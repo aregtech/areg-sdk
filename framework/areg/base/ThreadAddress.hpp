@@ -259,7 +259,7 @@ inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexce
     {
         mThreadName = std::move(src.mThreadName);
         mMagicNum   = src.mMagicNum;
-        src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        src.mMagicNum   = areg::CHECKSUM_IGNORE;
     }
 
     return (*this);

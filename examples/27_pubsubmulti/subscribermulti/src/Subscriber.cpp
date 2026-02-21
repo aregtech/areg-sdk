@@ -17,7 +17,7 @@
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
-Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+Subscriber::Subscriber( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component         (entry, owner)
     , SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
     , mStateEventCount  ( 0 )
@@ -25,14 +25,14 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
     Console & console = Console::getInstance();
@@ -42,7 +42,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), NEService::getString(status));
+        console.outputMsg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), areg::getString(status));
     }
     else
     {
@@ -59,12 +59,12 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, areg::eDataStateType state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    String publisherState = state == NEService::eDataStateType::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
+    String publisherState = state == areg::eDataStateType::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
@@ -73,7 +73,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProvi
     if (PubSubClientBase::isConnected() == false)
     {
         ASSERT(PubSubClientBase::getProxy() != nullptr);
-        stateConnect = NEService::getString(PubSubClientBase::getProxy()->getConnectionStatus());
+        stateConnect = areg::getString(PubSubClientBase::getProxy()->getConnectionStatus());
     }
 
     console.outputMsg(  pubsub::CoordStatus
@@ -83,7 +83,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProvi
                       , mStateEventCount);
     console.refreshScreen();
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
 
         if (isIntegerAlwaysValid() == false)

@@ -59,7 +59,7 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner);
 
 protected:
 
@@ -105,7 +105,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( areg::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.

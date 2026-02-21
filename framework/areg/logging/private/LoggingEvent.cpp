@@ -25,8 +25,8 @@
 
 namespace
 {
-    constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(NELogging::sLogMessage)) };
-    constexpr const uint32_t _logNamesSize{ static_cast<uint32_t>(NELogging::LOG_NAMES_SIZE * 2) };
+    constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(areg::sLogMessage)) };
+    constexpr const uint32_t _logNamesSize{ static_cast<uint32_t>(areg::LOG_NAMES_SIZE * 2) };
     constexpr const uint32_t _logLocalMessage{ _logMessageSize - _logNamesSize };
 }
 
@@ -48,7 +48,7 @@ LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action, con
 {
 }
 
-LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action, const NELogging::sLogMessage & logData )
+LoggingEventData::LoggingEventData( LoggingEventData::eLoggingAction action, const areg::sLogMessage & logData )
     : mAction       ( action )
     , mDataBuffer   (_logMessageSize, reinterpret_cast<const unsigned char *>(&logData), _logLocalMessage)
 {

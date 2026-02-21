@@ -23,7 +23,7 @@
  * \brief   This service client sends a request every 200 ms (HelloUnblock::ClientTimeot).
  *          Since the service responses with the timeout 500 ms, if do not manually
  *          unblock the request it will fail with reason 'the request is busy'
- *          (NEService::ResultType::RequestBusy).
+ *          (areg::ResultType::RequestBusy).
  *          This client demonstrate that all requests are processed and sent to the client.
  *          Start multiple instances of the client to make sure that all clients properly
  *          receive requests.
@@ -39,7 +39,7 @@ class ServiceClient : public    Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    ServiceClient( const areg::ComponentEntry & entry, ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( areg::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************
  * Response HelloUnblock
@@ -90,11 +90,11 @@ protected:
      *          It may happen if the request is busy and not completed.
      *          Since the request is manually unblocked on service side,
      *          we override this method to make sure that it never fails
-     *          with reason NEService::ResultType::RequestBusy, which happens
+     *          with reason areg::ResultType::RequestBusy, which happens
      *          if the request is still pending.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloUblockFailed( NEService::ResultType FailureReason ) override;
+    virtual void requestHelloUblockFailed( areg::ResultType FailureReason ) override;
 
     /**
      * \brief   Triggered, when HelloServiceState attribute is updated. The function contains
@@ -105,7 +105,7 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state ) override;
+    virtual void onHelloServiceStateUpdate( HelloUnblock::eServiceState HelloServiceState, areg::eDataStateType state ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 

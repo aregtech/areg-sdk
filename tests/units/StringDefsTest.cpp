@@ -53,8 +53,8 @@ TEST(NEStringTest, StringLength)
     for (uint32_t i = 0; i < count; ++i)
     {
         const SimpleString& entry = params[i];
-        EXPECT_EQ(NEString::getStringLength<char>(entry.str), static_cast<NEString::CharCount>(entry.len));
-        EXPECT_TRUE(NEString::isEmpty<char>(entry.str) == (entry.len == 0));
+        EXPECT_EQ(areg::getStringLength<char>(entry.str), static_cast<areg::CharCount>(entry.len));
+        EXPECT_TRUE(areg::isEmpty<char>(entry.str) == (entry.len == 0));
     }
 }
 
@@ -96,7 +96,7 @@ TEST(NEStringTest, StringLineLength)
     for (uint32_t i = 0; i < count; ++i)
     {
         const SimpleString& entry = params[i];
-        EXPECT_EQ(NEString::getStringLineLength<char>(entry.str), static_cast<NEString::CharCount>(entry.len));
+        EXPECT_EQ(areg::getStringLineLength<char>(entry.str), static_cast<areg::CharCount>(entry.len));
     }
 }
 
@@ -125,84 +125,84 @@ TEST(NEStringTest, LowerUpperNumericCase)
     for (uint32_t i = 0; i <= 0xFFu; ++i)
     {
         char ch    = static_cast<char>(i);
-        char lower = NEString::makeLower<char>(ch);
-        char upper = NEString::makeUpper<char>(ch);
+        char lower = areg::makeLower<char>(ch);
+        char upper = areg::makeUpper<char>(ch);
 
         if ((ch >= chNumMin) && (ch <= chNumMax))
         {
             // is numeric
-            EXPECT_TRUE(NEString::isNumeric<char>(ch));
-            EXPECT_FALSE(NEString::isLower<char>(ch));
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isNumeric<char>(ch));
+            EXPECT_FALSE(areg::isLower<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
             EXPECT_EQ(lower, upper);
             EXPECT_EQ(ch, lower);
-            EXPECT_FALSE(NEString::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isLetter<char>(ch));
         }
         else if ((ch >= chUpperMin) && (ch <= chUpperMax))
         {
             // is upper
-            EXPECT_TRUE(NEString::isUpper<char>(ch));
-            EXPECT_FALSE(NEString::isLower<char>(ch));
+            EXPECT_TRUE(areg::isUpper<char>(ch));
+            EXPECT_FALSE(areg::isLower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
         }
         else if ((ch >= chUpperMinSpec1) && (ch <= chUpperMaxSpec1))
         {
             // is upper special 1
-            EXPECT_TRUE(NEString::isUpper<char>(ch));
-            EXPECT_FALSE(NEString::isLower<char>(ch));
+            EXPECT_TRUE(areg::isUpper<char>(ch));
+            EXPECT_FALSE(areg::isLower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
         }
         else if ((ch >= chUpperMinSpec2) && (ch <= chUpperMaxSpec2))
         {
             // is upper special 2
-            EXPECT_TRUE(NEString::isUpper<char>(ch));
-            EXPECT_FALSE(NEString::isLower<char>(ch));
+            EXPECT_TRUE(areg::isUpper<char>(ch));
+            EXPECT_FALSE(areg::isLower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
         }
         else if ((ch >= chLowerMin) && (ch <= chLowerMax))
         {
             // is lower
-            EXPECT_TRUE(NEString::isLower<char>(ch));
-            EXPECT_FALSE(NEString::isUpper<char>(ch));
+            EXPECT_TRUE(areg::isLower<char>(ch));
+            EXPECT_FALSE(areg::isUpper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
         }
         else if ((ch >= chLowerMinSpec1) && (ch <= chLowerMaxSpec1))
         {
             // is lower special 1
-            EXPECT_TRUE(NEString::isLower<char>(ch));
-            EXPECT_FALSE(NEString::isUpper<char>(ch));
+            EXPECT_TRUE(areg::isLower<char>(ch));
+            EXPECT_FALSE(areg::isUpper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
         }
         else if ((ch >= chLowerMinSpec2) && (ch <= chLowerMaxSpec2))
         {
             // is lower special 2
-            EXPECT_TRUE(NEString::isLower<char>(ch));
-            EXPECT_FALSE(NEString::isUpper<char>(ch));
+            EXPECT_TRUE(areg::isLower<char>(ch));
+            EXPECT_FALSE(areg::isUpper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
         }
         else if ((ch == static_cast<char>(0x8A)) ||
                  (ch == static_cast<char>(0x8C)) ||
@@ -210,52 +210,52 @@ TEST(NEStringTest, LowerUpperNumericCase)
                  (ch == static_cast<char>(0x9F)) )
         {
             // is upper, control --> 138 (Š), 140 (Œ), 142 (Ž), 159 (Ÿ)
-            EXPECT_TRUE(NEString::isUpper<char>(ch));
-            EXPECT_FALSE(NEString::isLower<char>(ch));
+            EXPECT_TRUE(areg::isUpper<char>(ch));
+            EXPECT_FALSE(areg::isLower<char>(ch));
             EXPECT_EQ(ch, upper);
             EXPECT_NE(ch, lower);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
-            EXPECT_TRUE(NEString::isControl<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isControl<char>(ch));
         }
         else if ((ch == static_cast<char>(0x9A)) ||
                  (ch == static_cast<char>(0x9C)) ||
                  (ch == static_cast<char>(0x9E)) )
         {
             // is lower, control --> 154 (š), 156 (œ), 158 (ž)
-            EXPECT_TRUE(NEString::isLower<char>(ch));
-            EXPECT_FALSE(NEString::isUpper<char>(ch));
+            EXPECT_TRUE(areg::isLower<char>(ch));
+            EXPECT_FALSE(areg::isUpper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_NE(ch, upper);
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
-            EXPECT_TRUE(NEString::isControl<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isControl<char>(ch));
         }
         else if (ch == static_cast<char>(0xDF))
         {
             // is German letter 'ss' --> 223 (ß), has no upper case
-            EXPECT_FALSE(NEString::isNumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLetter<char>(ch));
-            EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
-            EXPECT_TRUE(NEString::isLower<char>(ch));
-            EXPECT_FALSE(NEString::isUpper<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch));
+            EXPECT_TRUE(areg::isLetter<char>(ch));
+            EXPECT_TRUE(areg::isAlphanumeric<char>(ch));
+            EXPECT_TRUE(areg::isLower<char>(ch));
+            EXPECT_FALSE(areg::isUpper<char>(ch));
             EXPECT_EQ(ch, lower);
             EXPECT_EQ(ch, upper);
         }
         else
         {
             // is symbol or special char, there is no upper or lower case
-            EXPECT_FALSE(NEString::isNumeric<char>(ch))     << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
-            EXPECT_FALSE(NEString::isLetter<char>(ch))      << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
-            EXPECT_FALSE(NEString::isAlphanumeric<char>(ch))<< "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
-            EXPECT_TRUE(NEString::isSymbol<char>(ch)        || 
-                        NEString::isWhitespace<char>(ch)    ||
-                        NEString::isDelimited<char>(ch)     ||
-                        NEString::isEndOfLine<char>(ch)     ||
-                        NEString::isEndOfString<char>(ch)   ||
-                        NEString::isControl<char>(ch));
+            EXPECT_FALSE(areg::isNumeric<char>(ch))     << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
+            EXPECT_FALSE(areg::isLetter<char>(ch))      << "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
+            EXPECT_FALSE(areg::isAlphanumeric<char>(ch))<< "Check char: \'" << static_cast<wchar_t>(ch) << "\'";
+            EXPECT_TRUE(areg::isSymbol<char>(ch)        || 
+                        areg::isWhitespace<char>(ch)    ||
+                        areg::isDelimited<char>(ch)     ||
+                        areg::isEndOfLine<char>(ch)     ||
+                        areg::isEndOfString<char>(ch)   ||
+                        areg::isControl<char>(ch));
             EXPECT_EQ(lower, upper);
             EXPECT_EQ(ch, lower);
         }
@@ -281,7 +281,7 @@ TEST(NEStringTest, GetPrintable)
         buffer[i] = static_cast<char>(static_cast<uint8_t>(i + 1u));
     }
 
-    buffer[0xFF] = NEString::EndOfString; // 256-th entry
+    buffer[0xFF] = areg::EndOfString; // 256-th entry
 
     uint32_t countPrintable{ 0 };
     uint32_t countNonPrintable{ 0 };
@@ -289,8 +289,8 @@ TEST(NEStringTest, GetPrintable)
     char* next = { buffer };
     do
     {
-        const char* buf = NEString::getPrintable<char>(next, NEString::COUNT_ALL, &next);
-        while (NEString::isEndOfString(*buf) == false)
+        const char* buf = areg::getPrintable<char>(next, areg::COUNT_ALL, &next);
+        while (areg::isEndOfString(*buf) == false)
         {
             const uint8_t ch{ static_cast<uint8_t>(*buf) };
             if (ch <= 31)
@@ -324,7 +324,7 @@ TEST(NEStringTest, GetPrintable)
                 EXPECT_TRUE(canPrint);
             }
 
-            EXPECT_TRUE(NEString::isPrintable(*buf));
+            EXPECT_TRUE(areg::isPrintable(*buf));
             ++countPrintable;
             ++buf;
         }
@@ -384,28 +384,28 @@ TEST_P(StringTestCompare, CompareStrings)
     const char* left{ param.left.data() };
     const char* right{ param.right.data() };
 
-    NEMath::eCompare result{};
+    areg::eCompare result{};
 
-    result = NEString::compare<char, char>(left, right);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resAllSens));
+    result = areg::compare<char, char>(left, right);
+    EXPECT_EQ(result, static_cast<areg::eCompare>(param.resAllSens));
 
-    result = NEString::compareIgnoreCase<char>(left, right);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resAllIgnore));
+    result = areg::compareIgnoreCase<char>(left, right);
+    EXPECT_EQ(result, static_cast<areg::eCompare>(param.resAllIgnore));
 
-    result = NEString::compare<char, char>(left, right, param.count);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+    result = areg::compare<char, char>(left, right, param.count);
+    EXPECT_EQ(result, static_cast<areg::eCompare>(param.resCountSens));
 
-    result = NEString::compareIgnoreCase<char, char>(left, right, param.count);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountIgnore));
+    result = areg::compareIgnoreCase<char, char>(left, right, param.count);
+    EXPECT_EQ(result, static_cast<areg::eCompare>(param.resCountIgnore));
 
-    result = NEString::compareFast<char>(left, right, param.count);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+    result = areg::compareFast<char>(left, right, param.count);
+    EXPECT_EQ(result, static_cast<areg::eCompare>(param.resCountSens));
 
-    result = NEString::compareStrings<char, char>(left, right, param.count, true);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+    result = areg::compareStrings<char, char>(left, right, param.count, true);
+    EXPECT_EQ(result, static_cast<areg::eCompare>(param.resCountSens));
 
-    result = NEString::compareStrings<char, char>(left, right, param.count, false);
-    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountIgnore));
+    result = areg::compareStrings<char, char>(left, right, param.count, false);
+    EXPECT_EQ(result, static_cast<areg::eCompare>(param.resCountIgnore));
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
@@ -426,7 +426,7 @@ struct TrimStringsParams
     std::string_view    trimLeft;   //!< The result to trim left
     std::string_view    trimRight;  //!< The result to trim right
     std::string_view    trimAll;    //!< The result to trim all sides.
-    int                 count{};    //!< The number of characters in the string to trim. NEString::COUNT_ALL means to take the complete string. Otherwise, only a part of string is taken.
+    int                 count{};    //!< The number of characters in the string to trim. areg::COUNT_ALL means to take the complete string. Otherwise, only a part of string is taken.
 };
 
 //!< The list of parameters: the string to test and the expected results to compare
@@ -472,22 +472,22 @@ TEST_P(StringTestTrim, TrimStrings)
     const TrimStringsParams& param = GetParam();
     char buffer[64];
 
-    NEString::CharCount count{};
+    areg::CharCount count{};
 
-    count = NEString::copyString<char, char>(buffer, 64, param.noTrim.data(), NEString::COUNT_ALL);
-    EXPECT_EQ(count, static_cast<NEString::CharCount>(param.noTrim.length()));
-    NEString::trimLeft<char>(buffer, param.count);
-    EXPECT_EQ(NEString::compare(buffer, param.trimLeft.data()), NEMath::eCompare::Equal);
+    count = areg::copyString<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
+    EXPECT_EQ(count, static_cast<areg::CharCount>(param.noTrim.length()));
+    areg::trimLeft<char>(buffer, param.count);
+    EXPECT_EQ(areg::compare(buffer, param.trimLeft.data()), areg::eCompare::Equal);
 
-    count = NEString::copyString<char, char>(buffer, 64, param.noTrim.data(), NEString::COUNT_ALL);
-    EXPECT_EQ(count, static_cast<NEString::CharCount>(param.noTrim.length()));
-    NEString::trimRight<char>(buffer, param.count);
-    EXPECT_EQ(NEString::compare(buffer, param.trimRight.data()), NEMath::eCompare::Equal);
+    count = areg::copyString<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
+    EXPECT_EQ(count, static_cast<areg::CharCount>(param.noTrim.length()));
+    areg::trimRight<char>(buffer, param.count);
+    EXPECT_EQ(areg::compare(buffer, param.trimRight.data()), areg::eCompare::Equal);
 
-    count = NEString::copyString<char, char>(buffer, 64, param.noTrim.data(), NEString::COUNT_ALL);
-    EXPECT_EQ(count, static_cast<NEString::CharCount>(param.noTrim.length()));
-    NEString::trimAll<char>(buffer, param.count);
-    EXPECT_EQ(NEString::compare(buffer, param.trimAll.data()), NEMath::eCompare::Equal);
+    count = areg::copyString<char, char>(buffer, 64, param.noTrim.data(), areg::COUNT_ALL);
+    EXPECT_EQ(count, static_cast<areg::CharCount>(param.noTrim.length()));
+    areg::trimAll<char>(buffer, param.count);
+    EXPECT_EQ(areg::compare(buffer, param.trimAll.data()), areg::eCompare::Equal);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
@@ -543,20 +543,20 @@ TEST_P(StringTestTrimCopy, TrimCopyStrings)
     const TrimStringsParams& param = GetParam();
     wchar_t wide[64];
 
-    NEMath::eCompare compare{};
+    areg::eCompare compare{};
 
-    NEString::trimLeft<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
-    compare = NEString::compare<wchar_t, char>(wide, param.trimLeft.data());
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
+    areg::trimLeft<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
+    EXPECT_EQ(compare, areg::eCompare::Equal);
+    compare = areg::compare<wchar_t, char>(wide, param.trimLeft.data());
+    EXPECT_EQ(compare, areg::eCompare::Equal);
 
-    NEString::trimRight<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
-    compare = NEString::compare<wchar_t, char>(wide, param.trimRight.data());
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
+    areg::trimRight<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
+    compare = areg::compare<wchar_t, char>(wide, param.trimRight.data());
+    EXPECT_EQ(compare, areg::eCompare::Equal);
 
-    NEString::trimAll<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
-    compare = NEString::compare<wchar_t, char>(wide, param.trimAll.data());
-    EXPECT_EQ(compare, NEMath::eCompare::Equal);
+    areg::trimAll<wchar_t, char>(wide, 64, param.noTrim.data(), param.count);
+    compare = areg::compare<wchar_t, char>(wide, param.trimAll.data());
+    EXPECT_EQ(compare, areg::eCompare::Equal);
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
@@ -606,34 +606,34 @@ TEST_P(StringTestRemoveChar, RemoveChar)
     const RemoveCharParams& param = GetParam();
     char buffer[64];
 
-    EXPECT_EQ(NEString::copyString<char>(buffer, 64, param.source.data(), NEString::COUNT_ALL), static_cast<NEString::CharCount>(param.source.length()));
-    const char* all = NEString::removeChar<char>(param.remove, buffer, true);
-    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL), NEMath::eCompare::Equal);
+    EXPECT_EQ(areg::copyString<char>(buffer, 64, param.source.data(), areg::COUNT_ALL), static_cast<areg::CharCount>(param.source.length()));
+    const char* all = areg::removeChar<char>(param.remove, buffer, true);
+    EXPECT_EQ(areg::compareFast<char>(buffer, param.resAll.data(), areg::COUNT_ALL), areg::eCompare::Equal);
     EXPECT_TRUE(all != nullptr);
-    EXPECT_TRUE(NEString::isEndOfString<char>(*all));
+    EXPECT_TRUE(areg::isEndOfString<char>(*all));
 
-    NEString::CharCount len = NEString::getStringLength<char>(buffer);
-    NEString::CharCount count = static_cast<NEString::CharCount>(param.source.length()) - len;
+    areg::CharCount len = areg::getStringLength<char>(buffer);
+    areg::CharCount count = static_cast<areg::CharCount>(param.source.length()) - len;
 
-    EXPECT_EQ(NEString::copyString<char>(buffer, 64, param.source.data(), NEString::COUNT_ALL), static_cast<NEString::CharCount>(param.source.length()));
-    char* one = NEString::removeChar<char>(param.remove, buffer, false);
-    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resOne.data(), NEString::COUNT_ALL), NEMath::eCompare::Equal);
+    EXPECT_EQ(areg::copyString<char>(buffer, 64, param.source.data(), areg::COUNT_ALL), static_cast<areg::CharCount>(param.source.length()));
+    char* one = areg::removeChar<char>(param.remove, buffer, false);
+    EXPECT_EQ(areg::compareFast<char>(buffer, param.resOne.data(), areg::COUNT_ALL), areg::eCompare::Equal);
     EXPECT_TRUE(one != nullptr);
 
     for ( ;count > 1; --count)
     {
         // we did not reach end of string.
-        EXPECT_TRUE(NEString::isEndOfString<char>(*one) == false);
+        EXPECT_TRUE(areg::isEndOfString<char>(*one) == false);
         // remove char starting at `one`
-        one = NEString::removeChar<char>(param.remove, one, false);
+        one = areg::removeChar<char>(param.remove, one, false);
     }
 
     // no more character to remove, check it
-    EXPECT_TRUE(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL) == NEMath::eCompare::Equal);
+    EXPECT_TRUE(areg::compareFast<char>(buffer, param.resAll.data(), areg::COUNT_ALL) == areg::eCompare::Equal);
 
     // the `one` might not reach end of string, call `removeChar` one more time and make sure that end of string reached
-    one = NEString::removeChar<char>(param.remove, buffer, false);
-    EXPECT_TRUE(NEString::isEndOfString<char>(*one));
+    one = areg::removeChar<char>(param.remove, buffer, false);
+    EXPECT_TRUE(areg::isEndOfString<char>(*one));
 }
 
 #if defined(INSTANTIATE_TEST_SUITE_P)
@@ -695,33 +695,33 @@ TEST_P(StringTestFindFirstChar, FindFirstChar)
     const char* next{ param.source.data() };
     const char ch{ param.ch };
     const PhraseList& results{ param.results };
-    NEString::CharCount pos{ param.pos };
-    NEString::CharCount posTemp{ param.pos };
+    areg::CharCount pos{ param.pos };
+    areg::CharCount posTemp{ param.pos };
     const char* nextTemp{ nullptr };
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
         const std::string_view& result{ results[i] };
 
-        posTemp = NEString::findFirst<char>(ch, next, posTemp, true, &nextTemp);
+        posTemp = areg::findFirst<char>(ch, next, posTemp, true, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
         posTemp = 0;
 
 
-        pos = NEString::findFirst<char>(ch, param.source.data(), pos, true, &next);
-        EXPECT_TRUE(pos != NEString::INVALID_POS);
+        pos = areg::findFirst<char>(ch, param.source.data(), pos, true, &next);
+        EXPECT_TRUE(pos != areg::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
         EXPECT_TRUE(result == next);
         pos += 1;
     }
 
-    pos = NEString::findFirst<char>(ch, param.source.data(), pos, true, &next);
-    if (pos != NEString::INVALID_POS)
+    pos = areg::findFirst<char>(ch, param.source.data(), pos, true, &next);
+    if (pos != areg::INVALID_POS)
     {
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
     }
 
-    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    EXPECT_TRUE(areg::isEmpty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
@@ -775,24 +775,24 @@ TEST_P(StringTestFindLastChar, FindLastChar)
     const char* next{ param.source.data() };
     const char ch{ param.ch };
     const PhraseList& results{ param.results };
-    NEString::CharCount pos{ param.pos };
+    areg::CharCount pos{ param.pos };
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
         const std::string_view& result{ results[i] };
 
-        pos = NEString::findLast<char>(ch, param.source.data(), pos, true, &next);
-        EXPECT_TRUE(pos != NEString::INVALID_POS);
+        pos = areg::findLast<char>(ch, param.source.data(), pos, true, &next);
+        EXPECT_TRUE(pos != areg::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
         EXPECT_TRUE(result == next);
         pos -= 1;
 
-        EXPECT_NE(pos, NEString::END_POS);
+        EXPECT_NE(pos, areg::END_POS);
     }
 
-    pos = NEString::findLast<char>(ch, param.source.data(), pos, true, &next);
-    EXPECT_EQ(pos, NEString::INVALID_POS);
-    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    pos = areg::findLast<char>(ch, param.source.data(), pos, true, &next);
+    EXPECT_EQ(pos, areg::INVALID_POS);
+    EXPECT_TRUE(areg::isEmpty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
@@ -871,36 +871,36 @@ TEST_P(StringTestFindFirstPhrase, FindFirstString)
     const char* next{ param.source.data() };
     const char * phrase{ param.phrase.data() };
     const PhraseList& results{ param.results };
-    NEString::CharCount pos{ param.pos };
-    NEString::CharCount posTemp{ param.pos };
+    areg::CharCount pos{ param.pos };
+    areg::CharCount posTemp{ param.pos };
     const char* nextTemp{ nullptr };
-    NEString::CharCount phraseCount{ static_cast<NEString::CharCount>(param.phrase.length()) };
+    areg::CharCount phraseCount{ static_cast<areg::CharCount>(param.phrase.length()) };
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
         const std::string_view& result{ results[i] };
 
-        posTemp = NEString::findFirst<char>(phrase, next, posTemp, param.isSensitive, &nextTemp);
+        posTemp = areg::findFirst<char>(phrase, next, posTemp, param.isSensitive, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
         posTemp = 0;
 
 
-        pos = NEString::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
-        EXPECT_TRUE(pos != NEString::INVALID_POS);
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        pos = areg::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+        EXPECT_TRUE(pos != areg::INVALID_POS);
+        areg::eCompare comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, areg::eCompare::Equal);
         EXPECT_TRUE(result == next);
         pos += phraseCount;
     }
 
-    pos = NEString::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
-    if (pos != NEString::INVALID_POS)
+    pos = areg::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+    if (pos != areg::INVALID_POS)
     {
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        areg::eCompare comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, areg::eCompare::Equal);
     }
 
-    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    EXPECT_TRUE(areg::isEmpty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
@@ -968,29 +968,29 @@ TEST_P(StringTestFindLastPhrase, FindLastString)
     const char* next{ param.source.data() };
     const char * phrase{ param.phrase.data() };
     const PhraseList& results{ param.results };
-    NEString::CharCount pos{ param.pos };
+    areg::CharCount pos{ param.pos };
 
-    NEString::CharCount phraseCount{ static_cast<NEString::CharCount>(param.phrase.length()) };
+    areg::CharCount phraseCount{ static_cast<areg::CharCount>(param.phrase.length()) };
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
         const std::string_view& result{ results[i] };
 
-        pos = NEString::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
-        EXPECT_TRUE(pos != NEString::INVALID_POS);
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        pos = areg::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+        EXPECT_TRUE(pos != areg::INVALID_POS);
+        areg::eCompare comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, areg::eCompare::Equal);
         EXPECT_TRUE(result == next);
     }
 
-    pos = NEString::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
-    if (pos != NEString::INVALID_POS)
+    pos = areg::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
+    if (pos != areg::INVALID_POS)
     {
-        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
-        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        areg::eCompare comp = areg::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
+        EXPECT_EQ(comp, areg::eCompare::Equal);
     }
 
-    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    EXPECT_TRUE(areg::isEmpty<char>(next));
     EXPECT_TRUE(next == nullptr);
 }
 
@@ -1070,32 +1070,32 @@ TEST_P(StringTestStartsEnds, StringStartsEnds)
     {
         if (param.substr.length() > 1)
         {
-            EXPECT_EQ(NEString::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
         }
         else if (param.substr.length() == 1)
         {
-            EXPECT_EQ(NEString::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
         }
         else
         {
-            EXPECT_EQ(NEString::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
-            EXPECT_EQ(NEString::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
         }
     }
     else
     {
         if (param.substr.length() > 1)
         {
-            EXPECT_EQ(NEString::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
         }
         else if (param.substr.length() == 1)
         {
-            EXPECT_EQ(NEString::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
         }
         else
         {
-            EXPECT_EQ(NEString::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
-            EXPECT_EQ(NEString::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(areg::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
         }
     }
 }
@@ -1148,17 +1148,17 @@ TEST_P(StringTestGetLine, StringGetLine)
 
     char buffer[256]{};
     char* next{ buffer };
-    NEString::copyString(buffer, 256, source);
+    areg::copyString(buffer, 256, source);
 
     for (const auto& line : lines)
     {
-        const char * result = NEString::getLine<char>(next, NEString::END_POS, &next);
+        const char * result = areg::getLine<char>(next, areg::END_POS, &next);
         EXPECT_TRUE(line == result);
     }
 
     EXPECT_TRUE(next == nullptr);
 
-    const char* result = NEString::getLine<char>(next, NEString::END_POS, &next);
+    const char* result = areg::getLine<char>(next, areg::END_POS, &next);
     EXPECT_TRUE(result == nullptr);
 }
 
@@ -1211,7 +1211,7 @@ TEST_P(StringTestGetInteger, StringGetInteger)
     uint32_t idx = 0;
     for (auto num : digits)
     {
-        int result = NEString::makeInteger(next, &next);
+        int result = areg::makeInteger(next, &next);
         EXPECT_EQ(result, num);
         if (idx < remains.size())
         {
@@ -1219,7 +1219,7 @@ TEST_P(StringTestGetInteger, StringGetInteger)
         }
     }
 
-    int result = NEString::makeInteger(next, &next);
+    int result = areg::makeInteger(next, &next);
     EXPECT_EQ(result, 0);
     EXPECT_TRUE(next == nullptr);
 }

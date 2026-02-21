@@ -47,7 +47,7 @@ public:
      * \brief   Initializes Service handler and client connection objects.
      * \param   remoteService   The instance of remote service to process messages.
      * \param   connection      The instance of client connection object to read messages.
-     * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD
+     * \param   namePrefix      The prefix to add to the areg::CLIENT_RECEIVE_MESSAGE_THREAD
      *                          to have unique thread names.
      **/
     ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);

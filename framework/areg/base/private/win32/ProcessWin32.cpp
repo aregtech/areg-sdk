@@ -41,7 +41,7 @@ void Process::_osInitilize()
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
     TCHAR fullPath[File::MAXIMUM_PATH];
-    NEMemory::memZero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
+    areg::memZero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
 
     if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {

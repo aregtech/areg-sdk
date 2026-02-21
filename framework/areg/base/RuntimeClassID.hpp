@@ -336,7 +336,7 @@ inline RuntimeClassID::operator unsigned int () const
 
 inline bool RuntimeClassID::isValid() const
 {
-    return (mMagicNum != NEMath::CHECKSUM_IGNORE);
+    return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
 
 inline const String & RuntimeClassID::getName() const

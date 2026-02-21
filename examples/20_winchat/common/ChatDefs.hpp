@@ -525,7 +525,7 @@ inline chat::sMessageData * chat::newData( )
     chat::sMessageData * result = DEBUG_NEW chat::sMessageData;
     if ( result != nullptr )
     {
-        NEMemory::memZero(reinterpret_cast<void *>(result), sizeof( chat::sMessageData ));
+        areg::memZero(reinterpret_cast<void *>(result), sizeof( chat::sMessageData ));
     }
 
     return result;

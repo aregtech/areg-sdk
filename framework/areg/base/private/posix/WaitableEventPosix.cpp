@@ -28,9 +28,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
-    : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitEvent, true, asciiName )
+    : WaitablePosix  ( areg::os::eSyncObject::SoWaitEvent, true, asciiName )
 
-    , mEventReset       ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
+    , mEventReset       ( isAutoReset ? areg::os::eEventResetInfo::EventResetAutomatic : areg::os::eEventResetInfo::EventResetManual )
     , mIsSignaled       ( isInitSignaled )
 {
 }
@@ -79,7 +79,7 @@ bool WaitableEventPosix::resetEvent()
 #ifdef DEBUG
         if (mIsSignaled)
         {
-            if (NESyncTypesIX::eEventResetInfo::EventResetAutomatic == mEventReset)
+            if (areg::os::eEventResetInfo::EventResetAutomatic == mEventReset)
             {
                 AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
             }
@@ -141,7 +141,7 @@ void WaitableEventPosix::notifyReleasedThreads(int numThreads)
 {
     ObjectLockPosix lock(*this);
 
-    if ((mEventReset == NESyncTypesIX::eEventResetInfo::EventResetAutomatic) && (numThreads > 0))
+    if ((mEventReset == areg::os::eEventResetInfo::EventResetAutomatic) && (numThreads > 0))
     {
         AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
         mIsSignaled = false;

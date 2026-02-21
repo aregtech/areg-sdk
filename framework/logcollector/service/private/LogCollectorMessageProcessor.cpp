@@ -21,23 +21,23 @@
 LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerService & loggerService)
     : mLoggerService    ( loggerService )
     , mListSaveConfig   ( )
-    , mPendingSave      ( NEService::COOKIE_UNKNOWN )
+    , mPendingSave      ( areg::COOKIE_UNKNOWN )
 {
 }
 
 void LogCollectorMessageProcessor::queryConnectedInstances(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceQueryInstances));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::SystemServiceQueryInstances));
 
     const ITEM_ID & source{ msgReceived.getSource() };
     const ITEM_ID& target{ msgReceived.getTarget() };
-    if ((source >= NEService::COOKIE_REMOTE_SERVICE) && (target == NEService::COOKIE_LOGGER))
+    if ((source >= areg::COOKIE_REMOTE_SERVICE) && (target == areg::COOKIE_LOGGER))
     {
-        const NEService::MapInstances& instances = mLoggerService.getInstances();
+        const areg::MapInstances& instances = mLoggerService.getInstances();
         auto srcPos = instances.find(source);
         if (instances.isValidPosition(srcPos))
         {
-            const NEService::sServiceConnectedInstance& instance = instances.valueAtPosition(srcPos);
+            const areg::sServiceConnectedInstance& instance = instances.valueAtPosition(srcPos);
             if (isLogObserver(instance.ciSource))
             {
                 notifyConnectedInstances(mLoggerService.getInstances(), source);
@@ -46,18 +46,18 @@ void LogCollectorMessageProcessor::queryConnectedInstances(const RemoteMessage &
     }
 }
 
-void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::MapInstances& instances, const ITEM_ID& target /*= NEService::TARGET_ALL*/) const
+void LogCollectorMessageProcessor::notifyConnectedInstances(const areg::MapInstances& instances, const ITEM_ID& target /*= areg::TARGET_ALL*/) const
 {
     const auto& observers{ mLoggerService.getObservers() };
     if (observers.isEmpty())
         return;
 
     RemoteMessage msgInstances;
-    ASSERT((target == NEService::TARGET_ALL) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
+    ASSERT((target == areg::TARGET_ALL) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
 
-    if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
+    if (msgInstances.initMessage(areg::getMessageNotifyInstances().rbHeader) != nullptr)
     {
-        msgInstances << NERemoteService::eRemoteConnection::RemoteConnected;
+        msgInstances << areg::eRemoteConnection::RemoteConnected;
         uint32_t count{ 0 };
         uint32_t pos = msgInstances.getPosition();
         msgInstances << count; // reserves space, initially set 0
@@ -77,17 +77,17 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const NEService::Map
             msgInstances.moveToEnd();
         }
 
-        if (target == NEService::TARGET_ALL)
+        if (target == areg::TARGET_ALL)
         {
             for (const auto& observer : observers.getData())
             {
-                RemoteMessage msg{ msgInstances.clone(NEService::COOKIE_LOGGER, observer.first) };
+                RemoteMessage msg{ msgInstances.clone(areg::COOKIE_LOGGER, observer.first) };
                 mLoggerService.sendMessage(msg);
             }
         }
         else
         {
-            msgInstances.setSource(NEService::COOKIE_LOGGER);
+            msgInstances.setSource(areg::COOKIE_LOGGER);
             msgInstances.setTarget(target);
             mLoggerService.sendMessage(msgInstances);
         }
@@ -101,21 +101,21 @@ void LogCollectorMessageProcessor::notifyDisconnectedInstances(const ArrayList<I
         return;
 
     RemoteMessage msgInstances;
-    if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
+    if (msgInstances.initMessage(areg::getMessageNotifyInstances().rbHeader) != nullptr)
     {
-        msgInstances << NERemoteService::eRemoteConnection::RemoteDisconnected;
+        msgInstances << areg::eRemoteConnection::RemoteDisconnected;
         msgInstances << listIds;
-        if (target == NEService::TARGET_ALL)
+        if (target == areg::TARGET_ALL)
         {
             for (const auto& observer : observers.getData())
             {
-                RemoteMessage msg{ msgInstances.clone(NEService::COOKIE_LOGGER, observer.first) };
+                RemoteMessage msg{ msgInstances.clone(areg::COOKIE_LOGGER, observer.first) };
                 mLoggerService.sendMessage(msg);
             }
         }
         else
         {
-            msgInstances.setSource(NEService::COOKIE_LOGGER);
+            msgInstances.setSource(areg::COOKIE_LOGGER);
             msgInstances.setTarget(target);
             mLoggerService.sendMessage(msgInstances);
         }
@@ -124,7 +124,7 @@ void LogCollectorMessageProcessor::notifyDisconnectedInstances(const ArrayList<I
 
 void LogCollectorMessageProcessor::registerScopesAtObserver(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::ServiceLogRegisterScopes));
     msgReceived.moveToBegin();
     uint32_t scopeCount{ 0 };
     msgReceived >> scopeCount;
@@ -140,25 +140,25 @@ void LogCollectorMessageProcessor::registerScopesAtObserver(const RemoteMessage 
 
 void LogCollectorMessageProcessor::updateLogSourceScopes(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogUpdateScopes));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::ServiceLogUpdateScopes));
     _forwardMessageToLogSources(msgReceived);
 }
 
 void LogCollectorMessageProcessor::queryLogSourceScopes(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogQueryScopes));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::ServiceLogQueryScopes));
     _forwardMessageToLogSources(msgReceived);
 }
 
 void LogCollectorMessageProcessor::saveLogSourceConfiguration(const RemoteMessage & msgReceived)
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceSaveLogConfiguration));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::ServiceSaveLogConfiguration));
 
-    ITEM_ID target{ NEService::COOKIE_UNKNOWN };
+    ITEM_ID target{ areg::COOKIE_UNKNOWN };
     msgReceived >> target;
-    if ((target == NEService::TARGET_ALL) || (target == NEService::COOKIE_LOGGER))
+    if ((target == areg::TARGET_ALL) || (target == areg::COOKIE_LOGGER))
     {
-        const NEService::MapInstances& instances{ mLoggerService.getInstances() };
+        const areg::MapInstances& instances{ mLoggerService.getInstances() };
         for (const auto& entry : instances.getData())
         {
             if (isLogSource(entry.second.ciSource))
@@ -167,12 +167,12 @@ void LogCollectorMessageProcessor::saveLogSourceConfiguration(const RemoteMessag
             }
         }
     }
-    else if (target != NEService::COOKIE_UNKNOWN)
+    else if (target != areg::COOKIE_UNKNOWN)
     {
         mListSaveConfig.addIfUnique(target);
     }
 
-    if ((mPendingSave == NEService::COOKIE_UNKNOWN) && (mListSaveConfig.isEmpty() == false))
+    if ((mPendingSave == areg::COOKIE_UNKNOWN) && (mListSaveConfig.isEmpty() == false))
     {
         processNextSaveConfig();
     }
@@ -180,14 +180,14 @@ void LogCollectorMessageProcessor::saveLogSourceConfiguration(const RemoteMessag
 
 void LogCollectorMessageProcessor::logSourceScopesUpadated(const RemoteMessage& msgReceived)
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogScopesUpdated));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::ServiceLogScopesUpdated));
     _forwardMessageToObservers(msgReceived);
 }
 
 #ifdef      DEBUG
 void LogCollectorMessageProcessor::logSourceConfigurationSaved(const RemoteMessage& msgReceived)
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogConfigurationSaved));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::ServiceLogConfigurationSaved));
     processNextSaveConfig();
 }
 #else   // DEBUG
@@ -200,19 +200,19 @@ void LogCollectorMessageProcessor::logSourceConfigurationSaved(const RemoteMessa
 void LogCollectorMessageProcessor::processNextSaveConfig()
 {
     mLoggerService.mSaveTimer.stopTimer();
-    mPendingSave = NEService::COOKIE_UNKNOWN;
+    mPendingSave = areg::COOKIE_UNKNOWN;
     if (mListSaveConfig.isEmpty() == false)
     {
         mPendingSave = mListSaveConfig[0u];
         mListSaveConfig.removeAt(0u, 1u);
-        mLoggerService.sendMessage(NELogging::messageSaveConfiguration(NEService::COOKIE_LOGGER, mPendingSave));
+        mLoggerService.sendMessage(areg::messageSaveConfiguration(areg::COOKIE_LOGGER, mPendingSave));
         mLoggerService.mSaveTimer.startTimer(LogCollectorServerService::TIMEOUT_SAVE_CONFIG, static_cast<DispatcherThread &>(mLoggerService), 1);
     }
 }
 
 void LogCollectorMessageProcessor::clientDisconnected(const ITEM_ID& cookie)
 {
-    if ((cookie > NEService::TARGET_ALL) && (mPendingSave == cookie))
+    if ((cookie > areg::TARGET_ALL) && (mPendingSave == cookie))
     {
         processNextSaveConfig();
     }
@@ -220,31 +220,31 @@ void LogCollectorMessageProcessor::clientDisconnected(const ITEM_ID& cookie)
 
 void LogCollectorMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogMessage));
-    ASSERT(NELogging::eLogDataType::LogDataRemote == reinterpret_cast<const NELogging::sLogMessage *>(msgReceived.getBuffer())->logDataType);
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(areg::eFuncIdRange::ServiceLogMessage));
+    ASSERT(areg::eLogDataType::LogDataRemote == reinterpret_cast<const areg::sLogMessage *>(msgReceived.getBuffer())->logDataType);
     _forwardMessageToObservers(msgReceived);
 }
 
-bool LogCollectorMessageProcessor::isLogSource(NEService::eMessageSource msgSource)
+bool LogCollectorMessageProcessor::isLogSource(areg::eMessageSource msgSource)
 {
     switch (msgSource)
     {
-    case NEService::eMessageSource::MessageSourceClient:    // fall through
-    case NEService::eMessageSource::MessageSourceSimulation:// fall through
-    case NEService::eMessageSource::MessageSourceTest:
+    case areg::eMessageSource::MessageSourceClient:    // fall through
+    case areg::eMessageSource::MessageSourceSimulation:// fall through
+    case areg::eMessageSource::MessageSourceTest:
         return true;
 
-    case NEService::eMessageSource::MessageSourceUndefined: // fall through
-    case NEService::eMessageSource::MessageSourceService:   // fall through
-    case NEService::eMessageSource::MessageSourceObserver:  // fall through
+    case areg::eMessageSource::MessageSourceUndefined: // fall through
+    case areg::eMessageSource::MessageSourceService:   // fall through
+    case areg::eMessageSource::MessageSourceObserver:  // fall through
     default:
         return false;
     }
 }
 
-bool LogCollectorMessageProcessor::isLogObserver(NEService::eMessageSource msgSource)
+bool LogCollectorMessageProcessor::isLogObserver(areg::eMessageSource msgSource)
 {
-    return ((static_cast<uint32_t>(NEService::eMessageSource::MessageSourceObserver) & static_cast<uint32_t>(msgSource)) != 0);
+    return ((static_cast<uint32_t>(areg::eMessageSource::MessageSourceObserver) & static_cast<uint32_t>(msgSource)) != 0);
 }
 
 inline void LogCollectorMessageProcessor::_forwardMessageToLogSources(const RemoteMessage& msgReceived) const
@@ -254,17 +254,17 @@ inline void LogCollectorMessageProcessor::_forwardMessageToLogSources(const Remo
         return;
 
     ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::TARGET_ALL };
+    ITEM_ID target{ msgReceived.getTarget() != areg::COOKIE_LOGGER ? msgReceived.getTarget() : areg::TARGET_ALL };
 
-    auto srcPos = source != NEService::COOKIE_LOGGER ? instances.find(source) : instances.invalidPosition();
-    if ((source == NEService::COOKIE_LOGGER) || (instances.isValidPosition(srcPos) && isLogObserver(instances.valueAtPosition(srcPos).ciSource)))
+    auto srcPos = source != areg::COOKIE_LOGGER ? instances.find(source) : instances.invalidPosition();
+    if ((source == areg::COOKIE_LOGGER) || (instances.isValidPosition(srcPos) && isLogObserver(instances.valueAtPosition(srcPos).ciSource)))
     {
         auto dstPos = instances.find(target);
         if (instances.isValidPosition(dstPos) && isLogSource(instances.valueAtPosition(dstPos).ciSource))
         {
             mLoggerService.sendMessage(msgReceived);
         }
-        else if (target == NEService::TARGET_ALL)
+        else if (target == areg::TARGET_ALL)
         {
             for (const auto& instance : instances.getData())
             {
@@ -285,8 +285,8 @@ inline void LogCollectorMessageProcessor::_forwardMessageToObservers(const Remot
         return;
 
     ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::TARGET_ALL };
-    const NEService::MapInstances& instances = mLoggerService.getInstances();
+    ITEM_ID target{ msgReceived.getTarget() != areg::COOKIE_LOGGER ? msgReceived.getTarget() : areg::TARGET_ALL };
+    const areg::MapInstances& instances = mLoggerService.getInstances();
 
     auto srcPos = instances.find(source);
     auto dstPos = instances.find(target);
@@ -296,7 +296,7 @@ inline void LogCollectorMessageProcessor::_forwardMessageToObservers(const Remot
         {
             mLoggerService.sendMessage(msgReceived);
         }
-        else if (target == NEService::TARGET_ALL)
+        else if (target == areg::TARGET_ALL)
         {
             for (const auto& observer : observers.getData())
             {

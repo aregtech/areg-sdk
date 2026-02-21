@@ -26,30 +26,30 @@
 
 #ifdef  _DEBUG
 
-void AREG_API_IMPL NEDebug::outputConsole( NEDebug::DebugPriority priority, const char * msg, ... )
+void AREG_API_IMPL areg::outputConsole( areg::DebugPriority priority, const char * msg, ... )
 {
     va_list args;
     if (msg != nullptr)
     {
         va_start(args, msg);
-        char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
-        int lenPref = String::formatString(buffer, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", NEDebug::getPrioPrefix(priority));
-        int lenMsg  = String::formatStringList(buffer + lenPref, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
+        char buffer[areg::MAX_DEBUG_BUFFER_SIZE];
+        int lenPref = String::formatString(buffer, static_cast<int>(areg::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", areg::getPrioPrefix(priority));
+        int lenMsg  = String::formatStringList(buffer + lenPref, static_cast<int>(areg::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
         char last   = buffer[lenPref + lenMsg - 1];
-        if ( last != NEString::EndOfLine )
+        if ( last != areg::EndOfLine )
         {
-            buffer[lenPref + lenMsg + 0] = NEString::EndOfLine;
-            buffer[lenPref + lenMsg + 1] = NEString::EndOfString;
+            buffer[lenPref + lenMsg + 0] = areg::EndOfLine;
+            buffer[lenPref + lenMsg + 1] = areg::EndOfString;
         }
 
-        NEDebug::outputMessageOS(buffer);
+        areg::outputMessageOS(buffer);
         va_end(args);
     }
 }
 
 #else   // !_DEBUG
 
-void AREG_API_IMPL NEDebug::outputConsole( NEDebug::DebugPriority /*priority*/, const char * /*msg*/, ... )
+void AREG_API_IMPL areg::outputConsole( areg::DebugPriority /*priority*/, const char * /*msg*/, ... )
 {
 }
 
@@ -57,16 +57,16 @@ void AREG_API_IMPL NEDebug::outputConsole( NEDebug::DebugPriority /*priority*/, 
 
 #ifdef  _DEBUG
 
-void AREG_API_IMPL NEDebug::outputConsole(const char * msg, ...)
+void AREG_API_IMPL areg::outputConsole(const char * msg, ...)
 {
     va_list args;
     if (msg != nullptr)
     {
         va_start(args, msg);
 
-        char buffer[NEDebug::MAX_DEBUG_BUFFER_SIZE];
-        String::formatStringList( buffer, NEDebug::MAX_DEBUG_BUFFER_SIZE, msg, args );
-        NEDebug::outputMessageOS( buffer );
+        char buffer[areg::MAX_DEBUG_BUFFER_SIZE];
+        String::formatStringList( buffer, areg::MAX_DEBUG_BUFFER_SIZE, msg, args );
+        areg::outputMessageOS( buffer );
 
         va_end(args);
     }
@@ -74,7 +74,7 @@ void AREG_API_IMPL NEDebug::outputConsole(const char * msg, ...)
 
 #else   // !_DEBUG
 
-void AREG_API_IMPL NEDebug::outputConsole(const char * /*msg*/, ...)
+void AREG_API_IMPL areg::outputConsole(const char * /*msg*/, ...)
 {
 }
 

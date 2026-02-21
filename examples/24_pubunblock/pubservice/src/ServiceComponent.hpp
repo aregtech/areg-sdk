@@ -50,7 +50,7 @@ class ServiceComponent  : public  Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    ServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner );
 
 protected:
 

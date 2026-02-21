@@ -98,7 +98,7 @@ public:
      * \param   serviceVersion  The service version to set.
      * \param   serviceType     The type of service
      **/
-    ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::eServiceType serviceType );
+    ServiceItem( const String & serviceName, const Version & serviceVersion, areg::eServiceType serviceType );
 
     /**
      * \brief   Creates service item and initializes data from given stream.
@@ -207,12 +207,12 @@ public:
     /**
      * \brief   Returns service type
      **/
-    inline NEService::eServiceType getServiceType() const;
+    inline areg::eServiceType getServiceType() const;
 
     /**
      * \brief   Sets the service type
      **/
-    inline void setServiceType( NEService::eServiceType serviceType );
+    inline void setServiceType( areg::eServiceType serviceType );
 
     /**
      * \brief   Returns true if service is remote
@@ -265,7 +265,7 @@ protected:
     /**
      * \brief   Service type
      **/
-    NEService::eServiceType mServiceType;
+    areg::eServiceType mServiceType;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -308,7 +308,7 @@ inline const String & ServiceItem::getServiceName() const
 inline void ServiceItem::setServiceName( const String & serviceName )
 {
     mServiceName = serviceName;
-    mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     mMagicNum    = ServiceItem::_magicNumber(*this);
 }
 
@@ -322,25 +322,25 @@ inline void ServiceItem::setServiceVersion( const Version & serviceVersion )
     mServiceVersion = serviceVersion;
 }
 
-inline NEService::eServiceType ServiceItem::getServiceType() const
+inline areg::eServiceType ServiceItem::getServiceType() const
 {
     return mServiceType;
 }
 
-inline void ServiceItem::setServiceType( NEService::eServiceType serviceType )
+inline void ServiceItem::setServiceType( areg::eServiceType serviceType )
 {
     mServiceType = serviceType;
-    mMagicNum    = serviceType != NEService::eServiceType::ServiceInvalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
+    mMagicNum    = serviceType != areg::eServiceType::ServiceInvalid ? ServiceItem::_magicNumber(*this) : areg::CHECKSUM_IGNORE;
 }
 
 inline bool ServiceItem::isServicePublic() const
 {
-    return (mServiceType == NEService::eServiceType::ServicePublic);
+    return (mServiceType == areg::eServiceType::ServicePublic);
 }
 
 inline bool ServiceItem::isValid() const
 {
-    return ( mMagicNum != NEMath::CHECKSUM_IGNORE );
+    return ( mMagicNum != areg::CHECKSUM_IGNORE );
 }
 
 inline bool ServiceItem::isValidated() const
@@ -348,7 +348,7 @@ inline bool ServiceItem::isValidated() const
     return (mServiceName.isEmpty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
            (mServiceVersion         != Version::getInvalidVersion()             ) && 
-           (mServiceType            != NEService::eServiceType::ServiceInvalid  );
+           (mServiceType            != areg::eServiceType::ServiceInvalid  );
 }
 
 inline ServiceItem & ServiceItem::operator = ( const ServiceItem & source )

@@ -142,7 +142,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceProvider( const StubAddress & stubService, const areg::eDisconnectReason reason ) override;
 
     /**
      * \brief   Call to register the remote service consumer in the system and connect to service provider.
@@ -159,7 +159,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const areg::eDisconnectReason reason ) override;
 
 /************************************************************************/
 // EventRouter interface overrides

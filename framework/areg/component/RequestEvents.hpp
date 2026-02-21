@@ -129,7 +129,7 @@ public:
     /**
      * \brief   Returns data type of request data
      **/
-    inline NEService::eMessageDataType getDataType() const;
+    inline areg::eMessageDataType getDataType() const;
 
     /**
      * \brief   Returns reference of data input streaming object
@@ -375,7 +375,7 @@ protected:
     NotifyRequestEvent( const ProxyAddress & fromProxy
                       , const StubAddress & toStub
                       , unsigned int msgId
-                      , NEService::eRequestType reqType
+                      , areg::eRequestType reqType
                       , Event::eEventType eventType );
 
     /**
@@ -426,7 +426,7 @@ protected:
     LocalNotifyRequestEvent( const ProxyAddress & fromProxy
                            , const StubAddress & toStub
                            , unsigned int msgId
-                           , NEService::eRequestType reqType );
+                           , areg::eRequestType reqType );
 
     /**
      * \brief   Initializes object data from streaming object.
@@ -477,7 +477,7 @@ protected:
     RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
                             , const StubAddress & toStub
                             , unsigned int msgId
-                            , NEService::eRequestType reqType );
+                            , areg::eRequestType reqType );
 
     /**
      * \brief   Initializes object data from streaming object.
@@ -534,7 +534,7 @@ inline const EventData & RequestEvent::getData() const
     return mData;
 }
 
-inline NEService::eMessageDataType RequestEvent::getDataType() const
+inline areg::eMessageDataType RequestEvent::getDataType() const
 {
     return mData.getDataType();
 }

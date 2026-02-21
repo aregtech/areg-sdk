@@ -49,9 +49,9 @@ bool FileLogger::openLogger()
             {
                     
                 Process & curProcess = Process::getInstance();
-                NELogging::sLogMessage logMsgHello(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+                areg::sLogMessage logMsgHello(areg::eLogMessageType::LogMessageText, 0u, 0u, 0u, areg::eLogPriority::PrioIgnoreLayout, nullptr, 0);
                 String::formatString( logMsgHello.logMessage
-                                    , NELogging::LOG_MESSAGE_IZE
+                                    , areg::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::getString(curProcess.getEnvironment())
                                     , curProcess.getFullPath().getString()
@@ -70,9 +70,9 @@ void FileLogger::closeLogger()
     if ( mLogFile.isOpened() )
     {
         Process & curProcess = Process::getInstance();
-        NELogging::sLogMessage logMsgGoodbye(NELogging::eLogMessageType::LogMessageText, 0u, 0u, 0u, NELogging::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+        areg::sLogMessage logMsgGoodbye(areg::eLogMessageType::LogMessageText, 0u, 0u, 0u, areg::eLogPriority::PrioIgnoreLayout, nullptr, 0);
         String::formatString(logMsgGoodbye.logMessage
-                            , NELogging::LOG_MESSAGE_IZE
+                            , areg::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
@@ -85,25 +85,25 @@ void FileLogger::closeLogger()
     mLogFile.close();
 }
 
-void FileLogger::logMessage( const NELogging::sLogMessage & logMessage )
+void FileLogger::logMessage( const areg::sLogMessage & logMessage )
 {
     if (mLogFile.isOpened())
     {
         switch (logMessage.logMsgType)
         {
-        case NELogging::eLogMessageType::LogMessageText:
+        case areg::eLogMessageType::LogMessageText:
             getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(mLogFile));
             break;
 
-        case NELogging::eLogMessageType::LogMessageScopeEnter:
+        case areg::eLogMessageType::LogMessageScopeEnter:
             getLayoutEnterScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
-        case NELogging::eLogMessageType::LogMessageScopeExit:
+        case areg::eLogMessageType::LogMessageScopeExit:
             getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
             break;
 
-        case NELogging::eLogMessageType::LogMessageUndefined: // fall through
+        case areg::eLogMessageType::LogMessageUndefined: // fall through
         default:
             ASSERT(false);  // unexpected message to log
             break;

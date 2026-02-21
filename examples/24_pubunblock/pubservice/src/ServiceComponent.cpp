@@ -23,7 +23,7 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 
-ServiceComponent::ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , HelloUnblockStub  ( static_cast<Component &>(self()) )
     , TimerConsumer   ( )
@@ -46,7 +46,7 @@ void ServiceComponent::startupServiceInterface( Component & holder )
 void ServiceComponent::requestIdentifier()
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
-    uint32_t clientId = NEUtilities::generateUniqueId( );
+    uint32_t clientId = areg::generateUniqueId( );
     LOG_DBG( "Generated ID for the clinet: %u ", clientId );
     responseIdentifier( clientId );
 }

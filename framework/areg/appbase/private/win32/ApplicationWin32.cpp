@@ -41,7 +41,7 @@ void Application::_osReleaseHandlers()
  **/
 bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
-    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
+    ASSERT(areg::isEmpty<wchar_t>(serviceName) == false);
     bool result = false;
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;

@@ -77,7 +77,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                     const ClientInfo & client = clientList.valueAtPosition( listPos );
                     if ( client.isConnected( ) )
                     {
-                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::eServiceConnection::ServiceDisconnected );
+                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), areg::eServiceConnection::ServiceDisconnected );
                     }
                 }
             }
@@ -104,7 +104,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         {
             ProxyAddress  addrProxy;
             Channel       channel;
-            NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+            areg::eDisconnectReason reason{areg::eDisconnectReason::ReasonUndefined};
             stream >> addrProxy;
             stream >> channel;
             stream >> reason;
@@ -128,7 +128,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         {
             StubAddress   addrstub;
             Channel       channel;
-            NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+            areg::eDisconnectReason reason{areg::eDisconnectReason::ReasonUndefined};
             stream >> addrstub;
             stream >> channel;
             stream >> reason;
@@ -139,8 +139,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection:
         {
-            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            areg::eRemoteServices service{ areg::eRemoteServices::ServiceUnknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(areg::eConnectionTypes::ConnectUndefined) };
             stream >> service;
             stream >> connectTypes;
 
@@ -150,8 +150,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection:
         {
-            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            areg::eRemoteServices service{ areg::eRemoteServices::ServiceUnknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(areg::eConnectionTypes::ConnectUndefined) };
             stream >> service;
             stream >> connectTypes;
 
@@ -235,10 +235,10 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                 }
             }
 
-            NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonProviderDisconnected };
+            areg::eDisconnectReason reason { areg::eDisconnectReason::ReasonProviderDisconnected };
             if ( cmdService == ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection )
             {
-                reason = NEService::eDisconnectReason::ReasonServiceLost;
+                reason = areg::eDisconnectReason::ReasonServiceLost;
             }
 
             for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
@@ -293,7 +293,7 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
     const ServerInfo & server = mServerList.registerServer( whichServer, clientList );
     LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( server.getConnectionStatus( ) )
+               , areg::getString( server.getConnectionStatus( ) )
                , clientList.getSize( ) );
 #else   // !AREG_LOGS
     mServerList.registerServer( whichServer, clientList );
@@ -309,7 +309,7 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const areg::eDisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
@@ -324,8 +324,8 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
     ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
     LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( reason )
-               , NEService::getString( server.getConnectionStatus( ) )
+               , areg::getString( reason )
+               , areg::getString( server.getConnectionStatus( ) )
                , clientList.getSize( ) );
 
 #else   // AREG_LOGS
@@ -334,7 +334,7 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
 
 #endif  // AREG_LOGS
 
-    NEService::eServiceConnection status = NEService::serviceConnection( reason );
+    areg::eServiceConnection status = areg::serviceConnection( reason );
     for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
     {
         const ClientInfo & client{ clientList.valueAtPosition( pos ) };
@@ -360,7 +360,7 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
                , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( client.getConnectionStatus( ) ) );
+               , areg::getString( client.getConnectionStatus( ) ) );
 
     if ( client.isConnected( ) )
     {
@@ -372,7 +372,7 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const areg::eDisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 
@@ -387,12 +387,12 @@ void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & which
     LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
                , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( client.getConnectionStatus( ) ) );
+               , areg::getString( client.getConnectionStatus( ) ) );
 
     // Unregister client first, then send event that client does not receive notification
     if ( client.isConnected( ) )
     {
-        _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), NEService::serviceConnection( reason ) );
+        _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), areg::serviceConnection( reason ) );
     }
     else
     {
@@ -403,26 +403,26 @@ void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & which
 void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
-    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
+    if ( server.isLocalAddress( ) && server.getSource( ) != areg::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
                    , StubAddress::convAddressToPath( server ).getString( )
                    , ProxyAddress::convAddressToPath( client ).getString( ) );
 
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, areg::eServiceConnection::ServiceConnected );
         if ( clientConnect != nullptr )
         {
             server.deliverServiceEvent( *clientConnect );
         }
     }
 
-    if ( client.isLocalAddress( ) && client.getSource( ) != NEService::SOURCE_UNKNOWN )
+    if ( client.isLocalAddress( ) && client.getSource( ) != areg::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
                    , ProxyAddress::convAddressToPath( client ).getString( )
                    , StubAddress::convAddressToPath( server ).getString( ) );
 
-        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, areg::eServiceConnection::ServiceConnected );
         if ( proxyConnect != nullptr )
         {
             client.deliverServiceEvent( *proxyConnect );
@@ -432,11 +432,11 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress
 
 void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
                                                              , const StubAddress & server
-                                                             , const NEService::eServiceConnection status ) const
+                                                             , const areg::eServiceConnection status ) const
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
 
-    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
+    if ( server.isLocalAddress( ) && server.getSource( ) != areg::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
                    , StubAddress::convAddressToPath( server ).getString( )
@@ -489,12 +489,12 @@ void ServiceManagerEventProcessor::_startComponentThread( const String & threadN
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
-    const NERegistry::ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
+    const areg::ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
     Thread * thread = Thread::findThreadByName( threadName );
     if ( entry.isValid( ) && (thread == nullptr) )
     {
         ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
-        if ( (compThread != nullptr) && compThread->createThread( NECommon::WAIT_INFINITE ) )
+        if ( (compThread != nullptr) && compThread->createThread( areg::WAIT_INFINITE ) )
         {
             LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );
         }

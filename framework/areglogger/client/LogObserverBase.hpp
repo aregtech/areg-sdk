@@ -150,7 +150,7 @@ public:
     /**
      * \brief   Returns the address of the log collector service.
      **/
-    const NESocket::SocketAddress & getLoggerAddress() const;
+    const areg::SocketAddress & getLoggerAddress() const;
 
     /**
      * \brief   Returns the IP address of the log collector service.
@@ -286,7 +286,7 @@ public:
      *          This query will receive list of all registered instances.
      * \param   infos   On output, contains the list of information of all registered instances in database.
      **/
-    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
+    void getLogInstanceInfos(std::vector< areg::sServiceConnectedInstance>& infos);
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
@@ -294,7 +294,7 @@ public:
      * \param   scopes  On output, contains the list of all registered scopes in database related with the specified instance ID.
      * \param   instID  The ID of the instance.
      **/
-    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
+    void getLogInstScopes(std::vector<areg::sScopeInfo>& scopes, ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
@@ -304,13 +304,13 @@ public:
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
-     *          If `instId` is `NEService::COOKIE_ANY` it receives the list of all instances
+     *          If `instId` is `areg::COOKIE_ANY` it receives the list of all instances
      *          similar to the call to `getLogMessages()`.
      * \param   messages    On output, contains the list of log messages of the specified instance.
      * \param   instId  The ID of the instance to get log messages.
-     *                  If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     *                  If `areg::COOKIE_ANY` it receives log messages of all instances.
      **/
-    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
+    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
@@ -324,11 +324,11 @@ public:
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
-     *          If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
+     *          If `instId` is `areg::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
      *          similar to the call to `getLogMessages()`.
      * \param   messages    On output, contains the list of log messages of the specified instance and scope.
      * \param   instId      The ID of the instance to get log messages.
-     *                      If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     *                      If `areg::COOKIE_ANY` it receives log messages of all instances.
      * \param   scopeId     The ID of the scope to get log messages.
      *                      If `0` it receives log messages of all scopes.
      **/
@@ -348,17 +348,17 @@ public:
     /**
      * \brief   Requests the list of registered scopes of the specified connected instance.
      * \param   target  The cookie ID of the target instance to receive the list of registered scopes.
-     *                  If the target is NEService::TARGET_ALL (or 0), it receives the list of scopes of all connected instances.
+     *                  If the target is areg::TARGET_ALL (or 0), it receives the list of scopes of all connected instances.
      *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool requestScopes(ITEM_ID target = NEService::TARGET_ALL);
+    bool requestScopes(ITEM_ID target = areg::TARGET_ALL);
 
     /**
      * \brief   Requests to update the priority of the logging message to receive.
      *          The indicated scopes can be scope group.
      * \param   target  The valid cookie ID of the target to update the log message priority.
-     *                  This value cannot be NEService::TARGET_ALL (or 0xFF).
+     *                  This value cannot be areg::TARGET_ALL (or 0xFF).
      * \param   scopes  The list of scopes of scope group to update the priority.
      *                  The scope group should  end with '*'. For example 'areg_base_*'.
      *                  In this case the ID of the scope can be 0.
@@ -371,11 +371,11 @@ public:
      * \brief   Requests to save current configuration of the specified target. This is normally called when update the log priority of the instance,
      *          so that on next start the application logs message of the scopes and priorities currently set.
      * \param   target  The cookie ID of the target instance to save the configuration.
-     *                  If the target is NEService::TARGET_ALL (or 0xFF), the request is sent to all connected instances.
+     *                  If the target is areg::TARGET_ALL (or 0xFF), the request is sent to all connected instances.
      *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool requestSaveConfig(ITEM_ID target = NEService::TARGET_ALL);
+    bool requestSaveConfig(ITEM_ID target = areg::TARGET_ALL);
 
     /**
      * \brief   Saves the configuration of the log observer in the configuration file.
@@ -442,14 +442,14 @@ protected:
      * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
      * \param   instances   The list of the connected instances.
      **/
-    virtual void onLogInstancesConnect(const std::vector< NEService::sServiceConnectedInstance > & instances) = 0;
+    virtual void onLogInstancesConnect(const std::vector< areg::sServiceConnectedInstance > & instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
      * \param   instances   The list of IDs of the disconnected instances.
      * \param   count       The number of entries in the list.
      **/
-    virtual void onLogInstancesDisconnect(const std::vector< NEService::sServiceConnectedInstance > & instances) = 0;
+    virtual void onLogInstancesDisconnect(const std::vector< areg::sServiceConnectedInstance > & instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when connection with the log collector service is lost.

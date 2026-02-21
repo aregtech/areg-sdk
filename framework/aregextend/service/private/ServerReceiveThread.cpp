@@ -27,7 +27,7 @@
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -43,7 +43,7 @@ bool ServerReceiveThread::runDispatcher()
 
     readyForEvents(true);
     int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
-    if ( mConnection.serverListen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
+    if ( mConnection.serverListen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
@@ -52,24 +52,24 @@ bool ServerReceiveThread::runDispatcher()
         uint32_t retryCount = 0;
         do 
         {
-            whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
+            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
             if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
                 whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
-                NESocket::SocketAddress addrAccepted;
+                areg::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
 
                 if (mConnection.isValid() == false)
                 {
                     LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
-                    if (NESocket::isSocketHandleValid(hSocket))
+                    if (areg::isSocketHandleValid(hSocket))
                     {
-                        NESocket::socketClose(hSocket);
+                        areg::socketClose(hSocket);
                     }
 
                     whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
                 }
-                else if (hSocket == NESocket::FailedSocketHandle)
+                else if (hSocket == areg::FailedSocketHandle)
                 {
                     LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
                     if (++retryCount >= RETRY_COUNT)
@@ -78,7 +78,7 @@ bool ServerReceiveThread::runDispatcher()
                         whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
                     }
                 }
-                else if ( hSocket != NESocket::InvalidSocketHandle )
+                else if ( hSocket != areg::InvalidSocketHandle )
                 {
                     retryCount = 0;
 
@@ -126,7 +126,7 @@ bool ServerReceiveThread::runDispatcher()
                     }
 
 #if AREG_LOGS
-                    const NESocket::SocketAddress& addSocket = clientSocket.getAddress();
+                    const areg::SocketAddress& addSocket = clientSocket.getAddress();
 #endif // AREG_LOGS
                     int sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
                     if (sizeReceived > 0 )

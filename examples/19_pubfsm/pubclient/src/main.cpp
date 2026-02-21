@@ -38,7 +38,7 @@
 constexpr char const _modelName[]  { "TheModel" };   //!< The name of model
 constexpr char const _threadName[] { "TestTrafficLightThread" }; //!< The name of component wonning thread.
 static char clientRole[128];    //!< The role name of service client.
-static const char* const _compName  = NEUtilities::generateName(fsm::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
+static const char* const _compName  = areg::generateName(fsm::SerivceLightClient, clientRole, 128); //!< Generated name of the service owner, unique for client application.
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -87,14 +87,14 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (NEString::compareIgnoreCase<char, char>(buffer, "sn") == NEMath::eCompare::Equal) || 
-         (NEString::compare<char, char>(buffer, "1") == NEMath::eCompare::Equal) )
+    if ( (areg::compareIgnoreCase<char, char>(buffer, "sn") == areg::eCompare::Equal) || 
+         (areg::compare<char, char>(buffer, "1") == areg::eCompare::Equal) )
     {
         isEastWest = false;
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ((NEString::compareIgnoreCase<char, char>(buffer, "ew") == NEMath::eCompare::Equal) ||
-             (NEString::compare<char, char>(buffer, "2") == NEMath::eCompare::Equal) )
+    else if ((areg::compareIgnoreCase<char, char>(buffer, "ew") == areg::eCompare::Equal) ||
+             (areg::compare<char, char>(buffer, "2") == areg::eCompare::Equal) )
     {
         isEastWest = true;
         printf("\nSelected Choice: East-West traffic.\n");
@@ -122,7 +122,7 @@ int main()
         Application::loadModel( nullptr );
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::WAIT_INFINITE);
 
         // By passing nullptr, stop and unload all models.
         Application::unloadModel( nullptr );

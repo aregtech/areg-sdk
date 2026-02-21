@@ -201,7 +201,7 @@ public:
     /**
      * \brief   Returns the property key type value.
      **/
-    NEPersistence::eConfigKeys getPropertyType() const;
+    areg::eConfigKeys getPropertyType() const;
 
     /**
      * \brief   Returns string value of the Key. 
@@ -366,8 +366,8 @@ namespace std
 
 #include "areg/base/Containers.hpp"
 
-// Declaration of ListProperties within NEPersistence namespace
-namespace NEPersistence
+// Declaration of ListProperties within areg namespace
+namespace areg
 {
     //!< The type to initialize list of properties.
     using ListProperties = ArrayList<Property>;

@@ -24,7 +24,7 @@ DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
 
-Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & owner, int position)
+Subscriber::Subscriber(const areg::DependencyEntry & entry, Component & owner, int position)
     : PubSubMixClientBase   ( entry, owner )
     , mOldInteger   ( {0, entry.mRoleName } )
     , mOldState     ( false )
@@ -36,14 +36,14 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
     pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
 }
 
-bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy )
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
     PubSubMixClientBase::serviceConnected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
     Console & console = Console::getInstance();
@@ -64,7 +64,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
         }
         else
         {
-            console.outputMsg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), NEService::getString(status));
+            console.outputMsg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), areg::getString(status));
         }
     }
 
@@ -76,13 +76,13 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::eDataStateType state)
+void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, areg::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         ASSERT(StringOnChange.name == mOldString.name);
 
@@ -131,14 +131,14 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
     console.unlockConsole();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
+void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, areg::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     String oldInt = mOldState ? String::makeString(mOldInteger.value) : pubsub::Invalid;
     console.saveCursorPosition();
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         bool isChanged = mOldInteger == IntegerAlways;
         LOG_INFO("The [ %s ] names INTEGER (Always) data is OK, old is [ %s ], new [ %u ], { %s }"
@@ -187,10 +187,10 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     console.unlockConsole();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSubMix::eServiceState ServiceProviderState, areg::eDataStateType state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {

@@ -28,12 +28,12 @@ class ServicingComponent    : public    Component
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static const unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
+    static const unsigned int   TIMER_TIMEOUT   { areg::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
     static const int            TIMER_EVENTS    { 10 };   					    //!< Fired timer count.
 
 public:
     //!< Init component object.
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread);
+    ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & ownerThread);
 
 protected:
 /************************************************************************/

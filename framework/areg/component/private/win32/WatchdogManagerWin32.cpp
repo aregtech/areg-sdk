@@ -45,11 +45,11 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 {
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = 0;
-    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(watchdog.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(watchdog.getTimeout()) * areg::MILLISEC_TO_100NS);  // timer from now
     dueTime *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger{ };
-    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::loDword(dueTime));
-    timeTrigger.HighPart = static_cast<LONG >(NEMath::hiDword(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::loDword(dueTime));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hiDword(dueTime));
 
     return (::SetWaitableTimer(   watchdog.getHandle()
                                 , &timeTrigger

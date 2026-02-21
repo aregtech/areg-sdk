@@ -20,18 +20,18 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
 DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
 DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
-TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component                     ( entry, owner )
     , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)
     , mIsEastWest                   (std::any_cast<bool>(entry.getData()))
 {
 }
 
-void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::eDataStateType state)
+void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTrafficLight & TrafficSouthNorth, areg::eDataStateType state)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficSouthNorthUpdate);
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(TrafficSouthNorth.lightVehicle), fsm::getName(TrafficSouthNorth.lightPedestrian));
         
@@ -46,11 +46,11 @@ void TrafficLightClient::onTrafficSouthNorthUpdate(const TrafficController::sTra
     }
 }
 
-void TrafficLightClient::onTrafficEastWestUpdate(const TrafficController::sTrafficLight & TrafficEastWest, NEService::eDataStateType state)
+void TrafficLightClient::onTrafficEastWestUpdate(const TrafficController::sTrafficLight & TrafficEastWest, areg::eDataStateType state)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_onTrafficEastWestUpdate);
 
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(TrafficEastWest.lightVehicle), fsm::getName(TrafficEastWest.lightPedestrian));
 
@@ -79,7 +79,7 @@ void TrafficLightClient::broadcastEastWest(TrafficController::eVehicleTrafficLig
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(LightVehicle), fsm::getName(LightPedestrian));
 }
 
-bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 

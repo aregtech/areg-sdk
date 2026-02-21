@@ -150,11 +150,11 @@ bool File::isOpened() const
 inline bool File::_nameHasCurrentFolder(const char * filePath, bool skipSep)
 {
     bool result = false;
-    if (NEString::isEmpty<char>(filePath) == false)
+    if (areg::isEmpty<char>(filePath) == false)
     {
         if (filePath[0] == File::DIR_CURRENT[0])
         {
-            result = (skipSep && filePath[1] == NEString::EndOfString)  || 
+            result = (skipSep && filePath[1] == areg::EndOfString)  || 
                      (filePath[1] == File::UNIX_SEPARATOR)              ||
                      (filePath[1] == File::DOS_SEPARATOR);
         }
@@ -166,11 +166,11 @@ inline bool File::_nameHasCurrentFolder(const char * filePath, bool skipSep)
 inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 {
     bool result{ false };
-    if (NEString::isEmpty<char>(filePath) == false)
+    if (areg::isEmpty<char>(filePath) == false)
     {
         if ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))
         {
-            result = (skipSep && filePath[2] == NEString::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
+            result = (skipSep && filePath[2] == areg::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
         }
     }
 
@@ -204,7 +204,7 @@ String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
         uint32_t len = _osCreateTempFileName(buffer, dir.getString(), name.getString(), unique);
         if (len != 0)
         {
-            name.assign(buffer, static_cast<NEString::CharCount>(len));
+            name.assign(buffer, static_cast<areg::CharCount>(len));
         }
         else
         {
@@ -235,13 +235,13 @@ const String & File::getExecutableDir()
 String File::getFileNameWithExtension( const char* filePath )
 {
     const char * result = nullptr;
-    if ( NEString::isEmpty<char>(filePath) == false )
+    if ( areg::isEmpty<char>(filePath) == false )
     {
-        NEString::CharPos pos = NEString::getStringLength<char>(filePath) - 1;
+        areg::CharPos pos = areg::getStringLength<char>(filePath) - 1;
         if (filePath[pos] != File::PATH_SEPARATOR )
         {
-            pos = NEString::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
-            if (NEString::isPositionValid(pos))
+            pos = areg::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
+            if (areg::isPositionValid(pos))
             {
                 result = filePath + pos + 1;
             }
@@ -254,8 +254,8 @@ String File::getFileNameWithExtension( const char* filePath )
 String File::getFileName( const char* filePath )
 {
     String result(File::getFileNameWithExtension(filePath));
-    NEString::CharPos pos = result.findLast(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
-    if (NEString::isPositionValid(pos) && NEString::isAlphanumeric<char>(result[pos + 1]) )
+    areg::CharPos pos = result.findLast(File::EXTENSION_SEPARATOR, areg::END_POS, true);
+    if (areg::isPositionValid(pos) && areg::isAlphanumeric<char>(result[pos + 1]) )
     {
         result.substring(0, pos);
     }
@@ -267,10 +267,10 @@ String File::getFileExtension( const char* filePath )
 {
     String result;
     String fileName(File::getFileNameWithExtension(filePath));
-    NEString::CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
-    if (NEString::isPositionValid(pos) && NEString::isAlphanumeric<char>(fileName[pos + 1]) )
+    areg::CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, areg::END_POS, true);
+    if (areg::isPositionValid(pos) && areg::isAlphanumeric<char>(fileName[pos + 1]) )
     {
-        fileName.substring(result, pos, NEString::COUNT_ALL);
+        fileName.substring(result, pos, areg::COUNT_ALL);
     }
 
     return result;
@@ -279,8 +279,8 @@ String File::getFileExtension( const char* filePath )
 String File::getFileDirectory(const char* filePath)
 {
     constexpr char separator{ File::PATH_SEPARATOR };
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, true, nullptr);
-    if ( NEString::isPositionValid( pos ) )
+    areg::CharPos pos = areg::isEmpty<char>(filePath) ? areg::INVALID_POS : areg::findLast<char>( separator, filePath, areg::END_POS, true, nullptr);
+    if ( areg::isPositionValid( pos ) )
     {
         return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
     }
@@ -293,7 +293,7 @@ String File::getFileDirectory(const char* filePath)
 bool File::createDirCascaded( const char* dirPath )
 {
     bool result{ false };
-    if ( NEString::isEmpty<char>( dirPath ) == false )
+    if ( areg::isEmpty<char>( dirPath ) == false )
     {
         std::error_code err;
         std::filesystem::create_directories( dirPath, err );
@@ -306,7 +306,7 @@ bool File::createDirCascaded( const char* dirPath )
 String File::normalizePath(const char* fileName)
 {
     String result;
-    if (NEString::isEmpty<char>(fileName) == false)
+    if (areg::isEmpty<char>(fileName) == false)
     {
         result = fileName;
         FileBase::normalizeName(result);
@@ -324,7 +324,7 @@ String File::normalizePath(const char* fileName)
 bool File::findParent(const char * filePath, const char ** nextPos, const char * lastPos /*= nullptr*/)
 {
     bool result = false;
-    if ( NEString::isEmpty<char>(filePath) == false)
+    if ( areg::isEmpty<char>(filePath) == false)
     {
         int length = 0;
         if (nextPos != nullptr)
@@ -336,14 +336,14 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
         }
         else
         {
-            length = NEString::getStringLength<char>(filePath); 
+            length = areg::getStringLength<char>(filePath); 
             if ( filePath[length - 1] == File::PATH_SEPARATOR )
                 -- length;
         }
 
         if (length != 0)
         {
-            int pos = NEString::findLast( File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
+            int pos = areg::findLast( File::PATH_SEPARATOR, filePath, areg::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;
@@ -362,7 +362,7 @@ String File::getParentDir(const char * filePath)
     const char * end = nullptr;
     if (File::findParent(filePath, &end))
     {
-        result.assign(filePath, static_cast<NEString::CharCount>(end - filePath) );
+        result.assign(filePath, static_cast<areg::CharCount>(end - filePath) );
     }
 
     return result;
@@ -374,7 +374,7 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
     const char * start  { filePath };
     const char * end    { filePath };
 
-    while (*end != NEString::EndOfString)
+    while (*end != areg::EndOfString)
     {
         if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
         {
@@ -545,19 +545,19 @@ void File::flush()
 bool File::deleteFile(const char* filePath)
 {
     std::error_code err;
-    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
+    return (areg::isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
 }
 
 bool File::createDir(const char* dirPath)
 {
     std::error_code err;
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
+    return (areg::isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
 }
 
 bool File::deleteDir(const char* dirPath)
 {
     bool result{ false };
-    if (NEString::isEmpty<char>(dirPath) == false)
+    if (areg::isEmpty<char>(dirPath) == false)
     {
         std::error_code err;
         std::filesystem::remove_all(dirPath, err);
@@ -570,7 +570,7 @@ bool File::deleteDir(const char* dirPath)
 bool File::moveFile(const char* oldPath, const char* newPath)
 {
     bool result{ false };
-    if ( (NEString::isEmpty<char>(oldPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
+    if ( (areg::isEmpty<char>(oldPath) == false) && (areg::isEmpty<char>(newPath) == false) )
     {
         std::error_code err;
         std::filesystem::rename(oldPath, newPath, err);
@@ -588,7 +588,7 @@ String File::getCurrentDir()
 bool File::setCurrentDir(const char* dirPath)
 {
     bool result{ false };
-    if (NEString::isEmpty<char>(dirPath) == false)
+    if (areg::isEmpty<char>(dirPath) == false)
     {
         std::error_code err;
         std::filesystem::current_path(dirPath, err);
@@ -601,7 +601,7 @@ bool File::setCurrentDir(const char* dirPath)
 bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
 {
     bool result{ false };
-    if ( (NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
+    if ( (areg::isEmpty<char>(originPath) == false) && (areg::isEmpty<char>(newPath) == false) )
     {
         std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
         std::error_code err;
@@ -620,19 +620,19 @@ String File::getTempDir()
 bool File::existDir(const char* dirPath)
 {
     std::error_code err;
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
+    return (areg::isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
 }
 
 bool File::existFile(const char* filePath)
 {
     std::error_code err;
-    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
+    return (areg::isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
 }
 
 String File::getFileFullPath(const char* filePath)
 {
     String result;
-    if (NEString::isEmpty<char>(filePath) == false)
+    if (areg::isEmpty<char>(filePath) == false)
     {
         std::error_code err;
         std::filesystem::path fp = std::filesystem::absolute(filePath, err);

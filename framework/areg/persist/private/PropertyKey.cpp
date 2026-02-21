@@ -46,21 +46,21 @@ PropertyKey::PropertyKey(const std::string_view& section, const std::string_view
 {
 }
 
-PropertyKey::PropertyKey(const String& section, const String& module, const String& property, const String& position, NEPersistence::eConfigKeys keyType)
+PropertyKey::PropertyKey(const String& section, const String& module, const String& property, const String& position, areg::eConfigKeys keyType)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( keyType == NEPersistence::eConfigKeys::EntryAnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    , mKeyType  ( keyType == areg::eConfigKeys::EntryAnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
 {
 }
 
-PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, NEPersistence::eConfigKeys keyType)
+PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, areg::eConfigKeys keyType)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( keyType == NEPersistence::eConfigKeys::EntryAnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    , mKeyType  ( keyType == areg::eConfigKeys::EntryAnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
 {
 }
 
@@ -78,7 +78,7 @@ PropertyKey::PropertyKey()
     , mModule   ( )
     , mProperty ( )
     , mPosition ( )
-    , mKeyType  ( NEPersistence::eConfigKeys::EntryInvalid )
+    , mKeyType  ( areg::eConfigKeys::EntryInvalid )
 {
 }
 
@@ -87,7 +87,7 @@ PropertyKey::PropertyKey( const String & key )
     , mModule   ( )
     , mProperty ( )
     , mPosition ( )
-    , mKeyType  ( NEPersistence::eConfigKeys::EntryInvalid )
+    , mKeyType  ( areg::eConfigKeys::EntryInvalid )
 {
     parseKey( key );
 }
@@ -97,7 +97,7 @@ PropertyKey::PropertyKey( String && key )
     , mModule   ( )
     , mProperty ( )
     , mPosition ( )
-    , mKeyType  (NEPersistence::eConfigKeys::EntryInvalid)
+    , mKeyType  (areg::eConfigKeys::EntryInvalid)
 {
     parseKey( std::move(key) );
 }
@@ -146,7 +146,7 @@ bool PropertyKey::operator == ( const PropertyKey & other ) const
     {
         if (mSection == other.mSection)
         {
-            if ((mModule == other.mModule) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (other.mModule == NEPersistence::SYNTAX_ALL_MODULES))
+            if ((mModule == other.mModule) || (mModule == areg::SYNTAX_ALL_MODULES) || (other.mModule == areg::SYNTAX_ALL_MODULES))
             {
                 result = mProperty == other.mProperty ? mPosition == other.mPosition : other.mSection.isEmpty() && PropertyKey::_isCompatible(mProperty, other.mProperty);
             }
@@ -167,15 +167,15 @@ bool PropertyKey::operator != ( const PropertyKey & other ) const
 
 PropertyKey::operator unsigned int () const
 {
-    unsigned int result{ NEMath::CHECKSUM_IGNORE };
+    unsigned int result{ areg::CHECKSUM_IGNORE };
     if (mSection.isEmpty() == false)
     {
-        result = NEMath::crc32Init();
-        result = NEMath::crc32Start(result, mSection.getString());
-        result = NEMath::crc32Start(result, mModule.getString());
-        result = NEMath::crc32Start(result, mProperty.getString());
-        result = NEMath::crc32Start(result, mPosition.getString());
-        result = NEMath::crc32Finish(result);
+        result = areg::crc32Init();
+        result = areg::crc32Start(result, mSection.getString());
+        result = areg::crc32Start(result, mModule.getString());
+        result = areg::crc32Start(result, mProperty.getString());
+        result = areg::crc32Start(result, mPosition.getString());
+        result = areg::crc32Finish(result);
     }
 
     return result;
@@ -211,14 +211,14 @@ String PropertyKey::convToString() const
     if ( isValid() )
     {
         result.append(mSection)
-              .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
+              .append(areg::SYNTAX_OBJECT_SEPARATOR)
               .append(mModule)
-              .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
+              .append(areg::SYNTAX_OBJECT_SEPARATOR)
               .append(mProperty);
 
         if (mPosition.isEmpty() == false)
         {
-            result.append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mPosition);
+            result.append(areg::SYNTAX_OBJECT_SEPARATOR).append(mPosition);
         }
     }
 
@@ -241,7 +241,7 @@ bool PropertyKey::isModuleProperty(const String& section, const String& module, 
 
     if (isValid() && (mSection == section) && (mProperty == property) && (module.isEmpty() == false))
     {
-        if ((mModule == module) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (module == NEPersistence::SYNTAX_ALL_MODULES))
+        if ((mModule == module) || (mModule == areg::SYNTAX_ALL_MODULES) || (module == areg::SYNTAX_ALL_MODULES))
         {
             result = PropertyKey::_isCompatible(mPosition, position);
         }
@@ -256,7 +256,7 @@ bool PropertyKey::isModuleSection(const String& section, const String& module) c
 
     if (isValid() && (mSection == section) && (module.isEmpty() == false))
     {
-        result = ((mModule == module) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (module == NEPersistence::SYNTAX_ALL_MODULES));
+        result = ((mModule == module) || (mModule == areg::SYNTAX_ALL_MODULES) || (module == areg::SYNTAX_ALL_MODULES));
     }
 
     return result;
@@ -265,7 +265,7 @@ bool PropertyKey::isModuleSection(const String& section, const String& module) c
 void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
 {
     mSection    = section != nullptr ? section  : String::EmptyString;
-    mModule     = module  != nullptr ? module   : NEPersistence::SYNTAX_ALL_MODULES;
+    mModule     = module  != nullptr ? module   : areg::SYNTAX_ALL_MODULES;
     mProperty   = property!= nullptr ? property : String::EmptyString;
     mPosition   = position!= nullptr ? position : String::EmptyString;
     mKeyType    = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
@@ -280,7 +280,7 @@ void PropertyKey::setValues(const String& section, const String& property, const
     mKeyType    = PropertyKey::_findKey(section, module, property, position);
 }
 
-void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position, NEPersistence::eConfigKeys keyType)
+void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position, areg::eConfigKeys keyType)
 {
     mSection    = section;
     mModule     = module;
@@ -309,7 +309,7 @@ const String & PropertyKey::getPosition() const
     return mPosition;
 }
 
-NEPersistence::eConfigKeys PropertyKey::getKeyType() const
+areg::eConfigKeys PropertyKey::getKeyType() const
 {
     return mKeyType;
 }
@@ -331,12 +331,12 @@ bool PropertyKey::hasProperty() const
 
 bool PropertyKey::isAllModules() const
 {
-    return (mModule == NEPersistence::SYNTAX_ALL_MODULES);
+    return (mModule == areg::SYNTAX_ALL_MODULES);
 }
 
 bool PropertyKey::isGroupProperty() const
 {
-    return mPosition.endsWith(NEPersistence::SYNTAX_GROUP) || mProperty.endsWith(NEPersistence::SYNTAX_GROUP);
+    return mPosition.endsWith(areg::SYNTAX_GROUP) || mProperty.endsWith(areg::SYNTAX_GROUP);
 }
 
 bool PropertyKey::hasSection() const
@@ -355,12 +355,12 @@ void PropertyKey::resetKey()
     mProperty.clear();
     mModule.clear();
     mPosition.clear();
-    mKeyType = NEPersistence::eConfigKeys::EntryInvalid;
+    mKeyType = areg::eConfigKeys::EntryInvalid;
 }
 
 inline void PropertyKey::_parseKey(const String& key)
 {
-    std::vector<StringBase<char>> list = key.split(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
+    std::vector<StringBase<char>> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
     resetKey();
 
     if (list.size() != 0)
@@ -383,12 +383,12 @@ inline void PropertyKey::_parseKey(const String& key)
             }
             else
             {
-                mProperty = NEPersistence::SYNTAX_ALL_MODULES;
+                mProperty = areg::SYNTAX_ALL_MODULES;
             }
         }
         else
         {
-            mModule = NEPersistence::SYNTAX_ALL_MODULES;
+            mModule = areg::SYNTAX_ALL_MODULES;
         }
 
         mKeyType = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
@@ -409,25 +409,25 @@ inline bool PropertyKey::_isCompatible(const String& left, const String& right)
         }
 
         result = ((*lval == String::EmptyChar) && (*rval == String::EmptyChar)) ||
-                 ((*lval == NEPersistence::SYNTAX_ANY_VALUE) || (*rval == NEPersistence::SYNTAX_ANY_VALUE));
+                 ((*lval == areg::SYNTAX_ANY_VALUE) || (*rval == areg::SYNTAX_ANY_VALUE));
     }
 
     return result;
 }
 
-inline NEPersistence::eConfigKeys PropertyKey::_findKey(const String& section, const String& module, const String& property, const String& position)
+inline areg::eConfigKeys PropertyKey::_findKey(const String& section, const String& module, const String& property, const String& position)
 {
-    NEPersistence::eConfigKeys result{ NEPersistence::eConfigKeys::EntryInvalid };
+    areg::eConfigKeys result{ areg::eConfigKeys::EntryInvalid };
 
-    for (int i = static_cast<int>(NEPersistence::eConfigKeys::EntryConfigVersion); i <= static_cast<int>(NEPersistence::eConfigKeys::EntryAnyKey); ++i)
+    for (int i = static_cast<int>(areg::eConfigKeys::EntryConfigVersion); i <= static_cast<int>(areg::eConfigKeys::EntryAnyKey); ++i)
     {
-        const auto& key = NEPersistence::DefaultPropertyKeys[i];
-        if (((NEPersistence::SYNTAX_ALL_MODULES == key.section) || (section == key.section))  &&
-            ((NEPersistence::SYNTAX_ALL_MODULES == key.module)  || (module == key.module))    &&
-            ((NEPersistence::SYNTAX_ALL_MODULES == key.property)|| (property == key.property))&&
-            ((NEPersistence::SYNTAX_ALL_MODULES == key.position)|| (position == key.position)))
+        const auto& key = areg::DefaultPropertyKeys[i];
+        if (((areg::SYNTAX_ALL_MODULES == key.section) || (section == key.section))  &&
+            ((areg::SYNTAX_ALL_MODULES == key.module)  || (module == key.module))    &&
+            ((areg::SYNTAX_ALL_MODULES == key.property)|| (property == key.property))&&
+            ((areg::SYNTAX_ALL_MODULES == key.position)|| (position == key.position)))
         {
-            result = static_cast<NEPersistence::eConfigKeys>(i);
+            result = static_cast<areg::eConfigKeys>(i);
             break;
         }
     }

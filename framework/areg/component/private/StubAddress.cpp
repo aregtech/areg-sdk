@@ -68,24 +68,24 @@ StubAddress::StubAddress()
     : ServiceAddress( )
     , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
 StubAddress::StubAddress( const String & serviceName
                         , const Version & serviceVersion
-                        , NEService::eServiceType serviceType
+                        , areg::eServiceType serviceType
                         , const String & roleName
                         , const String & threadName   /*= String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
     {
-        mChannel.setCookie(NEService::COOKIE_LOCAL);
+        mChannel.setCookie(areg::COOKIE_LOCAL);
     }
 
     mMagicNum = StubAddress::_magicNumber(*this);
@@ -95,26 +95,26 @@ StubAddress::StubAddress(const ServiceItem & service, const String & roleName, c
     : ServiceAddress( service, roleName )
     , mThreadName   ( )
     , mChannel      ( )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
     {
-        mChannel.setCookie(NEService::COOKIE_LOCAL);
+        mChannel.setCookie(areg::COOKIE_LOCAL);
     }
 
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString() */)
+StubAddress::StubAddress(const areg::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString() */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
-        mChannel.setCookie(NEService::COOKIE_LOCAL);
+        mChannel.setCookie(areg::COOKIE_LOCAL);
 
     mMagicNum = StubAddress::_magicNumber(*this);
 }
@@ -142,7 +142,7 @@ StubAddress::StubAddress(const ServiceAddress & source)
     , mMagicNum     (static_cast<unsigned int>(source))
 {
     if (ServiceAddress::isValid())
-        mChannel.setCookie(NEService::COOKIE_LOCAL);
+        mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
 StubAddress::StubAddress( ServiceAddress && source)
@@ -152,16 +152,16 @@ StubAddress::StubAddress( ServiceAddress && source)
     , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(self())))
 {
     if (ServiceAddress::isValid())
-        mChannel.setCookie(NEService::COOKIE_LOCAL);
+        mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
 StubAddress::StubAddress( const InStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )
     , mChannel      ( )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    ITEM_ID cookie = NEService::COOKIE_LOCAL;
+    ITEM_ID cookie = areg::COOKIE_LOCAL;
     stream >> cookie;
     if ( ServiceAddress::isValid() )
         mChannel.setCookie(cookie);
@@ -193,7 +193,7 @@ void StubAddress::setThread(const String & threadName)
     }
     else
     {
-        mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        mMagicNum   = areg::CHECKSUM_IGNORE;
         mThreadName = ThreadAddress::getInvalidThreadAddress().getThreadName();
     }
 }
@@ -203,7 +203,7 @@ bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) cons
     bool result{ false };
 
     const ITEM_ID & target{ mChannel.getSource() };
-    Thread* thread = target != NEService::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
+    Thread* thread = target != areg::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
     DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     if (dispatcher != nullptr)
     {
@@ -233,11 +233,11 @@ String StubAddress::convToString() const
     String result(static_cast<uint32_t>(0xFF));
 
     result.append(EXTENTION_STUB)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(ServiceAddress::convToString())
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(mThreadName)
-          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(mChannel.convToString());
 
     return result;
@@ -246,11 +246,11 @@ String StubAddress::convToString() const
 void StubAddress::convFromString(const char* pathStub, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathStub;
-    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_STUB.data() )
+    if ( String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_STUB.data() )
     {
         ServiceAddress::convFromString(strSource, &strSource);
-        mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource).getString() );
+        mThreadName  = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+        mChannel.convFromString( String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource).getString() );
 
         mMagicNum   = StubAddress::_magicNumber(*this);
     }
@@ -261,16 +261,16 @@ void StubAddress::convFromString(const char* pathStub, const char** out_nextPart
 
 unsigned int StubAddress::_magicNumber(const StubAddress & addrStub)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    unsigned int result = areg::CHECKSUM_IGNORE;
 
     if (addrStub.isValidated())
     {
-        result = NEMath::crc32Init();
-        result = NEMath::crc32Start( result, addrStub.mServiceName.getString() );
-        result = NEMath::crc32Start( result, static_cast<unsigned char>(addrStub.mServiceType) );
-        result = NEMath::crc32Start( result, addrStub.mRoleName.getString() );
-        result = NEMath::crc32Start( result, addrStub.mThreadName.getString() );
-        result = NEMath::crc32Finish(result);
+        result = areg::crc32Init();
+        result = areg::crc32Start( result, addrStub.mServiceName.getString() );
+        result = areg::crc32Start( result, static_cast<unsigned char>(addrStub.mServiceType) );
+        result = areg::crc32Start( result, addrStub.mRoleName.getString() );
+        result = areg::crc32Start( result, addrStub.mThreadName.getString() );
+        result = areg::crc32Finish(result);
     }
 
     return result;
@@ -283,7 +283,7 @@ bool StubAddress::isValidated() const
 
 AREG_API_IMPL const InStream & operator >> ( const InStream & stream, StubAddress & input )
 {
-    ITEM_ID cookie = NEService::COOKIE_LOCAL;
+    ITEM_ID cookie = areg::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
     stream >> input.mThreadName;
     stream >> cookie;

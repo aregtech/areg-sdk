@@ -31,22 +31,22 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, StubEvent)
 ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
                                         , const StubAddress  & target
                                         , unsigned int reqId
-                                        , NEService::eRequestType reqType
+                                        , areg::eRequestType reqType
                                         , Event::eEventType eventType)
     : StubEvent     (target, eventType)
     , mProxySource  (proxyAddress)
     , mMessageId    (reqId)
     , mRequestType  (reqType)
-    , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
+    , mSequenceNr   (areg::SEQUENCE_NUMBER_NOTIFY)
 {
 }
 
 ServiceRequestEvent::ServiceRequestEvent(const InStream & stream)
     : StubEvent     (stream)
     , mProxySource  (stream)
-    , mMessageId    (NEService::INVALID_MESSAGE_ID)
-    , mRequestType  (NEService::eRequestType::Unprocessed)
-    , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
+    , mMessageId    (areg::INVALID_MESSAGE_ID)
+    , mRequestType  (areg::eRequestType::Unprocessed)
+    , mSequenceNr   (areg::SEQUENCE_NUMBER_NOTIFY)
 {
     stream >> mMessageId;
     stream >> mRequestType;

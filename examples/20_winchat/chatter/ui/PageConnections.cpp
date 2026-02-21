@@ -258,7 +258,7 @@ inline void PageConnections::addConnection( const ConnectionManager::sConnection
         uint32_t cookie = connection.cookie;
 
         LVITEM lv;
-        NEMemory::zeroElement<LVITEM>( lv );
+        areg::zeroElement<LVITEM>( lv );
 
         // Column nickname
         lv.mask = LVIF_TEXT | LVIF_PARAM;
@@ -328,7 +328,7 @@ inline void PageConnections::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>( lv );
+        areg::zeroElement<LVCOLUMN>( lv );
         lv.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt = LVCFMT_LEFT;
         lv.cx = width;
@@ -360,7 +360,7 @@ inline void PageConnections::cleanService()
 
 inline int PageConnections::findConnection( const ConnectionManager::sConnection & connection ) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int result = areg::INVALID_INDEX;
     for ( int i = 0; i < mCtrlConnections.GetItemCount(); ++ i )
     {
         if ( mCtrlConnections.GetItemData(i) == connection.cookie )
@@ -379,7 +379,7 @@ inline int PageConnections::findConnection( const ConnectionManager::sConnection
 inline void PageConnections::removeConnection( const ConnectionManager::sConnection & connection )
 {
     int pos = findConnection(connection);
-    if ( pos != NECommon::INVALID_INDEX )
+    if ( pos != areg::INVALID_INDEX )
     {
         mCtrlConnections.EnsureVisible( pos, FALSE );
         mCtrlConnections.DeleteItem( pos );
@@ -408,7 +408,7 @@ inline bool PageConnections::loadModel( const String & nickName, const uint32_t 
         unloadModel( );
         
         std::any data = std::make_any< PageConnections *>(this);
-        NERegistry::Model model = DirectConnectionService::GetModel( nickName, cookie, data );
+        areg::Model model = DirectConnectionService::GetModel( nickName, cookie, data );
 
         LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().getString(), serviceName.getString() );
 

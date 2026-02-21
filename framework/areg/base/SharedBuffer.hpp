@@ -66,15 +66,15 @@ public:
     /**
      * \brief   Default constructor
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit SharedBuffer(unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    explicit SharedBuffer(unsigned int blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Reserves the space in the byte buffer to write data and sets block size.
      * \param   reserveSize Size in bytes to reserve
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size)
      **/
     SharedBuffer( unsigned int reserveSize, unsigned int blockSize );
 
@@ -83,9 +83,9 @@ public:
      * \param	buffer      The data to initialize byte buffer
      * \param	size        The length in bytes of data
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer( const unsigned char * buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE );
+    SharedBuffer( const unsigned char * buffer, unsigned int size, unsigned int blockSize = areg::BLOCK_SIZE );
 
     /**
      * \brief	Reserves requested space in bytes and writes given data into byte buffer.
@@ -96,9 +96,9 @@ public:
      * \param	buffer      The data to initialize byte buffer
      * \param	size        The length in bytes of data
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief	Initialization constructor, writes given null-terminated string into byte buffer.
@@ -106,10 +106,10 @@ public:
      *          If given string is null, it will write only end-of-string ('\0') character.
      * \param	textString  The byte buffer as a null-terminated string
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit SharedBuffer( const char * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
-    explicit SharedBuffer( const wchar_t * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
+    explicit SharedBuffer( const char * textString, unsigned int blockSize = areg::BLOCK_SIZE );
+    explicit SharedBuffer( const wchar_t * textString, unsigned int blockSize = areg::BLOCK_SIZE );
 
     /**
      * \brief	Copy constructor. It does not copy data from src, it will refer to the same shared
@@ -291,7 +291,7 @@ protected:
     virtual unsigned int getHeaderSize() const override;
 
     /**
-     * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
+     * \brief   Returns the size to align the buffer. By default it is sizeof(areg::uAlign)
      **/
     virtual unsigned int getAlignedSize() const override;
 

@@ -60,7 +60,7 @@ public:
      * \param   target  The channel communication target ID set by system.
      * \param   cookie  The ID assigned by system.
      **/
-    explicit Channel( const ITEM_ID & source, const ITEM_ID & target = NEService::TARGET_UNKNOWN, const ITEM_ID & cookie = NEService::COOKIE_UNKNOWN );
+    explicit Channel( const ITEM_ID & source, const ITEM_ID & target = areg::TARGET_UNKNOWN, const ITEM_ID & cookie = areg::COOKIE_UNKNOWN );
 
     /**
      * \brief   Copy constructor.
@@ -262,14 +262,14 @@ inline Channel::operator const ITEM_ID & () const
 
 inline bool Channel::isValid() const
 {
-    return (mCookie != NEService::COOKIE_UNKNOWN);
+    return (mCookie != areg::COOKIE_UNKNOWN);
 }
 
 inline void Channel::invalidate()
 {
-    mSource = NEService::SOURCE_UNKNOWN;
-    mTarget = NEService::TARGET_UNKNOWN;
-    mCookie = NEService::COOKIE_UNKNOWN;
+    mSource = areg::SOURCE_UNKNOWN;
+    mTarget = areg::TARGET_UNKNOWN;
+    mCookie = areg::COOKIE_UNKNOWN;
 }
 
 inline const InStream & operator >> ( const InStream & stream, Channel & input )

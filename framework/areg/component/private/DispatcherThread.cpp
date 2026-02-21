@@ -97,7 +97,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Disable Thread locking
     //////////////////////////////////////////////////////////////////////////
-    virtual bool waitForDispatcherStart( unsigned int waitTimeout = NECommon::WAIT_INFINITE ) override;
+    virtual bool waitForDispatcherStart( unsigned int waitTimeout = areg::WAIT_INFINITE ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -169,7 +169,7 @@ int NullDispatcherThread::onThreadExit()
     return static_cast<int>(ThreadConsumer::eExitCodes::ExitError);
 }
 
-bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= NECommon::WAIT_INFINITE */ )
+bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= areg::WAIT_INFINITE */ )
 {
     return false;
 }
@@ -242,7 +242,7 @@ void DispatcherThread::triggerExit()
     mExternalEvents.unlockQueue( );
 }
 
-Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -275,7 +275,7 @@ void DispatcherThread::readyForEvents( bool isReady )
     }
 }
 
-bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE */ )
+bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= areg::WAIT_INFINITE */ )
 {
     return mEventStarted.lock(waitTimeout);
 }

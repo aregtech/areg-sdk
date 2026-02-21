@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // RouterConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
-RouterConsoleService::RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+RouterConsoleService::RouterConsoleService( const areg::ComponentEntry & entry, ComponentThread & owner )
     : SystemServiceConsole( &MultitargetRouter::getInstance().getDataRateHelper(), entry, owner)
 {
 }

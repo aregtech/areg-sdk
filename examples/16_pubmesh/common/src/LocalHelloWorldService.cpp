@@ -43,7 +43,7 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
 
     if ( mClientList.isInvalidPosition( pos ) )
     {
-        theClient = LocalHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
+        theClient = LocalHelloWorld::sConnectedClient( areg::generateUniqueId(), roleName );
         mClientList.pushLast( theClient );
         LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }

@@ -221,8 +221,8 @@ TEST(HashMapTest, TestPositionOperations)
         EXPECT_EQ(nextValue, Value);
         if (hashMap.isValidPosition(pos))
         {
-            EXPECT_EQ(NEMath::delta(hashMap.keyAtPosition(pos), nextKey), 1);
-            EXPECT_EQ(NEMath::delta(hashMap.valueAtPosition(pos), nextValue), coef);
+            EXPECT_EQ(areg::delta(hashMap.keyAtPosition(pos), nextKey), 1);
+            EXPECT_EQ(areg::delta(hashMap.valueAtPosition(pos), nextValue), coef);
         }
 
         pos = hashMap.nextPosition(cur);

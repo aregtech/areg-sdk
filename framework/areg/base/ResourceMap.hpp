@@ -404,7 +404,7 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::ex
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
 inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::lock() const
 {
-    mSyncObj.lock(NECommon::WAIT_INFINITE);
+    mSyncObj.lock(areg::WAIT_INFINITE);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>

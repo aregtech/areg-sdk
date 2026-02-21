@@ -31,7 +31,7 @@ TIMERHANDLE TimerBase::_osCreateWaitableTimer()
 
     if ( mName.isEmpty( ) == false )
     {
-        NEString::copyString<TCHAR, char>( convertName, MAX_PATH, mName.getString( ), mName.getLength( ) );
+        areg::copyString<TCHAR, char>( convertName, MAX_PATH, mName.getString( ), mName.getLength( ) );
         name = convertName;
     }
 

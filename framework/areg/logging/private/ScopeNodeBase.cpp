@@ -32,7 +32,7 @@ ScopeNodeBase & ScopeNodeBase::invalidNode()
 
 ScopeNodeBase::ScopeNodeBase()
     : mNodeType     ( ScopeNodeBase::eNode::Invalid )
-    , mPrioStates   ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
+    , mPrioStates   ( static_cast<uint32_t>(areg::eLogPriority::PrioInvalid) )
     , mNodeName     ( )
     , mGrouping     ( static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping) )
 {
@@ -40,13 +40,13 @@ ScopeNodeBase::ScopeNodeBase()
 
 ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType )
     : mNodeType     ( nodeType )
-    , mPrioStates   ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
+    , mPrioStates   ( static_cast<uint32_t>(areg::eLogPriority::PrioInvalid) )
     , mNodeName     ( )
     , mGrouping    ( static_cast<unsigned int>(ScopeNodeBase::Grouping::NoGroupping) )
 {
 }
 
-ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & nodeName, unsigned int prio /*= static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset)*/ )
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::eNode nodeType, const String & nodeName, unsigned int prio /*= static_cast<unsigned int>(areg::eLogPriority::PrioNotset)*/ )
     : mNodeType     ( nodeType )
     , mPrioStates   ( prio )
     , mNodeName     ( nodeName )
@@ -73,18 +73,18 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
 String ScopeNodeBase::extractNodeName( String & scopeName )
 {
     String result(scopeName);
-    NEString::CharPos startPos = NEString::START_POS;
+    areg::CharPos startPos = areg::START_POS;
     const char * str = scopeName.getString( );
 
     // move position forward if a node starts with '_', which should
     // be included in the node name.
-    while ( *(str + startPos) == NELogOptions::SYNTAX_SCOPE_SEPARATOR )
+    while ( *(str + startPos) == areg::SYNTAX_SCOPE_SEPARATOR )
     {
         ++ startPos;
     }
 
-    NEString::CharPos pos = scopeName.findFirst(NELogOptions::SYNTAX_SCOPE_SEPARATOR, startPos );
-    if ( NEString::isPositionValid(pos) )
+    areg::CharPos pos = scopeName.findFirst(areg::SYNTAX_SCOPE_SEPARATOR, startPos );
+    if ( areg::isPositionValid(pos) )
     {
         result.substring( 0, pos );
         scopeName.substring( pos + 1 );
@@ -196,8 +196,8 @@ String ScopeNodeBase::makeConfigString( const String & parent ) const
 {
     if (isValid())
     {
-        char scope[NELogging::LOG_MESSAGE_IZE];
-        uint32_t len = static_cast<uint32_t>(String::formatString(scope, NELogging::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
+        char scope[areg::LOG_MESSAGE_IZE];
+        uint32_t len = static_cast<uint32_t>(String::formatString(scope, areg::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
         return String(scope, len);
     }
     else

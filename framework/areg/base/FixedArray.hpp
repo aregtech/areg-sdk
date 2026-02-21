@@ -353,7 +353,7 @@ FixedArray<VALUE>::FixedArray( const FixedArray<VALUE>& src )
     : mValueList( src.mElemCount != 0 ? DEBUG_NEW VALUE[src.mElemCount] : nullptr )
     , mElemCount( mValueList != nullptr ? src.mElemCount : 0 )
 {
-    NEMemory::copyElems<VALUE>(mValueList, src.mValueList, mElemCount);
+    areg::copyElems<VALUE>(mValueList, src.mValueList, mElemCount);
 }
 
 template< typename VALUE >
@@ -370,7 +370,7 @@ FixedArray<VALUE>::FixedArray(const VALUE* list, uint32_t count)
     : mValueList(count ? DEBUG_NEW VALUE[count] : nullptr)
     , mElemCount(mValueList != nullptr ? count : 0)
 {
-    NEMemory::copyElems<VALUE>(mValueList, list, mElemCount);
+    areg::copyElems<VALUE>(mValueList, list, mElemCount);
 }
 
 template< typename VALUE >
@@ -410,13 +410,13 @@ inline FixedArray<VALUE> & FixedArray<VALUE>::operator = ( FixedArray<VALUE> && 
 template< typename VALUE >
 inline bool FixedArray<VALUE>::operator == ( const FixedArray<VALUE>& other ) const
 {
-    return ((mElemCount == other.getSize()) && NEMemory::equalElements<VALUE>(mValueList, other.mValueList, mElemCount));
+    return ((mElemCount == other.getSize()) && areg::equalElements<VALUE>(mValueList, other.mValueList, mElemCount));
 }
 
 template< typename VALUE >
 inline bool FixedArray<VALUE>::operator != (const FixedArray<VALUE>& other) const
 {
-    return ((mElemCount != other.getSize()) || !NEMemory::equalElements<VALUE>(mValueList, other.mValueList, mElemCount));
+    return ((mElemCount != other.getSize()) || !areg::equalElements<VALUE>(mValueList, other.mValueList, mElemCount));
 }
 
 template< typename VALUE >
@@ -446,7 +446,7 @@ inline bool FixedArray<VALUE>::isValidIndex(uint32_t whichIndex) const
 template< typename VALUE >
 inline bool FixedArray<VALUE>::contains(const VALUE& elemSearch, uint32_t startAt /*= 0*/) const
 {
-    return (find(elemSearch, startAt) != NECommon::INVALID_INDEX);
+    return (find(elemSearch, startAt) != areg::INVALID_INDEX);
 }
 
 template< typename VALUE >
@@ -535,7 +535,7 @@ inline void FixedArray<VALUE>::move(FixedArray< VALUE > && src) noexcept
 template< typename VALUE >
 inline int FixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /* = 0 */) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for (uint32_t i = startAt; i < mElemCount; ++i)
     {
         if (elemSearch == mValueList[i])

@@ -69,7 +69,7 @@ public:
      *          Specified remoteAddress will be set as remote server address to connect.
      * \param   remoteAddress   Address of remote host to connect.
      **/
-    SocketClient( const NESocket::SocketAddress & remoteAddress );
+    SocketClient( const areg::SocketAddress & remoteAddress );
 
     /**
      * \brief   Destructor.

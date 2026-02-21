@@ -308,7 +308,7 @@ inline ComponentAddress & ComponentAddress::operator = ( ComponentAddress && src
         mThreadAddress  = std::move(src.mThreadAddress);
         mRoleName       = std::move(src.mRoleName);
         mMagicNum       = src.mMagicNum;
-        src.mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        src.mMagicNum   = areg::CHECKSUM_IGNORE;
     }
 
     return (*this);

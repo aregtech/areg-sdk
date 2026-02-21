@@ -20,7 +20,7 @@
 DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component     ( entry, owner )
     , HelloWorldStub( static_cast<Component &>(self()) )
     , mClientList   ( )
@@ -47,7 +47,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 
     if ( mClientList.isInvalidPosition(pos))
     {
-        theClient = HelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
+        theClient = HelloWorld::sConnectedClient( areg::generateUniqueId(), roleName );
         mClientList.pushFirst( theClient );
         LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }

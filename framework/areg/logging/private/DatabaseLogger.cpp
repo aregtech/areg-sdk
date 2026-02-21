@@ -76,7 +76,7 @@ void DatabaseLogger::closeLogger()
     }
 }
 
-void DatabaseLogger::logMessage(const NELogging::sLogMessage& logMessage)
+void DatabaseLogger::logMessage(const areg::sLogMessage& logMessage)
 {
     Lock lock(mLock);
     if (isValid())

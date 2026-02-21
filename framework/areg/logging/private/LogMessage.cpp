@@ -25,24 +25,24 @@
 #include <string.h>
 
 #if AREG_LOGS
-LogMessage::LogMessage(NELogging::eLogMessageType msgType, unsigned int sessionId, TIME64 scopeStamp, const LogScope & logScope )
-    : NELogging::sLogMessage( msgType, logScope.getScopeId(), sessionId, scopeStamp, NELogging::PrioScope, logScope.getScopeName().getString(), static_cast<uint32_t>(logScope.getScopeName( ).getLength()) )
+LogMessage::LogMessage(areg::eLogMessageType msgType, unsigned int sessionId, TIME64 scopeStamp, const LogScope & logScope )
+    : areg::sLogMessage( msgType, logScope.getScopeId(), sessionId, scopeStamp, areg::PrioScope, logScope.getScopeName().getString(), static_cast<uint32_t>(logScope.getScopeName( ).getLength()) )
 {
     // AAvetyan: check that the message type is either LogMessageScopeEnter or LogMessageScopeExit
-    ASSERT( ((static_cast<uint8_t>(NELogging::eLogMessageType::LogMessageScopeEnter) & static_cast<uint8_t>(msgType)) != 0) || 
-            ((static_cast<uint8_t>(NELogging::eLogMessageType::LogMessageScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
+    ASSERT( ((static_cast<uint8_t>(areg::eLogMessageType::LogMessageScopeEnter) & static_cast<uint8_t>(msgType)) != 0) || 
+            ((static_cast<uint8_t>(areg::eLogMessageType::LogMessageScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
 }
 
 void LogMessage::setMessage(const char * message, int msgLen )
 {
-    uint32_t len = NEMemory::memCopy(this->logMessage, NELogging::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
+    uint32_t len = areg::memCopy(this->logMessage, areg::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
     this->logMessage[len] = String::EmptyChar;
 }
 
 #else   // AREG_LOGS
 
-LogMessage::LogMessage(NELogging::eLogMessageType /*msgType*/, unsigned int /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
-    : NELogging::sLogMessage( )
+LogMessage::LogMessage(areg::eLogMessageType /*msgType*/, unsigned int /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
+    : areg::sLogMessage( )
 {
 }
 

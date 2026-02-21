@@ -168,7 +168,7 @@ void TimerPosix::timerExpired()
     {
         if (mContext->getEventCount() > TimerBase::ONE_TIME)
         {
-            NESyncTypesIX::convTimeout(mDueTime, mContext->getTimeout());
+            areg::os::convTimeout(mDueTime, mContext->getTimeout());
         }
         else if (_isStarted())
         {
@@ -185,14 +185,14 @@ bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     return (mTimerQueue != INVALID_DISPATCH_QUEUE);
 #else   // !__APPLE__
     struct sigevent sigEvent;
-    NEMemory::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
+    areg::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
 
     sigEvent.sigev_notify           = SIGEV_THREAD;
     sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
     sigEvent.sigev_notify_function  = funcTimer;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    return (NECommon::RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
+    return (areg::RETURNED_OK == ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId));
 #endif  // __APPLE__
 }
 
@@ -235,9 +235,9 @@ inline bool TimerPosix::_startTimer()
                     }
                 });
 
-                if (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
+                if (areg::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
                 {
-                    NESyncTypesIX::convTimeout(mDueTime, msTimeout);
+                    areg::os::convTimeout(mDueTime, msTimeout);
                     result = true;
                     dispatch_resume(mTimerSource);
                 }
@@ -265,20 +265,20 @@ inline bool TimerPosix::_startTimer()
         if ((msTimeout != 0) && (eventCount != 0))
         {
             struct itimerspec interval;
-            NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-            NESyncTypesIX::convTimeout(interval.it_value, msTimeout);
+            areg::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
+            areg::os::convTimeout(interval.it_value, msTimeout);
             if (eventCount > 1)
             {
                 interval.it_interval.tv_sec = interval.it_value.tv_sec;
                 interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
             }
 
-            if (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
+            if (areg::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
             {
-                NESyncTypesIX::convTimeout(mDueTime, msTimeout);
+                areg::os::convTimeout(mDueTime, msTimeout);
                 result = true;
 
-                if (NECommon::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
+                if (areg::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
                 {
                     result          = false;
                     mDueTime.tv_sec = 0;
@@ -309,7 +309,7 @@ void TimerPosix::_stopTimer()
     ASSERT(mTimerId != INVALID_POSIX_TIMER_ID);
 
     struct itimerspec interval;
-    NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
+    areg::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
 
     mDueTime.tv_sec = 0;
     mDueTime.tv_nsec= 0;

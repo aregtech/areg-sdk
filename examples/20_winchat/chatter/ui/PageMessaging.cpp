@@ -135,7 +135,7 @@ void PageMessaging::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>( lv );
+        areg::zeroElement<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -334,7 +334,7 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
     removeTyping(nickName, cookie);
 
     LVITEM lv;
-    NEMemory::zeroElement<LVITEM>( lv );
+    areg::zeroElement<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -387,7 +387,7 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            NEMemory::zeroElement<LVITEM>( lv );
+            areg::zeroElement<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;

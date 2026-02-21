@@ -19,7 +19,7 @@ DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlw
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
 
 
-SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr)
+SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, Component & owner, areg::sCoord coordInt, areg::sCoord coordStr)
     : PubSubClientBase  ( entry, owner )
     , mCoordInteger     ( coordInt )
     , mCoordString      ( coordStr )
@@ -31,13 +31,13 @@ SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Compon
 {
 }
 
-void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
+void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, areg::eDataStateType state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
     ++ mStrEventCount;
 
     Console & console = Console::getInstance();
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
         console.outputMsg(mCoordString, "%s%s => %s { changed }, event count: %u"
@@ -67,14 +67,14 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
     console.refreshScreen();
 }
 
-void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
+void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, areg::eDataStateType state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
     ++ mIntEventCount;
 
     Console & console = Console::getInstance();
     String oldInt = mOldState ? String::makeString(mOldInteger) : pubsub::StrInvalid;
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
         console.outputMsg( mCoordInteger, "%s%s => %u { %s }, event count: %u"

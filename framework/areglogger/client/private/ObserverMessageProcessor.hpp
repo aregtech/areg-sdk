@@ -26,7 +26,7 @@
  ************************************************************************/
 class LoggerClient;
 class RemoteMessage;
-namespace NELogging {
+namespace areg {
     struct sLogMessage;
 }
 //////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ private:
     void _clientsDisconnected(const RemoteMessage& msgReceived);
 
     //!< Initializes the local log message with default values.
-    void _initLocalLogMessage(NELogging::sLogMessage& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
+    void _initLocalLogMessage(areg::sLogMessage& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

@@ -31,7 +31,7 @@ public:
     static ConnectionController * getService();
 
 public:
-    ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    ConnectionController( const areg::ComponentEntry & entry, ComponentThread & ownerThread );
     virtual ~ConnectionController();
 
 //////////////////////////////////////////////////////////////////////////

@@ -27,7 +27,7 @@
 // SyncWaitable class implementation
 //////////////////////////////////////////////////////////////////////////
 
-WaitablePosix::WaitablePosix( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
+WaitablePosix::WaitablePosix( areg::os::eSyncObject syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
     : MutexPosix     ( syncType, isRecursive, asciiName )
 {
 }

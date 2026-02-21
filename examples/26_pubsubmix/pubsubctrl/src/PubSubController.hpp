@@ -52,7 +52,7 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PubSubController( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    PubSubController( const areg::ComponentEntry & entry, ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.

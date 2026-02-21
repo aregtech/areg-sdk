@@ -27,7 +27,7 @@
  * Dependencies
  ************************************************************************/
 class LogMessage;
-namespace NELogging
+namespace areg
 {
     struct sLogMessage;
 }
@@ -98,7 +98,7 @@ public:
      * \param   action  The action ID to set in event data
      * \param   logData The buffer of logging message data set.
      **/
-    LoggingEventData( LoggingEventData::eLoggingAction action, const NELogging::sLogMessage & logData );
+    LoggingEventData( LoggingEventData::eLoggingAction action, const areg::sLogMessage & logData );
 
     /**
      * \brief   Copies logging event data from given source.

@@ -27,13 +27,13 @@
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 EventData::EventData( unsigned int msgId, EventDataStream::eEventData dataType, const String & name /*= String::getEmptyString()*/ )
-    : mDataType (NEService::getMessageDataType(msgId))
+    : mDataType (areg::getMessageDataType(msgId))
     , mData     (dataType, name)
 {
 }
 
 EventData::EventData( unsigned int msgId, const EventDataStream & args, const String & name /*= String::getEmptyString()*/ )
-    : mDataType (NEService::getMessageDataType(msgId))
+    : mDataType (areg::getMessageDataType(msgId))
     , mData     (args, name)
 {
 }
@@ -51,7 +51,7 @@ EventData::EventData( EventData && src ) noexcept
 }
 
 EventData::EventData(const InStream & stream)
-    : mDataType ( NEService::eMessageDataType::UndefinedDataType )
+    : mDataType ( areg::eMessageDataType::UndefinedDataType )
     , mData     ( EventDataStream::eEventData::EventDataExternal )
 {
     stream >> mDataType;

@@ -29,10 +29,10 @@ class DirectChatService : public Component
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const DirectMessager::sParticipant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
+    static areg::Model GetModel( const DirectMessager::sParticipant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
-    DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    DirectChatService( const areg::ComponentEntry & entry, ComponentThread & ownerThread );
     virtual ~DirectChatService();
 
 //////////////////////////////////////////////////////////////////////////

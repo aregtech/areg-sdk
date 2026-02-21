@@ -19,10 +19,10 @@
 AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
 
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
-                                          , NEService::ResultType result
+                                          , areg::ResultType result
                                           , unsigned int responseId
                                           , Event::eEventType eventType
-                                          , const SequenceNumber & seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
+                                          , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
     : ProxyEvent    (target, eventType)
     , mResponseId   (responseId)
     , mResult       (result)
@@ -40,9 +40,9 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const Se
 
 ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
     : ProxyEvent    ( stream )
-    , mResponseId   ( NEService::INVALID_MESSAGE_ID )
-    , mResult       ( NEService::ResultType::Undefined )
-    , mSequenceNr   ( NEService::SEQUENCE_NUMBER_ANY )
+    , mResponseId   ( areg::INVALID_MESSAGE_ID )
+    , mResult       ( areg::ResultType::Undefined )
+    , mSequenceNr   ( areg::SEQUENCE_NUMBER_ANY )
 {
     stream >> mResponseId;
     stream >> mResult;

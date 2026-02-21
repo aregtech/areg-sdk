@@ -72,25 +72,25 @@
 //////////////////////////////////////////////////////////////////////////
 
     //!< Priority to log everything
-    #define PRIO_LOG_ALL        (static_cast<unsigned int>(NELogging::eLogPriority::PrioDebug)    | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_LOG_ALL        (static_cast<unsigned int>(areg::eLogPriority::PrioDebug)    | static_cast<unsigned int>(areg::eLogPriority::PrioScope))
 
     //!< Priority to log info, warnings, error and fatal
-    #define PRIO_INFO           (static_cast<unsigned int>(NELogging::eLogPriority::PrioInfo)     | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_INFO           (static_cast<unsigned int>(areg::eLogPriority::PrioInfo)     | static_cast<unsigned int>(areg::eLogPriority::PrioScope))
 
     //!< Priority to log warnings, error and fatal
-    #define PRIO_WARNING        (static_cast<unsigned int>(NELogging::eLogPriority::PrioWarning)  | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_WARNING        (static_cast<unsigned int>(areg::eLogPriority::PrioWarning)  | static_cast<unsigned int>(areg::eLogPriority::PrioScope))
 
     //!< Priority to log error and fatal
-    #define PRIO_ERROR          (static_cast<unsigned int>(NELogging::eLogPriority::PrioError)    | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_ERROR          (static_cast<unsigned int>(areg::eLogPriority::PrioError)    | static_cast<unsigned int>(areg::eLogPriority::PrioScope))
 
     //!< Priority to log only fatal
-    #define PRIO_FATAL          (static_cast<unsigned int>(NELogging::eLogPriority::PrioFatal)    | static_cast<unsigned int>(NELogging::eLogPriority::PrioScope))
+    #define PRIO_FATAL          (static_cast<unsigned int>(areg::eLogPriority::PrioFatal)    | static_cast<unsigned int>(areg::eLogPriority::PrioScope))
 
     //!< Unset logging scopes in priorities
-    #define PRIO_NOSCOPES(x)    ((x) & (~static_cast<unsigned int>(NELogging::eLogPriority::PrioScope)))
+    #define PRIO_NOSCOPES(x)    ((x) & (~static_cast<unsigned int>(areg::eLogPriority::PrioScope)))
 
     //!< No logging
-    #define PRIO_NOLOGS         (static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset))
+    #define PRIO_NOLOGS         (static_cast<unsigned int>(areg::eLogPriority::PrioNotset))
 
 //////////////////////////////////////////////////////////////////////////
 // if AREG_LOGS is defined and not zero
@@ -99,33 +99,33 @@
     /**
      * \brief   Returns true if logging is already configured and started
      **/
-    #define IS_LOGGING_STARTED()                          NELogging::isStarted()
+    #define IS_LOGGING_STARTED()                          areg::isStarted()
 
     /**
      * \brief   Returns true if logging is enabled
      **/
-    #define IS_LOGGING_ENABLED()                        NELogging::isEnabled()
+    #define IS_LOGGING_ENABLED()                        areg::isEnabled()
 
     /**
      * \brief   Use this macro to load configuration file and start logging.
      *          If config file name is nullptr, it will load from default folder "./config/areg.init"
      **/
-    #define LOGGING_START(configFile)                   NELogging::startLogging((configFile))
+    #define LOGGING_START(configFile)                   areg::startLogging((configFile))
 
     /**
      * \brief   Call to force to start logging.
      **/
-    #define LOGGING_FORCE_START()                       NELogging::forceStartLogging()
+    #define LOGGING_FORCE_START()                       areg::forceStartLogging()
 
     /**
      * \brief   Either configures logging values from file or sets default values, enables and starts logging
      **/
-    #define LOGGING_CONFIGURE_AND_START(configFile)     NELogging::initAndStartLogging((configFile))
+    #define LOGGING_CONFIGURE_AND_START(configFile)     areg::initAndStartLogging((configFile))
 
     /**
      * \brief   Use this macro to stop logging. This blocks the calling thread until logging thread completes the job.
      **/
-    #define LOGGING_STOP()                              NELogging::stopLogging( true )
+    #define LOGGING_STOP()                              areg::stopLogging( true )
 
     /**
      * \brief   Use this macro to define scope in source code. This will create scope variable and set name
@@ -142,45 +142,45 @@
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)
      **/
-    #define LOG_DBG(...)                                do { if (_messager.isDbgEnabled())   _messager.logMessage( NELogging::PrioDebug    , __VA_ARGS__ ); } while(0)
+    #define LOG_DBG(...)                                do { if (_messager.isDbgEnabled())   _messager.logMessage( areg::PrioDebug    , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Information priority messages in logging target (file or remote host)
      **/
-    #define LOG_INFO(...)                               do { if (_messager.isInfoEnabled())  _messager.logMessage( NELogging::PrioInfo     , __VA_ARGS__ ); } while(0)
+    #define LOG_INFO(...)                               do { if (_messager.isInfoEnabled())  _messager.logMessage( areg::PrioInfo     , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Warning priority messages in logging target (file or remote host)
      **/
-    #define LOG_WARN(...)                               do { if (_messager.isWarnEnabled())  _messager.logMessage( NELogging::PrioWarning  , __VA_ARGS__ ); } while(0)
+    #define LOG_WARN(...)                               do { if (_messager.isWarnEnabled())  _messager.logMessage( areg::PrioWarning  , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Error priority messages in logging target (file or remote host)
      **/
-    #define LOG_ERR(...)                                do { if (_messager.isErrEnabled())   _messager.logMessage( NELogging::PrioError    , __VA_ARGS__ ); } while(0)
+    #define LOG_ERR(...)                                do { if (_messager.isErrEnabled())   _messager.logMessage( areg::PrioError    , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
      **/
-    #define LOG_FATAL(...)                              do { if (_messager.isFatalEnabled()) _messager.logMessage( NELogging::PrioFatal    , __VA_ARGS__ ); } while(0)
+    #define LOG_FATAL(...)                              do { if (_messager.isFatalEnabled()) _messager.logMessage( areg::PrioFatal    , __VA_ARGS__ ); } while(0)
 
 
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)
      **/
-    #define LOG_DBG_IF(cond, ...)                       do { if (_messager.isDbgEnabled() && (cond))   _messager.logMessage( NELogging::PrioDebug    , __VA_ARGS__ ); } while(0)
+    #define LOG_DBG_IF(cond, ...)                       do { if (_messager.isDbgEnabled() && (cond))   _messager.logMessage( areg::PrioDebug    , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Information priority messages in logging target (file or remote host)
      **/
-    #define LOG_INFO_IF(cond, ...)                      do { if (_messager.isInfoEnabled() && (cond))  _messager.logMessage( NELogging::PrioInfo     , __VA_ARGS__ ); } while(0)
+    #define LOG_INFO_IF(cond, ...)                      do { if (_messager.isInfoEnabled() && (cond))  _messager.logMessage( areg::PrioInfo     , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Warning priority messages in logging target (file or remote host)
      **/
-    #define LOG_WARN_IF(cond, ...)                      do { if (_messager.isWarnEnabled() && (cond))  _messager.logMessage( NELogging::PrioWarning  , __VA_ARGS__ ); } while(0)
+    #define LOG_WARN_IF(cond, ...)                      do { if (_messager.isWarnEnabled() && (cond))  _messager.logMessage( areg::PrioWarning  , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Error priority messages in logging target (file or remote host)
      **/
-    #define LOG_ERR_IF(cond, ...)                       do { if (_messager.isErrEnabled() && (cond))   _messager.logMessage( NELogging::PrioError    , __VA_ARGS__ ); } while(0)
+    #define LOG_ERR_IF(cond, ...)                       do { if (_messager.isErrEnabled() && (cond))   _messager.logMessage( areg::PrioError    , __VA_ARGS__ ); } while(0)
     /**
      * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
      **/
-    #define LOG_FATAL_IF(cond, ...)                     do { if (_messager.isFatalEnabled() && (cond)) _messager.logMessage( NELogging::PrioFatal    , __VA_ARGS__ ); } while(0)
+    #define LOG_FATAL_IF(cond, ...)                     do { if (_messager.isFatalEnabled() && (cond)) _messager.logMessage( areg::PrioFatal    , __VA_ARGS__ ); } while(0)
 
     /**
      * \brief   Use this macro to define global scope and global message object.
@@ -195,7 +195,7 @@
                                                             static bool isActivated { false };          \
                                                             if (isActivated == false)                   \
                                                             {                                           \
-                                                                NELogging::activateScope( _##scope );     \
+                                                                areg::activateScope( _##scope );     \
                                                                 isActivated = true;                     \
                                                             }                                           \
                                                             return _messager;                           \

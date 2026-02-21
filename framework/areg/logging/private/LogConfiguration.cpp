@@ -36,28 +36,28 @@ bool LogConfiguration::isLoggingEnabled() const
 bool LogConfiguration::isRemoteLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeRemote);
+    return config.getLogEnabled(areg::LoggingType::LogTypeRemote);
 }
 
 bool LogConfiguration::isFileLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeFile);
+    return config.getLogEnabled(areg::LoggingType::LogTypeFile);
 }
 
 bool LogConfiguration::isDatabaseLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeDatabase);
+    return config.getLogEnabled(areg::LoggingType::LogTypeDatabase);
 }
 
 bool LogConfiguration::isDebugOutputLoggingEnabled() const
 {
     ConfigManager& config = Application::getConfigManager();
-    return config.getLogEnabled(NELogging::LoggingType::LogTypeDebug);
+    return config.getLogEnabled(areg::LoggingType::LogTypeDebug);
 }
 
-void LogConfiguration::setLogEnabled(NELogging::LoggingType logType, bool isEnabled)
+void LogConfiguration::setLogEnabled(areg::LoggingType logType, bool isEnabled)
 {
     ConfigManager& config = Application::getConfigManager();
     if (isEnabled && config.getLoggingStatus() == false)
@@ -148,43 +148,43 @@ void LogConfiguration::setLogFile(const String& prop)
 
 bool LogConfiguration::getRemoteTcpEnable() const
 {
-    return (Application::getConfigManager().getLogEnabled(NELogging::LoggingType::LogTypeRemote) &&
-            Application::getConfigManager().getRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip));
+    return (Application::getConfigManager().getLogEnabled(areg::LoggingType::LogTypeRemote) &&
+            Application::getConfigManager().getRemoteServiceEnable(areg::eRemoteServices::ServiceLogger, areg::eConnectionTypes::ConnectTcpip));
 }
 
 void LogConfiguration::setRemoteTcpEnable(bool prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+    Application::getConfigManager().setRemoteServiceEnable(areg::eRemoteServices::ServiceLogger, areg::eConnectionTypes::ConnectTcpip, prop, isTemporary);
 }
 
 String LogConfiguration::getRemoteTcpAddress() const
 {
-    return Application::getConfigManager().getRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
+    return Application::getConfigManager().getRemoteServiceAddress(areg::eRemoteServices::ServiceLogger, areg::eConnectionTypes::ConnectTcpip);
 }
 
 void LogConfiguration::setRemoteTcpAddress(const String & prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+    Application::getConfigManager().setRemoteServiceAddress(areg::eRemoteServices::ServiceLogger, areg::eConnectionTypes::ConnectTcpip, prop, isTemporary);
 }
 
 uint16_t LogConfiguration::getRemoteTcpPort() const
 {
-    return Application::getConfigManager().getRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
+    return Application::getConfigManager().getRemoteServicePort(areg::eRemoteServices::ServiceLogger, areg::eConnectionTypes::ConnectTcpip);
 }
 
 void LogConfiguration::setRemoteTcpPort(uint16_t prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+    Application::getConfigManager().setRemoteServicePort(areg::eRemoteServices::ServiceLogger, areg::eConnectionTypes::ConnectTcpip, prop, isTemporary);
 }
 
 bool LogConfiguration::getDatabaseEnable() const
 {
-    return Application::getConfigManager().getLogEnabled(NELogging::LoggingType::LogTypeDatabase);
+    return Application::getConfigManager().getLogEnabled(areg::LoggingType::LogTypeDatabase);
 }
 
 void LogConfiguration::setDatabaseEnable(bool prop, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setLogEnabled(NELogging::LoggingType::LogTypeDatabase, prop, isTemporary);
+    Application::getConfigManager().setLogEnabled(areg::LoggingType::LogTypeDatabase, prop, isTemporary);
 }
 
 uint32_t LogConfiguration::getModuleScopes(std::vector<Property>& scopeList)
@@ -201,18 +201,18 @@ void LogConfiguration::setModuleScopes(const std::vector<Property>& scopeList)
 
 String LogConfiguration::getDatabaseEngine() const
 {
-    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseEngine().position);
+    return Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseEngine().position);
 }
 
 void LogConfiguration::setDatabaseEngine(const String& dbEngine, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseEngine().position, dbEngine, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseEngine().position, dbEngine, isTemporary);
 }
 
 String LogConfiguration::getDatabaseFullPath() const
 {
-    String dbLocation = Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
-    String dbName = Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
+    String dbLocation = Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseLocation().position);
+    String dbName = Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseName().position);
     return File::makeFileFullPath(dbLocation, dbName);
 }
 
@@ -221,75 +221,75 @@ void LogConfiguration::setDatabaseFullPath(const String& dbFullPath, bool isTemp
     String dbLocation = File::getFileDirectory(dbFullPath.getString());
     String dbName = File::getFileNameWithExtension(dbFullPath.getString());
 
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position, dbLocation, isTemporary);
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseName().position, dbName, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseLocation().position, dbLocation, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseName().position, dbName, isTemporary);
 }
 
 String LogConfiguration::getDatabaseName() const
 {
-    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
+    return Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseName().position);
 }
 
 void LogConfiguration::setDatabaseName(const String & dbName, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseName().position, dbName, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseName().position, dbName, isTemporary);
 }
 
 String LogConfiguration::getDatabaseLocation() const
 {
-    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
+    return Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseLocation().position);
 }
 
 void LogConfiguration::setDatabaseLocation(const String & dbLocation, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position, dbLocation, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseLocation().position, dbLocation, isTemporary);
 }
 
 String LogConfiguration::getDatabaseDriver() const
 {
-    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseDriver().position);
+    return Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseDriver().position);
 }
 
 void LogConfiguration::setDatabaseDriver(const String& dbDriver, bool isTemporary /*= false*/)
 {
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseDriver().position, dbDriver, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseDriver().position, dbDriver, isTemporary);
 }
 
-NESocket::SocketAddress LogConfiguration::getDatabaseAddress() const
+areg::SocketAddress LogConfiguration::getDatabaseAddress() const
 {
-    String address{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseAddress().position) };
-    uint32_t port{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabasePort().position).toUInt32() };
+    String address{ Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseAddress().position) };
+    uint32_t port{ Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabasePort().position).toUInt32() };
 
-    return NESocket::SocketAddress(address, static_cast<uint16_t>(port));
+    return areg::SocketAddress(address, static_cast<uint16_t>(port));
 }
 
-void LogConfiguration::setDatabaseAddress(const NESocket::SocketAddress& dbAddress, bool isTemporary)
+void LogConfiguration::setDatabaseAddress(const areg::SocketAddress& dbAddress, bool isTemporary)
 {
     setDatabaseAddress(dbAddress.getHostAddress(), dbAddress.getHostPort(), isTemporary);
 }
 
 void LogConfiguration::setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary)
 {
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseAddress().position, dbAddress, isTemporary);
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabasePort().position, String::makeString(static_cast<uint32_t>(dbPort)), isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseAddress().position, dbAddress, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabasePort().position, String::makeString(static_cast<uint32_t>(dbPort)), isTemporary);
 }
 
-NESocket::UserData LogConfiguration::getDatabaseUser() const
+areg::UserData LogConfiguration::getDatabaseUser() const
 {
-    String user{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position) };
-    String password{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabasePassword().position) };
-    return NESocket::UserData(user, password);
+    String user{ Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseUser().position) };
+    String password{ Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabasePassword().position) };
+    return areg::UserData(user, password);
 }
 
-void LogConfiguration::setDatabaseUser(const NESocket::UserData& dbUser, bool isTemporary)
+void LogConfiguration::setDatabaseUser(const areg::UserData& dbUser, bool isTemporary)
 {
     return setDatabaseUser(dbUser.getUser(), dbUser.getPassword(), isTemporary);
 }
 
 void LogConfiguration::setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary)
 {
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position, dbUserName, isTemporary);
-    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabasePassword().position, dbUserPassword, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseUser().position, dbUserName, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabasePassword().position, dbUserPassword, isTemporary);
 }
 
 void LogConfiguration::saveConfiguration()

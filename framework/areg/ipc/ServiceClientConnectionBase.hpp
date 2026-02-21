@@ -85,9 +85,9 @@ public:
      * \param   prefixName          The prefix to add to the names of message receive and send threads.
      **/
     ServiceClientConnectionBase(  const ITEM_ID & target
-                                , NERemoteService::eRemoteServices service
+                                , areg::eRemoteServices service
                                 , unsigned int connectTypes
-                                , NEService::eMessageSource msgSource
+                                , areg::eMessageSource msgSource
                                 , ConnectionConsumer& connectionConsumer
                                 , RemoteMessageHandler & messageHandler
                                 , DispatcherThread & messageDispatcher
@@ -186,7 +186,7 @@ protected:
      * \param   connectTypes    The type of connection to setup.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes) override;
+    virtual bool setupServiceConnectionData(areg::eRemoteServices service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -238,7 +238,7 @@ protected:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const override;
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::eMessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -386,7 +386,7 @@ protected:
     /**
      * \brief   The remote target service to communicate.
      **/
-    const NERemoteService::eRemoteServices  mService;
+    const areg::eRemoteServices  mService;
 
     /**
      * \brief   The bitwise set of connection types supported by remote service.
@@ -396,7 +396,7 @@ protected:
     /**
      * \brief   The type of messaging source application.
      **/
-    const NEService::eMessageSource         mMessageSource;
+    const areg::eMessageSource         mMessageSource;
 
     /**
      * \brief   Client connection object
@@ -553,7 +553,7 @@ inline const char * ServiceClientConnectionBase::getString(ServiceClientConnecti
 inline bool ServiceClientConnectionBase::isConnectionStarted() const
 {
     const ITEM_ID & cookie = mClientConnection.getCookie();
-    return (mClientConnection.isValid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
+    return (mClientConnection.isValid() && (cookie != areg::COOKIE_LOCAL) && (cookie != areg::COOKIE_UNKNOWN));
 }
 
 inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::eConnectionState newState)

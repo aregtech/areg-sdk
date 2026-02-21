@@ -77,10 +77,10 @@ protected:
      * \param   seqNr       The sequence number of call.
      **/
     ServiceResponseEvent( const ProxyAddress & target
-                        , NEService::ResultType result
+                        , areg::ResultType result
                         , unsigned int responseId
                         , Event::eEventType eventType
-                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief   Copies all data from given source, except the target proxy address. This is used if proxy needs to clone
@@ -115,7 +115,7 @@ public:
     /**
      * \brief   Returns response call result
      **/
-    inline NEService::ResultType getResult() const;
+    inline areg::ResultType getResult() const;
 
     /**
      * \brief   Returns sequence number of call.
@@ -175,7 +175,7 @@ protected:
     /**
      * \brief   The response result
      **/
-    NEService::ResultType mResult;
+    areg::ResultType mResult;
 
     /**
      * \brief   The sequence number.
@@ -199,7 +199,7 @@ inline unsigned int ServiceResponseEvent::getResponseId() const
     return mResponseId;
 }
 
-inline NEService::ResultType ServiceResponseEvent::getResult() const
+inline areg::ResultType ServiceResponseEvent::getResult() const
 {
     return mResult;
 }

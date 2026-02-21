@@ -67,7 +67,7 @@ void PageBrokerSetup::OnBnClickedBrokerConnect( )
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
         uint32_t temp = check.toUInt32( );
-        if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
+        if ( (temp != areg::InvalidPort) && (temp < 0xFFFFu) )
         {
             mBrokerPort = static_cast<USHORT>(temp);
             String ipAddress;
@@ -167,7 +167,7 @@ BOOL PageBrokerSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    ConnectionConfiguration config(NERemoteService::eRemoteServices::ServiceRouter, NERemoteService::eConnectionTypes::ConnectTcpip);
+    ConnectionConfiguration config(areg::eRemoteServices::ServiceRouter, areg::eConnectionTypes::ConnectTcpip);
     unsigned char field0, field1, field2, field3;
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {

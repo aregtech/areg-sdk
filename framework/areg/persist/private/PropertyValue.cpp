@@ -47,7 +47,7 @@ PropertyValue::PropertyValue( const char * value )
 }
 
 PropertyValue::PropertyValue(unsigned int intValue)
-    : mValue( String::makeString(intValue, NEString::eRadix::RadixDecimal) )
+    : mValue( String::makeString(intValue, areg::eRadix::RadixDecimal) )
 {
 }
 
@@ -127,7 +127,7 @@ bool PropertyValue::operator != ( const PropertyValue & other ) const
 
 PropertyValue::operator unsigned int() const
 {
-    return getInteger(NEString::eRadix::RadixDecimal);
+    return getInteger(areg::eRadix::RadixDecimal);
 }
 
 PropertyValue::operator const String& () const
@@ -170,9 +170,9 @@ const String & PropertyValue::getString() const
     return mValue;
 }
 
-unsigned int PropertyValue::getInteger( NEString::eRadix radix /*= NEString::RadixDecimal*/ ) const
+unsigned int PropertyValue::getInteger( areg::eRadix radix /*= areg::RadixDecimal*/ ) const
 {
-    return mValue.toUInt32( static_cast<NEString::eRadix>(radix) );
+    return mValue.toUInt32( static_cast<areg::eRadix>(radix) );
 }
 
 double PropertyValue::getDouble() const
@@ -185,7 +185,7 @@ unsigned int PropertyValue::getIndetifier( const std::vector<Identifier> & idLis
     unsigned int result = Identifier::BAD_IDENTIFIER_VALUE;
     if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
     {
-        std::vector<StringBase<char>> list { mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };
@@ -225,7 +225,7 @@ void PropertyValue::setBoolean(bool newValue)
     mValue = String::makeString(newValue);
 }
 
-void PropertyValue::setInteger(unsigned int intValue, NEString::eRadix radix /*= NEString::RadixDecimal*/ )
+void PropertyValue::setInteger(unsigned int intValue, areg::eRadix radix /*= areg::RadixDecimal*/ )
 {
     mValue = String::makeString(intValue, radix);
 }
@@ -240,7 +240,7 @@ ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identif
     ArrayList<Identifier> result;
     if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
     {
-        std::vector<StringBase<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };
@@ -268,9 +268,9 @@ void PropertyValue::setIdentifierList(unsigned int idBits, const std::vector<Ide
         {
             if (mValue.isEmpty() == false)
             {
-                mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                      .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                      .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+                mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+                      .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
+                      .append(areg::SYNTAX_WHITESPACE_DELIMITER);
             }
 
             mValue += entry.getName();
@@ -285,9 +285,9 @@ void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
     {
         if ( mValue.isEmpty() == false )
         {
-            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+            mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+                  .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
+                  .append(areg::SYNTAX_WHITESPACE_DELIMITER);
         }
 
         mValue += entry.getName();
@@ -299,7 +299,7 @@ ArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
     ArrayList<String> result;
     if (mValue.isEmpty() == false)
     {
-        std::vector<StringBase<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };
@@ -324,9 +324,9 @@ void PropertyValue::setValueList(const std::vector<String>& list)
     {
         if (mValue.isEmpty() == false)
         {
-            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+            mValue.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+                  .append(areg::SYNTAX_VALUE_LIST_DELIMITER)
+                  .append(areg::SYNTAX_WHITESPACE_DELIMITER);
         }
 
         mValue += entry;
@@ -361,7 +361,7 @@ String PropertyValue::convToString() const
     String result (mValue);
     if (mValue.isEmpty() == false)
     {
-        result += NEPersistence::SYNTAX_END_COMMAND;
+        result += areg::SYNTAX_END_COMMAND;
     }
 
     return result;
@@ -371,7 +371,7 @@ inline void PropertyValue::_parseValue()
 {
     mValue.trimAll();
     int32_t len = mValue.getLength();
-    while ((len != 0) && (mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND))
+    while ((len != 0) && (mValue[len - 1] == areg::SYNTAX_END_COMMAND))
     {
         len = mValue.resize(len - 1).getLength();
     }

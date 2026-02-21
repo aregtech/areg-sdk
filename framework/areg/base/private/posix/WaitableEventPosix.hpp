@@ -84,17 +84,17 @@ public:
 public:
     /**
      * \brief   Returns the reset information of synchronization Event.
-     *          The Event object can be either NESyncTypesIX::EventResetManual
-     *          or NESyncTypesIX::EventResetAutomatic. The EventResetManual
+     *          The Event object can be either areg::os::EventResetManual
+     *          or areg::os::EventResetAutomatic. The EventResetManual
      *          reset Events are manually set to signaled and non-signaled state.
      *          The EventResetAutomatic Events are manually signaled and
      *          automatically reset as soon as any waiting thread is released.
      **/
-    inline NESyncTypesIX::eEventResetInfo  getResetInfo() const;
+    inline areg::os::eEventResetInfo  getResetInfo() const;
 
     /**
      * \brief   Call to set waitable Event signaled. If Event is signaled, all waiting threads
-     *          are released. If Event type is NESyncTypesIX::EventResetAutomatic, it is
+     *          are released. If Event type is areg::os::EventResetAutomatic, it is
      *          automatically reset. Otherwise, it remains signaled until it is not manually reset.
      *          Waitable Event signal are received by all waiting threads.
      * \return  Returns true if operation succeeded.
@@ -103,8 +103,8 @@ public:
 
     /**
      * \brief   Call to reset the signal state of waitable Event, i.e. make non-signaled.
-     *          Only NESyncTypesIX::EventResetManual type Events can be manually reset.
-     *          The call is ignored if event type is NESyncTypesIX::EventResetAutomatic,
+     *          Only areg::os::EventResetManual type Events can be manually reset.
+     *          The call is ignored if event type is areg::os::EventResetAutomatic,
      *          because automatic events are automatically reset after threads get released.
      * \return  Returns true if operation succeeded. The operation may fail if the waitable
      *          Event is created with auto-reset flag.
@@ -163,7 +163,7 @@ private:
     /**
      * \brief   Specifies whether the event is manual- or auto-reset.
      **/
-    const NESyncTypesIX::eEventResetInfo   mEventReset;
+    const areg::os::eEventResetInfo   mEventReset;
     /**
      * \brief   Flag that indicates the signaled state of the event.
      **/
@@ -181,7 +181,7 @@ private:
 // WaitableEventPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NESyncTypesIX::eEventResetInfo WaitableEventPosix::getResetInfo() const
+inline areg::os::eEventResetInfo WaitableEventPosix::getResetInfo() const
 {
     ObjectLockPosix lock(*this);
     return mEventReset;

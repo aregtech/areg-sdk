@@ -19,25 +19,25 @@
 
 ServiceStub::ServiceStub()
     : mStubAddress  ( )
-    , mConnectStatus( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( areg::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
 ServiceStub::ServiceStub( const StubAddress & addrStub )
     : mStubAddress  ( addrStub )
-    , mConnectStatus( addrStub.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( addrStub.isValid() ? areg::eServiceConnection::ServicePending : areg::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
 ServiceStub::ServiceStub( StubAddress && addrStub ) noexcept
     : mStubAddress  ( std::move(addrStub) )
-    , mConnectStatus(mStubAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus(mStubAddress.isValid( ) ? areg::eServiceConnection::ServicePending : areg::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
 ServiceStub::ServiceStub( const ProxyAddress & addrProxy )
     : mStubAddress  ( static_cast<const ServiceItem &>(addrProxy), addrProxy.getRoleName(), "" )
-    , mConnectStatus( addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( addrProxy.isValid() ? areg::eServiceConnection::ServicePending : areg::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
@@ -55,20 +55,20 @@ ServiceStub::ServiceStub( ServiceStub && stubService ) noexcept
 
 ServiceStub::ServiceStub(const ServiceAddress& addrService)
     : mStubAddress  (addrService)
-    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+    , mConnectStatus(areg::eServiceConnection::ServiceConnectionUnknown)
 {
 }
 
 ServiceStub::ServiceStub( ServiceAddress && addrService)
     : mStubAddress  (std::move(addrService))
-    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+    , mConnectStatus(areg::eServiceConnection::ServiceConnectionUnknown)
 {
 }
 
 ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
 {
     mStubAddress    = addrStub;
-    mConnectStatus  = addrStub.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = addrStub.isValid() ? areg::eServiceConnection::ServicePending : areg::eServiceConnection::ServiceConnectionUnknown;
 
     return (*this);
 }
@@ -76,7 +76,7 @@ ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
 ServiceStub & ServiceStub::operator = ( StubAddress && addrStub ) noexcept
 {
     mStubAddress    = std::move(addrStub);
-    mConnectStatus  = mStubAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = mStubAddress.isValid( ) ? areg::eServiceConnection::ServicePending : areg::eServiceConnection::ServiceConnectionUnknown;
     
     return (*this);
 }
@@ -84,7 +84,7 @@ ServiceStub & ServiceStub::operator = ( StubAddress && addrStub ) noexcept
 ServiceStub & ServiceStub::operator = ( const ProxyAddress & addrProxy )
 {
     mStubAddress    = static_cast<const ServiceAddress &>(addrProxy);
-    mConnectStatus  = addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = addrProxy.isValid() ? areg::eServiceConnection::ServicePending : areg::eServiceConnection::ServiceConnectionUnknown;
 
     return (*this);
 }
@@ -128,24 +128,24 @@ ServiceStub::operator unsigned int () const
 
 bool ServiceStub::isValid() const
 {
-    return mStubAddress.isValid() && (mStubAddress.getSource() != NEService::SOURCE_UNKNOWN) && (mStubAddress.getCookie() != NEService::COOKIE_UNKNOWN);
+    return mStubAddress.isValid() && (mStubAddress.getSource() != areg::SOURCE_UNKNOWN) && (mStubAddress.getCookie() != areg::COOKIE_UNKNOWN);
 }
 
-void ServiceStub::setService( const StubAddress & addrStub, NEService::eServiceConnection connectStatus /*= NEService::eServiceConnection::ServiceConnected */ )
+void ServiceStub::setService( const StubAddress & addrStub, areg::eServiceConnection connectStatus /*= areg::eServiceConnection::ServiceConnected */ )
 {
     mStubAddress    = addrStub;
     setServiceStatus( connectStatus );
 }
 
-void ServiceStub::setServiceStatus( NEService::eServiceConnection newStatus )
+void ServiceStub::setServiceStatus( areg::eServiceConnection newStatus )
 {
-    mConnectStatus  = NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = areg::eServiceConnection::ServiceConnectionUnknown;
     if ( mStubAddress.isValid() )
     {
         mConnectStatus = newStatus;
-        if ( newStatus == NEService::eServiceConnection::ServiceConnected )
-            mConnectStatus = mStubAddress.getSource() != NEService::SOURCE_UNKNOWN ? NEService::eServiceConnection::ServiceConnected : NEService::eServiceConnection::ServicePending;
+        if ( newStatus == areg::eServiceConnection::ServiceConnected )
+            mConnectStatus = mStubAddress.getSource() != areg::SOURCE_UNKNOWN ? areg::eServiceConnection::ServiceConnected : areg::eServiceConnection::ServicePending;
         else
-            mStubAddress.setSource( NEService::SOURCE_UNKNOWN );
+            mStubAddress.setSource( areg::SOURCE_UNKNOWN );
     }
 }

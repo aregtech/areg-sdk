@@ -11,19 +11,19 @@
 
 #include <iostream>
 
-ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+ClientComponent::ClientComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( entry, owner )
     , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.getString(), owner )
 {
 }
 
-bool ClientComponent::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool ClientComponent::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy)
 {
     bool result{ false };
     if ( HelloServiceClientBase::serviceConnected(status, proxy) )
     {
         result = true;
-        if (NEService::isServiceConnected(status))
+        if (areg::isServiceConnected(status))
         {
             // Up from this part the client can:
             //      a. call requests to run on the server side.
@@ -50,13 +50,13 @@ void ClientComponent::responseHelloService( bool success )
     // Sleep for no reason! Do not do this in a real application.
     // It is done to give a chance to see an output message on the console.
     // Otherwise, the next line of code closes the application and you miss the message on console.
-    Thread::sleep(NECommon::WAIT_1_SECOND);
+    Thread::sleep(areg::WAIT_1_SECOND);
 
     // The client completed the job, set signal to quit application
     Application::signalAppQuit();
 }
 
-void ClientComponent::requestHelloServiceFailed(NEService::ResultType /* FailureReason */)
+void ClientComponent::requestHelloServiceFailed(areg::ResultType /* FailureReason */)
 {
     // make error handling here.
     std::cerr << "Failed to execute request, retry again." << std::endl;

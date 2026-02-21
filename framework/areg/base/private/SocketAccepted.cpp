@@ -15,7 +15,7 @@
 
 #include "areg/base/SocketAccepted.hpp"
 
-SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress )
+SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress )
     : Socket  ( hSocket, sockAddress)
 {
 }
@@ -40,6 +40,6 @@ bool SocketAccepted::setAddress(const char * /*hostName*/, unsigned short /*port
     return false;
 }
 
-void SocketAccepted::setAddress(const NESocket::SocketAddress & /*newAddress*/)
+void SocketAccepted::setAddress(const areg::SocketAddress & /*newAddress*/)
 {
 }

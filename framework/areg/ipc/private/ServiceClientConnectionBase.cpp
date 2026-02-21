@@ -39,9 +39,9 @@ DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 //////////////////////////////////////////////////////////////////////////
 
 ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
-                                                        , NERemoteService::eRemoteServices service
+                                                        , areg::eRemoteServices service
                                                         , unsigned int connectTypes
-                                                        , NEService::eMessageSource msgSource
+                                                        , areg::eMessageSource msgSource
                                                         , ConnectionConsumer& connectionConsumer
                                                         , RemoteMessageHandler & messageHandler
                                                         , DispatcherThread & messageDispatcher
@@ -61,12 +61,12 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
     , mLock                 ( )
 
-    , mTimerConnect         ( static_cast<TimerConsumer &>(mTimerConsumer), prefixName + NEConnection::CLIENT_CONNECT_TIMER_NAME )
+    , mTimerConnect         ( static_cast<TimerConsumer &>(mTimerConsumer), prefixName + areg::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive        (messageHandler, mClientConnection, prefixName)
     , mThreadSend           (messageHandler, mClientConnection, prefixName)
     , mTimerConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
 {
-    ASSERT((target > NEService::TARGET_LOCAL) && (target < NEService::COOKIE_REMOTE_SERVICE));
+    ASSERT((target > areg::TARGET_LOCAL) && (target < areg::COOKIE_REMOTE_SERVICE));
 }
 
 ServiceClientConnectionBase::~ServiceClientConnectionBase()
@@ -78,18 +78,18 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
 
     msgReceived.moveToBegin();
-    ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
-    NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
+    ITEM_ID cookie{ areg::COOKIE_UNKNOWN };
+    areg::eServiceConnection connection{ areg::eServiceConnection::ServiceConnectionUnknown };
     msgReceived >> cookie;
     msgReceived >> connection;
-    LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
+    LOG_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", areg::getString(connection), cookie);
 
     switch (connection)
     {
-    case NEService::eServiceConnection::ServiceConnected:
-    case NEService::eServiceConnection::ServicePending:
+    case areg::eServiceConnection::ServiceConnected:
+    case areg::eServiceConnection::ServicePending:
         {
-            if (msgReceived.getResult() == NEMemory::MESSAGE_SUCCESS)
+            if (msgReceived.getResult() == areg::MESSAGE_SUCCESS)
             {
                 Lock lock(mLock);
                 ASSERT(cookie == msgReceived.getTarget());
@@ -100,45 +100,45 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
             else
             {
                 cancelConnection();
-                onChannelConnected(NEService::COOKIE_UNKNOWN);
+                onChannelConnected(areg::COOKIE_UNKNOWN);
                 sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
             }
         }
         break;
 
-    case NEService::eServiceConnection::ServiceConnectionLost:
-    case NEService::eServiceConnection::ServiceDisconnected:
-    case NEService::eServiceConnection::ServiceFailed:
+    case areg::eServiceConnection::ServiceConnectionLost:
+    case areg::eServiceConnection::ServiceDisconnected:
+    case areg::eServiceConnection::ServiceFailed:
         {
             cancelConnection();
-            onChannelConnected(NEService::COOKIE_UNKNOWN);
+            onChannelConnected(areg::COOKIE_UNKNOWN);
             sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
         }
         break;
 
-    case NEService::eServiceConnection::ServiceConnectionUnknown:   // fall through
-    case NEService::eServiceConnection::ServiceRejected:            // fall through
-    case NEService::eServiceConnection::ServiceShutdown:            // fall through
+    case areg::eServiceConnection::ServiceConnectionUnknown:   // fall through
+    case areg::eServiceConnection::ServiceRejected:            // fall through
+    case areg::eServiceConnection::ServiceShutdown:            // fall through
     default:
         {
             cancelConnection();
-            onChannelConnected(NEService::COOKIE_UNKNOWN);
+            onChannelConnected(areg::COOKIE_UNKNOWN);
             sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStopped);
         }
         break;
     }
 }
 
-bool ServiceClientConnectionBase::setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes)
+bool ServiceClientConnectionBase::setupServiceConnectionData(areg::eRemoteServices service, uint32_t connectTypes)
 {
     Lock lock( mLock );
 
     bool result{ false };
     if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
     {
-        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) != 0)
+        if ((mConnectTypes & static_cast<uint32_t>(areg::eConnectionTypes::ConnectTcpip)) != 0)
         {
-            ConnectionConfiguration config(service, NERemoteService::eConnectionTypes::ConnectTcpip);
+            ConnectionConfiguration config(service, areg::eConnectionTypes::ConnectTcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 String address{ config.getConnectionAddress() };
@@ -163,9 +163,9 @@ bool ServiceClientConnectionBase::connectServiceHost()
     bool result{ false };
     if (mClientConnection.isValid() == false)
     {
-        if ((mConnectTypes & static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)) != 0)
+        if ((mConnectTypes & static_cast<unsigned int>(areg::eConnectionTypes::ConnectTcpip)) != 0)
         {
-            ConnectionConfiguration config(mService, NERemoteService::eConnectionTypes::ConnectTcpip);
+            ConnectionConfiguration config(mService, areg::eConnectionTypes::ConnectTcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 result = true;
@@ -208,14 +208,14 @@ bool ServiceClientConnectionBase::isServiceHostSetup() const
     return mClientConnection.getAddress().isValid();
 }
 
-RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const
+RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, areg::eMessageSource msgSource) const
 {
-    return NERemoteService::createConnectRequest(source, target, msgSource);
+    return areg::createConnectRequest(source, target, msgSource);
 }
 
 RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const
 {
-    return NERemoteService::createDisconnectRequest(source, target);
+    return areg::createDisconnectRequest(source, target);
 }
 
 void ServiceClientConnectionBase::onServiceReconnectTimerExpired()
@@ -229,9 +229,9 @@ void ServiceClientConnectionBase::onServiceStart()
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
     LOG_DBG("Starting remove servicing");
 
-    mChannel.setCookie( NEService::COOKIE_LOCAL );
-    mChannel.setSource( NEService::SOURCE_UNKNOWN );
-    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+    mChannel.setCookie( areg::COOKIE_LOCAL );
+    mChannel.setSource( areg::SOURCE_UNKNOWN );
+    mChannel.setTarget( areg::TARGET_UNKNOWN );
     if ( startConnection( ) )
     {
         setConnectionState( ServiceClientConnectionBase::eConnectionState::ConnectionStarting );
@@ -252,17 +252,17 @@ void ServiceClientConnectionBase::onServiceStop()
 
     mThreadReceive.triggerExit( );
 
-    if ((channel.getTarget() > NEService::COOKIE_LOCAL) && (channel.getTarget() < NEService::COOKIE_REMOTE_SERVICE))
+    if ((channel.getTarget() > areg::COOKIE_LOCAL) && (channel.getTarget() < areg::COOKIE_REMOTE_SERVICE))
     {
         sendMessage(createServiceDisconnectMessage(channel.getCookie(), mTarget));
     }
 
     disconnectService( Event::eEventPriority::EventPriorityNormal );
 
-    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-    mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
+    mThreadSend.completionWait( areg::WAIT_INFINITE );
+    mThreadSend.shutdownThread( areg::DO_NOT_WAIT );
     mClientConnection.closeSocket( );
-    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadReceive.shutdownThread( areg::WAIT_INFINITE );
 
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
 }
@@ -277,7 +277,7 @@ void ServiceClientConnectionBase::onServiceConnectionStarted()
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
     ASSERT(isConnectionStarted());
-    if ( mClientConnection.getCookie() != NEService::COOKIE_LOCAL )
+    if ( mClientConnection.getCookie() != areg::COOKIE_LOCAL )
     {
         LOG_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.getCookie());
 
@@ -302,13 +302,13 @@ void ServiceClientConnectionBase::onServiceConnectionStopped()
 
     cancelConnection( );
 
-    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
-    mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadReceive.shutdownThread( areg::WAIT_INFINITE );
+    mThreadSend.shutdownThread( areg::WAIT_INFINITE );
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
 
     if ( Application::isServicingReady( ) )
     {
-        mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
+        mTimerConnect.startTimer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
     }
 }
 
@@ -326,11 +326,11 @@ void ServiceClientConnectionBase::onServiceConnectionLost()
     {
         LOG_DBG( "Restarting lost connection with remote service" );
 
-        mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
-        mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
+        mThreadReceive.shutdownThread( areg::WAIT_INFINITE );
+        mThreadSend.shutdownThread( areg::WAIT_INFINITE );
         mConnectionConsumer.lostRemoteServiceChannel( channel );
 
-        mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
+        mTimerConnect.startTimer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
     }
     else
     {
@@ -360,7 +360,7 @@ void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
     Lock lock(mLock);
 
-    if (cookie >= NEService::COOKIE_REMOTE_SERVICE)
+    if (cookie >= areg::COOKIE_REMOTE_SERVICE)
     {
         mChannel.setCookie(cookie);
         mChannel.setSource(mMessageDispatcher.getId());
@@ -389,22 +389,22 @@ bool ServiceClientConnectionBase::startConnection()
 
     if ( mClientConnection.createSocket() )
     {
-        if ( mThreadReceive.createThread( NECommon::WAIT_INFINITE ) && mThreadSend.createThread( NECommon::WAIT_INFINITE ) )
+        if ( mThreadReceive.createThread( areg::WAIT_INFINITE ) && mThreadSend.createThread( areg::WAIT_INFINITE ) )
         {
-            VERIFY( mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
-            VERIFY( mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
+            VERIFY( mThreadReceive.waitForDispatcherStart( areg::WAIT_INFINITE ) );
+            VERIFY( mThreadSend.waitForDispatcherStart( areg::WAIT_INFINITE ) );
             LOG_DBG("Client service starting connection with remote routing service.");
-            result = mClientConnection.sendMessage(createServiceConnectMessage(NEService::COOKIE_UNKNOWN, mTarget, mMessageSource));
+            result = mClientConnection.sendMessage(createServiceConnectMessage(areg::COOKIE_UNKNOWN, mTarget, mMessageSource));
         }
     }
 
     if ( result == false )
     {
-        LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
-        mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
-        mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
+        LOG_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
+        mThreadSend.shutdownThread( areg::DO_NOT_WAIT );
+        mThreadReceive.shutdownThread( areg::DO_NOT_WAIT );
         mClientConnection.closeSocket();
-        mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
+        mTimerConnect.startTimer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
     }
 
     return result;
@@ -416,8 +416,8 @@ void ServiceClientConnectionBase::cancelConnection()
     LOG_WARN("Canceling client service connection");
 
     mClientConnection.closeSocket();
-    mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
+    mClientConnection.setCookie( areg::COOKIE_UNKNOWN );
 
-    mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
-    mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
+    mThreadReceive.shutdownThread( areg::DO_NOT_WAIT );
+    mThreadSend.shutdownThread( areg::DO_NOT_WAIT );
 }

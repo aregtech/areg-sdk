@@ -42,7 +42,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService1", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestService1" )
     // end of thread description
@@ -63,7 +63,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService2", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestService2" )
     // end of thread description
@@ -90,11 +90,11 @@ int main()
 
         Application::loadModel(_modelName);
         std::cout << "Service model is loaded. Waiting to quit application signal." << std::endl;
-        Application::waitAppQuit( NECommon::WAIT_INFINITE ); // wait for quit signal to complete application.
+        Application::waitAppQuit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
         Application::unloadModel(_modelName);                // stop and unload components
         
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 

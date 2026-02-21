@@ -68,7 +68,7 @@
 static String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
 {
     String result;
-    if ( NEString::isEmpty<char>(fileName) == false )
+    if ( areg::isEmpty<char>(fileName) == false )
     {
         fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
         String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
@@ -258,7 +258,7 @@ unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const
 unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
+    buffer[0] = areg::EndOfString;
 
     int csidl = -1;
     switch (specialFolder)

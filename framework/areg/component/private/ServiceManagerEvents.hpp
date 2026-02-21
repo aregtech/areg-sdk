@@ -99,7 +99,7 @@ public:
      * \param   addrProxy   The address of the service consumer to unregister.
      * \param   reason      The reason to unregister or disconnect the service consumer.
      **/
-    static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy, NEService::eDisconnectReason reason );
+    static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy, areg::eDisconnectReason reason );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register Stub
@@ -111,7 +111,7 @@ public:
      * \param   addrStub    The address of the service provider to unregister / disconnect.
      * \param   reason      The reason to unregister or disconnect the service provider.
      **/
-    static ServiceManagerEventData unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason );
+    static ServiceManagerEventData unregisterStub( const StubAddress & addrStub, areg::eDisconnectReason reason );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to configure connection.
@@ -119,7 +119,7 @@ public:
      * \param   connectTypes    The bitwise set of connections to configure.
      * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes );
+    static ServiceManagerEventData configureConnection(areg::eRemoteServices service, unsigned int connectTypes );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection
@@ -127,7 +127,7 @@ public:
      * \param   connectTypes    The bitwise set of connections to start.
      * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes);
+    static ServiceManagerEventData startConnection(areg::eRemoteServices service, unsigned int connectTypes);
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection.

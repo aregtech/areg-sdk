@@ -39,7 +39,7 @@ class WorkerThread;
  *          terminates the component thread, and restarts again.
  *          Set the watchdog timeout value big enough to process events.
  *          The watchdog timeout is set in milliseconds.
- *          If the watchdog timeout is zero (NECommon::WATCHDOG_IGNORE), the
+ *          If the watchdog timeout is zero (areg::WATCHDOG_IGNORE), the
  *          watchdog is ignored for the thread and thread is not terminated.
  **/
 class AREG_API Watchdog  : public TimerBase
@@ -89,7 +89,7 @@ public:
      * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
      *                      The timeout with value zero disables Watchdog
      **/
-    Watchdog(ComponentThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(ComponentThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
     /**
      * \brief   The watchdog object bind with Worker Thread. Should not be instantiated
@@ -98,7 +98,7 @@ public:
      * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
      *                      The timeout with value zero disables Watchdog
      **/
-    Watchdog(WorkerThread& thread, uint32_t msTimeout = NECommon::WATCHDOG_IGNORE);
+    Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
     /**
      * \brief   Destructor.
@@ -240,27 +240,27 @@ inline Watchdog::WATCHDOG_ID Watchdog::watchdogId()
 inline Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
 {
 #if (AREG_TARGET_PLATFORM ==64)
-    return static_cast<WATCHDOG_ID>(NEMath::make64(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(areg::make64(guardId, sequence));
 #elif (AREG_TARGET_PLATFORM == 32)
-    return static_cast<WATCHDOG_ID>(NEMath::make32(guardId, sequence));
+    return static_cast<WATCHDOG_ID>(areg::make32(guardId, sequence));
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::GUARD_ID Watchdog::makeGuardId(Watchdog::WATCHDOG_ID watchdogId)
 {
 #if (AREG_TARGET_PLATFORM == 64)
-    return static_cast<GUARD_ID>(NEMath::hiDword(watchdogId));
+    return static_cast<GUARD_ID>(areg::hiDword(watchdogId));
 #elif (AREG_TARGET_PLATFORM == 32)
-    return static_cast<GUARD_ID>(NEMath::hiWord(watchdogId));
+    return static_cast<GUARD_ID>(areg::hiWord(watchdogId));
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 
 inline Watchdog::SEQUENCE_ID Watchdog::makeSequenceId(Watchdog::WATCHDOG_ID watchdogId)
 {
 #if (AREG_TARGET_PLATFORM == 64)
-    return static_cast<GUARD_ID>(NEMath::loDword(watchdogId));
+    return static_cast<GUARD_ID>(areg::loDword(watchdogId));
 #elif (AREG_TARGET_PLATFORM == 32)
-    return static_cast<GUARD_ID>(NEMath::loWord(watchdogId));
+    return static_cast<GUARD_ID>(areg::loWord(watchdogId));
 #endif  // (AREG_TARGET_PLATFORM == 64)
 }
 

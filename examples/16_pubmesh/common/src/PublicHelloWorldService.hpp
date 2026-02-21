@@ -76,7 +76,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
+    virtual bool clientConnected( const ProxyAddress & client, areg::eServiceConnection status ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

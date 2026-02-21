@@ -21,14 +21,14 @@ public:
 
     static DirectConnectionService * GetService();
 
-    static NERegistry::Model GetModel( const String & nickName, uint32_t cookie, std::any data );
+    static areg::Model GetModel( const String & nickName, uint32_t cookie, std::any data );
 
     static String GetGeneratedService( const String & nickName, uint32_t cookie );
 
     inline void SetOwnerData(const String & nickName, uint32_t cookie );
 
 public:
-    DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    DirectConnectionService( const areg::ComponentEntry & entry, ComponentThread & ownerThread );
     virtual ~DirectConnectionService();
 
 //////////////////////////////////////////////////////////////////////////

@@ -196,7 +196,7 @@ public:
      * \param   message     The structure of the message to log.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    virtual bool logMessage(const NELogging::sLogMessage & message) override;
+    virtual bool logMessage(const areg::sLogMessage & message) override;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -204,7 +204,7 @@ public:
      * \param   timestamp   The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    virtual bool logInstanceConnected(const NEService::sServiceConnectedInstance & instance, const DateTime & timestamp) override;
+    virtual bool logInstanceConnected(const areg::sServiceConnectedInstance & instance, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when an instance of log source is disconnected.
@@ -222,7 +222,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    virtual bool logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    virtual bool logScopeActivate(const areg::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -242,7 +242,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    virtual uint32_t logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
+    virtual uint32_t logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.
@@ -310,8 +310,8 @@ public:
      *          This query will receive list of all registered instances.
      * \param[out]  infos   On output, the vector contains information of connected instances.
      **/
-    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
-    std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos();
+    void getLogInstanceInfos(std::vector< areg::sServiceConnectedInstance>& infos);
+    std::vector< areg::sServiceConnectedInstance> getLogInstanceInfos();
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
@@ -319,8 +319,8 @@ public:
      * \param[out]  scopes  On output, the vector contains information of log scopes.
      * \param[in]   instID  The ID of the instance.
      **/
-    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
-    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId);
+    void getLogInstScopes(std::vector<areg::sScopeInfo>& scopes, ITEM_ID instId);
+    std::vector<areg::sScopeInfo> getLogInstScopes(ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
@@ -331,14 +331,14 @@ public:
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
-     *          If `instId` is `NEService::COOKIE_ANY` it receives the list of all instances
+     *          If `instId` is `areg::COOKIE_ANY` it receives the list of all instances
      *          similar to the call to `getLogMessages()`.
      * \param[out]  messages    On output, the vector contains log messages of the specified instance.
      * \param[in]   instId      The ID of the instance to get log messages.
-     *                          If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     *                          If `areg::COOKIE_ANY` it receives log messages of all instances.
      **/
-    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = NEService::COOKIE_ANY);
-    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = NEService::COOKIE_ANY);
+    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
+    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
@@ -353,11 +353,11 @@ public:
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
-     *          If `instId` is `NEService::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
+     *          If `instId` is `areg::COOKIE_ANY` and `scopeId` is `0`, it receives the list of all logs
      *          similar to the call to `getLogMessages()`.
      * \param[out]  messages    On output, the vector contains log messages of the specified instance and scope.
      * \param[in]   instId      The ID of the instance to get log messages.
-     *                          If `NEService::COOKIE_ANY` it receives log messages of all instances.
+     *                          If `areg::COOKIE_ANY` it receives log messages of all instances.
      * \param[in]   scopeId     The ID of the scope to get log messages.
      *                          If `0` it receives log messages of all scopes.
      **/
@@ -374,7 +374,7 @@ public:
      * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, int maxEntries = -1);
+    static int getLogInstScopes(std::vector<areg::sScopeInfo>& scopes, SqliteStatement& stmt, int maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
@@ -398,7 +398,7 @@ public:
      *                              and prepared to extract instance information.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& infos, SqliteStatement& stmt);
+    static int fillLogInstances(std::vector< areg::sServiceConnectedInstance>& infos, SqliteStatement& stmt);
 
     /**
      * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -415,7 +415,7 @@ public:
      * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
+    static int fillInstScopes(std::vector<areg::sScopeInfo>& scopes, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
 
     /**
      * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -436,25 +436,25 @@ public:
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database.
-     *          The statement will fetch all scopes if `instId` is `NEService::TARGET_ALL`.
+     *          The statement will fetch all scopes if `instId` is `areg::TARGET_ALL`.
      *          The statement object should be already initialized and bind with the log database.
      *          The logging database should be opened for reading data.
      * \param[out]  stmt    The SQLite statement object bound with SQLite logging database.
-     * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
+     * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `areg::TARGET_ALL`.
      * @return  Returns number of scopes of specified instance.
      **/
-    uint32_t setupStatementReadScopes(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadScopes(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Call to setup statement to read the list of logs from logging database.
-     *          The statement will fetch all logs if `instId` is `NEService::TARGET_ALL`.
+     *          The statement will fetch all logs if `instId` is `areg::TARGET_ALL`.
      *          The statement object should be already initialized and bind with the log database.
      *          The logging database should be opened for reading data.
      * \param[out]  stmt    The SQLite statement object bound with SQLite logging database.
-     * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `NEService::TARGET_ALL`.
+     * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `areg::TARGET_ALL`.
      * @return  Returns number of log messages of specified instance ID.
      **/
-    uint32_t setupStatementReadLogs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadLogs(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Sets up the log filters
@@ -467,24 +467,24 @@ public:
     /**
      * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
      * \param[out]  stmt    The statement object to use to extract logs from database.
-     * \param[in]   instId  The ID of the instance to apply the filter or NEService::TARGET_ALL if the filter is applied to all instances.
+     * \param[in]   instId  The ID of the instance to apply the filter or areg::TARGET_ALL if the filter is applied to all instances.
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupStatementReadFilterLogs(SqliteStatement& stmt, ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t setupStatementReadFilterLogs(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Returns number of log messages of specified instance ID.
-     *          Returns number of all log messages if the instance ID is `NEService::TARGET_ALL`.
-     * \param   instId  The ID of the instance to get log messages. If `NEService::TARGET_ALL` extracts all log messages.
+     *          Returns number of all log messages if the instance ID is `areg::TARGET_ALL`.
+     * \param   instId  The ID of the instance to get log messages. If `areg::TARGET_ALL` extracts all log messages.
      **/
-    uint32_t countLogEntries(ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t countLogEntries(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Returns number of scopes of specified instance ID.
-     *          Returns number of all scopes if the instance ID is `NEService::TARGET_ALL`.
-     * \param   instId  The ID of the instance to get scope information. If `NEService::TARGET_ALL` extracts all scopes.
+     *          Returns number of all scopes if the instance ID is `areg::TARGET_ALL`.
+     * \param   instId  The ID of the instance to get scope information. If `areg::TARGET_ALL` extracts all scopes.
      **/
-    uint32_t countScopeEntries(ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t countScopeEntries(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Returns number of log instances.
@@ -494,19 +494,19 @@ public:
     /**
      * \brief   Returns number of filtered log messages of specified instance ID.
      **/
-    uint32_t countFilterLogs(ITEM_ID instId = NEService::TARGET_ALL);
+    uint32_t countFilterLogs(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Resets the logging priority filter mask of the specified instance ID or for all instances.
      *          Returns true if operation succeeded.
      **/
-    bool resetFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
+    bool resetFilterMask(ITEM_ID instId = areg::TARGET_ALL);
 
     /**
      * \brief   Disables the logging priority filter mask of the specified instance ID or for all instances.
      *          Returns true if operation succeeded.
      **/
-    bool disableFilterMask(ITEM_ID instId = NEService::TARGET_ALL);
+    bool disableFilterMask(ITEM_ID instId = areg::TARGET_ALL);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -545,18 +545,18 @@ private:
     inline static void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
 
     /**
-     * \brief   Extracts the log instance from the SqliteStatement and copies it to the NEService::sServiceConnectedInstance.
+     * \brief   Extracts the log instance from the SqliteStatement and copies it to the areg::sServiceConnectedInstance.
      * \param   stmt    The SqliteStatement to extract the log instance.
-     * \param   inst    The NEService::sServiceConnectedInstance to copy the log instance.
+     * \param   inst    The areg::sServiceConnectedInstance to copy the log instance.
      **/
-    inline static void _copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance & inst);
+    inline static void _copyLogInstances(SqliteStatement& stmt, areg::sServiceConnectedInstance & inst);
 
     /**
-     * \brief   Extracts the log scope from the SqliteStatement and copies it to the NELogging::sScopeInfo.
+     * \brief   Extracts the log scope from the SqliteStatement and copies it to the areg::sScopeInfo.
      * \param   stmt    The SqliteStatement to extract the log scope.
-     * \param   scope   The NELogging::sScopeInfo to copy the log scope.
+     * \param   scope   The areg::sScopeInfo to copy the log scope.
      **/
-    inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
+    inline static void _copyLogScopes(SqliteStatement& stmt, areg::sScopeInfo& scope);
 
     /**
      * \brief   Updates the filter information for the specified instance.

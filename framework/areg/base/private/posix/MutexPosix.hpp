@@ -78,7 +78,7 @@ protected:
      *                          locked the object.
      * \param   asciiName       The name of synchronization object.
      **/
-    MutexPosix( NESyncTypesIX::eSyncObject syncType, bool isRecursive, const char * asciiName = nullptr );
+    MutexPosix( areg::os::eSyncObject syncType, bool isRecursive, const char * asciiName = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -96,15 +96,15 @@ public:
      *          If timeout specified, it will be locked until either object
      *          is not released or timeout expired.
      * \param   msTimeout   The timeout is milliseconds to stay locked.
-     *                      If specified NECommon::DO_NOT_WAIT the
+     *                      If specified areg::DO_NOT_WAIT the
      *                      function returned immediately independent whether
      *                      it is locked or not. If timeout specified
-     *                      NECommon::WAIT_INFINITE it will remain
+     *                      areg::WAIT_INFINITE it will remain
      *                      blocked until object is not released.
      * \return  Returns true if succeeded to lock the object. Returns false
      *          if either failed to lock or the timeout expired.
      **/
-    bool lock(unsigned int msTimeout = NECommon::WAIT_INFINITE) const;
+    bool lock(unsigned int msTimeout = areg::WAIT_INFINITE) const;
 
     /**
      * \brief   This function returns immediately without blocking.
@@ -218,12 +218,12 @@ public:
      *          or returns when timeout expired.
      * \param   msTimeout   Timeout in milliseconds to wait when requesting mutex
      *                      mutex ownership. If value is equal to
-     *                      NECommon::WAIT_INFINITE the thread will be locked until
+     *                      areg::WAIT_INFINITE the thread will be locked until
      *                      does not get the ownership.
      * \return  Returns true if succeeded to take mutex ownership.
      *          Otherwise, if timeout expired or error happened, it returns false.
      **/
-    inline bool lock( unsigned int msTimeout = NECommon::WAIT_INFINITE ) const;
+    inline bool lock( unsigned int msTimeout = areg::WAIT_INFINITE ) const;
 
     /**
      * \brief   Call to unlock mutex to let other threads to take the ownership.
@@ -262,7 +262,7 @@ inline ObjectLockPosix::ObjectLockPosix( const MutexPosix & mutex, bool autoLock
 {
     if (autoLock)
     {
-        mMutex.lock(NECommon::WAIT_INFINITE);
+        mMutex.lock(areg::WAIT_INFINITE);
     }
 }
 
@@ -274,7 +274,7 @@ inline ObjectLockPosix::~ObjectLockPosix()
     }
 }
 
-inline bool ObjectLockPosix::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
+inline bool ObjectLockPosix::lock( unsigned int msTimeout /*= areg::WAIT_INFINITE*/ ) const
 {
     return mMutex.lock(msTimeout);
 }

@@ -38,7 +38,7 @@ LogManager & LogManager::getInstance()
     return _theLogManager;
 }
 
-void LogManager::logMessage(const NELogging::sLogMessage& logData )
+void LogManager::logMessage(const areg::sLogMessage& logData )
 {
     LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::eLoggingAction::LoggingLogMessage, logData) );
 }
@@ -112,7 +112,7 @@ bool LogManager::forceActivateLogging()
     {
         Lock lock( logManager.mLock );
         logManager.mLogConfig.setStatus(true);
-        logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
+        logManager.mLogConfig.setLogEnabled(areg::LoggingType::LogTypeFile, true);
         logManager.mScopeController.activateDefaults( );
         result = logManager.startLoggingThread( );
     }
@@ -131,7 +131,7 @@ void LogManager::setDefaultConfiguration(bool overwriteExisting)
 bool LogManager::setScopePriority( const char * scopeName, unsigned int newPrio )
 {
     ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-    unsigned int scopeId = NELogging::makeScopeId( scopeName );
+    unsigned int scopeId = areg::makeScopeId( scopeName );
     const LogScope * scope = ctrScope.getScope( scopeId );
     bool result{ scope != nullptr };
     if ( result && (scope->getPriority() != newPrio))
@@ -152,9 +152,9 @@ void LogManager::updateScopes(const String & scopeName, unsigned int scopeId, un
 unsigned int LogManager::getScopePriority( const char * scopeName )
 {
     ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-    unsigned int scopeId = NELogging::makeScopeId( scopeName );
+    unsigned int scopeId = areg::makeScopeId( scopeName );
     const LogScope * scope = ctrScope.getScope( scopeId );
-    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid));
+    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(areg::eLogPriority::PrioInvalid));
 }
 
 void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
@@ -176,14 +176,14 @@ void LogManager::forceEnableLogging()
 {
     LogManager& logManager = LogManager::getInstance();
     logManager.mLogConfig.setStatus(true);
-    logManager.mLogConfig.setLogEnabled(NELogging::LoggingType::LogTypeFile, true);
+    logManager.mLogConfig.setLogEnabled(areg::LoggingType::LogTypeFile, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , LoggingEventConsumer  ( )
 
     , mScopeController  ( )
@@ -240,12 +240,12 @@ bool LogManager::startLoggingThread()
 {
     ASSERT((isRunning() == false) && (isReady() == false));
     mLogStarted.resetEvent( );
-    if ( createThread(NECommon::WAIT_INFINITE) )
+    if ( createThread(areg::WAIT_INFINITE) )
     {
-        if ( waitForDispatcherStart(NECommon::WAIT_INFINITE) )
+        if ( waitForDispatcherStart(areg::WAIT_INFINITE) )
         {
             sendLogEvent( LoggingEventData(LoggingEventData::eLoggingAction::LoggingStartLogs) );
-            mLogStarted.lock( NECommon::WAIT_INFINITE );
+            mLogStarted.lock( areg::WAIT_INFINITE );
         }
     }
 #ifdef  DEBUG
@@ -265,16 +265,16 @@ void LogManager::stopLoggingThread(bool waitComplete)
 
     if (waitComplete)
     {
-        completionWait(NECommon::WAIT_INFINITE);
-        shutdownThread(NECommon::DO_NOT_WAIT);
+        completionWait(areg::WAIT_INFINITE);
+        shutdownThread(areg::DO_NOT_WAIT);
     }
 }
 
 void LogManager::waitLoggingThreadEnd()
 {
     mIsStarted = false;
-    completionWait(NECommon::WAIT_INFINITE);
-    shutdownThread(NECommon::DO_NOT_WAIT);
+    completionWait(areg::WAIT_INFINITE);
+    shutdownThread(areg::DO_NOT_WAIT);
 }
 
 void LogManager::readyForEvents( bool isReady )
@@ -349,7 +349,7 @@ void LogManager::stopLogs()
     triggerExit( );
 }
 
-void LogManager::writeLogMessage( const NELogging::sLogMessage & logMessage )
+void LogManager::writeLogMessage( const areg::sLogMessage & logMessage )
 {
     mLoggerFile.logMessage( logMessage );
     mLoggerDebug.logMessage( logMessage );

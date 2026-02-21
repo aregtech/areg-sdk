@@ -46,9 +46,9 @@ void WaitableTimerPosix::_posixTimerRoutine(union sigval si)
 
 
 WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
-    : WaitablePosix  ( NESyncTypesIX::eSyncObject::SoWaitTimer, false, name )
+    : WaitablePosix  ( areg::os::eSyncObject::SoWaitTimer, false, name )
 
-    , mResetInfo        ( isAutoReset ? NESyncTypesIX::eEventResetInfo::EventResetAutomatic : NESyncTypesIX::eEventResetInfo::EventResetManual )
+    , mResetInfo        ( isAutoReset ? areg::os::eEventResetInfo::EventResetAutomatic : areg::os::eEventResetInfo::EventResetManual )
 #ifdef __APPLE__
     , mTimerSource      ( nullptr )
     , mTimerQueue       ( nullptr )
@@ -65,13 +65,13 @@ WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char 
     mTimerQueue = dispatch_queue_create("areg.waitable.timer", DISPATCH_QUEUE_SERIAL);
 #else   // !__APPLE__
     struct sigevent sigEvent;
-    NEMemory::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
+    areg::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
     sigEvent.sigev_notify           = SIGEV_THREAD;
     sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
     sigEvent.sigev_notify_function  = &WaitableTimerPosix::_posixTimerRoutine;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    if (NECommon::RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
+    if (areg::RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
     {
         mTimerId = static_cast<timer_t>(0);
     }
@@ -108,7 +108,7 @@ bool WaitableTimerPosix::setTimer(unsigned int msTimeout, bool isPeriodic)
                 this->_timerExpired();
             });
 
-            NESyncTypesIX::convTimeout(mDueTime, msTimeout);
+            areg::os::convTimeout(mDueTime, msTimeout);
             mTimeout    = msTimeout;
             mIsSignaled = false;
             mThreadId   = Thread::getCurrentThreadId();
@@ -121,8 +121,8 @@ bool WaitableTimerPosix::setTimer(unsigned int msTimeout, bool isPeriodic)
     if ((mTimerId != static_cast<timer_t>(0)) && (msTimeout != 0))
     {
         struct itimerspec interval;
-        NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-        NESyncTypesIX::convTimeout(interval.it_value, msTimeout);
+        areg::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
+        areg::os::convTimeout(interval.it_value, msTimeout);
         if ( isPeriodic )
         {
             interval.it_interval.tv_sec = interval.it_value.tv_sec;
@@ -135,7 +135,7 @@ bool WaitableTimerPosix::setTimer(unsigned int msTimeout, bool isPeriodic)
         mIsSignaled     = false;
         mThreadId       = Thread::getCurrentThreadId();
         result          = true;
-        if ( NECommon::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
+        if ( areg::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
         {
             result = false;
             _resetTimer();
@@ -219,7 +219,7 @@ bool WaitableTimerPosix::checkCanSignalMultipleThreads() const
 void WaitableTimerPosix::notifyReleasedThreads(int /* numThreads */)
 {
     ObjectLockPosix lock(*this);
-    if (mResetInfo == NESyncTypesIX::eEventResetInfo::EventResetAutomatic)
+    if (mResetInfo == areg::os::eEventResetInfo::EventResetAutomatic)
     {
         AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
         mIsSignaled = false;
@@ -262,7 +262,7 @@ inline void WaitableTimerPosix::_stopTimer()
         mDueTime.tv_sec = 0;
         mDueTime.tv_nsec= 0;
         itimerspec cancelSpec;
-        NEMemory::memZero(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
+        areg::memZero(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
         ::timer_settime(mTimerId, 0, &cancelSpec, nullptr);
     }
 #endif  // __APPLE__
@@ -287,7 +287,7 @@ inline void WaitableTimerPosix::_timerExpired()
 #endif  // __APPLE__
         {
             ++ mFiredCount;
-            NESyncTypesIX::convTimeout(mDueTime, mTimeout);
+            areg::os::convTimeout(mDueTime, mTimeout);
 
             mIsSignaled = true;
             sendSignal  = true;

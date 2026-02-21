@@ -37,7 +37,7 @@ ServiceClient::ServiceClient(const String & roleName, Component & owner)
     LOG_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
-bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );
@@ -84,7 +84,7 @@ inline String ServiceClient::timerName( Component & /* owner */ ) const
     ASSERT( getProxy( ) != nullptr );
     String result = "";
     result.append( getServiceRole( ) )
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::DEFAULT_SPECIAL_CHAR)
           .append(getServiceName());
 
     return result;

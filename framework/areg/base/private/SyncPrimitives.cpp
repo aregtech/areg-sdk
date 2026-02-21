@@ -91,7 +91,7 @@ Semaphore::Semaphore( int maxCount, int initCount /* = 0 */ )
     : Lockable( SyncObject::eSyncObject::SoSemaphore )
 
     , mMaxCount( std::max( maxCount, 1 ) )
-    , mCurrCount( NEMath::isInRange<int>(initCount, 0, mMaxCount) ? initCount : 0 )
+    , mCurrCount( areg::isInRange<int>(initCount, 0, mMaxCount) ? initCount : 0 )
 {
     _osCreateSemaphore( );
 }
@@ -102,7 +102,7 @@ Semaphore::~Semaphore()
     _osReleaseSemaphore( );
 }
 
-bool Semaphore::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+bool Semaphore::lock( unsigned int timeout /* = areg::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     bool result = false;
@@ -162,7 +162,7 @@ SpinLock::SpinLock()
 {
 }
 
-bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( unsigned int /*timeout = areg::WAIT_INFINITE*/ )
 {
     for ( ; ; )
     {
@@ -259,13 +259,13 @@ Lock::~Lock()
 //////////////////////////////////////////////////////////////////////////
 MultiLock::MultiLock(SyncObject* pObjects[], int count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
-    , mSizeCount    (std::min(count, NECommon::MAXIMUM_WAITING_OBJECTS))
+    , mSizeCount    (std::min(count, areg::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
-    NEMemory::memZero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
+    areg::memZero(static_cast<void *>(mLockedStates), areg::MAXIMUM_WAITING_OBJECTS * sizeof(eLockedState)  );
     if (autoLock)
     {
-        lock(NECommon::WAIT_INFINITE, true);
+        lock(areg::WAIT_INFINITE, true);
     }
 }
 

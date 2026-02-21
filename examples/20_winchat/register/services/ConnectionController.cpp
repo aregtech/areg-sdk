@@ -42,7 +42,7 @@ ConnectionController * ConnectionController::getService()
     return ConnectionController::sService;
 }
 
-ConnectionController::ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
+ConnectionController::ConnectionController( const areg::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component             ( entry, ownerThread )
     , ConnectionManagerStub ( static_cast<Component &>(self()) )
     , CentralMessagerStub   ( static_cast<Component &>(self()) )
@@ -158,11 +158,11 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
                     chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
                     if ( data != nullptr )
                     {
-                        NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+                        areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
                         data->dataSave      = connection.cookie;
                         data->timeSend      = connection.connectTime;
                         data->timeReceived  = connection.connectedTime;
-                        data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
+                        data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
 
                         ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdRegistered), 0, reinterpret_cast<LPARAM>(data) );
                     }
@@ -213,11 +213,11 @@ void ConnectionController::requestDisconnect( const String & nickName, unsigned 
             chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
             if ( data != nullptr )
             {
-                NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+                areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
                 data->dataSave      = connection.cookie;
                 data->timeSend      = connection.connectTime;
                 data->timeReceived  = connection.connectedTime;
-                data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
+                data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
 
                 ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdUnregistered), 0, reinterpret_cast<LPARAM>(data) );
             }
@@ -256,12 +256,12 @@ void ConnectionController::requestSendMessage( const String & nickName, unsigned
         chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+            areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = dateTime;
             data->timeReceived  = DateTime::getNow();
-            data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
-            NEString::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
+            data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
+            areg::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
 
             ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
@@ -288,12 +288,12 @@ void ConnectionController::requestKeyTyping( const String & nickName, unsigned i
         chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+            areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = connection.connectTime;
             data->timeReceived  = connection.connectedTime;
-            data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
-            NEString::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
+            data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
+            areg::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
 
             ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
         }

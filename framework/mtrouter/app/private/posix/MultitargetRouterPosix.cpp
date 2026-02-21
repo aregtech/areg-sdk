@@ -31,7 +31,7 @@
 int main(int argc, char* argv[], char* envp[])
 {
     MultitargetRouter& router = MultitargetRouter::getInstance();
-    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    router.parseOptions(argc, argv, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }
 

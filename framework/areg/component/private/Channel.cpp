@@ -19,18 +19,18 @@
 
 const Channel & Channel::getInvalidChannel()
 {
-    static const Channel _invalidChannel( NEService::SOURCE_UNKNOWN, NEService::TARGET_UNKNOWN, NEService::COOKIE_UNKNOWN );
+    static const Channel _invalidChannel( areg::SOURCE_UNKNOWN, areg::TARGET_UNKNOWN, areg::COOKIE_UNKNOWN );
     return _invalidChannel;
 }
 
 Channel::Channel()
-    : mSource( NEService::SOURCE_UNKNOWN )
-    , mTarget( NEService::TARGET_UNKNOWN )
-    , mCookie( NEService::COOKIE_UNKNOWN ) 
+    : mSource( areg::SOURCE_UNKNOWN )
+    , mTarget( areg::TARGET_UNKNOWN )
+    , mCookie( areg::COOKIE_UNKNOWN ) 
 {
 }
 
-Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= NEService::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= NEService::COOKIE_UNKNOWN*/ )
+Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= areg::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= areg::COOKIE_UNKNOWN*/ )
     : mSource( source )
     , mTarget( target )
     , mCookie( cookie )
@@ -78,15 +78,15 @@ String Channel::convToString() const
 
 const Channel & Channel::convFromString(const String & channel)
 {
-    mSource = NEService::SOURCE_UNKNOWN;
-    mTarget = NEService::TARGET_UNKNOWN;
-    mCookie = NEService::COOKIE_UNKNOWN;
+    mSource = areg::SOURCE_UNKNOWN;
+    mTarget = areg::TARGET_UNKNOWN;
+    mCookie = areg::COOKIE_UNKNOWN;
 
     String source, target, cookie;
-    NEString::CharPos pos = NEString::START_POS;
-    pos = channel.substring( source, NECommon::OBJECT_SEPARATOR, pos );
-    pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
-    channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
+    areg::CharPos pos = areg::START_POS;
+    pos = channel.substring( source, areg::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( target, areg::OBJECT_SEPARATOR, pos );
+    channel.substring( cookie, areg::OBJECT_SEPARATOR, pos );
 
     mSource = static_cast<ITEM_ID>( source.toUInt64() );
     mTarget = static_cast<ITEM_ID>( target.toUInt64() );

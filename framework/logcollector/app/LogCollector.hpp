@@ -45,20 +45,20 @@ class LogCollector : public ServiceApplicationBase
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   NELogCollectorSettings::eRouterOptions
+     * \brief   logcollector::eRouterOptions
      *          The commands to handle the log collector.
      **/
     enum class eLoggerOptions : int32_t
     {
-          CMD_LogUndefined      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Undefined)  //!< Undefined command.
-        , CMD_LogPrintHelp      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Help)       //!< Output help message.
-        , CMD_LogLoad           = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
-        , CMD_LogVerbose        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features.
-        , CMD_LogUninstall      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS.
-        , CMD_LogInstall        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS.
-        , CMD_LogService        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Service)    //!< Start logcollector as a service. Valid only as a command line option in Windows OS.
-        , CMD_LogConsole        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option.
-        , CMD_LogPause          = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Custom)     //!< Pause logcollector.
+          CMD_LogUndefined      = static_cast<int32_t>(aregext::eServiceOption::CMD_Undefined)  //!< Undefined command.
+        , CMD_LogPrintHelp      = static_cast<int32_t>(aregext::eServiceOption::CMD_Help)       //!< Output help message.
+        , CMD_LogLoad           = static_cast<int32_t>(aregext::eServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_LogVerbose        = static_cast<int32_t>(aregext::eServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features.
+        , CMD_LogUninstall      = static_cast<int32_t>(aregext::eServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogInstall        = static_cast<int32_t>(aregext::eServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS.
+        , CMD_LogService        = static_cast<int32_t>(aregext::eServiceOption::CMD_Service)    //!< Start logcollector as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogConsole        = static_cast<int32_t>(aregext::eServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option.
+        , CMD_LogPause          = static_cast<int32_t>(aregext::eServiceOption::CMD_Custom)     //!< Pause logcollector.
         , CMD_LogRestart                                                                                //!< Restart logcollector.
         , CMD_LogInstances                                                                              //!< Display the names of connected log provider and log observer instances.
         , CMD_LogSilent                                                                                 //!< Silent mode, no data rate is displayed.
@@ -205,13 +205,13 @@ protected:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eRemoteServices getServiceType() const override;
+    virtual areg::eRemoteServices getServiceType() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::eConnectionTypes getConnectionType() const override;
+    virtual areg::eConnectionTypes getConnectionType() const override;
 
 /************************************************************************/
 // ConfigListener protected overrides
@@ -230,7 +230,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    virtual void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    virtual void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -240,7 +240,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & getConnetedInstances() const;
+    inline const areg::MapInstances & getConnetedInstances() const;
 
     /**
      * \brief   Returns instance of the LogCollector service.
@@ -277,7 +277,7 @@ private:
     /**
      * \brief   Outputs on console the information about connected instances.
      **/
-    static void _outputInstances( const NEService::MapInstances & instances );
+    static void _outputInstances( const areg::MapInstances & instances );
 
     /**
      * \brief   Sets verbose or silent mode to output data rate.
@@ -313,7 +313,7 @@ private:
      * \param[in]   optScope    The option entry that contains scope priority update instruction.
      *                          If the command contains a list of scopes to update, the should be split by ';'.
      * \param[out]  msgList     On output it contains a list a messages to send to the targets.
-     *                          If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
+     *                          If a message is referred to all connected clients, the target is areg::TARGET_ALL.
      **/
     static void _createScopeMessage(const OptionParser::sOption& optScope, ArrayList<RemoteMessage> & msgList);
 
@@ -351,7 +351,7 @@ private:
 // LogCollector class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::MapInstances & LogCollector::getConnetedInstances() const
+inline const areg::MapInstances & LogCollector::getConnetedInstances() const
 {
     return mServiceServer.getInstances( );
 }

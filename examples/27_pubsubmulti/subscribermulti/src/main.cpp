@@ -25,7 +25,7 @@
 
 constexpr char const _modelName[]  { "PubSub_model" };  //!< The name of model
 constexpr char const _serviceName[]{ "Publisher" };     //!< The name of the service
-const String         _subscriber (NEUtilities::generateName("Subscriber")); //!< Generated name of service client component
+const String         _subscriber (areg::generateName("Subscriber")); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -80,7 +80,7 @@ int main()
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::WAIT_INFINITE);
 
         // release and cleanup resources of application.
         Application::releaseApplication();

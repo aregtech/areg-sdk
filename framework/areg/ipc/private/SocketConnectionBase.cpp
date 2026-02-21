@@ -26,9 +26,9 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
     if ( in_message.isValid() && clientSocket.isValid() )
     {
         in_message.bufferCompletionFix();
-        const NEMemory::sRemoteMessageHeader & buffer = reinterpret_cast<const NEMemory::sRemoteMessageHeader &>( *in_message.getByteBuffer() );
-        result = clientSocket.sendData( reinterpret_cast<const unsigned char *>(&buffer), sizeof(NEMemory::sRemoteMessageHeader) );
-        if ((result == sizeof(NEMemory::sRemoteMessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
+        const areg::sRemoteMessageHeader & buffer = reinterpret_cast<const areg::sRemoteMessageHeader &>( *in_message.getByteBuffer() );
+        result = clientSocket.sendData( reinterpret_cast<const unsigned char *>(&buffer), sizeof(areg::sRemoteMessageHeader) );
+        if ((result == sizeof(areg::sRemoteMessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
         {
             ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
             // send the aligned length.
@@ -44,13 +44,13 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
     int result{ -1 };
     if ( clientSocket.isValid() && clientSocket.isAlive() )
     {
-        NEMemory::sRemoteMessageHeader msgHeader{};
+        areg::sRemoteMessageHeader msgHeader{};
 
         out_message.invalidate();
-        result = clientSocket.receiveData(reinterpret_cast<unsigned char *>(&msgHeader), sizeof(NEMemory::sRemoteMessageHeader));
-        if ( result == sizeof(NEMemory::sRemoteMessageHeader) )
+        result = clientSocket.receiveData(reinterpret_cast<unsigned char *>(&msgHeader), sizeof(areg::sRemoteMessageHeader));
+        if ( result == sizeof(areg::sRemoteMessageHeader) )
         {
-            result = sizeof(NEMemory::sRemoteMessageHeader);
+            result = sizeof(areg::sRemoteMessageHeader);
             unsigned char * buffer = out_message.initMessage( msgHeader );
             if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
             {
@@ -69,7 +69,7 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
         }
         else
         {
-            result = (result > 0) && (result != sizeof(NEMemory::sRemoteMessageHeader)) ? 0 : result;
+            result = (result > 0) && (result != sizeof(areg::sRemoteMessageHeader)) ? 0 : result;
         }
     }
 

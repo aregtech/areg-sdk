@@ -23,7 +23,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     {   }
@@ -45,16 +45,16 @@ class ServiceConsumer   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+    ServiceConsumer(const areg::ComponentEntry & entry, ComponentThread & owner)
 		: Component             ( entry, owner )
 		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(NEService::eServiceConnection status, ProxyBase& proxy) override
+    virtual bool serviceConnected(areg::eServiceConnection status, ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+        if (HelloServiceClientBase::serviceConnected(status, proxy) && areg::isServiceConnected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
         // Return `true` if the service connection notification is relevant.
         return true;
@@ -92,7 +92,7 @@ int main()
     // load model to initialize components
     Application::loadModel("ServiceModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
     Application::releaseApplication();
     return 0;

@@ -100,7 +100,7 @@ inline void StubEventConsumer::_localProcessRequestEvent( RequestEvent & request
     Component *curComponent   = Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
     ComponentThread::setCurrentComponent(curComponent);
 
-    if (NEService::isRequestId(requestEvent.getRequestId()))
+    if (areg::isRequestId(requestEvent.getRequestId()))
     {
         processRequestEvent(requestEvent);
     }
@@ -118,7 +118,7 @@ inline void StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEve
     ComponentThread::setCurrentComponent(curComponent);
 
     unsigned int reqId = notifyRequest.getRequestId();
-    if (NEService::isAttributeId(reqId) || NEService::isResponseId(reqId))
+    if (areg::isAttributeId(reqId) || areg::isResponseId(reqId))
     {
         processAttributeEvent(notifyRequest);
     }
@@ -132,9 +132,9 @@ inline void StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEve
 
 inline void StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
+    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(areg::eFuncIdRange::ResponseServiceProviderConnection) )
     {
-        if (notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection)
+        if (notifyConnect.getRequestType() == areg::eRequestType::ServiceConnection)
         {
             processStubRegisteredEvent(notifyConnect.getTargetStub(), notifyConnect.getConnectionStatus());
         }

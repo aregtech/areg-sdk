@@ -77,7 +77,7 @@ public:
      * \param   channelId       The unique channel ID of the service connectivity in the system.
      * \param   serverAddress   Address of server.
      **/
-    ServerConnection(const ITEM_ID & channelId, const NESocket::SocketAddress & serverAddress );
+    ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.

@@ -95,7 +95,7 @@ public:
      * \brief	Constructs empty hash-map with hash table size 'hashSize'.
      * \param	hashSize	The size of has map table. By default, MAP_DEFAULT_HASH_SIZE (63).
      **/
-    HashMap( uint32_t hashSize = NECommon::MAP_DEFAULT_HASH_SIZE);
+    HashMap( uint32_t hashSize = areg::MAP_DEFAULT_HASH_SIZE);
 
     /**
      * \brief   Copies entries from given source.
@@ -545,7 +545,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template < typename KEY, typename VALUE >
-HashMap<KEY, VALUE>::HashMap(uint32_t hashSize /* = NECommon::MAP_DEFAULT_HASH_SIZE */)
+HashMap<KEY, VALUE>::HashMap(uint32_t hashSize /* = areg::MAP_DEFAULT_HASH_SIZE */)
     : Constless<std::unordered_map<KEY, VALUE>>( )
     , mValueList(hashSize)
 {

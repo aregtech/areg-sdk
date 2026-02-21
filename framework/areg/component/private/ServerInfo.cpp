@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 ServerInfo::ServerInfo()
     : mServerAddress( StubAddress::getInvalidStubAddress() )
-    , mServerState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mServerState  ( areg::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
@@ -33,19 +33,19 @@ ServerInfo::ServerInfo( const StubAddress & server )
     : mServerAddress( server )
     , mServerState  (  )
 {
-    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
+    setConnectionStatus( areg::eServiceConnection::ServiceConnected );
 }
 
 ServerInfo::ServerInfo( StubAddress && server )
     : mServerAddress( server )
     , mServerState  ( )
 {
-    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
+    setConnectionStatus( areg::eServiceConnection::ServiceConnected );
 }
 
 ServerInfo::ServerInfo( const ProxyAddress & proxy )
     : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), String::getEmptyString() )
-    , mServerState  ( NEService::eServiceConnection::ServicePending )
+    , mServerState  ( areg::eServiceConnection::ServicePending )
 {
     mServerAddress.invalidateChannel();
 }
@@ -84,7 +84,7 @@ ServerInfo & ServerInfo::operator = ( ServerInfo && src ) noexcept
 ServerInfo & ServerInfo::operator = ( const StubAddress & server )
 {
     mServerAddress  = server;
-    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
+    setConnectionStatus( areg::eServiceConnection::ServiceConnected );
     
     return (*this);
 }
@@ -92,7 +92,7 @@ ServerInfo & ServerInfo::operator = ( const StubAddress & server )
 ServerInfo & ServerInfo::operator = ( StubAddress && server ) noexcept
 {
     mServerAddress  = std::move(server);
-    setConnectionStatus( NEService::eServiceConnection::ServiceConnected );
+    setConnectionStatus( areg::eServiceConnection::ServiceConnected );
     
     return (*this);
 }
@@ -100,7 +100,7 @@ ServerInfo & ServerInfo::operator = ( StubAddress && server ) noexcept
 ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
 {
     mServerAddress = addService;
-    setConnectionStatus( NEService::eServiceConnection::ServicePending );
+    setConnectionStatus( areg::eServiceConnection::ServicePending );
 
     return (*this);
 }
@@ -108,7 +108,7 @@ ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
 ServerInfo & ServerInfo::operator = ( ServiceAddress && addService ) noexcept
 {
     mServerAddress = std::move( addService );
-    setConnectionStatus( NEService::eServiceConnection::ServicePending );
+    setConnectionStatus( areg::eServiceConnection::ServicePending );
 
     return (*this);
 }
@@ -134,12 +134,12 @@ ServerInfo::operator unsigned int () const
     return static_cast<unsigned int>( addrService );
 }
 
-void ServerInfo::setConnectionStatus(NEService::eServiceConnection newConnection)
+void ServerInfo::setConnectionStatus(areg::eServiceConnection newConnection)
 {
-    if ( mServerAddress.getSource() != NEService::SOURCE_UNKNOWN )
+    if ( mServerAddress.getSource() != areg::SOURCE_UNKNOWN )
         mServerState = newConnection;
     else if ( static_cast<const ServiceItem &>(mServerAddress).isValid() )
-        mServerState = NEService::eServiceConnection::ServicePending;
+        mServerState = areg::eServiceConnection::ServicePending;
     else
-        mServerState = NEService::eServiceConnection::ServiceConnectionUnknown;
+        mServerState = areg::eServiceConnection::ServiceConnectionUnknown;
 }

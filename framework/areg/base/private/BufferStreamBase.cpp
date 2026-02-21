@@ -219,7 +219,7 @@ bool BufferStreamBase::isEqual( const BufferStreamBase &other ) const
     if ( (result == false) && (isValid() && other.isValid()))
     {
         unsigned int used = getSizeUsed();
-        result = (used == other.getSizeUsed()) && NEMemory::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
+        result = (used == other.getSizeUsed()) && areg::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
     }
 
     return result;
@@ -247,8 +247,8 @@ unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned i
                 unsigned char *dst      = getBuffer() + atPos;
                 unsigned int moveSize   = writePos - atPos;
 
-                NEMemory::memMove( dst + size, dst, moveSize );
-                NEMemory::memCopy( dst, size, buffer, size );
+                areg::memMove( dst + size, dst, moveSize );
+                areg::memCopy( dst, size, buffer, size );
 
                 result = size;
 
@@ -275,7 +275,7 @@ unsigned int BufferStreamBase::writeData(const unsigned char* buffer, unsigned i
 
     if ((remain != 0) && (size != 0))
     {
-        result = NEMemory::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
+        result = areg::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
         unsigned int usedSize   = mByteBuffer->bufHeader.biUsed;
         unsigned int newPos     = writePos + result;
         setSizeUsed( std::max(usedSize, newPos) );
@@ -300,7 +300,7 @@ unsigned int BufferStreamBase::readData(unsigned char* buffer, unsigned int size
         if (result != 0)
         {
             const unsigned char* src = getBufferToRead();
-            NEMemory::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
+            areg::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
             mReadPosition.setPosition(static_cast<int>(result), Cursor::eCursorPosition::PositionCurrent);
         }
     }

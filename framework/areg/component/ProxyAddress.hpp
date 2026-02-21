@@ -97,7 +97,7 @@ public:
      **/
     ProxyAddress( const String & serviceName
                 , const Version & serviceVersion
-                , NEService::eServiceType serviceType
+                , areg::eServiceType serviceType
                 , const String & roleName
                 , const String & threadName = String::getEmptyString() );
     /**
@@ -115,7 +115,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
+    ProxyAddress( const areg::SInterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.
@@ -463,32 +463,32 @@ inline ProxyAddress::operator unsigned int() const
 
 inline bool ProxyAddress::isLocalAddress() const
 {
-    return (mChannel.getCookie() == NEService::COOKIE_LOCAL);
+    return (mChannel.getCookie() == areg::COOKIE_LOCAL);
 }
 
 inline bool ProxyAddress::isRemoteAddress() const
 {
-    return (mChannel.getCookie() >= NEService::COOKIE_ANY);
+    return (mChannel.getCookie() >= areg::COOKIE_ANY);
 }
 
 inline bool ProxyAddress::isSourceLocal() const
 {
-    return (mChannel.getCookie() == NEService::COOKIE_LOCAL) && (mChannel.getSource() != 0);
+    return (mChannel.getCookie() == areg::COOKIE_LOCAL) && (mChannel.getSource() != 0);
 }
 
 inline bool ProxyAddress::isSourcePublic() const
 {
-    return (mChannel.getCookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
+    return (mChannel.getCookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
 }
 
 inline bool ProxyAddress::isTargetLocal() const
 {
-    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+    return (mChannel.getCookie( ) == areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
 inline bool ProxyAddress::isTargetPublic() const
 {
-    return (mChannel.getCookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+    return (mChannel.getCookie( ) >= areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
 inline const String & ProxyAddress::getThread() const

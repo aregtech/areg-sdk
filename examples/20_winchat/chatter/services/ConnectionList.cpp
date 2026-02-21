@@ -24,7 +24,7 @@ ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispTh
 
 }
 
-bool ConnectionList::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool ConnectionList::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
     bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );

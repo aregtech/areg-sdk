@@ -18,7 +18,7 @@
 
 ServerConnectionBase::ServerConnectionBase()
     : mServerSocket         ( )
-    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
+    , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -29,7 +29,7 @@ ServerConnectionBase::ServerConnectionBase()
 
 ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
     : mServerSocket         ( hostName, portNr )
-    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
+    , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -38,9 +38,9 @@ ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned sho
 {
 }
 
-ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serverAddress)
+ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAddress)
     : mServerSocket         ( serverAddress )
-    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
+    , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -68,17 +68,17 @@ void ServerConnectionBase::closeSocket()
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
-    mCookieGenerator = NEService::COOKIE_REMOTE_SERVICE;
+    mCookieGenerator = areg::COOKIE_REMOTE_SERVICE;
 
     mServerSocket.closeSocket();
 }
 
-bool ServerConnectionBase::serverListen(int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE */)
+bool ServerConnectionBase::serverListen(int maxQueueSize /*= areg::MAXIMUM_LISTEN_QUEUE_SIZE */)
 {
     return mServerSocket.listenConnection(maxQueueSize);
 }
 
-SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted)
+SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(areg::SocketAddress & out_addrNewAccepted)
 {
     return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), static_cast<int32_t>(mMasterList.getSize()));
 }
@@ -91,7 +91,7 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
     if ( mServerSocket.isValid() && clientConnection.isValid( ) )
     {
         const SOCKETHANDLE hSocket = clientConnection.getHandle();
-        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        ASSERT(hSocket != areg::InvalidSocketHandle);
 
         if ( mMasterList.find(hSocket) == -1)
         {
@@ -99,7 +99,7 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
             ASSERT(mSocketToCookie.contains(hSocket) == false);
 
             ITEM_ID cookie{ mCookieGenerator ++ };
-            ASSERT(cookie >= NEService::COOKIE_REMOTE_SERVICE);
+            ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
 
             mAcceptedConnections.setAt(hSocket, clientConnection);
             mCookieToSocket.setAt(cookie, hSocket);
@@ -124,7 +124,7 @@ void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
 
     SOCKETHANDLE hSocket{ clientConnection.getHandle() };
     MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
-    ITEM_ID cookie{ mSocketToCookie.isValidPosition(pos) ? static_cast<ITEM_ID>(mSocketToCookie.valueAtPosition(pos)) : NEService::COOKIE_UNKNOWN };
+    ITEM_ID cookie{ mSocketToCookie.isValidPosition(pos) ? static_cast<ITEM_ID>(mSocketToCookie.valueAtPosition(pos)) : areg::COOKIE_UNKNOWN };
 
     mSocketToCookie.removeAt(hSocket);
     mCookieToSocket.removeAt(cookie);

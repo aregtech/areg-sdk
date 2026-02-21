@@ -23,9 +23,9 @@
 
 #ifdef  _DEBUG
 
-void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
+void AREG_API_IMPL areg::outputMessageOS( const char * msg )
 {
-    if ( NEString::isEmpty<char>( msg ) == false )
+    if ( areg::isEmpty<char>( msg ) == false )
     {
         ::fprintf( stdout, "%s", msg );
         ::fflush( stdout );
@@ -34,7 +34,7 @@ void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 
 #else   // _DEBUG
 
-void AREG_API_IMPL NEDebug::outputMessageOS( const char * /*msg*/ )
+void AREG_API_IMPL areg::outputMessageOS( const char * /*msg*/ )
 {
 }
 

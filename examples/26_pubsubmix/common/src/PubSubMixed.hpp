@@ -30,7 +30,7 @@ class PubSubMixed   : public Component
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PubSubMixed(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    PubSubMixed(const areg::ComponentEntry & entry, ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

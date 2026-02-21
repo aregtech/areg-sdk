@@ -33,7 +33,7 @@ ByteBuffer::ByteBuffer()
 {
 }
 
-ByteBuffer::ByteBuffer( NEMemory::sByteBuffer & byteBuffer )
+ByteBuffer::ByteBuffer( areg::sByteBuffer & byteBuffer )
     : mByteBuffer( &byteBuffer, ByteBufferDeleter( ) )
 {
 }
@@ -66,13 +66,13 @@ unsigned int ByteBuffer::reserve(unsigned int size, bool copy)
                 unsigned int sizeAlign{ getAlignedSize() };
                 unsigned int sizeBuffer{ getHeaderSize() + size };
 
-                sizeBuffer = NEMath::alignSize(sizeBuffer, sizeAlign);
+                sizeBuffer = areg::alignSize(sizeBuffer, sizeAlign);
                 unsigned char* buffer = DEBUG_NEW unsigned char[sizeBuffer];
                 int copied = static_cast<int>(initBuffer(buffer, sizeBuffer, copy));
                 if (static_cast<unsigned int>(copied) != Cursor::INVALID_CURSOR_POSITION)
                 {
-                    NEMemory::sByteBuffer * temp = reinterpret_cast<NEMemory::sByteBuffer *>(buffer);
-                    mByteBuffer = std::shared_ptr<NEMemory::sByteBuffer>(temp, ByteBufferDeleter());
+                    areg::sByteBuffer * temp = reinterpret_cast<areg::sByteBuffer *>(buffer);
+                    mByteBuffer = std::shared_ptr<areg::sByteBuffer>(temp, ByteBufferDeleter());
                 }
                 else
                 {
@@ -99,16 +99,16 @@ unsigned int ByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bufL
         unsigned int dataOffset     = getDataOffset();
         unsigned int dataLength     = bufLength - dataOffset;
 
-        NEMemory::sByteBuffer* buffer= new(newBuffer)NEMemory::sByteBuffer;
+        areg::sByteBuffer* buffer= new(newBuffer)areg::sByteBuffer;
         buffer->bufHeader.biBufSize = bufLength;
         buffer->bufHeader.biLength  = dataLength;
         buffer->bufHeader.biOffset  = dataOffset;
-        buffer->bufHeader.biBufType = NEMemory::eBufferType::BufferInternal;
+        buffer->bufHeader.biBufType = areg::eBufferType::BufferInternal;
 
         if (makeCopy && (mByteBuffer.get() != nullptr))
         {
             unsigned char* data         = newBuffer + dataOffset;
-            const unsigned char* srcBuf = NEMemory::getBufferDataRead(mByteBuffer.get());
+            const unsigned char* srcBuf = areg::getBufferDataRead(mByteBuffer.get());
             unsigned int srcCount       = mByteBuffer->bufHeader.biUsed;
             srcCount                    = std::min(srcCount, dataLength);
             result                      = srcCount;
@@ -127,5 +127,5 @@ unsigned int ByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bufL
 
 unsigned int ByteBuffer::getAlignedSize() const
 {
-    return NEMemory::BLOCK_SIZE;
+    return areg::BLOCK_SIZE;
 }

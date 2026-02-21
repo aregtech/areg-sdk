@@ -36,12 +36,12 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
         {
             if (entry.startsWith(opt.cmdShort))
             {
-                entry.substring(static_cast<NEString::CharPos>(opt.cmdShort.length()));
+                entry.substring(static_cast<areg::CharPos>(opt.cmdShort.length()));
                 found = true;
             }
             else if (entry.startsWith(opt.cmdLong))
             {
-                entry.substring(static_cast<NEString::CharPos>(opt.cmdLong.length()));
+                entry.substring(static_cast<areg::CharPos>(opt.cmdLong.length()));
                 found = true;
             }
 

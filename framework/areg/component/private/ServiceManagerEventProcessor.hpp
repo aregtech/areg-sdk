@@ -99,7 +99,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
       *                             about public service connection status.
      **/
-    void _unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregisterServer( const StubAddress & whichServer, const areg::eDisconnectReason reason, RegistrationProvider& registerProvider);
 
      /**
       * \brief   The function is called when it is requested to register the service consumer.
@@ -120,7 +120,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
      *                              about public service connection status.
      **/
-    void _unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregisterClient( const ProxyAddress & whichClient, const areg::eDisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Creates and sends predefined service consumer connected notification.
@@ -135,7 +135,7 @@ private:
      * \param   server      The address of service provider that disconnected.
      * \param   status      The service connection status.
      **/
-    void _sendClientDisconnectEvent( const ProxyAddress & client, const StubAddress & server, const NEService::eServiceConnection status ) const;
+    void _sendClientDisconnectEvent( const ProxyAddress & client, const StubAddress & server, const areg::eServiceConnection status ) const;
 
     /**
      * \brief   Terminates the component thread. No guarantee that all resources are cleanup.

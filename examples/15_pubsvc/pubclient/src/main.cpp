@@ -24,7 +24,7 @@
 
 constexpr char const _modelName[]  { "HelloModel" };    //!< The name of model
 constexpr char const _serviceName[]{ "HelloService" };  //!< The name of provided service
-const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
+const String     _serviceClient  = areg::generateName("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -80,7 +80,7 @@ int main()
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::WAIT_INFINITE);
 
         // stop and unload components
         Application::unloadModel(_modelName);

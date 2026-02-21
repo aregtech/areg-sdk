@@ -77,7 +77,7 @@ public:
      **/
     ServiceAddress( const String & serviceName
                   , const Version & serviceVersion
-                  , NEService::eServiceType serviceType
+                  , areg::eServiceType serviceType
                   , const String & roleName );
 
     /**
@@ -312,7 +312,7 @@ inline const String & ServiceAddress::getRoleName() const
 inline void ServiceAddress::setRoleName(const String & roleName)
 {
     mRoleName = roleName;
-    mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
+    mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 

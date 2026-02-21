@@ -58,7 +58,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
 
     //!< Definition of storage item to store.
-    using StorageItem       = std::pair<String, NEMemory::uAlign>;
+    using StorageItem       = std::pair<String, areg::uAlign>;
     //!< Definition of storage list object to store items.
     using StorageList       = LinkedList<ThreadLocalStorage::StorageItem>;
 
@@ -113,17 +113,17 @@ public:
      * \brief   Returns the element value, saved in the 
      *          local storage by given name.
      *          The Key should be exist in the list when function is called.
-     *          Otherwise it will return NEMemory::InvalidElement element,
+     *          Otherwise it will return areg::InvalidElement element,
      *          which is defining invalid element.
      *          If element was not found, it will raise assertion in Debug version.
      *          In release version either call existKey() before calling the method,
-     *          or check the address of returned element with NEMemory::InvalidElement
+     *          or check the address of returned element with areg::InvalidElement
      * \param   Key     The name of a local storage item.
      * \return  Returns local storage element if Key exists. 
-     *          Otherwise it returns NEMemory::InvalidElement, if there is no element
+     *          Otherwise it returns areg::InvalidElement, if there is no element
      *          with specified name.
      **/
-    NEMemory::uAlign getStorageItem( const String & Key ) const;
+    areg::uAlign getStorageItem( const String & Key ) const;
 
     /**
      * \brief   Saves specified item in thread local storage object.
@@ -134,7 +134,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, NEMemory::uAlign Value);
+    void setStorageItem(const String & Key, areg::uAlign Value);
 
     /**
      * \brief   Saves pointer value in thread local storage object.
@@ -189,7 +189,7 @@ public:
      * \return  Returns the value of returned element. If element does not
      *          exist, it will return dummy zero value.
      **/
-    NEMemory::uAlign removeStoragteItem(const String & Key);
+    areg::uAlign removeStoragteItem(const String & Key);
 
     /**
      * \brief   Removes all items in thread local storage

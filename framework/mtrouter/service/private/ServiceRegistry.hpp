@@ -94,7 +94,7 @@ public:
      * \return  If found registered remote Stub address, returns the actual service connection status.
      *          Otherwise, returns unknown service connection status.
      **/
-    NEService::eServiceConnection getServiceStatus( const StubAddress & addrStub ) const;
+    areg::eServiceConnection getServiceStatus( const StubAddress & addrStub ) const;
 
     /**
      * \brief   By given remote servicing Proxy address checks and returns the service connection status.
@@ -102,7 +102,7 @@ public:
      * \return  If found registered remote Stub address as Proxy target, returns the actual service connection status.
      *          Otherwise, returns unknown service connection status.
      **/
-    NEService::eServiceConnection getServiceStatus( const ProxyAddress & addrProxy ) const;
+    areg::eServiceConnection getServiceStatus( const ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Returns the list of connected proxies address or empty list if no proxy is connected yet.
@@ -160,7 +160,7 @@ public:
     /**
      * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
      *          specified value. In output listProviders and listConsumers contain list of remote stub and proxy addresses.
-     * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
+     * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering
      * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
@@ -169,7 +169,7 @@ public:
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
      *          In output listProviders and listConsumers contain list of remote stub and proxy addresses.
-     * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
+     * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering
      * \param[out]  listProviders      On output the list contains stub address objects that have sources of specified cookie.
      * \param[out]  listConsumers    On output the list contains proxy address objects that have sources of specified cookie.
      **/

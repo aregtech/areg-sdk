@@ -28,12 +28,12 @@ LayoutManager::~LayoutManager()
 bool LayoutManager::createLayouts( const char * layoutFormat )
 {
     deleteLayouts();
-    int len = NEString::isEmpty<char>(layoutFormat) == false ? NEString::getStringLength<char>( layoutFormat ) : 0;
+    int len = areg::isEmpty<char>(layoutFormat) == false ? areg::getStringLength<char>( layoutFormat ) : 0;
     char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<unsigned int>(len) + 1u ] : nullptr;
 
     if ( strFormat != nullptr )
     {
-        NEString::copyString<char, char>( strFormat, len + 1, layoutFormat, len );
+        areg::copyString<char, char>( strFormat, len + 1, layoutFormat, len );
         _createLayouts(strFormat);
         delete [] strFormat;
     }
@@ -49,7 +49,7 @@ bool LayoutManager::createLayouts(const String& layoutFormat)
 
     if (strFormat != nullptr)
     {
-        NEString::copyString<char, char>(strFormat, static_cast<NEString::CharCount>(len + 1), layoutFormat.getString(), static_cast<NEString::CharCount>(len));
+        areg::copyString<char, char>(strFormat, static_cast<areg::CharCount>(len + 1), layoutFormat.getString(), static_cast<areg::CharCount>(len));
         _createLayouts(strFormat);
         delete[] strFormat;
     }
@@ -68,9 +68,9 @@ void LayoutManager::deleteLayouts()
     mLayoutList.clear();
 }
 
-void LayoutManager::logMessage(const NELogging::sLogMessage & logMsg, OutStream & stream) const
+void LayoutManager::logMessage(const areg::sLogMessage & logMsg, OutStream & stream) const
 {
-    if (logMsg.logMessagePrio == NELogging::PrioIgnoreLayout)
+    if (logMsg.logMessagePrio == areg::PrioIgnoreLayout)
     {
         stream.write(logMsg.logMessage);
     }
@@ -95,25 +95,25 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
 
     while (*pos != String::EmptyChar)
     {
-        if (*pos == NELogOptions::SYNTAX_SPECIAL_FORMAT)
+        if (*pos == areg::SYNTAX_SPECIAL_FORMAT)
         {
             char ch = *(pos + 1);
             LogLayout* newLayout{ nullptr };
-            switch (static_cast<NELogOptions::eLayouts>(ch))
+            switch (static_cast<areg::eLayouts>(ch))
             {
-            case NELogOptions::eLayouts::LayoutTickCount:
+            case areg::eLayouts::LayoutTickCount:
                 newLayout = DEBUG_NEW TickCountLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutDayTime:
+            case areg::eLayouts::LayoutDayTime:
                 newLayout = DEBUG_NEW DayTimeLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutExecutableId:
+            case areg::eLayouts::LayoutExecutableId:
                 newLayout = DEBUG_NEW ModuleIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutMessage:
+            case areg::eLayouts::LayoutMessage:
                 if (hasExclusive == false)
                 {
                     newLayout = DEBUG_NEW MessageLayout();
@@ -121,31 +121,31 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 }
                 break;
 
-            case NELogOptions::eLayouts::LayoutEndOfLine:
+            case areg::eLayouts::LayoutEndOfLine:
                 newLayout = DEBUG_NEW EndOfLineLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutPriority:
+            case areg::eLayouts::LayoutPriority:
                 newLayout = DEBUG_NEW PriorityLayout();
                 break;
 
-            case NELogOptions::eLayouts::LaytoutScopeId:
+            case areg::eLayouts::LaytoutScopeId:
                 newLayout = DEBUG_NEW ScopeIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutThreadId:
+            case areg::eLayouts::LayoutThreadId:
                 newLayout = DEBUG_NEW ThreadIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutExecutableName:
+            case areg::eLayouts::LayoutExecutableName:
                 newLayout = DEBUG_NEW ModuleNameLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutThreadName:
+            case areg::eLayouts::LayoutThreadName:
                 newLayout = DEBUG_NEW ThreadNameLayout();
                 break;
 
-            case NELogOptions::eLayouts::LaytoutScopeName:
+            case areg::eLayouts::LaytoutScopeName:
                 if (hasExclusive == false)
                 {
                     newLayout = DEBUG_NEW ScopeNameLayout();
@@ -153,14 +153,14 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 }
                 break;
 
-            case NELogOptions::eLayouts::LayoutCookieId:
+            case areg::eLayouts::LayoutCookieId:
                 newLayout = DEBUG_NEW CookieIdLayout();
                 break;
 
-            case NELogOptions::eLayouts::LayoutUndefined:  // fall through
-            case NELogOptions::eLayouts::LayoutAnyText:    // fall through
+            case areg::eLayouts::LayoutUndefined:  // fall through
+            case areg::eLayouts::LayoutAnyText:    // fall through
             default:
-                if (ch == NELogOptions::SYNTAX_SPECIAL_FORMAT)
+                if (ch == areg::SYNTAX_SPECIAL_FORMAT)
                 {
                     *(pos + 1) = String::EmptyChar;
                     newLayout = DEBUG_NEW AnyTextLayout(pos1);

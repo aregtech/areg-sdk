@@ -45,16 +45,16 @@ inline int _readString(const FileBase & file, ClassType & outValue)
     unsigned int length     { 0 };
     do 
     {
-        buffer[0]               = NEString::EndOfString;
+        buffer[0]               = areg::EndOfString;
         unsigned int oldPos     = file.getPosition();
         unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
         readLength              = std::min(strLength, readLength);
-        buffer[readLength]      = NEString::EndOfString;
+        buffer[readLength]      = areg::EndOfString;
 
         length = readLength;
         if ( readLength != 0 )
         {
-            const CharType * str = NEString::getPrintable<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
+            const CharType * str = areg::getPrintable<CharType>( buffer, static_cast<areg::CharCount>(readLength), &context );
             length = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
 
             outValue    += str;
@@ -89,16 +89,16 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
     unsigned int length     { 0 };
     do 
     {
-        buffer[0]               = NEString::EndOfString;
+        buffer[0]               = areg::EndOfString;
         unsigned int oldPos     = file.getPosition();
         unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
         readLength              = std::min(strLength, readLength);
-        buffer[readLength]      = NEString::EndOfString;
+        buffer[readLength]      = areg::EndOfString;
 
         length = readLength;
         if ( readLength != 0 )
         {
-            const CharType * str = NEString::getLine<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
+            const CharType * str = areg::getLine<CharType>( buffer, static_cast<areg::CharCount>(readLength), &context );
             length   = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
             outValue+= str;
             result  += length;
@@ -123,16 +123,16 @@ inline int _readString(const FileBase & file, CharType * buffer, int charCount)
         if ((buffer != nullptr) && (charCount > 1))
         {
             unsigned int strLength  = static_cast<unsigned int>(charCount) - 1;
-            buffer[0]               = NEString::EndOfString;
+            buffer[0]               = areg::EndOfString;
             unsigned int oldPos     = file.getPosition();
             CharType * context      = nullptr;
             unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
             readLength              = std::min(strLength, readLength);
-            buffer[readLength]      = NEString::EndOfString;
+            buffer[readLength]      = areg::EndOfString;
 
             if ( readLength != 0 )
             {
-                NEString::getPrintable<CharType>( buffer, charCount, &context );
+                areg::getPrintable<CharType>( buffer, charCount, &context );
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
@@ -153,15 +153,15 @@ inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
         if ((buffer != nullptr) && (charCount > 1))
         {
             unsigned int strLength  = static_cast<unsigned int>(charCount) - 1;
-            buffer[0]               = NEString::EndOfString;
+            buffer[0]               = areg::EndOfString;
             unsigned int oldPos     = file.getPosition();
             CharType * context      = nullptr;
             unsigned int readLength = file.read(reinterpret_cast<unsigned char *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
             readLength              = std::min(strLength, readLength);
-            buffer[readLength]      = NEString::EndOfString;
+            buffer[readLength]      = areg::EndOfString;
             if ( readLength != 0 )
             {
-                NEString::getLine<CharType>(buffer, charCount, &context);
+                areg::getLine<CharType>(buffer, charCount, &context);
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
                 int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
@@ -174,14 +174,14 @@ inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
 }
 
 template<typename CharType>
-inline bool _writeString(FileBase & file, const CharType * buffer, int strLen = static_cast<int>(NEString::COUNT_ALL) )
+inline bool _writeString(FileBase & file, const CharType * buffer, int strLen = static_cast<int>(areg::COUNT_ALL) )
 {
     bool result = false;
     if (file.isOpened() && file.canWrite())
     {
         if (buffer != nullptr)
         {
-            unsigned int len = strLen >= 0 ? static_cast<unsigned int>(strLen) : static_cast<unsigned int>(NEString::getStringLength<CharType>( buffer ));
+            unsigned int len = strLen >= 0 ? static_cast<unsigned int>(strLen) : static_cast<unsigned int>(areg::getStringLength<CharType>( buffer ));
             len += file.isBinaryMode() ? 1 : 0;
             len *= sizeof(CharType);
 
@@ -200,7 +200,7 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
     {
         if (buffer != nullptr)
         {
-            unsigned int len = static_cast<unsigned int>(NEString::getStringLineLength<CharType>(buffer));
+            unsigned int len = static_cast<unsigned int>(areg::getStringLineLength<CharType>(buffer));
             len *= sizeof(CharType);
             if ( file.write(reinterpret_cast<const unsigned char *>(buffer), len) == len )
                 result = file.writeChar( StringBase<CharType>::NewLine );
@@ -211,7 +211,7 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
 }
 
 template<typename DataType>
-NEMath::eCompare _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<NEMath::eCompare( const DataType *, const DataType * )> func )
+areg::eCompare _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<areg::eCompare( const DataType *, const DataType * )> func )
 {
     return func( memBuffer1, memBuffer2 );
 }
@@ -223,7 +223,7 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
     if ( file.canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION) )
     {
         unsigned int posSearch = file.setPosition( static_cast<int>(startPos), Cursor::eCursorPosition::PositionBegin );
-        if ( (NEString::isEmpty<CharType>(text) == false) && (length != 0) )
+        if ( (areg::isEmpty<CharType>(text) == false) && (length != 0) )
         {
             unsigned int dataLen = length * 2;
             unsigned int bufLen  = length + 1;
@@ -234,7 +234,7 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
             {
                 if ( readLen != 0 )
                 {
-                    NEMemory::memMove( fileData, fileData + length, readLen - length );
+                    areg::memMove( fileData, fileData + length, readLen - length );
                     readLen -= length;
                 }
 
@@ -246,15 +246,15 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
                 readLen += inBuf;
                 for ( unsigned int i = 0; (readLen - i) >= static_cast<unsigned int>(length); ++i )
                 {
-                    NEMath::eCompare comp = _compareData<CharType>( (fileData + i)
+                    areg::eCompare comp = _compareData<CharType>( (fileData + i)
                                                                 , text
-                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> NEMath::eCompare
+                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> areg::eCompare
                                                                 {
-                                                                    return NEString::compareStrings<CharType, CharType>( buf1, buf2, static_cast<NEString::CharCount>(length), sensitive );
+                                                                    return areg::compareStrings<CharType, CharType>( buf1, buf2, static_cast<areg::CharCount>(length), sensitive );
                                                                 }
                     );
 
-                    if ( comp == NEMath::eCompare::Equal )
+                    if ( comp == areg::eCompare::Equal )
                     {
                         posSearch += i * sizeof(CharType);
                         result = posSearch;
@@ -627,7 +627,7 @@ unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * 
             {
                 if ( readLen != 0 )
                 {
-                    NEMemory::memMove( fileData, fileData + length, readLen - length );
+                    areg::memMove( fileData, fileData + length, readLen - length );
                     readLen = length;
                 }
 
@@ -637,15 +637,15 @@ unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * 
 
                 for ( unsigned int i = 0; (readLen - i) >= length; ++i )
                 {
-                    NEMath::eCompare comp = _compareData<unsigned char>( (fileData + i)
+                    areg::eCompare comp = _compareData<unsigned char>( (fileData + i)
                                                                        , buffer
-                                                                       , [length]( const unsigned char * buf1, const unsigned char * buf2 ) -> NEMath::eCompare
+                                                                       , [length]( const unsigned char * buf1, const unsigned char * buf2 ) -> areg::eCompare
                                                                          {
-                                                                             return NEMemory::memCompare( buf1, buf2, length );
+                                                                             return areg::memCompare( buf1, buf2, length );
                                                                          }
                                                                         );
 
-                    if ( comp == NEMath::eCompare::Equal )
+                    if ( comp == areg::eCompare::Equal )
                     {
                         posSearch += i;
                         result = posSearch;
@@ -670,12 +670,12 @@ unsigned int FileBase::searchData( unsigned int startPos, const ByteBuffer & buf
 
 unsigned int FileBase::searchText( unsigned int startPos, const char * text, bool caseSensitive ) const
 {
-    return _searchText<char>( *this, startPos, text, static_cast<uint32_t>(NEString::getStringLength<char>( text )), caseSensitive );
+    return _searchText<char>( *this, startPos, text, static_cast<uint32_t>(areg::getStringLength<char>( text )), caseSensitive );
 }
 
 unsigned int FileBase::searchText( unsigned int startPos, const wchar_t * text, bool caseSensitive ) const
 {
-    return _searchText<wchar_t>( *this, startPos, text, static_cast<uint32_t>(NEString::getStringLength<wchar_t>( text )), caseSensitive );
+    return _searchText<wchar_t>( *this, startPos, text, static_cast<uint32_t>(areg::getStringLength<wchar_t>( text )), caseSensitive );
 }
 
 unsigned int FileBase::searchText( unsigned int startPos, const String & text, bool caseSensitive ) const
@@ -696,12 +696,12 @@ void FileBase::normalizeName(String & name)
 {
     // replace all "%time%"
     char fmt[128] { 0 };
-    NEUtilities::sSystemTime st;
+    areg::sSystemTime st;
     DateTime::getNow(st, true);
     String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
-    name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, NEString::START_POS, true);
+    name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, areg::START_POS, true);
 
     // replace all "%appname%"
     const String & appName = Process::getInstance().getAppName();
-    name.replace(FileBase::FILE_MASK_APPNAME, appName, NEString::START_POS, true);
+    name.replace(FileBase::FILE_MASK_APPNAME, appName, areg::START_POS, true);
 }

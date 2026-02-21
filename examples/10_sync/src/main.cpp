@@ -71,14 +71,14 @@ protected:
         mQuit.resetEvent();
 
         // Wait for auto-reset event before continuing
-        gEventRun.lock(NECommon::WAIT_INFINITE);
+        gEventRun.lock(areg::WAIT_INFINITE);
         LOG_INFO("Auto-reset event 'gEventRun' is signaled");
 
         // Multi-lock with multiple objects
         SyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
         MultiLock multiLock(objects, std::size(objects), false);
 
-        constexpr unsigned int waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
+        constexpr unsigned int waitTimeout{ areg::WAIT_1_MILLISECOND * 150 };
 
         do
         {
@@ -138,14 +138,14 @@ protected:
         SyncObject* objects[] = { &gEventExit, &gMutexDummy };
         MultiLock multiLock(objects, std::size(objects), false);
 
-        int waitResult = multiLock.lock(NECommon::WAIT_INFINITE, false, false);
+        int waitResult = multiLock.lock(areg::WAIT_INFINITE, false, false);
         LOG_DBG("GoodbyeThread finished lock with result [%d]", waitResult);
         std::cout << "Multi-lock is signaled the elem " << waitResult << " is unlocked" << std::endl;
 
         if (waitResult >= 0)
             multiLock.unlock(waitResult);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        Thread::sleep(areg::WAIT_500_MILLISECONDS);
         mQuit.setEvent();
     }
 };
@@ -171,20 +171,20 @@ int main()
 
         HelloThread helloThread;
         LOG_DBG("Starting Hello Thread");
-        helloThread.createThread(NECommon::DO_NOT_WAIT);
+        helloThread.createThread(areg::DO_NOT_WAIT);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gEventRun.setEvent();   // let HelloThread proceed
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gMutexWait.unlock();
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        Thread::sleep(areg::WAIT_1_SECOND);
 
         GoodbyeThread goodbyeThread;
         LOG_DBG("Starting Goodbye Thread");
-        goodbyeThread.createThread(NECommon::WAIT_INFINITE);
+        goodbyeThread.createThread(areg::WAIT_INFINITE);
 
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        Thread::sleep(areg::WAIT_1_SECOND);
 
         SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
         gEventExit.setEvent();
@@ -193,8 +193,8 @@ int main()
         MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;
 
-        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
-        goodbyeThread.shutdownThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdownThread(areg::WAIT_INFINITE);
+        goodbyeThread.shutdownThread(areg::WAIT_INFINITE);
 
         constexpr uint32_t eventTimeout{ 1000 };
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);

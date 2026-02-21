@@ -216,12 +216,12 @@ private:
 
 inline bool WriteConverter::writeLine( const char * in_value )
 {
-    return (appendString(in_value) && setChar(static_cast<char>(NEString::EndOfLine)));
+    return (appendString(in_value) && setChar(static_cast<char>(areg::EndOfLine)));
 }
 
 inline bool WriteConverter::writeLine( const wchar_t * in_value )
 {
-    return (appendString(in_value) && setChar(static_cast<wchar_t>(NEString::EndOfLine)));
+    return (appendString(in_value) && setChar(static_cast<wchar_t>(areg::EndOfLine)));
 }
 
 inline bool WriteConverter::setEndOfString( bool isWideChar )

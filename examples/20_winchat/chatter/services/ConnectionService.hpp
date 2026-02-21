@@ -10,7 +10,7 @@
 class ConnectionService    : public  Component
 {
 public:
-    ConnectionService(const NERegistry::ComponentEntry& entry, ComponentThread& ownerThread);
+    ConnectionService(const areg::ComponentEntry& entry, ComponentThread& ownerThread);
 
 protected:
 

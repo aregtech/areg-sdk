@@ -45,7 +45,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PatientClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    PatientClient(const areg::ComponentEntry & entry, ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -61,7 +61,7 @@ protected:
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
-    virtual void onPatientUpdate( const PatientInformation::PatientInfo & Patient, NEService::eDataStateType state ) override;
+    virtual void onPatientUpdate( const PatientInformation::PatientInfo & Patient, areg::eDataStateType state ) override;
 
     /**
      * \brief   Triggered when receives service provider connected / disconnected event.
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( areg::eServiceConnection status, ProxyBase & proxy ) override;
 
     /**
      * \brief   Returns pointer to Worker Thread Consumer object identified

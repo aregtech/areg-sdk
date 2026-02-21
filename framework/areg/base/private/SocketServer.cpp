@@ -18,10 +18,10 @@
 SocketServer::SocketServer( const char * hostName, unsigned short portNr )
     : Socket  ( )
 {
-    mAddress.resolveAddress(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, true);
+    mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, true);
 }
 
-SocketServer::SocketServer( const NESocket::SocketAddress & serverAddress )
+SocketServer::SocketServer( const areg::SocketAddress & serverAddress )
     : Socket  ( )
 {
     mAddress = serverAddress;
@@ -37,12 +37,12 @@ bool SocketServer::createSocket()
     decreaseLock();
     if ( mAddress.isValid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::serverSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
-        if ( hSocket != NESocket::InvalidSocketHandle )
+    	SOCKETHANDLE hSocket = areg::serverSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+        if ( hSocket != areg::InvalidSocketHandle )
         {
             mSocket = std::make_shared<SOCKETHANDLE>( hSocket );
-            mSendSize = NESocket::getMaxSendSize(hSocket);
-            mRecvSize = NESocket::getMaxReceiveSize(hSocket);
+            mSendSize = areg::getMaxSendSize(hSocket);
+            mRecvSize = areg::getMaxReceiveSize(hSocket);
         }
     }
 
@@ -51,10 +51,10 @@ bool SocketServer::createSocket()
 
 bool SocketServer::listenConnection(int maxQueueSize)
 {
-    return (isValid() ? NESocket::serverListenConnection(*mSocket, maxQueueSize > 0 ? maxQueueSize : NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
+    return (isValid() ? areg::serverListenConnection(*mSocket, maxQueueSize > 0 ? maxQueueSize : areg::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
 }
 
-SOCKETHANDLE SocketServer::waitConnectionEvent(NESocket::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int entriesCount)
+SOCKETHANDLE SocketServer::waitConnectionEvent(areg::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int entriesCount)
 {
-    return ( isValid() ? NESocket::serverAcceptConnection(*mSocket, masterList, entriesCount, &out_addrAccepted) : NESocket::InvalidSocketHandle );
+    return ( isValid() ? areg::serverAcceptConnection(*mSocket, masterList, entriesCount, &out_addrAccepted) : areg::InvalidSocketHandle );
 }

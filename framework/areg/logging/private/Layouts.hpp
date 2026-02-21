@@ -69,7 +69,7 @@ protected:
     /**
      * \brief   Initializes the layout type
      **/
-    LogLayout( NELogOptions::eLayouts layout );
+    LogLayout( areg::eLayouts layout );
 
 public:
     /**
@@ -91,7 +91,7 @@ public:
      * \param   stream  The streaming object, where the text message should be written.
      * \note    Every layout object should overwrite this message to make layout specific outputs.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const = 0;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Returns the layout type
      **/
-    inline NELogOptions::eLayouts getLayoutType() const;
+    inline areg::eLayouts getLayoutType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -109,7 +109,7 @@ protected:
     /**
      * \brief   Layout type. Cannot be modified.
      **/
-    const NELogOptions::eLayouts  mLayout;
+    const areg::eLayouts  mLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -182,7 +182,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -248,7 +248,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -314,7 +314,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -380,7 +380,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -446,7 +446,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -512,7 +512,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -578,7 +578,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -644,7 +644,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -710,7 +710,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -776,7 +776,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -842,7 +842,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -920,7 +920,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -995,7 +995,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const override;
+    virtual void logMessage( const areg::sLogMessage & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1006,7 +1006,7 @@ public:
 // LogLayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogOptions::eLayouts LogLayout::getLayoutType() const
+inline areg::eLayouts LogLayout::getLayoutType() const
 {
     return mLayout;
 }

@@ -58,7 +58,7 @@ public:
      * \param   server          The address of Stub object. If valid, Proxy can send request events.
      * \param   connectStatus   Indicates the connection status.
      **/
-    ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, NEService::eServiceConnection connectStatus );
+    ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, areg::eServiceConnection connectStatus );
 
     /**
      * \brief   Copy constructor.
@@ -91,7 +91,7 @@ public:
     /**
      * \brief   Returns the current connection status set in proxy connect event.
      **/
-    inline NEService::eServiceConnection getConnectionStatus() const;
+    inline areg::eServiceConnection getConnectionStatus() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -126,7 +126,7 @@ private:
     /**
      * \brief   The proxy connection status.
      **/
-    NEService::eServiceConnection   mConnectionStatus;
+    areg::eServiceConnection   mConnectionStatus;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -145,7 +145,7 @@ inline const StubAddress & ProxyConnectEvent::getStubAddress() const
     return mStubAddress;
 }
 
-inline NEService::eServiceConnection ProxyConnectEvent::getConnectionStatus() const
+inline areg::eServiceConnection ProxyConnectEvent::getConnectionStatus() const
 {
     return mConnectionStatus;
 }

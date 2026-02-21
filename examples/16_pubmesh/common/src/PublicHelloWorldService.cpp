@@ -51,7 +51,7 @@ void PublicHelloWorldService::requestRegister( const String & name, const Servic
 
     if ( mClientList.isInvalidPosition( pos ) )
     {
-        theClient = PublicHelloWorld::sClientRegister( NEUtilities::generateUniqueId( ), name, service, thread, process );
+        theClient = PublicHelloWorld::sClientRegister( areg::generateUniqueId( ), name, service, thread, process );
         mClientList.pushFirst( theClient );
         LOG_DBG( "Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
             , theClient.crID
@@ -107,7 +107,7 @@ void PublicHelloWorldService::requestHelloWorld( unsigned int clientID )
     responseHelloWorld( theClient.crID );
 }
 
-bool PublicHelloWorldService::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+bool PublicHelloWorldService::clientConnected(const ProxyAddress & client, areg::eServiceConnection status)
 {
     return PublicHelloWorldStub::clientConnected(client, status);
 }

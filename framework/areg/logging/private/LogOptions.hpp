@@ -33,10 +33,10 @@
   *         log enable / disable, scope (group of scopes) defines, 
   *         log target (file, remote host), comments, etc.
   **/
-namespace NELogOptions
-{
+AREG_NAMESPACE_BEGIN
+
     /**
-     * \brief   NELogging::eLogStatus
+     * \brief   areg::eLogStatus
      *          Defines logging status
      **/
     typedef enum class E_LogStatus
@@ -47,7 +47,7 @@ namespace NELogOptions
     } eLogStatus;
 
     /**
-     * \brief   NELogging::eConfigKey
+     * \brief   areg::eConfigKey
      *          The configuration key visibility levels
      **/
     typedef enum class E_ConfigKey
@@ -59,7 +59,7 @@ namespace NELogOptions
     } eConfigKey;
 
     /**
-     * \brief   NELogging::eLayouts
+     * \brief   areg::eLayouts
      *          The syntax of specifiers to parse and create layouts to output messages.
      * 
      * \example Formatting message out for scope:
@@ -120,13 +120,6 @@ namespace NELogOptions
     constexpr char              SYNTAX_SCOPE_GROUP                  { '*' };
 
     /**
-     * \brief   Symbol, indicating scope group or all scopes.
-     *          For example, the scope "scope.*" means all scope.
-     *          And the scope "scope.areg_*" means all scopes of that start with "areg_"
-     **/
-    constexpr std::string_view  LOG_SCOPES_GRPOUP                   { "*" };
-
-    /**
      * \brief   The reserved name of invalid scope
      **/
     constexpr std::string_view  INVALID_SCOPE_NAME                  { "INVALID_SCOPE_NAME" };
@@ -144,16 +137,16 @@ namespace NELogOptions
     /**
      * \brief   The default logging priority
      **/
-    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NELogging::PrioNotset) };
+    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(areg::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate
      **/
     constexpr std::pair<std::string_view, unsigned int>  DEFAULT_LOG_ENABLED_SCOPES[]
     {
-          { {"*"}       , static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) }
+          { {"*"}       , static_cast<unsigned int>(areg::eLogPriority::PrioNotset) }
     };
-}
+AREG_NAMESPACE_END
 
 //////////////////////////////////////////////////////////////////////////
 // NELogging namespace inline method implementation

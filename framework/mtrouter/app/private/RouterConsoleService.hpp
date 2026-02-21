@@ -43,7 +43,7 @@ public:
      * \param   entry   The instance of the component entry that contains the component information.
      * \param   owner   The instance of component owner thread.
      **/
-    RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    RouterConsoleService( const areg::ComponentEntry & entry, ComponentThread & owner );
 
     /**
      * \brief   Destructor.

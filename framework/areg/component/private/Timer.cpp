@@ -35,9 +35,9 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 //////////////////////////////////////////////////////////////////////////
 Timer::Timer( TimerConsumer& timerConsumer
             , const String & timerName  /*= String::getEmptyString()*/
-            , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
+            , uint32_t timeoutMs        /*= areg::INVALID_TIMEOUT*/
             , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
-    : TimerBase         ( TimerBase::eTimerType::TimerTypeNormal, NEUtilities::generateName(timerName), timeoutMs )
+    : TimerBase         ( TimerBase::eTimerType::TimerTypeNormal, areg::generateName(timerName), timeoutMs )
     , mConsumer         (timerConsumer)
 
     , mCurrentQueued    (0)
@@ -120,11 +120,11 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
         mStartedAt = mExpiredAt;
     }
 
-    mExpiredAt = NEMath::make64(highValue, lowValue);
+    mExpiredAt = areg::make64(highValue, lowValue);
     mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
     mActive = mEventsCount != 0;
 
-    if (mTimeoutInMs != NECommon::INVALID_TIMEOUT)
+    if (mTimeoutInMs != areg::INVALID_TIMEOUT)
     {
         TimerEvent::sendEvent(*this, *mDispatchThread);
     }
@@ -138,7 +138,7 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
 
 void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
 {
-    mStartedAt = NEMath::make64(highValue, lowValue);
+    mStartedAt = areg::make64(highValue, lowValue);
     mExpiredAt = 0;
 }
 
@@ -185,7 +185,7 @@ inline void Timer::_stopTimer()
     mActive         = false;
     mDispatchThread = nullptr;
     mCurrentQueued  = 0;
-    mTimeoutInMs    = NECommon::INVALID_TIMEOUT;
+    mTimeoutInMs    = areg::INVALID_TIMEOUT;
     mEventsCount    = 0;
     mStartedAt      = 0;
     mExpiredAt      = 0;

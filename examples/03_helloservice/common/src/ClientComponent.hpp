@@ -15,7 +15,7 @@ class ClientComponent   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ClientComponent(const areg::ComponentEntry & entry, ComponentThread & owner);
 
 protected:
 /************************************************************************
@@ -31,7 +31,7 @@ protected:
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestHelloServiceFailed( NEService::ResultType FailureReason ) override;
+    virtual void requestHelloServiceFailed( areg::ResultType FailureReason ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -47,7 +47,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( areg::eServiceConnection status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls

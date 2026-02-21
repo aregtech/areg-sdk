@@ -42,8 +42,8 @@ class LogScope;
  *          constants, structures, methods and types used
  *          to provide logging functionality.
  **/
-namespace NELogging
-{
+AREG_NAMESPACE_BEGIN
+
     /**
      * \brief   The supported logging version
      **/
@@ -61,7 +61,7 @@ namespace NELogging
     using SCOPEPOS      = ScopeList::MAPPOS;
 
     /**
-     * \brief   NELogging::sScopeInfo
+     * \brief   areg::sScopeInfo
      *          The structure to keep scope information. It is used to generate scope priority update messages.
      *          The structure contains scope name, scope ID and scope priority values.
      **/
@@ -80,7 +80,7 @@ namespace NELogging
          **/
         inline sScopeInfo(const char* name, uint32_t id, uint32_t prio);
 
-        uint32_t    scopeId;    //!< The scope ID, can be 0 (NELogging::LOG_SCOPE_ID_NONE). For scope group should be 0.
+        uint32_t    scopeId;    //!< The scope ID, can be 0 (areg::LOG_SCOPE_ID_NONE). For scope group should be 0.
         uint32_t    scopePrio;  //!< The scope priority.
         String      scopeName;  //!< The name of the scope or scope group.
     };
@@ -89,7 +89,7 @@ namespace NELogging
     using ScopeNames    = ArrayList<sScopeInfo>;
 
     /**
-     * \brief   NELogging::LoggingType
+     * \brief   areg::LoggingType
      *          The logging types in Areg framework
      **/
     enum LoggingType : unsigned int
@@ -102,7 +102,7 @@ namespace NELogging
     };
 
     /**
-     * \brief   NELogging::eLogPriority
+     * \brief   areg::eLogPriority
      *          Log priority definition set when logging message
      **/
     enum eLogPriority : unsigned short
@@ -130,35 +130,35 @@ namespace NELogging
     };
 
     /**
-     * \brief   NELogging::getString
-     *          Converts NELogging::eLogPriority values to readable string values
+     * \brief   areg::getString
+     *          Converts areg::eLogPriority values to readable string values
      **/
-    inline const char * getString( NELogging::eLogPriority prio );
+    inline const char * getString( areg::eLogPriority prio );
 
     /**
      * \brief   Returns true if the specified log priority value is valid.
      **/
-    inline bool isValidLogPriority( NELogging::eLogPriority prio );
+    inline bool isValidLogPriority( areg::eLogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority refers to the logging.
      **/
-    inline bool isLogPriority( NELogging::eLogPriority prio );
+    inline bool isLogPriority( areg::eLogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority enables logging, i.e. logs messages..
      **/
-    inline bool isEnablingLog( NELogging::eLogPriority prio );
+    inline bool isEnablingLog( areg::eLogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority makes scope logging.
      **/
-    inline bool isLogScope( NELogging::eLogPriority prio );
+    inline bool isLogScope( areg::eLogPriority prio );
 
     /**
      * \brief   Returns true if the specified priority does not log messages.
      **/
-    inline bool isDisablingLog( NELogging::eLogPriority prio );
+    inline bool isDisablingLog( areg::eLogPriority prio );
 
     /**
      * \brief   Returns the cookie of the log collector (logger).
@@ -166,14 +166,14 @@ namespace NELogging
     AREG_API const ITEM_ID & getCookie();
 
     /**
-     * \brief   NELogging::HAS_MESSAGE_PRIORITY
+     * \brief   areg::HAS_MESSAGE_PRIORITY
      *          Flag, indicating whether there is any priority set to output message.
      *          The log has priority if one of first 5 bits are set.
      **/
     constexpr unsigned int  HAS_MESSAGE_PRIORITY    { 0x1F }; // 63, bit set 0001 1111
 
     /**
-     * \brief   NELogging::LOG_SCOPE_ID_NONE
+     * \brief   areg::LOG_SCOPE_ID_NONE
      *          Constant, defines no scope ID. It is used to output message without scope
      **/
     constexpr unsigned int  LOG_SCOPE_ID_NONE     { 0 };
@@ -217,13 +217,13 @@ namespace NELogging
     constexpr std::string_view   LOGDB_ENGINE_NAME  { "sqlite3" };
 
     /**
-     * \brief   Returns string value of NELogging::eLogPriority.
+     * \brief   Returns string value of areg::eLogPriority.
      *          There are following valid string priority values:
      *          NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO, DEBUG.
      * \param   prio    The priority to get string value.
      * \return  Returns string priority value
      **/
-    inline const String& logPrioToString(NELogging::eLogPriority prio);
+    inline const String& logPrioToString(areg::eLogPriority prio);
 
     /**
      * \brief   From given string value returns log priority value.
@@ -233,7 +233,7 @@ namespace NELogging
      *                  The given string is not case sensitive.
      * \return  Returns appropriate logging priority value.
      **/
-    inline NELogging::eLogPriority stringToLogPrio(const String& prio);
+    inline areg::eLogPriority stringToLogPrio(const String& prio);
 
     /**
      * \brief   Converts the bitwise set of priority into the human readable string.
@@ -252,18 +252,18 @@ namespace NELogging
     AREG_API unsigned int makePriorities(const String& prio);
 
     /**
-     * \brief   NELogging::LOG_MESSAGE_IZE
+     * \brief   areg::LOG_MESSAGE_IZE
      *          The maximum size of text in log message
      **/
     constexpr uint32_t  LOG_MESSAGE_IZE     { 332 };
     /**
-     * \brief   NELogging::LOG_NAMES_SIZE
+     * \brief   areg::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
      **/
     constexpr uint32_t   LOG_NAMES_SIZE     { 48 };
 
     /**
-     * \brief   NELogging::eLogMessageType
+     * \brief   areg::eLogMessageType
      *          The logging message type.
      **/
     enum class eLogMessageType  : unsigned char
@@ -275,7 +275,7 @@ namespace NELogging
     };
 
     /**
-     * \brief   NELogging::eLogDataType
+     * \brief   areg::eLogDataType
      *          The data type in the message log
      **/
     enum class eLogDataType : unsigned char
@@ -285,7 +285,7 @@ namespace NELogging
     };
 
     /**
-     * \brief   NELogging::sLogMessage
+     * \brief   areg::sLogMessage
      *          The structure of logging message object to output on target (log collector or observer).
      **/
     struct AREG_API sLogMessage
@@ -294,7 +294,7 @@ namespace NELogging
          * \brief   Initializes logging message of specified type.
          * \param   msgType     The logging message type.
          **/
-        sLogMessage( NELogging::eLogMessageType msgType = NELogging::eLogMessageType::LogMessageUndefined );
+        sLogMessage( areg::eLogMessageType msgType = areg::eLogMessageType::LogMessageUndefined );
         /**
          * \brief   Initializes logging message and sets specified data.
          * \param   msgType     The logging message type.
@@ -306,7 +306,7 @@ namespace NELogging
          * \param   message     The message text to output on target. Can be empty.
          * \param   msgLen      The length of the message string.
          **/
-        sLogMessage(NELogging::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::eLogPriority msgPrio, const char * message, unsigned int msgLen);
+        sLogMessage(areg::eLogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, areg::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
@@ -319,9 +319,9 @@ namespace NELogging
          **/
         sLogMessage & operator = (const sLogMessage & src);
 
-        NELogging::eLogDataType     logDataType;    //!< The type of log message data.
-        NELogging::eLogMessageType  logMsgType;     //!< The type of the logging message.
-        NELogging::eLogPriority     logMessagePrio; //!< The log message priority
+        areg::eLogDataType     logDataType;    //!< The type of log message data.
+        areg::eLogMessageType  logMsgType;     //!< The type of the logging message.
+        areg::eLogPriority     logMessagePrio; //!< The log message priority
         ITEM_ID                     logSource;      //!< The ID of the source that generated logging message.
         ITEM_ID                     logTarget;      //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
         ITEM_ID                     logCookie;      //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
@@ -333,7 +333,7 @@ namespace NELogging
         unsigned int                logScopeId;     //!< The ID of log scope that generated log message
         unsigned int                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
         unsigned int                logMessageLen;  //!< The actual length of the log message
-        char                        logMessage[LOG_MESSAGE_IZE];//!< The message text to output, with maximum NELogging::LOG_MESSAGE_IZE characters.
+        char                        logMessage[LOG_MESSAGE_IZE];//!< The message text to output, with maximum areg::LOG_MESSAGE_IZE characters.
         unsigned int                logThreadLen;               //!< The length of the thread name;
         char                        logThread[LOG_NAMES_SIZE];  //!< The name of the thread that generated the log. Valid only for remote logging
         unsigned int                logModuleLen;               //!< The length of the module name.
@@ -387,7 +387,7 @@ namespace NELogging
 
     /**
      * \brief   Activates the specified log scope, enabling logging for messages within that scope.
-     *          By default, the logging priority of a scope is set to NELogging::PrioNotset.
+     *          By default, the logging priority of a scope is set to areg::PrioNotset.
      *          The method checks the logging configuration for priority settings, and if a priority 
      *          is specified, the scope begins logging messages of that priority or higher.
      * \param   logScope    The log scope instance to activate and set a logging priority for.
@@ -395,7 +395,7 @@ namespace NELogging
      *                      unable to log messages.
      * \note    Activating a scope alone does not guarantee message logging. 
      *          If the configuration file lacks priority information for the scope, messages will not be logged.
-     *          However, if the configuration specifies a priority other than NELogging::PrioNotset,
+     *          However, if the configuration specifies a priority other than areg::PrioNotset,
      *          messages within that scope will be logged according to the specified priority.
      **/
     AREG_API void activateScope( LogScope & logScope );
@@ -458,7 +458,7 @@ namespace NELogging
 
     /**
      * \brief   If scope with the give name found, returns the combined priority of scope; 
-     *          otherwise, returns invalid priority (NELogging::eLogPriority::PrioInvalid).
+     *          otherwise, returns invalid priority (areg::eLogPriority::PrioInvalid).
      * \param   scopeName   The name of the existing scope.
      * \return  If found the scope, returns the actual priority of the scope.
      *          Otherwise, returns invalid priority.
@@ -472,7 +472,7 @@ namespace NELogging
      * \param   srcCookie   The cookie of the source generated message.
      * \return  Returns message object for network communication.
      **/
-    AREG_API RemoteMessage createLogMessage(const NELogging::sLogMessage& logMessage, NELogging::eLogDataType dataType, const ITEM_ID & srcCookie);
+    AREG_API RemoteMessage createLogMessage(const areg::sLogMessage& logMessage, areg::eLogDataType dataType, const ITEM_ID & srcCookie);
 
     /**
      * \brief   Triggers an event to log the message, contained in the buffer.
@@ -484,13 +484,13 @@ namespace NELogging
      * \brief   Log local custom message ignoring process and thread names.
      * \param   logMessage  The structure that contains information to log a message.
      **/
-    AREG_API void logAnyMessageLocal(const NELogging::sLogMessage& logMessage);
+    AREG_API void logAnyMessageLocal(const areg::sLogMessage& logMessage);
 
     /**
      * \brief   Log custom message considering process and thread names.
      * \param   logMessage  The structure that contains information to log a message.
      **/
-    AREG_API void logAnyMessage(const NELogging::sLogMessage& logMessage);
+    AREG_API void logAnyMessage(const areg::sLogMessage& logMessage);
 
     /**
      * \brief   Creates a message for logging service to register scopes with message priority.
@@ -499,7 +499,7 @@ namespace NELogging
      * \param   scopeList   The list of scopes to register.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const NELogging::ScopeList & scopeList);
+    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList);
 
     /**
      * \brief   Creates a message to update the list of log scopes and priorities. This message can change the priority either
@@ -512,7 +512,7 @@ namespace NELogging
      *                      The scope IDs can be set or missed (set 0).
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageUpdateScopes(const ITEM_ID & source, const ITEM_ID & target, const NELogging::ScopeNames & scopeNames);
+    AREG_API RemoteMessage messageUpdateScopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeNames & scopeNames);
 
     /**
      * \brief   Creates a message to update the logging priority of a single scope or a single group of scopes.
@@ -529,7 +529,7 @@ namespace NELogging
     /**
      * \brief   Creates a message to query instances connected to the service.
      * \param   source      The source ID that created the query message. Should be the ID of the log observer or the ID of the log collector service.
-     * \param   target      The target ID to send the message. The target is either concrete target or NEService::TARGET_ALL if message targets all clients.
+     * \param   target      The target ID to send the message. The target is either concrete target or areg::TARGET_ALL if message targets all clients.
      * \return  Returns generated message ready to forward to target client(s) via log collector service.
      **/
     AREG_API RemoteMessage messageQueryInstances(const ITEM_ID& source, const ITEM_ID& target);
@@ -542,9 +542,9 @@ namespace NELogging
      *          Only log observers and the log collector service (logger) can generate and send the message.
      *          The message is ignored if the client creates and send the message.
      * \param   source      The ID of the source that generated the message.
-     *                      The source should be either log observer or NEService::COOKIE_LOGGER.
+     *                      The source should be either log observer or areg::COOKIE_LOGGER.
      * \param   target      The ID of the target to send the message.
-     *                      If the ID is NEService::TARGET_ALL, the message is sent to all connected clients.
+     *                      If the ID is areg::TARGET_ALL, the message is sent to all connected clients.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
     AREG_API RemoteMessage messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target);
@@ -553,20 +553,20 @@ namespace NELogging
      * \brief   Creates a message to notify that scopes priority have been changed.
      *          The message is contains the list of all scopes and priorities, similar to methods messageRegisterScopes()
      * \param   source      The source ID that creates the message.
-     * \param   target      The target ID that receives the message. Normally, it should be NEService::COOKIE_LOGGER, and
+     * \param   target      The target ID that receives the message. Normally, it should be areg::COOKIE_LOGGER, and
      *                      then the log collector forwards the message to all lob observer instances.
      * \param   scopeList   The list of scopes, IDs and priorities to set in the message.
      * \return  Returns generated remote message that contains information of scopes, IDS and priorities to send to log collector.
      * \see     messageRegisterScopes
      **/
-    AREG_API RemoteMessage messageScopesUpdated(const ITEM_ID& source, const ITEM_ID& target, const NELogging::ScopeList& scopeList);
+    AREG_API RemoteMessage messageScopesUpdated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList);
 
     /**
      * \brief   Creates a message to send request to the connected client target to save configuration.
      * \param   source      The source ID that generated the message. It should be either ID of the log observer application
      *                      or the ID of the log collector service.
      * \param   target      The target ID to receive the message. This target can be either concrete connected client
-     *                      or can be NEService::TARGET_ALL if should be forwarded to all connected clients.
+     *                      or can be areg::TARGET_ALL if should be forwarded to all connected clients.
      * \return  Returns generated message ready to send to client(s) via log collector service.
      **/
     AREG_API RemoteMessage messageSaveConfiguration(const ITEM_ID & source, const ITEM_ID & target);
@@ -575,7 +575,7 @@ namespace NELogging
      * \brief   Create a message to notify the log collector that the configuration file has been saved.
      *          The message sent immediately after request to save configuration file, and the message
      *          is sent only to the log observer. The source of the message is taken by 
-     *          calling NELogging::getCookie() method, and the target is hard-coded value NEService::COOKIE_LOGGER.
+     *          calling areg::getCookie() method, and the target is hard-coded value areg::COOKIE_LOGGER.
      * \return  Returns generate remote message to notify the log collector that the configuration file has been saved.
      * \see     messageSaveConfiguration
      **/
@@ -585,13 +585,13 @@ namespace NELogging
      * \brief   Call to set external logging database engine.
      **/
     AREG_API void setLogDatabaseEngine(LogDatabaseEngine* dbEngine);
-}
+AREG_NAMESPACE_END
 
 //////////////////////////////////////////////////////////////////////////////
 // NELogging namespace streamable types
 //////////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE(NELogging::eLogPriority)
-AREG_IMPLEMENT_STREAMABLE(NELogging::eLogMessageType)
+AREG_IMPLEMENT_STREAMABLE(areg::eLogPriority)
+AREG_IMPLEMENT_STREAMABLE(areg::eLogMessageType)
 
 //////////////////////////////////////////////////////////////////////////////
 // NELogging namespace objects
@@ -606,9 +606,9 @@ AREG_IMPLEMENT_STREAMABLE(NELogging::eLogMessageType)
  * \param   stream  The source of log message data.
  * \param   input   On output this contains structured logging message.
  **/
-inline const InStream & operator >> (const InStream& stream, NELogging::sLogMessage& input)
+inline const InStream & operator >> (const InStream& stream, areg::sLogMessage& input)
 {
-    stream.read(reinterpret_cast<unsigned char *>(&input), offsetof(NELogging::sLogMessage, logMessage));
+    stream.read(reinterpret_cast<unsigned char *>(&input), offsetof(areg::sLogMessage, logMessage));
     stream.read(reinterpret_cast<unsigned char *>(input.logMessage), input.logMessageLen + 1);
     return stream;
 }
@@ -618,9 +618,9 @@ inline const InStream & operator >> (const InStream& stream, NELogging::sLogMess
  * \param   stream  The streaming object to save log message.
  * \param   output  The source of log message to serialize message.
  **/
-inline OutStream& operator << (OutStream& stream, const NELogging::sLogMessage& output)
+inline OutStream& operator << (OutStream& stream, const areg::sLogMessage& output)
 {
-    stream.write(reinterpret_cast<const unsigned char *>(&output), offsetof(NELogging::sLogMessage, logMessage));
+    stream.write(reinterpret_cast<const unsigned char *>(&output), offsetof(areg::sLogMessage, logMessage));
     stream.write(reinterpret_cast<const unsigned char *>(output.logMessage), output.logMessageLen + 1);
     return stream;
 }
@@ -630,7 +630,7 @@ inline OutStream& operator << (OutStream& stream, const NELogging::sLogMessage& 
  * \param   stream  The source of data that contains scope update structure information.
  * \param   input   On output this contains structured scope update data.
  **/
-inline const InStream& operator >> (const InStream& stream, NELogging::sScopeInfo & input)
+inline const InStream& operator >> (const InStream& stream, areg::sScopeInfo & input)
 {
     stream >> input.scopeId >> input.scopePrio >> input.scopeName;
     return stream;
@@ -641,7 +641,7 @@ inline const InStream& operator >> (const InStream& stream, NELogging::sScopeInf
  * \param   stream  The streaming object to save scope update information.
  * \param   output  The source of scope update structure to serialize message.
  **/
-inline OutStream& operator << (OutStream& stream, const NELogging::sScopeInfo & output)
+inline OutStream& operator << (OutStream& stream, const areg::sScopeInfo & output)
 {
     stream << output.scopeId << output.scopePrio << output.scopeName;
     return stream;
@@ -651,142 +651,142 @@ inline OutStream& operator << (OutStream& stream, const NELogging::sScopeInfo & 
 // NELogging namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
 
-inline const char* NELogging::getString(NELogging::eLogPriority prio)
+inline const char* areg::getString(areg::eLogPriority prio)
 {
     switch ( prio )
     {
-    case NELogging::eLogPriority::PrioInvalid:
-        return "NELogging::PrioInvalid";
-    case NELogging::eLogPriority::PrioNotset:
-        return "NELogging::PrioNotset";
-    case NELogging::eLogPriority::PrioFatal:
-        return "NELogging::PrioFatal";
-    case NELogging::eLogPriority::PrioScope:
-        return "NELogging::PrioScope";
-    case NELogging::eLogPriority::PrioError:
-        return "NELogging::PrioError";
-    case NELogging::eLogPriority::PrioWarning:
-        return "NELogging::PrioWarning";
-    case NELogging::eLogPriority::PrioInfo:
-        return "NELogging::PrioInfo";
-    case NELogging::eLogPriority::PrioDebug:
-        return "NELogging::PrioDebug";
-    case NELogging::eLogPriority::PrioLogs:
-        return "NELogging::PrioLogs";
-    case NELogging::eLogPriority::PrioScopeLogs:
-        return "NELogging::PrioScopeLogs";
-    case NELogging::eLogPriority::PrioValidLogs:
-        return "NELogging::PrioValidLogs";
-    case NELogging::eLogPriority::PrioIgnore:
-        return "NELogging::PrioIgnore";
-    case NELogging::eLogPriority::PrioMarker:
-        return "NELogging::PrioMarker";
-    case NELogging::eLogPriority::PrioMarkerError:
-        return "NELogging::PrioMarkerError";
-    case NELogging::eLogPriority::PrioMarkerWarning:
-        return "NELogging::PrioMarkerWarning";
-    case NELogging::eLogPriority::PrioMarkerInfo:
-        return "NELogging::PrioMarkerInfo";
-    case NELogging::eLogPriority::PrioIgnoreLayout:
-        return "NELogging::PrioIgnoreLayout";
-    case NELogging::eLogPriority::PrioAny:
-        return "NELogging::PrioAny";
-    case NELogging::eLogPriority::PrioValid:
-        return "NELogging::PrioValid";
+    case areg::eLogPriority::PrioInvalid:
+        return "areg::PrioInvalid";
+    case areg::eLogPriority::PrioNotset:
+        return "areg::PrioNotset";
+    case areg::eLogPriority::PrioFatal:
+        return "areg::PrioFatal";
+    case areg::eLogPriority::PrioScope:
+        return "areg::PrioScope";
+    case areg::eLogPriority::PrioError:
+        return "areg::PrioError";
+    case areg::eLogPriority::PrioWarning:
+        return "areg::PrioWarning";
+    case areg::eLogPriority::PrioInfo:
+        return "areg::PrioInfo";
+    case areg::eLogPriority::PrioDebug:
+        return "areg::PrioDebug";
+    case areg::eLogPriority::PrioLogs:
+        return "areg::PrioLogs";
+    case areg::eLogPriority::PrioScopeLogs:
+        return "areg::PrioScopeLogs";
+    case areg::eLogPriority::PrioValidLogs:
+        return "areg::PrioValidLogs";
+    case areg::eLogPriority::PrioIgnore:
+        return "areg::PrioIgnore";
+    case areg::eLogPriority::PrioMarker:
+        return "areg::PrioMarker";
+    case areg::eLogPriority::PrioMarkerError:
+        return "areg::PrioMarkerError";
+    case areg::eLogPriority::PrioMarkerWarning:
+        return "areg::PrioMarkerWarning";
+    case areg::eLogPriority::PrioMarkerInfo:
+        return "areg::PrioMarkerInfo";
+    case areg::eLogPriority::PrioIgnoreLayout:
+        return "areg::PrioIgnoreLayout";
+    case areg::eLogPriority::PrioAny:
+        return "areg::PrioAny";
+    case areg::eLogPriority::PrioValid:
+        return "areg::PrioValid";
     default:
         ASSERT(false);
-        return "ERR: Unexpected NELogging::eLogPrior value";
+        return "ERR: Unexpected areg::eLogPrior value";
     }
 }
 
-inline NELogging::sScopeInfo::sScopeInfo()
+inline areg::sScopeInfo::sScopeInfo()
     : scopeId   ( 0u )
-    , scopePrio ( static_cast<uint32_t>(NELogging::eLogPriority::PrioInvalid) )
+    , scopePrio ( static_cast<uint32_t>(areg::eLogPriority::PrioInvalid) )
     , scopeName (String::EmptyString)
 {
 }
 
-inline NELogging::sScopeInfo::sScopeInfo(const char* name, uint32_t id, uint32_t prio)
+inline areg::sScopeInfo::sScopeInfo(const char* name, uint32_t id, uint32_t prio)
     : scopeId   (id)
     , scopePrio (prio)
     , scopeName (name)
 {
 }
 
-inline bool NELogging::isValidLogPriority( NELogging::eLogPriority prio )
+inline bool areg::isValidLogPriority( areg::eLogPriority prio )
 {
-    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NELogging::eLogPriority::PrioValid)) != 0;
+    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(areg::eLogPriority::PrioValid)) != 0;
 }
 
-inline bool NELogging::isLogPriority( NELogging::eLogPriority prio )
+inline bool areg::isLogPriority( areg::eLogPriority prio )
 {
-    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NELogging::eLogPriority::PrioValidLogs)) != 0;
+    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(areg::eLogPriority::PrioValidLogs)) != 0;
 }
 
-inline bool NELogging::isEnablingLog( NELogging::eLogPriority prio )
+inline bool areg::isEnablingLog( areg::eLogPriority prio )
 {
-    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NELogging::eLogPriority::PrioLogs)) != 0;
+    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(areg::eLogPriority::PrioLogs)) != 0;
 }
 
-inline bool NELogging::isLogScope( NELogging::eLogPriority prio )
+inline bool areg::isLogScope( areg::eLogPriority prio )
 {
-    return (prio == NELogging::eLogPriority::PrioScope);
+    return (prio == areg::eLogPriority::PrioScope);
 }
 
-inline bool NELogging::isDisablingLog( NELogging::eLogPriority prio )
+inline bool areg::isDisablingLog( areg::eLogPriority prio )
 {
-    return (prio == NELogging::eLogPriority::PrioNotset) || (prio == NELogging::eLogPriority::PrioInvalid);
+    return (prio == areg::eLogPriority::PrioNotset) || (prio == areg::eLogPriority::PrioInvalid);
 }
 
-inline const String& NELogging::logPrioToString(NELogging::eLogPriority prio)
+inline const String& areg::logPrioToString(areg::eLogPriority prio)
 {
     switch (prio)
     {
-    case NELogging::eLogPriority::PrioNotset:
-        return NELogging::PRIO_NOTSET_STR;
-    case NELogging::eLogPriority::PrioScope:
-        return NELogging::PRIO_SCOPE_STR;
-    case NELogging::eLogPriority::PrioFatal:
-        return NELogging::PRIO_FATAL_STR;
-    case NELogging::eLogPriority::PrioError:
-        return NELogging::PRIO_ERROR_STR;
-    case NELogging::eLogPriority::PrioWarning:
-        return NELogging::PRIO_WARNING_STR;
-    case NELogging::eLogPriority::PrioInfo:
-        return NELogging::PRIO_INFO_STR;
-    case NELogging::eLogPriority::PrioDebug:
-        return NELogging::PRIO_DEBUG_STR;
+    case areg::eLogPriority::PrioNotset:
+        return areg::PRIO_NOTSET_STR;
+    case areg::eLogPriority::PrioScope:
+        return areg::PRIO_SCOPE_STR;
+    case areg::eLogPriority::PrioFatal:
+        return areg::PRIO_FATAL_STR;
+    case areg::eLogPriority::PrioError:
+        return areg::PRIO_ERROR_STR;
+    case areg::eLogPriority::PrioWarning:
+        return areg::PRIO_WARNING_STR;
+    case areg::eLogPriority::PrioInfo:
+        return areg::PRIO_INFO_STR;
+    case areg::eLogPriority::PrioDebug:
+        return areg::PRIO_DEBUG_STR;
 
-    case NELogging::eLogPriority::PrioInvalid:        // fall through
-    case NELogging::eLogPriority::PrioLogs:           // fall through
-    case NELogging::eLogPriority::PrioValidLogs:      // fall through
-    case NELogging::eLogPriority::PrioIgnore:         // fall through
-    case NELogging::eLogPriority::PrioIgnoreLayout:   // fall through
-    case NELogging::eLogPriority::PrioAny:            // fall through
-    case NELogging::eLogPriority::PrioValid:          // fall through
+    case areg::eLogPriority::PrioInvalid:        // fall through
+    case areg::eLogPriority::PrioLogs:           // fall through
+    case areg::eLogPriority::PrioValidLogs:      // fall through
+    case areg::eLogPriority::PrioIgnore:         // fall through
+    case areg::eLogPriority::PrioIgnoreLayout:   // fall through
+    case areg::eLogPriority::PrioAny:            // fall through
+    case areg::eLogPriority::PrioValid:          // fall through
     default:
-        return NELogging::PRIO_NO_PRIO;
+        return areg::PRIO_NO_PRIO;
     }
 }
 
-inline NELogging::eLogPriority NELogging::stringToLogPrio(const String& prio)
+inline areg::eLogPriority areg::stringToLogPrio(const String& prio)
 {
-    if (NELogging::PRIO_DEBUG_STR == prio)
-        return NELogging::eLogPriority::PrioDebug;
-    else if (NELogging::PRIO_INFO_STR == prio)
-        return NELogging::eLogPriority::PrioInfo;
-    else if (NELogging::PRIO_WARNING_STR == prio)
-        return NELogging::eLogPriority::PrioWarning;
-    else if (NELogging::PRIO_ERROR_STR == prio)
-        return NELogging::eLogPriority::PrioError;
-    else if (NELogging::PRIO_FATAL_STR == prio)
-        return NELogging::eLogPriority::PrioFatal;
-    else if (NELogging::PRIO_SCOPE_STR == prio)
-        return NELogging::eLogPriority::PrioScope;
-    else if (NELogging::PRIO_NOTSET_STR == prio)
-        return NELogging::eLogPriority::PrioNotset;
+    if (areg::PRIO_DEBUG_STR == prio)
+        return areg::eLogPriority::PrioDebug;
+    else if (areg::PRIO_INFO_STR == prio)
+        return areg::eLogPriority::PrioInfo;
+    else if (areg::PRIO_WARNING_STR == prio)
+        return areg::eLogPriority::PrioWarning;
+    else if (areg::PRIO_ERROR_STR == prio)
+        return areg::eLogPriority::PrioError;
+    else if (areg::PRIO_FATAL_STR == prio)
+        return areg::eLogPriority::PrioFatal;
+    else if (areg::PRIO_SCOPE_STR == prio)
+        return areg::eLogPriority::PrioScope;
+    else if (areg::PRIO_NOTSET_STR == prio)
+        return areg::eLogPriority::PrioNotset;
     else
-        return NELogging::eLogPriority::PrioIgnoreLayout;
+        return areg::eLogPriority::PrioIgnoreLayout;
 }
 
 #endif  // AREG_LOGGING_LOGGINGDEFS_HPP

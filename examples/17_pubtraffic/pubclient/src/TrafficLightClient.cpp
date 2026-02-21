@@ -12,7 +12,7 @@
 #include "pubclient/src/TrafficLightClient.hpp"
 #include "areg/appbase/Application.hpp"
 
-TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component                     ( entry, owner )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
 
@@ -20,7 +20,7 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 {
 }
 
-bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy)
 {
     bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
 
@@ -41,17 +41,17 @@ bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status,
     return result;
 }
 
-void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::eTrafficLight SouthNorth, NEService::eDataStateType state)
+void TrafficLightClient::onSouthNorthUpdate(SimpleTrafficLight::eTrafficLight SouthNorth, areg::eDataStateType state)
 {
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         outputState(SouthNorth);
     }
 }
 
-void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state)
+void TrafficLightClient::onEastWestUpdate(SimpleTrafficLight::eTrafficLight EastWest, areg::eDataStateType state)
 {
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         outputState(EastWest);
     }

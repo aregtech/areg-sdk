@@ -42,7 +42,7 @@ void DirectMessagingClient::shutdownChat()
     }
 }
 
-bool DirectMessagingClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool DirectMessagingClient::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_ServiceConnected );
 
@@ -130,8 +130,8 @@ void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndComman
             nickName = "[ " + participant.nickName + " ]";
         else
             nickName = participant.nickName;
-        NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
-        NEString::copyString<TCHAR, char>( data->message , chat::MAXLEN_MESSAGE , msgText.getString( )  );
+        areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
+        areg::copyString<TCHAR, char>( data->message , chat::MAXLEN_MESSAGE , msgText.getString( )  );
         data->timeSend      = dateStart;
         data->timeReceived  = dateEnd;
         data->dataSave      = participant.cookie;

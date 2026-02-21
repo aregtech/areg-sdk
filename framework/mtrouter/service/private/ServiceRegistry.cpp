@@ -67,12 +67,12 @@ const ServiceProxy & ServiceRegistry::getProxyService(const ProxyAddress & addPr
     return getProxyServiceList( static_cast<const ServiceAddress &>(addProxy) ).getService(addProxy);
 }
 
-NEService::eServiceConnection ServiceRegistry::getServiceStatus(const StubAddress & addrStub) const
+areg::eServiceConnection ServiceRegistry::getServiceStatus(const StubAddress & addrStub) const
 {
     return getStubService(addrStub).getServiceStatus();
 }
 
-NEService::eServiceConnection ServiceRegistry::getServiceStatus(const ProxyAddress & addrProxy) const
+areg::eServiceConnection ServiceRegistry::getServiceStatus(const ProxyAddress & addrProxy) const
 {
     return getProxyService(addrProxy).getServiceStatus();
 }
@@ -98,7 +98,7 @@ const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & a
 
         LOG_DBG("Proxy [ %s ] is registered for service with status [ %s ]"
                         , ProxyAddress::convAddressToPath(addrProxy).getString()
-                        , NEService::getString(result.getServiceStatus()));
+                        , areg::getString(result.getServiceStatus()));
     }
 
     return result;
@@ -118,7 +118,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
         {
             LOG_INFO("Proxy [ %s ] is unregistered, remove empty and invalid service entry with status [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
-                            , NEService::getString(stub.getServiceStatus()));
+                            , areg::getString(stub.getServiceStatus()));
 
             removePosition(pos);
             pos = invalidPosition(); // should not be the last
@@ -128,7 +128,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
             LOG_INFO("Unregistered proxy [ %s ], there are [ %d ] proxies left, service status [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , proxies.getSize()
-                            , NEService::getString(stub.getServiceStatus()));
+                            , areg::getString(stub.getServiceStatus()));
         }
     }
     else
@@ -154,12 +154,12 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
         LOG_DBG("Registered new service [ %s ], there are no proxies yet waiting for service"
                     , StubAddress::convAddressToPath(addrStub).getString());
 
-        result.setServiceStatus( NEService::eServiceConnection::ServiceConnected );
+        result.setServiceStatus( areg::eServiceConnection::ServiceConnected );
         out_listProxies = proxies;
     }
     else
     {
-        result.setService( addrStub, NEService::eServiceConnection::ServiceConnected );
+        result.setService( addrStub, areg::eServiceConnection::ServiceConnected );
         proxies.stubServiceAvailable(addrStub);
         out_listProxies = proxies;
 
@@ -181,7 +181,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & a
         ServiceStub & stub = keyAtPosition(pos);
         ListServiceProxies & proxies = valueAtPosition(pos);
 
-        stub.setServiceStatus( NEService::eServiceConnection::ServicePending );
+        stub.setServiceStatus( areg::eServiceConnection::ServicePending );
         proxies.stubServiceUnavailable( );
         if ( proxies.isEmpty() )
         {
@@ -225,12 +225,12 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
         const StubAddress & addrStub = svcStub.getServiceAddress();
         const ListServiceProxies & listProxies = valueAtPosition(posMap);
 
-        if ( svcStub.isValid() && ((cookie == NEService::COOKIE_ANY) || (addrStub.getCookie() == cookie)) )
+        if ( svcStub.isValid() && ((cookie == areg::COOKIE_ANY) || (addrStub.getCookie() == cookie)) )
         {
             LOG_INFO("The cookie [ %u ] of service [ %s ] with status [ %s ] match criteria."
                         , static_cast<unsigned int>(addrStub.getCookie())
                         , StubAddress::convAddressToPath(addrStub).getString()
-                        , NEService::getString(svcStub.getServiceStatus()));
+                        , areg::getString(svcStub.getServiceStatus()));
 
             listProviders.add(addrStub);
         }
@@ -239,19 +239,19 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
             LOG_DBG("Ignore stub [ %s ] with cookie [ %u ] and status [ %s ]"
                         , StubAddress::convAddressToPath(addrStub).getString()
                         , static_cast<unsigned int>(addrStub.getCookie())
-                        , NEService::getString(svcStub.getServiceStatus()));
+                        , areg::getString(svcStub.getServiceStatus()));
         }
 
         for (ListServiceProxiesBase::LISTPOS posList = listProxies.firstPosition(); listProxies.isValidPosition(posList); posList = listProxies.nextPosition(posList) )
         {
             const ServiceProxy & svcProxy   = listProxies.valueAtPosition(posList);
             const ProxyAddress & addrProxy  = svcProxy.getServiceAddress();
-            if ( svcProxy.isValid() && ((cookie == NEService::COOKIE_ANY) || (addrProxy.getCookie() == cookie)) )
+            if ( svcProxy.isValid() && ((cookie == areg::COOKIE_ANY) || (addrProxy.getCookie() == cookie)) )
             {
                 LOG_INFO("The cookie [ %u ] of proxy [ %s ] with status [ %s ] match criteria."
                             , static_cast<unsigned int>(addrProxy.getCookie())
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
-                            , NEService::getString(svcProxy.getServiceStatus()));
+                            , areg::getString(svcProxy.getServiceStatus()));
 
                 listConsumers.add(addrProxy);
             }
@@ -260,7 +260,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
                 LOG_DBG("Ignore proxy [ %s ] with cookie [ %u ] and status [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , static_cast<unsigned int>(addrProxy.getCookie())
-                            , NEService::getString(svcProxy.getServiceStatus()));
+                            , areg::getString(svcProxy.getServiceStatus()));
             }
         }
     }
@@ -317,7 +317,7 @@ const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & addrPr
         ServiceProxy * svcProxy = proxies.getService(addrProxy);
         if ((svcProxy != nullptr) && svcProxy->isValid())
         {
-            LOG_INFO("Found service of proxy [ %s ] to disconnect, current state [ %s ]", addrProxy.convToString().getString(), NEService::getString(svcProxy->getServiceStatus()));
+            LOG_INFO("Found service of proxy [ %s ] to disconnect, current state [ %s ]", addrProxy.convToString().getString(), areg::getString(svcProxy->getServiceStatus()));
             svcProxy->stubUnavailable();
         }
         else

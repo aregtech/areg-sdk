@@ -189,8 +189,8 @@ String ScopeNode::makeScopePath( const String & prefix ) const
 {
     ASSERT(mNodeName.isEmpty() == false);
     ASSERT(isValid());
-    char scope[NELogging::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::formatString(scope, NELogging::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), NELogOptions::SYNTAX_SCOPE_SEPARATOR));
+    char scope[areg::LOG_MESSAGE_IZE];
+    uint32_t len = static_cast<uint32_t>(String::formatString(scope, areg::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), areg::SYNTAX_SCOPE_SEPARATOR));
 
     return String(scope, len);
 }
@@ -295,13 +295,13 @@ unsigned int ScopeNode::groupRecursive()
 
 String ScopeNode::makeConfigString( const String & parent ) const
 {
-    char scope[NELogging::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::formatString(    scope, NELogging::LOG_MESSAGE_IZE
+    char scope[areg::LOG_MESSAGE_IZE];
+    uint32_t len = static_cast<uint32_t>(String::formatString(    scope, areg::LOG_MESSAGE_IZE
                                                                 , "%s%s%c%c"
                                                                 , parent.getString()
                                                                 , mNodeName.getString()
-                                                                , NELogOptions::SYNTAX_SCOPE_SEPARATOR
-                                                                , NELogOptions::SYNTAX_SCOPE_GROUP));
+                                                                , areg::SYNTAX_SCOPE_SEPARATOR
+                                                                , areg::SYNTAX_SCOPE_GROUP));
     return String(scope, len);
 }
 
@@ -373,7 +373,7 @@ bool ScopeNode::isEmpty() const
 //////////////////////////////////////////////////////////////////////////
 
 ScopeRoot::ScopeRoot()
-    : ScopeNode     ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(NELogging::eLogPriority::PrioNotset) )
+    : ScopeNode     ( ScopeNodeBase::eNode::Root, Process::getInstance().getAppName(), static_cast<unsigned int>(areg::eLogPriority::PrioNotset) )
 {
 }
 
@@ -410,7 +410,7 @@ unsigned int ScopeRoot::updateConfigNode( ConfigManager & config, const String &
 
 String ScopeRoot::makeConfigString(const String& parent) const
 {
-    return (parent + NELogOptions::SYNTAX_SCOPE_GROUP);
+    return (parent + areg::SYNTAX_SCOPE_GROUP);
 }
 
 #endif // AREG_LOGS

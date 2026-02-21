@@ -58,7 +58,7 @@ void PageConnections::ServiceConnected( bool /*isConnected*/)
 void PageConnections::OutputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, LPARAM data )
 {
     LVITEM lv;
-    NEMemory::zeroElement<LVITEM>(lv);
+    areg::zeroElement<LVITEM>(lv);
 
     // Column nickname
     lv.mask         = LVIF_TEXT | LVIF_PARAM;
@@ -166,7 +166,7 @@ void PageConnections::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>(lv);
+        areg::zeroElement<LVCOLUMN>(lv);
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -219,7 +219,7 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 
 int PageConnections::findInTyping( unsigned int cookie )
 {
-    int result = NECommon::INVALID_INDEX;
+    int result = areg::INVALID_INDEX;
     for (uint32_t i = 0; i < mTypingList.getSize( ); ++i )
     {
         if (cookie == mTypingList[i]->dataSave)
@@ -267,7 +267,7 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
     if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
-        if ( rmIndex != NECommon::INVALID_INDEX )
+        if ( rmIndex != areg::INVALID_INDEX )
         {
             chat::sMessageData *temp = mTypingList.getAt(rmIndex);
             mTypingList.removeAt( rmIndex, 1 );
@@ -298,11 +298,11 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
     chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
-    bool isEmpty = data != nullptr ? NEString::isEmpty<TCHAR>( data->message ) : true;
+    bool isEmpty = data != nullptr ? areg::isEmpty<TCHAR>( data->message ) : true;
     if ( data != nullptr )
     {
         int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
-        if ( rmIndex != NECommon::INVALID_INDEX )
+        if ( rmIndex != areg::INVALID_INDEX )
         {
             chat::sMessageData *temp = mTypingList.getAt( rmIndex );
             if ( isEmpty )
@@ -333,7 +333,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
             mTypingList.add(data);
 
             LVITEM lv;
-            NEMemory::zeroElement<LVITEM>( lv );
+            areg::zeroElement<LVITEM>( lv );
 
             // Column nickname
             lv.mask         = LVIF_TEXT | LVIF_PARAM;

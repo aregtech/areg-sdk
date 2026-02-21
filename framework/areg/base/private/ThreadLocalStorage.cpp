@@ -38,9 +38,9 @@ ThreadLocalStorage::~ThreadLocalStorage()
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-NEMemory::uAlign ThreadLocalStorage::getStorageItem( const String & Key ) const
+areg::uAlign ThreadLocalStorage::getStorageItem( const String & Key ) const
 {
-    NEMemory::uAlign result = NEMemory::InvalidElement;
+    areg::uAlign result = areg::InvalidElement;
 
     StorageList::LISTPOS pos = mStorageList.firstPosition();
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
@@ -56,42 +56,42 @@ NEMemory::uAlign ThreadLocalStorage::getStorageItem( const String & Key ) const
     return result;
 }
 
-void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::uAlign Value)
+void ThreadLocalStorage::setStorageItem(const String & Key, areg::uAlign Value)
 {
     mStorageList.pushFirst(ThreadLocalStorage::StorageItem(Key, Value));
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
 {
-    NEMemory::uAlign aln;
+    areg::uAlign aln;
     aln.alignPtr.mElement = const_cast<void *>(Value);
     setStorageItem(Key, aln);
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, unsigned int Value )
 {
-    NEMemory::uAlign aln;
+    areg::uAlign aln;
     aln.alignUInt.mElement = Value;
     setStorageItem(Key, aln);
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, uint64_t Value )
 {
-    NEMemory::uAlign aln;
+    areg::uAlign aln;
     aln.alignUInt64.mElement = Value;
     setStorageItem(Key, aln);
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, double Value )
 {
-    NEMemory::uAlign aln;
+    areg::uAlign aln;
     aln.alignDouble.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const String & Key )
+areg::uAlign ThreadLocalStorage::removeStoragteItem( const String & Key )
 {
-    NEMemory::uAlign result{ {0} };
+    areg::uAlign result{ {0} };
     StorageList::LISTPOS pos = mStorageList.firstPosition();
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {

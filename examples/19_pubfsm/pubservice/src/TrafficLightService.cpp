@@ -29,7 +29,7 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startupComponent);
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdownComponent);
 
-TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component                     ( entry, owner )
     , PowerManagerStub              ( static_cast<Component &>(self()) )
     , TrafficControllerStub         ( static_cast<Component &>(self()) )

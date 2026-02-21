@@ -164,7 +164,7 @@ public:
      * \param	timeout	The timeout in milliseconds to wait.
      * \return	Returns true if current thread successfully got mutex ownership
      **/
-    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = areg::WAIT_INFINITE ) override;
 
     /**
      * \brief	Unlocks / Release mutex. The calling thread should have mutex ownership
@@ -309,7 +309,7 @@ public:
      * \return	Returns true if Event was unlocked / signaled and thread was unblock
      *          with no time out or waiting error.
      **/
-    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = areg::WAIT_INFINITE ) override;
 
     /**
      * \brief	Unlock Event, i.e. set to signaled state
@@ -468,7 +468,7 @@ public:
      *                      Otherwise the lock count decreased and thread is released.
      * \return	Returns true if thread was released because of signaled state of semaphore.
      **/
-    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = areg::WAIT_INFINITE ) override;
 
     /**
      * \brief   Unlocks Semaphore, i.e. signals it, and increase lock count number.
@@ -608,7 +608,7 @@ public:
      *          the lock() function accept a specified time-out interval.
      * \return  In case of critical section, always return true.
      **/
-    virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/) override;
+    virtual bool lock( unsigned int /*timeout = areg::WAIT_INFINITE*/) override;
 
     /**
      * \brief   Releases ownership of the specified critical section object.
@@ -719,7 +719,7 @@ public:
      *          the lock() function accept a specified time-out interval.
      * \return  Spin-lock always return true.
      **/
-    virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
+    virtual bool lock( unsigned int /*timeout = areg::WAIT_INFINITE*/ ) override;
 
     /**
      * \brief   Releases ownership of the spin-lock object.
@@ -802,7 +802,7 @@ public:
      *          block the thread.
      * \return  Always returns true.
      **/
-    inline virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
+    inline virtual bool lock( unsigned int /*timeout = areg::WAIT_INFINITE*/ ) override;
 
     /**
      * \brief   Releases ownership of the resource lock object.
@@ -908,7 +908,7 @@ public:
      * \brief   No real locking when call this method.
      * \return	Always returns true.
      **/
-    inline virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
+    inline virtual bool lock( unsigned int /*timeout = areg::WAIT_INFINITE*/ ) override;
 
     /**
      * \brief   No real unlocking.
@@ -979,7 +979,7 @@ public:
      * \param	timeout     The timeout to wait if timer is in non-signaled state.
      * \return	Returns true if thread was released because of signaled state of timer.
      **/
-    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = areg::WAIT_INFINITE ) override;
 
     /**
      * \brief   Activates the specified waitable timer.
@@ -1175,7 +1175,7 @@ public:
      *                  in all classes of synchronization object.
      * \return	Returns true if synchronization object successfully locked
      **/
-    inline bool lock( unsigned int timeout = NECommon::WAIT_INFINITE );
+    inline bool lock( unsigned int timeout = areg::WAIT_INFINITE );
 
     /**
      * \brief   Called to unlock synchronization object manually
@@ -1260,7 +1260,7 @@ public:
      *          All synchronization objects are locked.
      *          Same as MAX_SIZE_OF_ARRAY (64)
      **/
-    static constexpr int    LOCK_INDEX_ALL          { NECommon::MAXIMUM_WAITING_OBJECTS };
+    static constexpr int    LOCK_INDEX_ALL          { areg::MAXIMUM_WAITING_OBJECTS };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -1314,7 +1314,7 @@ public:
      *          locked / signaled.
      *          Otherwise, it returns valid index of locked object in array.
      **/
-    inline int lock( unsigned int timeout = NECommon::WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
+    inline int lock( unsigned int timeout = areg::WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
 
     /**
      * \brief   Unlocks every synchronization object, which was locked before
@@ -1351,7 +1351,7 @@ private:
     /**
      * \brief   Locking state of every object within array.
      **/
-    eLockedState            mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
+    eLockedState            mLockedStates[areg::MAXIMUM_WAITING_OBJECTS];
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
@@ -1406,13 +1406,13 @@ public:
 #endif  // _MSC_VER
 
     //!< One nanosecond duration
-    static constexpr Duration   ONE_NS      { NECommon::DURATION_1_NS };
+    static constexpr Duration   ONE_NS      { areg::DURATION_1_NS };
     //!< One microsecond duration
-    static constexpr Duration   ONE_MUS     { NECommon::DURATION_1_MICRO };
+    static constexpr Duration   ONE_MUS     { areg::DURATION_1_MICRO };
     //!< One millisecond duration
-    static constexpr Duration   ONE_MS      { NECommon::DURATION_1_MILLI };
+    static constexpr Duration   ONE_MS      { areg::DURATION_1_MILLI };
     //!< One second duration
-    static constexpr Duration   ONE_SEC     { NECommon::DURATION_1_SEC };
+    static constexpr Duration   ONE_SEC     { areg::DURATION_1_SEC };
     //!< The minimum waiting timeout
     static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
 
@@ -1562,7 +1562,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Mutex class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool Mutex::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+inline bool Mutex::lock( unsigned int timeout /* = areg::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     return _osLockMutex( timeout );
@@ -1570,7 +1570,7 @@ inline bool Mutex::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
 
 inline bool Mutex::tryLock()
 {
-    return lock( NECommon::DO_NOT_WAIT );
+    return lock( areg::DO_NOT_WAIT );
 }
 
 inline bool Mutex::unlock()
@@ -1603,7 +1603,7 @@ inline bool SyncEvent::unlock()
     return (mSyncObject != nullptr ? _osUnlockEvent(mSyncObject) : false);
 }
 
-inline bool SyncEvent::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+inline bool SyncEvent::lock( unsigned int timeout /* = areg::WAIT_INFINITE */ )
 {
     return (mSyncObject != nullptr ? _osLockEvent(timeout) : false);
 }
@@ -1643,7 +1643,7 @@ inline long Semaphore::getCurrentCount() const
 // CriticalSection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool CriticalSection::lock( unsigned int  /*timeout = NECommon::WAIT_INFINITE */ )
+inline bool CriticalSection::lock( unsigned int  /*timeout = areg::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     return _osLock( );
@@ -1663,7 +1663,7 @@ inline bool CriticalSection::tryLock()
 
 inline bool CriticalSection::lock()
 {
-    return lock( NECommon::WAIT_INFINITE );
+    return lock( areg::WAIT_INFINITE );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1683,14 +1683,14 @@ inline bool SpinLock::tryLock()
 
 inline bool SpinLock::lock()
 {
-    return lock( NECommon::WAIT_INFINITE );
+    return lock( areg::WAIT_INFINITE );
 }
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceLock class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ResourceLock::lock( unsigned int timeout /*= NECommon::WAIT_INFINITE */ )
+inline bool ResourceLock::lock( unsigned int timeout /*= areg::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     return _osLock( timeout );
@@ -1717,7 +1717,7 @@ inline bool NolockSyncObject::lock()
     return true;
 }
 
-inline bool NolockSyncObject::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+inline bool NolockSyncObject::lock( unsigned int /*timeout = areg::WAIT_INFINITE*/ )
 {
     return true;
 }
@@ -1736,7 +1736,7 @@ inline bool NolockSyncObject::tryLock()
 // SyncTimer class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SyncTimer::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+inline bool SyncTimer::lock( unsigned int timeout /* = areg::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     return _osLock( timeout );
@@ -1778,7 +1778,7 @@ inline bool SyncTimer::isAutoreset() const
 //////////////////////////////////////////////////////////////////////////
 // Lock class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool Lock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */)
+inline bool Lock::lock(unsigned int timeout /* = areg::WAIT_INFINITE */)
 {
     return mSyncObject.lock(timeout);
 }
@@ -1791,7 +1791,7 @@ inline bool Lock::unlock()
 //////////////////////////////////////////////////////////////////////////
 // MultiLock class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline int MultiLock::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+inline int MultiLock::lock( unsigned int timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
     ASSERT( mSizeCount != 0 );
     return _osLock( timeout, waitForAll, isAlertable );

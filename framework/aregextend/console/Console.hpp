@@ -61,7 +61,7 @@ public:
      *          The lines on console are Y-coordinates.
      *          The columns on console are X-coordinates.
      **/
-    using Coord     = NEMath::sCoord;
+    using Coord     = areg::sCoord;
 
     //!< The default buffer size to input on console.
     static constexpr uint32_t INPUT_BUFFER_SIZE { 512 };
@@ -485,7 +485,7 @@ inline void Console::refreshScreen() const
 
 inline bool Console::lockConsole()
 {
-    return mLock.lock(NECommon::WAIT_INFINITE);
+    return mLock.lock(areg::WAIT_INFINITE);
 }
 
 inline void Console::unlockConsole()

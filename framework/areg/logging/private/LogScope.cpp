@@ -29,8 +29,8 @@
 
 #if AREG_LOGS
 
-LogScope::LogScope( const char * scopeName, NELogging::eLogPriority priority /*= NELogging::PrioNotset*/ )
-    : mScopeId      ( NELogging::makeScopeId(scopeName)  )
+LogScope::LogScope( const char * scopeName, areg::eLogPriority priority /*= areg::PrioNotset*/ )
+    : mScopeId      ( areg::makeScopeId(scopeName)  )
     , mScopePrio    ( priority )
     , mScopeName    ( scopeName != nullptr ? scopeName : "" )
     , mIsRegistered ( true )
@@ -58,19 +58,19 @@ LogScope::~LogScope()
 
 void LogScope::setPriority(const char* newPrio)
 {
-    setPriority(NELogging::stringToLogPrio(newPrio));
+    setPriority(areg::stringToLogPrio(newPrio));
 }
 
 void LogScope::setPriority(const String& newPrio)
 {
-    setPriority(NELogging::stringToLogPrio(newPrio));
+    setPriority(areg::stringToLogPrio(newPrio));
 }
 
 #else   // AREG_LOGS
 
-LogScope::LogScope(const char* /*scopeName*/, NELogging::eLogPriority /*priority*/ /*= NELogging::PrioNotset*/)
+LogScope::LogScope(const char* /*scopeName*/, areg::eLogPriority /*priority*/ /*= areg::PrioNotset*/)
     : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid) )
+    , mScopePrio    ( static_cast<unsigned int>(areg::eLogPriority::PrioInvalid) )
     , mScopeName    ( )
     , mIsRegistered (false)
 {
@@ -78,7 +78,7 @@ LogScope::LogScope(const char* /*scopeName*/, NELogging::eLogPriority /*priority
 
 LogScope::LogScope(const InStream& /*stream*/ )
     : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<unsigned int>(NELogging::eLogPriority::PrioInvalid) )
+    , mScopePrio    ( static_cast<unsigned int>(areg::eLogPriority::PrioInvalid) )
     , mScopeName    ( )
     , mIsRegistered (false)
 {

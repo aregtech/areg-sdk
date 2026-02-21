@@ -24,17 +24,17 @@
 // Defines
 // No special meaning, only short meanings
 /************************************************************************/
-#define DUMMY   static_cast<uint16_t>(NEString::eCharDefs::CD_Undefined                                         )   /* Dummy */
-#define EOFS    static_cast<uint16_t>(NEString::eCharDefs::CD_EOfS                                              )   /* End of string, null-termination */
-#define EOFL    static_cast<uint16_t>(NEString::eCharDefs::CD_EndOfLine  | NEString::eCharDefs::CD_WhiteSpace   )   /* End of line, regardless only '\n' is defining, but using to make binary buffer readable */
-#define DEOL    static_cast<uint16_t>(NEString::eCharDefs::CD_CarReturn  | NEString::eCharDefs::CD_EndOfLine    )   /* DOS End of Line, used only for carriage return */
-#define SPACE   static_cast<uint16_t>(NEString::eCharDefs::CD_WhiteSpace | NEString::eCharDefs::CD_Delimiter    )   /* White space, used for trimming, as we as syntax separator */
-#define CTRL    static_cast<uint16_t>(NEString::eCharDefs::CD_Control    | NEString::eCharDefs::CD_WhiteSpace   )   /* Control key value, also used to specify white space in conversion of binary buffer to readable */
-#define PRINT   static_cast<uint16_t>(NEString::eCharDefs::CD_Printable                                         )   /* All printable characters, symbols and numbers, which may change text, including tab and whitespace */
-#define NUMBER  static_cast<uint16_t>(NEString::eCharDefs::CD_Number     | NEString::eCharDefs::CD_Printable    )   /* All numbers */
-#define SYMBOL  static_cast<uint16_t>(NEString::eCharDefs::CD_Symbol     | NEString::eCharDefs::CD_Printable    )   /* All symbols */
-#define LET_UP  static_cast<uint16_t>(NEString::eCharDefs::CD_LetterUp   | NEString::eCharDefs::CD_Printable    )   /* All upper case letters */
-#define LET_LO  static_cast<uint16_t>(NEString::eCharDefs::CD_LetterLo   | NEString::eCharDefs::CD_Printable    )   /* All lower case letters */
+#define DUMMY   static_cast<uint16_t>(areg::eCharDefs::CD_Undefined                                         )   /* Dummy */
+#define EOFS    static_cast<uint16_t>(areg::eCharDefs::CD_EOfS                                              )   /* End of string, null-termination */
+#define EOFL    static_cast<uint16_t>(areg::eCharDefs::CD_EndOfLine  | areg::eCharDefs::CD_WhiteSpace   )   /* End of line, regardless only '\n' is defining, but using to make binary buffer readable */
+#define DEOL    static_cast<uint16_t>(areg::eCharDefs::CD_CarReturn  | areg::eCharDefs::CD_EndOfLine    )   /* DOS End of Line, used only for carriage return */
+#define SPACE   static_cast<uint16_t>(areg::eCharDefs::CD_WhiteSpace | areg::eCharDefs::CD_Delimiter    )   /* White space, used for trimming, as we as syntax separator */
+#define CTRL    static_cast<uint16_t>(areg::eCharDefs::CD_Control    | areg::eCharDefs::CD_WhiteSpace   )   /* Control key value, also used to specify white space in conversion of binary buffer to readable */
+#define PRINT   static_cast<uint16_t>(areg::eCharDefs::CD_Printable                                         )   /* All printable characters, symbols and numbers, which may change text, including tab and whitespace */
+#define NUMBER  static_cast<uint16_t>(areg::eCharDefs::CD_Number     | areg::eCharDefs::CD_Printable    )   /* All numbers */
+#define SYMBOL  static_cast<uint16_t>(areg::eCharDefs::CD_Symbol     | areg::eCharDefs::CD_Printable    )   /* All symbols */
+#define LET_UP  static_cast<uint16_t>(areg::eCharDefs::CD_LetterUp   | areg::eCharDefs::CD_Printable    )   /* All upper case letters */
+#define LET_LO  static_cast<uint16_t>(areg::eCharDefs::CD_LetterLo   | areg::eCharDefs::CD_Printable    )   /* All lower case letters */
 
 namespace
 {
@@ -262,17 +262,17 @@ namespace
 // NEString namespace global method implementation
 /************************************************************************/
 
-AREG_API_IMPL unsigned short NEString::getUTF8_256CharDef( int ch )
+AREG_API_IMPL unsigned short areg::getUTF8_256CharDef( int ch )
 {
     return static_cast<unsigned short>(ch >= -128 && ch <= 127 ? UTF8_256_Table[static_cast<unsigned char>(ch & 0xFF)] : DUMMY);
 }
 
-AREG_API_IMPL unsigned int NEString::makeUTF8_256LowerChar( int ch )
+AREG_API_IMPL unsigned int areg::makeUTF8_256LowerChar( int ch )
 {
     return (ch >= -128 && ch <= 127 ? static_cast<unsigned int>(UTF8_256_Table_lower[static_cast<unsigned char>(ch & 0xFF)]) : static_cast<unsigned int>(ch));
 }
 
-AREG_API_IMPL unsigned int NEString::makeUTF8_256UpperChar( int ch )
+AREG_API_IMPL unsigned int areg::makeUTF8_256UpperChar( int ch )
 {
     return (ch >= -128 && ch <= 127 ? static_cast<unsigned int>(UTF8_256_Table_upper[static_cast<unsigned char>(ch & 0xFF)]) : static_cast<unsigned int>(ch));
 }

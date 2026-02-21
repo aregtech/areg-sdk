@@ -100,17 +100,17 @@ inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & event
 {
     switch (eventResponse.getDataType() )
     {
-    case NEService::eMessageDataType::RequestDataType:      // fall through
-    case NEService::eMessageDataType::ResponseDataType:
+    case areg::eMessageDataType::RequestDataType:      // fall through
+    case areg::eMessageDataType::ResponseDataType:
         processResponseEvent(eventResponse);
         break;
 
-    case NEService::eMessageDataType::AttributeDataType:
+    case areg::eMessageDataType::AttributeDataType:
         processAttributeEvent(eventResponse);
         break;
 
-    case NEService::eMessageDataType::ServiceDataType:      // fall through
-    case NEService::eMessageDataType::UndefinedDataType:
+    case areg::eMessageDataType::ServiceDataType:      // fall through
+    case areg::eMessageDataType::UndefinedDataType:
         ASSERT(false);
         break;
 
@@ -121,7 +121,7 @@ inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & event
 
 inline void ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
-    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
+    if ( eventConnect.getResponseId() == static_cast<unsigned int>(areg::eFuncIdRange::ResponseServiceProviderConnection) )
     {
         serviceConnectionUpdated( eventConnect.getStubAddress(), eventConnect.getTargetProxy().getChannel(), eventConnect.getConnectionStatus() );
     }

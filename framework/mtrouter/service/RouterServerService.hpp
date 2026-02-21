@@ -74,7 +74,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceProvider( const StubAddress & stubService, const areg::eDisconnectReason reason ) override;
 
     /**
      * \brief   Call to register the remote service consumer in the system and connect to service provider.
@@ -91,7 +91,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const areg::eDisconnectReason reason ) override;
 
 /************************************************************************/
 // RegistrationConsumer interface overrides
@@ -99,9 +99,9 @@ protected:
 
     /**
      * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
-     *          If cookie value is 'NEService::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
+     *          If cookie value is 'areg::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
      *          On output listProviders and listConsumers contain the list of remote services.
-     * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering.
+     * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering.
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
      **/
@@ -124,18 +124,18 @@ protected:
      * \param   stub    The address of the remote service provider that has been unregistered.
      * \param   reason  The reason that remote service provider is unregistered.
      * \param   cookie  The cookie of source that has initiated to unregister provider.
-     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
+     *                  The parameter is ignored if 'areg::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, areg::eDisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered from the system.
      * \param   proxy   The address of the remote service consumer that has been unregistered.
      * \param   reason  The reason that remote service consumer is unregistered.
      * \param   cookie  The cookie of source that has initiated to unregister consumer.
-     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
+     *                  The parameter is ignored if 'areg::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, areg::eDisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is established.

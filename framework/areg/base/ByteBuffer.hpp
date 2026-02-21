@@ -45,7 +45,7 @@ protected:
     /**
      * \brief   Shared pointer allocator / deleter.
      **/
-    using ByteBufferDeleter     = NEMemory::BufferDeleter<NEMemory::sByteBuffer>;
+    using ByteBufferDeleter     = areg::BufferDeleter<areg::sByteBuffer>;
 
     /**
      * \brief   ByteBuffer::MAX_BUF_LENGTH
@@ -65,7 +65,7 @@ protected:
     /**
      * \brief   Initializes byte-buffer from given source
      **/
-    ByteBuffer( NEMemory::sByteBuffer & byteBuffer );
+    ByteBuffer( areg::sByteBuffer & byteBuffer );
 
     /**
      * \brief   Moves byte-buffer from given source
@@ -129,7 +129,7 @@ public:
     /**
      * \brief   Returns pointer to the byte buffer.
      **/
-    inline const NEMemory::sByteBuffer * getByteBuffer()  const;
+    inline const areg::sByteBuffer * getByteBuffer()  const;
 
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
@@ -174,7 +174,7 @@ public:
      * \brief   Returns type of byte buffer. 
      *          If valid, it should be either internal or external (for RPC)
      **/
-    inline NEMemory::eBufferType getType() const;
+    inline areg::eBufferType getType() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected internal members
@@ -184,7 +184,7 @@ protected:
     /**
      * \brief   Returns pointer to the byte buffer.
      **/
-    inline NEMemory::sByteBuffer * getByteBuffer();
+    inline areg::sByteBuffer * getByteBuffer();
 
     /**
      * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 
@@ -219,7 +219,7 @@ protected:
     virtual unsigned int initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const;
 
     /**
-     * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
+     * \brief   Returns the size to align the buffer. By default it is sizeof(areg::uAlign)
      **/
     virtual unsigned int getAlignedSize() const;
 
@@ -246,7 +246,7 @@ protected:
     /**
      * \brief   Pointer to Byte Buffer structure.
      **/
-    mutable std::shared_ptr<NEMemory::sByteBuffer> mByteBuffer;
+    mutable std::shared_ptr<areg::sByteBuffer> mByteBuffer;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -263,12 +263,12 @@ private:
 // ByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEMemory::sByteBuffer * ByteBuffer::getByteBuffer() const
+inline const areg::sByteBuffer * ByteBuffer::getByteBuffer() const
 {
     return mByteBuffer.get();
 }
 
-inline NEMemory::sByteBuffer * ByteBuffer::getByteBuffer()
+inline areg::sByteBuffer * ByteBuffer::getByteBuffer()
 {
     return mByteBuffer.get( );
 }
@@ -285,12 +285,12 @@ inline unsigned int ByteBuffer::getSizeUsed() const
 
 inline const unsigned char* ByteBuffer::getBuffer() const
 {
-    return NEMemory::getBufferDataRead(mByteBuffer.get());
+    return areg::getBufferDataRead(mByteBuffer.get());
 }
 
 inline unsigned char* ByteBuffer::getBuffer()
 {
-    return NEMemory::getBufferDataWrite(mByteBuffer.get());
+    return areg::getBufferDataWrite(mByteBuffer.get());
 }
 
 inline bool ByteBuffer::isValid() const
@@ -303,9 +303,9 @@ inline unsigned int ByteBuffer::getSizeAvailable() const
     return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
-inline NEMemory::eBufferType ByteBuffer::getType() const
+inline areg::eBufferType ByteBuffer::getType() const
 {
-    return (isValid() ? mByteBuffer->bufHeader.biBufType : NEMemory::eBufferType::BufferUnknown);
+    return (isValid() ? mByteBuffer->bufHeader.biBufType : areg::eBufferType::BufferUnknown);
 }
 
 inline void ByteBuffer::setSizeUsed(unsigned int newSize)
@@ -318,12 +318,12 @@ inline void ByteBuffer::setSizeUsed(unsigned int newSize)
 
 inline const unsigned char * ByteBuffer::getEndOfBuffer() const
 {
-    return (isValid() ? NEMemory::getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
+    return (isValid() ? areg::getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
 }
 
 inline unsigned char * ByteBuffer::getEndOfBuffer()
 {
-    return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
+    return (isValid() ? areg::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }
 
 #endif  // AREG_BASE_BYTEBUFFER_HPP

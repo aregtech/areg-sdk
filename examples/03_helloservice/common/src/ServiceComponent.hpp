@@ -15,7 +15,7 @@ class ServiceComponent  : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceComponent(const areg::ComponentEntry & entry, ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloService Interface Requests

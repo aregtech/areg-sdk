@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 class DateTime;
-namespace NEService {
+namespace areg {
     struct sServiceConnectedInstance;
 }
 
@@ -64,7 +64,7 @@ public:
      * \param   message     The structure of the message to log.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    virtual bool logMessage(const NELogging::sLogMessage & message) = 0;
+    virtual bool logMessage(const areg::sLogMessage & message) = 0;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -72,7 +72,7 @@ public:
      * \param   timestamp   The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    virtual bool logInstanceConnected(const NEService::sServiceConnectedInstance & instance, const DateTime & timestamp) = 0;
+    virtual bool logInstanceConnected(const areg::sServiceConnectedInstance & instance, const DateTime & timestamp) = 0;
 
     /**
      * \brief   Called when an instance of log source is disconnected.
@@ -90,7 +90,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    virtual bool logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
+    virtual bool logScopeActivate(const areg::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -110,7 +110,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    virtual uint32_t logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) = 0;
+    virtual uint32_t logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) = 0;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.

@@ -42,7 +42,7 @@ namespace
     constexpr Console::Coord    _coordString    { 0, 6 };
 }
 
-Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+Subscriber::Subscriber( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
     , mOldInteger       ( 0 )
@@ -51,14 +51,14 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( areg::eServiceConnection status, ProxyBase & proxy )
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
     Console & console = Console::getInstance();
@@ -68,7 +68,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(_coordStatus, _fmtDisconnected.data(), NEService::getString(status));
+        console.outputMsg(_coordStatus, _fmtDisconnected.data(), areg::getString(status));
     }
     else
     {
@@ -83,11 +83,11 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
+void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, areg::eDataStateType state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
         console.outputMsg(_coordString, "%s%s => %s { changed }", _txtString.data(), mOldString.getString(), StringOnChange.getString());
@@ -110,12 +110,12 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
     console.refreshScreen();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
+void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, areg::eDataStateType state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
         console.outputMsg(_coordInteger, "%s%s => %u { %s }"
@@ -144,10 +144,10 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
     console.refreshScreen();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::eServiceState ServiceProviderState, areg::eDataStateType state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onServiceProviderStateUpdate);
-    if (state == NEService::eDataStateType::DataIsOK)
+    if (state == areg::eDataStateType::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {

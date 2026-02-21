@@ -72,7 +72,7 @@ public:
      * \param   connectTypes    The bitwise set of connection types like 'tcpip' or 'udp'.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionData( NERemoteService::eRemoteServices service, uint32_t connectTypes ) = 0;
+    virtual bool setupServiceConnectionData( areg::eRemoteServices service, uint32_t connectTypes ) = 0;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -124,7 +124,7 @@ public:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const = 0;
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::eMessageSource msgSource) const = 0;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.

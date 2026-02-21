@@ -48,7 +48,7 @@ public:
      * \param   entry   The entry of registry, which describes the component.
      * \param   owner   The component owning thread.
      **/
-    ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+    ServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
         : Component         ( entry.mRoleName, owner )
         , mLocalService     ( static_cast<Component &>(self()) )
         , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), ServiceComponent::MAIN_TIMEOUT   )
@@ -100,12 +100,12 @@ BEGIN_MODEL( _modelName )
             REGISTER_DEPENDENCY(mesh::PublicThirdService)
             REGISTER_DEPENDENCY(mesh::LocalService)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::LocalService )
+        END_REGISTER_COMPONENT( areg::LocalService )
 
     // end of thread description
     END_REGISTER_THREAD( "TestClientProcessThread" )
 
-// end of model NECommon::ModelName
+// end of model areg::ModelName
 END_MODEL( _modelName )
 
 //////////////////////////////////////////////////////////////////////////
@@ -139,10 +139,10 @@ int main()
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 

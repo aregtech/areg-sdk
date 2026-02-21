@@ -19,9 +19,9 @@ DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_shutdownServiceIntrface);
 DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_processTimer);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread)
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & ownerThread)
     : Component ( entry, ownerThread )
-    , StubBase  ( self(), NEService::getEmptyInterface() )
+    , StubBase  ( self(), areg::getEmptyInterface() )
 
     , mTimer    ( self(), entry.mRoleName )
     , mCount    ( 0 )

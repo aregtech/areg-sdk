@@ -20,21 +20,21 @@
 
 AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
-StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
+StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, areg::eServiceConnection connectStatus)
     : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
                             , stubTarget
-                            , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
-                            , NEService::eRequestType::ServiceConnection
+                            , static_cast<unsigned int>(areg::eFuncIdRange::ResponseServiceProviderConnection)
+                            , areg::eRequestType::ServiceConnection
                             , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
 }
 
-StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
+StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::eServiceConnection connectStatus)
     : ServiceRequestEvent   ( proxyClient
                             , stubTarget
-                            , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
-                            , NEService::eRequestType::ClientConnection
+                            , static_cast<unsigned int>(areg::eFuncIdRange::ResponseServiceProviderConnection)
+                            , areg::eRequestType::ClientConnection
                             , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
@@ -42,7 +42,7 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
 
 StubConnectEvent::StubConnectEvent( const InStream & stream )
     : ServiceRequestEvent   ( stream )
-    , mConnectionStatus    ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectionStatus    ( areg::eServiceConnection::ServiceConnectionUnknown )
 {
     stream >> mConnectionStatus;
 }

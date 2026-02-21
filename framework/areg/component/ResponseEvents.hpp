@@ -75,10 +75,10 @@ protected:
      * \param   seqNr       The call sequence number.
      **/
     ResponseEvent( const ProxyAddress & proxyTarget
-                 , const NEService::ResultType result
+                 , const areg::ResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
-                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief	Initializes event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -92,10 +92,10 @@ protected:
      **/
     ResponseEvent( const EventDataStream & args
                  , const ProxyAddress & proxyTarget
-                 , NEService::ResultType result
+                 , areg::ResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
-                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                 , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::getEmptyString() );
 
     /**
@@ -128,7 +128,7 @@ public:
     /**
      * \brief   Returns data type of request data
      **/
-    inline NEService::eMessageDataType getDataType() const;
+    inline areg::eMessageDataType getDataType() const;
 
     /**
      * \brief   Returns reference of data input streaming object
@@ -217,9 +217,9 @@ protected:
      * \param   seqNr       The call sequence number.
      **/
     LocalResponseEvent( const ProxyAddress & proxyTarget
-                      , NEService::ResultType result
+                      , areg::ResultType result
                       , unsigned int respId
-                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
+                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief	Initializes local event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -233,9 +233,9 @@ protected:
      **/
     LocalResponseEvent( const EventDataStream & args
                       , const ProxyAddress & proxyTarget
-                      , NEService::ResultType result
+                      , areg::ResultType result
                       , unsigned int respId
-                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                      , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                       , const String & name = String::getEmptyString() );
 
     /**
@@ -296,9 +296,9 @@ protected:
      * \param   seqNr       The call sequence number.
      **/
     RemoteResponseEvent( const ProxyAddress & proxyTarget
-                       , NEService::ResultType result
+                       , areg::ResultType result
                        , unsigned int respId
-                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief	Initializes remote event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -312,9 +312,9 @@ protected:
      **/
     RemoteResponseEvent( const EventDataStream & args
                        , const ProxyAddress & proxyTarget
-                       , NEService::ResultType result
+                       , areg::ResultType result
                        , unsigned int respId
-                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
                        , const String & name = String::getEmptyString() );
 
     /**
@@ -368,7 +368,7 @@ inline const EventData & ResponseEvent::getData() const
     return mData;
 }
 
-inline NEService::eMessageDataType ResponseEvent::getDataType() const
+inline areg::eMessageDataType ResponseEvent::getDataType() const
 {
     return mData.getDataType();
 }

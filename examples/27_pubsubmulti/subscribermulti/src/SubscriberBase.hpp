@@ -31,7 +31,7 @@ protected:
      * \param   entry   The dependency entry.
      * \param   owner   The owning component.
      **/
-    SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr);
+    SubscriberBase(const areg::DependencyEntry & entry, Component & owner, areg::sCoord coordInt, areg::sCoord coordStr);
 
     virtual ~SubscriberBase() = default;
 
@@ -51,7 +51,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onStringOnChangeUpdate( const String & StringOnChange, NEService::eDataStateType state ) override;
+    virtual void onStringOnChangeUpdate( const String & StringOnChange, areg::eDataStateType state ) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -62,15 +62,15 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onIntegerAlwaysUpdate( unsigned int IntegerAlways, NEService::eDataStateType state ) override;
+    virtual void onIntegerAlwaysUpdate( unsigned int IntegerAlways, areg::eDataStateType state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    const NEMath::sCoord    mCoordInteger;      //!< The coordinates to print integer value change information
-    const NEMath::sCoord    mCoordString;       //!< The coordinates to print string value change information
+    const areg::sCoord    mCoordInteger;      //!< The coordinates to print integer value change information
+    const areg::sCoord    mCoordString;       //!< The coordinates to print string value change information
     uint32_t                mOldInteger;        //!< Old integer value to compare when output on console.
     bool                    mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
     String                  mOldString;         //!< Old string value to compare when output on console.
