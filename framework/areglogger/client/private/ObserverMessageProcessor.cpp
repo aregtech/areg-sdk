@@ -238,7 +238,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
             {
                 callback = mLoggerClient.mCallbacks->evtLogMessage;
 
-                msgLog.msgType      = static_cast<eLogType>(msgRemote->logMsgType);
+                msgLog.msgType      = static_cast<LogType>(msgRemote->logMsgType);
                 msgLog.msgPriority  = static_cast<LogPriority>(msgRemote->logMessagePrio);
                 msgLog.msgSource    = static_cast<uint64_t>(msgRemote->logSource);
                 msgLog.msgCookie    = static_cast<uint64_t>(msgRemote->logCookie);

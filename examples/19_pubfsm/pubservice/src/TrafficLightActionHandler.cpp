@@ -1,6 +1,6 @@
 
 //////////////////////////////////////////////////////////////////////////
-// Begin generate IETrafficLightActionHandler.cpp file
+// Begin generate TrafficLightActionHandler.cpp file
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
@@ -10,7 +10,7 @@
  ************************************************************************/
 
 /************************************************************************
- * \file            pubservice/src/IETrafficLightActionHandler.cpp
+ * \file            pubservice/src/TrafficLightActionHandler.cpp
  * \ingroup         TrafficLight State Machine
  * \brief           This is an automatic generated code of TrafficLight action handler.
  ************************************************************************/
@@ -19,8 +19,8 @@
  * Include files
  ************************************************************************/
 
-#include "pubservice/src/IETrafficLightActionHandler.hpp"
+#include "pubservice/src/TrafficLightActionHandler.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// End generate IETrafficLightActionHandler.cpp file
+// End generate TrafficLightActionHandler.cpp file
 //////////////////////////////////////////////////////////////////////////

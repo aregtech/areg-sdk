@@ -35,7 +35,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IETrafficLightActionHandler;
+class TrafficLightActionHandler;
 class DispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
@@ -188,7 +188,7 @@ public:
      * \param   actionHandler   The reference of action handler object to trigger actions.
      * \param   instanceName    The name of FSM instance. By default it has the name of FSM. 
      **/
-    TrafficLightFSM( IETrafficLightActionHandler & actionHandler, const std::string_view & instanceName = NETrafficLightFSM::InstanceDefaultName );
+    TrafficLightFSM( TrafficLightActionHandler & actionHandler, const std::string_view & instanceName = NETrafficLightFSM::InstanceDefaultName );
 
     /**
      * \brief   TrafficLightFSM class destructor
@@ -199,7 +199,7 @@ private:
     /**
      * \brief   Reference to State Machine action handler class object
      **/
-    IETrafficLightActionHandler& mActionHandler;
+    TrafficLightActionHandler& mActionHandler;
 
 public:
 

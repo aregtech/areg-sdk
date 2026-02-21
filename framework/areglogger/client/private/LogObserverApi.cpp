@@ -44,7 +44,7 @@ namespace
         /// The log observer initialized counter
         uint32_t        losCounter  { 0 };
         /// The log observer state
-        eObserverStates losState    { eObserverStates::ObserverUninitialized };
+        ObserverState losState    { ObserverState::ObserverUninitialized };
         /// The log observer events
         sObserverEvents losEvents   { };
     };
@@ -89,24 +89,24 @@ namespace
         }
     }
 
-    inline bool _isInitialized(eObserverStates state)
+    inline bool _isInitialized(ObserverState state)
     {
-        return (state != eObserverStates::ObserverUninitialized);
+        return (state != ObserverState::ObserverUninitialized);
     }
 
-    inline bool _isDisconnected(eObserverStates state)
+    inline bool _isDisconnected(ObserverState state)
     {
-        return (state == eObserverStates::ObserverDisconnected);
+        return (state == ObserverState::ObserverDisconnected);
     }
 
-    inline bool _isConnected(eObserverStates state)
+    inline bool _isConnected(ObserverState state)
     {
-        return (state >= eObserverStates::ObserverConnected);
+        return (state >= ObserverState::ObserverConnected);
     }
 
-    inline bool _isStarted(eObserverStates state)
+    inline bool _isStarted(ObserverState state)
     {
-        return (state == eObserverStates::ObserverConnected);
+        return (state == ObserverState::ObserverConnected);
     }
 }
 
@@ -120,7 +120,7 @@ LOGGER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, co
     if (_isInitialized(theObserver.losState) == false)
     {
         LoggerClient& client = LoggerClient::getInstance();
-        theObserver.losState = eObserverStates::ObserverDisconnected;
+        theObserver.losState = ObserverState::ObserverDisconnected;
         _setCallbacks(theObserver.losEvents, callbacks);
         client.setCallbacks(&theObserver.losEvents);
         Application::initApplication(false, false, false, true, false, configFilePath, static_cast<ConfigListener *>(&client));
@@ -140,7 +140,7 @@ LOGGER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ip
         client.openLoggingDatabase(dbPath);
         if (client.startLoggerClient(ipAddress, portNr))
         {
-            theObserver.losState = eObserverStates::ObserverConnected;
+            theObserver.losState = ObserverState::ObserverConnected;
         }
     }
 
@@ -157,7 +157,7 @@ LOGGER_API_IMPL void logObserverDisconnectLogger()
         LoggerClient& client = LoggerClient::getInstance();
         client.stopLoggerClient();
         client.closeLoggingDatabase();
-        theObserver.losState = eObserverStates::ObserverDisconnected;
+        theObserver.losState = ObserverState::ObserverDisconnected;
     }
 }
 
@@ -169,7 +169,7 @@ LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
     bool result{ _isInitialized(theObserver.losState) };
     if (_isConnected(theObserver.losState))
     {
-        theObserver.losState = doPause ? eObserverStates::ObserverPaused : eObserverStates::ObserverConnected;
+        theObserver.losState = doPause ? ObserverState::ObserverPaused : ObserverState::ObserverConnected;
         LoggerClient::getInstance().setPaused(doPause);
     }
 
@@ -186,7 +186,7 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
         LoggerClient& client = LoggerClient::getInstance();
         if (doStop)
         {
-            theObserver.losState = eObserverStates::ObserverPaused;
+            theObserver.losState = ObserverState::ObserverPaused;
             client.setPaused(true);
             client.closeLoggingDatabase();
             result = true;
@@ -195,7 +195,7 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
         {
             if (client.openLoggingDatabase(dbPath))
             {
-                theObserver.losState = eObserverStates::ObserverConnected;
+                theObserver.losState = ObserverState::ObserverConnected;
                 client.setPaused(false);
                 result = true;
             }
@@ -206,7 +206,7 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
 }
 
 
-LOGGER_API_IMPL eObserverStates logObserverCurrentState()
+LOGGER_API_IMPL ObserverState logObserverCurrentState()
 {
     sLogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
@@ -228,7 +228,7 @@ LOGGER_API_IMPL void logObserverRelease()
         client.stopLoggerClient();
         Application::releaseApplication();
         _setCallbacks(theObserver.losEvents, nullptr);
-        theObserver.losState = eObserverStates::ObserverUninitialized;
+        theObserver.losState = ObserverState::ObserverUninitialized;
     }
 }
 

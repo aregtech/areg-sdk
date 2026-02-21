@@ -22,7 +22,7 @@
  ************************************************************************/
 #include "pubservice/src/TrafficLightFSM.hpp"
 
-#include "pubservice/src/IETrafficLightActionHandler.hpp"
+#include "pubservice/src/TrafficLightActionHandler.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/logging/GELog.h"
 
@@ -205,7 +205,7 @@ void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
 ////////////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM Class constructor / destructor 
 ////////////////////////////////////////////////////////////////////////////////
-TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, const std::string_view & instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
+TrafficLightFSM::TrafficLightFSM( TrafficLightActionHandler & actionHandler, const std::string_view & instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
     : mActionHandler  ( actionHandler )
     
     , mTimerRed( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )

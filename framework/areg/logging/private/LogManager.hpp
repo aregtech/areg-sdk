@@ -43,7 +43,6 @@
 class LogDatabaseEngine;
 class LogScope;
 class LogMessage;
-class IELogger;
 namespace NELogging
 {
     struct sLogMessage;

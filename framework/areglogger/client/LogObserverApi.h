@@ -81,7 +81,7 @@ struct sLogInstance
 /**
  * \brief   The type of the log message
  **/
-enum eLogType
+enum LogType
 {
     /* The enter scope log message */
       LogScopeEnter     = 1
@@ -137,9 +137,9 @@ struct sLogScope
 struct sLogMessage
 {
     /* The type of the message: scope enter, scope exit or message text. */
-    eLogType        msgType;
+    LogType         msgType;
     /* The priority of the message to log. */
-    LogPriority    msgPriority;
+    LogPriority     msgPriority;
     /* The ID of the message source. This value is indicated in the sLogInstance::liCookie */
     ITEM_ID         msgSource;
     /* The cookie ID of the message. This value is indicated in the sLogInstance::liCookie */
@@ -169,7 +169,7 @@ struct sLogMessage
 /**
  * \brief   The states of the log observer.
  **/
-enum eObserverStates
+enum ObserverState
 {
     /* The lob observer is uninitialized */
       ObserverUninitialized = 0
@@ -370,7 +370,7 @@ LOGGER_API bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL
 /**
  * \brief   Call to get the current state of the log observer.
  **/
-LOGGER_API eObserverStates logObserverCurrentState();
+LOGGER_API ObserverState logObserverCurrentState();
 
 /**
  * \brief   Returns true if log observer is initialized and the log collector service connection is triggered.

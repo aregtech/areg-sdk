@@ -35,11 +35,6 @@
 #include "aregextend/service/private/ServerReceiveThread.hpp"
 #include "aregextend/service/private/ServerSendThread.hpp"
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class IERemoteServiceConsumer;
-
 //////////////////////////////////////////////////////////////////////////
 // ServiceCommunicationBase class declaration
 //////////////////////////////////////////////////////////////////////////
