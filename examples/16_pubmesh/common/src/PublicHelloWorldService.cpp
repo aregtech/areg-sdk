@@ -81,7 +81,7 @@ void PublicHelloWorldService::requestUnregister( const PublicHelloWorld::sClient
     }
 }
 
-void PublicHelloWorldService::requestHelloWorld( unsigned int clientID )
+void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 

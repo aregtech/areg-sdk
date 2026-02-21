@@ -70,8 +70,8 @@ void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
 
     if (watchdog != nullptr)
     {
-        unsigned int highValue 	= static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
-        unsigned int lowValue  	= static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        uint32_t highValue 	= static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
+        uint32_t lowValue  	= static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
         posixTimer->stopTimer();
         watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
     }
@@ -88,8 +88,8 @@ void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
 
     if (watchdog != nullptr)
     {
-        unsigned int highValue 	= static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
-        unsigned int lowValue  	= static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        uint32_t highValue 	= static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
+        uint32_t lowValue  	= static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
         posixTimer->stopTimer();
         watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
     }

@@ -30,7 +30,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, StubEvent)
 //////////////////////////////////////////////////////////////////////////
 ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
                                         , const StubAddress  & target
-                                        , unsigned int reqId
+                                        , uint32_t reqId
                                         , NEService::RequestType reqType
                                         , Event::EventType eventType)
     : StubEvent     (target, eventType)

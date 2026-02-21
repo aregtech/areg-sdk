@@ -72,7 +72,7 @@ protected:
     /**
      * \brief   The size of master list to listen sockets for incoming messages.
      **/
-    static constexpr int    MASTER_LIST_SIZE    { 64 };
+    static constexpr int32_t    MASTER_LIST_SIZE    { 64 };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -97,7 +97,7 @@ public:
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
      **/
-    ServerConnectionBase( const String & hostName, unsigned short portNr );
+    ServerConnectionBase( const String & hostName, uint16_t portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -133,7 +133,7 @@ public:
      * \param   portNr      Valid port number of socket connection.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    inline bool setAddress( const String & hostName, unsigned short portNr );
+    inline bool setAddress( const String & hostName, uint16_t portNr );
 
     /**
      * \brief   Sets socket address. The address should be either invalid
@@ -207,7 +207,7 @@ public:
      * \param   portNr      The valid port number to bind.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const String & hostName, unsigned short portNr );
+    bool createSocket( const String & hostName, uint16_t portNr );
 
     /**
      * \brief   Before listening and accepting connection from clients,
@@ -231,7 +231,7 @@ public:
      *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
      * \param   maxQueueSize    The maximum size of the socket queue in the list.
      **/
-    bool serverListen( int maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
+    bool serverListen( int32_t maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
 
     /**
      * \brief   Call to wait for connection event. Function is blocking call until connection
@@ -347,7 +347,7 @@ private:
 // ServerConnectionBase class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ServerConnectionBase::setAddress(const String & hostName, unsigned short portNr)
+inline bool ServerConnectionBase::setAddress(const String & hostName, uint16_t portNr)
 {
     Lock lock(mLock);
     return mServerSocket.setAddress(hostName, portNr, true);

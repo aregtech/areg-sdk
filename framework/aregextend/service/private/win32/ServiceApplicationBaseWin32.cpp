@@ -270,7 +270,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     return result;
 }
 
-int ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t ServiceApplicationBase::_osStartServiceDispatcher()
 {
     _serviceTable[0].lpServiceName = getServiceName();
     _serviceTable[0].lpServiceProc = &::_win32ServiceMain;

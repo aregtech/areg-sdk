@@ -48,7 +48,7 @@ bool CentralMessaging::serviceConnected( NEService::ServiceConnectionState statu
     return result;
 }
 
-void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t cookie, const String & newMessage, const DateTime & dateTime )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
     if ( cookie != mConnectionHandler.GetCookie() )
@@ -69,7 +69,7 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, unsigned i
     }
 }
 
-void CentralMessaging::broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
+void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t cookie, const String & newMessage )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
     if ( cookie != mConnectionHandler.GetCookie( ) )

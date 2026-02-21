@@ -19,7 +19,7 @@
 class ServiceHelloWorld : protected HelloWorldStub
 {
     //!< The type of list of connected clients.
-    using ClientList = OrderedMap<String, unsigned int>;
+    using ClientList = OrderedMap<String, uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -59,15 +59,15 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    void requestShutdownService( unsigned int clientID, const String & roleName ) override;
+    void requestShutdownService( uint32_t clientID, const String & roleName ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
 private:
-    const bool      mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
-    ClientList      mClientList;    //!< The list of connected clients.
-    signed short    mRemainRequest; //!< The maximum number of processing requests.
+    const bool  mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
+    ClientList  mClientList;    //!< The list of connected clients.
+    int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

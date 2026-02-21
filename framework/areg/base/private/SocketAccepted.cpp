@@ -20,7 +20,7 @@ SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::Sock
 {
 }
 
-bool SocketAccepted::createSocket(const char * /*hostName*/, unsigned short /*portNr*/)
+bool SocketAccepted::createSocket(const char * /*hostName*/, uint16_t /*portNr*/)
 {
     return true;
 }
@@ -35,7 +35,7 @@ bool SocketAccepted::operator == (const SocketAccepted & other) const
 	return (this == &other) || ( isValid() && (*mSocket == other.getHandle() ));
 }
 
-bool SocketAccepted::setAddress(const char * /*hostName*/, unsigned short /*portNr*/, bool /*isServer*/)
+bool SocketAccepted::setAddress(const char * /*hostName*/, uint16_t /*portNr*/, bool /*isServer*/)
 {
     return false;
 }

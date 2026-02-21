@@ -83,7 +83,7 @@ WaitableTimerPosix::~WaitableTimerPosix()
     _resetTimer();
 }
 
-bool WaitableTimerPosix::setTimer(unsigned int msTimeout, bool isPeriodic)
+bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
 {
     bool result = false;
     ObjectLockPosix lock(*this);
@@ -216,7 +216,7 @@ bool WaitableTimerPosix::checkCanSignalMultipleThreads() const
     return true;
 }
 
-void WaitableTimerPosix::notifyReleasedThreads(int /* numThreads */)
+void WaitableTimerPosix::notifyReleasedThreads(int32_t /* numThreads */)
 {
     ObjectLockPosix lock(*this);
     if (mResetInfo == NESyncTypesIX::ResetMode::Automatic)

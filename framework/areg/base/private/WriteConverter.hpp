@@ -83,18 +83,18 @@ public:
     bool setChar( wchar_t in_value );
 
     /**
-     * \brief   Writes short integer value to the writable streaming object
-     * \param   in_value [in]    The short integer value to write to writable streaming object
+     * \brief   Writes int16_t integer value to the writable streaming object
+     * \param   in_value [in]    The int16_t integer value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
-    bool setShort( short in_value );
+    bool setShort( int16_t in_value );
 
     /**
      * \brief   Writes integer value to the writable streaming object
      * \param   in_value [in]    The integer value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
-    bool setInt( int in_value );
+    bool setInt( int32_t in_value );
 
     /**
      * \brief   Writes 64-bit integer value to the writable streaming object

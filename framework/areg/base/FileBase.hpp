@@ -58,7 +58,7 @@ class ByteBuffer;
  *          6. Binary       - File opened in binary mode. All data will be read and written as binary data.
  *                            For strings, the null-terminate symbol will be also written / read.
  *
- *          7. Text         - File opened int text mode. All data will be written as plain text, 
+ *          7. Text         - File opened int32_t text mode. All data will be written as plain text, 
  *                            until does not match null-terminate symbol.
  *              
  *          8. ShareRead    - File is opened in share read mode. The other File object is able to read.
@@ -290,7 +290,7 @@ public:
     inline OutStream & getWriteStream();
 
     /**
-     * \brief   Returns the name of file object set by user. This can be either short name
+     * \brief   Returns the name of file object set by user. This can be either int16_t name
      *          or normalized full path. Can be empty string for buffered file.
      * \return  Returns the given name of file.
      **/
@@ -299,7 +299,7 @@ public:
     /**
      * \brief   Returns the file open mode (bits)
      **/
-    inline unsigned int getMode() const;
+    inline uint32_t getMode() const;
 
 /************************************************************************/
 // State functions
@@ -393,12 +393,12 @@ public:
     /**
      * \brief   Returns the start position value.
      **/
-    inline static unsigned int getStartPosition();
+    inline static uint32_t getStartPosition();
 
     /**
      * \brief   Return the invalid position value.
      **/
-    inline static unsigned int getInvalidPosition();
+    inline static uint32_t getInvalidPosition();
 
 /************************************************************************/
 // Read / Write operation functions
@@ -411,7 +411,7 @@ public:
      *
      * \return	Returns size of copied data in bytes 
      **/
-    int append(const unsigned char* buffer, unsigned int length);
+    int32_t append(const uint8_t* buffer, uint32_t length);
 
     /**
      * \brief	Read data in inverted order.
@@ -419,7 +419,7 @@ public:
      * \param	length	The length of buffer in bytes
      * \return	Returns the size of data read out.
      **/
-    int readInvert(unsigned char* buffer, unsigned int length) const;
+    int32_t readInvert(uint8_t* buffer, uint32_t length) const;
 
     /**
      * \brief	Write data in inverted order
@@ -427,7 +427,7 @@ public:
      * \param	length	The length of data to write
      * \return	Returns the size of written data in bytes.
      **/
-    int writeInvert( const unsigned char * buffer, int unsigned length );
+    int32_t writeInvert( const uint8_t * buffer, uint32_t length );
 
     /**
      * \brief	Call to set new size of file object and returns the current position of pointer.
@@ -441,7 +441,7 @@ public:
      * \param   fillValue   The value to fill reserved space
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
-    unsigned int resizeAndFill(unsigned int newSize, unsigned char fillValue);
+    uint32_t resizeAndFill(uint32_t newSize, uint8_t fillValue);
 
 /************************************************************************/
 // Read / Write simple types
@@ -468,18 +468,18 @@ public:
     inline bool readChar(wchar_t & Value) const;
 
     /**
-     * \brief   Reads 2 bytes of data, covert to short integer and if succeeds, returns true.
+     * \brief   Reads 2 bytes of data, covert to int16_t integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readShort(short & Value) const;
+    inline bool readShort(int16_t & Value) const;
 
     /**
      * \brief   Reads 4 bytes of data, covert to integer and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      * \param[out]  Value   On output contains value that could read.
      **/
-    inline bool readInt(int & Value) const;
+    inline bool readInt(int32_t & Value) const;
 
     /**
      * \brief   Reads 8 bytes of data, covert to large integer and if succeeds, returns true.
@@ -524,18 +524,18 @@ public:
     inline bool writeChar(wchar_t inValue);
 
     /**
-     * \brief   Write 2 bytes of short integer data and if succeeds, returns true.
+     * \brief   Write 2 bytes of int16_t integer data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      * \param   inValue [in]    Value to write.
      **/
-    inline bool writeShort(short inValue);
+    inline bool writeShort(int16_t inValue);
 
     /**
      * \brief   Write 4 bytes of integer data and if succeeds, returns true.
      *          If fails, this will not change the current file pointer position
      * \param   inValue [in]    Value to write.
      **/
-    inline bool writeInt(int inValue);
+    inline bool writeInt(int32_t inValue);
 
     /**
      * \brief   Write 8 bytes of large integer data and if succeeds, returns true.
@@ -566,13 +566,13 @@ public:
      *          the end and returns number of characters, which could read.
      * 
      * \param[in,out]   buffer      The buffer where the string should be written. 
-     * \param[int]      charCount   Number of characters to write in the string buffer.
+     * \param[int32_t]      charCount   Number of characters to write in the string buffer.
      *                              The string buffer should be long enough to set
      *                              end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readString( char * buffer, int charCount ) const;
-    int readString( wchar_t * buffer, int charCount ) const;
+    int32_t readString( char * buffer, int32_t charCount ) const;
+    int32_t readString( wchar_t * buffer, int32_t charCount ) const;
 
     /**
      * \brief	Read string until end of file or null-terminated character.
@@ -581,21 +581,21 @@ public:
      * \param[out]  buffer  The string containing data
      * \return	Returns number of characters, which could read.
      **/
-    int readString(String & buffer) const;
-    int readString(WideString & buffer) const;
+    int32_t readString(String & buffer) const;
+    int32_t readString(WideString & buffer) const;
 
     /**
      * \brief	Reads a line of string, automatically sets null-terminate char at
      *          the end and returns number of characters, which could read.
      * 
      * \param[in,out]   buffer      The buffer where the string should be written. 
-     * \param[int]      charCount   Number of characters to write in the string buffer.
+     * \param[int32_t]      charCount   Number of characters to write in the string buffer.
      *                              The string buffer should be long enough to set
      *                              end-of-string character at the end.
      * \return	Returns number of characters, which could read.
      **/
-    int readLine( char * buffer, int charCount) const;
-    int readLine( wchar_t * buffer, int charCount ) const;
+    int32_t readLine( char * buffer, int32_t charCount) const;
+    int32_t readLine( wchar_t * buffer, int32_t charCount ) const;
 
     /**
      * \brief	Reads a line of string until end of file, or first match of 
@@ -605,8 +605,8 @@ public:
      * \param[out]  buffer  On output, this contains a string of a line.
      * \return	Returns number of characters, which could read.
      **/
-    int readLine(String & buffer) const;
-    int readLine(WideString & buffer) const;
+    int32_t readLine(String & buffer) const;
+    int32_t readLine(WideString & buffer) const;
 
     /**
      * \brief	Writes string in file and returns true if succeeded.
@@ -649,7 +649,7 @@ public:
      * \return  If found, returns the valid position in the file where the binary data starts.
      *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      **/
-    unsigned int searchData( unsigned int startPos, const unsigned char * buffer, uint32_t length ) const;
+    uint32_t searchData( uint32_t startPos, const uint8_t * buffer, uint32_t length ) const;
     /**
      * \brief   Searches the given binary data in the file and returns the position where the data starts.
      * \param   startPos    The position in the file to start to search.
@@ -657,7 +657,7 @@ public:
      * \return  If found, returns the valid position in the file where the binary data starts.
      *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      **/
-    unsigned int searchData( unsigned int startPos, const ByteBuffer & buffer ) const;
+    uint32_t searchData( uint32_t startPos, const ByteBuffer & buffer ) const;
 
     /**
      * \brief   Searches the given null-terminated text in the file and returns the position where the data starts.
@@ -667,10 +667,10 @@ public:
      * \return  If found, returns the valid position in the file where the binary data starts.
      *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      **/
-    unsigned int searchText( unsigned int startPos, const char * text, bool caseSensitive ) const;
-    unsigned int searchText( unsigned int startPos, const wchar_t * text, bool caseSensitive ) const;
-    unsigned int searchText( unsigned int startPos, const String & text, bool caseSensitive ) const;
-    unsigned int searchText( unsigned int startPos, const WideString & text, bool caseSensitive ) const;
+    uint32_t searchText( uint32_t startPos, const char * text, bool caseSensitive ) const;
+    uint32_t searchText( uint32_t startPos, const wchar_t * text, bool caseSensitive ) const;
+    uint32_t searchText( uint32_t startPos, const String & text, bool caseSensitive ) const;
+    uint32_t searchText( uint32_t startPos, const WideString & text, bool caseSensitive ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override methods
@@ -712,7 +712,7 @@ public:
      * \return	Returns true if file was opened with success.
      * \see     close()
      **/
-    virtual bool open(const String& fileName, unsigned int mode) = 0;
+    virtual bool open(const String& fileName, uint32_t mode) = 0;
 
     /**
      * \brief   Call to close file object.
@@ -735,7 +735,7 @@ public:
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    virtual unsigned int getLength() const = 0;
+    virtual uint32_t getLength() const = 0;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
@@ -753,7 +753,7 @@ public:
      *
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
-    virtual unsigned int reserve(unsigned int newSize) = 0;
+    virtual uint32_t reserve(uint32_t newSize) = 0;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
@@ -771,7 +771,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const override = 0;
+    virtual uint32_t read( uint8_t * buffer, uint32_t size ) const override = 0;
 
     /**
      * \brief	Write data to output stream object from given buffer
@@ -782,7 +782,7 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override = 0;
+    virtual uint32_t write( const uint8_t* buffer, uint32_t size ) override = 0;
 
 /************************************************************************/
 // InStream interface overrides
@@ -796,7 +796,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    unsigned int read( ByteBuffer & buffer ) const override;
+    uint32_t read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -804,7 +804,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( String & ascii ) const override;
+    uint32_t read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -812,7 +812,7 @@ public:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( WideString & wide ) const override;
+    uint32_t read( WideString & wide ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -824,7 +824,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    unsigned int write( const ByteBuffer & buffer ) override;
+    uint32_t write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -832,7 +832,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int write( const String & ascii ) override;
+    uint32_t write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -840,7 +840,7 @@ public:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int write( const WideString & wide ) override;
+    uint32_t write( const WideString & wide ) override;
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 
@@ -855,7 +855,7 @@ protected:
      * \param	mode	Integer value of bitwise OR operation of OpenMode values
      * \return	Returns normalized value.
      **/
-    virtual unsigned int normalizeMode(unsigned int mode) const;
+    virtual uint32_t normalizeMode(uint32_t mode) const;
 
 /************************************************************************/
 // OutStream overrides
@@ -885,20 +885,20 @@ protected:
     /**
      * \brief   File open mode
      **/
-    unsigned int    mFileMode;
+    uint32_t    mFileMode;
 
 private:
     /**
      * \brief   Object of converter class.
      *          Used to retrieve and convert primitive types
-     *          such as bool, char, short, double, int, etc.
+     *          such as bool, char, int16_t, double, int32_t, etc.
      *          For more details see description of ReadConverter class
      **/
     ReadConverter   mReadConvert;
     /**
      * \brief   Object of converter class.
      *          Used to convert and write primitive types
-     *          such as bool, char, short, double, int, etc.
+     *          such as bool, char, int16_t, double, int32_t, etc.
      *          For more details see description of WriteConverter class
      **/
     WriteConverter    mWriteConvert;
@@ -935,7 +935,7 @@ inline const String & FileBase::getName() const
     return mFileName;
 }
 
-inline unsigned int FileBase::getMode() const
+inline uint32_t FileBase::getMode() const
 {
     return mFileMode;
 }
@@ -1015,12 +1015,12 @@ inline bool FileBase::moveToEnd() const
     return Cursor::moveToEnd();
 }
 
-inline unsigned int FileBase::getStartPosition()
+inline uint32_t FileBase::getStartPosition()
 {
     return Cursor::START_CURSOR_POSITION;
 }
 
-inline unsigned int FileBase::getInvalidPosition()
+inline uint32_t FileBase::getInvalidPosition()
 {
     return Cursor::INVALID_CURSOR_POSITION;
 }
@@ -1052,12 +1052,12 @@ inline bool FileBase::readChar( wchar_t & Value ) const
     return mReadConvert.getChar(Value);
 }
 
-inline bool FileBase::readShort( short & Value ) const
+inline bool FileBase::readShort( int16_t & Value ) const
 {
     return mReadConvert.getShort(Value);
 }
 
-inline bool FileBase::readInt( int & Value ) const
+inline bool FileBase::readInt( int32_t & Value ) const
 {
     return mReadConvert.getInt(Value);
 }
@@ -1092,12 +1092,12 @@ inline bool FileBase::writeChar( wchar_t inValue )
     return mWriteConvert.setChar(inValue);
 }
 
-inline bool FileBase::writeShort( short inValue )
+inline bool FileBase::writeShort( int16_t inValue )
 {
     return mWriteConvert.setShort(inValue);
 }
 
-inline bool FileBase::writeInt( int inValue )
+inline bool FileBase::writeInt( int32_t inValue )
 {
     return mWriteConvert.setInt(inValue);
 }

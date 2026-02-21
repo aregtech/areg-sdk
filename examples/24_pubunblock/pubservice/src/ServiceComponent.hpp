@@ -76,7 +76,7 @@ protected:
      *          and stops sending request when reach the maximum.
      * \see     responseHelloUnblock
      **/
-    void requestHelloUblock( unsigned int clientId, unsigned int seqNr ) override;
+    void requestHelloUblock( uint32_t clientId, uint32_t seqNr ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 

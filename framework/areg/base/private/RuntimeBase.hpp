@@ -80,7 +80,7 @@ public:
     /**
      * \brief   Returns the calculated number of runtime class.
      **/
-    virtual unsigned int getRuntimeClassNumber() const;
+    virtual uint32_t getRuntimeClassNumber() const;
 
     /**
      * \brief   Checks class instance by name.
@@ -93,7 +93,7 @@ public:
      * \brief   Checks class instance by name.
      * \param   classMagic  The magic number related with the  name of the class to check.
      **/
-    virtual bool isInstanceOfRuntimeClass( unsigned int classMagic ) const;
+    virtual bool isInstanceOfRuntimeClass( uint32_t classMagic ) const;
 
     /**
      * \brief   Checks class instance by Class Identifier.

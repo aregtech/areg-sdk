@@ -34,7 +34,7 @@ class PubSubController  : public    Component
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The commands of PubSub
-    enum class OptionFlag : int
+    enum class OptionFlag : int32_t
     {
           CMD_Undefined     //!< Undefined command, no command is entered
         , CMD_Error         //!< Error happened

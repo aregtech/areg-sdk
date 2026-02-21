@@ -153,7 +153,7 @@ public:
      * \param	whichConsumer	Reference to consumer object to unregister.
      * \return	Returns unregister count. If zero, consumer is not registered for any event.
      **/
-    virtual int  removeConsumer(EventConsumer& whichConsumer);
+    virtual int32_t  removeConsumer(EventConsumer& whichConsumer);
 
     /**
      * \brief	Call to check whether specified event class type has any registered consumer.

@@ -50,7 +50,7 @@ LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const Sh
 
 LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const NELogging::sLogMessage & logData )
     : mAction       ( action )
-    , mDataBuffer   (_logMessageSize, reinterpret_cast<const unsigned char *>(&logData), _logLocalMessage)
+    , mDataBuffer   (_logMessageSize, reinterpret_cast<const uint8_t *>(&logData), _logLocalMessage)
 {
 }
 

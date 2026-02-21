@@ -84,7 +84,7 @@ public:
      **/
     ServiceCommunicationBase( const ITEM_ID & serviceId
                             , NERemoteService::RemoteServiceKind service
-                            , unsigned int connectTypes
+                            , uint32_t connectTypes
                             , const String & dispatcher
                             , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
     /**
@@ -276,7 +276,7 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    void applyServiceConnectionData( const String & hostName, unsigned short portNr ) override;
+    void applyServiceConnectionData( const String & hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
@@ -490,7 +490,7 @@ private:
 protected:
     const ConnectionPolicy               mConnectBehavior;   //!< The default connection behavior.
     const NERemoteService::RemoteServiceKind  mService;           //!< The remote service type.
-    const unsigned int                      mConnectTypes;      //!< The bitwise flags of remote service connections.
+    const uint32_t                      mConnectTypes;      //!< The bitwise flags of remote service connections.
     ServerConnection                        mServerConnection;  //!< The instance of server connection object.
     Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
     ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients

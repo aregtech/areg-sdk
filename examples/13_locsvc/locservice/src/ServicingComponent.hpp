@@ -53,7 +53,7 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    signed short    mRemainRequest; //!< The maximum number of processing requests.
+    int16_t mRemainRequest; //!< The maximum number of processing requests.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

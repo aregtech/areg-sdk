@@ -162,7 +162,7 @@ public:
      * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
      * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
      **/
-    void logMain( int argc, char ** argv );
+    void logMain( int32_t argc, char ** argv );
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
@@ -262,7 +262,7 @@ private:
      * \param   logBuffer   The pointer to the NELogging::sLogMessage structure to log messages.
      * \param   size        The size of the buffer with log message.
      **/
-    static void callbackLogMessageEx(const unsigned char * logBuffer, uint32_t size);
+    static void callbackLogMessageEx(const uint8_t * logBuffer, uint32_t size);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

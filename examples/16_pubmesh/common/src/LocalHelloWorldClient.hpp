@@ -35,7 +35,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout The timeout in milliseconds to trigger the request to output message
      **/
-    LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout );
+    LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout );
 
     virtual ~LocalHelloWorldClient() = default;
 
@@ -90,9 +90,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
-    const unsigned int  mMsTimeout; //!< The timeout in milliseconds to set for timer
+    const uint32_t  mMsTimeout; //!< The timeout in milliseconds to set for timer
     Timer               mTimer;     //!< The timer to trigger to send request to output message
-    unsigned int        mID;        //!< The ID given by service.
+    uint32_t        mID;        //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

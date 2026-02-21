@@ -114,7 +114,7 @@ void Console::printMsg(const char* format, ...) const
     _osOutputText(text);
 }
 
-bool Console::readConsoleData(char* buffer, unsigned int bufSize)
+bool Console::readConsoleData(char* buffer, uint32_t bufSize)
 {
     return Console::_osWaitInputString(buffer, bufSize);
 }

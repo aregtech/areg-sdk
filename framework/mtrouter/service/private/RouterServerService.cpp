@@ -149,7 +149,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
             mServiceRegistry.getServiceSources(cookie, listStubs, listProxies);
 
             LOG_DBG("Routing service received disconnect message from cookie [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
-                        , static_cast<unsigned int>(cookie)
+                        , static_cast<uint32_t>(cookie)
                         , listStubs.getSize()
                         , listProxies.getSize());
 
@@ -409,7 +409,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
                         , stub.convToString().getString()
                         , listProxies.getSize());
 
-        LOG_DBG("Filter sources [ %u ] of proxy list", static_cast<unsigned int>(cookie));
+        LOG_DBG("Filter sources [ %u ] of proxy list", static_cast<uint32_t>(cookie));
 
         ArrayList<ITEM_ID> sendList;
         for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
@@ -439,7 +439,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
                 // ignore, it already has unregistered stub locally or proxy status did not changed
                 ServiceProxy dummy;
                 mServiceRegistry.unregisterServiceProxy(addrProxy, dummy);
-                LOG_DBG("Proxy [ %s ] is marked as ignored by source [ %u ], remove and skip", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
+                LOG_DBG("Proxy [ %s ] is marked as ignored by source [ %u ], remove and skip", addrProxy.convToString().getString(), static_cast<uint32_t>(cookie));
             }
         }
     }
@@ -455,7 +455,7 @@ void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress &
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceConsumer);
     LOG_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
                     , ProxyAddress::convAddressToPath(proxy).getString()
-                    , static_cast<unsigned int>(cookie));
+                    , static_cast<uint32_t>(cookie));
 
     RemoteMessage msgRegisterProxy;
     ServiceProxy svcProxy;

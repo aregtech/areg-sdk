@@ -67,7 +67,7 @@ public:
      * \brief   File::LEN_SPECIAL_MASKS
      *          The special masked names array length.
      */
-    static constexpr int                LEN_SPECIAL_MASKS   { std::size(SPEACIAL_MASKS) };
+    static constexpr int32_t                LEN_SPECIAL_MASKS   { std::size(SPEACIAL_MASKS) };
 
     /**
      * \brief   File::TEMP_FILE_PREFIX
@@ -107,7 +107,7 @@ public:
      * \brief   File::MAXIMUM_PATH
      *          The maximum path of file.
      **/
-    static constexpr int                MAXIMUM_PATH        {1024};
+    static constexpr int32_t                MAXIMUM_PATH        {1024};
 
     /**
      * \brief   File::PATH_SEPARATOR
@@ -181,7 +181,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    bool open(const String& fileName, unsigned int mode) override;
+    bool open(const String& fileName, uint32_t mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -213,19 +213,19 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    unsigned int setPosition(int offset, Cursor::SeekOrigin startAt) const override;
+    uint32_t setPosition(int32_t offset, Cursor::SeekOrigin startAt) const override;
 
     /**
      * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    unsigned int getPosition() const override;
+    uint32_t getPosition() const override;
 
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    unsigned int getLength() const override;
+    uint32_t getLength() const override;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
@@ -243,7 +243,7 @@ public:
      *
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
-    unsigned int reserve(unsigned int newSize) override;
+    uint32_t reserve(uint32_t newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
@@ -262,7 +262,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    unsigned int read( ByteBuffer & buffer ) const override;
+    uint32_t read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -270,7 +270,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( String & ascii ) const override;
+    uint32_t read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -278,7 +278,7 @@ public:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( WideString & wide ) const override;
+    uint32_t read( WideString & wide ) const override;
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
@@ -287,7 +287,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    unsigned int read( unsigned char * buffer, unsigned int size ) const override;
+    uint32_t read( uint8_t * buffer, uint32_t size ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -299,7 +299,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    unsigned int write( const ByteBuffer & buffer ) override;
+    uint32_t write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -307,7 +307,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int write( const String & ascii ) override;
+    uint32_t write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -315,7 +315,7 @@ public:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int write( const WideString & wide ) override;
+    uint32_t write( const WideString & wide ) override;
 
     /**
      * \brief	Write data to output stream object from given buffer
@@ -326,7 +326,7 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    unsigned int write( const unsigned char* buffer, unsigned int size ) override;
+    uint32_t write( const uint8_t* buffer, uint32_t size ) override;
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 
@@ -345,7 +345,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    unsigned int getSizeReadable() const override;
+    uint32_t getSizeReadable() const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -357,7 +357,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    unsigned int getSizeWritable() const override;
+    uint32_t getSizeWritable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static operations
@@ -580,7 +580,7 @@ public:
      *                                  will be added to the list.
      * \return  Returns number of new nodes added to the list.
      **/
-    static int splitPath(const char * filePath, StringList & in_out_List);
+    static int32_t splitPath(const char * filePath, StringList & in_out_List);
 
     /**
      * \brief   From given directory name and file name creates the full path of the file.
@@ -643,7 +643,7 @@ private:
      * \return  Returns the size of data that could read from the file.
      *          Returns zero if failed to read or no more data to read.
      */
-    unsigned int _osReadFile(unsigned char* buffer, unsigned int size) const;
+    uint32_t _osReadFile(uint8_t* buffer, uint32_t size) const;
 
     /**
      * \brief   OS specific method to write data into the file. The file should
@@ -654,7 +654,7 @@ private:
      * \return  Returns the size of data that could write into the file.
      *          Returns zero if failed to write or no data to write.
      */
-    unsigned int _osWriteFile( const unsigned char* buffer, unsigned int size );
+    uint32_t _osWriteFile( const uint8_t* buffer, uint32_t size );
 
     /**
      * \brief   OS specific method to move cursor position in the file.
@@ -665,13 +665,13 @@ private:
      * \return  If succeeded, returns the new position of the cursor. Otherwise, returns
      *          invalid position (Cursor::INVALID_CURSOR_POSITION).
      */
-    unsigned int _osSetPositionFile(int offset, Cursor::SeekOrigin startAt) const;
+    uint32_t _osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const;
 
     /**
      * \brief   If file is opened, return the current cursor position in the file.
      *          Otherwise, returns invalid position (Cursor::INVALID_CURSOR_POSITION).
      */
-    unsigned int _osGetPositionFile() const;
+    uint32_t _osGetPositionFile() const;
 
     /**
      * \brief   OS specific method to truncate the opened file until the current position of the cursor.
@@ -698,7 +698,7 @@ private:
      * \param   unique  If true, the name of the file is unique.
      * \return  Returns the length of data in the buffer.
      */
-    static unsigned int _osCreateTempFileName(char* buffer, const char* folder, const char * prefix, unsigned int unique);
+    static uint32_t _osCreateTempFileName(char* buffer, const char* folder, const char * prefix, uint32_t unique);
 
     /**
      * \brief   OS specific method to retrieve the OS specific methods.
@@ -708,7 +708,7 @@ private:
      * \param   specialFolder   THe flag indicating the uniqueness and specialty of the file.
      * \return  Return the length of the path in the 'buffer'.
      */
-    static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const File::SpecialFolder specialFolder);
+    static uint32_t _osGetSpecialDir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder);
 
     /**
      * \brief   Returns OS specific invalid file handle.

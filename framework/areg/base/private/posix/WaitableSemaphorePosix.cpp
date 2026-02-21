@@ -27,7 +27,7 @@
 // WaitableSemaphorePosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-WaitableSemaphorePosix::WaitableSemaphorePosix(int maxCount, int initCount /*= 0*/, const char * asciiName /*= nullptr */)
+WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCount /*= 0*/, const char * asciiName /*= nullptr */)
     : WaitablePosix  ( NESyncTypesIX::SyncKind::SoWaitSemaphore, true, asciiName )
 
     , mMaxCount         ( maxCount  )
@@ -86,7 +86,7 @@ bool WaitableSemaphorePosix::checkCanSignalMultipleThreads() const
     return true;
 }
 
-void WaitableSemaphorePosix::notifyReleasedThreads(int /* numThreads */)
+void WaitableSemaphorePosix::notifyReleasedThreads(int32_t /* numThreads */)
 {
 }
 

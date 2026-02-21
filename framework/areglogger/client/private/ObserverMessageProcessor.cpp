@@ -210,8 +210,8 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
     FuncLogMessage callback{ nullptr };
     FuncLogMessageEx callbackEx{ nullptr };
     sLogMessage msgLog{ };
-    const unsigned char* logBuffer{ nullptr };
-    unsigned int size{ 0 };
+    const uint8_t* logBuffer{ nullptr };
+    uint32_t size{ 0 };
     DateTime now{ DateTime::getNow() };
 
     do
@@ -240,15 +240,15 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
 
                 msgLog.msgType      = static_cast<eLogType>(msgRemote->logMsgType);
                 msgLog.msgPriority  = static_cast<LogPriority>(msgRemote->logMessagePrio);
-                msgLog.msgSource    = static_cast<unsigned long long>(msgRemote->logSource);
-                msgLog.msgCookie    = static_cast<unsigned long long>(msgRemote->logCookie);
-                msgLog.msgModuleId  = static_cast<unsigned long long>(msgRemote->logModuleId);
-                msgLog.msgThreadId  = static_cast<unsigned long long>(msgRemote->logThreadId);
-                msgLog.msgTimestamp = static_cast<unsigned long long>(msgRemote->logTimestamp);
-                msgLog.msgReceived  = static_cast<unsigned long long>(msgRemote->logReceived);
-                msgLog.msgDuration  = static_cast<unsigned int>(msgRemote->logDuration);
-                msgLog.msgScopeId   = static_cast<unsigned int>(msgRemote->logScopeId);
-                msgLog.msgSessionId = static_cast<unsigned int>(msgRemote->logSessionId);
+                msgLog.msgSource    = static_cast<uint64_t>(msgRemote->logSource);
+                msgLog.msgCookie    = static_cast<uint64_t>(msgRemote->logCookie);
+                msgLog.msgModuleId  = static_cast<uint64_t>(msgRemote->logModuleId);
+                msgLog.msgThreadId  = static_cast<uint64_t>(msgRemote->logThreadId);
+                msgLog.msgTimestamp = static_cast<uint64_t>(msgRemote->logTimestamp);
+                msgLog.msgReceived  = static_cast<uint64_t>(msgRemote->logReceived);
+                msgLog.msgDuration  = static_cast<uint32_t>(msgRemote->logDuration);
+                msgLog.msgScopeId   = static_cast<uint32_t>(msgRemote->logScopeId);
+                msgLog.msgSessionId = static_cast<uint32_t>(msgRemote->logSessionId);
 
                 NEMemory::memCopy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , msgRemote->logMessageLen + 1);
                 NEMemory::memCopy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
@@ -280,7 +280,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
 
     FuncInstancesConnect callback{ nullptr };
     sLogInstance* listInstances{ nullptr };
-    int size{ static_cast<int>(listConnected.getSize()) };
+    int32_t size{ static_cast<int32_t>(listConnected.getSize()) };
     if (size == 0)
         return;
 
@@ -346,8 +346,8 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                     inst.liBitness = static_cast<uint32_t>(client.ciBitness);
                     inst.liCookie = client.ciCookie;
                     inst.liTimestamp = client.ciTimestamp;
-                    NEMemory::memCopy(inst.liName    , LENGTH_NAME    , client.ciInstance.c_str(), static_cast<int>(client.ciInstance.length()) + 1);
-                    NEMemory::memCopy(inst.liLocation, LENGTH_LOCATION, client.ciLocation.c_str(), static_cast<int>(client.ciLocation.length()) + 1);
+                    NEMemory::memCopy(inst.liName    , LENGTH_NAME    , client.ciInstance.c_str(), static_cast<int32_t>(client.ciInstance.length()) + 1);
+                    NEMemory::memCopy(inst.liLocation, LENGTH_LOCATION, client.ciLocation.c_str(), static_cast<int32_t>(client.ciLocation.length()) + 1);
                 }
             }
 
@@ -378,8 +378,8 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
     msgReceived >> listClients;
     FuncInstancesDisconnect callback{ nullptr };
     ITEM_ID* listInstances{ nullptr };
-    int size{ static_cast<int>(listClients.getSize()) };
-    int count{ 0 };
+    int32_t size{ static_cast<int32_t>(listClients.getSize()) };
+    int32_t count{ 0 };
 
     do
     {

@@ -128,10 +128,10 @@ void LogManager::setDefaultConfiguration(bool overwriteExisting)
     }
 }
 
-bool LogManager::setScopePriority( const char * scopeName, unsigned int newPrio )
+bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
 {
     ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-    unsigned int scopeId = NELogging::makeScopeId( scopeName );
+    uint32_t scopeId = NELogging::makeScopeId( scopeName );
     const LogScope * scope = ctrScope.getScope( scopeId );
     bool result{ scope != nullptr };
     if ( result && (scope->getPriority() != newPrio))
@@ -142,19 +142,19 @@ bool LogManager::setScopePriority( const char * scopeName, unsigned int newPrio 
     return result;
 }
 
-void LogManager::updateScopes(const String & scopeName, unsigned int scopeId, unsigned int newPrio)
+void LogManager::updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio)
 {
     ScopeController & ctrScope = LogManager::getInstance().mScopeController;
     ctrScope.clearConfigScopes();
     ctrScope.changeScopeActivityStatus(scopeName, scopeId, newPrio);
 }
 
-unsigned int LogManager::getScopePriority( const char * scopeName )
+uint32_t LogManager::getScopePriority( const char * scopeName )
 {
     ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-    unsigned int scopeId = NELogging::makeScopeId( scopeName );
+    uint32_t scopeId = NELogging::makeScopeId( scopeName );
     const LogScope * scope = ctrScope.getScope( scopeId );
-    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid));
+    return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid));
 }
 
 void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
@@ -373,7 +373,7 @@ inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::Even
     LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
 }
 
-void LogManager::changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio )
+void LogManager::changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio )
 {
     mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
 }

@@ -20,7 +20,7 @@
 namespace
 {
     template<typename CharType>
-    inline void _convertArguments( const CharType ** argv, int argc, OptionParser::StrList & optList )
+    inline void _convertArguments( const CharType ** argv, int32_t argc, OptionParser::StrList & optList )
     {
         if ( (argv != nullptr) && (argc > 1) )
         {
@@ -36,7 +36,7 @@ namespace
     }
 
     template<typename CharType>
-    inline void _convertArguments(CharType** argv, int argc, OptionParser::StrList& optList)
+    inline void _convertArguments(CharType** argv, int32_t argc, OptionParser::StrList& optList)
     {
         if ((argv != nullptr) && (argc > 1))
         {
@@ -277,28 +277,28 @@ OptionParser & OptionParser::operator=( OptionParser && src ) noexcept
 bool OptionParser::parseCommandLine( const char ** cmdLine, uint32_t count )
 {
     StrList optList;
-    _convertArguments<char>( cmdLine, static_cast<int>(count), optList );
+    _convertArguments<char>( cmdLine, static_cast<int32_t>(count), optList );
     return parseOptions( optList );
 }
 
 bool OptionParser::parseCommandLine( const wchar_t ** cmdLine, uint32_t count )
 {
     StrList optList;
-    _convertArguments<wchar_t>( cmdLine, static_cast<int>(count), optList );
+    _convertArguments<wchar_t>( cmdLine, static_cast<int32_t>(count), optList );
     return parseOptions( optList );
 }
 
 bool OptionParser::parseCommandLine(char** cmdLine, uint32_t count)
 {
     StrList optList;
-    _convertArguments<char>(cmdLine, static_cast<int>(count), optList);
+    _convertArguments<char>(cmdLine, static_cast<int32_t>(count), optList);
     return parseOptions(optList);
 }
 
 bool OptionParser::parseCommandLine(wchar_t** cmdLine, uint32_t count)
 {
     StrList optList;
-    _convertArguments<wchar_t>(cmdLine, static_cast<int>(count), optList);
+    _convertArguments<wchar_t>(cmdLine, static_cast<int32_t>(count), optList);
     return parseOptions(optList);
 }
 
@@ -389,7 +389,7 @@ bool OptionParser::parseOptions( StrList & optList )
     return result;
 }
 
-uint32_t OptionParser::findOption(int optId) const
+uint32_t OptionParser::findOption(int32_t optId) const
 {
     uint32_t result{ NECommon::INVALID_POSITION };
     for (uint32_t i = 0; i < mInputOptions.getSize(); ++i)
@@ -498,7 +498,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
     }
 }
 
-inline void OptionParser::_setValue( int newValue, sOption & opt, const sOptionSetup & setup )
+inline void OptionParser::_setValue( int32_t newValue, sOption & opt, const sOptionSetup & setup )
 {
     opt.inValue.valInt = newValue;
     if ( OptionParser::hasRange( setup.optField ) )

@@ -86,7 +86,7 @@ public:
      **/
     ServiceClientConnectionBase(  const ITEM_ID & target
                                 , NERemoteService::RemoteServiceKind service
-                                , unsigned int connectTypes
+                                , uint32_t connectTypes
                                 , NEService::MessageSource msgSource
                                 , ConnectionConsumer& connectionConsumer
                                 , RemoteMessageHandler & messageHandler
@@ -195,7 +195,7 @@ protected:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    void applyServiceConnectionData( const String & hostName, unsigned short portNr ) override;
+    void applyServiceConnectionData( const String & hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
@@ -391,7 +391,7 @@ protected:
     /**
      * \brief   The bitwise set of connection types supported by remote service.
      **/
-    const unsigned int                      mConnectTypes;
+    const uint32_t                      mConnectTypes;
 
     /**
      * \brief   The type of messaging source application.

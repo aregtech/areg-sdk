@@ -70,7 +70,7 @@ protected:
      **/
     ServiceRequestEvent( const ProxyAddress & proxyAddress
                        , const StubAddress & target
-                       , unsigned int reqId
+                       , uint32_t reqId
                        , NEService::RequestType reqType
                        , Event::EventType eventType );
 
@@ -103,7 +103,7 @@ public:
     /**
      * \brief   Returns request message ID stored in service event
      **/
-    inline unsigned int getRequestId() const;
+    inline uint32_t getRequestId() const;
 
     /**
      * \brief   Returns request type to process.
@@ -153,7 +153,7 @@ protected:
     /**
      * \brief   Request message ID to trigger service call.
      **/
-    unsigned int                mMessageId;
+    uint32_t                mMessageId;
 
     /**
      * \brief   Request type. Normally, either notification or request call.
@@ -187,7 +187,7 @@ inline void ServiceRequestEvent::setEventSource(const ProxyAddress& addrProxySou
     mProxySource = addrProxySource;
 }
 
-inline unsigned int ServiceRequestEvent::getRequestId() const
+inline uint32_t ServiceRequestEvent::getRequestId() const
 {
     return mMessageId;
 }

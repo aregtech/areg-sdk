@@ -65,7 +65,7 @@ bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEServ
     return result;
 }
 
-void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
+void PublicServiceComponent::requestHelloWorld( uint32_t clientID )
 {
     LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
     PublicHelloWorldService::requestHelloWorld( clientID );

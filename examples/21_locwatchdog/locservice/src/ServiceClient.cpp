@@ -75,7 +75,7 @@ void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*Servic
 
 #endif  // AREG_LOGS
 
-void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
+void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_responseStartSleep);
     LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);

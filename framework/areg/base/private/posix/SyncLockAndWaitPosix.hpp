@@ -186,7 +186,7 @@ public:
      *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
      *              - NESyncTypesIX::SyncSignal::FirstError if error happened. For example, the waitable is invalidated.
      **/
-    static int waitForSingleObject( WaitablePosix & syncWait, unsigned int msTimeout = NECommon::WAIT_INFINITE );
+    static int32_t waitForSingleObject( WaitablePosix & syncWait, uint32_t msTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Call to lock and wait the list of synchronization objects until one or all objects are signaled.
@@ -212,7 +212,7 @@ public:
      *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
      *              - NESyncTypesIX::SyncSignal::FirstError + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
      **/
-    static int waitForMultipleObjects( WaitablePosix ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
+    static int32_t waitForMultipleObjects( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = NECommon::WAIT_INFINITE);
 
     /**
      * \brief   Called by waitable object to indicate that it is in signaled state.
@@ -221,7 +221,7 @@ public:
      *          In case of Mutex this should be one. In case of Synchronization Event there can be multiple threads.
      *          For more details see description of each waitable object
      **/
-    static int eventSignaled( WaitablePosix & syncWaitable );
+    static int32_t eventSignaled( WaitablePosix & syncWaitable );
 
     /**
      * \brief   Called by waitable object to indicate wait failure. For example, when waitable object is invalidated.
@@ -263,7 +263,7 @@ private:
      *                          or it should wait for any event to be in signaled state.
      * \param   msTimeout       Initializes the timeout in milliseconds to wait.
      **/
-    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int count, NESyncTypesIX::WaitCondition matchCondition, unsigned int msTimeout );
+    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, NESyncTypesIX::WaitCondition matchCondition, uint32_t msTimeout );
 
     /**
      * \brief   Destructor.
@@ -321,13 +321,13 @@ private:
      * \brief   Called to wait for condition variable. Either it waits with infinite wait flag or with timeout.
      * \return  Returns POSIX error code. If 0, the waiting method succeeded.
      **/
-    inline int _waitCondition();
+    inline int32_t _waitCondition();
 
     /**
      * \brief   Returns the index of registered waitable in the list.
      * \param   syncWaitable   The instance of waitable object to lookup in the list.
      **/
-    inline int _getWaitableIndex( const WaitablePosix & syncWaitable ) const;
+    inline int32_t _getWaitableIndex( const WaitablePosix & syncWaitable ) const;
 
     /**
      * \brief   Called to notify the event has been fired.
@@ -369,7 +369,7 @@ private:
     /**
      * \brief   Timeout in milliseconds to wait when blocks the thread.
      **/
-    const unsigned int                  mWaitTimeout;
+    const uint32_t                  mWaitTimeout;
     /**
      * \brief   The ID of thread that instantiated LockAndWait object.
      **/

@@ -344,10 +344,10 @@ void ConfigManager::removeModuleProperty(const String& section, const String& pr
     }
 }
 
-int ConfigManager::removeModuleProperties(const String& section, const String& property, NEPersistence::ConfigEntry keyType)
+int32_t ConfigManager::removeModuleProperties(const String& section, const String& property, NEPersistence::ConfigEntry keyType)
 {
     Lock lock(mLock);
-    int result{ 0 };
+    int32_t result{ 0 };
     uint32_t i{ 0 };
     while (i < mWritableProperties.getSize())
     {
@@ -640,17 +640,17 @@ bool ConfigManager::getLogEnabled(const String& logType) const
 
 bool ConfigManager::getLogEnabled(NELogging::LogTarget logType) const
 {
-    String id = Identifier::convToString( static_cast<unsigned int>(logType)
+    String id = Identifier::convToString( static_cast<uint32_t>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::LogTarget::Undefined));
+                                        , static_cast<uint32_t>(NELogging::LogTarget::Undefined));
     return getLogEnabled(id);
 }
 
 void ConfigManager::setLogEnabled(NELogging::LogTarget logType, bool newValue, bool isTemporary /*= false*/)
 {
-    String id = Identifier::convToString( static_cast<unsigned int>(logType)
+    String id = Identifier::convToString( static_cast<uint32_t>(logType)
                                         , NEApplication::LogTypeIdentifiers
-                                        , static_cast<unsigned int>(NELogging::LogTarget::Undefined));
+                                        , static_cast<uint32_t>(NELogging::LogTarget::Undefined));
     setLogEnabled(id, newValue, isTemporary);
 }
 
@@ -855,7 +855,7 @@ void ConfigManager::addModuleLogScope(const String& scopeName, const String& pri
     setModuleProperty(key.section, key.property, scopeName, prio, confKey, false);
 }
 
-void ConfigManager::addModuleLogScope(const String& scopeName, unsigned int prio)
+void ConfigManager::addModuleLogScope(const String& scopeName, uint32_t prio)
 {
     PropertyValue value;
     value.setIdentifierList(prio, NEApplication::LogScopePriorityIndentifiers);
@@ -877,7 +877,7 @@ bool ConfigManager::removeScope(const String& scopeName)
     return (pos != NECommon::INVALID_POSITION);
 }
 
-int ConfigManager::removeModuleScopes()
+int32_t ConfigManager::removeModuleScopes()
 {
     constexpr NEPersistence::ConfigEntry confKey{ NEPersistence::ConfigEntry::LogScope };
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogScope();
@@ -913,12 +913,12 @@ String ConfigManager::getRemoteServiceName(const String& service, const String& 
 
 String ConfigManager::getRemoteServiceName(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
+    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
+                                                    , static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined));
+                                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined));
     return getRemoteServiceName(service, connect);
 }
 
@@ -934,12 +934,12 @@ bool ConfigManager::getRemoteServiceEnable(const String& service, const String& 
 
 bool ConfigManager::getRemoteServiceEnable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
+    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
+                                                    , static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined));
+                                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined));
     return getRemoteServiceEnable(service, connect);
 }
 
@@ -954,12 +954,12 @@ void ConfigManager::setRemoteServiceEnable(const String& service, const String& 
 
 void ConfigManager::setRemoteServiceEnable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, bool newValue, bool isTemporary /*= false*/)
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
+    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
+                                                    , static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined));
+                                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined));
     setRemoteServiceEnable(service, connect, newValue, isTemporary);
 }
 
@@ -986,12 +986,12 @@ String ConfigManager::getRemoteServiceAddress(const String& service, const Strin
 
 String ConfigManager::getRemoteServiceAddress(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
+    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
+                                                    , static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined));
+                                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined));
     return getRemoteServiceAddress(service, connect);
 }
 
@@ -1006,12 +1006,12 @@ void ConfigManager::setRemoteServiceAddress(const String& service, const String&
 
 void ConfigManager::setRemoteServiceAddress(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, const String& newValue, bool isTemporary /*= false*/)
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
+    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
+                                                    , static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined));
+                                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined));
     setRemoteServiceAddress(service, connect, newValue, isTemporary);
 }
 
@@ -1027,12 +1027,12 @@ uint16_t ConfigManager::getRemoteServicePort(const String& service, const String
 
 uint16_t ConfigManager::getRemoteServicePort(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
+    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
+                                                    , static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined));
+                                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined));
     return getRemoteServicePort(service, connect);
 }
 
@@ -1047,12 +1047,12 @@ void ConfigManager::setRemoteServicePort(const String& service, const String& co
 
 void ConfigManager::setRemoteServicePort(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, uint16_t newValue, bool isTemporary /*= false*/)
 {
-    const String& service = Identifier::convToString( static_cast<unsigned int>(serviceType)
+    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , NEApplication::RemoteServiceIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<unsigned int>(connectType)
+                                                    , static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown));
+    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , NEApplication::ConnectionIdentifiers
-                                                    , static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined));
+                                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined));
     setRemoteServicePort(service, connect, newValue, isTemporary);
 }
 

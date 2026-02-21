@@ -47,7 +47,7 @@ class String;
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   A base class of all thread objects running int the system.
+ * \brief   A base class of all thread objects running int32_t the system.
  *          Use this or derived classes to keep tracking of instantiated and running thread
  *          that can be accessed by ID, unique names or handles. The class creates (starts) 
  *          and destroys (stops) thread. To implement the cyclic runs, the object requires
@@ -176,7 +176,7 @@ public:
      *                              until thread starts running or timeout expires.
      * \return	Returns true if new thread is successfully created and started.
      **/
-    virtual bool createThread( unsigned int waitForStartMs = NECommon::DO_NOT_WAIT );
+    virtual bool createThread( uint32_t waitForStartMs = NECommon::DO_NOT_WAIT );
 
     /**
      * \brief   Override the method to trigger exist event for the threads.
@@ -198,7 +198,7 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = NECommon::DO_NOT_WAIT );
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -208,7 +208,7 @@ public:
      * \param   waitForCompleteMs   The timeout in milliseconds to wait for completion.
      * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
      **/
-    virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE );
+    virtual bool completionWait( uint32_t waitForCompleteMs = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   It calls shutdownThread() with waiting timeout 10 ms. If waiting time is expired, 
@@ -342,7 +342,7 @@ public:
      *          It continues execution when time is expired.
      * \param   msTimeout   Timeout in milliseconds to put thread in sleep mode.
      **/
-    inline static void sleep( unsigned int msTimeout );
+    inline static void sleep( uint32_t msTimeout );
 
     /**
      * \brief   Switches thread processing time.
@@ -531,7 +531,7 @@ private:
      * \brief   Thread entry point. Consumer function call performed here.
      * \return  Returns thread routine exit code.
      **/
-    int  _threadEntry();
+    int32_t  _threadEntry();
 
     /**
      * \brief   Set running / not running flag
@@ -615,7 +615,7 @@ private:
     /**
      * \brief   Puts the thread in a sleeping mode for specified duration in milliseconds.
      **/
-    static void _osSleep( unsigned int timeout );
+    static void _osSleep( uint32_t timeout );
 
     /**
      * \brief   OS specific implementation of getting the ID of current thread.
@@ -637,7 +637,7 @@ private:
      *          milliseconds specifies how long should the caller wait for thread to complete.
      *          If timer expires and thread did not complete, it kills / cancels the thread.
      **/
-    Thread::ThreadCompletion _osDestroyThread( unsigned int waitForStopMs );
+    Thread::ThreadCompletion _osDestroyThread( uint32_t waitForStopMs );
 
     /**
      * \brief   OS specific implementation to set thread new priority.
@@ -806,7 +806,7 @@ inline uint32_t Thread::getPredefinedStackSize() const
     return mStackSizeKB;
 }
 
-inline void Thread::sleep( unsigned int ms )
+inline void Thread::sleep( uint32_t ms )
 {
     _osSleep( ms );
 }

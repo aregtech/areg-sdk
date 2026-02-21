@@ -27,7 +27,7 @@ class PublicServiceComponent    : public    Component
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
 //////////////////////////////////////////////////////////////////////////
-    static constexpr unsigned  int  LOCAL_TIMEOUT   { 555 };//!< Timeout to output message in local service.
+    static constexpr uint32_t  LOCAL_TIMEOUT   { 555 };//!< Timeout to output message in local service.
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -62,7 +62,7 @@ protected:
      * \param   clientID    The ID of registered client to make message output
      * \see     responseHelloWorld
      **/
-    void requestHelloWorld( unsigned int clientID ) override;
+    void requestHelloWorld( uint32_t clientID ) override;
 
     /**
      * \brief   Request call.

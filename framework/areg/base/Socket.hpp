@@ -118,7 +118,7 @@ public:
      * \param   portNr      The valid port number to connect or bind.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( const char * hostName, unsigned short portNr ) = 0;
+    virtual bool createSocket( const char * hostName, uint16_t portNr ) = 0;
 
     /**
      * \brief   For client sockets, this method is creating new socket descriptor
@@ -156,7 +156,7 @@ public:
      * \return  Returns number of bytes sent to remote target. 
      *          Returns negative number if socket is not valid of failed to send.
      **/
-    virtual int sendData( const unsigned char * buffer, int length ) const;
+    virtual int32_t sendData( const uint8_t * buffer, int32_t length ) const;
 
     /**
      * \brief   If socket is valid, receives data using existing socket connection and returns
@@ -169,7 +169,7 @@ public:
      * \return  Returns number of bytes received from remote target. 
      *          Returns negative number if socket is not valid of failed to receive data.
      **/
-    virtual int receiveData( unsigned char * buffer, int length ) const;
+    virtual int32_t receiveData( uint8_t * buffer, int32_t length ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -198,7 +198,7 @@ public:
      *          Returns negative value if socket is invalid.
      * \return  Returns number of bytes available to read from socket buffer.
      **/
-    inline int pendingRead() const;
+    inline int32_t pendingRead() const;
 
     /**
      * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
@@ -237,17 +237,17 @@ public:
      *                      server or for client.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool setAddress( const char * hostName, unsigned short portNr, bool isServer );
+    bool setAddress( const char * hostName, uint16_t portNr, bool isServer );
 
     /**
      * \brief   Returns the packet size in bytes to send data.
      **/
-    inline unsigned int getSendPacketSize() const;
+    inline uint32_t getSendPacketSize() const;
 
     /**
      * \brief   Returns the packet size in bytes to receive data.
      **/
-    inline unsigned int getRecvPacketSize() const;
+    inline uint32_t getRecvPacketSize() const;
 
 protected:
 /************************************************************************/
@@ -280,7 +280,7 @@ protected:
      * \return  Returns the actual size of packet in bytes to send data. If socket is not valid,
      *          return NESocket::PACKET_INVALID_SIZE.
      **/
-    unsigned int setSendPacketSize(unsigned int sendSize, bool force = false) const;
+    uint32_t setSendPacketSize(uint32_t sendSize, bool force = false) const;
 
      /**
       * \brief   Sets the socket packet size in bytes to receive data. The packet cannot be smaller than NESocket::PACKET_MIN_SIZE
@@ -294,7 +294,7 @@ protected:
       * \return  Returns the actual size of packet in bytes to receive data. If socket is not valid,
       *          return NESocket::PACKET_INVALID_SIZE.
       **/
-    unsigned int setRecvPacketSize(unsigned int recvSize, bool force = false) const;
+    uint32_t setRecvPacketSize(uint32_t recvSize, bool force = false) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -323,13 +323,13 @@ protected:
      * \brief   The size in bytes of packet to send data.
      *          Should be in range NESocket::PACKET_MIN_SIZE and NESocket::PACKET_MAX_SIZE.
      **/
-    mutable unsigned int    mSendSize;
+    mutable uint32_t    mSendSize;
 
      /**
       * \brief   The size in bytes of packet to receive data.
       *          Should be in range NESocket::PACKET_MIN_SIZE and NESocket::PACKET_MAX_SIZE.
       **/
-    mutable unsigned int    mRecvSize;
+    mutable uint32_t    mRecvSize;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -361,7 +361,7 @@ inline bool Socket::isAlive() const
     return (mSocket.get() != nullptr) && NESocket::isSocketAlive(*mSocket);
 }
 
-inline int Socket::pendingRead() const
+inline int32_t Socket::pendingRead() const
 {
     return (mSocket.get() != nullptr) && NESocket::pendingRead(*mSocket);
 }
@@ -376,12 +376,12 @@ inline bool Socket::disableReceive() const
     return (mSocket.get() != nullptr) && NESocket::disableReceive(*mSocket);
 }
 
-inline unsigned int Socket::getSendPacketSize() const
+inline uint32_t Socket::getSendPacketSize() const
 {
     return (isValid() ? mSendSize : NESocket::PACKET_INVALID_SIZE);
 }
 
-unsigned int Socket::getRecvPacketSize() const
+uint32_t Socket::getRecvPacketSize() const
 {
     return (isValid() ? mRecvSize : NESocket::PACKET_INVALID_SIZE);
 }

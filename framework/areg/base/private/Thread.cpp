@@ -171,7 +171,7 @@ ThreadLocalStorage & Thread::getCurrentThreadStorage()
     return (*localStorage);
 }
 
-bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT */)
+bool Thread::createThread(uint32_t waitForStartMs /* = NECommon::DO_NOT_WAIT */)
 {
     bool result = false;
 
@@ -200,7 +200,7 @@ void Thread::triggerExit()
 {
 }
 
-Thread::ThreadCompletion Thread::shutdownThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
+Thread::ThreadCompletion Thread::shutdownThread( uint32_t waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
 {
     Thread::ThreadCompletion result{ _osDestroyThread( waitForStopMs ) };
 
@@ -218,7 +218,7 @@ Thread::ThreadCompletion Thread::terminateThread()
     return shutdownThread( NECommon::WAIT_10_MILLISECONDS );
 }
 
-bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
+bool Thread::completionWait( uint32_t waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
 {
     mSyncObject.lock(NECommon::WAIT_INFINITE);
 
@@ -265,7 +265,7 @@ size_t Thread::getCurrentStackSize()
     return (threadObj != nullptr ? _osGetCurrentStackSize(threadObj->mThreadHandle) : 0);
 }
 
-int Thread::_threadEntry()
+int32_t Thread::_threadEntry()
 {
     ThreadConsumer::ExitCode result = ThreadConsumer::ExitCode::Terminated;
 
@@ -290,7 +290,7 @@ int Thread::_threadEntry()
 
     _cleanResources( true );
 
-    return static_cast<int>(result);
+    return static_cast<int32_t>(result);
 }
 
 void Thread::_cleanResources(bool unregister)

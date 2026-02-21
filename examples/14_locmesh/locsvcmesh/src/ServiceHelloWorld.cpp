@@ -29,7 +29,7 @@ ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
 void ServiceHelloWorld::requestHelloWorld( const String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
-    unsigned int clientId = 0;
+    uint32_t clientId = 0;
     if ( mClientList.find( roleName, clientId ) == false )
     {
         clientId = NEUtilities::generateUniqueId( );
@@ -58,7 +58,7 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
 
 #if AREG_LOGS
 
-void ServiceHelloWorld::requestShutdownService( unsigned int clientID, const String & roleName )
+void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
     LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString( ), clientID );
@@ -72,7 +72,7 @@ void ServiceHelloWorld::requestShutdownService( unsigned int clientID, const Str
 
 #else  // AREG_LOGS
 
-void ServiceHelloWorld::requestShutdownService( unsigned int /*clientID*/, const String & /*roleName*/ )
+void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const String & /*roleName*/ )
 {
     if ( mIsMain )
     {

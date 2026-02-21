@@ -24,7 +24,7 @@ namespace
      * \brief   32-bit CRC (Cyclic Redundancy Check) lookup table (polynomial = 0x04C11DB7) with size 1024 bytes (256 x 4).
      *          CRC polynomial: X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X+1
      **/
-    constexpr unsigned char _crc32LookupTable[] = {
+    constexpr uint8_t _crc32LookupTable[] = {
         0x00, 0x00, 0x00, 0x00, 0x96, 0x30, 0x07, 0x77,
         0x2C, 0x61, 0x0E, 0xEE, 0xBA, 0x51, 0x09, 0x99,
         0x19, 0xC4, 0x6D, 0x07, 0x8F, 0xF4, 0x6A, 0x70,
@@ -156,72 +156,72 @@ namespace
     };
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Calculate( const unsigned char* data, int size )
+AREG_API_IMPL uint32_t NEMath::crc32Calculate( const uint8_t* data, int32_t size )
 {
-    unsigned int result = static_cast<unsigned int>(~0);   // initialize
-    const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
+    uint32_t result = static_cast<uint32_t>(~0);   // initialize
+    const uint32_t* crc32Tab = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);   // get converted lookup table
     for ( int count = size ; count != 0; -- count, ++ data )
-        result = (result >> 8) ^ crc32Tab[*data ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate
+        result = (result >> 8) ^ crc32Tab[*data ^ static_cast<uint8_t>(result & 0x000000FF)];  // calculate
     return (~result);   // return result
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Calculate( const char * strData )
+AREG_API_IMPL uint32_t NEMath::crc32Calculate( const char * strData )
 {
-    unsigned int result = static_cast<unsigned int>(~0);   // initialize
+    uint32_t result = static_cast<uint32_t>(~0);   // initialize
     if ( strData != nullptr )
     {
-        const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
+        const uint32_t* crc32Tab = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);   // get converted lookup table
         for ( ; *strData != static_cast<char>('\0'); ++ strData )
-            result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(*strData) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate
+            result = (result >> 8) ^ crc32Tab[static_cast<uint8_t>(*strData) ^ static_cast<uint8_t>(result & 0x000000FF)];  // calculate
     }
     return (~result);   // return result
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Calculate( const wchar_t * strData )
+AREG_API_IMPL uint32_t NEMath::crc32Calculate( const wchar_t * strData )
 {
-    unsigned int result = static_cast<unsigned int>(~0);   // initialize
+    uint32_t result = static_cast<uint32_t>(~0);   // initialize
     if ( strData != nullptr )
     {
-        const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
+        const uint32_t* crc32Tab = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);   // get converted lookup table
         for ( ; *strData != static_cast<wchar_t>('\0'); ++ strData )
         {
-            unsigned short data  = *strData;
-            if ( data <= static_cast<unsigned short>(0x00FF) )
+            uint16_t data  = *strData;
+            if ( data <= static_cast<uint16_t>(0x00FF) )
             {
-                result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(*strData) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate
+                result = (result >> 8) ^ crc32Tab[static_cast<uint8_t>(*strData) ^ static_cast<uint8_t>(result & 0x000000FF)];  // calculate
             }
             else
             {
-                unsigned char low    = NEMath::loByte(static_cast<uint16_t>(data));
-                unsigned char high   = NEMath::hiByte(static_cast<uint16_t>(data));
-                result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(low ) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate low bits
-                result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(high) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate hight bits
+                uint8_t low    = NEMath::loByte(static_cast<uint16_t>(data));
+                uint8_t high   = NEMath::hiByte(static_cast<uint16_t>(data));
+                result = (result >> 8) ^ crc32Tab[static_cast<uint8_t>(low ) ^ static_cast<uint8_t>(result & 0x000000FF)];  // calculate low bits
+                result = (result >> 8) ^ crc32Tab[static_cast<uint8_t>(high) ^ static_cast<uint8_t>(result & 0x000000FF)];  // calculate hight bits
             }
         }
     }
     return (~result);   // return result
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Init()
+AREG_API_IMPL uint32_t NEMath::crc32Init()
 {
-    return static_cast<unsigned int>(~0);
+    return static_cast<uint32_t>(~0);
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Start( unsigned int crcInit, const unsigned char* data, int size )
+AREG_API_IMPL uint32_t NEMath::crc32Start( uint32_t crcInit, const uint8_t* data, int32_t size )
 {
-    unsigned int result = crcInit;
+    uint32_t result = crcInit;
     if ( data != nullptr && size > 0)
     {
-        const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
+        const uint32_t* crc32Table = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);  // get converted lookup table
         for ( ; size > 0; -- size, ++ data )
         {
-            result  = (result >> 8) ^ crc32Table[ *data ^ static_cast<unsigned char>(result & 0x000000FF)];
+            result  = (result >> 8) ^ crc32Table[ *data ^ static_cast<uint8_t>(result & 0x000000FF)];
             /************************************************************************
              * This calculation is similar as following algorithm:
              ************************************************************************/
             /************************************************************************
-             *  unsigned char tmpCRC32[4];
-             *  unsigned char* crc32 = reinterpret_cast<unsigned char *>(&result);
+             *  uint8_t tmpCRC32[4];
+             *  uint8_t* crc32 = reinterpret_cast<uint8_t *>(&result);
              *  for(int i = 0; i < size; i++)
              *  {
              *      tmpCRC32[0] = crc32[0];
@@ -240,27 +240,27 @@ AREG_API_IMPL unsigned int NEMath::crc32Start( unsigned int crcInit, const unsig
     return result;
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Start(unsigned int crcInit, const char * data)
+AREG_API_IMPL uint32_t NEMath::crc32Start(uint32_t crcInit, const char * data)
 {
-    unsigned int result = crcInit;
+    uint32_t result = crcInit;
     if ( data != nullptr && *data != '\0')
     {
-        const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
+        const uint32_t* crc32Table = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);  // get converted lookup table
         for ( ; *data != '\0'; ++ data )
-            result  = (result >> 8) ^ crc32Table[ *data ^ static_cast<unsigned char>(result & 0x000000FF)];
+            result  = (result >> 8) ^ crc32Table[ *data ^ static_cast<uint8_t>(result & 0x000000FF)];
     }
     return result;
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Start(unsigned int crcInit, unsigned char uch)
+AREG_API_IMPL uint32_t NEMath::crc32Start(uint32_t crcInit, uint8_t uch)
 {
-    unsigned int result = crcInit;
-    const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
-    result  = (result >> 8) ^ crc32Table[ uch ^ static_cast<unsigned char>(result & 0x000000FF)];
+    uint32_t result = crcInit;
+    const uint32_t* crc32Table = reinterpret_cast<const uint32_t *>(::_crc32LookupTable);  // get converted lookup table
+    result  = (result >> 8) ^ crc32Table[ uch ^ static_cast<uint8_t>(result & 0x000000FF)];
     return result;
 }
 
-AREG_API_IMPL unsigned int NEMath::crc32Finish( unsigned int crc )
+AREG_API_IMPL uint32_t NEMath::crc32Finish( uint32_t crc )
 {
     return (~crc);
 }

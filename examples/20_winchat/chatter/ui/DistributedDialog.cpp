@@ -27,8 +27,8 @@
 #define new DEBUG_NEW
 #endif
 
-#define FIRST_MESSAGE       (WM_USER + 12 + static_cast<unsigned int>(NEDistributedApp::WindowCommand::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 12 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 
 // CAboutDlg dialog used for App About
@@ -206,12 +206,12 @@ void DistributedDialog::OnPaint()
         SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
         // Center icon in client rectangle
-        int cxIcon = GetSystemMetrics(SM_CXICON);
-        int cyIcon = GetSystemMetrics(SM_CYICON);
+        int32_t cxIcon = GetSystemMetrics(SM_CXICON);
+        int32_t cyIcon = GetSystemMetrics(SM_CYICON);
         CRect rect;
         GetClientRect(&rect);
-        int x = (rect.Width() - cxIcon + 1) / 2;
-        int y = (rect.Height() - cyIcon + 1) / 2;
+        int32_t x = (rect.Width() - cxIcon + 1) / 2;
+        int32_t y = (rect.Height() - cyIcon + 1) / 2;
 
         // Draw the icon
         dc.DrawIcon(x, y, m_hIcon);

@@ -36,9 +36,9 @@ ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBas
 {
 }
 
-int ServiceApplicationBase::serviceMain(NESystemService::ServiceOption optStartup, const char* argument)
+int32_t ServiceApplicationBase::serviceMain(NESystemService::ServiceOption optStartup, const char* argument)
 {
-    int result{ RESULT_SUCCEEDED };
+    int32_t result{ RESULT_SUCCEEDED };
     Application::setWorkingDirectory(nullptr);
     mSystemServiceOption = optStartup;
     switch (optStartup)
@@ -229,9 +229,9 @@ void ServiceApplicationBase::runService()
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
 }
 
-int ServiceApplicationBase::startServiceDispatcher()
+int32_t ServiceApplicationBase::startServiceDispatcher()
 {
-    int result{ RESULT_IGNORED };
+    int32_t result{ RESULT_IGNORED };
     if (mServiceSetup == false)
     {
         mServiceSetup = true;
@@ -264,7 +264,7 @@ void ServiceApplicationBase::onSetupConfiguration( const NEPersistence::ListProp
 {
 }
 
-bool ServiceApplicationBase::inputConsoleData(char* buffer, unsigned int bufSize)
+bool ServiceApplicationBase::inputConsoleData(char* buffer, uint32_t bufSize)
 {
     return Console::readConsoleData(buffer, bufSize);
 }

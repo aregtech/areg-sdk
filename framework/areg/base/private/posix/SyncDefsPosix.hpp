@@ -116,14 +116,14 @@ namespace NESyncTypesIX
      * \param   msTimeout   The timeout to be calculated.
      * \return  Returns true if succeeded to get time and convert.
      **/
-    inline bool timeoutFromNow( timespec & out_result, unsigned int msTimeout );
+    inline bool timeoutFromNow( timespec & out_result, uint32_t msTimeout );
 
     /**
      * \brief   Converts the given timeout value into POSIX time structure.
      * \param   out_result  The object that contains timeout information in nanosecond range.
      * \param   msTimeout   The timeout to be calculated.
      **/
-    inline void convTimeout( timespec & out_result, unsigned int msTimeout );
+    inline void convTimeout( timespec & out_result, uint32_t msTimeout );
 
 } // namespace NESyncTypesIX
 
@@ -131,7 +131,7 @@ namespace NESyncTypesIX
 // NESyncTypesIX namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NESyncTypesIX::timeoutFromNow( timespec & out_result, unsigned int msTimeout )
+inline bool NESyncTypesIX::timeoutFromNow( timespec & out_result, uint32_t msTimeout )
 {
     bool result = false;
     if ( NESyncTypesIX::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
@@ -143,7 +143,7 @@ inline bool NESyncTypesIX::timeoutFromNow( timespec & out_result, unsigned int m
     return result;
 }
 
-inline void NESyncTypesIX::convTimeout( timespec & out_result, unsigned int msTimeout )
+inline void NESyncTypesIX::convTimeout( timespec & out_result, uint32_t msTimeout )
 {
 	constexpr std::chrono::nanoseconds _sec_to_nano{NEUtilities::SEC_TO_NS};
 

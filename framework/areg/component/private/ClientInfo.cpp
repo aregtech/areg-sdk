@@ -135,10 +135,10 @@ void ClientInfo::setConnectionStatus( NEService::ServiceConnectionState newConne
     }
 }
 
-ClientInfo::operator unsigned int () const
+ClientInfo::operator uint32_t () const
 {
     const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mClientAddress);
-    return static_cast<unsigned int>( addrService );
+    return static_cast<uint32_t>( addrService );
 }
 
 void ClientInfo::setTargetServer(const StubAddress & addrStub)

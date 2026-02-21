@@ -50,9 +50,9 @@ public:
 private:
     void setHeaders();
 
-    // int findInTyping( LPCTSTR nickName );
+    // int32_t findInTyping( LPCTSTR nickName );
 
-    int findInTyping( unsigned int cookie );
+    int32_t findInTyping( uint32_t cookie );
 
 private:
     CListCtrl   mCtrlList;

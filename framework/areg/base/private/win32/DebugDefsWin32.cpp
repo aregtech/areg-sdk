@@ -62,9 +62,9 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
     constexpr char  _msgUnknownMachine[]        { "<Unknown machine type>" };
     constexpr char  _msgIncompleteStack[]       { "Call Stack is incomplete...." };
 
-    constexpr unsigned int   _stackMaxDepth     { 64 };
-    constexpr unsigned int   _symNameLength     { MAX_SYM_NAME };
-    constexpr unsigned int   _sizeOfSymInfo     { NEMath::alignSize(static_cast<uint32_t>(sizeof( SYMBOL_INFO )) + _symNameLength * static_cast<uint32_t>(sizeof( char )), static_cast<uint32_t>(sizeof(ULONG64))) };
+    constexpr uint32_t   _stackMaxDepth     { 64 };
+    constexpr uint32_t   _symNameLength     { MAX_SYM_NAME };
+    constexpr uint32_t   _sizeOfSymInfo     { NEMath::alignSize(static_cast<uint32_t>(sizeof( SYMBOL_INFO )) + _symNameLength * static_cast<uint32_t>(sizeof( char )), static_cast<uint32_t>(sizeof(ULONG64))) };
 
     callStack.clear();
 
@@ -108,7 +108,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
             IMAGEHLP_MODULE64   moduleInfo { };
             PSYMBOL_INFO        symbolInfo  = reinterpret_cast<PSYMBOL_INFO>(symBuffer);
 
-            unsigned int curDepth = 0;
+            uint32_t curDepth = 0;
             while ( ::StackWalk64( machineType, hProcess, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr ) == TRUE )
             {
                 if ( frame.AddrFrame.Offset == 0 || ++ curDepth > _stackMaxDepth )

@@ -165,7 +165,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
         {
             String   ipAddress;
-            unsigned short portNr = 0;
+            uint16_t portNr = 0;
             stream >> ipAddress;
             stream >> portNr;
 

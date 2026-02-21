@@ -173,7 +173,7 @@ public:
      * \param   waitTimeout     The waiting timeout in milliseconds
      * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns false.
      **/
-    virtual bool waitForDispatcherStart( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    virtual bool waitForDispatcherStart( uint32_t waitTimeout = NECommon::WAIT_INFINITE );
 
 /************************************************************************/
 // Thread overrides
@@ -200,7 +200,7 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = NECommon::DO_NOT_WAIT ) override;
 
 protected:
 /************************************************************************/

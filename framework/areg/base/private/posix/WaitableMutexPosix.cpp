@@ -124,14 +124,14 @@ bool WaitableMutexPosix::checkCanSignalMultipleThreads() const
 
 #ifdef  DEBUG
 
-void WaitableMutexPosix::notifyReleasedThreads(int numThreads)
+void WaitableMutexPosix::notifyReleasedThreads(int32_t numThreads)
 {
     ASSERT((numThreads == 1) || (numThreads == 0));
 }
 
 #else   // DEBUG
 
-void WaitableMutexPosix::notifyReleasedThreads(int /*numThreads*/)
+void WaitableMutexPosix::notifyReleasedThreads(int32_t /*numThreads*/)
 {
 }
 

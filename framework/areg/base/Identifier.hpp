@@ -48,7 +48,7 @@ public:
      *          The values is reserved and should not be used
      *          at least together with BAD_IDENTIFIER_NAME
      **/
-    static constexpr unsigned int       BAD_IDENTIFIER_VALUE    { static_cast<unsigned int>(0x80000000) };
+    static constexpr uint32_t       BAD_IDENTIFIER_VALUE    { static_cast<uint32_t>(0x80000000) };
 
     /**
      * \brief   Identifier::BAD_IDENTIFIER_NAME
@@ -86,9 +86,9 @@ public:
      * \param   idValue     The integer value of identifier
      * \param   idName      The name of identifier associated with integer value.
      **/
-    Identifier(unsigned int idValue, const char* idName);
-    Identifier(unsigned int idValue, const std::string_view& idName);
-    Identifier(unsigned int idValue, const String& idName);
+    Identifier(uint32_t idValue, const char* idName);
+    Identifier(uint32_t idValue, const std::string_view& idName);
+    Identifier(uint32_t idValue, const String& idName);
 
     /**
      * \brief   Copy constructor.
@@ -124,7 +124,7 @@ public:
      *          Return the string value of the given default identifier entry index if identifier not found and default index is valid.
      *          Returns empty string if identifier not found and the index is invalid.
      **/
-    inline static const String& convToString(unsigned int idValue, const std::vector<Identifier>& lookupList, unsigned int defIndex);
+    inline static const String& convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
     /**
      * \brief   Converts given string value of the identifier into the digital value.
@@ -138,7 +138,7 @@ public:
      *          Return the integer value of the given default identifier entry index if identifier not found and default index is valid.
      *          Returns 0xFFFF'FFFF if identifier not found and the index is invalid.
      **/
-    inline static unsigned int convFromString(const String& idName, const std::vector<Identifier>& lookupList, unsigned int defIndex);
+    inline static uint32_t convFromString(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -167,7 +167,7 @@ public:
     /**
      * \brief   Returns true if the integer value of identifier is equal.
      **/
-    inline bool operator == (unsigned int rhs) const;
+    inline bool operator == (uint32_t rhs) const;
 
     /**
      * \brief   Returns true if 2 identifier objects are not equal.
@@ -182,7 +182,7 @@ public:
     /**
      * \brief   Returns true if the integer value of identifier is equal.
      **/
-    inline bool operator != ( unsigned int rhs ) const;
+    inline bool operator != ( uint32_t rhs ) const;
 
 /************************************************************************
  * Friend functions. Declare to make it streamable
@@ -227,7 +227,7 @@ public:
     /**
      * \brief   Returns Identifier integer value
      **/
-    inline unsigned int getValue() const;
+    inline uint32_t getValue() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -236,7 +236,7 @@ private:
     /**
      * \brief   Integer value of Identifier
      **/
-    unsigned int    mValue;
+    uint32_t    mValue;
     /**
      * \brief   String value of Identifier
      **/
@@ -247,7 +247,7 @@ private:
 // Identifier class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& Identifier::convToString(unsigned int idValue, const std::vector<Identifier>& lookupList, unsigned int defIndex)
+inline const String& Identifier::convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex)
 {
     ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
@@ -261,7 +261,7 @@ inline const String& Identifier::convToString(unsigned int idValue, const std::v
     return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::getEmptyString());
 }
 
-inline unsigned int Identifier::convFromString(const String& idName, const std::vector<Identifier>& lookupList, unsigned int defIndex)
+inline uint32_t Identifier::convFromString(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
 {
     ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
@@ -285,7 +285,7 @@ inline bool Identifier::operator == ( const char * rhs ) const
     return (mName == rhs);
 }
 
-inline bool Identifier::operator == ( unsigned int rhs ) const
+inline bool Identifier::operator == ( uint32_t rhs ) const
 {
     return (mValue == rhs);
 }
@@ -300,7 +300,7 @@ inline bool Identifier::operator != ( const char * rhs ) const
     return (mName != rhs);
 }
 
-inline bool Identifier::operator != ( unsigned int rhs ) const
+inline bool Identifier::operator != ( uint32_t rhs ) const
 {
     return (mValue != rhs);
 }
@@ -321,7 +321,7 @@ inline const String & Identifier::getName() const
     return mName;
 }
 
-inline unsigned int Identifier::getValue() const
+inline uint32_t Identifier::getValue() const
 {
     return mValue;
 }

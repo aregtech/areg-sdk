@@ -60,7 +60,7 @@ public:
 
     bool AddConnection( const chat::sConnection & newConnection );
 
-    int AddConnections( const chat::ListConnections & listConnections );
+    int32_t AddConnections( const chat::ListConnections & listConnections );
 
     bool RemoveConnection( const chat::sConnection & connection );
 
@@ -70,7 +70,7 @@ public:
 
 private:
 
-    int findConnection( const chat::sConnection & connection ) const;
+    int32_t findConnection( const chat::sConnection & connection ) const;
 
 private:
     chat::ListConnections mListConnections;

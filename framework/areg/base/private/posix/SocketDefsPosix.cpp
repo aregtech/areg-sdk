@@ -55,18 +55,18 @@ namespace NESocket
         ::close(hSocket);
     }
 
-    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize)
+    int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
-        int result{ dataLength };
+        int32_t result{ dataLength };
         bool checkSize = false;
 
         while (dataLength > 0)
         {
-            int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
             int written = ::send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
             if (written > 0)
             {
@@ -93,17 +93,17 @@ namespace NESocket
         return result;
     }
 
-    int _osRecvData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize)
+    int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
-        int result{ 0 };
+        int32_t result{ 0 };
 
         while (dataLength > 0)
         {
-            int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
             int read = ::recv(hSocket, dataBuffer + result, remain, 0);
             if (read > 0)
             {
@@ -125,13 +125,13 @@ namespace NESocket
         return result;
     }
 
-    bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long& arg)
+    bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         return (NECommon::RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
     }
 
-    bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long& value)
+    bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         socklen_t len{ sizeof(unsigned long) };

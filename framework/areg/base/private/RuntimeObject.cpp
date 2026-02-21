@@ -30,7 +30,7 @@ void RuntimeObject::destroy()
     delete this;
 }
 
-RuntimeObject::operator unsigned int() const
+RuntimeObject::operator uint32_t() const
 {
     return getRuntimeClassNumber();
 }
@@ -57,24 +57,24 @@ void* RuntimeObject::operator new[](size_t /*size*/, void* ptr)
 
 
 #if defined(_DEBUG) && defined(_MSC_VER)
-void* RuntimeObject::operator new(size_t size, int /*block*/, const char* file, int line)
+void* RuntimeObject::operator new(size_t size, int32_t /*block*/, const char* file, int32_t line)
 {
     return ::operator new(size, 1, file, line);
 }
 #else   // _DEBUG
-void* RuntimeObject::operator new(size_t size, int /*block*/, const char* /*file*/, int /*line*/)
+void* RuntimeObject::operator new(size_t size, int32_t /*block*/, const char* /*file*/, int32_t /*line*/)
 {
     return ::operator new (size);
 }
 #endif  // _DEBUG
 
 #if defined(_DEBUG) && defined(_MSC_VER)
-void* RuntimeObject::operator new[](size_t size, int /*block*/, const char* file, int line)
+void* RuntimeObject::operator new[](size_t size, int32_t /*block*/, const char* file, int32_t line)
 {
     return ::operator new(size, 1, file, line);
 }
 #else   // _DEBUG
-void* RuntimeObject::operator new[](size_t size, int /*block*/, const char* /*file*/, int /*line*/)
+void* RuntimeObject::operator new[](size_t size, int32_t /*block*/, const char* /*file*/, int32_t /*line*/)
 {
     return ::operator new[](size);
 }
@@ -90,7 +90,7 @@ void RuntimeObject::operator delete(void* ptr, size_t /*size*/)
     ::operator delete(ptr);
 }
 
-void RuntimeObject::operator delete(void* ptr, int, const char*, int)
+void RuntimeObject::operator delete(void* ptr, int32_t, const char*, int32_t)
 {
     ::operator delete (ptr);
 }
@@ -105,7 +105,7 @@ void RuntimeObject::operator delete[](void* ptr, size_t /*size*/)
     ::operator delete[](ptr);
 }
 
-void RuntimeObject::operator delete[](void* ptr, int, const char*, int)
+void RuntimeObject::operator delete[](void* ptr, int32_t, const char*, int32_t)
 {
     ::operator delete[](ptr);
 }

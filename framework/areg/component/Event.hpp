@@ -137,7 +137,7 @@ public:
      * \brief   Event::EventType
      *          Event types.
      **/
-    typedef enum class E_EventType  : unsigned int
+    typedef enum class E_EventType  : uint32_t
     {
           EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.      Bit set: 0000 0000 0000 0000
 
@@ -569,27 +569,27 @@ inline void Event::setEventConsumer( EventConsumer * consumer )
 
 inline bool Event::isInternal( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventInternal)) != 0;
+    return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventInternal)) != 0;
 }
 
 inline bool Event::isExternal( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventExternal)) != 0;
+    return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventExternal)) != 0;
 }
 
 inline bool Event::isLocal( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventLocal)) != 0;
+    return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventLocal)) != 0;
 }
 
 inline bool Event::isRemote( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventRemote)) != 0;
+    return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventRemote)) != 0;
 }
 
 inline bool Event::isCustom( Event::EventType eventType )
 {
-    return (static_cast<unsigned int>(eventType) & static_cast<unsigned int>(Event::EventType::EventCustom)) != 0;
+    return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventCustom)) != 0;
 }
 
 inline bool Event::isInternal() const

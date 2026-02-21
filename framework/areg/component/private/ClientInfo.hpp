@@ -132,7 +132,7 @@ public:
     /**
      * \brief   Operator to covert client info to 32-bit unsigned integer.
      **/
-    explicit operator unsigned int () const;
+    explicit operator uint32_t () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -204,10 +204,10 @@ namespace std
     template<>
     struct hash<ClientInfo>
     {
-        //! A function to convert ClientInfo object to unsigned int.
-        inline unsigned int operator()(const ClientInfo& key) const
+        //! A function to convert ClientInfo object to uint32_t.
+        inline uint32_t operator()(const ClientInfo& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }

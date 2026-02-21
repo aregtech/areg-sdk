@@ -90,12 +90,12 @@ public:
     /**
      * \brief   Returns the connection port number of the remote service and type.
      **/
-    unsigned short getConnectionPort() const;
+    uint16_t getConnectionPort() const;
 
     /**
      * \brief   Sets the connection port number of the remote service and type.
      **/
-    void setConnectionPort(unsigned short portNr);
+    void setConnectionPort(uint16_t portNr);
 
     /**
      * \brief   Returns the connection address of the remote service and type.
@@ -112,15 +112,15 @@ public:
      * \param   address     The connection address.
      * \param   portNr      The connection port number.
      **/
-    void setConnectionData(const String& address, unsigned short portNr);
+    void setConnectionData(const String& address, uint16_t portNr);
 
     /**
      * \brief   Returns byte sets of connection host IP address of given connection section.
      **/
-    bool getConnectionIpAddress( unsigned char & field0
-                               , unsigned char & field1
-                               , unsigned char & field2
-                               , unsigned char & field3);
+    bool getConnectionIpAddress( uint8_t & field0
+                               , uint8_t & field1
+                               , uint8_t & field2
+                               , uint8_t & field3);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.

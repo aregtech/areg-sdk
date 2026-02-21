@@ -119,7 +119,7 @@ public:
      * \param   connectTypes    The bitwise set of connections to configure.
      * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData configureConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes );
+    static ServiceManagerEventData configureConnection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection
@@ -127,14 +127,14 @@ public:
      * \param   connectTypes    The bitwise set of connections to start.
      * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData startConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes);
+    static ServiceManagerEventData startConnection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes);
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection.
      * \param   ipAddress   The IP-Address of remote Routing Service.
      * \param   portNr      The port number to connect.
      **/
-    static ServiceManagerEventData startNetConnection( const String & ipAddress, unsigned short portNr );
+    static ServiceManagerEventData startNetConnection( const String & ipAddress, uint16_t portNr );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to stop connection

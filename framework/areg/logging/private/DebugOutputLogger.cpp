@@ -130,24 +130,24 @@ bool DebugOutputLogger::isLoggerOpened() const
 }
 
 #if defined(OUTPUT_DEBUG)
-unsigned int DebugOutputLogger::write(const unsigned char * buffer, unsigned int size)
+uint32_t DebugOutputLogger::write(const uint8_t * buffer, uint32_t size)
 {
     mOutputMessageA.append(reinterpret_cast<const char *>(buffer), size);
     return size;
 }
 #else   // defined(OUTPUT_DEBUG)
-unsigned int DebugOutputLogger::write(const unsigned char * /* buffer */, unsigned int size)
+uint32_t DebugOutputLogger::write(const uint8_t * /* buffer */, uint32_t size)
 {
     return size;
 }
 #endif  // defined(OUTPUT_DEBUG)
 
-unsigned int DebugOutputLogger::write(const ByteBuffer & buffer)
+uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
 {
     return write(buffer.getBuffer(), buffer.getSizeUsed());
 }
 
-unsigned int DebugOutputLogger::write( const String & ascii )
+uint32_t DebugOutputLogger::write( const String & ascii )
 {
 #if defined(OUTPUT_DEBUG)
     mOutputMessageA += ascii;
@@ -155,7 +155,7 @@ unsigned int DebugOutputLogger::write( const String & ascii )
     return ascii.getSpace();
 }
 
-unsigned int DebugOutputLogger::write( const WideString & wide )
+uint32_t DebugOutputLogger::write( const WideString & wide )
 {
 #if defined(OUTPUT_DEBUG)
     mOutputMessageA += wide;
@@ -172,9 +172,9 @@ void DebugOutputLogger::flush()
     mOutputMessageA.clear();
 }
 
-unsigned int DebugOutputLogger::getSizeWritable() const
+uint32_t DebugOutputLogger::getSizeWritable() const
 {
-    return static_cast<unsigned int>(0xFFFF);
+    return static_cast<uint32_t>(0xFFFF);
 }
 
 #endif // AREG_LOGS

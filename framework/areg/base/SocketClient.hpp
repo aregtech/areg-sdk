@@ -59,7 +59,7 @@ public:
      * \param   hostName    Host name or IP-address of remote server to connect.
      * \param   portNr      Port number of remote server to connect.
      **/
-    SocketClient( const char * hostName, unsigned short portNr );
+    SocketClient( const char * hostName, uint16_t portNr );
 
     /**
      * \brief   Initialization constructor. Creates instance of object
@@ -89,7 +89,7 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const char * hostName, unsigned short portNr ) override;
+    bool createSocket( const char * hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Before sending or receiving any data from remote host,

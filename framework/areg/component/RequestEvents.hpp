@@ -85,7 +85,7 @@ protected:
      **/
     RequestEvent( const ProxyAddress & fromSource
                 , const StubAddress & toTarget
-                , unsigned int reqId
+                , uint32_t reqId
                 , Event::EventType eventType);
 
     /**
@@ -102,7 +102,7 @@ protected:
     RequestEvent( const EventDataStream & args
                 , const ProxyAddress & fromSource
                 , const StubAddress & toTarget
-                , unsigned int reqId
+                , uint32_t reqId
                 , Event::EventType eventType
                 , const String & name = String::getEmptyString());
 
@@ -216,7 +216,7 @@ protected:
      * \param	toTarget	The address of Stub target
      * \param	reqId	    The ID of request.
      **/
-    LocalRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId);
+    LocalRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
 
     /**
      * \brief	Creates event with data. Initializes event source, target information and message ID.
@@ -230,7 +230,7 @@ protected:
     LocalRequestEvent( const EventDataStream & args
                      , const ProxyAddress & fromSource
                      , const StubAddress & toTarget
-                     , unsigned int reqId
+                     , uint32_t reqId
                      , const String & name = String::getEmptyString());
 
     /**
@@ -282,7 +282,7 @@ protected:
      * \param	toTarget	The address of Stub target
      * \param	reqId	    The ID of request.
      **/
-    RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId);
+    RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
 
     /**
      * \brief	Creates event with data. Initializes event source, target information and message ID.
@@ -296,7 +296,7 @@ protected:
     RemoteRequestEvent( const EventDataStream & args
                       , const ProxyAddress & fromSource
                       , const StubAddress & toTarget
-                      , unsigned int reqId
+                      , uint32_t reqId
                       , const String & name = String::getEmptyString());
 
 
@@ -374,7 +374,7 @@ protected:
      **/
     NotifyRequestEvent( const ProxyAddress & fromProxy
                       , const StubAddress & toStub
-                      , unsigned int msgId
+                      , uint32_t msgId
                       , NEService::RequestType reqType
                       , Event::EventType eventType );
 
@@ -425,7 +425,7 @@ protected:
      **/
     LocalNotifyRequestEvent( const ProxyAddress & fromProxy
                            , const StubAddress & toStub
-                           , unsigned int msgId
+                           , uint32_t msgId
                            , NEService::RequestType reqType );
 
     /**
@@ -476,7 +476,7 @@ protected:
      **/
     RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
                             , const StubAddress & toStub
-                            , unsigned int msgId
+                            , uint32_t msgId
                             , NEService::RequestType reqType );
 
     /**

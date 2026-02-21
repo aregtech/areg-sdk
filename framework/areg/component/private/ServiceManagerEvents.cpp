@@ -72,7 +72,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddre
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes)
+ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection );
     OutStream & stream = data.getWriteStream();
@@ -81,7 +81,7 @@ ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteSer
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::RemoteServiceKind service, unsigned int connectTypes)
+ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
     OutStream & stream = data.getWriteStream();
@@ -90,7 +90,7 @@ ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startNetConnection( const String & ipAddress, unsigned short portNr )
+ServiceManagerEventData ServiceManagerEventData::startNetConnection( const String & ipAddress, uint16_t portNr )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection );
     OutStream & stream = data.getWriteStream( );

@@ -79,7 +79,7 @@ int main()
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.getName().getString());
         Thread::ThreadCompletion status = aThread.shutdownThread(NECommon::WAIT_INFINITE);
 
-        LOG_WARN_IF(Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int>(status));
+        LOG_WARN_IF(Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
         LOG_INFO_IF(Thread::ThreadCompletion::Completed == status, "The thread exit normal");
 
     } while (false);

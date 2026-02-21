@@ -541,7 +541,7 @@ protected:
      * \brief   Loads all models, which are not loaded yet.
      * \return  Returns number of models that was loaded.
      **/
-    int loadAllModels();
+    int32_t loadAllModels();
 
     /**
      * \brief   Loads threads and components of specified model.
@@ -554,7 +554,7 @@ protected:
      *                      which are not loaded yet.
      * \return  Returns number of models that was loaded.
      **/
-    int loadModel( const String & modelName);
+    int32_t loadModel( const String & modelName);
 
     /**
      * \brief   Loads specified Model. It will start all registered in Model threads,

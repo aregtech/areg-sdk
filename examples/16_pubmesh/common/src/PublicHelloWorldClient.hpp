@@ -38,7 +38,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout     The timeout in milliseconds to trigger the request to output message
      **/
-    PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout );
+    PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout );
 
     /**
      * \brief   Destructor
@@ -65,7 +65,7 @@ protected:
      * \param   clientID    Indicates the ID client that made message output
      * \see     requestHelloWorld
      **/
-    void responseHelloWorld( unsigned int clientID ) override;
+    void responseHelloWorld( uint32_t clientID ) override;
 
     /**
      * \brief   Triggered, when ServiceState attribute is updated. The function contains
@@ -118,7 +118,7 @@ private:
 // member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    const unsigned int  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
+    const uint32_t  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
     Timer               mTimer;     //!< The timer to trigger to send request to output message
     PublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
 

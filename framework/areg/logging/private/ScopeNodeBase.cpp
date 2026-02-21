@@ -34,7 +34,7 @@ ScopeNodeBase::ScopeNodeBase()
     : mNodeType     ( ScopeNodeBase::NodeType::Invalid )
     , mPrioStates   ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
     , mNodeName     ( )
-    , mGrouping     ( static_cast<unsigned int>(ScopeNodeBase::Grouping::None) )
+    , mGrouping     ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
 {
 }
 
@@ -42,15 +42,15 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType )
     : mNodeType     ( nodeType )
     , mPrioStates   ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
     , mNodeName     ( )
-    , mGrouping    ( static_cast<unsigned int>(ScopeNodeBase::Grouping::None) )
+    , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
 {
 }
 
-ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, unsigned int prio /*= static_cast<unsigned int>(NELogging::LogPriority::PrioNotset)*/ )
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio /*= static_cast<uint32_t>(NELogging::LogPriority::PrioNotset)*/ )
     : mNodeType     ( nodeType )
     , mPrioStates   ( prio )
     , mNodeName     ( nodeName )
-    , mGrouping    ( static_cast<unsigned int>(ScopeNodeBase::Grouping::None) )
+    , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
 {
 }
 
@@ -143,7 +143,7 @@ bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
     return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
 }
 
-const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & scopePath, unsigned int /* prioStates */ ) const
+const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & scopePath, uint32_t /* prioStates */ ) const
 {
     static ScopeNodeBase _invalidNode;
     scopePath = String::EmptyString;
@@ -155,7 +155,7 @@ std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( const ScopeNodeBas
     return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
 }
 
-std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & /* scopePath */, unsigned int /* prioStates */ )
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & /* scopePath */, uint32_t /* prioStates */ )
 {
     return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
 }
@@ -165,29 +165,29 @@ String ScopeNodeBase::makeScopePath( const String & prefix ) const
     return prefix;
 }
 
-unsigned int ScopeNodeBase::groupChildNodes()
+uint32_t ScopeNodeBase::groupChildNodes()
 {
     return 0;
 }
 
-unsigned int ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const String& /*parentPath*/) const
+uint32_t ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const String& /*parentPath*/) const
 {
     return 0;
 }
 
-unsigned int ScopeNodeBase::addChildRecursive( String & scopePath, unsigned int prioStates )
+uint32_t ScopeNodeBase::addChildRecursive( String & scopePath, uint32_t prioStates )
 {
     std::pair<ScopeNodeBase &, bool> node = addChildNode( scopePath, prioStates );
     return (node.first.isValid() ? (1 + node.first.addChildRecursive(scopePath, prioStates)) : 0);
 }
 
-unsigned int ScopeNodeBase::addChildRecursive( const LogScope & logScope )
+uint32_t ScopeNodeBase::addChildRecursive( const LogScope & logScope )
 {
     String scopeName( logScope.getScopeName( ) );
     return addChildRecursive( scopeName, logScope.getPriority( ) );
 }
 
-unsigned int ScopeNodeBase::groupRecursive()
+uint32_t ScopeNodeBase::groupRecursive()
 {
     return 0;
 }
@@ -206,7 +206,7 @@ String ScopeNodeBase::makeConfigString( const String & parent ) const
     }
 }
 
-unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int /* prioRemove */ )
+uint32_t ScopeNodeBase::removePriorityNodesRecursive( uint32_t /* prioRemove */ )
 {
     return 0;
 }

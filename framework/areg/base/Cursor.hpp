@@ -52,13 +52,13 @@ public:
      * \brief   Cursor::INVALID_CURSOR_POSITION
      *          Indicator of invalid position of cursor
      **/
-    static constexpr unsigned int INVALID_CURSOR_POSITION   { static_cast<unsigned int>(~0) };
+    static constexpr uint32_t INVALID_CURSOR_POSITION   { static_cast<uint32_t>(~0) };
 
     /**
      * \brief   Cursor::START_CURSOR_POSITION
      *          Indicator of cursor start position
      **/
-    static constexpr unsigned int START_CURSOR_POSITION     { static_cast<unsigned int>(0) };
+    static constexpr uint32_t START_CURSOR_POSITION     { static_cast<uint32_t>(0) };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -86,7 +86,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    virtual unsigned int getPosition() const = 0;
+    virtual uint32_t getPosition() const = 0;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -101,7 +101,7 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition( int offset, Cursor::SeekOrigin startAt ) const = 0;
+    virtual uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations

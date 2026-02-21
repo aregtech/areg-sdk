@@ -42,7 +42,7 @@
 namespace
 {
 
-    inline char ** _convertArguments( TCHAR ** argv, int argc )
+    inline char ** _convertArguments( TCHAR ** argv, int32_t argc )
     {
         char ** argvTemp = argc != 0 ? DEBUG_NEW char * [static_cast<uint32_t>(argc)] : nullptr;
         if ( argvTemp != nullptr )
@@ -60,7 +60,7 @@ namespace
         return argvTemp;
     }
 
-    inline void _deleteArguments( char ** argv, int argc )
+    inline void _deleteArguments( char ** argv, int32_t argc )
     {
         if ( argv != nullptr )
         {
@@ -79,16 +79,16 @@ namespace
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
-    char** argvTemp = _convertArguments(argv, static_cast<int>(argc));
-    LogObserver::getInstance().logMain(static_cast<int>(argc), argvTemp);
-    _deleteArguments(argvTemp, static_cast<int>(argc));
+    char** argvTemp = _convertArguments(argv, static_cast<int32_t>(argc));
+    LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argvTemp);
+    _deleteArguments(argvTemp, static_cast<int32_t>(argc));
 
     return 0;
 }
 #else
 int main(int argc, char* argv[], char* envp[])
 {
-    LogObserver::getInstance().logMain(static_cast<int>(argc), argv);
+    LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argv);
     return 0;
 }
 #endif

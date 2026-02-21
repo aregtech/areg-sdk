@@ -78,11 +78,11 @@ protected:
         SyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
         MultiLock multiLock(objects, std::size(objects), false);
 
-        constexpr unsigned int waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
+        constexpr uint32_t waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
 
         do
         {
-            int waitResult = multiLock.lock(waitTimeout, true, false);
+            int32_t waitResult = multiLock.lock(waitTimeout, true, false);
 
             if (waitResult == MultiLock::LOCK_INDEX_ALL)
             {
@@ -138,7 +138,7 @@ protected:
         SyncObject* objects[] = { &gEventExit, &gMutexDummy };
         MultiLock multiLock(objects, std::size(objects), false);
 
-        int waitResult = multiLock.lock(NECommon::WAIT_INFINITE, false, false);
+        int32_t waitResult = multiLock.lock(NECommon::WAIT_INFINITE, false, false);
         LOG_DBG("GoodbyeThread finished lock with result [%d]", waitResult);
         std::cout << "Multi-lock is signaled the elem " << waitResult << " is unlocked" << std::endl;
 

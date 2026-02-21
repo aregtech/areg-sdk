@@ -153,7 +153,7 @@ public:
      * \return  If list of proxy services is not empty, the return value is
      *          not zero. Otherwise, it returns zero.
      **/
-    int stubServiceAvailable( const StubAddress & addrStub );
+    int32_t stubServiceAvailable( const StubAddress & addrStub );
 
     /**
      * \brief   Sets all registered proxy service in pending state
@@ -163,7 +163,7 @@ public:
      * \return  If list of proxy services is not empty, the return value is
      *          not zero. Otherwise, it returns zero.
      **/
-    int stubServiceUnavailable();
+    int32_t stubServiceUnavailable();
 
     /**
      * \brief   Search in the list and collects all proxies, which cookie is equal
@@ -174,7 +174,7 @@ public:
      * \return  Returns number of entries found in the list. If no entry found, 
      *          return value is zero.
      **/
-    int getSpecificService( ListServiceProxies & out_listProxies, const ITEM_ID & cookie );
+    int32_t getSpecificService( ListServiceProxies & out_listProxies, const ITEM_ID & cookie );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

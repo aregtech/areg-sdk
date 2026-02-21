@@ -79,7 +79,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     virtual bool registerEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
     virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
-    virtual int  removeConsumer( EventConsumer & whichConsumer ) override;
+    virtual int32_t  removeConsumer( EventConsumer & whichConsumer ) override;
     virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const override;
 
     //////////////////////////////////////////////////////////////////////////
@@ -92,12 +92,12 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     virtual bool onThreadRegistered( Thread * threadObj ) override;
     virtual void onThreadRuns() override;
-    virtual int onThreadExit() override;
+    virtual int32_t onThreadExit() override;
 
     //////////////////////////////////////////////////////////////////////////
     // Disable Thread locking
     //////////////////////////////////////////////////////////////////////////
-    virtual bool waitForDispatcherStart( unsigned int waitTimeout = NECommon::WAIT_INFINITE ) override;
+    virtual bool waitForDispatcherStart( uint32_t waitTimeout = NECommon::WAIT_INFINITE ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -139,7 +139,7 @@ bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID & /* whic
 bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID & /*whichClass*/, EventConsumer & /* whichConsumer*/ )
 {   return false;   }
 
-int NullDispatcherThread::removeConsumer( EventConsumer & /* whichConsumer*/ )
+int32_t NullDispatcherThread::removeConsumer( EventConsumer & /* whichConsumer*/ )
 {   return 0;       }
 
 bool NullDispatcherThread::hasRegisteredConsumer( const RuntimeClassID & /* whichClass */ ) const
@@ -163,13 +163,13 @@ void NullDispatcherThread::onThreadRuns()
     ASSERT(false);
 }
 
-int NullDispatcherThread::onThreadExit()
+int32_t NullDispatcherThread::onThreadExit()
 {
     ASSERT(false);
-    return static_cast<int>(ThreadConsumer::ExitCode::Error);
+    return static_cast<int32_t>(ThreadConsumer::ExitCode::Error);
 }
 
-bool NullDispatcherThread::waitForDispatcherStart( unsigned int /* waitTimeout */ /*= NECommon::WAIT_INFINITE */ )
+bool NullDispatcherThread::waitForDispatcherStart( uint32_t /* waitTimeout */ /*= NECommon::WAIT_INFINITE */ )
 {
     return false;
 }
@@ -242,7 +242,7 @@ void DispatcherThread::triggerExit()
     mExternalEvents.unlockQueue( );
 }
 
-Thread::ThreadCompletion DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion DispatcherThread::shutdownThread( uint32_t waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -275,7 +275,7 @@ void DispatcherThread::readyForEvents( bool isReady )
     }
 }
 
-bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE */ )
+bool DispatcherThread::waitForDispatcherStart( uint32_t waitTimeout /*= NECommon::WAIT_INFINITE */ )
 {
     return mEventStarted.lock(waitTimeout);
 }

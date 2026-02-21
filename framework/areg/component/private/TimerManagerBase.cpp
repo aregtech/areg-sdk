@@ -38,16 +38,16 @@ bool TimerManagerBase::runDispatcher()
 
     SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(syncObjects, 2, false);
-    int whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Error);
+    int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
     do
     {
         whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false, true);
-        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+        Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
         if (static_cast<const Event*>(eventElem) != static_cast<const Event*>(&exitEvent))
         {
-            if (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue))
+            if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
             {
                 // proceed one external event.
                 if (prepareDispatchEvent(eventElem))
@@ -62,7 +62,7 @@ bool TimerManagerBase::runDispatcher()
         }
         else
         {
-            whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Exit);
+            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
         }
 
     } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
@@ -72,7 +72,7 @@ bool TimerManagerBase::runDispatcher()
 
     ASSERT(static_cast<EventQueue&>(mInternalEvents).isEmpty());
 
-    return (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Exit));
+    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }
 
 void TimerManagerBase::readyForEvents(bool isReady)

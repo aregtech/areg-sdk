@@ -25,7 +25,7 @@
 #include <string.h>
 
 #if AREG_LOGS
-LogMessage::LogMessage(NELogging::LogMessageType msgType, unsigned int sessionId, TIME64 scopeStamp, const LogScope & logScope )
+LogMessage::LogMessage(NELogging::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const LogScope & logScope )
     : NELogging::sLogMessage( msgType, logScope.getScopeId(), sessionId, scopeStamp, NELogging::LogPriority::PrioScope, logScope.getScopeName().getString(), static_cast<uint32_t>(logScope.getScopeName( ).getLength()) )
 {
     // AAvetyan: check that the message type is either ScopeEnter or ScopeExit
@@ -33,7 +33,7 @@ LogMessage::LogMessage(NELogging::LogMessageType msgType, unsigned int sessionId
             ((static_cast<uint8_t>(NELogging::LogMessageType::ScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
 }
 
-void LogMessage::setMessage(const char * message, int msgLen )
+void LogMessage::setMessage(const char * message, int32_t msgLen )
 {
     uint32_t len = NEMemory::memCopy(this->logMessage, NELogging::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
     this->logMessage[len] = String::EmptyChar;
@@ -41,7 +41,7 @@ void LogMessage::setMessage(const char * message, int msgLen )
 
 #else   // AREG_LOGS
 
-LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, unsigned int /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
+LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
     : NELogging::sLogMessage( )
 {
 }

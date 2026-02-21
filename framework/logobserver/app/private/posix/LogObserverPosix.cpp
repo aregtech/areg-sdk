@@ -26,7 +26,7 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    LogObserver::getInstance().logMain(static_cast<int>(argc), argv);
+    LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argv);
     return 0;
 }
 

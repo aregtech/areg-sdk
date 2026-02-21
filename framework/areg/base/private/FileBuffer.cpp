@@ -23,9 +23,9 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-FileBuffer::FileBuffer( unsigned int mode       /*= (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))*/
+FileBuffer::FileBuffer( uint32_t mode       /*= (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))*/
                       , const char * name       /*= nullptr*/
-                      , unsigned int blockSize  /*= BLOCK_SIZE*/)
+                      , uint32_t blockSize  /*= BLOCK_SIZE*/)
     : FileBase      ( )
 
     , mSharedBuffer (blockSize)
@@ -85,7 +85,7 @@ bool FileBuffer::open()
     return mIsOpened;
 }
 
-bool FileBuffer::open(const String& fileName, unsigned int mode)
+bool FileBuffer::open(const String& fileName, uint32_t mode)
 {
     bool result = false;
     if (isOpened() == false)
@@ -115,9 +115,9 @@ void FileBuffer::close()
     mSharedBuffer.invalidate();
 }
 
-unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
+uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
     if (isOpened() && canRead())
     {
         result = mSharedBuffer.read(buffer, size);
@@ -126,14 +126,14 @@ unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
     return result;
 }
 
-unsigned int FileBuffer::getSizeReadable() const
+uint32_t FileBuffer::getSizeReadable() const
 {
     return (isOpened() ? mSharedBuffer.getSizeReadable() : 0);
 }
 
-unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
+uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size)
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
 
     if (isOpened() && canWrite())
     {
@@ -143,7 +143,7 @@ unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int FileBuffer::getSizeWritable() const
+uint32_t FileBuffer::getSizeWritable() const
 {
     return (isOpened() ? mSharedBuffer.getSizeWritable() : 0);
 }
@@ -159,7 +159,7 @@ bool FileBuffer::remove()
     return true;
 }
 
-unsigned int FileBuffer::getLength() const
+uint32_t FileBuffer::getLength() const
 {
     return (isOpened() ? mSharedBuffer.getSizeUsed() : NEMemory::INVALID_SIZE);
 }
@@ -169,7 +169,7 @@ bool FileBuffer::isOpened() const
     return mIsOpened;
 }
 
-unsigned int FileBuffer::reserve(unsigned int newSize)
+uint32_t FileBuffer::reserve(uint32_t newSize)
 {
     return (isOpened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
 }
@@ -189,17 +189,17 @@ bool FileBuffer::truncate()
     return result;
 }
 
-unsigned int FileBuffer::setPosition( int offset, Cursor::SeekOrigin startAt ) const
+uint32_t FileBuffer::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
 {
     return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
-unsigned int FileBuffer::getPosition() const
+uint32_t FileBuffer::getPosition() const
 {
     return (isOpened() ? mSharedBuffer.getPosition() : Cursor::INVALID_CURSOR_POSITION);
 }
 
-unsigned int FileBuffer::normalizeMode( unsigned int mode ) const
+uint32_t FileBuffer::normalizeMode( uint32_t mode ) const
 {
     if (mSharedBuffer.isShared())
     {
@@ -213,37 +213,37 @@ unsigned int FileBuffer::normalizeMode( unsigned int mode ) const
     return FileBase::normalizeMode(mode);
 }
 
-unsigned int FileBuffer::insertAt( const unsigned char* buffer, unsigned int size, unsigned int atPos )
+uint32_t FileBuffer::insertAt( const uint8_t* buffer, uint32_t size, uint32_t atPos )
 {
     return (isOpened() && canWrite() ? mSharedBuffer.insertAt(buffer, size, atPos) : 0);
 }
 
-unsigned int FileBuffer::read(ByteBuffer & buffer) const
+uint32_t FileBuffer::read(ByteBuffer & buffer) const
 {
     return FileBase::read(buffer);
 }
 
-unsigned int FileBuffer::read(String & ascii) const
+uint32_t FileBuffer::read(String & ascii) const
 {
     return FileBase::read(ascii);
 }
 
-unsigned int FileBuffer::read(WideString & wide) const
+uint32_t FileBuffer::read(WideString & wide) const
 {
     return FileBase::read(wide);
 }
 
-unsigned int FileBuffer::write(const ByteBuffer & buffer)
+uint32_t FileBuffer::write(const ByteBuffer & buffer)
 {
     return FileBase::write(buffer);
 }
 
-unsigned int FileBuffer::write(const String & ascii)
+uint32_t FileBuffer::write(const String & ascii)
 {
     return FileBase::write(ascii);
 }
 
-unsigned int FileBuffer::write(const WideString & wide)
+uint32_t FileBuffer::write(const WideString & wide)
 {
     return FileBase::write(wide);
 }

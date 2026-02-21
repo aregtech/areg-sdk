@@ -52,20 +52,20 @@ public:
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
-    using SEQUENCE_ID   = unsigned int;
+    using SEQUENCE_ID   = uint32_t;
     /**
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFFFFFF.
      **/
-    using GUARD_ID      = unsigned int;
+    using GUARD_ID      = uint32_t;
 #elif (AREG_TARGET_PLATFORM == 32)
     /**
      * \brief   The Sequence number changed each time watchdog is started. It can be zero.
      **/
-    using SEQUENCE_ID   = unsigned short;
+    using SEQUENCE_ID   = uint16_t;
     /**
      * \brief   The unique ID of watchdog guard. It is not a zero and the maximum value is 0xFFFF.
      **/
-    using GUARD_ID      = unsigned short;
+    using GUARD_ID      = uint16_t;
 #endif  // (AREG_TARGET_PLATFORM == 64)
 
     /**

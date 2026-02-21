@@ -52,7 +52,7 @@ public:
     /**
      * \brief   The length of synchronization object name, including null-termination symbol.
      **/
-    static constexpr int    _MAX_NAME_LENGTH    { 32 };
+    static constexpr int32_t    _MAX_NAME_LENGTH    { 32 };
 
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor.

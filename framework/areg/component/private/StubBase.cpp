@@ -51,7 +51,7 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
             {
                 result = true;
             }
-            else if (mSequenceNr == other.mSequenceNr || mSequenceNr == static_cast<unsigned int>(-1 * static_cast<int>(mSequenceNr == other.mSequenceNr)))
+            else if (mSequenceNr == other.mSequenceNr || mSequenceNr == static_cast<uint32_t>(-1 * static_cast<int32_t>(mSequenceNr == other.mSequenceNr)))
             {
                 result = true;
             }
@@ -95,7 +95,7 @@ StubBase::~StubBase()
     map_providers().unregisterResourceObject(mAddress);
 }
 
-bool StubBase::isBusy( unsigned int requestId ) const
+bool StubBase::isBusy( uint32_t requestId ) const
 {
     bool result = false;
     StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY));
@@ -135,7 +135,7 @@ bool StubBase::prepareResponse( SessionID sessionId )
     return result;
 }
 
-void StubBase::prepareRequest( Listener & listener, const SequenceNumber & seqNr, unsigned int responseId )
+void StubBase::prepareRequest( Listener & listener, const SequenceNumber & seqNr, uint32_t responseId )
 {
     listener.mMessageId = responseId;
     listener.mSequenceNr= mListListener.isInvalidPosition(mListListener.find(listener)) ? seqNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr));
@@ -143,7 +143,7 @@ void StubBase::prepareRequest( Listener & listener, const SequenceNumber & seqNr
     mCurrListener = mListListener.firstPosition();
 }
 
-uint32_t StubBase::findListeners( unsigned int requestId, StubListenerList & out_listners ) const
+uint32_t StubBase::findListeners( uint32_t requestId, StubListenerList & out_listners ) const
 {
     StubBase::Listener listener(requestId, NEService::SEQUENCE_NUMBER_ANY);
     StubListenerList::LISTPOS pos = mListListener.find(listener);
@@ -197,7 +197,7 @@ void StubBase::sendResponseNotification( const StubListenerList & whichListeners
         ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
         if (eventResp != nullptr)
         {
-            if (static_cast<int>(listener.mSequenceNr) >= 0)
+            if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
             {
                 eventResp->setSequenceNumber(listener.mSequenceNr);
                 if (listener.mSequenceNr != 0)
@@ -223,7 +223,7 @@ void StubBase::sendErrorNotification( const StubListenerList & whichListeners, c
         ServiceResponseEvent* eventError = masterEvent.cloneForTarget(listener.mProxy);
         if (eventError != nullptr)
         {
-            if (static_cast<int>(listener.mSequenceNr) >= 0)
+            if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
             {
                 eventError->setSequenceNumber(listener.mSequenceNr);
                 if (listener.mSequenceNr != 0)
@@ -292,14 +292,14 @@ void StubBase::errorAllRequests()
     LOG_SCOPE( areg_component_StubBase_errorAllRequests );
     LOG_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", getServiceRole().getString(), getServiceName().getString() );
 
-    unsigned int i;
+    uint32_t i;
 
-    const unsigned int numOfAttr= getNumberOfAttributes();
-    const unsigned int numOfResp= getNumberOfResponses();
-    const unsigned int numOfReqs= getNumberOfRequests();
-    const unsigned int* attrIds = getAttributeIds();
-    const unsigned int* respIds = getResponseIds();
-    const unsigned int* reqIds  = getRequestIds();
+    const uint32_t numOfAttr= getNumberOfAttributes();
+    const uint32_t numOfResp= getNumberOfResponses();
+    const uint32_t numOfReqs= getNumberOfRequests();
+    const uint32_t* attrIds = getAttributeIds();
+    const uint32_t* respIds = getResponseIds();
+    const uint32_t* reqIds  = getRequestIds();
 
     ASSERT(attrIds != nullptr || numOfAttr == 0);
     ASSERT(respIds != nullptr || numOfResp == 0);
@@ -323,21 +323,21 @@ void StubBase::errorAllRequests()
 
 void StubBase::cancelAllRequests()
 {
-    const unsigned int numOfReqs= getNumberOfRequests();
-    const unsigned int* reqIds  = getRequestIds();
-    for ( unsigned int i = 0; i < numOfReqs; ++ i )
+    const uint32_t numOfReqs= getNumberOfRequests();
+    const uint32_t* reqIds  = getRequestIds();
+    for ( uint32_t i = 0; i < numOfReqs; ++ i )
     {
         errorRequest( reqIds[i], true );
     }
 }
 
-void StubBase::invalidateAttribute( unsigned int attrId )
+void StubBase::invalidateAttribute( uint32_t attrId )
 {
     if ( NEService::isAttributeId(attrId) )
         errorRequest(attrId, false);
 }
 
-void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data, NEService::ResultType result ) const
+void StubBase::sendUpdateEvent( uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
 {
     LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
     StubBase::StubListenerList listeners;
@@ -355,7 +355,7 @@ void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data
     }
 }
 
-void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::ResultType result ) const
+void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
 {
     ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
     if ( eventElem != nullptr )
@@ -364,7 +364,7 @@ void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, unsigned
     }
 }
 
-void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & data )
+void StubBase::sendResponseEvent( uint32_t respId, const EventDataStream & data )
 {
     StubBase::StubListenerList listeners;
     if (findListeners(respId, listeners) > 0)
@@ -395,7 +395,7 @@ void StubBase::sendBusyRespone( const Listener & whichListener )
     }
 }
 
-bool StubBase::canExecuteRequest( Listener & whichListener, unsigned int whichResponse, const SequenceNumber & seqNr )
+bool StubBase::canExecuteRequest( Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr )
 {
     bool result = false;
     if (isBusy(whichResponse))
@@ -412,7 +412,7 @@ bool StubBase::canExecuteRequest( Listener & whichListener, unsigned int whichRe
     return result;
 }
 
-bool StubBase::existNotificationListener( unsigned int msgId, const ProxyAddress & notifySource ) const
+bool StubBase::existNotificationListener( uint32_t msgId, const ProxyAddress & notifySource ) const
 {
     bool result = false;
     if ( notifySource.isValid() )
@@ -430,7 +430,7 @@ bool StubBase::existNotificationListener( unsigned int msgId, const ProxyAddress
     return result;
 }
 
-bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & notifySource)
+bool StubBase::addNotificationListener(uint32_t msgId, const ProxyAddress & notifySource)
 {
     LOG_SCOPE(areg_component_StubBase_addNotificationListener);
 
@@ -469,7 +469,7 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
     return result;
 }
 
-void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddress & notifySource )
+void StubBase::removeNotificationListener( uint32_t msgId, const ProxyAddress & notifySource )
 {
     for (StubListenerList::LISTPOS pos = mListListener.firstPosition(); mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
     {
@@ -529,38 +529,38 @@ const Version & StubBase::getImplVersion() const
     return mInterface.idVersion;
 }
 
-unsigned int StubBase::getNumberOfRequests() const
+uint32_t StubBase::getNumberOfRequests() const
 {
     return mInterface.idRequestCount;
 }
 
-unsigned int StubBase::getNumberOfResponses() const
+uint32_t StubBase::getNumberOfResponses() const
 {
     return mInterface.idResponseCount;
 }
 
-unsigned int StubBase::getNumberOfAttributes() const
+uint32_t StubBase::getNumberOfAttributes() const
 {
     return mInterface.idAttributeCount;
 }
 
-const unsigned int * StubBase::getRequestIds() const
+const uint32_t * StubBase::getRequestIds() const
 {
     return mInterface.idRequestList;
 }
 
-const unsigned int * StubBase::getResponseIds() const
+const uint32_t * StubBase::getResponseIds() const
 {
     return mInterface.idResponseList;
 }
 
-const unsigned int * StubBase::getAttributeIds() const
+const uint32_t * StubBase::getAttributeIds() const
 {
     return mInterface.idAttributeList;
 }
 
 ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */
-                                             , unsigned int             /* msgId */
+                                             , uint32_t             /* msgId */
                                              , NEService::ResultType   /* result */
                                              , const EventDataStream &  /* data */ ) const
 {

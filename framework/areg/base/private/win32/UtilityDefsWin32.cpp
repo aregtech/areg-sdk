@@ -68,8 +68,8 @@ namespace NEUtilities
                 gmtime_s(&now, &ts.tv_sec);
             }
 
-            unsigned short milli = static_cast<unsigned short>(static_cast<TIME64>(ts.tv_nsec) / MILLISEC_TO_NS);
-            unsigned short micro = static_cast<unsigned short>(static_cast<TIME64>(ts.tv_nsec) % MILLISEC_TO_NS) / MICROSEC_TO_NS;
+            uint16_t milli = static_cast<uint16_t>(static_cast<TIME64>(ts.tv_nsec) / MILLISEC_TO_NS);
+            uint16_t micro = static_cast<uint16_t>(static_cast<TIME64>(ts.tv_nsec) % MILLISEC_TO_NS) / MICROSEC_TO_NS;
 
             ASSERT(milli < 1000);
             ASSERT(micro < 1000);
@@ -92,7 +92,7 @@ namespace NEUtilities
         bool result = false;
 
         time_t secs;
-        unsigned short milli, micro;
+        uint16_t milli, micro;
         NEUtilities::convMicrosecs(utcTime, secs, milli, micro);
 
         struct tm tmLocal { };
@@ -117,7 +117,7 @@ namespace NEUtilities
     void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime)
     {
         time_t secs;
-        unsigned short milli, micro;
+        uint16_t milli, micro;
         NEUtilities::convMicrosecs(timeValue, secs, milli, micro);
 
         struct tm gmt {};

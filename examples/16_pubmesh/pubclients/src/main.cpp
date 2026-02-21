@@ -33,10 +33,10 @@ class ServiceComponent : public Component
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
 //////////////////////////////////////////////////////////////////////////
-    static constexpr unsigned int   MAIN_TIMEOUT{ 1'000 };  //!< Timeout to send request to main controller remote service
-    static constexpr unsigned int   SECOND_TIMEOUT{ 2'000 };  //!< Timeout to send request to second remote service
-    static constexpr unsigned int   THIRD_TIMEOUT{ 3'000 };  //!< Timeout to send request to third remote service
-    static constexpr unsigned int   LOCAL_TIMEOUT{ 4'000 };  //!< Timeout to send request to a local service.
+    static constexpr uint32_t   MAIN_TIMEOUT{ 1'000 };  //!< Timeout to send request to main controller remote service
+    static constexpr uint32_t   SECOND_TIMEOUT{ 2'000 };  //!< Timeout to send request to second remote service
+    static constexpr uint32_t   THIRD_TIMEOUT{ 3'000 };  //!< Timeout to send request to third remote service
+    static constexpr uint32_t   LOCAL_TIMEOUT{ 4'000 };  //!< Timeout to send request to a local service.
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

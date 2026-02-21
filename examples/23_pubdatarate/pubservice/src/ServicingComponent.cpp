@@ -85,7 +85,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_startupServiceInterface);
 
-    unsigned int sizeSend{ 0 }, sizeReceive{ 0 };
+    uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
     mQuitThread = false;
     mOptionChanged = true;
     mPauseEvent.resetEvent();   // pause
@@ -148,7 +148,7 @@ void ServicingComponent::onTimerExpired()
     uint32_t didSleep   = mDidSleep;
     uint32_t ignoreSleep= mIgnoreSleep;
 
-    unsigned int sizeSend{ 0 }, sizeReceive{ 0 };
+    uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
     Application::queryCommunicationData( sizeSend, sizeReceive );
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
@@ -408,7 +408,7 @@ void ServicingComponent::_printHelp() const
     console.setCursorCurPosition(COORD_OPT_INFO);
 
     console.printTxt("---------------------------------------\n");
-    console.printTxt("Printing help for the commands. Use short or long command, one or a few of them.");
+    console.printTxt("Printing help for the commands. Use int16_t or long command, one or a few of them.");
     console.printMsg("-w=<value> or --width=<value> ....: Image width. Range [32 .. 32768]\n");
     console.printMsg("-h=<value> or --height=<value> ...: Image height. Range [32 .. 32768]\n");
     console.printMsg("-l=<value> or --lines=<value> ....: Lines per image block, not larger than \'height\'.\n");

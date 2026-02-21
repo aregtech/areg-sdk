@@ -78,7 +78,7 @@ protected:
      **/
     ServiceResponseEvent( const ProxyAddress & target
                         , NEService::ResultType result
-                        , unsigned int responseId
+                        , uint32_t responseId
                         , Event::EventType eventType
                         , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
@@ -110,7 +110,7 @@ public:
     /**
      * \brief   Get and set response message ID.
      **/
-    inline unsigned int getResponseId() const;
+    inline uint32_t getResponseId() const;
 
     /**
      * \brief   Returns response call result
@@ -170,7 +170,7 @@ protected:
     /**
      * \brief   The response message ID
      **/
-    unsigned int            mResponseId;
+    uint32_t            mResponseId;
 
     /**
      * \brief   The response result
@@ -194,7 +194,7 @@ private:
 // ServiceResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline unsigned int ServiceResponseEvent::getResponseId() const
+inline uint32_t ServiceResponseEvent::getResponseId() const
 {
     return mResponseId;
 }

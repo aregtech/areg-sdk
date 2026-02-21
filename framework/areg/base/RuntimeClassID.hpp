@@ -126,7 +126,7 @@ public:
      * \param   rhs     Right-Hand Operand, Runtime Class ID to compare the calculated number.
      * \return  Returns true if number is equal to Runtime Class ID.
      **/
-    friend inline bool operator == ( unsigned int lhs, const RuntimeClassID & rhs );
+    friend inline bool operator == ( uint32_t lhs, const RuntimeClassID & rhs );
 
     /**
      * \brief   Compares number with Runtime Class ID calculated number.
@@ -134,7 +134,7 @@ public:
      * \param   rhs     Right-Hand Operand, Runtime Class ID to compare the calculated number.
      * \return  Returns true if number is not equal to Runtime Class ID.
      **/
-    friend inline bool operator != ( unsigned int lhs, const RuntimeClassID & rhs );
+    friend inline bool operator != ( uint32_t lhs, const RuntimeClassID & rhs );
 
 /************************************************************************/
 // class members operators
@@ -193,7 +193,7 @@ public:
      * \brief   Operator to convert the value or Runtime Class ID to unsigned integer value.
      *          Used to calculate hash value in hash map
      **/
-    inline explicit operator unsigned int () const;
+    inline explicit operator uint32_t () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -240,7 +240,7 @@ private:
     /**
      * \brief   The calculated number of runtime class.
      **/
-    unsigned int    mMagicNum;
+    uint32_t    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -254,10 +254,10 @@ namespace std
     template<>
     struct hash<RuntimeClassID>
     {
-        //! A function to convert String object to unsigned int.
-        inline unsigned int operator()(const RuntimeClassID& key) const
+        //! A function to convert String object to uint32_t.
+        inline uint32_t operator()(const RuntimeClassID& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -329,7 +329,7 @@ inline bool RuntimeClassID::operator != (const String & other) const
     return mClassName != other;
 }
 
-inline RuntimeClassID::operator unsigned int () const
+inline RuntimeClassID::operator uint32_t () const
 {
     return mMagicNum;
 }
@@ -369,12 +369,12 @@ inline bool operator != ( const String & lhs, const RuntimeClassID & rhs )
     return rhs.mClassName != lhs;
 }
 
-inline bool operator == ( unsigned int lhs, const RuntimeClassID & rhs )
+inline bool operator == ( uint32_t lhs, const RuntimeClassID & rhs )
 {
     return rhs.mMagicNum  == lhs;
 }
 
-inline bool operator != ( unsigned int lhs, const RuntimeClassID & rhs )
+inline bool operator != ( uint32_t lhs, const RuntimeClassID & rhs )
 {
     return rhs.mMagicNum != lhs;
 }

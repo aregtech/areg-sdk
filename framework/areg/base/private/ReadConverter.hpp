@@ -94,14 +94,14 @@ public:
     bool getChar( wchar_t & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to short integer.
-     *          On output, the Value contains short integer value.
+     * \brief   Reads data from streaming object and converts to int16_t integer.
+     *          On output, the Value contains int16_t integer value.
      *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted short integer value.
+     * \param[out]  Value   On output, this parameter contains converted int16_t integer value.
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getShort(short & Value) const;
+    bool getShort(int16_t & Value) const;
 
     /**
      * \brief   Reads data from streaming object and converts to integer.
@@ -111,7 +111,7 @@ public:
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getInt( int & Value ) const;
+    bool getInt( int32_t & Value ) const;
 
     /**
      * \brief   Reads data from streaming object and converts to 64-bit integer.

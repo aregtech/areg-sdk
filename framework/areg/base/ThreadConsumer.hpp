@@ -114,7 +114,7 @@ public:
      *          This method is triggered after exiting from Run() function.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit();
+    virtual int32_t onThreadExit();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

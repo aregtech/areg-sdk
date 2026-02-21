@@ -46,7 +46,7 @@ void SystemServiceBase::resetDefaultOptions()
     mCommunication.enableCalculateDataRate(NESystemService::DEFAULT_VERBOSE);
 }
 
-bool SystemServiceBase::parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount )
+bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount )
 {
     bool result{ false };
 
@@ -72,7 +72,7 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
     return result;
 }
 
-bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount)
+bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount)
 {
     bool result{ false };
 
@@ -165,9 +165,9 @@ bool SystemServiceBase::dispatchOption(const OptionParser::sOption& opt)
     return result;
 }
 
-int SystemServiceBase::serviceMain(NESystemService::ServiceOption optStartup, const char* argument)
+int32_t SystemServiceBase::serviceMain(NESystemService::ServiceOption optStartup, const char* argument)
 {
-    int result{ RESULT_SUCCEEDED };
+    int32_t result{ RESULT_SUCCEEDED };
     if (serviceInitialize(optStartup, argument, nullptr))
     {
         LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);

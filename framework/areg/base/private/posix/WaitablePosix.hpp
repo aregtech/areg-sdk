@@ -88,7 +88,7 @@ public:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    virtual void notifyReleasedThreads( int numThreads ) = 0;
+    virtual void notifyReleasedThreads( int32_t numThreads ) = 0;
 
     /**
      * \brief   Call when synchronization object is going to be deleted.

@@ -30,8 +30,8 @@
 //!<\brief  Local service component
 class LocalServiceComponent : public Component
 {
-    static constexpr unsigned int   PUBLIC_CLIENT_TIMEOUT   { 1'000 };  //!< The timeout to send request to public service
-    static constexpr unsigned int   LOCAL_CLIENT_TIMEOUT    {   500 };  //!< The timeout to send request to local service
+    static constexpr uint32_t   PUBLIC_CLIENT_TIMEOUT   { 1'000 };  //!< The timeout to send request to public service
+    static constexpr uint32_t   LOCAL_CLIENT_TIMEOUT    {   500 };  //!< The timeout to send request to local service
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -62,10 +62,10 @@ private:
 //!<\brief  A public service component
 class PublicServiceComponent : public Component
 {
-    static constexpr unsigned int   TIMEOUT_CONTROLLER_SERVICE_CLIENT   {   700 };
-    static constexpr unsigned int   TIMEOUT_PUBLIC_SERVICE_CLIENT       { 1'000 };
-    static constexpr unsigned int   TIMEOUT_LOCAL_SERVICE_CLIENT_1      {   800 };
-    static constexpr unsigned int   TIMEOUT_LOCAL_SERVICE_CLIENT_2      { 1'200 };
+    static constexpr uint32_t   TIMEOUT_CONTROLLER_SERVICE_CLIENT   {   700 };
+    static constexpr uint32_t   TIMEOUT_PUBLIC_SERVICE_CLIENT       { 1'000 };
+    static constexpr uint32_t   TIMEOUT_LOCAL_SERVICE_CLIENT_1      {   800 };
+    static constexpr uint32_t   TIMEOUT_LOCAL_SERVICE_CLIENT_2      { 1'200 };
 
 public:
 

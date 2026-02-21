@@ -58,21 +58,21 @@ namespace NESystemService
     const OptionParser::sOptionSetup ServiceOptionSetup[ ]
     {
           //!< Default command.
-          { ""  , ""            , static_cast<int>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+          { ""  , ""            , static_cast<int32_t>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a console application.
-        , { "-c", "--console"   , static_cast<int>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-c", "--console"   , static_cast<int32_t>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display help on console.
-        , { "-h", "--help"      , static_cast<int>(ServiceOption::CMD_Help)        , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-h", "--help"      , static_cast<int32_t>(ServiceOption::CMD_Help)        , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display the error message.
-        , { "-l", "--load"      , static_cast<int>(ServiceOption::CMD_Load)        , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+        , { "-l", "--load"      , static_cast<int32_t>(ServiceOption::CMD_Load)        , OptionParser::STRING_NO_RANGE , {}, {}, {} }
           //!< Command to install service. Valid for Windows OS, ignored in other cases.
-        , { "-i", "--install"   , static_cast<int>(ServiceOption::CMD_Install)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-i", "--install"   , static_cast<int32_t>(ServiceOption::CMD_Install)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a system service process.
-        , { "-s", "--service"   , static_cast<int>(ServiceOption::CMD_Service)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-s", "--service"   , static_cast<int32_t>(ServiceOption::CMD_Service)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to uninstall service. Valid for Windows OS, ignored in other cases.
-        , { "-u", "--uninstall" , static_cast<int>(ServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA          , {}, {}, {} }
+        , { "-u", "--uninstall" , static_cast<int32_t>(ServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA          , {}, {}, {} }
           //!< Command to display data rate when run as console application.
-        , { "-v", "--verbose"   , static_cast<int>(ServiceOption::CMD_Verbose)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-v", "--verbose"   , static_cast<int32_t>(ServiceOption::CMD_Verbose)     , OptionParser::NO_DATA         , {}, {}, {} }
     };
 
     /**
@@ -174,14 +174,14 @@ namespace NESystemService
      * \returns Returns argument list of type 'char'
      **/
     template<typename CharType>
-    inline char** convertArguments(CharType** argv, int argc);
+    inline char** convertArguments(CharType** argv, int32_t argc);
 
     /**
      * \brief   Deletes the list of arguments returned by 'convertArguments' function.
      * \param   argv        The list of arguments returned by 'convertArguments' function.
      * \param   argc        The number of arguments in the argument list.
      **/
-    inline void deleteArguments(char** argv, int argc);
+    inline void deleteArguments(char** argv, int32_t argc);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -241,7 +241,7 @@ inline const char * NESystemService::getString( NESystemService::ServicePhase se
 }
 
 template<typename CharType>
-inline char** NESystemService::convertArguments(CharType** argv, int argc)
+inline char** NESystemService::convertArguments(CharType** argv, int32_t argc)
 {
     char** result = argc != 0 ? DEBUG_NEW char* [static_cast<uint32_t>(argc)] : nullptr;
     if (result != nullptr)
@@ -260,7 +260,7 @@ inline char** NESystemService::convertArguments(CharType** argv, int argc)
     return result;
 }
 
-inline void NESystemService::deleteArguments(char** argv, int argc)
+inline void NESystemService::deleteArguments(char** argv, int32_t argc)
 {
     if (argv != nullptr)
     {

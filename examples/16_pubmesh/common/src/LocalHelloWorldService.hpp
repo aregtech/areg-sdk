@@ -54,7 +54,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     ClientList      mClientList;    //!< The list of connected clients.
-    unsigned int    mNumRequests;   //!< The number of executed requests.
+    uint32_t    mNumRequests;   //!< The number of executed requests.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

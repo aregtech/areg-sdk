@@ -92,7 +92,7 @@ Component* Component::findComponentByName( const String & roleName )
     return Component::resource_map().findResourceObject(NEMath::crc32Calculate(roleName.getString()));
 }
 
-Component * Component::findComponentByNumber(unsigned int magicNum)
+Component * Component::findComponentByNumber(uint32_t magicNum)
 {
     ASSERT(magicNum != NEMath::CHECKSUM_IGNORE);
 
@@ -101,7 +101,7 @@ Component * Component::findComponentByNumber(unsigned int magicNum)
 
 Component* Component::findComponentByAddress( const ComponentAddress& comAddress )
 {
-    Component* result = Component::resource_map().findResourceObject( static_cast<unsigned int>(comAddress.getRoleName()) );
+    Component* result = Component::resource_map().findResourceObject( static_cast<uint32_t>(comAddress.getRoleName()) );
     return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);
 }
 
@@ -272,7 +272,7 @@ StubBase* Component::findServerByName( const String & serviceName )
     return result;
 }
 
-void Component::waitComponentCompletion( unsigned int waitTimeout )
+void Component::waitComponentCompletion( uint32_t waitTimeout )
 {
     ThreadAddress addrThread;
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
@@ -292,9 +292,9 @@ void Component::notifyWorkerThreadStarted(WorkerThreadConsumer& /*consumer*/, Wo
 {
 }
 
-unsigned int Component::_magicNumber(Component & comp)
+uint32_t Component::_magicNumber(Component & comp)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = NEMath::CHECKSUM_IGNORE;
     if ( comp.getAddress().isValid() )
     {
         result = NEMath::crc32Calculate(comp.getRoleName().getString());

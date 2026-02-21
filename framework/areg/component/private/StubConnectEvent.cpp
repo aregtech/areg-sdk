@@ -23,7 +23,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus)
     : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
                             , stubTarget
-                            , static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection)
+                            , static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection)
                             , NEService::RequestType::ServiceConnection
                             , Event::EventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
@@ -33,7 +33,7 @@ StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::Se
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus)
     : ServiceRequestEvent   ( proxyClient
                             , stubTarget
-                            , static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection)
+                            , static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection)
                             , NEService::RequestType::ClientConnection
                             , Event::EventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )

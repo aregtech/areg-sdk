@@ -65,11 +65,11 @@ public:
 
     void SetInitiator( const chat::sInitiator & initiator );
 
-    int AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
+    int32_t AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
 
     bool AddParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant );
 
-    int RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
+    int32_t RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
 
     bool RemoveParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant );
 
@@ -84,7 +84,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    int findPosition( const chat::sParticipant & participant ) const;
+    int32_t findPosition( const chat::sParticipant & participant ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

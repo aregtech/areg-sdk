@@ -302,7 +302,7 @@ void LogConfiguration::saveConfiguration()
 void LogConfiguration::updateScopeConfiguration(const ScopeController& scopeController) const
 {
     const auto& scopeList = scopeController.getScopeList();
-    unsigned int key{ 0 };
+    uint32_t key{ 0 };
     LogScope* scope = scopeList.resourceFirstKey(key);
     ScopeRoot root;
     while (scope != nullptr)

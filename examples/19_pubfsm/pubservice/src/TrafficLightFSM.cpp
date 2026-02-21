@@ -271,13 +271,13 @@ inline void TrafficLightFSM::updateStateTree( const TrafficLightFSM::FsmState wh
 {
     ASSERT(curState   != TrafficLightFSM::FsmState::STATE_SIZE);
 
-    TrafficLightFSM::FsmState parent = sParrentStates[static_cast<int>(whichState)];
+    TrafficLightFSM::FsmState parent = sParrentStates[static_cast<int32_t>(whichState)];
     if (parent != TrafficLightFSM::FsmState::UNDEFINED)
     {
         updateStateTree(parent, curState);
     }
 
-    mCurrentStates[static_cast<int>(whichState)] = curState;
+    mCurrentStates[static_cast<int32_t>(whichState)] = curState;
 }
 
 /**
@@ -290,7 +290,7 @@ inline bool TrafficLightFSM::isInParentTree( TrafficLightFSM::FsmState whichStat
     bool result = whichState == checkState;
     if (result == false)
     {
-        whichState  = sParrentStates[static_cast<int>(whichState)];
+        whichState  = sParrentStates[static_cast<int32_t>(whichState)];
         result      = whichState != TrafficLightFSM::FsmState::UNDEFINED ? isInParentTree(whichState, checkState) : false;
     }
 
@@ -427,7 +427,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::FsmState curStat
             ASSERT(false);
         }
 
-        TrafficLightFSM::FsmState child = sChildStates[static_cast<int>(nextState)];
+        TrafficLightFSM::FsmState child = sChildStates[static_cast<int32_t>(nextState)];
         if (child != TrafficLightFSM::FsmState::UNDEFINED)
         {
             enterState(curState, child, nameTrigger);
@@ -523,7 +523,7 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
 
         INFO_EXIT_STATE(curState);
 
-        TrafficLightFSM::FsmState parent   = sParrentStates[static_cast<int>(curState)];
+        TrafficLightFSM::FsmState parent   = sParrentStates[static_cast<int32_t>(curState)];
         if (parent != TrafficLightFSM::FsmState::UNDEFINED && isInParentTree(nextState, parent) == false)
         {
             leaveState(parent, nextState, nameTrigger);
@@ -546,20 +546,20 @@ void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
     mMasterThread   = ownerThread != nullptr ? ownerThread : &(DispatcherThread::getCurrentDispatcherThread( ));
     NETrafficLightFSM::FsmEvent::addListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
     
-    mCurrentStates[static_cast<int>(FsmState::UNDEFINED)] = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::UNDEFINED)] = TrafficLightFSM::FsmState::UNDEFINED;
    
-    mCurrentStates[static_cast<int>(FsmState::TRAFIC_LIGHT_OFF)]          = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_ON)]          = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_INITIALIZE)]  = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_FUNCTION)]    = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_YELLOW)]      = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_RED)]         = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_VEHICLE_RED)] = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::OPPOSIT_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_GREEN)]       = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_VEHICLE_GREEN)]     = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_START)]       = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFIC_LIGHT_OFF)]          = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_ON)]          = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_INITIALIZE)]  = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_FUNCTION)]    = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_YELLOW)]      = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_RED)]         = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_VEHICLE_RED)] = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::OPPOSIT_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_GREEN)]       = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_VEHICLE_GREEN)]     = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_START)]       = TrafficLightFSM::FsmState::UNDEFINED;
 
     enterState(TrafficLightFSM::FsmState::UNDEFINED, TrafficLightFSM::FsmState::TRAFIC_LIGHT_OFF, "initFSM");
 }
@@ -591,20 +591,20 @@ void TrafficLightFSM::releaseFSM()
     mTimerPedestrianWalk.stopTimer( );
     mTimerVehicleWait.stopTimer( );
 
-    mCurrentStates[static_cast<int>(FsmState::UNDEFINED)] = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::UNDEFINED)] = TrafficLightFSM::FsmState::UNDEFINED;
    
-    mCurrentStates[static_cast<int>(FsmState::TRAFIC_LIGHT_OFF)]          = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_ON)]          = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_INITIALIZE)]  = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_FUNCTION)]    = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_YELLOW)]      = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_RED)]         = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_VEHICLE_RED)] = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::OPPOSIT_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_GREEN)]       = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_VEHICLE_GREEN)]     = TrafficLightFSM::FsmState::UNDEFINED;
-    mCurrentStates[static_cast<int>(FsmState::TRAFFIC_LIGHT_START)]       = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFIC_LIGHT_OFF)]          = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_ON)]          = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_INITIALIZE)]  = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_FUNCTION)]    = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_YELLOW)]      = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_RED)]         = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_VEHICLE_RED)] = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::OPPOSIT_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_GREEN)]       = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_PEDESTRIAN_GREEN)]  = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_VEHICLE_GREEN)]     = TrafficLightFSM::FsmState::UNDEFINED;
+    mCurrentStates[static_cast<int32_t>(FsmState::TRAFFIC_LIGHT_START)]       = TrafficLightFSM::FsmState::UNDEFINED;
 }
 
 

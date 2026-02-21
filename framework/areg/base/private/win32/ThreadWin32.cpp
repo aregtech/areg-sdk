@@ -50,7 +50,7 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
     /**
      * \brief   MS Exception value, used to set thread name.
      **/
-    static constexpr unsigned int   SET_NAME_MS_VC_EXCEPTION{ 0x406D1388u };
+    static constexpr uint32_t   SET_NAME_MS_VC_EXCEPTION{ 0x406D1388u };
 
 #pragma pack(push, 8)
     typedef struct tagTHREADNAME_INFO
@@ -93,7 +93,7 @@ void Thread::_osCloseHandle(  THREADHANDLE handle )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::_osSleep(unsigned int timeout)
+void Thread::_osSleep(uint32_t timeout)
 {
     ::Sleep(timeout);
 }
@@ -103,7 +103,7 @@ id_type Thread::_osGetCurrentThreadId()
     return static_cast<id_type>(::GetCurrentThreadId());
 }
 
-Thread::ThreadCompletion Thread::_osDestroyThread(unsigned int waitForStopMs)
+Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
 {
     mSyncObject.lock(NECommon::WAIT_INFINITE);
 
@@ -206,7 +206,7 @@ Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
 
     if (_isValidNoLock() && (newPriority != mThreadPriority))
     {
-        int Prio = std::numeric_limits<int32_t>::min();
+        int32_t Prio = std::numeric_limits<int32_t>::min();
         switch (newPriority)
         {
         case Thread::ThreadPriority::Lowest:

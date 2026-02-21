@@ -33,7 +33,7 @@ private:
     /**
      * \brief   Timeout to wait before sending message
      **/
-    static const unsigned int    TIMEOUT_VALUE       /*= 237*/;
+    static const uint32_t    TIMEOUT_VALUE       /*= 237*/;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -62,7 +62,7 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
      * \see     requestStartSleep
      **/
-    void responseStartSleep( unsigned int timeoutSleep ) override;
+    void responseStartSleep( uint32_t timeoutSleep ) override;
 
 #if AREG_LOGS
     /**

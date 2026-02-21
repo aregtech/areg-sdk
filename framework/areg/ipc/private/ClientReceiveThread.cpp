@@ -42,20 +42,20 @@ bool ClientReceiveThread::runDispatcher()
     SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
     RemoteMessage msgReceived;
-    int whichEvent{ static_cast<int>(EventDispatcherBase::EventSignal::Error) };
+    int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
     do
     {
         whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
-            whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Queue); // escape quit
-            int sizeReceive = mConnection.receiveMessage( msgReceived );
+            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
+            int32_t sizeReceive = mConnection.receiveMessage( msgReceived );
             if ( sizeReceive <= 0 )
             {
                 msgReceived.invalidate();
                 mRemoteService.failedReceiveMessage( mConnection.getSocket() );
-                whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Error);
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
             }
             else
             {
@@ -71,8 +71,8 @@ bool ClientReceiveThread::runDispatcher()
         }
         else
         {
-            Event * eventElem = whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-            whichEvent = isExitEvent(eventElem) ? static_cast<int>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+            whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
         }
 
     } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
@@ -82,7 +82,7 @@ bool ClientReceiveThread::runDispatcher()
 
     LOG_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
                 , getName().getString()
-                , whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Exit) ? "SUCCESS" : "FAILURE");
+                , whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) ? "SUCCESS" : "FAILURE");
 
-    return (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Exit));
+    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }

@@ -12,7 +12,7 @@ namespace NECentralApp
 {
     const char * const  THREAD_CENTRAL      = "ThreadCentral";
 
-    enum class WindowCommand : unsigned int
+    enum class WindowCommand : uint32_t
     {
           CmdFirst
         , CmdServiceConnection

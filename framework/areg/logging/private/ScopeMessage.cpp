@@ -118,7 +118,7 @@ void ScopeMessage::log( NELogging::LogPriority logPrio, const char * format, ...
     va_end(args);
 }
 
-inline void ScopeMessage::_sendLog( unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * format, va_list args )
+inline void ScopeMessage::_sendLog( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * format, va_list args )
 {
     LogMessage logData(NELogging::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
     logData.logMessageLen = static_cast<uint32_t>(String::formatStringList( logData.logMessage, NELogging::LOG_MESSAGE_IZE, format, args ));

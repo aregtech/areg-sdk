@@ -39,7 +39,7 @@ Version::Version()
 {
 }
 
-Version::Version( unsigned int major, unsigned int minor, unsigned int patch /*= 0*/ )
+Version::Version( uint32_t major, uint32_t minor, uint32_t patch /*= 0*/ )
     : mMajor    (major)
     , mMinor    (minor)
     , mPatch    (patch)
@@ -159,7 +159,7 @@ String Version::convToString() const
     constexpr const char * format{ "%d%c%d%c%d" };
 
     char buffer[ 128 ]{ 0 };
-    int len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
+    int32_t len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
     return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 

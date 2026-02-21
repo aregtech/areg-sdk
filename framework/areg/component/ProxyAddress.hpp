@@ -190,9 +190,9 @@ public:
     inline bool operator != ( const ProxyAddress & other ) const;
 
     /**
-     * \brief   Converts ProxyAddress object to 32-bit unsigned int value.
+     * \brief   Converts ProxyAddress object to 32-bit uint32_t value.
      **/
-    inline explicit operator unsigned int () const;
+    inline explicit operator uint32_t () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -367,7 +367,7 @@ private:
     /**
      * \brief   Returns the calculated hash-key value of specified proxy address object.
      **/
-    static unsigned int _magicNumber( const ProxyAddress & proxy );
+    static uint32_t _magicNumber( const ProxyAddress & proxy );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -389,7 +389,7 @@ private:
     /**
      * \brief   The calculated number of proxy address
      **/
-    unsigned int    mMagicNum;
+    uint32_t    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -403,10 +403,10 @@ namespace std
     template<>
     struct hash<ProxyAddress>
     {
-        //! A function to convert ProxyAddress object to unsigned int.
-        inline unsigned int operator()(const ProxyAddress& key) const
+        //! A function to convert ProxyAddress object to uint32_t.
+        inline uint32_t operator()(const ProxyAddress& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -456,7 +456,7 @@ inline bool ProxyAddress::operator != ( const ProxyAddress & other ) const
     return (mMagicNum != other.mMagicNum) || (mChannel.getCookie() != other.mChannel.getCookie());
 }
 
-inline ProxyAddress::operator unsigned int() const
+inline ProxyAddress::operator uint32_t() const
 {
     return mMagicNum;
 }

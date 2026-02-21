@@ -42,7 +42,7 @@ SyncObject::~SyncObject()
 //////////////////////////////////////////////////////////////////////////
 // SyncObject class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool SyncObject::lock(unsigned int /*timeout*/ /*= WAIT_INFINITE */)
+bool SyncObject::lock(uint32_t /*timeout*/ /*= WAIT_INFINITE */)
 {
     return false;
 }

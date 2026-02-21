@@ -20,42 +20,42 @@
 //! Logging type identifiers
 AREG_API_IMPL const std::vector<Identifier>     NEApplication::LogTypeIdentifiers =
 {
-      {static_cast<unsigned int>(NELogging::LogTarget::Undefined)               , NEApplication::DefaultLogTypes[0].ltIdName        }
-    , {static_cast<unsigned int>(NELogging::LogTarget::Remote)                  , NEApplication::DefaultLogTypes[1].ltIdName        }
-    , {static_cast<unsigned int>(NELogging::LogTarget::File)                    , NEApplication::DefaultLogTypes[2].ltIdName        }
-    , {static_cast<unsigned int>(NELogging::LogTarget::Debug)                   , NEApplication::DefaultLogTypes[3].ltIdName        }
-    , {static_cast<unsigned int>(NELogging::LogTarget::Database)                , NEApplication::DefaultLogTypes[4].ltIdName        }
+      {static_cast<uint32_t>(NELogging::LogTarget::Undefined)   , NEApplication::DefaultLogTypes[0].ltIdName        }
+    , {static_cast<uint32_t>(NELogging::LogTarget::Remote)      , NEApplication::DefaultLogTypes[1].ltIdName        }
+    , {static_cast<uint32_t>(NELogging::LogTarget::File)        , NEApplication::DefaultLogTypes[2].ltIdName        }
+    , {static_cast<uint32_t>(NELogging::LogTarget::Debug)       , NEApplication::DefaultLogTypes[3].ltIdName        }
+    , {static_cast<uint32_t>(NELogging::LogTarget::Database)    , NEApplication::DefaultLogTypes[4].ltIdName        }
 };
 
 //! Connection type identifiers
 AREG_API_IMPL const std::vector<Identifier>   NEApplication::ConnectionIdentifiers
 {
-      { static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined)  , NEApplication::DefaultConnections[0].ltIdName     }
-    , { static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip)      , NEApplication::DefaultConnections[1].ltIdName     }
-    , { static_cast<unsigned int>(NERemoteService::ConnectionType::Udp)        , NEApplication::DefaultConnections[2].ltIdName     }
-    , { static_cast<unsigned int>(NERemoteService::ConnectionType::Web)        , NEApplication::DefaultConnections[3].ltIdName     }
-    , { static_cast<unsigned int>(NERemoteService::ConnectionType::SharedMemory)         , NEApplication::DefaultConnections[4].ltIdName     }
+      { static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined)  , NEApplication::DefaultConnections[0].ltIdName     }
+    , { static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)      , NEApplication::DefaultConnections[1].ltIdName     }
+    , { static_cast<uint32_t>(NERemoteService::ConnectionType::Udp)        , NEApplication::DefaultConnections[2].ltIdName     }
+    , { static_cast<uint32_t>(NERemoteService::ConnectionType::Web)        , NEApplication::DefaultConnections[3].ltIdName     }
+    , { static_cast<uint32_t>(NERemoteService::ConnectionType::SharedMemory),NEApplication::DefaultConnections[4].ltIdName     }
 };
 
 //! Remote service identifiers
 AREG_API_IMPL const std::vector<Identifier>   NEApplication::RemoteServiceIdentifiers
 {
-      { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown)     , NEApplication::DefaultRemotetServices[0].ltIdName }
-    , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Router)      , NEApplication::DefaultRemotetServices[1].ltIdName }
-    , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Logger)      , NEApplication::DefaultRemotetServices[2].ltIdName }
+      { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown)  , NEApplication::DefaultRemotetServices[0].ltIdName }
+    , { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Router)   , NEApplication::DefaultRemotetServices[1].ltIdName }
+    , { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Logger)   , NEApplication::DefaultRemotetServices[2].ltIdName }
 };
 
 //! Log priority identifiers
 AREG_API_IMPL const std::vector<Identifier>   NEApplication::LogScopePriorityIndentifiers
 {
-      { static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid)                   , NELogging::PRIO_NO_PRIO                             }
-    , { static_cast<unsigned int>(NELogging::LogPriority::PrioNotset)                    , NELogging::PRIO_NOTSET_STR                          }
-    , { static_cast<unsigned int>(NELogging::LogPriority::PrioScope)                     , NELogging::PRIO_SCOPE_STR                           }
-    , { static_cast<unsigned int>(NELogging::LogPriority::PrioFatal)                     , NELogging::PRIO_FATAL_STR                           }
-    , { static_cast<unsigned int>(NELogging::LogPriority::PrioError)                     , NELogging::PRIO_ERROR_STR                           }
-    , { static_cast<unsigned int>(NELogging::LogPriority::PrioWarning)                   , NELogging::PRIO_WARNING_STR                         }
-    , { static_cast<unsigned int>(NELogging::LogPriority::PrioInfo)                      , NELogging::PRIO_INFO_STR                            }
-    , { static_cast<unsigned int>(NELogging::LogPriority::PrioDebug)                     , NELogging::PRIO_DEBUG_STR                           }
+      { static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid)  , NELogging::PRIO_NO_PRIO                             }
+    , { static_cast<uint32_t>(NELogging::LogPriority::PrioNotset)   , NELogging::PRIO_NOTSET_STR                          }
+    , { static_cast<uint32_t>(NELogging::LogPriority::PrioScope)    , NELogging::PRIO_SCOPE_STR                           }
+    , { static_cast<uint32_t>(NELogging::LogPriority::PrioFatal)    , NELogging::PRIO_FATAL_STR                           }
+    , { static_cast<uint32_t>(NELogging::LogPriority::PrioError)    , NELogging::PRIO_ERROR_STR                           }
+    , { static_cast<uint32_t>(NELogging::LogPriority::PrioWarning)  , NELogging::PRIO_WARNING_STR                         }
+    , { static_cast<uint32_t>(NELogging::LogPriority::PrioInfo)     , NELogging::PRIO_INFO_STR                            }
+    , { static_cast<uint32_t>(NELogging::LogPriority::PrioDebug)    , NELogging::PRIO_DEBUG_STR                           }
 };
 
  //! Areg TCP/IP Multitarget Router Service name

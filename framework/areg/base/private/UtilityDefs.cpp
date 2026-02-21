@@ -118,7 +118,7 @@ namespace NEUtilities
 
 AREG_API_IMPL time_t NEUtilities::convToSeconds(const sSystemTime & sysTime)
 {
-    const int year{ sysTime.stYear - 1900 };
+    const int32_t year{ sysTime.stYear - 1900 };
     return    static_cast<time_t>(sysTime.stSecond)
             + static_cast<time_t>(static_cast<TIME64>(sysTime.stMinute       ) * NEUtilities::MIN_TO_SECS)
             + static_cast<time_t>(static_cast<TIME64>(sysTime.stHour         ) * NEUtilities::HOUR_TO_SECS)
@@ -138,26 +138,26 @@ AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const TIME64 & lhs, co
     return NEUtilities::_compareLargeIntegers(lhsLi, rshLi);
 }
 
-AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& time, time_t& secs, unsigned short& milli, unsigned short& micro)
+AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)
 {
     secs = static_cast<time_t>(time / NEUtilities::SEC_TO_MICROSECS);
     TIME64 rest = time % NEUtilities::SEC_TO_MICROSECS;
-    milli = static_cast<unsigned short>(rest / NEUtilities::MILLISEC_TO_MICROSECS);
-    micro = static_cast<unsigned short>(rest % NEUtilities::MILLISEC_TO_MICROSECS);
+    milli = static_cast<uint16_t>(rest / NEUtilities::MILLISEC_TO_MICROSECS);
+    micro = static_cast<uint16_t>(rest % NEUtilities::MILLISEC_TO_MICROSECS);
 }
 
 AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & sysTime, struct tm & time)
 {
     if (sysTime.stYear >= 1900)
     {
-        time.tm_sec     = static_cast<int>( sysTime.stSecond);
-        time.tm_min     = static_cast<int>( sysTime.stMinute);
-        time.tm_hour    = static_cast<int>( sysTime.stHour);
-        time.tm_mday    = static_cast<int>( sysTime.stDay);
-        time.tm_mon     = static_cast<int>( sysTime.stMonth     -    1);    // tm_mon is 0 based
-        time.tm_year    = static_cast<int>( sysTime.stYear      - 1900);    // tm_year is 1900 based
-        time.tm_wday    = static_cast<int>( sysTime.stDayOfWeek -    1);    // tm_wday is 0 based
-        time.tm_yday    = static_cast<int>( sysTime.stDayOfYear -    1);    // day of year 0 based
+        time.tm_sec     = static_cast<int32_t>( sysTime.stSecond);
+        time.tm_min     = static_cast<int32_t>( sysTime.stMinute);
+        time.tm_hour    = static_cast<int32_t>( sysTime.stHour);
+        time.tm_mday    = static_cast<int32_t>( sysTime.stDay);
+        time.tm_mon     = static_cast<int32_t>( sysTime.stMonth     -    1);    // tm_mon is 0 based
+        time.tm_year    = static_cast<int32_t>( sysTime.stYear      - 1900);    // tm_year is 1900 based
+        time.tm_wday    = static_cast<int32_t>( sysTime.stDayOfWeek -    1);    // tm_wday is 0 based
+        time.tm_yday    = static_cast<int32_t>( sysTime.stDayOfYear -    1);    // day of year 0 based
         time.tm_isdst   = -1;
     }
     else
@@ -179,14 +179,14 @@ AREG_API_IMPL void NEUtilities::convToTm(const TIME64& timeMicro, tm& time)
 
 AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, sSystemTime & sysTime)
 {
-    sysTime.stSecond    = static_cast<int>(time.tm_sec);
-    sysTime.stMinute    = static_cast<int>(time.tm_min);
-    sysTime.stHour      = static_cast<int>(time.tm_hour);
-    sysTime.stDay       = static_cast<int>(time.tm_mday);
-    sysTime.stMonth     = static_cast<int>(time.tm_mon  +    1);
-    sysTime.stYear      = static_cast<int>(time.tm_year + 1900);
-    sysTime.stDayOfWeek = static_cast<int>(time.tm_wday +    1);
-    sysTime.stDayOfYear = static_cast<int>(time.tm_yday +    1);
+    sysTime.stSecond    = static_cast<int32_t>(time.tm_sec);
+    sysTime.stMinute    = static_cast<int32_t>(time.tm_min);
+    sysTime.stHour      = static_cast<int32_t>(time.tm_hour);
+    sysTime.stDay       = static_cast<int32_t>(time.tm_mday);
+    sysTime.stMonth     = static_cast<int32_t>(time.tm_mon  +    1);
+    sysTime.stYear      = static_cast<int32_t>(time.tm_year + 1900);
+    sysTime.stDayOfWeek = static_cast<int32_t>(time.tm_wday +    1);
+    sysTime.stDayOfYear = static_cast<int32_t>(time.tm_yday +    1);
 }
 
 AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const NEUtilities::sSystemTime & lhs, const NEUtilities::sSystemTime & rhs )
@@ -235,12 +235,12 @@ AREG_API_IMPL String NEUtilities::generateName( const char* prefix )
     return String(buffer);
 }
 
-AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int32_t length)
 {
     return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
 }
 
-AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int32_t length, const char * specChar)
 {
     constexpr char const strFormat[]{ "%s%s%08x%s%08x" };
 
@@ -263,7 +263,7 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
     return out_buffer;
 }
 
-AREG_API_IMPL unsigned int NEUtilities::generateUniqueId()
+AREG_API_IMPL uint32_t NEUtilities::generateUniqueId()
 {
     static std::atomic_uint _id(0u);
     return ++ _id;
@@ -302,7 +302,7 @@ AREG_API_IMPL TIME64 NEUtilities::systemTimeNow()
 
 AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
 {
-    const int year{ sysTime.stYear - 1900 };
+    const int32_t year{ sysTime.stYear - 1900 };
 
     return    static_cast<TIME64>(sysTime.stMicrosecs)
             + static_cast<TIME64>(sysTime.stMillisecs    ) * NEUtilities::MILLISEC_TO_MICROSECS

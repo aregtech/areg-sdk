@@ -60,7 +60,7 @@ File::~File()
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool File::open(const String& fileName, unsigned int mode)
+bool File::open(const String& fileName, uint32_t mode)
 {
     bool result = false;
     if ((isOpened() == false) && (fileName.isEmpty() == false))
@@ -84,34 +84,34 @@ void File::close()
     _osCloseFile();
 }
 
-unsigned int File::getSizeReadable() const
+uint32_t File::getSizeReadable() const
 {
-    unsigned int lenRead = 0;
-    unsigned int lenUsed = 0;
+    uint32_t lenRead = 0;
+    uint32_t lenUsed = 0;
     if (isOpened())
     {
         std::error_code err;
         std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
 
         lenRead = _osGetPositionFile();
-        lenUsed = !err ? static_cast<unsigned int>(sz) : 0;
+        lenUsed = !err ? static_cast<uint32_t>(sz) : 0;
     }
 
     ASSERT(lenRead <= lenUsed);
     return (lenUsed - lenRead);
 }
 
-unsigned int File::getSizeWritable() const
+uint32_t File::getSizeWritable() const
 {
-    unsigned int lenWritten     = 0;
-    unsigned int lenAvailable   = 0;
+    uint32_t lenWritten     = 0;
+    uint32_t lenAvailable   = 0;
     if (isOpened())
     {
         std::error_code err;
         std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
 
         lenWritten  = _osGetPositionFile();
-        lenAvailable = !err ? static_cast<unsigned int>(sz) : 0;
+        lenAvailable = !err ? static_cast<uint32_t>(sz) : 0;
     }
 
     ASSERT(lenWritten <= lenAvailable);
@@ -184,9 +184,9 @@ String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
     String name;
     if (unique)
     {
-        unsigned int ticks = unique ? static_cast<unsigned int>(DateTime::getSystemTickCount()) : 0u;
+        uint32_t ticks = unique ? static_cast<uint32_t>(DateTime::getSystemTickCount()) : 0u;
         DateTime timestamp{ DateTime::getNow() };
-        int len = String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
+        int32_t len = String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
                                       , pref.getString()
                                       , static_cast<uint32_t>(Process::getInstance().getId())
                                       , ticks
@@ -326,13 +326,13 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
     bool result = false;
     if ( NEString::isEmpty<char>(filePath) == false)
     {
-        int length = 0;
+        int32_t length = 0;
         if (nextPos != nullptr)
             *nextPos = nullptr;
         
         if (lastPos != nullptr)
         {
-            length = lastPos == filePath ? 0 : static_cast<int>(lastPos - filePath - 1);
+            length = lastPos == filePath ? 0 : static_cast<int32_t>(lastPos - filePath - 1);
         }
         else
         {
@@ -343,7 +343,7 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
 
         if (length != 0)
         {
-            int pos = NEString::findLast( File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
+            int32_t pos = NEString::findLast( File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;
@@ -368,9 +368,9 @@ String File::getParentDir(const char * filePath)
     return result;
 }
 
-int File::splitPath(const char * filePath, StringList & in_out_List)
+int32_t File::splitPath(const char * filePath, StringList & in_out_List)
 {
-    int oldCount        { static_cast<int>(in_out_List.getSize()) };
+    int32_t oldCount        { static_cast<int32_t>(in_out_List.getSize()) };
     const char * start  { filePath };
     const char * end    { filePath };
 
@@ -397,7 +397,7 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
             in_out_List.pushLast( node );
     }
 
-    return static_cast<int>(in_out_List.getSize() - static_cast<uint32_t>(oldCount));
+    return static_cast<int32_t>(in_out_List.getSize() - static_cast<uint32_t>(oldCount));
 }
 
 String File::makeFileFullPath(const char* dirName, const char* fileName)
@@ -409,24 +409,24 @@ String File::makeFileFullPath(const char* dirName, const char* fileName)
     return (!err ? fp.string() : filePath.string());
 }
 
-unsigned int File::read(ByteBuffer & buffer) const
+uint32_t File::read(ByteBuffer & buffer) const
 {
     return FileBase::read(buffer);
 }
 
-unsigned int File::read(String & ascii) const
+uint32_t File::read(String & ascii) const
 {
     return FileBase::read(ascii);
 }
 
-unsigned int File::read(WideString & wide) const
+uint32_t File::read(WideString & wide) const
 {
     return FileBase::read(wide);
 }
 
-unsigned int File::read(unsigned char* buffer, unsigned int size) const
+uint32_t File::read(uint8_t* buffer, uint32_t size) const
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
     if (isOpened() && canRead())
     {
         if ((buffer != nullptr) && (size > 0))
@@ -438,24 +438,24 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
     return result;
 }
 
-unsigned int File::write(const ByteBuffer & buffer)
+uint32_t File::write(const ByteBuffer & buffer)
 {
     return FileBase::write(buffer);
 }
 
-unsigned int File::write(const String & ascii)
+uint32_t File::write(const String & ascii)
 {
     return FileBase::write(ascii);
 }
 
-unsigned int File::write(const WideString & wide)
+uint32_t File::write(const WideString & wide)
 {
     return FileBase::write(wide);
 }
 
-unsigned int File::write(const unsigned char* buffer, unsigned int size)
+uint32_t File::write(const uint8_t* buffer, uint32_t size)
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
     if (isOpened() && canWrite())
     {
         if ((buffer != nullptr) && (size > 0))
@@ -467,34 +467,34 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int File::setPosition(int offset, Cursor::SeekOrigin startAt) const
+uint32_t File::setPosition(int32_t offset, Cursor::SeekOrigin startAt) const
 {
     return (isOpened() ? _osSetPositionFile(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
-unsigned int File::getPosition() const
+uint32_t File::getPosition() const
 {
     return (isOpened() ? _osGetPositionFile() : Cursor::INVALID_CURSOR_POSITION);
 }
 
-unsigned int File::getLength() const
+uint32_t File::getLength() const
 {
-    unsigned int result{ 0 };
+    uint32_t result{ 0 };
     if (isOpened())
     {
         std::error_code err;
         std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
-        result = !err ? static_cast<unsigned int>(sz) : 0;
+        result = !err ? static_cast<uint32_t>(sz) : 0;
     }
     return result;
 }
 
-unsigned int File::reserve(unsigned int newSize)
+uint32_t File::reserve(uint32_t newSize)
 {
-    unsigned int result = Cursor::INVALID_CURSOR_POSITION;
+    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
     if (isOpened() && canWrite())
     {
-        unsigned int curPos = _osGetPositionFile();
+        uint32_t curPos = _osGetPositionFile();
         close();
 
         std::error_code err;
@@ -517,7 +517,7 @@ unsigned int File::reserve(unsigned int newSize)
             }
             else
             {
-                result = setPosition(static_cast<int>(curPos), Cursor::SeekOrigin::Begin);
+                result = setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -645,7 +645,7 @@ String File::getFileFullPath(const char* filePath)
 String File::getSpecialDir(File::SpecialFolder specialFolder)
 {
     char buffer[File::MAXIMUM_PATH];
-    unsigned int space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);
+    uint32_t space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);
 
     return String(buffer, space);
 }

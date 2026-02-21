@@ -64,11 +64,11 @@ private:
 
     inline void setHeaders();
 
-    inline int getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants );
+    inline int32_t getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants );
 
     inline void addConnection( const ConnectionManager::sConnection & connection );
 
-    inline int findConnection( const ConnectionManager::sConnection & connection ) const;
+    inline int32_t findConnection( const ConnectionManager::sConnection & connection ) const;
 
     inline void removeConnection( const ConnectionManager::sConnection & connection );
 

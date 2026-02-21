@@ -32,7 +32,7 @@
 /**
  * \brief   This class is parsing command line or an option string separated by space
  *          and validates the options:
- *              - by option short / long name,
+ *              - by option int16_t / long name,
  *              - by option value range,
  *              - by syntax (quote).
  *          The developers need to setup the options and pass to constructor. If constructor
@@ -81,7 +81,7 @@
  *                  myapp -a=1 -b=2.3 -c=something
  *              3. Command line options with values, set by ' ': '-a' = {1}, '-b' = {2.3} '-c' = {"some", "thing"}
  *                  myapp -a 1 -b 2.3 -c some thing
- *              4. Command line options with short and long names: '-a', '-bc', '-def', '--ghijk-lmop'
+ *              4. Command line options with int16_t and long names: '-a', '-bc', '-def', '--ghijk-lmop'
  *                  myapp -a -bc -def --ghijk-lmop
  *              5. Command line options with value set mixed:  '-a' = {1}, '-bc' = {2.3}, '-def' =  {"some"}, '--ghijk-lmop' = {"thing" "and" "somethingelse"}
  *                  myapp -a=1 -bc = 2.3 -def some --ghijk-lmop thing and somethingelse
@@ -134,8 +134,8 @@
  * 
  *              const OptionParser::sOptionSetup setup[]
  *              {
- *                    {"-t", "--tri"   , static_cast<int>(Figure::Triangle) , OptionParser::STRING_NO_RANGE, {}, {}, {}}
- *                  , {"-r", "--rect"  , static_cast<int>(Figure::Rectangle), OptionParser::STRING_NO_RANGE, {}, {}, {}}
+ *                    {"-t", "--tri"   , static_cast<int32_t>(Figure::Triangle) , OptionParser::STRING_NO_RANGE, {}, {}, {}}
+ *                  , {"-r", "--rect"  , static_cast<int32_t>(Figure::Rectangle), OptionParser::STRING_NO_RANGE, {}, {}, {}}
  *              };
  *              And the option string can be: '-t "{1,1}, {5, 10}, {20, 3}" --rect "{1, 10}, 5, 3"'
  *              This is parsed to create 2 sOption object with one string in each, where `inCommand` indicates
@@ -225,7 +225,7 @@ public:
      **/
     union uValues
     {
-        int     valInt;     //!< Signed integer
+        int32_t     valInt;     //!< Signed integer
         float   valFloat;   //!< Signed floating point
     };
 
@@ -242,11 +242,11 @@ public:
      **/
     struct sOptionSetup
     {
-        std::string_view    optShort        {        }; //!< The short name of the option.
+        std::string_view    optShort        {        }; //!< The int16_t name of the option.
         std::string_view    optLong         {        }; //!< The long name of the option.
-        int                 optCmmand       { -1     }; //!< The digital value of the command.
+        int32_t                 optCmmand       { -1     }; //!< The digital value of the command.
         uint32_t            optField        { 0      }; //!< The flag indicating the valid fields.
-        Range<int>          optRangeInt     { 0, 0   }; //!< Range of valid integer values, ignored if no range.
+        Range<int32_t>          optRangeInt     { 0, 0   }; //!< Range of valid integer values, ignored if no range.
         Range<float>        optRangeFloat   { 0., 0. }; //!< Range of valid floating point values, ignored if no range
         FixedStrList        optRangeStrings {        }; //!< Range of valid strings, no case sensitive
     };
@@ -256,9 +256,9 @@ public:
      **/
     struct sOption
     {
-        int         inCommand   { -1 }; //!< The digital value of the command.
+        int32_t         inCommand   { -1 }; //!< The digital value of the command.
         uint32_t    inField     { 0  }; //!< The flag indicating the valid fields and values.
-        int         inRefSetup  { -1 }; //!< The reference index in the list of options setup, -1 is invalid index
+        int32_t         inRefSetup  { -1 }; //!< The reference index in the list of options setup, -1 is invalid index
         uValues     inValue     { 0  }; //!< Either integer or float value, depending on `inField`.
         StrList     inString    {    }; //!< The list of the strings, the `inField` should indicate string value
     };
@@ -438,7 +438,7 @@ public:
      * \return  Returns valid index if found an option with specified ID.
      *          Otherwise, returns invalid index (NECommon::INVALID_POSITION).
      **/
-    uint32_t findOption(int optId) const;
+    uint32_t findOption(int32_t optId) const;
 
     /**
      * \brief   Sort the entries of options by the ID (value) of commands.
@@ -465,7 +465,7 @@ private:
 
     /**
      * \brief   Creates and sets up input option structure based on the validity index.
-     * \param   isShort     True, if matches the short name of the option. Otherwise, should be false.
+     * \param   isShort     True, if matches the int16_t name of the option. Otherwise, should be false.
      * \param   cmdLine     The string that contains an option. With the option, the string may contain value
      *                      if the value is separated with the '=' equal sign.
      *                      Otherwise, it should contain only the option string.
@@ -485,7 +485,7 @@ private:
     /**
      * \brief   Sets the integer value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( int newValue, sOption & opt, const sOptionSetup & valid );
+    void _setValue( int32_t newValue, sOption & opt, const sOptionSetup & valid );
 
     /**
      * \brief   Sets the float value in the option. If needed, checks the validation in the range.

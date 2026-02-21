@@ -84,7 +84,7 @@ private:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    unsigned int        mStateEventCount;   //!< The event count of the service provider (publisher) state
+    uint32_t        mStateEventCount;   //!< The event count of the service provider (publisher) state
     SubscriberSecond    mSecond;            //!< Dummy subscriber. Only for testing and debugging purpose.
 
 //////////////////////////////////////////////////////////////////////////

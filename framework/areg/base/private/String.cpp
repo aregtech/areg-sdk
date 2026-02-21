@@ -60,10 +60,10 @@ namespace
         bool isNegative = number < 0;
 
         number = NEMath::getAbs<DigitType>(number);
-        short idx = 0;
+        int16_t idx = 0;
         do
         {
-            idx = static_cast<short>(number % base);
+            idx = static_cast<int16_t>(number % base);
 
             *dst ++ = _formatRadixBinary[idx < 0 ? 1 : idx];
             number /= base;
@@ -99,7 +99,7 @@ namespace
      * \return  Returns number of characters in the string.
      *          In case of error, the return is negative.
      **/
-    template<typename DigitType, int const CharCount = NEString::MSG_MIN_BUF_SIZE>
+    template<typename DigitType, int32_t const CharCount = NEString::MSG_MIN_BUF_SIZE>
     inline int32_t _formatDigit( String & result, const char * format, DigitType number )
     {
         char buffer[ CharCount ]{ 0 };
@@ -122,7 +122,7 @@ namespace
      * \param   argptr  The list of arguments to convert.
      * \return  Returns the number of characters in the buffer, not including null-character.
      **/
-    inline int _formatStringList( char * buffer, int count, const char * format, va_list argptr )
+    inline int32_t _formatStringList( char * buffer, int32_t count, const char * format, va_list argptr )
     {
 #ifdef  _WIN32
         return vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
@@ -140,7 +140,7 @@ namespace
      * \param   argptr      The list of arguments to convert.
      * \return  Returns the number of characters in the buffer, not including null-character.
      **/
-    template<int const CharCount = NEString::MSG_BUF_SIZE>
+    template<int32_t const CharCount = NEString::MSG_BUF_SIZE>
     inline int32_t _formatStringList( String & result, const char * format, va_list argptr )
     {
         char buffer[ CharCount ] { 0 };
@@ -287,7 +287,7 @@ String String::getSubstring(const char * src, const char * strPhrase, const char
 int32_t String::makeInt32( const char * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const char ** end /*= nullptr*/ )
 {
     char * temp = nullptr;
-    int result  = static_cast<int>(NEString::isEmpty<char>(strDigit) == false ? strtol( strDigit, &temp, static_cast<int>(radix) ) : 0);
+    int32_t result  = static_cast<int32_t>(NEString::isEmpty<char>(strDigit) == false ? strtol( strDigit, &temp, static_cast<int32_t>(radix) ) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -299,7 +299,7 @@ int32_t String::makeInt32( const char * strDigit, NEString::Radix radix /*= NESt
 uint32_t String::makeUInt32( const char * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const char ** end /*= nullptr*/ )
 {
     char * temp = nullptr;
-    unsigned int result = static_cast<unsigned int>(NEString::isEmpty<char>(strDigit) == false ? strtoul(strDigit, &temp, static_cast<int>(radix)) : 0);
+    uint32_t result = static_cast<uint32_t>(NEString::isEmpty<char>(strDigit) == false ? strtoul(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -311,7 +311,7 @@ uint32_t String::makeUInt32( const char * strDigit, NEString::Radix radix /*= NE
 int64_t String::makeInt64( const char * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const char ** end /*= nullptr*/ )
 {
     char * temp = nullptr;
-    int64_t result = static_cast<long long int>(NEString::isEmpty<char>(strDigit) == false ? strtoll(strDigit, &temp, static_cast<int>(radix)) : 0);
+    int64_t result = static_cast<int64_t>(NEString::isEmpty<char>(strDigit) == false ? strtoll(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -323,7 +323,7 @@ int64_t String::makeInt64( const char * strDigit, NEString::Radix radix /*= NESt
 uint64_t String::makeUInt64(const char * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const char ** end /*= nullptr*/)
 {
     char * temp = nullptr;
-    uint64_t result = static_cast<uint64_t>(NEString::isEmpty<char>(strDigit) == false ? strtoull(strDigit, &temp, static_cast<int>(radix)) : 0);
+    uint64_t result = static_cast<uint64_t>(NEString::isEmpty<char>(strDigit) == false ? strtoull(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -359,9 +359,9 @@ double String::makeDouble(const char * strDigit, const char ** end /*= nullptr*/
 bool String::makeBool( const char * strBoolean, const char ** end /*= nullptr*/ )
 {
     bool result = false;
-    int lenSkip = 0;
-    int lenTrue = static_cast<int>(NECommon::BOOLEAN_TRUE.length());
-    int lenFalse= static_cast<int>(NECommon::BOOLEAN_FALSE.length());
+    int32_t lenSkip = 0;
+    int32_t lenTrue = static_cast<int32_t>(NECommon::BOOLEAN_TRUE.length());
+    int32_t lenFalse= static_cast<int32_t>(NECommon::BOOLEAN_FALSE.length());
     if ( NEString::compareStrings<char, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::Ordering::Equal)
     {
         result = true;
@@ -524,16 +524,16 @@ String String::makeString( bool value )
     return String(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
 }
 
-int String::formatString( char * strDst, int count, const char * format, ... )
+int32_t String::formatString( char * strDst, int32_t count, const char * format, ... )
 {
     va_list argptr;
     va_start( argptr, format );
-    int result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
+    int32_t result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
     va_end( argptr );
     return result;
 }
 
-int String::formatStringList( char * strDst, int count, const char * format, va_list argptr )
+int32_t String::formatStringList( char * strDst, int32_t count, const char * format, va_list argptr )
 {
     return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
 }
@@ -555,7 +555,7 @@ String & String::formatList(const char * format, va_list argptr)
     clear();
     if (format != nullptr)
     {
-        int count = NEString::requiredBufferSize(format, argptr);
+        int32_t count = NEString::requiredBufferSize(format, argptr);
 
         switch ( count )
         {

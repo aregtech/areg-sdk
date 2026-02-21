@@ -125,10 +125,10 @@ void PageMessaging::OnDisconnectTriggered()
 
 void PageMessaging::setHeaders()
 {
-    int count = std::size( PageMessaging::HEADER_TITILES );
+    int32_t count = std::size( PageMessaging::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
-    int width1, width2;
+    int32_t width1, width2;
     chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
@@ -377,7 +377,7 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
 {
     if ( message.IsEmpty() == false )
     {
-        int pos = mLastItem;
+        int32_t pos = mLastItem;
         for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )

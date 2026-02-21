@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Type of supported Synchronization objects
      **/
-    enum class SyncKind  : short
+    enum class SyncKind  : int16_t
     {
           SoUnknown     = -1    //!< Unknown type of synchronization object.
         , SoMutex       =  0    //!< Synchronization object is a Mutex.
@@ -114,7 +114,7 @@ public:
      *                      own synchronization object
      * \return	If thread successfully owns object, returns true. Otherwise returns false.
      **/
-    virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE );
+    virtual bool lock( uint32_t timeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Unlocks / Release current thread ownership of synchronization object

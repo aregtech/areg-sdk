@@ -58,19 +58,19 @@ public:
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
      **/
-    static constexpr unsigned int   CONTINUOUSLY{ static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
+    static constexpr uint32_t   CONTINUOUSLY{ static_cast<uint32_t>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   TimerBase::ONE_TIME
      *          Timer which is fired one time.
      */
-    static constexpr unsigned int   ONE_TIME    { static_cast<unsigned int>(1u) };
+    static constexpr uint32_t   ONE_TIME    { static_cast<uint32_t>(1u) };
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed
      *          since the system was started, up to 49.7 days.
      **/
-    static unsigned int getTickCount();
+    static uint32_t getTickCount();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -90,8 +90,8 @@ protected:
      **/
     TimerBase( const TimerType timerType
              , const String & timerName
-             , unsigned int timeoutMs   = NECommon::INVALID_TIMEOUT
-             , unsigned int eventCount  = TimerBase::CONTINUOUSLY );
+             , uint32_t timeoutMs   = NECommon::INVALID_TIMEOUT
+             , uint32_t eventCount  = TimerBase::CONTINUOUSLY );
 
 public:
     /**
@@ -106,20 +106,20 @@ public:
     /**
      * \brief   Returns the timeout of timer in milliseconds.
      **/
-    inline unsigned int getTimeout() const;
+    inline uint32_t getTimeout() const;
 
     /**
      * \brief   Set the timeout of timer in milliseconds.
      * \param   timeoutMs   The timeout of timer in milliseconds.
      **/
-    inline void setTimeout(unsigned int timeoutMs);
+    inline void setTimeout(uint32_t timeoutMs);
 
     /**
      * \brief   Returns the amount of events, which timer still needs to send.
      *          This function returns zero, if timer is stopped (automatically or manually),
      *          and returns Timer::CONTINUOUSLY for continues events.
      **/
-    inline unsigned int getEventCount() const;
+    inline uint32_t getEventCount() const;
 
     /**
      * \brief   Set the number of timeout events to fire.
@@ -130,7 +130,7 @@ public:
      *                      If values is zero, does not run the timer.
      *                      Any other number defines the amount of timeout events to fire.
      **/
-    inline void setEventCount(unsigned int eventCount);
+    inline void setEventCount(uint32_t eventCount);
 
     /**
      * \brief   Returns the name of timer.
@@ -212,11 +212,11 @@ protected:
     /**
      * \brief   Timeout to fire timer.
      **/
-    unsigned int        mTimeoutInMs;
+    uint32_t        mTimeoutInMs;
     /**
      * \brief   The amount of events to fire
      **/
-    unsigned int        mEventsCount;
+    uint32_t        mEventsCount;
     /**
      * \brief   Flag, indicating whether the timer is active or not.
      **/
@@ -240,7 +240,7 @@ inline bool TimerBase::isValid() const
     return ((mTimeoutInMs != NECommon::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
 
-inline void TimerBase::setEventCount(unsigned int eventCount)
+inline void TimerBase::setEventCount(uint32_t eventCount)
 {
     mEventsCount = eventCount;
 }
@@ -250,17 +250,17 @@ inline const String & TimerBase::getName() const
     return mName;
 }
 
-inline unsigned int TimerBase::getTimeout() const
+inline uint32_t TimerBase::getTimeout() const
 {
     return mTimeoutInMs;
 }
 
-inline void TimerBase::setTimeout(unsigned int timeoutMs)
+inline void TimerBase::setTimeout(uint32_t timeoutMs)
 {
     mTimeoutInMs = timeoutMs;
 }
 
-inline unsigned int TimerBase::getEventCount() const
+inline uint32_t TimerBase::getEventCount() const
 {
     return mEventsCount;
 }

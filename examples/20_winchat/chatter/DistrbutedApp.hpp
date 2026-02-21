@@ -38,7 +38,7 @@ public:
     // Implementation
 
     DECLARE_MESSAGE_MAP()
-    int ExitInstance( ) override;
+    int32_t ExitInstance( ) override;
 };
 
 extern DistrbutedApp theApp;

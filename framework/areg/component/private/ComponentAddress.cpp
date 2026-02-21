@@ -149,9 +149,9 @@ void ComponentAddress::convFromString(const char * pathComponent, const char** o
         *out_nextPart = strSource;
 }
 
-unsigned int ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
+uint32_t ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = NEMath::CHECKSUM_IGNORE;
     if (addrComp.mThreadAddress.isValid() && (addrComp.mRoleName.isEmpty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
     {
         result = NEMath::crc32Init();

@@ -28,8 +28,8 @@ LayoutManager::~LayoutManager()
 bool LayoutManager::createLayouts( const char * layoutFormat )
 {
     deleteLayouts();
-    int len = NEString::isEmpty<char>(layoutFormat) == false ? NEString::getStringLength<char>( layoutFormat ) : 0;
-    char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<unsigned int>(len) + 1u ] : nullptr;
+    int32_t len = NEString::isEmpty<char>(layoutFormat) == false ? NEString::getStringLength<char>( layoutFormat ) : 0;
+    char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<uint32_t>(len) + 1u ] : nullptr;
 
     if ( strFormat != nullptr )
     {

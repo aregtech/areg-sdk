@@ -129,14 +129,14 @@ EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcep
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Methods
 //////////////////////////////////////////////////////////////////////////
-unsigned int EventDataStream::read( unsigned char* buffer, unsigned int size ) const
+uint32_t EventDataStream::read( uint8_t* buffer, uint32_t size ) const
 {
     return mDataBuffer.read(buffer, size);
 }
 
-unsigned int EventDataStream::read( ByteBuffer & buffer ) const
+uint32_t EventDataStream::read( ByteBuffer & buffer ) const
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.isEmpty() == false)
     {
         static_cast<SharedBuffer &>(buffer) = mSharedList.popFirst();
@@ -150,12 +150,12 @@ unsigned int EventDataStream::read( ByteBuffer & buffer ) const
     return result;
 }
 
-unsigned int EventDataStream::read( String & ascii ) const
+uint32_t EventDataStream::read( String & ascii ) const
 {
     return mDataBuffer.read(ascii);
 }
 
-unsigned int EventDataStream::read( WideString & wide ) const
+uint32_t EventDataStream::read( WideString & wide ) const
 {
     return mDataBuffer.read(wide);
 }
@@ -165,14 +165,14 @@ void EventDataStream::resetCursor() const
     mDataBuffer.moveToBegin();
 }
 
-unsigned int EventDataStream::write( const unsigned char* buffer, unsigned int size )
+uint32_t EventDataStream::write( const uint8_t* buffer, uint32_t size )
 {
     return mDataBuffer.write(buffer, size);
 }
 
-unsigned int EventDataStream::write( const ByteBuffer & buffer )
+uint32_t EventDataStream::write( const ByteBuffer & buffer )
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal)
     {
         mSharedList.pushLast( static_cast<const SharedBuffer &>(buffer) );
@@ -186,12 +186,12 @@ unsigned int EventDataStream::write( const ByteBuffer & buffer )
     return result;
 }
 
-unsigned int EventDataStream::write( const String & ascii )
+uint32_t EventDataStream::write( const String & ascii )
 {
     return mDataBuffer.write(ascii);
 }
 
-unsigned int EventDataStream::write( const WideString & wide )
+uint32_t EventDataStream::write( const WideString & wide )
 {
     return mDataBuffer.write(wide);
 }
@@ -200,13 +200,13 @@ void EventDataStream::flush()
 {
 }
 
-unsigned int EventDataStream::getSizeReadable() const
+uint32_t EventDataStream::getSizeReadable() const
 {
     ASSERT(false);
     return 0;
 }
 
-unsigned int EventDataStream::getSizeWritable() const
+uint32_t EventDataStream::getSizeWritable() const
 {
     ASSERT(false);
     return 0;

@@ -110,7 +110,7 @@ namespace NELogOptions
     /**
      * \brief   Default value of integer, if not set in configuration file
      **/
-    constexpr int               DEFAULT_INTEGER_VALUE               { 0 };
+    constexpr int32_t               DEFAULT_INTEGER_VALUE               { 0 };
 
     /**
      * \brief   Default value of boolean, if not set in configuration file
@@ -120,14 +120,14 @@ namespace NELogOptions
     /**
      * \brief   The default logging priority
      **/
-    constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) };
+    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate
      **/
-    constexpr std::pair<std::string_view, unsigned int>  DEFAULT_LOG_ENABLED_SCOPES[]
+    constexpr std::pair<std::string_view, uint32_t>  DEFAULT_LOG_ENABLED_SCOPES[]
     {
-          { {"*"}       , static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) }
+          { {"*"}       , static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) }
     };
 }
 

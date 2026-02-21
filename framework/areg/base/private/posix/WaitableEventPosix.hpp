@@ -154,7 +154,7 @@ public:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    void notifyReleasedThreads( int numThreads ) override;
+    void notifyReleasedThreads( int32_t numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

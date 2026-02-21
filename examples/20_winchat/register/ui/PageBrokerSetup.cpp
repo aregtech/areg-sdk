@@ -14,8 +14,8 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::WindowCommand::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NECentralApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 
 // PageBrokerSetup dialog
@@ -72,7 +72,7 @@ void PageBrokerSetup::OnBnClickedBrokerConnect( )
             mBrokerPort = static_cast<USHORT>(temp);
             String ipAddress;
             ipAddress.format("%u.%u.%u.%u", ip1, ip2, ip3, ip4);
-            mIsConnected = CentralDialog::StartConnection(ipAddress, static_cast<unsigned short>(mBrokerPort) );
+            mIsConnected = CentralDialog::StartConnection(ipAddress, static_cast<uint16_t>(mBrokerPort) );
         }
     }
 }
@@ -168,7 +168,7 @@ BOOL PageBrokerSetup::OnInitDialog( )
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
     ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
-    unsigned char field0, field1, field2, field3;
+    uint8_t field0, field1, field2, field3;
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {
         mBrokerPort = static_cast<USHORT>(config.getConnectionPort());

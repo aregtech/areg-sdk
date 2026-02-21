@@ -55,7 +55,7 @@ public:
      * \param   initCount   The initial count of semaphore.
      * \param   asciiName   The name of semaphore.
      **/
-    explicit WaitableSemaphorePosix( int maxCount, int initCount = 0, const char * asciiName = nullptr );
+    explicit WaitableSemaphorePosix( int32_t maxCount, int32_t initCount = 0, const char * asciiName = nullptr );
 
     /**
      * \brief   Destructor.
@@ -79,12 +79,12 @@ public:
     /**
      * \brief   Returns maximum count of semaphore.
      **/
-    inline int getMaximumCount() const;
+    inline int32_t getMaximumCount() const;
 
     /**
      * \brief   Returns current count of semaphore.
      **/
-    inline int getCurrentCount() const;
+    inline int32_t getCurrentCount() const;
 
 /************************************************************************/
 // WaitablePosix callback overrides.
@@ -114,7 +114,7 @@ public:
      * \brief   This callback is called to notify waitable the amount of threads that where released.
      * \param   numThreads  The amount of threads that where released.
      **/
-    void notifyReleasedThreads( int numThreads ) override;
+    void notifyReleasedThreads( int32_t numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -123,12 +123,12 @@ private:
     /**
      * \brief   Maximum count number. After setting cannot be changed.
      **/
-    const int   mMaxCount;
+    const int32_t   mMaxCount;
 
     /**
      * \brief   Current lock count of semaphore.
      **/
-    int         mCurCount;
+    int32_t         mCurCount;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -142,12 +142,12 @@ private:
 // WaitableSemaphorePosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 
-inline int WaitableSemaphorePosix::getMaximumCount() const
+inline int32_t WaitableSemaphorePosix::getMaximumCount() const
 {
     return mMaxCount;
 }
 
-inline int WaitableSemaphorePosix::getCurrentCount() const
+inline int32_t WaitableSemaphorePosix::getCurrentCount() const
 {
     ObjectLockPosix lock(*this); return mCurCount;
 }

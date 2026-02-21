@@ -51,7 +51,7 @@ public:
      *          to the size of NEMemory::BLOCK_SIZE. In case of read-only mode
      *          no buffer will be allocated and passed shared buffer will be used.
      **/
-    static constexpr unsigned int   BLOCK_SIZE  { 4 * NEMemory::BLOCK_SIZE };
+    static constexpr uint32_t   BLOCK_SIZE  { 4 * NEMemory::BLOCK_SIZE };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -63,9 +63,9 @@ public:
      * \param	mode	    The file open mode. By default file object is opened with write permission and in binary mode
      * \param	blockSize	The block size to increase. By default the block size is 4 x NEMemory::BLOCK_SIZE (default 64 bytes)
      **/
-    explicit FileBuffer( unsigned int mode      = (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))
+    explicit FileBuffer( uint32_t mode      = (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))
                        , const char*  name      = nullptr
-                       , unsigned int blockSize = FileBuffer::BLOCK_SIZE);
+                       , uint32_t blockSize = FileBuffer::BLOCK_SIZE);
 
     /**
      * \brief	Constructor to set by default attached mode
@@ -129,7 +129,7 @@ public:
      * \brief	If file object was opened and the size is not zero (i.e. data was written / read) 
      *          it returns the pointer of buffer. Otherwise it will return nullptr.
      **/
-    inline const unsigned char * getDataBuffer() const;
+    inline const uint8_t * getDataBuffer() const;
 
     /**
      * \brief   Returns reference to shared buffer object (for read only purpose)
@@ -144,7 +144,7 @@ public:
      * \param   atPos   The position to insert data.
      * \return	Returns the size in bytes of written data.
      **/
-    unsigned int insertAt( const unsigned char* buffer, unsigned int size, unsigned int atPos );
+    uint32_t insertAt( const uint8_t* buffer, uint32_t size, uint32_t atPos );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -184,7 +184,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    bool open(const String& fileName, unsigned int mode) override;
+    bool open(const String& fileName, uint32_t mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -205,7 +205,7 @@ public:
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    unsigned int getLength() const override;
+    uint32_t getLength() const override;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
@@ -223,7 +223,7 @@ public:
      *
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
-    unsigned int reserve(unsigned int newSize) override;
+    uint32_t reserve(uint32_t newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, returns true.
@@ -242,7 +242,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    unsigned int read( ByteBuffer & buffer ) const override;
+    uint32_t read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -250,7 +250,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( String & ascii ) const override;
+    uint32_t read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -258,7 +258,7 @@ public:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( WideString & wide ) const override;
+    uint32_t read( WideString & wide ) const override;
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
@@ -267,7 +267,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    unsigned int read( unsigned char * buffer, unsigned int size ) const override;
+    uint32_t read( uint8_t * buffer, uint32_t size ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -279,7 +279,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    unsigned int write( const ByteBuffer & buffer ) override;
+    uint32_t write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -287,7 +287,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int write( const String & ascii ) override;
+    uint32_t write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -295,7 +295,7 @@ public:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int write( const WideString & wide ) override;
+    uint32_t write( const WideString & wide ) override;
 
     /**
      * \brief	Write data to output stream object from given buffer
@@ -306,7 +306,7 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    unsigned int write( const unsigned char * buffer, unsigned int size ) override;
+    uint32_t write( const uint8_t * buffer, uint32_t size ) override;
 
 /************************************************************************/
 // Cursor interface overrides
@@ -325,14 +325,14 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    unsigned int setPosition(int offset, Cursor::SeekOrigin startAt) const override;
+    uint32_t setPosition(int32_t offset, Cursor::SeekOrigin startAt) const override;
 
     /**
      * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    unsigned int getPosition() const override;
+    uint32_t getPosition() const override;
 
 protected:
 /************************************************************************/
@@ -347,7 +347,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    unsigned int getSizeReadable() const override;
+    uint32_t getSizeReadable() const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -356,7 +356,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    unsigned int getSizeWritable() const override;
+    uint32_t getSizeWritable() const override;
 
 /************************************************************************/
 // Other overrides
@@ -366,7 +366,7 @@ protected:
      * \param	mode	Integer value of bitwise OR operation of OpenMode values
      * \return	Returns normalized value.
      **/
-    unsigned int normalizeMode(unsigned int mode) const override;
+    uint32_t normalizeMode(uint32_t mode) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private functions
@@ -401,7 +401,7 @@ private:
 // FileBuffer class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const unsigned char * FileBuffer::getDataBuffer() const
+inline const uint8_t * FileBuffer::getDataBuffer() const
 {
     return (isOpened() ? mSharedBuffer.getBuffer() : nullptr);
 }

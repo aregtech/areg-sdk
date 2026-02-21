@@ -17,15 +17,15 @@
 
 #include "areg/base/DateTime.hpp"
 
-unsigned int TimerBase::getTickCount()
+uint32_t TimerBase::getTickCount()
 {
-    return static_cast<unsigned int>(DateTime::getSystemTickCount());
+    return static_cast<uint32_t>(DateTime::getSystemTickCount());
 }
 
 TimerBase::TimerBase( const TimerType timerType
                     , const String& timerName
-                    , unsigned int timeoutMs    /*= NECommon::INVALID_TIMEOUT*/
-                    , unsigned int eventCount   /*= TimerBase::CONTINUOUSLY*/)
+                    , uint32_t timeoutMs    /*= NECommon::INVALID_TIMEOUT*/
+                    , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
     : mTimerType    ( timerType )
     , mHandle       ( nullptr   )
     , mName         ( timerName )

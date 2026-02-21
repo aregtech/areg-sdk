@@ -128,10 +128,10 @@ bool ServerInfo::operator == ( const ProxyAddress & proxy ) const
     return mServerAddress == proxy;
 }
 
-ServerInfo::operator unsigned int () const
+ServerInfo::operator uint32_t () const
 {
     const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mServerAddress);
-    return static_cast<unsigned int>( addrService );
+    return static_cast<uint32_t>( addrService );
 }
 
 void ServerInfo::setConnectionStatus(NEService::ServiceConnectionState newConnection)

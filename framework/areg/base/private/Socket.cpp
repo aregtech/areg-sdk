@@ -104,17 +104,17 @@ void Socket::closeSocket()
     decreaseLock( );
 }
 
-int Socket::sendData( const unsigned char * buffer, int length ) const
+int32_t Socket::sendData( const uint8_t * buffer, int32_t length ) const
 {
     return (isValid() ? NESocket::sendData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mSendSize) ) : -1);
 }
 
-int Socket::receiveData( unsigned char * buffer, int length ) const
+int32_t Socket::receiveData( uint8_t * buffer, int32_t length ) const
 {
     return (isValid( ) ? NESocket::receiveData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
 }
 
-bool Socket::setAddress(const char * hostName, unsigned short portNr, bool isServer)
+bool Socket::setAddress(const char * hostName, uint16_t portNr, bool isServer)
 {
     if ( isValid() && (mAddress.isEqualAddress(hostName, portNr) == false))
     {
@@ -148,7 +148,7 @@ void Socket::closeSocketHandle( SOCKETHANDLE hSocket )
     }
 }
 
-unsigned int Socket::setSendPacketSize(unsigned int sendSize, bool force /*= false*/) const
+uint32_t Socket::setSendPacketSize(uint32_t sendSize, bool force /*= false*/) const
 {
     if (isValid() == false)
     {
@@ -163,7 +163,7 @@ unsigned int Socket::setSendPacketSize(unsigned int sendSize, bool force /*= fal
     return mSendSize;
 }
 
-unsigned int Socket::setRecvPacketSize(unsigned int recvSize, bool force /*= false*/) const
+uint32_t Socket::setRecvPacketSize(uint32_t recvSize, bool force /*= false*/) const
 {
     if (isValid() == false)
     {

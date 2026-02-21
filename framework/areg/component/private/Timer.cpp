@@ -36,7 +36,7 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 Timer::Timer( TimerConsumer& timerConsumer
             , const String & timerName  /*= String::getEmptyString()*/
             , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
-            , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
+            , int32_t maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : TimerBase         (TimerBase::TimerType::PerThreadTimer, NEUtilities::generateName(timerName), timeoutMs)
     , mConsumer         (timerConsumer)
 
@@ -58,12 +58,12 @@ Timer::~Timer()
 // Operations
 //////////////////////////////////////////////////////////////////////////
 
-bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Timer::CONTINUOUSLY*/ )
+bool Timer::startTimer( uint32_t timeoutInMs, uint32_t eventCount /*= Timer::CONTINUOUSLY*/ )
 {
     return startTimer(timeoutInMs, DispatcherThread::getCurrentDispatcherThread(), eventCount);
 }
 
-bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread, unsigned int eventCount /*= Timer::CONTINUOUSLY*/)
+bool Timer::startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount /*= Timer::CONTINUOUSLY*/)
 {
     LOG_SCOPE(areg_component_Timer_startTimer);
 
@@ -111,7 +111,7 @@ void Timer::stopTimer()
     _stopTimer();
 }
 
-bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/ )
+bool Timer::timerIsExpired(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/ )
 {
     Lock lock(mLock);
 
@@ -136,7 +136,7 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
     return mActive;
 }
 
-void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
+void Timer::timerStarting(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/)
 {
     mStartedAt = NEMath::make64(highValue, lowValue);
     mExpiredAt = 0;
@@ -146,7 +146,7 @@ void Timer::_queueTimer()
 {
     Lock lock(mLock);
 
-    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<unsigned int>(mMaxQueued) )
+    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
     {
         if (mDispatchThread != nullptr)
         {
@@ -163,7 +163,7 @@ void Timer::_unqueueTimer()
 {
     Lock lock(mLock);
 
-    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<unsigned int>(mMaxQueued) )
+    if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
     {
         if (mDispatchThread != nullptr)
         {

@@ -32,7 +32,7 @@ bool ConnectionHandler::IsValid() const
 bool ConnectionHandler::AddConnection(const chat::sConnection & newConnection)
 {
     Lock lock(mLock);
-    int pos = NECommon::INVALID_INDEX;
+    int32_t pos = NECommon::INVALID_INDEX;
     
     if (newConnection.nickName != mNickName)
     {
@@ -43,10 +43,10 @@ bool ConnectionHandler::AddConnection(const chat::sConnection & newConnection)
     return (pos == NECommon::INVALID_INDEX);
 }
 
-int ConnectionHandler::AddConnections(const chat::ListConnections & listConnections)
+int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConnections)
 {
     Lock lock(mLock);
-    int result = 0;
+    int32_t result = 0;
     for (uint32_t i = 0; i < listConnections.getSize(); ++i)
     {
         const chat::sConnection & entry = listConnections.getAt(i);
@@ -66,7 +66,7 @@ int ConnectionHandler::AddConnections(const chat::ListConnections & listConnecti
 bool ConnectionHandler::RemoveConnection(const chat::sConnection & connection)
 {
     Lock lock(mLock);
-    int pos = findConnection(connection);
+    int32_t pos = findConnection(connection);
     if ( pos != NECommon::INVALID_INDEX )
     {
         mListConnections.removeAt( static_cast<uint32_t>(pos) );
@@ -81,15 +81,15 @@ bool ConnectionHandler::ConnectionExist(const chat::sConnection & connection)
     return ( findConnection(connection) != NECommon::INVALID_INDEX);
 }
 
-int ConnectionHandler::findConnection(const chat::sConnection & connection) const
+int32_t ConnectionHandler::findConnection(const chat::sConnection & connection) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int32_t result = NECommon::INVALID_INDEX;
     for (uint32_t i = 0; i < mListConnections.getSize(); ++i)
     {
         const chat::sConnection & entry = mListConnections.getAt(i);
         if (entry.nickName == connection.nickName)
         {
-            result = static_cast<int>(i);
+            result = static_cast<int32_t>(i);
             break;
         }
     }

@@ -73,10 +73,10 @@ private:
     static constexpr std::string_view   LOGGING_THREAD_NAME          { "_AREG_LOGGING_THREAD_" };
 
     //!< Logging activation waiting maximum timeout
-    static constexpr unsigned int       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
+    static constexpr uint32_t       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
 
     //!< Reconnect timeout in milliseconds
-    static constexpr unsigned int       LOG_RECONNECT_TIMEOUT       { NECommon::TIMEOUT_1_SEC * 5 };
+    static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { NECommon::TIMEOUT_1_SEC * 5 };
 
 public:
 
@@ -234,7 +234,7 @@ public:
      * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
      * \return  Returns true if scope found and priority changed.
      **/
-    static bool setScopePriority( const char * scopeName, unsigned int newPrio );
+    static bool setScopePriority( const char * scopeName, uint32_t newPrio );
 
     /**
      * \brief   Call to change the scope log priority.
@@ -242,7 +242,7 @@ public:
      * \param   scopeId     The ID of the scope, ignored in case of scope group.
      * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
      **/
-    static void updateScopes(const String & scopeName, unsigned int scopeId, unsigned int newPrio);
+    static void updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio);
 
     /**
      * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
@@ -250,7 +250,7 @@ public:
      * \return  Is found the scope, returns the actual priority of the scope.
      *          Otherwise, returns invalid priority (NELogging::LogPriority::PrioInvalid).
      **/
-    static unsigned int getScopePriority( const char * scopeName );
+    static uint32_t getScopePriority( const char * scopeName );
 
     /**
      * \brief   Call to set the instance of log database engine responsible to handle the database.
@@ -427,12 +427,12 @@ private:
      * \param   scopeId     The ID of the scope. If it is a scope group, the value is ignored.
      * \param   scopePrio   The new priority to set to the scope or scope group.
      **/
-    void changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio );
+    void changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio );
 
     /**
      * \brief   Returns read-only list of registered scopes.
      **/
-    inline const HashMap<unsigned int, LogScope *> & getScopeList() const;
+    inline const HashMap<uint32_t, LogScope *> & getScopeList() const;
 
     /**
      * \brief   Returns instance of log manager.
@@ -525,7 +525,7 @@ inline const ITEM_ID & LogManager::getConnectionCookie()
     return LogManager::getInstance().mLoggerTcp.getConnectionCookie();
 }
 
-inline const HashMap<unsigned int, LogScope *> & LogManager::getScopeList() const
+inline const HashMap<uint32_t, LogScope *> & LogManager::getScopeList() const
 {
     return mScopeController.getScopeList( );
 }

@@ -150,7 +150,7 @@ namespace NERegistry
          * \param   minor           The minor version number of implemented interface
          * \param   patch           The patch version number of implemented interface
          **/
-        ServiceEntry( const String & serviceName, unsigned int major, unsigned int minor, unsigned int patch );
+        ServiceEntry( const String & serviceName, uint32_t major, uint32_t minor, uint32_t patch );
 
         /**
          * \brief   Initialize service interface entry by given name and version object.
@@ -327,7 +327,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findService( const String & serviceName ) const;
+        int32_t findService( const String & serviceName ) const;
 
         /**
          * \brief   Searches specified Service Entry and returns
@@ -336,7 +336,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findService(const NERegistry::ServiceEntry & entry) const;
+        int32_t findService(const NERegistry::ServiceEntry & entry) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -555,7 +555,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findThread( const String & threadName ) const;
+        int32_t findThread( const String & threadName ) const;
 
         /**
          * \brief   Searches specified Worker Thread Entry and returns
@@ -564,7 +564,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findThread( const NERegistry::WorkerThreadEntry & entry ) const;
+        int32_t findThread( const NERegistry::WorkerThreadEntry & entry ) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -766,7 +766,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findDependency( const String & roleName ) const;
+        int32_t findDependency( const String & roleName ) const;
 
         /**
          * \brief   Searches specified Dependency Entry and returns
@@ -775,7 +775,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findDependency( const NERegistry::DependencyEntry & entry ) const;
+        int32_t findDependency( const NERegistry::DependencyEntry & entry ) const;
 
         /**
          * \brief   Returns true if dependency list is valid.
@@ -968,7 +968,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findSupportedService( const NERegistry::ServiceEntry & entry ) const;
+        int32_t findSupportedService( const NERegistry::ServiceEntry & entry ) const;
 
         /**
          * \brief   By given name, searches Service Entry in the existing list of
@@ -978,7 +978,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findSupportedService( const String & serviceName ) const;
+        int32_t findSupportedService( const String & serviceName ) const;
 
         /**
          * \brief   Adds Worker Thread Entry in Component Entry object.
@@ -1008,7 +1008,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findWorkerThread( const NERegistry::WorkerThreadEntry & entry ) const;
+        int32_t findWorkerThread( const NERegistry::WorkerThreadEntry & entry ) const;
 
         /**
          * \brief   By given name, searches Worker Thread Entry in the existing list of
@@ -1018,7 +1018,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findWorkerThread( const String & workerName ) const;
+        int32_t findWorkerThread( const String & workerName ) const;
 
         /**
          * \brief   Searches the worker thread entry in the list.
@@ -1074,7 +1074,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findDependencyService( const NERegistry::DependencyEntry & entry ) const;
+        int32_t findDependencyService( const NERegistry::DependencyEntry & entry ) const;
 
         /**
          * \brief   Searches Service in dependency service list by given Role Name.
@@ -1092,7 +1092,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findDependencyService(const String & roleName) const;
+        int32_t findDependencyService(const String & roleName) const;
 
         /**
          * \brief   Returns list of supported Services of Component Entry object
@@ -1304,7 +1304,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findComponent( const String & roleName ) const;
+        int32_t findComponent( const String & roleName ) const;
 
         /**
          * \brief   Searches specified Component Entry and returns
@@ -1313,7 +1313,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findComponent(const NERegistry::ComponentEntry& entry) const;
+        int32_t findComponent(const NERegistry::ComponentEntry& entry) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -1503,7 +1503,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findComponentEntry( const NERegistry::ComponentEntry & entry ) const;
+        int32_t findComponentEntry( const NERegistry::ComponentEntry & entry ) const;
 
         /**
          * \brief   By given name, searches Component Entry in the existing list of
@@ -1513,7 +1513,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findComponentEntry( const String & roleName ) const;
+        int32_t findComponentEntry( const String & roleName ) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1663,7 +1663,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findThread( const String & threadName ) const;
+        int32_t findThread( const String & threadName ) const;
 
         /**
          * \brief   Searches specified Thread Entry and returns
@@ -1672,7 +1672,7 @@ namespace NERegistry
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int findThread( const NERegistry::ComponentThreadEntry & entry ) const;
+        int32_t findThread( const NERegistry::ComponentThreadEntry & entry ) const;
 
     public:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -1863,7 +1863,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findThread( const NERegistry::ComponentThreadEntry & entry ) const;
+        int32_t findThread( const NERegistry::ComponentThreadEntry & entry ) const;
 
         /**
          * \brief   By given name, searches Thread Entry in the existing list of
@@ -1873,7 +1873,7 @@ namespace NERegistry
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int findThread(const String & threadName) const;
+        int32_t findThread(const String & threadName) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.

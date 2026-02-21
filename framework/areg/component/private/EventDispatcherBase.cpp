@@ -170,11 +170,11 @@ bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichC
 }
 
 
-int EventDispatcherBase::removeConsumer( EventConsumer & whichConsumer )
+int32_t EventDispatcherBase::removeConsumer( EventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
-    int result = 0;
+    int32_t result = 0;
     LinkedList<RuntimeClassID> removedList;
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
     EventConsumerList* Value = nullptr;
@@ -210,16 +210,16 @@ bool EventDispatcherBase::runDispatcher()
 
     SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
-    int whichEvent  = static_cast<int>(EventDispatcherBase::EventSignal::Error);
+    int32_t whichEvent  = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
     do 
     {
         whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false);
-        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+        Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
         if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
         {
-            if ( whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue) )
+            if ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
             {
                 if (eventElem == nullptr)
                 {
@@ -241,8 +241,8 @@ bool EventDispatcherBase::runDispatcher()
                     // But before popping internal event from stack, check whether
                     // there is no request to exit thread.
                     eventElem = nullptr;
-                    int eventLock = multiLock.lock(NECommon::DO_NOT_WAIT);
-                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int>(EventDispatcherBase::EventSignal::Queue) )
+                    int32_t eventLock = multiLock.lock(NECommon::DO_NOT_WAIT);
+                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
                     {
                         eventElem = static_cast<EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
                     }
@@ -252,7 +252,7 @@ bool EventDispatcherBase::runDispatcher()
         }
         else
         {
-            whichEvent = static_cast<int>(EventDispatcherBase::EventSignal::Exit);
+            whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
         }
 
     } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
@@ -261,7 +261,7 @@ bool EventDispatcherBase::runDispatcher()
     removeAllEvents( );
     _clean();
 
-    return (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Exit));
+    return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }
 
 void EventDispatcherBase::readyForEvents( bool isReady )

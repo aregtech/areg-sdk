@@ -68,7 +68,7 @@ public:
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
      **/
-    ServerConnection(const ITEM_ID & channelId, const char * hostName, unsigned short portNr );
+    ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -125,7 +125,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
      **/
-    inline int sendMessage( const RemoteMessage & in_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t sendMessage( const RemoteMessage & in_message, const SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
@@ -143,7 +143,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
      **/
-    inline int receiveMessage( RemoteMessage & out_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t receiveMessage( RemoteMessage & out_message, const SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   If socket is valid, sends data using existing socket connection and returns length in bytes
@@ -164,7 +164,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
      **/
-    inline int sendMessage( const RemoteMessage & in_message, const ITEM_ID & clientCookie ) const;
+    inline int32_t sendMessage( const RemoteMessage & in_message, const ITEM_ID & clientCookie ) const;
 
     /**
      * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
@@ -182,7 +182,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
      **/
-    inline int receiveMessage( RemoteMessage & out_message, const ITEM_ID & clientCookie ) const;
+    inline int32_t receiveMessage( RemoteMessage & out_message, const ITEM_ID & clientCookie ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -210,22 +210,22 @@ inline const ITEM_ID & ServerConnection::getChannelId() const
     return mChannelId;
 }
 
-inline int ServerConnection::sendMessage(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::sendMessage(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
 {
     return SocketConnectionBase::sendMessage(in_message, clientSocket);
 }
 
-inline int ServerConnection::sendMessage(const RemoteMessage & in_message, const ITEM_ID & clientCookie) const
+inline int32_t ServerConnection::sendMessage(const RemoteMessage & in_message, const ITEM_ID & clientCookie) const
 {
     return SocketConnectionBase::sendMessage(in_message, getClientByCookie(clientCookie) );
 }
 
-inline int ServerConnection::receiveMessage(RemoteMessage & out_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::receiveMessage(RemoteMessage & out_message, const SocketAccepted & clientSocket) const
 {
     return SocketConnectionBase::receiveMessage(out_message, clientSocket);
 }
 
-inline int ServerConnection::receiveMessage(RemoteMessage & out_message, const ITEM_ID & clientCookie) const
+inline int32_t ServerConnection::receiveMessage(RemoteMessage & out_message, const ITEM_ID & clientCookie) const
 {
     return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
 }

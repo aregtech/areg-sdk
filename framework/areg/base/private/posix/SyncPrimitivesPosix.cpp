@@ -63,7 +63,7 @@ void Mutex::_osCreateMutex( bool initLock )
     mSyncObject = DEBUG_NEW WaitableMutexPosix(initLock, "POSIX_Mutex");
 }
 
-bool Mutex::_osLockMutex( unsigned int timeout )
+bool Mutex::_osLockMutex( uint32_t timeout )
 {
     bool result{ false };
     WaitableMutexPosix * syncMutex{ reinterpret_cast<WaitableMutexPosix *>(mSyncObject) };
@@ -105,7 +105,7 @@ bool SyncEvent::_osUnlockEvent( void * eventHandle )
     return reinterpret_cast<WaitableEventPosix *>(eventHandle)->setEvent();
 }
 
-bool SyncEvent::_osLockEvent(unsigned int timeout)
+bool SyncEvent::_osLockEvent(uint32_t timeout)
 {
     WaitableEventPosix * syncEvent{ reinterpret_cast<WaitableEventPosix *>(mSyncObject) };
     return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject(*syncEvent, timeout));
@@ -140,7 +140,7 @@ void Semaphore::_osReleaseSemaphore()
     static_cast<WaitableSemaphorePosix *>(mSyncObject)->releaseSemaphore( );
 }
 
-bool Semaphore::_osLock( unsigned int timeout )
+bool Semaphore::_osLock( uint32_t timeout )
 {
     WaitableSemaphorePosix * syncSemaphore{ static_cast<WaitableSemaphorePosix *>(mSyncObject) };
     return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First)  == SyncLockAndWaitPosix::waitForSingleObject( *syncSemaphore, timeout ));
@@ -199,7 +199,7 @@ SpinLock::~SpinLock()
     mSyncObject = nullptr;
 }
 
-bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
 {
     return reinterpret_cast<SpinLockPosix *>(mSyncObject)->lock();
 }
@@ -229,7 +229,7 @@ void ResourceLock::_osReleaseResourceLock()
     // do not unlock, it will automatically unlock in MutexPosix::freeResource()
 }
 
-bool ResourceLock::_osLock(unsigned int timeout)
+bool ResourceLock::_osLock(uint32_t timeout)
 {
     return reinterpret_cast<MutexPosix *>(mSyncObject)->lock(timeout);
 }
@@ -259,7 +259,7 @@ void SyncTimer::_osReleaseTime()
     reinterpret_cast<WaitableTimerPosix *>(mSyncObject)->cancelTimer( );
 }
 
-bool SyncTimer::_osLock( unsigned int timeout )
+bool SyncTimer::_osLock( uint32_t timeout )
 {
     return (static_cast<int32_t>(NESyncTypesIX::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject( *reinterpret_cast<WaitablePosix *>(mSyncObject), timeout ));
 }
@@ -278,7 +278,7 @@ bool SyncTimer::_osCancelTimer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
+int32_t MultiLock::_osLock(uint32_t timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
 {
     WaitablePosix * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i )
@@ -286,14 +286,14 @@ int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, boo
         syncHandles[i] = reinterpret_cast<WaitablePosix *>(mSyncObjArray[i]->getHandle( ));
     }
 
-    int index = MultiLock::LOCK_INDEX_INVALID;
+    int32_t index = MultiLock::LOCK_INDEX_INVALID;
     do
     {
-        int result = SyncLockAndWaitPosix::waitForMultipleObjects(syncHandles, mSizeCount, waitForAll, timeout);
+        int32_t result = SyncLockAndWaitPosix::waitForMultipleObjects(syncHandles, mSizeCount, waitForAll, timeout);
 
         switch (result)
         {
-        case static_cast<int>(NESyncTypesIX::SyncSignal::All):
+        case static_cast<int32_t>(NESyncTypesIX::SyncSignal::All):
             index = MultiLock::LOCK_INDEX_ALL;
             for ( int i = 0; i < mSizeCount; ++ i)
             {
@@ -301,7 +301,7 @@ int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, boo
             }
             break;
 
-        case static_cast<int>(NESyncTypesIX::SyncSignal::AsyncSignal):
+        case static_cast<int32_t>(NESyncTypesIX::SyncSignal::AsyncSignal):
                 if (isAlertable)
                 {
                     index = MultiLock::LOCK_INDEX_COMPLETION;
@@ -313,12 +313,12 @@ int MultiLock::_osLock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, boo
                 }
             break;
 
-        case static_cast<int>(NESyncTypesIX::SyncSignal::Timeout):
+        case static_cast<int32_t>(NESyncTypesIX::SyncSignal::Timeout):
             index = MultiLock::LOCK_INDEX_TIMEOUT;
             break;
 
         default:
-            if ( (result >= static_cast<int>(NESyncTypesIX::SyncSignal::First)) && (result < mSizeCount) )
+            if ( (result >= static_cast<int32_t>(NESyncTypesIX::SyncSignal::First)) && (result < mSizeCount) )
             {
                 index = result;
                 mLockedStates[result] = MultiLock::LockState::Locked;

@@ -29,8 +29,8 @@ ConnectionConfiguration::ConnectionConfiguration(const String& service, const St
 }
 
 ConnectionConfiguration::ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType)
-    : mServiceName  (Identifier::convToString(static_cast<unsigned int>(service), NEApplication::RemoteServiceIdentifiers, static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown)))
-    , mConnectType  (Identifier::convToString(static_cast<unsigned int>(connectType), NEApplication::ConnectionIdentifiers, static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined)))
+    : mServiceName  (Identifier::convToString(static_cast<uint32_t>(service), NEApplication::RemoteServiceIdentifiers, static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown)))
+    , mConnectType  (Identifier::convToString(static_cast<uint32_t>(connectType), NEApplication::ConnectionIdentifiers, static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined)))
 {
 }
 
@@ -44,7 +44,7 @@ void ConnectionConfiguration::setConnectionAddress(const String& address)
     Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
 }
 
-void ConnectionConfiguration::setConnectionData(const String& address, unsigned short portNr)
+void ConnectionConfiguration::setConnectionData(const String& address, uint16_t portNr)
 {
     Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
     Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
@@ -65,20 +65,20 @@ void ConnectionConfiguration::setConnectionEnableFlag(bool isEnabled)
     Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
 }
 
-unsigned short ConnectionConfiguration::getConnectionPort() const
+uint16_t ConnectionConfiguration::getConnectionPort() const
 {
     return Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionPort(unsigned short portNr)
+void ConnectionConfiguration::setConnectionPort(uint16_t portNr)
 {
     Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::getConnectionIpAddress( unsigned char & field0
-                                                    , unsigned char & field1
-                                                    , unsigned char & field2
-                                                    , unsigned char & field3 )
+bool ConnectionConfiguration::getConnectionIpAddress( uint8_t & field0
+                                                    , uint8_t & field1
+                                                    , uint8_t & field2
+                                                    , uint8_t & field3 )
 {
     bool result = false;
     field0 = field1 = field2 = field3 = 0u;
@@ -104,10 +104,10 @@ bool ConnectionConfiguration::getConnectionIpAddress( unsigned char & field0
                     uint32_t f3 = String::makeUInt32( buffer, NEString::Radix::Decimal, &next );
                     if ( (buffer != next) && (f3 <= 0xFFu) )
                     {
-                        field0 = static_cast<unsigned char>(f0);
-                        field1 = static_cast<unsigned char>(f1);
-                        field2 = static_cast<unsigned char>(f2);
-                        field3 = static_cast<unsigned char>(f3);
+                        field0 = static_cast<uint8_t>(f0);
+                        field1 = static_cast<uint8_t>(f1);
+                        field2 = static_cast<uint8_t>(f2);
+                        field3 = static_cast<uint8_t>(f3);
                         result = true;
                     }
                 }

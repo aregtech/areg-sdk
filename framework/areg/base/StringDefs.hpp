@@ -70,21 +70,21 @@ namespace NEString
      *          Reference: https://www.charset.org/utf-8
      * \param   ch      The character value to receive defined value.
      **/
-    AREG_API uint16_t getUTF8_256CharDef( int ch );
+    AREG_API uint16_t getUTF8_256CharDef( int32_t ch );
 
     /**
      * \brief   Returns upper case letters and symbols based on first 256 of UTF-8 code page.
      *          Reference: https://www.charset.org/utf-8
      * \param   ch      The character value to receive defined value.
      **/
-    AREG_API unsigned int makeUTF8_256UpperChar(int ch);
+    AREG_API uint32_t makeUTF8_256UpperChar(int32_t ch);
 
     /**
      * \brief   Returns lower case letters and symbols based on first 256 of UTF-8 code page.
      *          Reference: https://www.charset.org/utf-8
      * \param   ch      The character value to receive defined value.
      **/
-    AREG_API unsigned int makeUTF8_256LowerChar( int ch );
+    AREG_API uint32_t makeUTF8_256LowerChar( int32_t ch );
 
     //! ASCII locale.
     static const char* const LOCALE_ASCII       = "C";
@@ -118,22 +118,22 @@ namespace NEString
     /**
      * \brief   The minimum size of a buffer allocated in the stack to format a string.
      **/
-    constexpr int       MSG_MIN_BUF_SIZE    { 128 };
+    constexpr int32_t       MSG_MIN_BUF_SIZE    { 128 };
 
     /**
      * \brief   The size of a buffer allocated in the stack to format a string.
      **/
-    constexpr int       MSG_BUF_SIZE        { 256 };
+    constexpr int32_t       MSG_BUF_SIZE        { 256 };
 
     /**
      * \brief   The big size of a buffer allocated in the stack to format a large string.
      **/
-    constexpr int       MSG_BIG_BUF_SIZE    { 512 };
+    constexpr int32_t       MSG_BIG_BUF_SIZE    { 512 };
 
     /**
      * \brief   The extra large size of a buffer allocated in the stack to format an extra large string.
      **/
-    constexpr int       MSG_EXTRA_BUF_SIZE  { 1024 };
+    constexpr int32_t       MSG_EXTRA_BUF_SIZE  { 1024 };
 
     /**
      * \brief   The enum used to convert string to digit and vice versa
@@ -172,7 +172,7 @@ namespace NEString
      *          If base differs or RadixDecimal, use conversion of unsigned integer.
      **/
     template<typename CharType, typename IntType>
-    int makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix = NEString::Radix::Decimal );
+    int32_t makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix = NEString::Radix::Decimal );
 
     /**
      * \brief   Swaps characters in a given string buffer.
@@ -838,7 +838,7 @@ namespace NEString
      *          Let's consider example:
      *
      *  char buffer[]   = {'1', '2', '\0', '4', 5, 6, '7', '8', '9', 127 };
-     *  int count       = sizeof(buffer);
+     *  int32_t count       = sizeof(buffer);
      *  char * next     = buffer;
      *
      *  const char * result1 = NEString::getPrintable<char>(next, count, &next);  // Results: result1 = "12"   , next = {'4', 5, 6, '7', '8', '9', 127}
@@ -872,7 +872,7 @@ namespace NEString
      *          White-space at begin will be ignored. The negative
      */
     template<typename CharType>
-    int makeInteger(const CharType * strNumber, const CharType ** remain);
+    int32_t makeInteger(const CharType * strNumber, const CharType ** remain);
 
     /**
      * \brief   Computes and returns the buffer size required to allocate to format the string.
@@ -889,9 +889,9 @@ namespace NEString
      *          function 'isBufferFit'
      **/
     template<char dummy = '\0'>
-    int requiredBufferSize( const char * format, va_list argptr );
+    int32_t requiredBufferSize( const char * format, va_list argptr );
     template<wchar_t dummy = L'\0'>
-    int requiredBufferSize( const wchar_t * format, va_list argptr );
+    int32_t requiredBufferSize( const wchar_t * format, va_list argptr );
 
     /**
      * \brief   Checks whether the buffer size fits to format a string.
@@ -901,9 +901,9 @@ namespace NEString
      * \param   argptr  The pointer to the argument list.
      * \return  Returns true if the checking size is enough to format the string.
      **/
-    template<int size, char dummy>
+    template<int32_t size, char dummy>
     bool isBufferFit( const char * format, va_list argptr );
-    template<int size, wchar_t dummy>
+    template<int32_t size, wchar_t dummy>
     bool isBufferFit( const wchar_t * format, va_list argptr );
 }
 
@@ -912,9 +912,9 @@ namespace NEString
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType, typename IntType>
-int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix )
+int32_t NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix )
 {
-    int result = 0;
+    int32_t result = 0;
     IntType num = NEMath::getAbs<IntType>(digit);
     if ( (NEString::isEmpty<CharType>(strDst) == false) && (charCount > 1) )
     {
@@ -985,7 +985,7 @@ void NEString::revertString( CharType * strDst, NEString::CharCount charCount /*
 }
 
 template<typename CharType>
-int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
+int32_t NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
 {
     NEMath::NumericSign sign = NEMath::NumericSign::Undefined;
     uint32_t result = 0;
@@ -1030,17 +1030,17 @@ int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
         }
     }
     
-    return (static_cast<int>(sign) * static_cast<int>(result));
+    return (static_cast<int32_t>(sign) * static_cast<int32_t>(result));
 }
 
 template<char dummy>
-int NEString::requiredBufferSize( const char * format, va_list argptr )
+int32_t NEString::requiredBufferSize( const char * format, va_list argptr )
 {
-    int result{ -1 };
+    int32_t result{ -1 };
 
     va_list argcopy;
     va_copy( argcopy, argptr );
-    int charCount = vsnprintf( nullptr, 0, format, argcopy );
+    int32_t charCount = vsnprintf( nullptr, 0, format, argcopy );
     va_end( argcopy );
 
     if ( charCount > 0 )
@@ -1067,9 +1067,9 @@ int NEString::requiredBufferSize( const char * format, va_list argptr )
 }
 
 template<wchar_t dummy>
-int NEString::requiredBufferSize( const wchar_t * format, va_list argptr )
+int32_t NEString::requiredBufferSize( const wchar_t * format, va_list argptr )
 {
-    int result{ -1 };
+    int32_t result{ -1 };
     if ( NEString::isBufferFit< NEString::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
     {
         result = NEString::MSG_MIN_BUF_SIZE;
@@ -1094,25 +1094,25 @@ int NEString::requiredBufferSize( const wchar_t * format, va_list argptr )
     return result;
 }
 
-template<int size, char dummy>
+template<int32_t size, char dummy>
 bool NEString::isBufferFit( const char * format, va_list argptr )
 {
     char buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    int charCount = vsnprintf( buf, size, format, argcopy );
+    int32_t charCount = vsnprintf( buf, size, format, argcopy );
     va_end( argcopy );
 
     return (charCount < size);
 }
 
-template<int size, wchar_t dummy>
+template<int32_t size, wchar_t dummy>
 bool NEString::isBufferFit( const wchar_t * format, va_list argptr )
 {
     wchar_t buf[ size ]{ 0 };
     va_list argcopy;
     va_copy( argcopy, argptr );
-    int charCount = vswprintf( buf, size, format, argcopy );
+    int32_t charCount = vswprintf( buf, size, format, argcopy );
     va_end( argcopy );
 
     return (charCount < size);
@@ -1541,13 +1541,13 @@ bool NEString::stringEndsWith(const CharType * strString, const CharType * phras
     bool result{ false };
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
     {
-        int lenString   = NEString::getStringLength<CharType>(strString);
-        int lenPhrase   = NEString::getStringLength<CharType>(phrase);
+        int32_t lenString   = NEString::getStringLength<CharType>(strString);
+        int32_t lenPhrase   = NEString::getStringLength<CharType>(phrase);
         
         ASSERT(lenString > 0);
         ASSERT(lenPhrase > 0);
 
-        int diff = lenString - lenPhrase;
+        int32_t diff = lenString - lenPhrase;
 
         result = (diff >= 0) && NEString::stringStartsWith<CharType>(strString + diff, phrase, caseSensitive);
     }
@@ -1561,7 +1561,7 @@ bool NEString::stringEndsWith(const CharType* strString, const CharType ch, bool
     bool result{ false };
     if (isEmpty<CharType>(strString) == false)
     {
-        int len = NEString::getStringLength<CharType>(strString);
+        int32_t len = NEString::getStringLength<CharType>(strString);
         ASSERT(len != 0);
         if (caseSensitive)
         {

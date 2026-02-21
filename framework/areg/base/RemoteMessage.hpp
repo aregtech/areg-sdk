@@ -48,7 +48,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    explicit RemoteMessage(unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    explicit RemoteMessage(uint32_t blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief   Constructor to reserve space for byte buffer object.
@@ -56,7 +56,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    RemoteMessage( unsigned int reserveSize, unsigned int blockSize );
+    RemoteMessage( uint32_t reserveSize, uint32_t blockSize );
 
     /**
      * \brief	Initializes and writes given data into byte buffer.
@@ -65,7 +65,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size).
      **/
-    RemoteMessage(const unsigned char * buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief	It does not make hard copy of data from given source, it will refer to the same shared
@@ -140,7 +140,7 @@ public:
      * \brief   Returns checksum value of Remote Buffer.
      *          The checksum value cannot be set. It is calculated by call ChecksumMark().
      **/
-    inline unsigned int getChecksum() const;
+    inline uint32_t getChecksum() const;
 
     /**
      * \brief   Returns the ID of remote source set in Remote Buffer header.
@@ -167,23 +167,23 @@ public:
     /**
      * \brief   Returns the message ID value set in remote buffer
      **/
-    inline unsigned int getMessageId() const;
+    inline uint32_t getMessageId() const;
 
     /**
      * \brief   Sets new Message ID value in Remote Buffer.
      * \param   newMessageId    New Message ID value set in Remote Buffer
      **/
-    inline void setMessageId( unsigned int newMessageId );
+    inline void setMessageId( uint32_t newMessageId );
 
     /**
      * \brief   Returns result of processed message
      **/
-    inline unsigned int getResult() const;
+    inline uint32_t getResult() const;
 
     /**
      * \brief   Sets result or processed message
      **/
-    inline void setResult( unsigned int newResult );
+    inline void setResult( uint32_t newResult );
 
     /**
      * \brief   Returns Sequence number value set in Remote Buffer.
@@ -221,7 +221,7 @@ public:
      * \param   reserve     The size in bytes to reserve in the buffer
      * \return  Returns pointer to allocated data buffer to copy data.
      **/
-    unsigned char * initMessage( const NEMemory::sRemoteMessageHeader & rmHeader, unsigned int reserve = 0 );
+    uint8_t * initMessage( const NEMemory::sRemoteMessageHeader & rmHeader, uint32_t reserve = 0 );
 
     /**
      * \brief   Clones the message buffer with the data.
@@ -253,17 +253,17 @@ protected:
      *          If no data is copied, it will return position at the beginning of buffer.
      *          If data is copied, will return the position of written data.
      **/
-    unsigned int initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const override;
+    uint32_t initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const override;
 
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    unsigned int getDataOffset() const override;
+    uint32_t getDataOffset() const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    unsigned int getHeaderSize() const override;
+    uint32_t getHeaderSize() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -284,7 +284,7 @@ private:
     /**
      * \brief   Calculates and returns the checksum value of given remote message
      **/
-    static unsigned int _checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage );
+    static uint32_t _checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -317,7 +317,7 @@ inline const NEMemory::sRemoteMessage * RemoteMessage::getRemoteMessage() const
     return reinterpret_cast<const NEMemory::sRemoteMessage *>(getByteBuffer());
 }
 
-inline unsigned int RemoteMessage::getChecksum() const
+inline uint32_t RemoteMessage::getChecksum() const
 {
     return _getHeader().rbhChecksum;
 }
@@ -348,12 +348,12 @@ inline void RemoteMessage::setTarget(const ITEM_ID & idTarget )
     }
 }
 
-inline unsigned int RemoteMessage::getMessageId() const
+inline uint32_t RemoteMessage::getMessageId() const
 {
     return _getHeader().rbhMessageId;
 }
 
-inline void RemoteMessage::setMessageId( unsigned int newMessageId )
+inline void RemoteMessage::setMessageId( uint32_t newMessageId )
 {
     if (isValid())
     {
@@ -361,12 +361,12 @@ inline void RemoteMessage::setMessageId( unsigned int newMessageId )
     }
 }
 
-inline unsigned int RemoteMessage::getResult() const
+inline uint32_t RemoteMessage::getResult() const
 {
     return _getHeader().rbhResult;
 }
 
-inline void RemoteMessage::setResult( unsigned int newResult )
+inline void RemoteMessage::setResult( uint32_t newResult )
 {
     if (isValid())
     {

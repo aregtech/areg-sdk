@@ -28,7 +28,7 @@ namespace
 
 #ifdef __APPLE__    //macOS
 
-    int _getProcIdByName(const char* procName)
+    int32_t _getProcIdByName(const char* procName)
     {
         if (NEString::isEmpty<char>(procName))
             return -1;
@@ -68,7 +68,7 @@ namespace
 
 #else   // Linux
 
-    int _getProcIdByName(const char* procName)
+    int32_t _getProcIdByName(const char* procName)
     {
         if (NEString::isEmpty<char>(procName))
             return -1;
@@ -117,14 +117,14 @@ namespace
 #endif  // Linux
 
     DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
-    void _handleSignalBrokenPipe(int s)
+    void _handleSignalBrokenPipe(int32_t s)
     {
         LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalBrokenPipe);
         LOG_WARN("Caught SIGPIPE signal [ %d ]", s);
     }
 
     DEF_LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
-    void _handleSignalSegmentationFault(int s)
+    void _handleSignalSegmentationFault(int32_t s)
     {
         LOG_SCOPE(areg_appbase_ApplicationPosix__handleSignalSegmentationFault);
         LOG_ERR("Caught segmentation fault!!! Parameter [ %d ]", s);
@@ -168,7 +168,7 @@ bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t
     ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
     ASSERT(NEString::isEmpty<wchar_t>(serviceExecutable) == false);
     String serviceExe(serviceExecutable);
-    int pid = _getProcIdByName(serviceExe);
+    int32_t pid = _getProcIdByName(serviceExe);
     bool result{ pid > 0 };
     if (pid < 0)
     {

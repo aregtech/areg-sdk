@@ -104,7 +104,7 @@ public:
      * \return  Returns true if succeeded to lock the object. Returns false
      *          if either failed to lock or the timeout expired.
      **/
-    bool lock(unsigned int msTimeout = NECommon::WAIT_INFINITE) const;
+    bool lock(uint32_t msTimeout = NECommon::WAIT_INFINITE) const;
 
     /**
      * \brief   This function returns immediately without blocking.
@@ -223,7 +223,7 @@ public:
      * \return  Returns true if succeeded to take mutex ownership.
      *          Otherwise, if timeout expired or error happened, it returns false.
      **/
-    inline bool lock( unsigned int msTimeout = NECommon::WAIT_INFINITE ) const;
+    inline bool lock( uint32_t msTimeout = NECommon::WAIT_INFINITE ) const;
 
     /**
      * \brief   Call to unlock mutex to let other threads to take the ownership.
@@ -274,7 +274,7 @@ inline ObjectLockPosix::~ObjectLockPosix()
     }
 }
 
-inline bool ObjectLockPosix::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
+inline bool ObjectLockPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 {
     return mMutex.lock(msTimeout);
 }

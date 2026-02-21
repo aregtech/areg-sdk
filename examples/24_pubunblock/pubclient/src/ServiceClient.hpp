@@ -72,7 +72,7 @@ protected:
      * \param   clientId    Generated ID for the client used when send request to unblock.
      * \see     requestIdentifier
      **/
-    void responseIdentifier( unsigned int clientId ) override;
+    void responseIdentifier( uint32_t clientId ) override;
     /**
      * \brief   Response callback.
      *          The response to hello world request.
@@ -83,7 +83,7 @@ protected:
      *          the client can check that all sequences exist.
      * \see     requestHelloUblock
      **/
-    void responseHelloUnblock( unsigned int clientId, unsigned int seqNr ) override;
+    void responseHelloUnblock( uint32_t clientId, uint32_t seqNr ) override;
 
     /**
      * \brief   This method is triggered if requestHelloUblock call fails.

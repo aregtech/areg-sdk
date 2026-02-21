@@ -39,7 +39,7 @@ BufferPosition::BufferPosition( ByteBuffer & buffer )
 /**
  * \brief   Returns current position of cursor.
  **/
-unsigned int BufferPosition::getPosition() const
+uint32_t BufferPosition::getPosition() const
 {
     if ( mBuffer.isValid() )
     {
@@ -54,15 +54,15 @@ unsigned int BufferPosition::getPosition() const
 /**
  * \brief   Sets the current position of cursor
  **/
-unsigned int BufferPosition::setPosition( int offset, Cursor::SeekOrigin startAt ) const
+uint32_t BufferPosition::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
 {
     if (mBuffer.isValid() == false)
     {
         return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    int size{ static_cast<int>(mBuffer.getSizeUsed()) };
-    int curPos{ static_cast<int>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
+    int32_t size{ static_cast<int32_t>(mBuffer.getSizeUsed()) };
+    int32_t curPos{ static_cast<int32_t>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
 
     switch (startAt)
     {
@@ -84,6 +84,6 @@ unsigned int BufferPosition::setPosition( int offset, Cursor::SeekOrigin startAt
         ASSERT(false);
     }
 
-    mPosition = static_cast<unsigned int>(curPos + offset);
+    mPosition = static_cast<uint32_t>(curPos + offset);
     return mPosition;
 }

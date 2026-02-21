@@ -81,18 +81,18 @@ namespace NESocket
     }
 
 
-    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize)
+    int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
-        int result{ dataLength };
+        int32_t result{ dataLength };
 
         while (dataLength > 0)
         {
-            int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-            int written = send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
+            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+            int32_t written = send(hSocket, reinterpret_cast<const char*>(dataBuffer), remain, 0);
             if (written > 0)
             {
                 dataLength -= written;
@@ -100,8 +100,8 @@ namespace NESocket
             }
             else
             {
-                int errCode = ::WSAGetLastError();
-                if (errCode == static_cast<int>(WSAEMSGSIZE))
+                int32_t errCode = ::WSAGetLastError();
+                if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
                 {
                     // try again with other package size
                     blockMaxSize = static_cast<int32_t>(NESocket::getMaxSendSize(hSocket));
@@ -118,18 +118,18 @@ namespace NESocket
         return result;
     }
 
-    int _osRecvData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize)
+    int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
-        int result{ 0 };
+        int32_t result{ 0 };
 
         while (dataLength > 0)
         {
-            int remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
-            int read = recv(hSocket, reinterpret_cast<char*>(dataBuffer) + result, remain, 0);
+            int32_t remain = dataLength > blockMaxSize ? blockMaxSize : dataLength;
+            int32_t read = recv(hSocket, reinterpret_cast<char*>(dataBuffer) + result, remain, 0);
             if (read > 0)
             {
                 dataLength -= read;
@@ -142,8 +142,8 @@ namespace NESocket
             }
             else
             {
-                int errCode = ::WSAGetLastError();
-                if (errCode == static_cast<int>(WSAEMSGSIZE))
+                int32_t errCode = ::WSAGetLastError();
+                if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
                 {
                     // try again with other package size
                     blockMaxSize = static_cast<int32_t>(NESocket::getMaxReceiveSize(hSocket));
@@ -160,16 +160,16 @@ namespace NESocket
         return result;
     }
 
-    bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long& arg)
+    bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         return (NECommon::RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
     }
 
-    bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long& value)
+    bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
-        int len{ sizeof(unsigned long) };
+        int32_t len{ sizeof(unsigned long) };
         return (NECommon::RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char *>(&value), &len));
     }
 

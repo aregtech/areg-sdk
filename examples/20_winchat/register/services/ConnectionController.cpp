@@ -12,8 +12,8 @@
 #include "areg/component/Model.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::WindowCommand::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NECentralApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 
@@ -111,7 +111,7 @@ void ConnectionController::requestConnect( const String & nickName, const DateTi
     }
 }
 
-void ConnectionController::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
+void ConnectionController::requestRegisterConnection( const String & nickName, uint32_t cookie, uint32_t connectCookie, const DateTime & dateRegister )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestRegisterConnection );
     LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.formatTime( )) );
@@ -189,7 +189,7 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
     }
 }
 
-void ConnectionController::requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+void ConnectionController::requestDisconnect( const String & nickName, uint32_t cookie, const DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestDisconnect );
     ConnectionManager::sConnection connection;
@@ -234,7 +234,7 @@ void ConnectionController::requestDisconnect( const String & nickName, unsigned 
     }
 }
 
-void ConnectionController::requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
+void ConnectionController::requestSendMessage( const String & nickName, uint32_t cookie, const String & newMessage, const DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestSendMessage );
 
@@ -270,7 +270,7 @@ void ConnectionController::requestSendMessage( const String & nickName, unsigned
     }
 }
 
-void ConnectionController::requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
+void ConnectionController::requestKeyTyping( const String & nickName, uint32_t cookie, const String & newMessage )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestKeyTyping );
 

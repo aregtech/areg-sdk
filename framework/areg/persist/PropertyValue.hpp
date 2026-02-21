@@ -48,7 +48,7 @@ public:
      * \brief   Initializes Value from 32-bit unsigned integer.
      * \param   intValue    The Value as 32-bit unsigned integer to set.
      **/
-    explicit PropertyValue( unsigned int intValue );
+    explicit PropertyValue( uint32_t intValue );
     /**
      * \brief   Initializes Value from digit with floating point.
      * \param   dValue      The Value as a digit with floating point to set.
@@ -112,7 +112,7 @@ public:
      * \brief   Copies property Value from given source as a 32-bit unsigned integer
      * \param   intValue    The 32-bit digit data to convert.
      **/
-    PropertyValue & operator = ( unsigned int intValue );
+    PropertyValue & operator = ( uint32_t intValue );
 
     /**
      * \brief   Copies property Value from given source as a digit with floating point
@@ -149,7 +149,7 @@ public:
     /**
      * \brief   Converts the property value into the 32-bit unsigned integer.
      **/
-    operator unsigned int() const;
+    operator uint32_t() const;
 
     /**
      * \brief   Converts the property value into the string.
@@ -217,14 +217,14 @@ public:
     /**
      * \brief   Returns value as a 32-bit unsigned integer
      **/
-    unsigned int getInteger( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    uint32_t getInteger( NEString::Radix radix = NEString::Radix::Decimal ) const;
 
     /**
      * \brief   Converts and sets value as a 32-bit unsigned integer
      * \param   intValue    The value as a 32-bit unsigned integer to convert and set
      * \param   radix       The conversion criteria of integer. By default, the passed integer is converted as a decimal.
      **/
-    void setInteger( unsigned int intValue, NEString::Radix radix = NEString::Radix::Decimal );
+    void setInteger( uint32_t intValue, NEString::Radix radix = NEString::Radix::Decimal );
 
     /**
      * \brief   Returns value as a digit with floating point
@@ -242,7 +242,7 @@ public:
      * \param   lookupList  The lookup list to convert literal identifiers into integer values.
      * \return  Combined with logical OR operation digital value of the identifiers.
      **/
-    unsigned int getIndetifier( const std::vector<Identifier> & lookupList) const;
+    uint32_t getIndetifier( const std::vector<Identifier> & lookupList) const;
 
     /**
      * \brief   Converts and sets value as a list of Identifiers
@@ -262,7 +262,7 @@ public:
      * \param   idBits      The bitwise set of IDs.
      * \param   lookupList  The lookup list to find entry and convert to the string.
      **/
-    void setIdentifierList(unsigned int idBits, const std::vector<Identifier>& lookupList);
+    void setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList);
 
     /**
      * \brief   Parses the value and returns the list of string. The strings in the value should be

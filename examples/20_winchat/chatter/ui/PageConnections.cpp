@@ -252,7 +252,7 @@ inline void PageConnections::addConnection( const ConnectionManager::sConnection
     if ( mConnectionHandler.GetNickName() != connection.nickName )
     {
         LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.getString( ), connection.cookie );
-        int pos = mCtrlConnections.GetItemCount( );
+        int32_t pos = mCtrlConnections.GetItemCount( );
         CString nickName( connection.nickName.getString() );
         CString timeConnect( DateTime( connection.connectTime ).formatTime( ).getBuffer( ) );
         uint32_t cookie = connection.cookie;
@@ -281,11 +281,11 @@ inline void PageConnections::addConnection( const ConnectionManager::sConnection
     }
 }
 
-inline int PageConnections::getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants )
+inline int32_t PageConnections::getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants )
 {
     outListParticipants.clear();
     UINT selected = mCtrlConnections.GetSelectedCount();
-    int count = 0;
+    int32_t count = 0;
     if (selected != 0)
     {
         outListParticipants.resize(selected + 1);
@@ -300,7 +300,7 @@ inline int PageConnections::getSelectedConnections( DirectConnection::sInitiator
         POSITION pos = mCtrlConnections.GetFirstSelectedItemPosition();
         do
         {
-            int i = mCtrlConnections.GetNextSelectedItem(pos);
+            int32_t i = mCtrlConnections.GetNextSelectedItem(pos);
             ASSERT( i != -1 );
             CString nickName= mCtrlConnections.GetItemText(i, 0);
             LPARAM cookie   = mCtrlConnections.GetItemData(i);
@@ -319,10 +319,10 @@ inline int PageConnections::getSelectedConnections( DirectConnection::sInitiator
 
 inline void PageConnections::setHeaders()
 {
-    int count = std::size( PageConnections::HEADER_TITILES );
+    int32_t count = std::size( PageConnections::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlConnections.GetClientRect( &rc );
-    int width = rc.Width( ) / count;
+    int32_t width = rc.Width( ) / count;
 
     for ( int i = 0; i < count; ++ i )
     {
@@ -358,9 +358,9 @@ inline void PageConnections::cleanService()
     }
 }
 
-inline int PageConnections::findConnection( const ConnectionManager::sConnection & connection ) const
+inline int32_t PageConnections::findConnection( const ConnectionManager::sConnection & connection ) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int32_t result = NECommon::INVALID_INDEX;
     for ( int i = 0; i < mCtrlConnections.GetItemCount(); ++ i )
     {
         if ( mCtrlConnections.GetItemData(i) == connection.cookie )
@@ -378,7 +378,7 @@ inline int PageConnections::findConnection( const ConnectionManager::sConnection
 
 inline void PageConnections::removeConnection( const ConnectionManager::sConnection & connection )
 {
-    int pos = findConnection(connection);
+    int32_t pos = findConnection(connection);
     if ( pos != NECommon::INVALID_INDEX )
     {
         mCtrlConnections.EnsureVisible( pos, FALSE );

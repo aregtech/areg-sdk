@@ -62,19 +62,19 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
 
         LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , NEService::getString(static_cast<NEService::FuncIdRange>(msgSend.getMessageId()))
-                    , static_cast<unsigned int>(msgSend.getMessageId())
+                    , static_cast<uint32_t>(msgSend.getMessageId())
                     , client.getAddress().getHostAddress().getString()
                     , client.getAddress().getHostPort()
-                    , ((unsigned int)(client.getHandle()))
-                    , static_cast<unsigned int>(msgSend.getSource())
-                    , static_cast<unsigned int>(msgSend.getTarget()));
+                    , ((uint32_t)(client.getHandle()))
+                    , static_cast<uint32_t>(msgSend.getSource())
+                    , static_cast<uint32_t>(msgSend.getTarget()));
 
-        int sentBytes = 0;
+        int32_t sentBytes = 0;
         if ((client.isAlive() == false) || ((sentBytes = mConnection.sendMessage(msgSend, client)) <= 0))
         {
             LOG_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
                         , msgSend.getMessageId()
-                        , static_cast<unsigned int>(msgSend.getTarget())
+                        , static_cast<uint32_t>(msgSend.getTarget())
                         , client.isAlive() ? "ALIVE" : "DEAD");
 
             mRemoteService.failedSendMessage(msgSend, client);

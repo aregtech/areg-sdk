@@ -65,7 +65,7 @@ public:
      * \param[in]       bufSize The size of the buffer. Should not be zero.
      * \returns Returns true if succeeded to read data from the console.
      **/
-    bool inputConsoleData(char* buffer, unsigned int bufSize);
+    bool inputConsoleData(char* buffer, uint32_t bufSize);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -81,7 +81,7 @@ public:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions() const = 0;
+    virtual std::pair<const OptionParser::sOptionSetup*, int32_t> getAppOptions() const = 0;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
@@ -146,7 +146,7 @@ public:
      *                      or need to use default value.
      * \return  The result of execution.
      **/
-    int serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
+    int32_t serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
 
     /**
      * \brief   Triggered to initialize the service application.
@@ -228,7 +228,7 @@ public:
      *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
      *          In all other cases it should return RESULT_FAILED_INIT.
      **/
-    int startServiceDispatcher() override;
+    int32_t startServiceDispatcher() override;
 
 protected:
 
@@ -322,7 +322,7 @@ private:
      *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
      *          In all other cases it should return RESULT_FAILED_INIT.
      **/
-    int _osStartServiceDispatcher();
+    int32_t _osStartServiceDispatcher();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

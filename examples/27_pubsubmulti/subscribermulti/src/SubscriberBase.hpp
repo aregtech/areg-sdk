@@ -62,7 +62,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    void onIntegerAlwaysUpdate( unsigned int IntegerAlways, NEService::DataState state ) override;
+    void onIntegerAlwaysUpdate( uint32_t IntegerAlways, NEService::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -74,8 +74,8 @@ private:
     uint32_t                mOldInteger;        //!< Old integer value to compare when output on console.
     bool                    mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
     String                  mOldString;         //!< Old string value to compare when output on console.
-    unsigned int            mIntEventCount;     //!< The event count of the integer value change
-    unsigned int            mStrEventCount;     //!< The event count of the string value change
+    uint32_t            mIntEventCount;     //!< The event count of the integer value change
+    uint32_t            mStrEventCount;     //!< The event count of the string value change
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

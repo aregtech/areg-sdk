@@ -84,7 +84,7 @@ void Application::initApplication(  bool startTracing   /*= true */
 
     if (startRouting)
     {
-        Application::startMessageRouting(static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip));
+        Application::startMessageRouting(static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip));
     }
 
     if (Application::getInstance().mAppState == NEApplication::AppState::Initializing)
@@ -214,7 +214,7 @@ void Application::stopWatchdogManager()
     WatchdogManager::stopWatchdogManager(true);
 }
 
-bool Application::startMessageRouting(unsigned int connectTypes)
+bool Application::startMessageRouting(uint32_t connectTypes)
 {
     bool result{ false };
 
@@ -231,7 +231,7 @@ bool Application::configMessageRouting()
     return (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceConfigure());
 }
 
-bool Application::startMessageRouting( const char * ipAddress, unsigned short portNr )
+bool Application::startMessageRouting( const char * ipAddress, uint16_t portNr )
 {
     bool result{ false };
 
@@ -311,7 +311,7 @@ NEMemory::uAlign Application::getStoredElement( const String & elemName )
     return (theApp.mStorage.isValidPosition(pos) ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
 }
 
-bool Application::waitAppQuit(unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/)
+bool Application::waitAppQuit(uint32_t waitTimeout /*= NECommon::WAIT_INFINITE*/)
 {
     Application & theApp = Application::getInstance( );
     return theApp.mAppQuit.lock(waitTimeout);
@@ -329,7 +329,7 @@ bool Application::isServicingReady()
     return (theApp.mAppState == NEApplication::AppState::Ready);
 }
 
-void Application::queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive )
+void Application::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive )
 {
     ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
 }

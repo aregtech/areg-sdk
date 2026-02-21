@@ -62,7 +62,7 @@ void TickCountLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, Out
 
     char buffer[128];
     uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>( DateTime::getProcessTickCount() )));
-    stream.write(reinterpret_cast<const unsigned char *>(buffer), len);
+    stream.write(reinterpret_cast<const uint8_t *>(buffer), len);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ void DayTimeLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream
     {
         String timestamp;
         DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, NEUtilities::TIME_FORMAT_ISO8601_OUTPUT);
-        stream.write( reinterpret_cast<const unsigned char *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
+        stream.write( reinterpret_cast<const uint8_t *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
     }
 }
 
@@ -127,7 +127,7 @@ void ModuleIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
     {
         if (msgLog.logModuleId == _moduleId)
         {
-            stream.write(reinterpret_cast<const unsigned char*>(_moduleName.getBuffer()), static_cast<uint32_t>(_moduleName.getLength()));
+            stream.write(reinterpret_cast<const uint8_t*>(_moduleName.getBuffer()), static_cast<uint32_t>(_moduleName.getLength()));
         }
         else
         {
@@ -138,7 +138,7 @@ void ModuleIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
 #endif  // _BIT64
             char buffer[128];
             uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
-            stream.write(reinterpret_cast<const unsigned char*>(buffer), len);
+            stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
         }
     }
 }
@@ -165,7 +165,7 @@ MessageLayout::MessageLayout( MessageLayout && /*src*/ ) noexcept
 void MessageLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const
 {
     uint32_t count{ static_cast<uint32_t>(NEString::getStringLength<char>(msgLog.logMessage)) };
-    stream.write(reinterpret_cast<const unsigned char *>(msgLog.logMessage), count);
+    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), count);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -189,7 +189,7 @@ EndOfLineLayout::EndOfLineLayout( EndOfLineLayout && /*src*/ ) noexcept
 
 void EndOfLineLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, OutStream & stream ) const
 {
-    stream.write(reinterpret_cast<const unsigned char*>(&NEString::EndOfLine), 1);
+    stream.write(reinterpret_cast<const uint8_t*>(&NEString::EndOfLine), 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -214,7 +214,7 @@ PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
 void PriorityLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const
 {
     const String& prio{ NELogging::logPrioToString(msgLog.logMessagePrio) };
-    stream.write(reinterpret_cast<const unsigned char *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
+    stream.write(reinterpret_cast<const uint8_t *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -242,7 +242,7 @@ void ScopeIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream
     {
         char buffer[128];
         uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, "%u", msgLog.logScopeId));
-        stream.write( reinterpret_cast<const unsigned char *>(buffer), len );
+        stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
 }
 
@@ -277,7 +277,7 @@ void ThreadIdLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStrea
 
         char buffer[128];
         uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
-        stream.write( reinterpret_cast<const unsigned char *>(buffer), len );
+        stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
 }
 
@@ -305,23 +305,23 @@ void ModuleNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStr
     if (msgLog.logDataType == NELogging::LogDataType::Local)
     {
         static const String& _module{ Process::getInstance().getAppName() };
-        stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
+        stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
     }
     else
     {
         if (msgLog.logCookie == NEService::COOKIE_LOCAL)
         {
             static const String& _module{ Process::getInstance().getAppName() };
-            stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
+            stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
         }
         else if ((msgLog.logCookie != NEService::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
         {
-            stream.write(reinterpret_cast<const unsigned char*>(msgLog.logModule), msgLog.logModuleLen);
+            stream.write(reinterpret_cast<const uint8_t*>(msgLog.logModule), msgLog.logModuleLen);
         }
         else
         {
             static constexpr std::string_view _unknown{ "Unknown_Module" };
-            stream.write(reinterpret_cast<const unsigned char*>(_unknown.data()), static_cast<unsigned int>(_unknown.length()));
+            stream.write(reinterpret_cast<const uint8_t*>(_unknown.data()), static_cast<uint32_t>(_unknown.length()));
         }
     }
 }
@@ -364,12 +364,12 @@ void ThreadNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStr
 
     if (len != 0)
     {
-        stream.write(reinterpret_cast<const unsigned char*>(name), len);
+        stream.write(reinterpret_cast<const uint8_t*>(name), len);
     }
     else
     {
         static constexpr std::string_view _unknownThread{ "Unknown_Thread" };
-        stream.write(reinterpret_cast<const unsigned char*>(_unknownThread.data()), static_cast<uint32_t>(_unknownThread.length()));
+        stream.write(reinterpret_cast<const uint8_t*>(_unknownThread.data()), static_cast<uint32_t>(_unknownThread.length()));
     }
 }
 
@@ -394,7 +394,7 @@ ScopeNameLayout::ScopeNameLayout( ScopeNameLayout && /*src*/ ) noexcept
 
 void ScopeNameLayout::logMessage( const NELogging::sLogMessage & msgLog, OutStream & stream ) const
 {
-    stream.write(reinterpret_cast<const unsigned char *>(msgLog.logMessage), msgLog.logMessageLen);
+    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), msgLog.logMessageLen);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -433,7 +433,7 @@ AnyTextLayout::AnyTextLayout(const char * anyMessage)
 
 void AnyTextLayout::logMessage( const NELogging::sLogMessage & /*msgLog*/, OutStream & stream ) const
 {
-    stream.write( reinterpret_cast<const unsigned char *>(mTextMessage.getString()), static_cast<uint32_t>(mTextMessage.getLength()) );
+    stream.write( reinterpret_cast<const uint8_t *>(mTextMessage.getString()), static_cast<uint32_t>(mTextMessage.getLength()) );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -465,7 +465,7 @@ void CookieIdLayout::logMessage(const NELogging::sLogMessage& msgLog, OutStream&
 
     char buffer[128];
     uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
-    stream.write(reinterpret_cast<const unsigned char*>(buffer), len);
+    stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
 }
 
 #endif  // AREG_LOGS

@@ -26,13 +26,13 @@
 //////////////////////////////////////////////////////////////////////////
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventData::EventData( unsigned int msgId, EventDataStream::EventDataKind dataType, const String & name /*= String::getEmptyString()*/ )
+EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name /*= String::getEmptyString()*/ )
     : mDataType (NEService::getMessageDataType(msgId))
     , mData     (dataType, name)
 {
 }
 
-EventData::EventData( unsigned int msgId, const EventDataStream & args, const String & name /*= String::getEmptyString()*/ )
+EventData::EventData( uint32_t msgId, const EventDataStream & args, const String & name /*= String::getEmptyString()*/ )
     : mDataType (NEService::getMessageDataType(msgId))
     , mData     (args, name)
 {

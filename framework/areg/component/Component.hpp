@@ -60,7 +60,7 @@ class AREG_API Component   : public    RuntimeObject
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
     //!< The basic operations of resource-map.
-    using ImplComponentResource = ResourceMapImpl<unsigned int, Component *>;
+    using ImplComponentResource = ResourceMapImpl<uint32_t, Component *>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      *          Component           The saved values are Component objects.
@@ -69,12 +69,12 @@ class AREG_API Component   : public    RuntimeObject
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
-     *          unsigned int            The calculated number of component as a key.
+     *          uint32_t            The calculated number of component as a key.
      *          Component               The type of container values, it contains Components
      *          MapComponentContainer   The hash-map object to store containers.
      *          ImplComponentResource   The implementation of basic resource+map operations.
      **/
-    using MapComponentResource  = ConcurrentResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
+    using MapComponentResource  = ConcurrentResourceMap<uint32_t, Component *, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
 //////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ public:
      * \param	magicNum	The calculated component number to search
      * \return	If found, returns pointer to component object. Otherwise, returns nullptr.
      **/
-    static Component * findComponentByNumber(unsigned int magicNum);
+    static Component * findComponentByNumber(uint32_t magicNum);
 
     /**
      * \brief	Checks whether component exists in component registries or not.
@@ -211,7 +211,7 @@ public:
      *          No action will be performed if component has no registered worker thread.
      * \param   waitTimeout     The timeout to wait for completion for every worker thread
      **/
-    virtual void waitComponentCompletion( unsigned int waitTimeout );
+    virtual void waitComponentCompletion( uint32_t waitTimeout );
 
     /**
      * \brief   Returns pointer to Worker Thread Consumer object identified
@@ -326,7 +326,7 @@ private:
     /**
      * \brief   The calculated number of component.
      **/
-    unsigned int        mMagicNum;
+    uint32_t        mMagicNum;
 
 private:
 /************************************************************************/
@@ -350,7 +350,7 @@ private:
     /**
      * \brief   Calculates the number of specified component object.
      **/
-    static unsigned int _magicNumber( Component & comp );
+    static uint32_t _magicNumber( Component & comp );
 
     /**
      * \brief   Returns the static resource map of created components.

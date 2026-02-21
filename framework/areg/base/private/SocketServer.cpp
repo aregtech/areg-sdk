@@ -15,7 +15,7 @@
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
 
-SocketServer::SocketServer( const char * hostName, unsigned short portNr )
+SocketServer::SocketServer( const char * hostName, uint16_t portNr )
     : Socket  ( )
 {
     mAddress.resolveAddress(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, true);
@@ -27,7 +27,7 @@ SocketServer::SocketServer( const NESocket::SocketAddress & serverAddress )
     mAddress = serverAddress;
 }
 
-bool SocketServer::createSocket(const char * hostName, unsigned short portNr)
+bool SocketServer::createSocket(const char * hostName, uint16_t portNr)
 {
     return ( mAddress.resolveAddress(hostName, portNr, true) && createSocket( ) );
 }
@@ -49,12 +49,12 @@ bool SocketServer::createSocket()
     return isValid();
 }
 
-bool SocketServer::listenConnection(int maxQueueSize)
+bool SocketServer::listenConnection(int32_t maxQueueSize)
 {
     return (isValid() ? NESocket::serverListenConnection(*mSocket, maxQueueSize > 0 ? maxQueueSize : NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
 }
 
-SOCKETHANDLE SocketServer::waitConnectionEvent(NESocket::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int entriesCount)
+SOCKETHANDLE SocketServer::waitConnectionEvent(NESocket::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
 {
     return ( isValid() ? NESocket::serverAcceptConnection(*mSocket, masterList, entriesCount, &out_addrAccepted) : NESocket::InvalidSocketHandle );
 }

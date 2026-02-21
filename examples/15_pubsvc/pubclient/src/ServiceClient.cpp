@@ -63,7 +63,7 @@ void ServiceClient::responseHelloWorld(const HelloWorld::sConnectedClient & clie
 }
 
 #if AREG_LOGS
-void ServiceClient::broadcastReachedMaximum( int maxNumber )
+void ServiceClient::broadcastReachedMaximum( int32_t maxNumber )
 {
     LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcastReachedMaximum);
     LOG_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
@@ -71,7 +71,7 @@ void ServiceClient::broadcastReachedMaximum( int maxNumber )
     mID = 0;
 }
 #else   // AREG_LOGS
-void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
+void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 {
     requestShutdownService(mID, getRoleName());
     mID = 0;

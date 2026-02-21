@@ -64,7 +64,7 @@ namespace NEDebug
      * \brief   NEDebug::MAX_DEBUG_BUFFER_SIZE
      *          The maximum buffer size for message output.
      **/
-    constexpr unsigned int  MAX_DEBUG_BUFFER_SIZE       = 1024;
+    constexpr uint32_t  MAX_DEBUG_BUFFER_SIZE       = 1024;
 
     constexpr std::string_view PREFIX_DBG_PRIORITIES [] =
     {

@@ -139,7 +139,7 @@ public:
      * 
      * \param index     Valid zero-based index, which value should not be more than the length of string.
      **/
-    inline const CharType operator[ ](int index) const;
+    inline const CharType operator[ ](int32_t index) const;
 
     /**
      * \brief   Assigning operator, copies data from given string source
@@ -746,7 +746,7 @@ public:
      *                      if zero, no change happens.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& moveTo(NEString::CharPos startPos, int moveTo);
+    StringBase<CharType>& moveTo(NEString::CharPos startPos, int32_t moveTo);
 
     /**
      * \brief   Inserts given source of character at given valid zero-based position in the string.
@@ -1313,9 +1313,9 @@ inline StringBase<CharType>::operator const CharType* () const
 }
 
 template<typename CharType>
-inline const CharType StringBase<CharType>::operator[ ](int index) const
+inline const CharType StringBase<CharType>::operator[ ](int32_t index) const
 {
-    ASSERT((mData.c_str() != nullptr) && (index < static_cast<int>(mData.length())));
+    ASSERT((mData.c_str() != nullptr) && (index < static_cast<int32_t>(mData.length())));
     return mData.c_str()[index];
 }
 
@@ -1636,7 +1636,7 @@ inline bool StringBase<CharType>::isValidNameChar(const CharType checkChar) cons
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0'};
-    return (std::isalnum(static_cast<int>(checkChar)) != 0) || NEString::isOneOf<CharType>(checkChar, symbols);
+    return (std::isalnum(static_cast<int32_t>(checkChar)) != 0) || NEString::isOneOf<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
@@ -1832,8 +1832,8 @@ NEString::CharPos StringBase<CharType>::findFirst( CharType chSearch
         return NEString::INVALID_POS;
 
     const CharType* str = getBuffer(startPos);
-    CharType chUpper = caseSensitive ? chSearch : static_cast<CharType>(std::toupper(static_cast<int>(chSearch)));
-    CharType chLower = caseSensitive ? chSearch : static_cast<CharType>(std::tolower(static_cast<int>(chSearch)));
+    CharType chUpper = caseSensitive ? chSearch : static_cast<CharType>(std::toupper(static_cast<int32_t>(chSearch)));
+    CharType chLower = caseSensitive ? chSearch : static_cast<CharType>(std::tolower(static_cast<int32_t>(chSearch)));
    
     while ((*str != EmptyChar) && (*str != chUpper) && (*str != chLower))
     {
@@ -1909,8 +1909,8 @@ NEString::CharPos StringBase<CharType>::findLast(CharType chSearch, NEString::Ch
     }
     else
     {
-        CharType chUpper = static_cast<CharType>(std::toupper(static_cast<int>(chSearch)));
-        CharType chLower = static_cast<CharType>(std::tolower(static_cast<int>(chSearch)));
+        CharType chUpper = static_cast<CharType>(std::toupper(static_cast<int32_t>(chSearch)));
+        CharType chLower = static_cast<CharType>(std::tolower(static_cast<int32_t>(chSearch)));
 
         while ((end >= begin) && (*end != chUpper) && (*end != chLower))
         {
@@ -1984,8 +1984,8 @@ NEMath::Ordering StringBase<CharType>::compare(const CharType* what, NEString::C
             ch2 = *other++;
             if (caseSensitive == false)
             {
-                ch1 = static_cast<CharType>(std::tolower(static_cast<int>(ch1)));
-                ch2 = static_cast<CharType>(std::tolower(static_cast<int>(ch2)));
+                ch1 = static_cast<CharType>(std::tolower(static_cast<int32_t>(ch1)));
+                ch2 = static_cast<CharType>(std::tolower(static_cast<int32_t>(ch2)));
             }
 
             if (ch1 != ch2)
@@ -2228,7 +2228,7 @@ inline StringBase<CharType>& StringBase<CharType>::append( CharType ch )
 }
 
 template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::moveTo(NEString::CharPos startPos, int moveTo)
+StringBase<CharType>& StringBase<CharType>::moveTo(NEString::CharPos startPos, int32_t moveTo)
 {
     if (moveTo < 0)
     {
@@ -2601,7 +2601,7 @@ inline StringBase<CharType>& StringBase<CharType>::trimLeft()
         uint32_t count = 0;
         for (const auto& ch : mData)
         {
-            if (std::isspace(static_cast<int>(ch)) == 0)
+            if (std::isspace(static_cast<int32_t>(ch)) == 0)
                 break;
 
             ++count;
@@ -2631,7 +2631,7 @@ inline void StringBase<CharType>::trimLeft(std::basic_string<CharType>& strResul
         uint32_t count = 0;
         for (const auto& ch : mData)
         {
-            if (std::isspace(static_cast<int>(ch)) == 0)
+            if (std::isspace(static_cast<int32_t>(ch)) == 0)
                 break;
 
             ++count;
@@ -2652,7 +2652,7 @@ inline StringBase<CharType>& StringBase<CharType>::trimRight()
         uint32_t count = 0;
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace(static_cast<int>(*cit)) == 0)
+            if (std::isspace(static_cast<int32_t>(*cit)) == 0)
                 break;
 
             ++count;
@@ -2782,7 +2782,7 @@ inline StringBase<CharType> & StringBase<CharType>::makeLower()
 {
     for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
     {
-        *src = static_cast<CharType>(std::tolower(static_cast<int>(*src)));
+        *src = static_cast<CharType>(std::tolower(static_cast<int32_t>(*src)));
     }
 
     return (*this);
@@ -2793,7 +2793,7 @@ inline StringBase<CharType> & StringBase<CharType>::makeUpper()
 {
     for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
     {
-        *src = static_cast<CharType>(std::toupper(static_cast<int>(*src)));
+        *src = static_cast<CharType>(std::toupper(static_cast<int32_t>(*src)));
     }
 
     return (*this);
@@ -2853,7 +2853,7 @@ inline StringBase<CharType>& StringBase<CharType>::makeAlphanumeric()
         CharType* dst = begin;
         for (const CharType* src = begin; *src != static_cast<CharType>(NEString::EndOfString); ++src)
         {
-            if (std::isalnum(static_cast<int>(*src)) != 0)
+            if (std::isalnum(static_cast<int32_t>(*src)) != 0)
                 *dst++ = *src;
         }
 
@@ -2923,8 +2923,8 @@ inline NEMath::Ordering StringBase<CharType>::compareStringIgnoreCase( NEString:
 
             while (count-- > 0)
             {
-                chLeft  = static_cast<CharType>(std::tolower(static_cast<int>(*leftSide ++)));
-                chRight = static_cast<CharType>(std::tolower(static_cast<int>(*rightSide ++)));
+                chLeft  = static_cast<CharType>(std::tolower(static_cast<int32_t>(*leftSide ++)));
+                chRight = static_cast<CharType>(std::tolower(static_cast<int32_t>(*rightSide ++)));
                 if (chLeft != chRight)
                 {
                     break;
@@ -2950,7 +2950,7 @@ inline NEString::CharPos StringBase<CharType>::replaceWith( NEString::CharPos   
     NEString::CharPos nextPos = NEString::INVALID_POS;
     if ( (startPos != NEString::INVALID_POS) && (startPos != NEString::END_POS) )
     {
-        int diff = static_cast<int>(lenReplace - count);
+        int32_t diff = static_cast<int32_t>(lenReplace - count);
         NEString::CharPos endPos = startPos + count;
         moveTo( endPos, diff );
         CharType * dst = getBuffer( startPos );
@@ -3017,7 +3017,7 @@ inline NEString::CharPos StringBase<CharType>::findFirstPhraseIgnoreCase(const s
 
     auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                          , phrase.begin(), phrase.end()
-                         , [&](const CharType& ch1, const CharType& ch2) { return (std::tolower(static_cast<int>(ch1)) == std::tolower(static_cast<int>(ch2))); }
+                         , [&](const CharType& ch1, const CharType& ch2) { return (std::tolower(static_cast<int32_t>(ch1)) == std::tolower(static_cast<int32_t>(ch2))); }
                          );
 
     return (it != mData.end() ? static_cast<NEString::CharPos>(std::distance(mData.begin(), it)) : NEString::END_POS);
@@ -3045,7 +3045,7 @@ inline NEString::CharPos StringBase<CharType>::findFirstWord(const std::basic_st
     {
         auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                              , word.begin(), word.end()
-                             , [&](const CharType& ch1, const CharType& ch2){ return (caseSensitive ? ch1 == ch2 : std::tolower(static_cast<int>(ch1)) == std::tolower(static_cast<int>(ch2))); }
+                             , [&](const CharType& ch1, const CharType& ch2){ return (caseSensitive ? ch1 == ch2 : std::tolower(static_cast<int32_t>(ch1)) == std::tolower(static_cast<int32_t>(ch2))); }
                              );
 
         if (it == mData.end())
@@ -3232,7 +3232,7 @@ inline bool StringBase<CharType>::_hasPhrase(const CharType* fullString, const C
     {
         for (; *phrase != StringBase<CharType>::EmptyChar; ++phrase, ++fullString)
         {
-            if (std::tolower(static_cast<int>(*phrase)) != std::tolower(static_cast<int>(*fullString)))
+            if (std::tolower(static_cast<int32_t>(*phrase)) != std::tolower(static_cast<int32_t>(*fullString)))
             {
                 result = false;
                 break;

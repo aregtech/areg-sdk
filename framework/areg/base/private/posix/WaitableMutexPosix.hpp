@@ -128,7 +128,7 @@ public:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    void notifyReleasedThreads( int numThreads ) override;
+    void notifyReleasedThreads( int32_t numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -142,7 +142,7 @@ private:
     /**
      * \brief   The number of locks recursively called.
      **/
-    int             mLockCount;
+    int32_t             mLockCount;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

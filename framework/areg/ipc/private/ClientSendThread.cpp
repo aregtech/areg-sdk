@@ -58,7 +58,7 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
     if ( data.isForwardMessage() )
     {
         const RemoteMessage & msg = data.getRemoteMessage( );
-        int sizeSend = mConnection.sendMessage( msg );
+        int32_t sizeSend = mConnection.sendMessage( msg );
         if ( sizeSend > 0 )
         {
             if (mSaveDataSend)

@@ -32,7 +32,7 @@ inline SharedBuffer& SharedBuffer::self()
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
-SharedBuffer::SharedBuffer( unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
+SharedBuffer::SharedBuffer( uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/ )
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
@@ -41,7 +41,7 @@ SharedBuffer::SharedBuffer( unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
 {
 }
 
-SharedBuffer::SharedBuffer( unsigned int reserveSize, unsigned int blockSize)
+SharedBuffer::SharedBuffer( uint32_t reserveSize, uint32_t blockSize)
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
@@ -51,7 +51,7 @@ SharedBuffer::SharedBuffer( unsigned int reserveSize, unsigned int blockSize)
     reserve(reserveSize, false);
 }
 
-SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
+SharedBuffer::SharedBuffer( const uint8_t* buffer, uint32_t size, uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/ )
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
@@ -62,7 +62,7 @@ SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsi
     writeData(buffer, size);
 }
 
-SharedBuffer::SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize)
+SharedBuffer::SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize)
     : BufferStreamBase  (static_cast<Cursor&>(self()), static_cast<Cursor&>(self()))
     , Cursor  ( )
 
@@ -74,28 +74,28 @@ SharedBuffer::SharedBuffer(unsigned int reserveSize, const unsigned char* buffer
     writeData(buffer, size);
 }
 
-SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
+SharedBuffer::SharedBuffer(const char * textString, uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/)
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
     , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
-    unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<char>(textString)) + 1u) * sizeof(char);
+    uint32_t size   = (static_cast<uint32_t>(NEString::getStringLength<char>(textString)) + 1u) * sizeof(char);
     size = reserve(size, false);
-    writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringA.data( )), size);
+    writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : NEString::EmptyStringA.data( )), size);
 }
 
-SharedBuffer::SharedBuffer(const wchar_t * textString, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
+SharedBuffer::SharedBuffer(const wchar_t * textString, uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/)
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
     , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
-    unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
+    uint32_t size   = (static_cast<uint32_t>(NEString::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
     size = reserve(size, false);
-    writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringW.data( )), size);
+    writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : NEString::EmptyStringW.data( )), size);
 }
 
 SharedBuffer::SharedBuffer( const SharedBuffer & src )
@@ -162,7 +162,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
     return (*this);
 }
 
-unsigned int SharedBuffer::setPosition(int offset, Cursor::SeekOrigin startAt) const
+uint32_t SharedBuffer::setPosition(int32_t offset, Cursor::SeekOrigin startAt) const
 {
     return mBufferPosition.setPosition(offset, startAt);
 }
@@ -178,13 +178,13 @@ void SharedBuffer::invalidate()
     BufferStreamBase::invalidate();
 }
 
-const unsigned char* SharedBuffer::getBufferAtCurrentPosition() const
+const uint8_t* SharedBuffer::getBufferAtCurrentPosition() const
 {
-    const unsigned char* result = nullptr;
+    const uint8_t* result = nullptr;
     if (isValid())
     {
-        unsigned int curPos = getPosition();
-        unsigned int written= getSizeUsed();
+        uint32_t curPos = getPosition();
+        uint32_t written= getSizeUsed();
         ASSERT(curPos != Cursor::INVALID_CURSOR_POSITION);
         if (curPos != written)
         {
@@ -198,12 +198,12 @@ const unsigned char* SharedBuffer::getBufferAtCurrentPosition() const
 
 SharedBuffer SharedBuffer::clone() const
 {
-    unsigned int reserved{ getSizeUsed() };
+    uint32_t reserved{ getSizeUsed() };
     SharedBuffer result;
     if ((result.reserve(reserved, false) >= reserved) && (reserved != 0))
     {
-        unsigned char * dst = result.getBuffer();
-        const unsigned char * src = getBuffer();
+        uint8_t * dst = result.getBuffer();
+        const uint8_t * src = getBuffer();
         NEMemory::memCopy(dst, reserved, src, reserved);
         result.setSizeUsed(reserved);
     }
@@ -211,7 +211,7 @@ SharedBuffer SharedBuffer::clone() const
     return result;
 }
 
-unsigned int SharedBuffer::getPosition() const
+uint32_t SharedBuffer::getPosition() const
 {
     return mBufferPosition.getPosition();
 }
@@ -221,17 +221,17 @@ bool SharedBuffer::canShare() const
     return true;
 }
 
-unsigned int SharedBuffer::getDataOffset() const
+uint32_t SharedBuffer::getDataOffset() const
 {
     return sizeof(NEMemory::BufferHeader);
 }
 
-unsigned int SharedBuffer::getHeaderSize() const
+uint32_t SharedBuffer::getHeaderSize() const
 {
     return sizeof(NEMemory::sByteBuffer);
 }
 
-unsigned int SharedBuffer::getAlignedSize() const
+uint32_t SharedBuffer::getAlignedSize() const
 {
     return mBlockSize;
 }

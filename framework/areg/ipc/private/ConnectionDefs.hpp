@@ -76,7 +76,7 @@ namespace NEConnection
      * \brief   NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT
      *          Default connect retry timer timeout value in milliseconds
      **/
-    constexpr unsigned int      DEFAULT_RETRY_CONNECT_TIMEOUT   { NECommon::TIMEOUT_500_MS };  // 500 ms
+    constexpr uint32_t      DEFAULT_RETRY_CONNECT_TIMEOUT   { NECommon::TIMEOUT_500_MS };  // 500 ms
 }
 
 #endif  // AREG_IPC_PRIVATE_CONNECTIONDEFS_HPP

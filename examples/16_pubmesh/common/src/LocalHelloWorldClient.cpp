@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorl
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
 
-LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout)
+LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout)
     : LocalHelloWorldClientBase ( dependency, owner )
     , TimerConsumer           ( )
 
