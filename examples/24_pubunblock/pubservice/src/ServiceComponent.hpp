@@ -59,14 +59,14 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( Component & holder ) override;
 
     /**
      * \brief   Request call.
      *          Request to assign an ID to the client used to call unblock request.
      * \see     responseIdentifier
      **/
-    virtual void requestIdentifier() override;
+    void requestIdentifier() override;
 
     /**
      * \brief   Request call.
@@ -76,13 +76,13 @@ protected:
      *          and stops sending request when reach the maximum.
      * \see     responseHelloUnblock
      **/
-    virtual void requestHelloUblock( unsigned int clientId, unsigned int seqNr ) override;
+    void requestHelloUblock( unsigned int clientId, unsigned int seqNr ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

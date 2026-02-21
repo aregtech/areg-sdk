@@ -154,7 +154,7 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -164,7 +164,7 @@ public:
      * \param   waitForCompleteMs   The timeout to wait for completion.
      * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
      **/
-    virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
+    bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -178,7 +178,7 @@ public:
      * \param   eventElem   The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides. Protected
@@ -195,7 +195,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher() override;
+    bool runDispatcher() override;
 
     /**
      * \brief   Search for consumer thread that can dispatch event.
@@ -206,7 +206,7 @@ protected:
      * \return  If found, returns valid pointer of dispatching thread. 
      *          Otherwise returns nullptr
      **/
-    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
+    DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -217,7 +217,7 @@ protected:
      *          This method is triggered after exiting from Run() function.
      * \return  Return thread exit error code.
      **/
-    virtual int onThreadExit() override;
+    int onThreadExit() override;
 
 /************************************************************************/
 // ComponentThread overrides
@@ -269,7 +269,7 @@ protected:
      * \return	Returns true if at least one consumer processed event.
      *          Otherwise it returns false.
      **/
-    virtual bool dispatchEvent( Event & eventElem ) override;
+    bool dispatchEvent( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

@@ -99,7 +99,7 @@ public:
      *                          The mutex is signaled if owner thread is nullptr or the thread context
      *                          and owner threads are same.
      **/
-    virtual bool checkSignaled( pthread_t contextThread ) const override;
+    bool checkSignaled( pthread_t contextThread ) const override;
 
     /**
      * \brief   This callback is triggered when a waiting thread is released to continue to run.
@@ -109,7 +109,7 @@ public:
      *          new owner thread. Only signaled waitable Mutex can assign thread ownership.
      *          Returns false, if waitable Mutex already has ownership and cannot take new.
      **/
-    virtual bool notifyRequestOwnership( pthread_t ownerThread ) override;
+    bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
     /**
      * \brief   This callback is triggered to when a system needs to know whether waitable
@@ -118,7 +118,7 @@ public:
      *          signals only one thread, when waitable Event can signal multiple threads.
      * \return  Waitable Mutex always returns false.
      **/
-    virtual bool checkCanSignalMultipleThreads() const override;
+    bool checkCanSignalMultipleThreads() const override;
 
     /**
      * \brief   This callback is called to notify the object the amount of
@@ -128,7 +128,7 @@ public:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    virtual void notifyReleasedThreads( int numThreads ) override;
+    void notifyReleasedThreads( int numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

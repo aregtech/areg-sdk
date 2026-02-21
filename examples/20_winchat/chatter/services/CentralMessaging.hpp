@@ -41,7 +41,7 @@ protected:
      * \param   newMessage  The message sent by initiator
      * \param   dateTime    The local time-stamp of initiator
      **/
-    virtual void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime ) override;
+    void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime ) override;
     /**
      * \brief   Server broadcast.
      *          Sent each time when a client is typing a key
@@ -51,7 +51,7 @@ protected:
      * \param   cookie      Assigned cookie of initiator
      * \param   newMessage  The message typed by initiator
      **/
-    virtual void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage ) override;
+    void broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage ) override;
     /**
      * \brief   Server broadcast.
      *          Server broadcasts a message to all clients.
@@ -60,7 +60,7 @@ protected:
      * \param   serverMessage   The message sent by servicing server
      * \param   dateTime        The time-stamp of servicing component
      **/
-    virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime ) override;
+    void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -76,7 +76,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

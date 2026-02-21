@@ -47,9 +47,9 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-    virtual BOOL OnInitDialog( ) override;
-    virtual BOOL OnKillActive( ) override;
-    virtual BOOL OnSetActive( ) override;
+    BOOL OnInitDialog( ) override;
+    BOOL OnKillActive( ) override;
+    BOOL OnSetActive( ) override;
 
 public:
     afx_msg void OnClickedCheckChatMessages( );

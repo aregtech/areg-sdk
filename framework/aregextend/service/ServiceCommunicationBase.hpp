@@ -215,20 +215,20 @@ public:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    virtual void failedReceiveMessage( Socket & whichSource ) override;
+    void failedReceiveMessage( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer
@@ -267,7 +267,7 @@ public:
      * \param   connectTypes    The bitwise set of connections.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
+    bool setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -276,13 +276,13 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void applyServiceConnectionData( const String & hostName, unsigned short portNr ) override;
+    void applyServiceConnectionData( const String & hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost() override;
+    bool connectServiceHost() override;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -290,27 +290,27 @@ public:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    virtual bool reconnectServiceHost() override;
+    bool reconnectServiceHost() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost() override;
+    void disconnectServiceHost() override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isServiceHostConnected() const override;
+    bool isServiceHostConnected() const override;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
      **/
-    virtual bool isServiceHostPending() const override;
+    bool isServiceHostPending() const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isServiceHostSetup() const override;
+    bool isServiceHostSetup() const override;
 
     /**
      * \brief   Creates the service connect request message, sets the message target and the source.
@@ -319,7 +319,7 @@ public:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
+    RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -327,7 +327,7 @@ public:
      * \param   target  The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -336,33 +336,33 @@ public:
     /**
      * \brief   Triggered when Timer is expired.
      **/
-    virtual void onServiceReconnectTimerExpired() override;
+    void onServiceReconnectTimerExpired() override;
 
     /**
      * \brief   Called when need to start the network server connection service. 
      **/
-    virtual void onServiceStart() override;
+    void onServiceStart() override;
 
     /**
      * \brief   Called when need to stop the network server connection service. 
      **/
-    virtual void onServiceStop() override;
+    void onServiceStop() override;
 
     /**
      * \brief   Called when need to restart the network server connection service. 
      **/
-    virtual void onServiceRestart() override;
+    void onServiceRestart() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit() override;
+    void onServiceExit() override;
 
     /**
      * \brief   Called when need to inform the channel connection.
      * \param   cookie  The channel connection cookie.
      **/
-    virtual void onChannelConnected(const ITEM_ID & cookie) override;
+    void onChannelConnected(const ITEM_ID & cookie) override;
 
 /************************************************************************/
 // ConnectionHandler interface overrides
@@ -377,24 +377,24 @@ public:
      * \return  Returns true if client connection can be accepted. To reject and close
      *          connection with client, the method should return false.
      **/
-    virtual bool canAcceptConnection( const SocketAccepted & clientSocket ) override;
+    bool canAcceptConnection( const SocketAccepted & clientSocket ) override;
 
     /**
      * \brief   Triggered, when lost connection with client.
      *          Passed clientSocket parameter specifies client socket, which lost connection.
      * \param   clientSocket    Client socket object, which lost connection.
      **/
-    virtual void connectionLost( SocketAccepted & clientSocket ) override;
+    void connectionLost( SocketAccepted & clientSocket ) override;
 
     /**
      * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
      **/
-    virtual void connectionFailure() override;
+    void connectionFailure() override;
 
     /**
      * \brief   Called when need to disconnect and unregister all service providers and service consumers.
      **/
-    virtual void disconnectServices() override;
+    void disconnectServices() override;
 
 /************************************************************************/
 // ServiceCommunicationBase
@@ -457,7 +457,7 @@ public:
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -472,7 +472,7 @@ public:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden calls

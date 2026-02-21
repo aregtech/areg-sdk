@@ -158,7 +158,7 @@ public:
      *
      * \return  Returns true if file object was opened with success.
      **/
-    virtual bool open() override;
+    bool open() override;
 
     /**
      * \brief	Opens the file object. For memory buffered file the file name can be nullptr.
@@ -181,7 +181,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    virtual bool open(const String& fileName, unsigned int mode) override;
+    bool open(const String& fileName, unsigned int mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -191,13 +191,13 @@ public:
      *          If CreateTemp is set, file object is always deleted on close.
      *          If FO_FOR_DELETE is set, file object is deleted only for memory buffered file even if file was opened with attach mode.
      **/
-    virtual void close() override;
+    void close() override;
 
     /**
      * \brief	Delete opened file. This will force to delete file object even if it is attached memory buffered file
      * \return	Returns true if succeeded.
      **/
-    virtual bool remove() override;
+    bool remove() override;
 
     /**
      * \brief	Sets the file pointer position and returns current position. 
@@ -213,24 +213,24 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition(int offset, Cursor::SeekOrigin startAt) const override;
+    unsigned int setPosition(int offset, Cursor::SeekOrigin startAt) const override;
 
     /**
      * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int getPosition() const override;
+    unsigned int getPosition() const override;
 
     /**
      * \brief	If succeeds, returns the current valid length of file data. otherwise returns INVALID_SIZE value.
      **/
-    virtual unsigned int getLength() const override;
+    unsigned int getLength() const override;
 
     /**
      * \brief   Returns the current open status of file object. If file is opened, returns true
      **/
-    virtual bool isOpened() const override;
+    bool isOpened() const override;
 
     /**
      * \brief	Call to reserve space or set new size of file object and returns the current position of pointer.
@@ -243,12 +243,12 @@ public:
      *
      * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value Cursor::INVALID_CURSOR_POSITION.
      **/
-    virtual unsigned int reserve(unsigned int newSize) override;
+    unsigned int reserve(unsigned int newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
      **/
-    virtual bool truncate() override;
+    bool truncate() override;
 
 /************************************************************************/
 // InStream interface overrides
@@ -262,7 +262,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( ByteBuffer & buffer ) const override;
+    unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -270,7 +270,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & ascii ) const override;
+    unsigned int read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -278,7 +278,7 @@ public:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wide ) const override;
+    unsigned int read( WideString & wide ) const override;
 
     /**
      * \brief	Reads data from input stream object, copies into given buffer and
@@ -287,7 +287,7 @@ public:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const override;
+    unsigned int read( unsigned char * buffer, unsigned int size ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -299,7 +299,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const ByteBuffer & buffer ) override;
+    unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -307,7 +307,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & ascii ) override;
+    unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -315,7 +315,7 @@ public:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wide ) override;
+    unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief	Write data to output stream object from given buffer
@@ -326,13 +326,13 @@ public:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const unsigned char* buffer, unsigned int size ) override;
+    unsigned int write( const unsigned char* buffer, unsigned int size ) override;
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 
      *          to be written to the file.
      **/
-    virtual void flush() override;
+    void flush() override;
 
 protected:
 /************************************************************************/
@@ -345,7 +345,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    virtual unsigned int getSizeReadable() const override;
+    unsigned int getSizeReadable() const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -357,7 +357,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    virtual unsigned int getSizeWritable() const override;
+    unsigned int getSizeWritable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static operations

@@ -49,7 +49,7 @@ protected:
      * \param   clientId    Thegiven ID of the client that requested to output message.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const String & clientName, unsigned int clientId ) override;
+    void responseHelloWorld( const String & clientName, unsigned int clientId ) override;
 
     /**
      * \brief   Server broadcast.
@@ -57,7 +57,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastReachedMaximum( int maxNumber ) override;
+    void broadcastReachedMaximum( int maxNumber ) override;
 
 
 /************************************************************************/
@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -84,7 +84,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 
 //////////////////////////////////////////////////////////////////////////

@@ -39,7 +39,7 @@ protected:
     /**
      * \brief   The response to hello world request.
      **/
-    virtual void responseHelloWorld() override;
+    void responseHelloWorld() override;
 
     /**
      * \brief   Server broadcast.
@@ -48,7 +48,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   maxNumber   The maximum number of requests.
      **/
-    virtual void broadcastReachedMaximum( int maxNumber ) override;
+    void broadcastReachedMaximum( int maxNumber ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -64,7 +64,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -73,7 +73,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

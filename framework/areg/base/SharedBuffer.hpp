@@ -237,7 +237,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    virtual unsigned int getPosition() const override;
+    unsigned int getPosition() const override;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -252,7 +252,7 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
-    virtual unsigned int setPosition( int offset, Cursor::SeekOrigin startAt ) const override;
+    unsigned int setPosition( int offset, Cursor::SeekOrigin startAt ) const override;
 
 /************************************************************************/
 // ByteBuffer interface overrides, not implemented in BufferStreamBase
@@ -274,7 +274,7 @@ public:
      * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
      *          invalidates writing and reading positions.
      **/
-    virtual void invalidate() override;
+    void invalidate() override;
 
 protected:
 /************************************************************************/
@@ -283,17 +283,17 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset() const override;
+    unsigned int getDataOffset() const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    virtual unsigned int getHeaderSize() const override;
+    unsigned int getHeaderSize() const override;
 
     /**
      * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
      **/
-    virtual unsigned int getAlignedSize() const override;
+    unsigned int getAlignedSize() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods

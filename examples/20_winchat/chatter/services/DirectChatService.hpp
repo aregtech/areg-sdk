@@ -47,7 +47,7 @@ protected:
      * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
-    virtual void requestChatJoin( const DirectMessager::sParticipant & participant, const DateTime & timeConnect ) override;
+    void requestChatJoin( const DirectMessager::sParticipant & participant, const DateTime & timeConnect ) override;
 
     /**
      * \brief   Request call.
@@ -57,7 +57,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    virtual void requestMessageSend( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void requestMessageSend( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Request call.
@@ -66,7 +66,7 @@ protected:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    virtual void requestMessageType( const DirectMessager::sParticipant & participant, const String & msgText ) override;
+    void requestMessageType( const DirectMessager::sParticipant & participant, const String & msgText ) override;
 
     /**
      * \brief   Request call.
@@ -75,7 +75,7 @@ protected:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    virtual void requestChatLeave( const DirectMessager::sParticipant & participant, const DateTime & timeLeave ) override;
+    void requestChatLeave( const DirectMessager::sParticipant & participant, const DateTime & timeLeave ) override;
 
 protected:
 
@@ -88,7 +88,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( ComponentThread & comThread ) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -96,7 +96,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( ComponentThread & comThread ) override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -109,7 +109,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( Component & holder ) override;
     
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

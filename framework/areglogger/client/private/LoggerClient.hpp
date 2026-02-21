@@ -380,25 +380,25 @@ protected:
      * \brief   Called by configuration manager before the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void prepareSaveConfiguration(ConfigManager& config) override;
+    void prepareSaveConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void postSaveConfiguration(ConfigManager& config) override;
+    void postSaveConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager before the configuration is loaded from the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void prepareReadConfiguration(ConfigManager& config) override;
+    void prepareReadConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void postReadConfiguration(ConfigManager& config) override;
+    void postReadConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -407,7 +407,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    virtual void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -422,14 +422,14 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent(Event& eventElem) override;
+    bool postEvent(Event& eventElem) override;
 
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // ServiceClientConnectionBase overrides
@@ -439,17 +439,17 @@ protected:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool connectServiceHost() override;
+    bool connectServiceHost() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void disconnectServiceHost() override;
+    void disconnectServiceHost() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit() override;
+    void onServiceExit() override;
 
 /************************************************************************/
 // ConnectionConsumer overrides
@@ -459,13 +459,13 @@ protected:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void connectedRemoteServiceChannel(const Channel& channel) override;
+    void connectedRemoteServiceChannel(const Channel& channel) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void disconnectedRemoteServiceChannel(const Channel& channel) override;
+    void disconnectedRemoteServiceChannel(const Channel& channel) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -473,7 +473,7 @@ protected:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void lostRemoteServiceChannel(const Channel& channel) override;
+    void lostRemoteServiceChannel(const Channel& channel) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -484,27 +484,27 @@ protected:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    virtual void failedReceiveMessage( Socket & whichSource ) override;
+    void failedReceiveMessage( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

@@ -87,18 +87,18 @@ public:
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    virtual void addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance & instance ) override;
+    void addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance & instance ) override;
 
     /**
      * \brief   Removes connected instance.
      * \param   cookie      The cookie of connected instance.
      **/
-    virtual void removeInstance(const ITEM_ID & cookie ) override;
+    void removeInstance(const ITEM_ID & cookie ) override;
 
     /**
      * \brief   Removes all connected instances from the map.
      **/
-    virtual void removeAllInstances() override;
+    void removeAllInstances() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -109,13 +109,13 @@ protected:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void connectedRemoteServiceChannel( const Channel & channel ) override;
+    void connectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) override;
+    void disconnectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -123,7 +123,7 @@ protected:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void lostRemoteServiceChannel( const Channel & channel ) override;
+    void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -134,7 +134,7 @@ protected:
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -143,29 +143,29 @@ protected:
     /**
      * \brief   Called when receive event the client connection is started.
      **/
-    virtual void onServiceConnectionStarted() override;
+    void onServiceConnectionStarted() override;
 
     /**
      * \brief   Called when receive event the client connection is stopped.
      **/
-    virtual void onServiceConnectionStopped() override;
+    void onServiceConnectionStopped() override;
 
     /**
      * \brief   Called when receive event the client connection is lost.
      **/
-    virtual void onServiceConnectionLost() override;
+    void onServiceConnectionLost() override;
 
     /**
      * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message. 
      **/
-    virtual void onServiceMessageReceived(const RemoteMessage & msgReceived) override;
+    void onServiceMessageReceived(const RemoteMessage & msgReceived) override;
 
     /**
      * \brief   Called when need to send a communication message.
      * \param   msgSend     The communication message to send. 
      **/
-    virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
+    void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -177,7 +177,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

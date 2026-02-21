@@ -72,7 +72,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( ComponentThread & comThread ) override;
 
     /**
      * \brief   Server broadcast.
@@ -81,7 +81,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   imageBlock  Acquired image block.
      **/
-    virtual void broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock ) override;
+    void broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock ) override;
 
     /**
      * \brief   Server broadcast.
@@ -89,7 +89,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastServiceStopping() override;
+    void broadcastServiceStopping() override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -105,7 +105,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -117,7 +117,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

@@ -52,7 +52,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state ) override;
+    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state ) override;
 
     /**
      * \brief   Response callback.
@@ -62,26 +62,26 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
      * \see     requestStartSleep
      **/
-    virtual void responseStartSleep( unsigned int timeoutSleep ) override;
+    void responseStartSleep( unsigned int timeoutSleep ) override;
 
 #if AREG_LOGS
     /**
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestStartSleepFailed( NEService::ResultType FailureReason ) override;
+    void requestStartSleepFailed( NEService::ResultType FailureReason ) override;
 
     /**
      * \brief   Overwrite to handle error of StopService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestStopServiceFailed( NEService::ResultType FailureReason ) override;
+    void requestStopServiceFailed( NEService::ResultType FailureReason ) override;
 
     /**
      * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestShutdownServiceFailed( NEService::ResultType FailureReason ) override;
+    void requestShutdownServiceFailed( NEService::ResultType FailureReason ) override;
 #endif  // AREG_LOGS
 
 /************************************************************************/
@@ -98,7 +98,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

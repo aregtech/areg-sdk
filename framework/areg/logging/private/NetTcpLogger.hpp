@@ -101,23 +101,23 @@ public:
      *          The logger must be opened before any messages can be logged.
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger() override;
+    bool openLogger() override;
 
     /**
      * \brief   Called to close logger and stop logging.
      **/
-    virtual void closeLogger() override;
+    void closeLogger() override;
 
     /**
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    virtual void logMessage( const NELogging::sLogMessage & logMessage ) override;
+    void logMessage( const NELogging::sLogMessage & logMessage ) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened() const override;
+    bool isLoggerOpened() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -132,13 +132,13 @@ private:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void connectedRemoteServiceChannel(const Channel& channel) override;
+    void connectedRemoteServiceChannel(const Channel& channel) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void disconnectedRemoteServiceChannel(const Channel& channel) override;
+    void disconnectedRemoteServiceChannel(const Channel& channel) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -146,7 +146,7 @@ private:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void lostRemoteServiceChannel(const Channel& channel) override;
+    void lostRemoteServiceChannel(const Channel& channel) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -157,27 +157,27 @@ private:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    virtual void failedReceiveMessage( Socket & whichSource ) override;
+    void failedReceiveMessage( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

@@ -309,7 +309,7 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    virtual void processEvent( const ServiceManagerEventData & data ) override;
+    void processEvent( const ServiceManagerEventData & data ) override;
 
 /************************************************************************/
 // EventRouter Interface overrides.
@@ -321,14 +321,14 @@ private:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // ConnectionConsumer overrides
@@ -338,13 +338,13 @@ private:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void connectedRemoteServiceChannel( const Channel & channel ) override;
+    void connectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) override;
+    void disconnectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -352,7 +352,7 @@ private:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void lostRemoteServiceChannel( const Channel & channel ) override;
+    void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
 // RegistrationConsumer overrides
@@ -366,19 +366,19 @@ private:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumer ) const override;
+    void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumer ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.
      * \param   stub    The address of remote service provider that has been registered.
      **/
-    virtual void registeredRemoteServiceProvider( const StubAddress & stub ) override;
+    void registeredRemoteServiceProvider( const StubAddress & stub ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is registered in the system.
      * \param   proxy   The address of remote service consumer that has been registered.
      **/
-    virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
+    void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
 
     /**
      * \brief   Triggered when a remote service provider is unregistered from the system.
@@ -387,7 +387,7 @@ private:
      * \param   cookie  The cookie of source that has initiated to unregister provider.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered from the system.
@@ -396,7 +396,7 @@ private:
      * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes

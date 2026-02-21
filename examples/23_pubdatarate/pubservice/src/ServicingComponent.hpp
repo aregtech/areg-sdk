@@ -80,7 +80,7 @@ class ServicingComponent    : public    Component
          * \brief   Triggered when option event is fired.
          * \param   data    The option data.
          **/
-        virtual void processEvent(const OptionData& data) override;
+        void processEvent(const OptionData& data) override;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -116,7 +116,7 @@ class ServicingComponent    : public    Component
          * \brief   Triggered when Timer is expired. 
          * \param   timer   The timer object that is expired.
          **/
-        virtual void processTimer( Timer & timer ) override;
+        void processTimer( Timer & timer ) override;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -206,7 +206,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -214,7 +214,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    virtual void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( Component & holder ) override;
 
 /************************************************************************/
 // StubBase overrides
@@ -225,7 +225,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status ) override;
+    bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -238,7 +238,7 @@ protected:
      *          the thread will complete work. To restart thread running, 
      *          createThread() method should be called again.
      **/
-    virtual void onThreadRuns() override;
+    void onThreadRuns() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

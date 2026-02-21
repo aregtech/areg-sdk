@@ -183,7 +183,7 @@ public:
      * \brief   This call does not stop dispatcher, but sets exit event in the queue
      *          and when all messages are dispatched, the dispatcher will be stopped and exit loop.
      **/
-    virtual void triggerExit() override;
+    void triggerExit() override;
 
     /**
      * \brief	Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT and it expires,
@@ -200,7 +200,7 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
 
 protected:
 /************************************************************************/
@@ -216,7 +216,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -227,7 +227,7 @@ protected:
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
     /**
      * \brief   Search for consumer thread that can dispatch event.

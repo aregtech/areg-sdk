@@ -222,7 +222,7 @@ protected:
      * \param	eventCount	The number of event elements currently in the queue.
      *                      If zero, queue is empty, dispatcher can be suspended.
      **/
-    virtual void signalEvent(uint32_t eventCount) override;
+    void signalEvent(uint32_t eventCount) override;
 
 /************************************************************************/
 // EventDispatcherBase overrides

@@ -34,12 +34,12 @@ public:
 
     // Overrides
 public:
-    virtual BOOL InitInstance() override;
+    BOOL InitInstance() override;
 
     // Implementation
 
     DECLARE_MESSAGE_MAP()
-    virtual int ExitInstance( ) override;
+    int ExitInstance( ) override;
 };
 
 extern CentralApp theApp;

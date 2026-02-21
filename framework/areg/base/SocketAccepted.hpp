@@ -94,13 +94,13 @@ private:
      * \brief   Plays no role for accepted sockets. Always returns true;
      * \return  Returns true.
      **/
-    virtual bool createSocket( const char * /*hostName*/, unsigned short /*portNr*/ ) override;
+    bool createSocket( const char * /*hostName*/, unsigned short /*portNr*/ ) override;
 
     /**
      * \brief   Plays no role for accepted sockets. Always returns true;
      * \return  Returns true.
      **/
-    virtual bool createSocket() override;
+    bool createSocket() override;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will 

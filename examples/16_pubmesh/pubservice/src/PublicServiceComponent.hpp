@@ -46,7 +46,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( ComponentThread & comThread ) override;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -54,7 +54,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
+    bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
 
     /**
      * \brief   Request call.
@@ -62,14 +62,14 @@ protected:
      * \param   clientID    The ID of registered client to make message output
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( unsigned int clientID ) override;
+    void requestHelloWorld( unsigned int clientID ) override;
 
     /**
      * \brief   Request call.
      *          The request to shutdown the system.
      * \note    Has no response
      **/
-    virtual void requestSystemShutdown() override;
+    void requestSystemShutdown() override;
 
 private:
 //////////////////////////////////////////////////////////////////////////

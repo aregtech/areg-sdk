@@ -39,7 +39,7 @@ protected:
      * \param   TrafficSouthNorth   The value of TrafficSouthNorth attribute.
      * \param   state               The data validation flag.
      **/
-    virtual void onTrafficSouthNorthUpdate( const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::DataState state ) override;
+    void onTrafficSouthNorthUpdate( const TrafficController::sTrafficLight & TrafficSouthNorth, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered, when TrafficEastWest attribute is updated. The function contains
@@ -50,7 +50,7 @@ protected:
      * \param   TrafficEastWest The value of TrafficEastWest attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onTrafficEastWestUpdate( const TrafficController::sTrafficLight & TrafficEastWest, NEService::DataState state ) override;
+    void onTrafficEastWestUpdate( const TrafficController::sTrafficLight & TrafficEastWest, NEService::DataState state ) override;
 
     /**
      * \brief   Server broadcast.
@@ -60,7 +60,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastSouthNorth( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
+    void broadcastSouthNorth( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
 
     /**
      * \brief   Server broadcast.
@@ -70,7 +70,7 @@ protected:
      * \param   LightVehicle    Light state for vehicles
      * \param   LightPedestrian Light state for pedestrians.
      **/
-    virtual void broadcastEastWest( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
+    void broadcastEastWest( TrafficController::VehicleTrafficLight LightVehicle, TrafficController::PedestrianTrafficLight LightPedestrian ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -86,7 +86,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

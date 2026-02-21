@@ -82,7 +82,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 /************************************************************************/
 // StubBase overrides.
@@ -94,7 +94,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
+    bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

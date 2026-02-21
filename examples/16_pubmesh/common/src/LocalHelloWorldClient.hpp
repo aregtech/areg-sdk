@@ -48,7 +48,7 @@ protected:
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
+    void responseHelloWorld( const LocalHelloWorld::sConnectedClient & clientInfo ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -64,7 +64,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -73,7 +73,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void processTimer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

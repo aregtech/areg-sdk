@@ -46,7 +46,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
     /**
      * \brief   Triggered, when SouthNorth attribute is updated. The function contains
@@ -57,7 +57,7 @@ protected:
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onSouthNorthUpdate( SimpleTrafficLight::TrafficLight SouthNorth, NEService::DataState state ) override;
+    void onSouthNorthUpdate( SimpleTrafficLight::TrafficLight SouthNorth, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered, when EastWest attribute is updated. The function contains
@@ -68,7 +68,7 @@ protected:
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
-    virtual void onEastWestUpdate( SimpleTrafficLight::TrafficLight EastWest, NEService::DataState state ) override;
+    void onEastWestUpdate( SimpleTrafficLight::TrafficLight EastWest, NEService::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

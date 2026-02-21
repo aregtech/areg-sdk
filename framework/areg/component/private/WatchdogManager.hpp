@@ -134,7 +134,7 @@ protected:
      * \brief   Automatically triggered when event is dispatched by timer thread
      * \param   data    The data object passed in event.
      **/
-    virtual void processEvent( const TimerManagerEventData & data) override;
+    void processEvent( const TimerManagerEventData & data) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -145,7 +145,7 @@ protected:
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Watchdog Thread.

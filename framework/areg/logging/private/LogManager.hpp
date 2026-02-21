@@ -313,7 +313,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    bool postEvent( Event & eventElem ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -324,7 +324,7 @@ protected:
      *          Override if need to make event dispatching preparation job.
      * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual void readyForEvents( bool isReady ) override;
+    void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // LoggingEventConsumer interface overrides
@@ -333,7 +333,7 @@ protected:
      * \brief   Called by event dispatcher when processes the logging event data.
      * \param   data    The logging event data to process.
      **/
-    virtual void processEvent( const LoggingEventData & data ) override;
+    void processEvent( const LoggingEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

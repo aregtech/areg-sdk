@@ -796,7 +796,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    virtual unsigned int read( ByteBuffer & buffer ) const override;
+    unsigned int read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -804,7 +804,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & ascii ) const override;
+    unsigned int read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -812,7 +812,7 @@ public:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wide ) const override;
+    unsigned int read( WideString & wide ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -824,7 +824,7 @@ public:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    virtual unsigned int write( const ByteBuffer & buffer ) override;
+    unsigned int write( const ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.
@@ -832,7 +832,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const String & ascii ) override;
+    unsigned int write( const String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -840,13 +840,13 @@ public:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int write( const WideString & wide ) override;
+    unsigned int write( const WideString & wide ) override;
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 
      *          to be written to the file.
      **/
-    virtual void flush() override;
+    void flush() override;
 
 protected:
 
@@ -864,7 +864,7 @@ protected:
      * \brief   Resets cursor pointer and moves to the begin of data.
      *          Implement the function if stream has pointer reset mechanism
      **/
-    virtual void resetCursor() const override;
+    void resetCursor() const override;
 
     /**
      * \brief   Normalizes the name, replace special masks such as time-stamp or process name in the give name.

@@ -120,38 +120,38 @@ protected:
      *                      command line. Otherwise, if application expects user inputs, prints
      *                      the help of command options.
      **/
-    virtual void printHelp( bool isCmdLine ) override;
+    void printHelp( bool isCmdLine ) override;
 
     /**
      * \brief   Triggered to start the console service.
      **/
-    virtual void startConsoleService() override;
+    void startConsoleService() override;
 
     /**
      * \brief   Stops the consoler service.
      **/
-    virtual void stopConsoleService() override;
+    void stopConsoleService() override;
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    virtual Console::CallBack getOptionCheckCallback() const override;
+    Console::CallBack getOptionCheckCallback() const override;
 
     /**
      * \brief   Triggered if need to run console with extended features.
      *          In extended feature, the console can output message at any position on the screen.
      **/
-    virtual void runConsoleInputExtended() override;
+    void runConsoleInputExtended() override;
 
     /**
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
-    virtual void runConsoleInputSimple() override;
+    void runConsoleInputSimple() override;
 
     /**
      * \brief   Run application as a background process without input or output on console. 
      **/
-    virtual void runService() override;
+    void runService() override;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides
@@ -161,57 +161,57 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions() const override;
+    std::pair<const OptionParser::sOptionSetup*, int> getAppOptions() const override;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
      **/
-    virtual wchar_t* getServiceNameW() const override;
+    wchar_t* getServiceNameW() const override;
 
     /**
      * \brief   Returns the ASCII name of the service application.
      **/
-    virtual char* getServiceNameA() const override;
+    char* getServiceNameA() const override;
 
     /**
      * \brief   Returns the UNICODE display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    virtual wchar_t* getServiceDisplayNameW() const override;
+    wchar_t* getServiceDisplayNameW() const override;
 
     /**
      * \brief   Returns the ASCII display name of the service application.
      *          This optional display name could be valid only for specific OS.
      *          For example, in Windows this name is displayed in the list of services.
      **/
-    virtual char* getServiceDisplayNameA() const override;
+    char* getServiceDisplayNameA() const override;
 
     /**
      * \brief   Returns the UNICODE description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    virtual wchar_t* getServiceDescriptionW() const override;
+    wchar_t* getServiceDescriptionW() const override;
 
     /**
      * \brief   Returns the ASCII description of the service application.
      *          This optional service description could be valid only for specific OS.
      *          For example, in Windows this description is shown in the list of services.
      **/
-    virtual char* getServiceDescriptionA() const override;
+    char* getServiceDescriptionA() const override;
 
     /**
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::RemoteServiceKind getServiceType() const override;
+    NERemoteService::RemoteServiceKind getServiceType() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::ConnectionType getConnectionType() const override;
+    NERemoteService::ConnectionType getConnectionType() const override;
 
 /************************************************************************/
 // ConfigListener protected overrides
@@ -221,7 +221,7 @@ protected:
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void postReadConfiguration(ConfigManager& config) override;
+    void postReadConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -230,7 +230,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    virtual void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

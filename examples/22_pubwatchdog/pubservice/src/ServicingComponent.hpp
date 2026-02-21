@@ -44,21 +44,21 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
      * \see     responseStartSleep
      **/
-    virtual void requestStartSleep( unsigned int timeoutSleep ) override;
+    void requestStartSleep( unsigned int timeoutSleep ) override;
 
     /**
      * \brief   Request call.
      *          Called to stop the service.
      * \note    Has no response
      **/
-    virtual void requestStopService() override;
+    void requestStopService() override;
 
     /**
      * \brief   Request call.
      *          Called to shutdown service and exit application.
      * \note    Has no response
      **/
-    virtual void requestShutdownService() override;
+    void requestShutdownService() override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -71,7 +71,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

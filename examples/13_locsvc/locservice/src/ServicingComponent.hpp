@@ -40,14 +40,14 @@ protected:
      * \param   roleName    The role name of client component that requested to print hello world
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( const String & roleName ) override;
+    void requestHelloWorld( const String & roleName ) override;
 
     /**
      * \brief   Request call.
      *          Sent by client to request to shutdown service and the application. This request has no response.
      * \note    Has no response
      **/
-    virtual void requestShutdownService() override;
+    void requestShutdownService() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

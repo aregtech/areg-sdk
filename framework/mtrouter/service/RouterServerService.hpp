@@ -66,7 +66,7 @@ protected:
      * \param   stubService     The address of service provider to register in the system.
      * \return  Returns true if succeeded registration.
      **/
-    virtual bool registerServiceProvider( const StubAddress & stubService ) override;
+    bool registerServiceProvider( const StubAddress & stubService ) override;
 
     /**
      * \brief   Call to unregister the service provider from the system and disconnect service consumers.
@@ -74,7 +74,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
+    void unregisterServiceProvider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
 
     /**
      * \brief   Call to register the remote service consumer in the system and connect to service provider.
@@ -83,7 +83,7 @@ protected:
      * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
+    bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
 
     /**
      * \brief   Call to unregister the service consumer from the system and disconnect service provider.
@@ -91,7 +91,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
+    void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
 
 /************************************************************************/
 // RegistrationConsumer interface overrides
@@ -105,19 +105,19 @@ protected:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const override;
+    void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.
      * \param   stub    The address of remote service provider that has been registered.
      **/
-    virtual void registeredRemoteServiceProvider( const StubAddress & stub ) override;
+    void registeredRemoteServiceProvider( const StubAddress & stub ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is registered in the system.
      * \param   proxy   The address of remote service consumer that has been registered.
      **/
-    virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
+    void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
 
     /**
      * \brief   Triggered when a remote service provider is unregistered from the system.
@@ -126,7 +126,7 @@ protected:
      * \param   cookie  The cookie of source that has initiated to unregister provider.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered from the system.
@@ -135,19 +135,19 @@ protected:
      * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
+    void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void connectedRemoteServiceChannel( const Channel & channel ) override;
+    void connectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) override;
+    void disconnectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -155,7 +155,7 @@ protected:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void lostRemoteServiceChannel( const Channel & channel ) override;
+    void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -166,7 +166,7 @@ protected:
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -175,29 +175,29 @@ protected:
     /**
      * \brief   Called when receive event the client connection is started.
      **/
-    virtual void onServiceConnectionStarted() override;
+    void onServiceConnectionStarted() override;
 
     /**
      * \brief   Called when receive event the client connection is stopped.
      **/
-    virtual void onServiceConnectionStopped() override;
+    void onServiceConnectionStopped() override;
 
     /**
      * \brief   Called when receive event the client connection is lost.
      **/
-    virtual void onServiceConnectionLost() override;
+    void onServiceConnectionLost() override;
 
     /**
      * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message. 
      **/
-    virtual void onServiceMessageReceived(const RemoteMessage & msgReceived) override;
+    void onServiceMessageReceived(const RemoteMessage & msgReceived) override;
 
     /**
      * \brief   Called when need to send a communication message.
      * \param   msgSend The communication message to send. 
      **/
-    virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
+    void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
 /************************************************************************/
 // ConnectionHandler overrides
@@ -206,7 +206,7 @@ protected:
     /**
      * \brief   Called when need to disconnect and unregister all service providers and service consumers.
      **/
-    virtual void disconnectServices() override;
+    void disconnectServices() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

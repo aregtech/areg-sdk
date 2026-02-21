@@ -80,7 +80,7 @@ private:
          * \param   data    The Event Data object passed to event when fired.
          * \remark  The method is not thread safe.
          **/
-        virtual void processEvent( const NETrafficLightFSM::FsmEventData & data ) override;
+        void processEvent( const NETrafficLightFSM::FsmEventData & data ) override;
 
     private:
     /************************************************************************/
@@ -126,7 +126,7 @@ private:
         /**
          * \brief   Process State Machine timers.
          **/
-        virtual void processTimer( Timer & timer ) override;
+        void processTimer( Timer & timer ) override;
     
     private:
     /************************************************************************/

@@ -55,7 +55,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    virtual void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state ) override;
+    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state ) override;
 
     /**
      * \brief   Response callback.
@@ -65,7 +65,7 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
      * \see     requestStartSleep
      **/
-    virtual void responseStartSleep( unsigned int timeoutSleep ) override;
+    void responseStartSleep( unsigned int timeoutSleep ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -81,7 +81,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

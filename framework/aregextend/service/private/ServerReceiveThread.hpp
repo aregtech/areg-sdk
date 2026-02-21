@@ -91,7 +91,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    virtual bool runDispatcher() override;
+    bool runDispatcher() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

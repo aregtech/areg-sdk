@@ -27,7 +27,7 @@ Every identifier in generated code must follow this table exactly.
 | Global vars (internal linkage) | `_snake_case`       | `_max_connections`                 |
 | Constants (`constexpr`)        | `UPPER_SNAKE_CASE`  | `MAX_BUFFER_SIZE`                  |
 | Template parameters            | `PascalCase`        | `MessageType`                      |
-| Namespaces                     | `snake_case`        | `areg::ipc`                        |
+| Namespaces                     | `snake_case`        | `areg`, `aregext`, `areg::os`      |
 | Macros                         | `AREG_UPPER_SNAKE`  | `AREG_NOCOPY`                      |
 | Local variables                | `snake_case`        | `connection_count`                 |
 
@@ -58,6 +58,41 @@ void set_timeout(int ms);
 
 // Bad — too long
 void load_configuration_file(std::string_view configuration_file_path);
+```
+
+### 1.3 Namespace assignment
+
+Assign namespaces based on module location. Do not invent new top-level names.
+
+| Namespace  | Module / location                                                        |
+|------------|--------------------------------------------------------------------------|
+| `areg`     | All files in `framework/areg/` (core framework)                          |
+| `areg::os` | OS-specific files (suffix `Posix` or `Win32`) within `framework/areg/`  |
+| `aregext`  | All files in `framework/aregextend/`                                     |
+| `areglog`  | All files in `framework/areglogger/`                                     |
+
+Standalone applications (`logcollector`, `logobserver`, `mtrouter`) do not require a namespace. If one is used, it must match the module name.
+
+Wrap every `.hpp` and `.cpp` file in the correct namespace:
+
+```cpp
+// framework/areg/ — core framework
+namespace areg
+{
+    class ServiceManager { };
+}  // namespace areg
+
+// framework/areg/ private/ posix/ or win32/ — OS-specific
+namespace areg::os
+{
+    class TimerPosix { };
+}  // namespace areg::os
+
+// framework/aregextend/
+namespace aregext
+{
+    class SystemServiceConsole { };
+}  // namespace aregext
 ```
 
 ---
@@ -450,8 +485,7 @@ These are preferred practices but not mandatory:
 #include <memory>
 #include <vector>
 
-AREG_NAMESPACE_BEGIN
-namespace ipc
+namespace areg
 {
 
 class Connection;
@@ -551,8 +585,7 @@ inline bool ServiceManager::is_running() const
     return mState == ServiceState::Running;
 }
 
-}  // namespace ipc
-AREG_NAMESPACE_END
+}  // namespace areg
 
 #endif  // AREG_IPC_SERVICE_MANAGER_HPP
 ```
@@ -565,8 +598,7 @@ AREG_NAMESPACE_END
 
 #include <algorithm>
 
-AREG_NAMESPACE_USE
-namespace areg::ipc
+namespace areg
 {
 
 ServiceManager::ServiceManager()
@@ -626,7 +658,7 @@ void ServiceManager::cleanup()
     mConnections.clear();
 }
 
-}  // namespace areg::ipc
+}  // namespace areg
 ```
 
 ---

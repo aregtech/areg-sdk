@@ -43,7 +43,7 @@ protected:
      * \param   listParticipants    The list of chat-room participants
      * \see     responseConnectoinSetup
      **/
-    virtual void requestConnectoinSetup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
+    void requestConnectoinSetup( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -52,7 +52,7 @@ protected:
      * \param   listParticipants    List of participants
      * \see     responseAddParticipant
      **/
-    virtual void requestAddParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
+    void requestAddParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -61,7 +61,7 @@ protected:
      * \param   listParticipants    List of chat-room participants
      * \see     responseRemoveParticipant
      **/
-    virtual void requestRemoveParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
+    void requestRemoveParticipant( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -69,7 +69,7 @@ protected:
      * \param   initiator   The initiator to close chat-room.
      * \note    Has no response
      **/
-    virtual void requestCloseConnection( const DirectConnection::sInitiator & initiator ) override;
+    void requestCloseConnection( const DirectConnection::sInitiator & initiator ) override;
 
 private:
     inline DirectConnectionService & self();
