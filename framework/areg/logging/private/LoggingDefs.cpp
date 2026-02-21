@@ -37,15 +37,15 @@ namespace
      *          The target, source and the message ID should be set before sending the message.
      *          Otherwise, the message ID is an empty function and message will be ignored by any component.
      **/
-    const NEMemory::sRemoteMessage& _getLogEmptyMessage()
+    const NEMemory::RawMessage& _getLogEmptyMessage()
     {
-        static constexpr NEMemory::sRemoteMessage _messageUpdateScpes
+        static constexpr NEMemory::RawMessage _messageUpdateScpes
         {
             {
                 {   /*rbhBufHeader*/
-                      sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                      sizeof(NEMemory::RawMessage)          // biBufSize
                     , sizeof(uint8_t)                     // biLength
-                    , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                    , sizeof(NEMemory::MessageHeader)    // biOffset
                     , NEMemory::BufferType::Remote       // biBufType
                     , 0                                         // biUsed
                 }
@@ -68,15 +68,15 @@ namespace
      *          The source of the log should be set before sending the message.
      *          Otherwise, it is ignored by the Log Collector and the message is dropped.
      **/
-    const NEMemory::sRemoteMessage & _getLogMessage()
+    const NEMemory::RawMessage & _getLogMessage()
     {
-        static constexpr NEMemory::sRemoteMessage _messageServiceLog
+        static constexpr NEMemory::RawMessage _messageServiceLog
         {
             {
                 {   /*rbhBufHeader*/
-                      sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                      sizeof(NEMemory::RawMessage)          // biBufSize
                     , sizeof(uint8_t)                     // biLength
-                    , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                    , sizeof(NEMemory::MessageHeader)    // biOffset
                     , NEMemory::BufferType::Remote       // biBufType
                     , 0                                         // biUsed
                 }
@@ -107,7 +107,7 @@ namespace
 }
 #endif // AREG_LOGS
 
-NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType)
+NELogging::LogEntry::LogEntry(NELogging::LogMessageType msgType)
     : logDataType   { NELogging::LogDataType::Local }
     , logMsgType    { msgType }
     , logMessagePrio{ NELogging::LogPriority::PrioNotset }
@@ -131,7 +131,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType)
 }
 
 #if AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen)
+NELogging::LogEntry::LogEntry(NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen)
     : logDataType   { NELogging::LogDataType::Local }
     , logMsgType    { msgType }
     , logMessagePrio{ msgPrio }
@@ -156,7 +156,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, uint32_t 
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGS
-NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
+NELogging::LogEntry::LogEntry(NELogging::LogMessageType msgType, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
     : logDataType{ NELogging::LogDataType::Local }
     , logMsgType{ msgType }
     , logMessagePrio{ NELogging::LogPriority::PrioNotset }
@@ -180,7 +180,7 @@ NELogging::sLogMessage::sLogMessage(NELogging::LogMessageType msgType, uint32_t 
 }
 #endif  // AREG_LOGS
 
-NELogging::sLogMessage::sLogMessage(const NELogging::sLogMessage & src)
+NELogging::LogEntry::LogEntry(const NELogging::LogEntry & src)
     : logDataType   { src.logDataType }
     , logMsgType    { src.logMsgType }
     , logMessagePrio{ src.logMessagePrio }
@@ -204,7 +204,7 @@ NELogging::sLogMessage::sLogMessage(const NELogging::sLogMessage & src)
     NEMemory::memCopy(logMessage, NELogging::LOG_MESSAGE_IZE, src.logMessage, src.logMessageLen + 1);
 }
 
-NELogging::sLogMessage & NELogging::sLogMessage::operator = (const NELogging::sLogMessage & src)
+NELogging::LogEntry & NELogging::LogEntry::operator = (const NELogging::LogEntry & src)
 {
     if (this != &src)
     {
@@ -306,16 +306,16 @@ AREG_API_IMPL uint32_t NELogging::getScopePriority( const char * scopeName )
     return LogManager::getScopePriority( scopeName );
 }
 
-AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage& logMessage, NELogging::LogDataType dataType, const ITEM_ID& srcCookie)
+AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::LogEntry& logMessage, NELogging::LogDataType dataType, const ITEM_ID& srcCookie)
 {
     RemoteMessage msgLog;
-    if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NELogging::sLogMessage)) != nullptr)
+    if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NELogging::LogEntry)) != nullptr)
     {
         msgLog << logMessage;
-        msgLog.setSizeUsed(sizeof(NELogging::sLogMessage));
+        msgLog.setSizeUsed(sizeof(NELogging::LogEntry));
         msgLog.moveToEnd();
         msgLog.setSource(srcCookie);
-        NELogging::sLogMessage* log = reinterpret_cast<NELogging::sLogMessage*>(msgLog.getBuffer());
+        NELogging::LogEntry* log = reinterpret_cast<NELogging::LogEntry*>(msgLog.getBuffer());
         log->logCookie   = srcCookie;
         log->logDataType = dataType;
 
@@ -359,7 +359,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageRegisterScopes(const ITEM_ID & sou
     return msgScope;
 }
 
-AREG_API_IMPL void NELogging::logAnyMessageLocal(const NELogging::sLogMessage& logMessage)
+AREG_API_IMPL void NELogging::logAnyMessageLocal(const NELogging::LogEntry& logMessage)
 {
     LogManager::logMessage(logMessage);
 }
@@ -375,7 +375,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageUpdateScopes(const ITEM_ID& source
         msgScope.setTarget(target);
         msgScope.setSource(source);
         msgScope << scopeNames.getSize();
-        const std::vector<NELogging::sScopeInfo>& list = scopeNames.getData();
+        const std::vector<NELogging::ScopeEntry>& list = scopeNames.getData();
         for (const auto & entry : list)
         {
             msgScope << entry;
@@ -385,9 +385,9 @@ AREG_API_IMPL RemoteMessage NELogging::messageUpdateScopes(const ITEM_ID& source
     return msgScope;
 }
 
-AREG_API_IMPL void NELogging::logAnyMessage(const NELogging::sLogMessage& logMessage)
+AREG_API_IMPL void NELogging::logAnyMessage(const NELogging::LogEntry& logMessage)
 {
-    LogManager::logMessage(SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(NELogging::sLogMessage)));
+    LogManager::logMessage(SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(NELogging::LogEntry)));
 }
 
 AREG_API_IMPL RemoteMessage NELogging::messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, uint32_t scopeId, uint32_t scopePrio)
@@ -590,7 +590,7 @@ AREG_API_IMPL uint32_t NELogging::getScopePriority( const char * /*scopeName*/ )
     return static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid);
 }
 
-AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::sLogMessage & /*logMessage*/, NELogging::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
+AREG_API_IMPL RemoteMessage NELogging::createLogMessage(const NELogging::LogEntry & /*logMessage*/, NELogging::LogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
 {
     RemoteMessage msgLog;
     return msgLog;
@@ -606,7 +606,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageRegisterScopes(const ITEM_ID & /*s
     return msgScope;
 }
 
-AREG_API_IMPL void NELogging::logAnyMessageLocal(const NELogging::sLogMessage & /*logMessage*/)
+AREG_API_IMPL void NELogging::logAnyMessageLocal(const NELogging::LogEntry & /*logMessage*/)
 {
 }
 
@@ -616,7 +616,7 @@ AREG_API_IMPL RemoteMessage NELogging::messageUpdateScopes(const ITEM_ID & /*sou
     return msgScope;
 }
 
-AREG_API_IMPL void NELogging::logAnyMessage(const NELogging::sLogMessage & /*logMessage*/)
+AREG_API_IMPL void NELogging::logAnyMessage(const NELogging::LogEntry & /*logMessage*/)
 {
 }
 

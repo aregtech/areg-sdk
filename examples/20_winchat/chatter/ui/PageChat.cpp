@@ -28,7 +28,7 @@ IMPLEMENT_DYNAMIC(PageChat, CPropertyPage)
 PageChat::PageChat( const String & serviceName
                       , const DirectConnection::sInitiator & initiator
                       , const DirectConnection::ListParticipants & listParties
-                      , const DirectConnection::sParticipant & ownerConnection
+                      , const DirectConnection::Participant & ownerConnection
                       , bool isInitiator )
 	: CPropertyPage             (PageChat::IDD)
     , ChatPrticipantHandler   ( serviceName, initiator, listParties, ownerConnection )
@@ -110,13 +110,13 @@ BOOL PageChat::OnInitDialog( )
 
     const DirectConnection::sInitiator & initiator    = GetInitiator();
     const DirectConnection::ListParticipants & parties= GetParticipantList();
-    const DirectConnection::sParticipant & owner      = GetConnectionOwner( );
+    const DirectConnection::Participant & owner      = GetConnectionOwner( );
     String message("");
     String comma("");
 
     for ( uint32_t i = 0; i < parties.getSize(); ++ i )
     {
-        const DirectConnection::sParticipant & participant = parties[i];
+        const DirectConnection::Participant & participant = parties[i];
         if ( owner != participant )
         {
             message += comma;
@@ -412,7 +412,7 @@ void PageChat::setTabTitle( const String & title )
 
 LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         outputMessage( CString( data->nickName )
@@ -430,7 +430,7 @@ LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
 
 LRESULT PageChat::OnCmdChatTyping( WPARAM /*wParam*/, LPARAM lParam)
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         outputTyping(CString( data->nickName ), CString( data->message ), static_cast<uint32_t>(data->dataSave));

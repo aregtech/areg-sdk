@@ -159,7 +159,7 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
         const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
         for ( uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
-            const chat::sConnection & connection = listConnections.getAt(i);
+            const chat::ConnectionRecord & connection = listConnections.getAt(i);
             addConnection( connection );
         }
 
@@ -171,12 +171,12 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
     }
 }
 
-void PageConnections::OnAddConnection( ConnectionManager::sConnection & data )
+void PageConnections::OnAddConnection( ConnectionManager::ConnectionRecord & data )
 {
     addConnection(data);
 }
 
-void PageConnections::OnRemoveConnection( ConnectionManager::sConnection & data )
+void PageConnections::OnRemoveConnection( ConnectionManager::ConnectionRecord & data )
 {
     removeConnection(data);
 }
@@ -246,7 +246,7 @@ uint32_t PageConnections::GetRegisteredCookie() const
     return mConnectionHandler.GetCookie( );
 }
 
-inline void PageConnections::addConnection( const ConnectionManager::sConnection & connection )
+inline void PageConnections::addConnection( const ConnectionManager::ConnectionRecord & connection )
 {
     LOG_SCOPE( chatter_ui_PageConnections_AddConnection );
     if ( mConnectionHandler.GetNickName() != connection.nickName )
@@ -305,7 +305,7 @@ inline int32_t PageConnections::getSelectedConnections( DirectConnection::sIniti
             CString nickName= mCtrlConnections.GetItemText(i, 0);
             LPARAM cookie   = mCtrlConnections.GetItemData(i);
 
-            DirectConnection::sParticipant participant;
+            DirectConnection::Participant participant;
             participant.nickName    = static_cast<LPCTSTR>(nickName);
             participant.cookie      = static_cast<uint32_t>(cookie);
             participant.sessionId   = static_cast<uint64_t>(now);
@@ -358,7 +358,7 @@ inline void PageConnections::cleanService()
     }
 }
 
-inline int32_t PageConnections::findConnection( const ConnectionManager::sConnection & connection ) const
+inline int32_t PageConnections::findConnection( const ConnectionManager::ConnectionRecord & connection ) const
 {
     int32_t result = NECommon::INVALID_INDEX;
     for ( int i = 0; i < mCtrlConnections.GetItemCount(); ++ i )
@@ -376,7 +376,7 @@ inline int32_t PageConnections::findConnection( const ConnectionManager::sConnec
     return result;
 }
 
-inline void PageConnections::removeConnection( const ConnectionManager::sConnection & connection )
+inline void PageConnections::removeConnection( const ConnectionManager::ConnectionRecord & connection )
 {
     int32_t pos = findConnection(connection);
     if ( pos != NECommon::INVALID_INDEX )

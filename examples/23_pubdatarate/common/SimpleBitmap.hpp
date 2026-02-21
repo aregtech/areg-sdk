@@ -38,10 +38,10 @@ public:
     /**
      * \brief   The Bitmap header info structure.
      */
-    struct sBitmapInfoHeader
+    struct BitmapInfoHeader
     {
         //!< Specifies the number of bytes required by the structure.
-        uint32_t    bmiSize     { sizeof(sBitmapInfoHeader) };
+        uint32_t    bmiSize     { sizeof(BitmapInfoHeader) };
         //!< Specifies the width of the bitmap, in pixels.
         int32_t     bmiWidth    { 0 };
         //!< Specifies the height of the bitmap, in pixels.
@@ -67,29 +67,29 @@ public:
     /**
      * \brief   This structure contains information about the type, size, and layout of a file that contains a Bitmap.
      */
-    struct sBitmapFileHeader
+    struct BitmapFileHeader
     {
         //!< The file type; must be BM.
         uint16_t    bmfType     { (static_cast<uint16_t>('B') << 8) | (static_cast<uint16_t>('M') << 0) };
         //!< The size, in bytes, of the bitmap file.
-        uint32_t    bmfSize     { sizeof(sBitmapFileHeader) + sizeof(sBitmapInfoHeader) };
+        uint32_t    bmfSize     { sizeof(BitmapFileHeader) + sizeof(BitmapInfoHeader) };
         //!< Must be 0.
         uint16_t    bmfReserved1{ 0 };
         //!< Must be 0.
         uint16_t    bmfReserved2{ 0 };
-        //!< The offset, in bytes, from the beginning of the sBitmapFileHeader structure to the bitmap bits.
-        uint32_t    bmfOffBits  { sizeof(sBitmapFileHeader) + sizeof(sBitmapInfoHeader) };
+        //!< The offset, in bytes, from the beginning of the BitmapFileHeader structure to the bitmap bits.
+        uint32_t    bmfOffBits  { sizeof(BitmapFileHeader) + sizeof(BitmapInfoHeader) };
     };
 
     /**
      * \brief   The bitmap file header structure, bitmap header information and bits aligned to 32-bit value.
      */
-    struct sBitmap
+    struct Bitmap
     {
         //!< The structure of bitmap file.
-        sBitmapFileHeader   bmpFile;
+        BitmapFileHeader   bmpFile;
         //!< The structure of bitmap information.
-        sBitmapInfoHeader   bmpInfo;
+        BitmapInfoHeader   bmpInfo;
         //!< Bitmap pixels.
         uint32_t            bmpBits[1]{0};
     };
@@ -228,7 +228,7 @@ public:
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-    sBitmap *       mBitmap;    //!< The bitmap
+    Bitmap *       mBitmap;    //!< The bitmap
     std::string     mFileName;  //!< The name of file, valid only if open bitmap or save.
     uint32_t        mFrameId;   //!< The ID of the frame.
     int32_t         mChannelId; //!< Image data source channel.
@@ -403,15 +403,15 @@ inline bool SimpleBitmap::open(const std::string& fileName)
     File file(fileName, static_cast<uint32_t>(File::OpenMode::Read) | static_cast<uint32_t>(File::OpenMode::Binary));
     if (file.open())
     {
-        sBitmapFileHeader bmf;
-        if (file.read(reinterpret_cast<uint8_t*>(&bmf), sizeof(sBitmapFileHeader)) == sizeof(sBitmapFileHeader))
+        BitmapFileHeader bmf;
+        if (file.read(reinterpret_cast<uint8_t*>(&bmf), sizeof(BitmapFileHeader)) == sizeof(BitmapFileHeader))
         {
             uint32_t size   = bmf.bmfSize;
             uint8_t* buffer = DEBUG_NEW uint8_t[size];
             file.moveToBegin();
             if (file.read(buffer, size) == size)
             {
-                mBitmap = reinterpret_cast<sBitmap*>(buffer);
+                mBitmap = reinterpret_cast<Bitmap*>(buffer);
                 result = true;
             }
             else
@@ -429,7 +429,7 @@ inline bool SimpleBitmap::setBlock( const NELargeData::ImageBlock & block )
     if (block.isEmpty())
         return false;
 
-    const NELargeData::sImageBlock* imgBlock = block.getBlock();
+    const NELargeData::RawImageBlock* imgBlock = block.getBlock();
 
     if ((mChannelId != -1) && (mChannelId != static_cast<int32_t>(imgBlock->channelId)))
         return false; // wrong source
@@ -440,7 +440,7 @@ inline bool SimpleBitmap::setBlock( const NELargeData::ImageBlock & block )
         _allocateBitmap( imgBlock->frameWidth, imgBlock->frameHeight );
     }
 
-    uint8_t * pixels = getPixels( imgBlock->imageData.imgStartPos.coordX, imgBlock->imageData.imgStartPos.coordY );
+    uint8_t * pixels = getPixels( imgBlock->imageData.imgStartPos.posX, imgBlock->imageData.imgStartPos.posY );
     ::memcpy( pixels, reinterpret_cast<const uint8_t *>(imgBlock->imageData.imgRGB), imgBlock->imageData.imgRBGLen );
     mChannelId  = static_cast<int32_t>(imgBlock->channelId);
     mFrameId    = imgBlock->frameSeqId;
@@ -460,8 +460,8 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     uint32_t remain = height - rowIndex;
     lines = std::min(lines, remain);
     uint32_t sizePixels = _dataSize(width, lines);
-    uint32_t sizeBlock = sizePixels + sizeof(NELargeData::sImageBlock);
-    NELargeData::sImageBlock* block = result.initialize(sizeBlock);
+    uint32_t sizeBlock = sizePixels + sizeof(NELargeData::RawImageBlock);
+    NELargeData::RawImageBlock* block = result.initialize(sizeBlock);
 
     block->blockSize = sizeBlock;
     block->channelId = 0;
@@ -470,7 +470,7 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     block->frameWidth = width;
     block->imageData.imgHeight = lines;
     block->imageData.imgRBGLen = sizePixels;
-    block->imageData.imgStartPos = NELargeData::sCoord{ 0, rowIndex };
+    block->imageData.imgStartPos = NEMath::Coord{ 0, static_cast<int32_t>(rowIndex) };
     block->imageData.imgWidth = width;
 
     NEMemory::copyElems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
@@ -480,11 +480,11 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
 inline void SimpleBitmap::_allocateBitmap(uint32_t width, uint32_t height)
 {
     uint32_t dataSize = _dataSize(width, height);
-    uint32_t fileSize = dataSize + sizeof(sBitmap);
+    uint32_t fileSize = dataSize + sizeof(Bitmap);
     uint8_t* buffer = DEBUG_NEW uint8_t[fileSize];
     if (buffer != nullptr)
     {
-        mBitmap = new(buffer)sBitmap;
+        mBitmap = new(buffer)Bitmap;
         mBitmap->bmpFile.bmfSize    = fileSize;
         mBitmap->bmpInfo.bmiSize    = dataSize;
         mBitmap->bmpInfo.bmiWidth   = static_cast<int32_t>(width);

@@ -38,7 +38,7 @@ LogManager & LogManager::getInstance()
     return _theLogManager;
 }
 
-void LogManager::logMessage(const NELogging::sLogMessage& logData )
+void LogManager::logMessage(const NELogging::LogEntry& logData )
 {
     LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
 }
@@ -349,7 +349,7 @@ void LogManager::stopLogs()
     triggerExit( );
 }
 
-void LogManager::writeLogMessage( const NELogging::sLogMessage & logMessage )
+void LogManager::writeLogMessage( const NELogging::LogEntry & logMessage )
 {
     mLoggerFile.logMessage( logMessage );
     mLoggerDebug.logMessage( logMessage );

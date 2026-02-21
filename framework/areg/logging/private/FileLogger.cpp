@@ -53,7 +53,7 @@ bool FileLogger::openLogger()
             {
                     
                 Process & curProcess = Process::getInstance();
-                NELogging::sLogMessage logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
+                NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
                 String::formatString( logMsgHello.logMessage
                                     , NELogging::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
@@ -74,7 +74,7 @@ void FileLogger::closeLogger()
     if ( mLogFile.isOpened() )
     {
         Process & curProcess = Process::getInstance();
-        NELogging::sLogMessage logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
+        NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
         String::formatString(logMsgGoodbye.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
@@ -89,7 +89,7 @@ void FileLogger::closeLogger()
     mLogFile.close();
 }
 
-void FileLogger::logMessage( const NELogging::sLogMessage & logMessage )
+void FileLogger::logMessage( const NELogging::LogEntry & logMessage )
 {
     if (mLogFile.isOpened())
     {

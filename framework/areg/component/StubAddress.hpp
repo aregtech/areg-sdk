@@ -114,7 +114,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
+    StubAddress( const NEService::InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.

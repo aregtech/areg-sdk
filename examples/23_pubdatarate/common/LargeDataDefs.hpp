@@ -14,6 +14,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/CommonDefs.hpp"
 #include "areg/base/IOStream.hpp"
+#include "areg/base/MathDefs.hpp"
 
 #include <memory>
 #include <string_view>
@@ -32,40 +33,33 @@ namespace NELargeData
     constexpr uint32_t           TIMER_TIMEOUT  { 1'000u };
 
     //!< The RGB structure of 1 pixel data.
-    struct sRBG
+    struct RBG
     {
         uint8_t red     { 0 }; //!< The red value of a pixel.
         uint8_t green   { 0 }; //!< The green value of a pixel.
         uint8_t blue    { 0 }; //!< The blue value of a pixel.
     };
 
-    //!< Coordinates.
-    struct sCoord
-    {
-        uint32_t coordX { 0 }; //!< X-coordinate.
-        uint32_t coordY { 0 }; //!< Y-coordinate.
-    };
-
     //!< The structure of an image data.
-    struct sImageData
+    struct ImageData
     {
         //!< Specifies the (x, y) starting position coordinate of an image data
-        sCoord      imgStartPos { 0, 0 };
+        NEMath::Coord   imgStartPos { 0, 0 };
         //!< Specifies  the width of an image data.
-        uint32_t    imgWidth    { 0 };
+        uint32_t        imgWidth    { 0 };
         //!< Specifies the height of an image data.
-        uint32_t    imgHeight   { 0 };
+        uint32_t        imgHeight   { 0 };
         //!< Specifies the length in bytes of an image pixels.
-        uint32_t    imgRBGLen   { 0 };
+        uint32_t        imgRBGLen   { 0 };
         //!< The following is array of pixels. Each pixel is a combination of RGB values.
-        sRBG        imgRGB[1];
+        RBG            imgRGB[1];
     };
 
     //!< The structure of an image block.
-    struct sImageBlock
+    struct RawImageBlock
     {
         //!< The total size of an image block
-        uint32_t    blockSize   { sizeof( sImageBlock ) };
+        uint32_t    blockSize   { sizeof(RawImageBlock) };
         //!< The frame ID of image block. Blocks with same ID belong to same image frame.
         uint32_t    frameSeqId  { 0 };
         //!< The image data source ID.
@@ -75,7 +69,7 @@ namespace NELargeData
         //!< Specifies the total height of the image frame.
         uint32_t    frameHeight { 0 };
         //!< The image data structure followed by array of pixels.
-        sImageData  imageData;
+        ImageData  imageData;
     };
 
     //!< The image block class, which is a wrapper of image block structure.
@@ -107,7 +101,7 @@ namespace NELargeData
          * \return  If succeeded, returns valid pointer of image block structure.
          *          Otherwise, returns null pointer.
          */
-        inline sImageBlock* initialize(uint32_t blockSize);
+        inline RawImageBlock* initialize(uint32_t blockSize);
         
         /**
          * \brief   Updates the channel ID and frame ID of the image block and returns
@@ -117,17 +111,17 @@ namespace NELargeData
          * \param   sequenceNr  The frame ID to set for image block
          * \return  Return pointer to image block.
          */
-        inline const sImageBlock* getBlock(uint32_t channelId, uint32_t sequenceNr);
+        inline const RawImageBlock* getBlock(uint32_t channelId, uint32_t sequenceNr);
 
         /**
          * \brief   Return pointer to the image block structure.
          */
-        inline const sImageBlock* getBlock() const;
+        inline const RawImageBlock* getBlock() const;
 
         /**
          * \brief   Sets the image block data.
          */
-        inline void setBlock(sImageBlock* block);
+        inline void setBlock(RawImageBlock* block);
 
         /**
          * \brief   Releases the image block.
@@ -164,7 +158,7 @@ namespace NELargeData
 //////////////////////////////////////////////////////////////////////////
     private:
         //!< The image block.
-        sImageBlock *   mBlock;
+        RawImageBlock *   mBlock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -217,21 +211,21 @@ inline NELargeData::ImageBlock& NELargeData::ImageBlock::operator = (NELargeData
     return (*this);
 }
 
-inline NELargeData::sImageBlock* NELargeData::ImageBlock::initialize(uint32_t blockSize)
+inline NELargeData::RawImageBlock* NELargeData::ImageBlock::initialize(uint32_t blockSize)
 {
     release();
     uint8_t* data = blockSize != 0 ? DEBUG_NEW uint8_t[blockSize] : nullptr;
     if (data != nullptr)
     {
         ::memset(data, 0x00, blockSize);
-        mBlock = new(data) NELargeData::sImageBlock;
+        mBlock = new(data) NELargeData::RawImageBlock;
         mBlock->blockSize = blockSize;
     }
 
     return mBlock;
 }
 
-inline const NELargeData::sImageBlock* NELargeData::ImageBlock::getBlock(uint32_t channelId, uint32_t sequenceNr)
+inline const NELargeData::RawImageBlock* NELargeData::ImageBlock::getBlock(uint32_t channelId, uint32_t sequenceNr)
 {
     if (mBlock != nullptr)
     {
@@ -242,12 +236,12 @@ inline const NELargeData::sImageBlock* NELargeData::ImageBlock::getBlock(uint32_
     return mBlock;
 }
 
-inline const NELargeData::sImageBlock* NELargeData::ImageBlock::getBlock() const
+inline const NELargeData::RawImageBlock* NELargeData::ImageBlock::getBlock() const
 {
     return mBlock;
 }
 
-inline void NELargeData::ImageBlock::setBlock(sImageBlock* block)
+inline void NELargeData::ImageBlock::setBlock(RawImageBlock* block)
 {
     release();
     mBlock = block;
@@ -305,7 +299,7 @@ inline const InStream& NELargeData::operator >> (const InStream& stream, NELarge
 
     if (data != nullptr)
     {
-        NELargeData::sImageBlock* block = new(data) NELargeData::sImageBlock;
+        NELargeData::RawImageBlock* block = new(data) NELargeData::RawImageBlock;
         block->blockSize = size;
         uint32_t skip = sizeof(block->blockSize);
         size -= skip;

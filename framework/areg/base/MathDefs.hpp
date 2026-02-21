@@ -63,47 +63,47 @@ namespace NEMath
     };
 
     /**
-     * \brief   NEMath::sRect
+     * \brief   NEMath::Rect
      *          The structure of rectangle object, 
      *          which contains coordinate of the top-left corner, width and height.
      **/
-    typedef struct S_Rect
+    struct Rect
     {
         int32_t     x       { 0 };  //!< Top left corner, X-coordinate.
         int32_t     y       { 0 };  //!< Top left corner, Y-coordinate.
         uint32_t    width   { 0 };  //!< Width of the rectangle.
         uint32_t    height  { 0 };  //!< Height of the rectangle.
-    } sRect;
+    };
 
     /**
-     * \brief   NEMath::sSize
+     * \brief   NEMath::Size
      *          The structure of the size object, which contains width and height values.
      **/
-    typedef struct S_Size
+    struct Size
     {
         uint32_t    width   { 0 };  //!< The width of the size object.
         uint32_t    height  { 0 };  //!< The height of the size object.
-    } sSize;
+    };
 
     /**
-     * \brief   NEMath::sPoint
+     * \brief   NEMath::Point
      *          The structure of the point object, which contains X- and Y-coordinates.
      **/
-    typedef struct S_Point
+    struct Point
     {
         int32_t     x;  //!< The X-coordinate of the point.
         int32_t     y;  //!< The Y-coordinate of the point.
-    } sPoint;
+    };
 
     /**
-     * \brief   NEMath::sCoord
+     * \brief   NEMath::Coord
      *          The structure of the Coordinate structure, which contains X- and Y-coordinates of a position.
      **/
-    typedef struct S_Coord
+    struct Coord
     {
         int32_t     posX;   //!< The X-coordinate of a position.
         int32_t     posY;   //!< The Y-coordinate of a position.
-    } sCoord;
+    };
 
 /************************************************************************/
 // NEMath constants
@@ -122,9 +122,9 @@ namespace NEMath
     /**
      * \brief   The union object of Large Integer,
      *          which consists of 32-bit low part integer and 32-bit high part integer.
-     *          NEMath::uLargeInteger
+     *          NEMath::Int64Parts
      **/
-    union  uLargeInteger
+    union  Int64Parts
     {
         /**
          * \brief   Named structure
@@ -139,11 +139,11 @@ namespace NEMath
     };
 
     /**
-     * \brief   NEMath::sLargeInteger
+     * \brief   NEMath::LargeInteger
      *          Large Number. 64-bit structure
      *          with defined high and low bits values.
      **/
-    struct AREG_API sLargeInteger
+    struct AREG_API LargeInteger
     {
     //////////////////////////////////////////////////////////////////////////
     // member variables
@@ -157,13 +157,13 @@ namespace NEMath
         /**
          * \brief   Default constructor
          **/
-        inline sLargeInteger();
+        inline LargeInteger();
         /**
          * \brief   Constructor. Sets hight and low 32-bit values of Large Number structure
          * \param   hi      The high 32-bit integer value of Large Number
          * \param   lo      The low  32-bit integer value of Large Number
          **/
-        inline sLargeInteger( uint32_t hi, uint32_t lo );
+        inline LargeInteger( uint32_t hi, uint32_t lo );
         /**
          * \brief   Constructor. Sets hight and low 32-bit values of Large Number structure
          *          taken from 64-bit source integer value
@@ -171,25 +171,25 @@ namespace NEMath
          *                  The high 32-bit integer value will be saved in hiBits
          *                  The low  32-bit integer value will be saved in loBits
          **/
-        inline sLargeInteger( uint64_t num );
+        inline LargeInteger( uint64_t num );
         /**
          * \brief   Copy constructor.
          * \param   src     The source to copy data.
          **/
-        inline sLargeInteger( const NEMath::sLargeInteger & src );
+        inline LargeInteger( const NEMath::LargeInteger & src );
 
         /**
          * \brief   Move constructor.
          * \param   src     The source to move data.
          **/
-        inline sLargeInteger( NEMath::sLargeInteger && src ) noexcept;
+        inline LargeInteger( NEMath::LargeInteger && src ) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
     //////////////////////////////////////////////////////////////////////////
 
     /************************************************************************/
-    // NEMath::sLargeInteger converting operators
+    // NEMath::LargeInteger converting operators
     /************************************************************************/
         /**
          * \brief   Converts Large Number structure to uint64_t 64-bit
@@ -199,32 +199,32 @@ namespace NEMath
         inline operator uint64_t () const;
 
     /************************************************************************/
-    // NEMath::sLargeInteger simple math operations
+    // NEMath::LargeInteger simple math operations
     /************************************************************************/
         /**
          * \brief   Assigning operator, assigns high and low 32-bit values
          *          taken from given Large Number source.
          * \param   src     The source of Large Number to take high and low 32-bit values.
          **/
-        inline NEMath::sLargeInteger & operator = ( const NEMath::sLargeInteger & src );
+        inline NEMath::LargeInteger & operator = ( const NEMath::LargeInteger & src );
         /**
          * \brief   Move operator, assigns high and low 32-bit values from given source.
          * \param   src     The source of Large Number to take high and low 32-bit values.
          **/
-        inline NEMath::sLargeInteger & operator = ( NEMath::sLargeInteger && src ) noexcept;
+        inline NEMath::LargeInteger & operator = ( NEMath::LargeInteger && src ) noexcept;
         /**
          * \brief   Assigning operator, assigns high and low 32-bit values
          *          taken from given 64-bit integer source.
          * \param   src     The source of 64-bit integers value to take high and low 32-bit values.
          **/
-        inline NEMath::sLargeInteger & operator = ( uint64_t src );
+        inline NEMath::LargeInteger & operator = ( uint64_t src );
 
         /**
          * \brief   Sums 2 Large Number values. 2 values will be added as 2 64-bit integer
          *          values and returned as 64-bit integer.
          * \param   rhs     The right-hand operand of Large Number to add
          **/
-        inline uint64_t operator + ( const NEMath::sLargeInteger & rhs ) const;
+        inline uint64_t operator + ( const NEMath::LargeInteger & rhs ) const;
         /**
          * \brief   Sums Large Number and 64-bit integer values. 2 values will be added as 2 64-bit integer
          *          values and returned as 64-bit integer.
@@ -237,20 +237,20 @@ namespace NEMath
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of Large Number to add
          **/
-        inline NEMath::sLargeInteger & operator += ( const NEMath::sLargeInteger & rhs );
+        inline NEMath::LargeInteger & operator += ( const NEMath::LargeInteger & rhs );
         /**
          * \brief   Sums Large Number and 64-bit integer values. 2 values will be added as 2 64-bit integer
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of 64-bit integer to add
          **/
-        inline NEMath::sLargeInteger & operator += ( uint64_t rhs );
+        inline NEMath::LargeInteger & operator += ( uint64_t rhs );
 
         /**
          * \brief   Subtracts 2 Large Number values. 2 values will be subtracted as 2 64-bit integer
          *          values and returned as 64-bit integer.
          * \param   rhs     The right-hand operand of Large Number to subtract
          **/
-        inline uint64_t operator - ( const NEMath::sLargeInteger & rhs ) const;
+        inline uint64_t operator - ( const NEMath::LargeInteger & rhs ) const;
         /**
          * \brief   Subtracts Large Number and 64-bit integer values. 2 values will be subtracted as 2 64-bit integer
          *          values and returned as 64-bit integer.
@@ -263,18 +263,18 @@ namespace NEMath
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of Large Number to subtract
          **/
-        inline NEMath::sLargeInteger & operator -= ( const NEMath::sLargeInteger & rhs );
+        inline NEMath::LargeInteger & operator -= ( const NEMath::LargeInteger & rhs );
          /**
          * \brief   Subtracts Large Number and 64-bit integer values. 2 values will be subtracted as 2 64-bit integer
          *          values and the result will be saved in left-hand operand Large Number structure
          * \param   rhs     The right-hand operand of 64-bit integer to subtract
          **/
-        inline NEMath::sLargeInteger & operator -= ( uint64_t rhs );
+        inline NEMath::LargeInteger & operator -= ( uint64_t rhs );
 
         /**
          * \brief   Compares 2 Large Number value and returns true if they are equal
          **/
-        inline bool operator == ( const NEMath::sLargeInteger & other ) const;
+        inline bool operator == ( const NEMath::LargeInteger & other ) const;
         /**
          * \brief   Compares Large Number and 64-bit integer values, and returns true if they are equal
          **/
@@ -282,16 +282,16 @@ namespace NEMath
         /**
          * \brief   Compares 2 Large Number value and returns true if they are not equal
          **/
-        inline bool operator != ( const NEMath::sLargeInteger & other ) const;
+        inline bool operator != ( const NEMath::LargeInteger & other ) const;
         /**
          * \brief   Compares Large Number and 64-bit integer values, and returns true if they are not equal
          **/
         inline bool operator != ( uint64_t other ) const;
 
     /************************************************************************/
-    // NEMath::sLargeInteger declare global operators to make streamable
+    // NEMath::LargeInteger declare global operators to make streamable
     /************************************************************************/
-        AREG_DECLARE_STREAMABLE(NEMath::sLargeInteger);
+        AREG_DECLARE_STREAMABLE(NEMath::LargeInteger);
     };
 
 /************************************************************************/
@@ -319,21 +319,21 @@ namespace NEMath
      * \param	hi	    High bits to set
      * \param	lo	    Low bits to set
      **/
-    inline void setBits( sLargeInteger & out_num, uint32_t hi, uint32_t lo);
+    inline void setBits( LargeInteger & out_num, uint32_t hi, uint32_t lo);
 
     /**
      * \brief	Returns High Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns High Bits value of Large Number
      **/
-    inline uint32_t getHighBits(const sLargeInteger & num);
+    inline uint32_t getHighBits(const LargeInteger & num);
 
     /**
      * \brief	Returns Low Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns Low Bits value of Large Number
      **/
-    inline uint32_t getLowBits(const sLargeInteger & num);
+    inline uint32_t getLowBits(const LargeInteger & num);
 
 /************************************************************************/
 // NEMath namespace utility functions, check-sum operations
@@ -637,18 +637,18 @@ inline char NEMath::getChar(NEMath::NumericSign sign)
     }
 }
 
-inline void NEMath::setBits( sLargeInteger &num, uint32_t hi, uint32_t lo )
+inline void NEMath::setBits( LargeInteger &num, uint32_t hi, uint32_t lo )
 {
     num.hiBits = hi;
     num.loBits = lo;
 }
 
-inline uint32_t NEMath::getHighBits( const sLargeInteger &num )
+inline uint32_t NEMath::getHighBits( const LargeInteger &num )
 {
     return (num.hiBits);
 }
 
-inline uint32_t NEMath::getLowBits( const sLargeInteger &num )
+inline uint32_t NEMath::getLowBits( const LargeInteger &num )
 {
     return (num.loBits);
 }
@@ -767,67 +767,67 @@ inline constexpr T NEMath::delta(T a, T b) noexcept
 }
 
 /************************************************************************/
-// NEMath::sLargeInteger inline functions implementation
+// NEMath::LargeInteger inline functions implementation
 /************************************************************************/
 
-inline NEMath::sLargeInteger::sLargeInteger()
+inline NEMath::LargeInteger::LargeInteger()
     : hiBits ( 0 ), loBits ( 0 ) 
 {
 }
 
-inline NEMath::sLargeInteger::sLargeInteger( uint32_t hi, uint32_t lo )
+inline NEMath::LargeInteger::LargeInteger( uint32_t hi, uint32_t lo )
     : hiBits ( hi ), loBits ( lo ) 
 {
 }
 
-inline NEMath::sLargeInteger::sLargeInteger( uint64_t num )
+inline NEMath::LargeInteger::LargeInteger( uint64_t num )
     : hiBits ( 0), loBits ( 0 ) 
 {
-    uLargeInteger li{};
+    Int64Parts li{};
     li.quadPart = num;
     hiBits = li.u.highPart;
     loBits = li.u.lowPart;
 }
 
-inline NEMath::sLargeInteger::sLargeInteger( const NEMath::sLargeInteger & src )
+inline NEMath::LargeInteger::LargeInteger( const NEMath::LargeInteger & src )
     : hiBits ( src.hiBits ), loBits ( src.loBits ) 
 {
 }
 
-inline NEMath::sLargeInteger::sLargeInteger( NEMath::sLargeInteger && src ) noexcept
+inline NEMath::LargeInteger::LargeInteger( NEMath::LargeInteger && src ) noexcept
     : hiBits ( src.hiBits ), loBits ( src.loBits )
 {
 }
 
-inline NEMath::sLargeInteger::operator uint64_t () const
+inline NEMath::LargeInteger::operator uint64_t () const
 {
-    uLargeInteger li{ {hiBits, loBits} };
+    Int64Parts li{ {hiBits, loBits} };
     return li.quadPart;
 }
 
-inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator = ( const uint64_t src )
+inline NEMath::LargeInteger & NEMath::LargeInteger::operator = ( const uint64_t src )
 {
-    uLargeInteger li{ {0, 0} };
+    Int64Parts li{ {0, 0} };
     li.quadPart = src;
     hiBits  = li.u.highPart;
     loBits  = li.u.lowPart;
     return (*this);
 }
 
-inline uint64_t NEMath::sLargeInteger::operator + ( const NEMath::sLargeInteger & rhs ) const
+inline uint64_t NEMath::LargeInteger::operator + ( const NEMath::LargeInteger & rhs ) const
 {
     return (static_cast<uint64_t>(*this) + static_cast<uint64_t>(rhs));
 }
 
-inline uint64_t NEMath::sLargeInteger::operator + ( uint64_t rhs ) const
+inline uint64_t NEMath::LargeInteger::operator + ( uint64_t rhs ) const
 {
     return ( (static_cast<uint64_t>(*this) + rhs) );
 }
 
-inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator += ( const NEMath::sLargeInteger & rhs )
+inline NEMath::LargeInteger & NEMath::LargeInteger::operator += ( const NEMath::LargeInteger & rhs )
 {
-    uLargeInteger liLhs{ {this->hiBits, this->loBits} };
-    uLargeInteger liRhs{ {rhs.hiBits, rhs.loBits} };
+    Int64Parts liLhs{ {this->hiBits, this->loBits} };
+    Int64Parts liRhs{ {rhs.hiBits, rhs.loBits} };
     liRhs.quadPart += liRhs.quadPart;
     this->hiBits    = liRhs.u.highPart;
     this->loBits    = liLhs.u.lowPart;
@@ -835,9 +835,9 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator += ( const NEMath
     return (*this);
 }
 
-inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator += ( uint64_t rhs )
+inline NEMath::LargeInteger & NEMath::LargeInteger::operator += ( uint64_t rhs )
 {
-    uLargeInteger li{ {this->hiBits, this->loBits} };
+    Int64Parts li{ {this->hiBits, this->loBits} };
     li.quadPart    += rhs;
     this->hiBits    = li.u.highPart;
     this->loBits    = li.u.lowPart;
@@ -845,20 +845,20 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator += ( uint64_t rhs
     return (*this);
 }
 
-inline uint64_t NEMath::sLargeInteger::operator - ( const NEMath::sLargeInteger & rhs ) const
+inline uint64_t NEMath::LargeInteger::operator - ( const NEMath::LargeInteger & rhs ) const
 {
     return ( static_cast<uint64_t>(*this) - static_cast<uint64_t>(rhs) );
 }
 
-inline uint64_t NEMath::sLargeInteger::operator - ( uint64_t rhs ) const
+inline uint64_t NEMath::LargeInteger::operator - ( uint64_t rhs ) const
 {
     return ( static_cast<uint64_t>(*this) - rhs );
 }
 
-inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator -= ( const NEMath::sLargeInteger & rhs )
+inline NEMath::LargeInteger & NEMath::LargeInteger::operator -= ( const NEMath::LargeInteger & rhs )
 {
-    uLargeInteger liLhs{ {this->hiBits, this->loBits} };
-    uLargeInteger liRhs{ {rhs.hiBits, rhs.loBits} };
+    Int64Parts liLhs{ {this->hiBits, this->loBits} };
+    Int64Parts liRhs{ {rhs.hiBits, rhs.loBits} };
     liRhs.quadPart -= liRhs.quadPart;
     this->hiBits    = liRhs.u.highPart;
     this->loBits    = liLhs.u.lowPart;
@@ -866,9 +866,9 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator -= ( const NEMath
     return (*this);
 }
 
-inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator -= ( uint64_t rhs )
+inline NEMath::LargeInteger & NEMath::LargeInteger::operator -= ( uint64_t rhs )
 {
-    uLargeInteger li{ {this->hiBits, this->loBits} };
+    Int64Parts li{ {this->hiBits, this->loBits} };
     li.quadPart -= rhs;
     this->hiBits = li.u.highPart;
     this->loBits = li.u.lowPart;
@@ -876,27 +876,27 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator -= ( uint64_t rhs
     return (*this);
 }
 
-inline bool NEMath::sLargeInteger::operator == ( const NEMath::sLargeInteger & other ) const
+inline bool NEMath::LargeInteger::operator == ( const NEMath::LargeInteger & other ) const
 {
     return ((this == &other) || ((hiBits == other.hiBits) && (loBits == other.loBits)));
 }
 
-inline bool NEMath::sLargeInteger::operator == ( uint64_t other ) const
+inline bool NEMath::LargeInteger::operator == ( uint64_t other ) const
 {
     return ( static_cast<uint64_t>(*this) == other );
 }
 
-inline bool NEMath::sLargeInteger::operator != (const NEMath::sLargeInteger& other) const
+inline bool NEMath::LargeInteger::operator != (const NEMath::LargeInteger& other) const
 {
     return ((this != &other) && ((hiBits != other.hiBits) || (loBits != other.loBits)));
 }
 
-inline bool NEMath::sLargeInteger::operator != (uint64_t other) const
+inline bool NEMath::LargeInteger::operator != (uint64_t other) const
 {
     return ( static_cast<uint64_t>(*this) != other );
 }
 
-inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator =  ( const NEMath::sLargeInteger & src )
+inline NEMath::LargeInteger & NEMath::LargeInteger::operator =  ( const NEMath::LargeInteger & src )
 {
     hiBits  = src.hiBits;
     loBits  = src.loBits;
@@ -904,7 +904,7 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator =  ( const NEMath
     return (*this);
 }
 
-inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator =  ( NEMath::sLargeInteger && src ) noexcept
+inline NEMath::LargeInteger & NEMath::LargeInteger::operator =  ( NEMath::LargeInteger && src ) noexcept
 {
     hiBits  = src.hiBits;
     loBits  = src.loBits;
@@ -913,8 +913,8 @@ inline NEMath::sLargeInteger & NEMath::sLargeInteger::operator =  ( NEMath::sLar
 }
 
 /************************************************************************/
-// NEMath::sLargeInteger declare global operators to make streamable
+// NEMath::LargeInteger declare global operators to make streamable
 /************************************************************************/
-AREG_IMPLEMENT_STREAMABLE(NEMath::sLargeInteger)
+AREG_IMPLEMENT_STREAMABLE(NEMath::LargeInteger)
 
 #endif  // AREG_BASE_MATHDEFS_HPP

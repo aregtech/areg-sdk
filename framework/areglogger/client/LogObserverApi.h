@@ -62,7 +62,7 @@
 /**
  * \brief   The structure of the connected instance.
  **/
-struct sLogInstance
+struct LogInstance
 {
     /* The type of the message source application. Either client, test or simulation */
     uint32_t    liSource;
@@ -121,7 +121,7 @@ enum LogPriority
 /**
  * \brief   The structure of scopes
  **/
-struct sLogScope
+struct ScopeInfo
 {
     /* The ID of the scope. Can be 0 if unknown or if indicates to scope group. */
     uint32_t    lsId;
@@ -134,15 +134,15 @@ struct sLogScope
 /**
  * \brief   The structure of the logging message.
  **/
-struct sLogMessage
+struct LogRecord
 {
     /* The type of the message: scope enter, scope exit or message text. */
     LogType         msgType;
     /* The priority of the message to log. */
     LogPriority     msgPriority;
-    /* The ID of the message source. This value is indicated in the sLogInstance::liCookie */
+    /* The ID of the message source. This value is indicated in the LogInstance::liCookie */
     ITEM_ID         msgSource;
-    /* The cookie ID of the message. This value is indicated in the sLogInstance::liCookie */
+    /* The cookie ID of the message. This value is indicated in the LogInstance::liCookie */
     ITEM_ID         msgCookie;
     /* The ID of the process, running on the local machine. */
     ITEM_ID         msgModuleId;
@@ -154,7 +154,7 @@ struct sLogMessage
     TIME64          msgReceived;
     /* The duration in microseconds since the scope message was instantiated */
     uint32_t        msgDuration;
-    /* The ID of the scope that generated message. Same as indicated in sLogScope::lsId. */
+    /* The ID of the scope that generated message. Same as indicated in ScopeInfo::lsId. */
     uint32_t        msgScopeId;
     /* The ID of the session, which is used to differentiate messages of the same scope. */
     uint32_t        msgSessionId;
@@ -162,7 +162,7 @@ struct sLogMessage
     char            msgLogText[LENGTH_MESSAGE];
     /* The name of the thread, if set, where the message was generated. */
     char            msgThread[LENGTH_NAME];
-    /* The name of the application that generated the message. Same as in sLogInstance::liName */
+    /* The name of the application that generated the message. Same as in LogInstance::liName */
     char            msgModule[LENGTH_NAME];
 };
 
@@ -234,7 +234,7 @@ typedef void (*FuncMessagingFailed)();
  * \param   instances   The pointer to the list of the connected instances.
  * \param   count       The number of entries in the list.
  **/
-typedef void (*FuncInstancesConnect)(const sLogInstance* /*instances*/, uint32_t /*count*/);
+typedef void (*FuncInstancesConnect)(const LogInstance* /*instances*/, uint32_t /*count*/);
 
 /**
  * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
@@ -245,30 +245,30 @@ typedef void (*FuncInstancesDisconnect)(const ITEM_ID * /*instances*/, uint32_t 
 
 /**
  * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.
- * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+ * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
  * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
  * \param   count   The number of scope entries in the list.
  **/
-typedef void (*FuncLogRegisterScopes)(ITEM_ID /*cookie*/, const sLogScope* /*scopes*/, uint32_t /*count*/);
+typedef void (*FuncLogRegisterScopes)(ITEM_ID /*cookie*/, const ScopeInfo* /*scopes*/, uint32_t /*count*/);
 
 /**
  * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
- * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+ * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
  * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
  * \param   count   The number of scope entries in the list.
  **/
-typedef void (*FuncLogUpdateScopes)(ITEM_ID /*cookie*/, const sLogScope* /*scopes*/, uint32_t /*count*/);
+typedef void (*FuncLogUpdateScopes)(ITEM_ID /*cookie*/, const ScopeInfo* /*scopes*/, uint32_t /*count*/);
 
 /**
  * \brief   The callback of the event triggered when receive message to log.
  * \param   logMessage  The structure of the message to log.
  **/
-typedef void (*FuncLogMessage)(const sLogMessage * /*logMessage*/);
+typedef void (*FuncLogMessage)(const LogRecord * /*logMessage*/);
 
 /**
  * \brief   The callback of the event triggered when receive remote message to log.
- *          The buffer indicates to the NELogging::sLogMessage structure.
- * \param   logBuffer   The pointer to the NELogging::sLogMessage structure to log messages.
+ *          The buffer indicates to the NELogging::LogEntry structure.
+ * \param   logBuffer   The pointer to the NELogging::LogEntry structure to log messages.
  * \param   size        The size of the buffer with log message.
  **/
 typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*size*/);
@@ -276,7 +276,7 @@ typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*
 /**
  * \brief   The structure of the callbacks / events to set when send or receive messages.
  **/
-struct sObserverEvents
+struct ObserverEvents
 {
     /* The callback to the trigger when the observer is initialized and configured, and the information of the log collector is available. */
     FuncObserverConfigured  evtObserverConfigured;
@@ -312,7 +312,7 @@ struct sObserverEvents
  *                          If NULL, it uses the default location of the config file './config/areg.init'
  * \returns Returns true, if succeeded to initialize internals. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverInitialize(const sObserverEvents * callbacks, const char * configFilePath /* = NULL */);
+LOGGER_API bool logObserverInitialize(const ObserverEvents * callbacks, const char * configFilePath /* = NULL */);
 
 /**
  * \brief   Call to release the log observer internals and release resources. This function should
@@ -452,7 +452,7 @@ LOGGER_API bool logObserverRequestScopes(ITEM_ID target);
  * \param   count   The number of scope entries in the list.
  * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGGER_API bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count);
+LOGGER_API bool logObserverRequestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count);
 
 /**
  * \brief   Call to save current configuration of the specified target. This is normally called when update the log priority of the instance,

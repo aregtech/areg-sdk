@@ -169,9 +169,9 @@ namespace
     }
 } // namespace
 
-const OptionParser::sOptionSetup OptionParser::getDefaultOptionSetup()
+const OptionParser::OptionSetup OptionParser::getDefaultOptionSetup()
 {
-    static sOptionSetup _defaultSetup{ "", "", 0, STRING_NO_RANGE, { }, { }, { } };
+    static OptionSetup _defaultSetup{ "", "", 0, STRING_NO_RANGE, { }, { }, { } };
     return _defaultSetup;
 }
 
@@ -195,7 +195,7 @@ OptionParser::OptionParser( const OptionSetupList & optList )
     }
 }
 
-OptionParser::OptionParser( const std::vector<sOptionSetup> & initList )
+OptionParser::OptionParser( const std::vector<OptionSetup> & initList )
     : mCmdLine      ( )
     , mSetupOptions ( initList )
     , mInputOptions ( )
@@ -206,7 +206,7 @@ OptionParser::OptionParser( const std::vector<sOptionSetup> & initList )
     }
 }
 
-OptionParser::OptionParser( std::vector<sOptionSetup> && initList ) noexcept
+OptionParser::OptionParser( std::vector<OptionSetup> && initList ) noexcept
     : mCmdLine      ( )
     , mSetupOptions ( std::move(initList) )
     , mInputOptions ( )
@@ -217,7 +217,7 @@ OptionParser::OptionParser( std::vector<sOptionSetup> && initList ) noexcept
     }
 }
 
-OptionParser::OptionParser( const sOptionSetup * initEntries, uint32_t count )
+OptionParser::OptionParser( const OptionSetup * initEntries, uint32_t count )
     : mCmdLine      ( )
     , mSetupOptions ( )
     , mInputOptions ( )
@@ -328,12 +328,12 @@ bool OptionParser::parseOptions( StrList & optList )
 
         mCmdLine += input;
         mCmdLine += DELIMITER_SPACE;
-        sOption opt;
+        InputOption opt;
         ASSERT( opt.inRefSetup == NECommon::INVALID_INDEX );
 
         for (uint32_t j = 0; j < initSize; ++ j )
         {
-            const sOptionSetup & entry = mSetupOptions[ j ];
+            const OptionSetup & entry = mSetupOptions[ j ];
             if ( _matchOption(input, entry.optLong) )
             {
                 opt = _setupInput( false, input, j );
@@ -350,14 +350,14 @@ bool OptionParser::parseOptions( StrList & optList )
         {
             if ( mInputOptions.isEmpty() == false )
             {
-                sOption & last = mInputOptions.lastEntry();
+                InputOption & last = mInputOptions.lastEntry();
                 ASSERT( last.inRefSetup != NECommon::INVALID_INDEX );
                 _setInputValue( input, last, static_cast<uint32_t>(last.inRefSetup) );
                 result = OptionParser::hasInputError( static_cast<uint32_t>(last.inField) ) == false;
             }
             else if ( mSetupOptions.isEmpty() == false)
             {
-                const sOptionSetup & setup = mSetupOptions[ 0u ];
+                const OptionSetup & setup = mSetupOptions[ 0u ];
                 if ( setup.optShort.empty( ) && setup.optLong.empty( ) )
                 {
                     // default option
@@ -406,19 +406,19 @@ uint32_t OptionParser::findOption(int32_t optId) const
 
 void OptionParser::sort()
 {
-    mInputOptions.sort([](const OptionParser::sOption& opt1, const OptionParser::sOption& opt2)
+    mInputOptions.sort([](const OptionParser::InputOption& opt1, const OptionParser::InputOption& opt2)
                         {
                             // sort ascending
                             return (opt1.inCommand < opt2.inCommand);
                          });
 }
 
-OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, uint32_t refSetup )
+OptionParser::InputOption OptionParser::_setupInput( bool isShort, String cmdLine, uint32_t refSetup )
 {
     ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize()) );
 
-    const sOptionSetup & setup = mSetupOptions[ refSetup ];
-    OptionParser::sOption opt;
+    const OptionSetup & setup = mSetupOptions[ refSetup ];
+    OptionParser::InputOption opt;
     opt.inField     = setup.optField;
     opt.inCommand   = setup.optCmmand;
     opt.inRefSetup  = static_cast<int32_t>(refSetup);
@@ -433,9 +433,9 @@ OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, u
     return opt;
 }
 
-void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t refSetup )
+void OptionParser::_setInputValue( String & newValue, InputOption & opt, uint32_t refSetup )
 {
-    const sOptionSetup& setup{ mSetupOptions[refSetup] };
+    const OptionSetup& setup{ mSetupOptions[refSetup] };
 
     if ( newValue.startsWith( DELIMITER_EQUAL, true ) )
     {
@@ -498,7 +498,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
     }
 }
 
-inline void OptionParser::_setValue( int32_t newValue, sOption & opt, const sOptionSetup & setup )
+inline void OptionParser::_setValue( int32_t newValue, InputOption & opt, const OptionSetup & setup )
 {
     opt.inValue.valInt = newValue;
     if ( OptionParser::hasRange( setup.optField ) )
@@ -510,7 +510,7 @@ inline void OptionParser::_setValue( int32_t newValue, sOption & opt, const sOpt
     }
 }
 
-inline void OptionParser::_setValue( float newValue, sOption & opt, const sOptionSetup & setup )
+inline void OptionParser::_setValue( float newValue, InputOption & opt, const OptionSetup & setup )
 {
     opt.inValue.valFloat = newValue;
     if ( OptionParser::hasRange( setup.optField ) )
@@ -522,7 +522,7 @@ inline void OptionParser::_setValue( float newValue, sOption & opt, const sOptio
     }
 }
 
-inline void OptionParser::_setValue( const String & newValue, sOption & opt, const sOptionSetup & setup )
+inline void OptionParser::_setValue( const String & newValue, InputOption & opt, const OptionSetup & setup )
 {
     opt.inString.push_back( newValue );
     if ( OptionParser::isFreestyle(setup.optField) == false )

@@ -86,7 +86,7 @@ void LoggerClient::stopLoggerClient()
     disconnectServiceHost();
 }
 
-void LoggerClient::setCallbacks(const sObserverEvents* callbacks)
+void LoggerClient::setCallbacks(const ObserverEvents* callbacks)
 {
     Lock lock(mLock);
     mCallbacks = callbacks;

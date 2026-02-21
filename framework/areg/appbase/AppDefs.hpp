@@ -189,9 +189,9 @@ namespace NEApplication
     /**
      * \brief   The structure to keep service enable or disable information.
      **/
-    struct sEntryTypesEnabling
+    struct LogTypeEntry
     {
-        uint32_t        ltId;
+        uint32_t            ltId;
         std::string_view    ltIdName;
         bool                ltEnabled;
     };
@@ -201,7 +201,7 @@ namespace NEApplication
      *          The list of logging types with the enabled / disabled flags.
      *          The disabled logging modules are not implemented yet.
      **/
-    constexpr sEntryTypesEnabling DefaultLogTypes []
+    constexpr LogTypeEntry DefaultLogTypes []
         {
               { static_cast<uint32_t>(NELogging::LogTarget::Undefined)  , {"unknown"}, false }
             , { static_cast<uint32_t>(NELogging::LogTarget::Remote)     , {"remote" }, false }
@@ -215,7 +215,7 @@ namespace NEApplication
      *          The list of connection types with the enabled / disabled flags.
      *          The disabled connection modules are not implemented yet.
      **/
-    constexpr sEntryTypesEnabling DefaultConnections[]
+    constexpr LogTypeEntry DefaultConnections[]
         {
               { static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined)   , {"unknown"}, false }
             , { static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
@@ -228,7 +228,7 @@ namespace NEApplication
      * \brief   NEApplication::DefaultRemotetServices
      *          The list of connection types with the enabled / disabled flags.
      **/
-    constexpr sEntryTypesEnabling DefaultRemotetServices[]
+    constexpr LogTypeEntry DefaultRemotetServices[]
         {
               { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown) , {"unknown"}, false }
             , { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Router)  , {"router" }, true  }
@@ -244,7 +244,7 @@ namespace NEApplication
      *          The list of read-only global properties that cannot be changed,
      *          but can be changed for certain modules and saved in writable configuration.
      **/
-    constexpr NEPersistence::sProperty  DefaultReadonlyProperties[]
+    constexpr NEPersistence::ConfigProperty  DefaultReadonlyProperties[]
         {
               { {"config"   , "*"   , "version" , ""        }, NEPersistence::CONFIG_VERSION    }   //!< The configuration version.
 
@@ -286,7 +286,7 @@ namespace NEApplication
      *          The list of default scopes and priorities set in writable properties
      *          in case if configuration file cannot be loaded.
      **/
-    constexpr NEPersistence::sProperty DefaultLogScopesConfig[]
+    constexpr NEPersistence::ConfigProperty DefaultLogScopesConfig[]
         {
               { {"log", "mtrouter"      , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'mtrouter' service scopes to enable / disable.
             , { {"log", "logcollector"  , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'logcollector' service scopes to enable / disable.

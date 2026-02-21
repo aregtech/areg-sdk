@@ -28,9 +28,9 @@
 #include "areg/component/Model.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
- /************************************************************************
-  * Dependencies.
-  ************************************************************************/
+/************************************************************************
+ * Dependencies.
+ ************************************************************************/
 class ConfigListener;
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using MapAppStorage     = StringHashMap<NEMemory::uAlign>;
+    using MapAppStorage     = StringHashMap<NEMemory::Primitive>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
@@ -292,13 +292,13 @@ public:
      * \return  If storage already has an element saved with same name, it returns previously save element.
      *          Otherwise, it returns NEMemory::InvalidElement.
      **/
-    static NEMemory::uAlign storeElement( const String & elemName, NEMemory::uAlign elem );
+    static NEMemory::Primitive storeElement( const String & elemName, NEMemory::Primitive elem );
 
     /**
      * \brief   Returns stored element, which has given name. If element does not exist, returns NEMemory::InvalidElement.
      * \param   elemName    The name of element to search in storage.
      **/
-    static NEMemory::uAlign getStoredElement( const String & elemName );
+    static NEMemory::Primitive getStoredElement( const String & elemName );
 
     /**
      * \brief   Locks the calling thread until either application quit signal is set, or waiting timeout is expired.

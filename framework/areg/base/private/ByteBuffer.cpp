@@ -33,7 +33,7 @@ ByteBuffer::ByteBuffer()
 {
 }
 
-ByteBuffer::ByteBuffer( NEMemory::sByteBuffer & byteBuffer )
+ByteBuffer::ByteBuffer( NEMemory::RawBuffer & byteBuffer )
     : mByteBuffer( &byteBuffer, ByteBufferDeleter( ) )
 {
 }
@@ -71,8 +71,8 @@ uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
                 int32_t copied = static_cast<int32_t>(initBuffer(buffer, sizeBuffer, copy));
                 if (static_cast<uint32_t>(copied) != Cursor::INVALID_CURSOR_POSITION)
                 {
-                    NEMemory::sByteBuffer * temp = reinterpret_cast<NEMemory::sByteBuffer *>(buffer);
-                    mByteBuffer = std::shared_ptr<NEMemory::sByteBuffer>(temp, ByteBufferDeleter());
+                    NEMemory::RawBuffer * temp = reinterpret_cast<NEMemory::RawBuffer *>(buffer);
+                    mByteBuffer = std::shared_ptr<NEMemory::RawBuffer>(temp, ByteBufferDeleter());
                 }
                 else
                 {
@@ -99,7 +99,7 @@ uint32_t ByteBuffer::initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool ma
         uint32_t dataOffset     = getDataOffset();
         uint32_t dataLength     = bufLength - dataOffset;
 
-        NEMemory::sByteBuffer* buffer= new(newBuffer)NEMemory::sByteBuffer;
+        NEMemory::RawBuffer* buffer= new(newBuffer)NEMemory::RawBuffer;
         buffer->bufHeader.biBufSize = bufLength;
         buffer->bufHeader.biLength  = dataLength;
         buffer->bufHeader.biOffset  = dataOffset;

@@ -81,7 +81,7 @@ public:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    virtual std::pair<const OptionParser::sOptionSetup*, int32_t> getAppOptions() const = 0;
+    virtual std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const = 0;
 
     /**
      * \brief   Returns the UNICODE name of the service application.

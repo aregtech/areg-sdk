@@ -123,12 +123,12 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
     }
 }
 
-void PageNetworkSetup::OnAddConnection( ConnectionManager::sConnection & /*data*/)
+void PageNetworkSetup::OnAddConnection( ConnectionManager::ConnectionRecord & /*data*/)
 {
     // do nothing
 }
 
-void PageNetworkSetup::OnRemoveConnection( ConnectionManager::sConnection & /*data*/)
+void PageNetworkSetup::OnRemoveConnection( ConnectionManager::ConnectionRecord & /*data*/)
 {
     // do nothing
 }

@@ -32,7 +32,7 @@ DateTime::DateTime()
 {
 }
 
-DateTime::DateTime( const NEUtilities::sSystemTime & sysTime )
+DateTime::DateTime( const NEUtilities::CalendarTime & sysTime )
     : mDateTime( NEUtilities::convToTime(sysTime) )
 {
 }
@@ -133,7 +133,7 @@ DateTime DateTime::getNow()
     return DateTime( NEUtilities::systemTimeNow() );
 }
 
-void DateTime::getNow( NEUtilities::sSystemTime & timeData, bool localTime )
+void DateTime::getNow( NEUtilities::CalendarTime & timeData, bool localTime )
 {
     NEUtilities::systemTimeNow(timeData, localTime);
 }
@@ -317,12 +317,12 @@ uint32_t DateTime::getDayOfTheWeek() const
     return ((dayOfWeek + 6) % 7);
 }
 
-void DateTime::getDateTime(NEUtilities::sSystemTime& sysTime)
+void DateTime::getDateTime(NEUtilities::CalendarTime& sysTime)
 {
     NEUtilities::convToSystemTime(mDateTime, sysTime);
 }
 
-void DateTime::setDateTime(const NEUtilities::sSystemTime& sysTime)
+void DateTime::setDateTime(const NEUtilities::CalendarTime& sysTime)
 {
     mDateTime = NEUtilities::convToTime(sysTime);
 }

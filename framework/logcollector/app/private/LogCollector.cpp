@@ -96,7 +96,7 @@ DEF_LOG_SCOPE(logcollector_app_logcollector_setState);
 // LogCollector class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::sOptionSetup LogCollector::ValidOptions[ ]
+const OptionParser::OptionSetup LogCollector::ValidOptions[ ]
 {
       { "-a", "--save"      , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-b", "--unsave"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
@@ -209,9 +209,9 @@ void LogCollector::runService()
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
 }
 
-std::pair<const OptionParser::sOptionSetup*, int32_t> LogCollector::getAppOptions() const
+std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::getAppOptions() const
 {
-    static  std::pair< const OptionParser::sOptionSetup*, int32_t> _opts( std::pair< const OptionParser::sOptionSetup*
+    static  std::pair< const OptionParser::OptionSetup*, int32_t> _opts( std::pair< const OptionParser::OptionSetup*
                                                                     , int32_t>(LogCollector::ValidOptions
                                                                     , static_cast<int32_t>(std::size(LogCollector::ValidOptions))));
     return _opts;
@@ -318,7 +318,7 @@ bool LogCollector::_checkCommand(const String& cmd)
         const OptionParser::InputOptionList & opts = parser.getOptions( );
         for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
-            const OptionParser::sOption & opt = opts[ i ];
+            const OptionParser::InputOption & opt = opts[ i ];
             switch ( static_cast<LoggerOption>(opt.inCommand) )
             {
             case LoggerOption::CMD_LogPause:
@@ -499,7 +499,7 @@ void LogCollector::_outputInstances( const NEService::MapInstances & instances )
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            NEService::sServiceConnectedInstance instance;
+            NEService::ConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             uint32_t id{ static_cast<uint32_t>(cookie) };
 
@@ -527,7 +527,7 @@ void LogCollector::_outputInstances( const NEService::MapInstances & instances )
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            NEService::sServiceConnectedInstance instance;
+            NEService::ConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             uint32_t id{ static_cast<uint32_t>(cookie) };
 
@@ -607,7 +607,7 @@ void LogCollector::_cleanHelp()
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::_processUpdateScopes(const OptionParser::sOption& optScope)
+void LogCollector::_processUpdateScopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
     ArrayList<RemoteMessage> msgList;
@@ -618,7 +618,7 @@ void LogCollector::_processUpdateScopes(const OptionParser::sOption& optScope)
     }
 }
 
-void LogCollector::_processQueryScopes(const OptionParser::sOption& optScope)
+void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
     ArrayList<ITEM_ID> listTargets;
@@ -649,7 +649,7 @@ void LogCollector::_processQueryScopes(const OptionParser::sOption& optScope)
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, ArrayList<RemoteMessage>& msgList)
+void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
@@ -694,7 +694,7 @@ void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, Ar
 
 String LogCollector::_normalizeScopeProperty(const String & scope)
 {
-    const NEPersistence::sPropertyKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::ConfigEntry::LogScope)] };
+    const NEPersistence::ConfigKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::ConfigEntry::LogScope)] };
     String result;
     if (scope.startsWith(propKey.property))
     {
@@ -762,7 +762,7 @@ RemoteMessage LogCollector::_createScopeUpdateMessage(const String& scope)
 inline void LogCollector::_enableLocalLogs(ConfigManager& config, bool enable)
 {
     constexpr NEPersistence::ConfigEntry prioConfKey{ NEPersistence::ConfigEntry::LogScope };
-    const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
+    const NEPersistence::ConfigKey& keyPrio{ NEPersistence::getLogScope() };
     uint32_t prios = enable
                 ? static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) | static_cast<uint32_t>(NELogging::LogPriority::PrioNotset)
                 : static_cast<uint32_t>(NELogging::LogPriority::PrioNotset);

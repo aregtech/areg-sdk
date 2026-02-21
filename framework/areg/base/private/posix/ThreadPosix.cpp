@@ -51,18 +51,18 @@ namespace
 {
 
     //!< POSIX thread structure
-    typedef struct S_PosixThread
+    struct PosixThread
     {
         pthread_t       pthreadId;      //!< The POSIX thread ID
         pthread_attr_t  pthreadAttr;    //!< The POSIX thread attribute
-    } sPosixThread;
+    };
 
 } // namespace
 
 /************************************************************************/
 // System specific thread routines
 /************************************************************************/
-void * Thread::_posixThreadRoutine( void * data )
+void* Thread::_posixThreadRoutine(void* data)
 {
     int32_t oldState{ 0 };
     int32_t oldType{ 0 };
@@ -78,7 +78,7 @@ void * Thread::_posixThreadRoutine( void * data )
     return nullptr;
 }
 
-unsigned long Thread::_windowsThreadRoutine( void * /* data */ )
+unsigned long Thread::_windowsThreadRoutine(void* /* data */ )
 {
     ASSERT(false);
     return 0;
@@ -107,7 +107,7 @@ void Thread::_osCloseHandle(  THREADHANDLE handle )
 {
     if (handle != nullptr)
     {
-        sPosixThread *pthread = reinterpret_cast<sPosixThread *>(handle);
+         PosixThread *pthread = reinterpret_cast< PosixThread *>(handle);
         pthread_attr_destroy(&pthread->pthreadAttr);
         delete pthread;
     }
@@ -183,7 +183,7 @@ bool Thread::_osCreateSystemThread()
 
     if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
     {
-        sPosixThread * handle = new sPosixThread;
+         PosixThread * handle = new  PosixThread;
         if ( handle != nullptr)
         {
             mWaitForRun.resetEvent();
@@ -294,7 +294,7 @@ Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
 size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
 {
     size_t size{ 0u };
-    sPosixThread* thread = reinterpret_cast<sPosixThread*>(handle);
+     PosixThread* thread = reinterpret_cast< PosixThread*>(handle);
     return ((thread != nullptr) && (NECommon::RETURNED_OK == pthread_attr_getstacksize(&thread->pthreadAttr, &size)) ? size : 0);
 }
 

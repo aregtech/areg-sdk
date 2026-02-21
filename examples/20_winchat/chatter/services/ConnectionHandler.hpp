@@ -58,19 +58,19 @@ public:
 
     bool IsValid() const;
 
-    bool AddConnection( const chat::sConnection & newConnection );
+    bool AddConnection( const chat::ConnectionRecord & newConnection );
 
     int32_t AddConnections( const chat::ListConnections & listConnections );
 
-    bool RemoveConnection( const chat::sConnection & connection );
+    bool RemoveConnection( const chat::ConnectionRecord & connection );
 
-    bool ConnectionExist( const chat::sConnection & connection );
+    bool ConnectionExist( const chat::ConnectionRecord & connection );
 
     void ResetConnectionList();
 
 private:
 
-    int32_t findConnection( const chat::sConnection & connection ) const;
+    int32_t findConnection( const chat::ConnectionRecord & connection ) const;
 
 private:
     chat::ListConnections mListConnections;

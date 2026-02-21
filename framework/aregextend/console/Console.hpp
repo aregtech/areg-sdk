@@ -61,7 +61,7 @@ public:
      *          The lines on console are Y-coordinates.
      *          The columns on console are X-coordinates.
      **/
-    using Coord     = NEMath::sCoord;
+    using Coord     = NEMath::Coord;
 
     //!< The default buffer size to input on console.
     static constexpr uint32_t INPUT_BUFFER_SIZE { 512 };

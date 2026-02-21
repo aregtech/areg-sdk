@@ -35,7 +35,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-struct sObserverEvents;
+struct ObserverEvents;
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerClient class declaration
@@ -128,7 +128,7 @@ public:
      *                      If the parameter is 'nullptr' it resets all callbacks and no
      *                      callback is triggered on the events.
      **/
-    void setCallbacks(const sObserverEvents * callbacks);
+    void setCallbacks(const ObserverEvents * callbacks);
 
     /**
      * \brief   Set paused flag true or false. If log collector client is paused, it does not
@@ -320,7 +320,7 @@ public:
      *          This query will receive list of all registered instances.
      * \param   infos   On output, contains the list of information of all registered instances in database.
      **/
-    inline void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
+    inline void getLogInstanceInfos(std::vector< NEService::ConnectedInstance>& infos);
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
@@ -328,7 +328,7 @@ public:
      * \param   scopes  On output, contains the list of all registered scopes in database related with the specified instance ID.
      * \param   instID  The ID of the instance.
      **/
-    inline void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
+    inline void getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
@@ -521,7 +521,7 @@ private:
      * \brief   The pointer to the callback structure to trigger methods on certain event.
      *          If nullptr, no callback is triggered.
      **/
-    const sObserverEvents *     mCallbacks;
+    const ObserverEvents *     mCallbacks;
 
     /**
      * \brief   The object that processes received messages.
@@ -579,12 +579,12 @@ inline void LoggerClient::getPriorityNames(std::vector<String>& names)
     mLogDatabase.getPriorityNames(names);
 }
 
-inline void LoggerClient::getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos)
+inline void LoggerClient::getLogInstanceInfos(std::vector< NEService::ConnectedInstance>& infos)
 {
     mLogDatabase.getLogInstanceInfos(infos);
 }
 
-inline void LoggerClient::getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId)
+inline void LoggerClient::getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId)
 {
     mLogDatabase.getLogInstScopes(scopes, instId);
 }

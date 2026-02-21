@@ -291,9 +291,9 @@ protected:
     uint32_t getHeaderSize() const override;
 
     /**
-     * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
+     * \brief   Returns the size to align the buffer.
      **/
-    uint32_t getAlignedSize() const override;
+    uint32_t getAlignedSize() const final;
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods

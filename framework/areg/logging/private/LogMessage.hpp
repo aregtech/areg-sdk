@@ -39,7 +39,7 @@ class LogScope;
  *          Different types of constructor allow to initialize message log
  *          structure with certain log types and priorities.
  **/
-class LogMessage  : public NELogging::sLogMessage
+class LogMessage  : public NELogging::LogEntry
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
@@ -123,7 +123,7 @@ public:
     /**
      * \brief   Returns instance of Log message structure
      **/
-    inline const NELogging::sLogMessage & getLogData() const;
+    inline const NELogging::LogEntry & getLogData() const;
 
     /**
      * \brief   Returns log type value
@@ -219,29 +219,29 @@ private:
 // LogMessage class inline methods
 //////////////////////////////////////////////////////////////////////////
 inline LogMessage::LogMessage( NELogging::LogMessageType msgType )
-    : NELogging::sLogMessage(msgType)
+    : NELogging::LogEntry(msgType)
 {
 }
 
 inline LogMessage::LogMessage( NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const String & message )
-    : NELogging::sLogMessage( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
+    : NELogging::LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
 {
 }
 
 inline LogMessage::LogMessage( NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen )
-    : NELogging::sLogMessage( msgType, scopeId, sessionId, scopeStamp, msgPrio, message, msgLen )
+    : NELogging::LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message, msgLen )
 {
 }
 
 inline LogMessage::LogMessage( const InStream & stream )
-    : NELogging::sLogMessage( )
+    : NELogging::LogEntry( )
 {
-    stream >> static_cast<NELogging::sLogMessage &>(*this);
+    stream >> static_cast<NELogging::LogEntry &>(*this);
 }
 
-inline const NELogging::sLogMessage & LogMessage::getLogData() const
+inline const NELogging::LogEntry & LogMessage::getLogData() const
 {
-    return static_cast<const NELogging::sLogMessage &>(*this);
+    return static_cast<const NELogging::LogEntry &>(*this);
 }
 
 inline NELogging::LogMessageType LogMessage::getMessageType() const
@@ -312,24 +312,24 @@ inline void LogMessage::setCookie(const ITEM_ID & newCookie)
 #else   // AREG_LOGS
 
 inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/)
-    : NELogging::sLogMessage()
+    : NELogging::LogEntry()
 {
 }
 
 inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const String& /*message*/)
-    : NELogging::sLogMessage()
+    : NELogging::LogEntry()
 {
 }
 
 inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
-    : NELogging::sLogMessage()
+    : NELogging::LogEntry()
 {
 }
 
 inline LogMessage::LogMessage(const InStream& stream)
-    : NELogging::sLogMessage()
+    : NELogging::LogEntry()
 {
-    stream >> static_cast<NELogging::sLogMessage&>(*this);
+    stream >> static_cast<NELogging::LogEntry&>(*this);
 }
 
 #endif  // AREG_LOGS

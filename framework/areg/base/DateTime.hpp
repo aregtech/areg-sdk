@@ -69,7 +69,7 @@ public:
      * \brief   Sets date and time value from given system time structure.
      * \param   sysTime     System time structure to get date and time values.
      **/
-    explicit DateTime( const NEUtilities::sSystemTime & sysTime );
+    explicit DateTime( const NEUtilities::CalendarTime & sysTime );
 
     /**
      * \brief   Copies data and time data from given source.
@@ -207,7 +207,7 @@ public:
      * \param[out]  timeData    On output, it will contain the time values.
      * \param[in]   localTime   If true, timeData is converted to local time.
      **/
-    static void getNow( NEUtilities::sSystemTime & timeData, bool localTime );
+    static void getNow( NEUtilities::CalendarTime & timeData, bool localTime );
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed since the system was started.
@@ -328,14 +328,14 @@ public:
      *          On output, the sysTime contains converted and broken date and time values.
      * \param[out]  sysTime     The System Time structure to break the data.
      **/
-    void getDateTime(NEUtilities::sSystemTime& sysTime);
+    void getDateTime(NEUtilities::CalendarTime& sysTime);
 
     /**
      * \brief   Calculates and sets the value in microseconds passed since Unix epoch.
      *          The date and time information is in 'sysTime' parameter.
      * \param[in]   sysTime     The System Time structure as a source of data.
      **/
-    void setDateTime(const NEUtilities::sSystemTime& sysTime);
+    void setDateTime(const NEUtilities::CalendarTime& sysTime);
 
     /**
      * \brief   Converts existing date and time value in microseconds passed since Unix epoch to tm structure.

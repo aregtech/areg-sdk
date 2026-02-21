@@ -68,7 +68,7 @@ void LayoutManager::deleteLayouts()
     mLayoutList.clear();
 }
 
-void LayoutManager::logMessage(const NELogging::sLogMessage & logMsg, OutStream & stream) const
+void LayoutManager::logMessage(const NELogging::LogEntry & logMsg, OutStream & stream) const
 {
     if (logMsg.logMessagePrio == NELogging::LogPriority::PrioIgnoreLayout)
     {

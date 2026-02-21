@@ -43,8 +43,8 @@
                 </EnumEntry>
             </FieldList>
         </DataType>
-        <DataType ID="11" Name="uAlign" Type="Imported">
-            <Description>This example exports NEMemory::uAlign in the service interface.</Description>
+        <DataType ID="11" Name="Primitive" Type="Imported">
+            <Description>This example exports NEMemory::Primitive in the service interface.</Description>
             <Namespace>NEMemory</Namespace>
             <Location>areg/base/MemoryDefs.hpp</Location>
         </DataType>
@@ -104,7 +104,7 @@
         <Method ID="25" MethodType="request" Name="SomeRequest3" Response="SomeResponse">
             <Description>Another request with parameter that is connected with SomeResponse method</Description>
             <ParamList>
-                <Parameter DataType="NEMemory::uAlign" ID="28" Name="param"/>
+                <Parameter DataType="NEMemory::Primitive" ID="28" Name="param"/>
             </ParamList>
         </Method>
         <Method ID="27" MethodType="request" Name="StandAlone">
@@ -116,7 +116,7 @@
                 <Parameter DataType="SomeEnum" ID="30" Name="value1">
                     <Description>We already have 'param1' in response, this parameter name must differ.</Description>
                 </Parameter>
-                <Parameter DataType="NEMemory::uAlign" ID="31" Name="value2"/>
+                <Parameter DataType="NEMemory::Primitive" ID="31" Name="value2"/>
                 <Parameter DataType="SomeStruct" ID="32" Name="value3"/>
                 <Parameter DataType="SomeArray" ID="34" Name="value4"/>
             </ParamList>

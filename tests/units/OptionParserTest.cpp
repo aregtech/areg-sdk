@@ -25,7 +25,7 @@
 //!< Basic options with no data passed as a command line strings
 TEST( OptionParserTest, CommandLineOptionSimpleNoData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-a", 1, OptionParser::FREESTYLE_DATA, {}, {}, {} }
         , { "-b", "-b", 2, OptionParser::FREESTYLE_DATA, {}, {}, {} }
@@ -55,7 +55,7 @@ TEST( OptionParserTest, CommandLineOptionSimpleNoData )
 //!< Basic options with data passed as a command line strings
 TEST( OptionParserTest, CommandLineOptionSimpleWithData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
         , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
@@ -91,7 +91,7 @@ TEST( OptionParserTest, CommandLineOptionSimpleWithData )
 //!< Options with data, but no assignment symbol passed as a command line strings
 TEST( OptionParserTest, CommandLineOptionWithDataNoAssignment )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
         , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
@@ -128,7 +128,7 @@ TEST( OptionParserTest, CommandLineOptionWithDataNoAssignment )
 //!< Options with short and long names and no data, passed as a command line strings
 TEST( OptionParserTest, CommandLineOptionMixedNoData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-aaa"        , 1, OptionParser::FREESTYLE_DATA, {}, {}, {}  }
         , { "-b", "-bc"         , 2, OptionParser::FREESTYLE_DATA, {}, {}, {}  }
@@ -159,7 +159,7 @@ TEST( OptionParserTest, CommandLineOptionMixedNoData )
 //!< Options with short and long names and with data, passed as a command line strings
 TEST( OptionParserTest, CommandLineOptionMixedWithData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-aaa"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
         , { "-b", "-bc"         , 2, OptionParser::FLOAT_IN_RANGE   , {       }, {0.1f, 10.1f}, {} }
@@ -178,7 +178,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -187,7 +187,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -196,7 +196,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -206,7 +206,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 3u ];
+        const OptionParser::InputOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -220,7 +220,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 //!< Options with data in the quote that contains a space, passed as a command line strings
 TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-abc"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
         , { "-s", "-scope"      , 2, OptionParser::STRING_NO_RANGE  , {       }, {0.1f, 10.1f}, {} }
@@ -236,7 +236,7 @@ TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -247,7 +247,7 @@ TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
 //!< Options with default option setup
 TEST( OptionParserTest, CommandLineOptionDefaultData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { OptionParser::getDefaultOptionSetup() }
         , { "-s", "-scope"  , 2, OptionParser::STRING_NO_RANGE, {}, {}, {} }
@@ -265,7 +265,7 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 0 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
@@ -276,7 +276,7 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -288,7 +288,7 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
 //!< Option with no data, passed as a string separated with space
 TEST( OptionParserTest, OptionsSimpleNoData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-a", 1, OptionParser::FREESTYLE_DATA, {}, {}, {} }
         , { "-b", "-b", 2, OptionParser::FREESTYLE_DATA, {}, {}, {} }
@@ -308,7 +308,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
@@ -317,7 +317,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
@@ -326,7 +326,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
@@ -337,7 +337,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 //!< Option with data, passed as a string separated with space
 TEST( OptionParserTest, OptionSimpleWithData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
         , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
@@ -355,7 +355,7 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -364,7 +364,7 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -373,7 +373,7 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -385,7 +385,7 @@ TEST( OptionParserTest, OptionSimpleWithData )
 //!< Option with data and no assignment symbol, passed as a string separated with space
 TEST( OptionParserTest, OptionWithDataNoAssignment )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-a", 1, OptionParser::INTEGER_NO_RANGE, {}, {}, {}  }
         , { "-b", "-b", 2, OptionParser::FLOAT_NO_RANGE  , {}, {}, {}  }
@@ -403,7 +403,7 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -412,7 +412,7 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -421,7 +421,7 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -434,7 +434,7 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 //!< Mixed option with data, passed as a string separated with space
 TEST( OptionParserTest, OptionMixedWithData )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-aaa"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
         , { "-b", "-bc"         , 2, OptionParser::FLOAT_IN_RANGE   , {       }, {0.1f, 10.1f}, {} }
@@ -453,7 +453,7 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0u ];
+        const OptionParser::InputOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -462,7 +462,7 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1u ];
+        const OptionParser::InputOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -471,7 +471,7 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2u ];
+        const OptionParser::InputOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -481,7 +481,7 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 3u ];
+        const OptionParser::InputOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -495,7 +495,7 @@ TEST( OptionParserTest, OptionMixedWithData )
 //!< Option with data in the quote that contains space, passed as a string separated with space
 TEST( OptionParserTest, OptionLongDataInQuote )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-abc"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {}, {} }
         , { "-s", "-scope"      , 2, OptionParser::STRING_NO_RANGE  , {       }, {}, {} }
@@ -511,7 +511,7 @@ TEST( OptionParserTest, OptionLongDataInQuote )
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -522,7 +522,7 @@ TEST( OptionParserTest, OptionLongDataInQuote )
 //!< Option with data in the quote that contains error (quote is not closed), passed as a string separated with space
 TEST( OptionParserTest, OptionLongDataInQuoteWithError )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "-a", "-abc"        , 1, OptionParser::INTEGER_IN_RANGE , {1 , 10 }, {         }, {} }
         , { "-s", "-scope"      , 2, OptionParser::STRING_NO_RANGE  , {       }, {0.1f, 10.1f}, {} }
@@ -539,7 +539,7 @@ TEST( OptionParserTest, OptionLongDataInQuoteWithError )
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -551,7 +551,7 @@ TEST( OptionParserTest, OptionLongDataInQuoteWithError )
 //!< Option with multiple data, passed as a string separated with space
 TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
 {
-    OptionParser::sOptionSetup setup[ ]
+    OptionParser::OptionSetup setup[ ]
     {
           { "cp", "copy", 1, OptionParser::STRING_NO_RANGE, {}, {}, {} }
         , { "mv", "move", 2, OptionParser::STRING_NO_RANGE, {}, {}, {} }
@@ -566,7 +566,7 @@ TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0u ];
+    const OptionParser::InputOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 1 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -584,7 +584,7 @@ TEST( OptionParserTest, OptionFiguresWithData )
         , Rectangle = 2
     };
 
-    const OptionParser::sOptionSetup setup[ ]
+    const OptionParser::OptionSetup setup[ ]
     {
           {"-t", "--tri"  , static_cast<int>(Figure::Triangle) , OptionParser::STRING_NO_RANGE, {}, {}, {}}
         , { "-r", "--rect", static_cast<int>(Figure::Rectangle), OptionParser::STRING_NO_RANGE, {}, {}, {} }
@@ -606,8 +606,8 @@ TEST( OptionParserTest, OptionFiguresWithData )
 
     do
     {
-        const OptionParser::sOption & opt1 = opts1[ 0u ];
-        const OptionParser::sOption & opt2 = opts2[ 0u ];
+        const OptionParser::InputOption & opt1 = opts1[ 0u ];
+        const OptionParser::InputOption & opt2 = opts2[ 0u ];
         ASSERT_EQ( opt1.inCommand , static_cast<int>(Figure::Triangle) );
         ASSERT_EQ( opt1.inCommand , opt2.inCommand );
         ASSERT_EQ( opt1.inField   , opt2.inField );
@@ -624,8 +624,8 @@ TEST( OptionParserTest, OptionFiguresWithData )
 
     do
     {
-        const OptionParser::sOption & opt1 = opts1[ 1u ];
-        const OptionParser::sOption & opt2 = opts2[ 1u ];
+        const OptionParser::InputOption & opt1 = opts1[ 1u ];
+        const OptionParser::InputOption & opt2 = opts2[ 1u ];
         ASSERT_EQ( opt1.inCommand , static_cast<int>(Figure::Rectangle) );
         ASSERT_EQ( opt1.inCommand , opt2.inCommand );
         ASSERT_EQ( opt1.inField   , opt2.inField );

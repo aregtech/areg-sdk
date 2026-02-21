@@ -92,7 +92,7 @@ DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_setState);
 // MultitargetRouter class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::sOptionSetup MultitargetRouter::ValidOptions[ ]
+const OptionParser::OptionSetup MultitargetRouter::ValidOptions[ ]
 {
       { "-c", "--console"   , static_cast<int32_t>(RouterOption::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int32_t>(RouterOption::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
@@ -194,9 +194,9 @@ void MultitargetRouter::runConsoleInputSimple()
     } while ( quit == false );
 }
 
-std::pair<const OptionParser::sOptionSetup*, int32_t> MultitargetRouter::getAppOptions() const
+std::pair<const OptionParser::OptionSetup*, int32_t> MultitargetRouter::getAppOptions() const
 {
-    static  std::pair< const OptionParser::sOptionSetup*, int32_t> _opts(std::pair< const OptionParser::sOptionSetup*, int32_t>(MultitargetRouter::ValidOptions, static_cast<int32_t>(std::size(MultitargetRouter::ValidOptions))));
+    static  std::pair< const OptionParser::OptionSetup*, int32_t> _opts(std::pair< const OptionParser::OptionSetup*, int32_t>(MultitargetRouter::ValidOptions, static_cast<int32_t>(std::size(MultitargetRouter::ValidOptions))));
     return _opts;
 }
 
@@ -291,7 +291,7 @@ bool MultitargetRouter::_checkCommand(const String& cmd)
         const OptionParser::InputOptionList & opts = parser.getOptions( );
         for (uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
-            const OptionParser::sOption & opt = opts[ i ];
+            const OptionParser::InputOption & opt = opts[ i ];
             switch ( static_cast<MultitargetRouter::RouterOption>(opt.inCommand) )
             {
             case MultitargetRouter::RouterOption::CMD_RouterPause:
@@ -458,7 +458,7 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            NEService::sServiceConnectedInstance instance;
+            NEService::ConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             uint32_t id{ static_cast<uint32_t>(cookie) };
 
@@ -486,7 +486,7 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            NEService::sServiceConnectedInstance instance;
+            NEService::ConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             uint32_t id{ static_cast<uint32_t>(cookie) };
 

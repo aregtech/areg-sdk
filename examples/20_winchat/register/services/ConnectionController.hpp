@@ -99,7 +99,7 @@ public:
      * \brief   Search connection entry in the list. On output, if found, 
      *          the parameter 'connection' contains value of entry
      **/
-    bool FindConnection( const String & nickName, ConnectionManager::sConnection & connection );
+    bool FindConnection( const String & nickName, ConnectionManager::ConnectionRecord & connection );
 
     /**
      * \brief   Returns true if name is reserved by system.

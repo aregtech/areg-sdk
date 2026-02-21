@@ -73,7 +73,7 @@ void ConnectionController::requestConnect( const String & nickName, const DateTi
     LOG_SCOPE( centralapp_ConnectionController_requestConnect );
     LOG_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime()));
 
-    ConnectionManager::sConnection connection;
+    ConnectionManager::ConnectionRecord connection;
     connection.nickName     = nickName;
     connection.connectTime  = dateTime;
     connection.cookie       = ConnectionManager::InvalidCookie;
@@ -116,7 +116,7 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
     LOG_SCOPE( centralapp_ConnectionController_requestRegisterConnection );
     LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.formatTime( )) );
 
-    ConnectionManager::sConnection connection;
+    ConnectionManager::ConnectionRecord connection;
     connection.nickName     = nickName;
     connection.connectTime  = dateRegister;
     connection.cookie       = ConnectionManager::InvalidCookie;
@@ -153,7 +153,7 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
                 HWND hWnd = mWnd;
                 if ( ::IsWindow( hWnd ) )
                 {
-                    chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
+                    chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
                     if ( data != nullptr )
                     {
                         NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -192,7 +192,7 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
 void ConnectionController::requestDisconnect( const String & nickName, uint32_t cookie, const DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestDisconnect );
-    ConnectionManager::sConnection connection;
+    ConnectionManager::ConnectionRecord connection;
     ConnectionManager::MapConnections & mapConnections = getConnectionList( );
     bool found = cookie != ConnectionManager::InvalidCookie ? mapConnections.find(cookie, connection) : FindConnection(nickName, connection);
 
@@ -208,7 +208,7 @@ void ConnectionController::requestDisconnect( const String & nickName, uint32_t 
             notifyConnectionListUpdated( );
 
             HWND hWnd = mWnd;
-            chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
+            chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
             if ( data != nullptr )
             {
                 NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -238,7 +238,7 @@ void ConnectionController::requestSendMessage( const String & nickName, uint32_t
 {
     LOG_SCOPE( centralapp_ConnectionController_requestSendMessage );
 
-    ConnectionManager::sConnection connection;
+    ConnectionManager::ConnectionRecord connection;
     ConnectionManager::MapConnections & mapConnections = getConnectionList( );
     bool found = cookie != ConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
@@ -251,7 +251,7 @@ void ConnectionController::requestSendMessage( const String & nickName, uint32_t
         broadcastKeyTyping( connection.nickName, cookie, String::getEmptyString() );
 
         HWND hWnd = mWnd;
-        chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
+        chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -274,7 +274,7 @@ void ConnectionController::requestKeyTyping( const String & nickName, uint32_t c
 {
     LOG_SCOPE( centralapp_ConnectionController_requestKeyTyping );
 
-    ConnectionManager::sConnection connection;
+    ConnectionManager::ConnectionRecord connection;
     ConnectionManager::MapConnections & mapConnections = getConnectionList( );
     bool found = cookie != ConnectionManager::InvalidCookie ? mapConnections.find( cookie, connection ) : FindConnection( nickName, connection );
     if ( found )
@@ -283,7 +283,7 @@ void ConnectionController::requestKeyTyping( const String & nickName, uint32_t c
         broadcastKeyTyping( connection.nickName, cookie, newMessage );
 
         HWND hWnd = mWnd;
-        chat::sMessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
+        chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
@@ -302,7 +302,7 @@ void ConnectionController::requestKeyTyping( const String & nickName, uint32_t c
     }
 }
 
-bool ConnectionController::FindConnection( const String & nickName, ConnectionManager::sConnection & connection )
+bool ConnectionController::FindConnection( const String & nickName, ConnectionManager::ConnectionRecord & connection )
 {
     bool result = false;
     const ConnectionManager::MapConnections & mapClients = getConnectionList();

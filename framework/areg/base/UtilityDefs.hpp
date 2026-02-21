@@ -314,10 +314,10 @@ namespace   NEUtilities
 /************************************************************************/
 
     /**
-     * \brief   NEUtilities::sSystemTime
+     * \brief   NEUtilities::CalendarTime
      *          The structure defines date-time data used in system time
      **/
-    typedef struct S_SystemTime
+    struct CalendarTime
     {
         int32_t     stYear{ 0 };        //!< The year in the time
         int32_t     stMonth{ 0 };       //!< The month in the time, which starts from 1 (January) until 12 (December)
@@ -329,7 +329,7 @@ namespace   NEUtilities
         int32_t     stSecond{ 0 };      //!< The second in the time, which starts from 0
         int32_t     stMillisecs{ 0 };   //!< The millisecond in the time, which starts from 0
         int32_t     stMicrosecs{ 0 };   //!< The microseconds in the time, which starts from 0
-    } sSystemTime;
+    };
 
     /**
      * \brief   Converts time in microseconds to time in seconds.
@@ -343,14 +343,14 @@ namespace   NEUtilities
      * \param   sysTime     The broken time to convert.
      * \return  Returns time in seconds.
      **/
-    AREG_API time_t convToSeconds(const sSystemTime& sysTime);
+    AREG_API time_t convToSeconds(const CalendarTime& sysTime);
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
      * \param[out]  sysTime     On output the system time parameter contains date-time of current time.
      * \param[in]   localTime   If true, in output the out_sysTime contains local time values.
      **/
-    AREG_API void systemTimeNow( sSystemTime & sysTime, bool localTime );
+    AREG_API void systemTimeNow( CalendarTime & sysTime, bool localTime );
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
@@ -365,7 +365,7 @@ namespace   NEUtilities
      * \param   sysTime     The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 convToTime( const sSystemTime & sysTime );
+    AREG_API TIME64 convToTime( const CalendarTime & sysTime );
 
     /**
      * \brief   Returns tm structure data as a 64-bit integer value in microseconds passed since Unix epoch,
@@ -380,7 +380,7 @@ namespace   NEUtilities
      * \param[in]   timeValue   64-bit value as microseconds passed since January 1 1970.
      * \param[out]  sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void convToSystemTime( const TIME64 & timeValue, sSystemTime & sysTime );
+    AREG_API void convToSystemTime( const TIME64 & timeValue, CalendarTime & sysTime );
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -391,7 +391,7 @@ namespace   NEUtilities
      *              - NEMath::Equal if both operands are equal
      *              - NEMath::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
-    AREG_API NEMath::Ordering compareTimes( const sSystemTime & lhs, const sSystemTime & rhs );
+    AREG_API NEMath::Ordering compareTimes( const CalendarTime & lhs, const CalendarTime & rhs );
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
@@ -420,7 +420,7 @@ namespace   NEUtilities
      * \param[in]   sysTime     The system-time data structure to convert.
      * \param[out]  time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void convToTm( const sSystemTime & sysTime, struct tm & time );
+    AREG_API void convToTm( const CalendarTime & sysTime, struct tm & time );
 
     /**
      * \brief   Converts time in microseconds since Unix epoch (January 1, 1970) to standard 'tm' type.
@@ -435,7 +435,7 @@ namespace   NEUtilities
      * \param[in]   time        Contains date-time of converted system time without information of milliseconds.
      * \param[out]  sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void convToSystemTime( const struct tm & time, sSystemTime & sysTime );
+    AREG_API void convToSystemTime( const struct tm & time, CalendarTime & sysTime );
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
@@ -455,7 +455,7 @@ namespace   NEUtilities
      * \param[out]  localTime   On output this structure contains the converted local time.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const sSystemTime & utcTime, sSystemTime & localTime );
+    AREG_API bool convToLocalTime( const CalendarTime & utcTime, CalendarTime & localTime );
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -463,7 +463,7 @@ namespace   NEUtilities
      * \param[out]  localTime   On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const TIME64 & utcTime, sSystemTime & localTime );
+    AREG_API bool convToLocalTime( const TIME64 & utcTime, CalendarTime & localTime );
 
     /**
      * \brief   Converts the system UTC time to local time in structure of tm.

@@ -40,7 +40,7 @@ namespace
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::sOptionSetup PubSubController::ValidOptions[]
+const OptionParser::OptionSetup PubSubController::ValidOptions[]
 {
       {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
     , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }

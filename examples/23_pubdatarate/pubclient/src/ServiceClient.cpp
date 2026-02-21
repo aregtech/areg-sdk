@@ -48,7 +48,7 @@ void ServiceClient::startupComponent(ComponentThread& /* comThread */)
 void ServiceClient::broadcastImageBlockAcquired(const NELargeData::ImageBlock& imageBlock)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
-    const NELargeData::sImageBlock* block = imageBlock.getBlock();
+    const NELargeData::RawImageBlock* block = imageBlock.getBlock();
     if ((block != nullptr) && mBitmap.allocateBitmap(block->frameWidth, block->frameHeight))
     {
         mBitmap.setBlock(imageBlock);

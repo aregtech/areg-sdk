@@ -32,7 +32,7 @@
 #include <string_view>
 
 //!< Declare as a class to use in namespace.
-class OptionData : public NEUtilities::sOptionData
+class OptionData : public NEUtilities::OptionValues
 {
 };
 
@@ -270,7 +270,7 @@ private:
     //! The thread to generate image data.
     Thread                      mImageThread;
     //! The actual options.
-    NEUtilities::sOptionData    mOptions;
+    NEUtilities::OptionValues    mOptions;
     //! The atomic object to quit input thread.
     std::atomic_bool            mQuitThread;
     //! The atomic object to notify that options changed.

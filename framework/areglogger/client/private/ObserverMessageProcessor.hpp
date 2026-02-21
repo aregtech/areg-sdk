@@ -27,7 +27,7 @@
 class LoggerClient;
 class RemoteMessage;
 namespace NELogging {
-    struct sLogMessage;
+    struct LogEntry;
 }
 //////////////////////////////////////////////////////////////////////////
 // ObserverMessageProcessor class declaration
@@ -93,7 +93,7 @@ private:
     void _clientsDisconnected(const RemoteMessage& msgReceived);
 
     //!< Initializes the local log message with default values.
-    void _initLocalLogMessage(NELogging::sLogMessage& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
+    void _initLocalLogMessage(NELogging::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

@@ -356,7 +356,7 @@ ThreadConsumer& Thread::getCurrentThreadConsumer()
 {
     ASSERT(getCurrentThread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
-    ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).alignPtr.mElement);
+    ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).valPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);
 }

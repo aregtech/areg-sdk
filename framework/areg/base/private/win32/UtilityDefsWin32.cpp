@@ -49,7 +49,7 @@ namespace NEUtilities
 #endif  // _MINGW
     }
 
-    void _osSystemTimeNow( NEUtilities::sSystemTime & sysTime, bool localTime )
+    void _osSystemTimeNow( NEUtilities::CalendarTime & sysTime, bool localTime )
     {
         struct timespec ts { };
         struct tm now { };
@@ -87,7 +87,7 @@ namespace NEUtilities
         localtime_s(&utcTime, &_timer);
     }
 
-    bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& localTime)
+    bool _osConvToLocalTime(const TIME64& utcTime, CalendarTime& localTime)
     {
         bool result = false;
 
@@ -114,7 +114,7 @@ namespace NEUtilities
         return (NECommon::RETURNED_OK == localtime_s(&localTm, &secs));
     }
 
-    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime)
+    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::CalendarTime& sysTime)
     {
         time_t secs;
         uint16_t milli, micro;

@@ -4,10 +4,10 @@
         <Description>The service interface of direct connection and messaging used in chat-room.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="sParticipant" Type="Imported">
+        <DataType ID="2" Name="Participant" Type="Imported">
             <Location>common/ChatDefs.hpp</Location>
             <Namespace>chat</Namespace>
-            <ImportedObject>sParticipant</ImportedObject>
+            <ImportedObject>Participant</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="3" Name="ListParticipants" Type="Imported">
@@ -26,7 +26,7 @@
         <Method ID="7" Name="ChatJoin" MethodType="Request" Response="ChatJoin">
             <Description>Request to join chat. The participant should be in the list of connections</Description>
             <ParamList>
-                <Parameter ID="51" Name="participant" DataType="sParticipant">
+                <Parameter ID="51" Name="participant" DataType="Participant">
                     <Description>The participant to join chat. The participant should be in the connection list.</Description>
                 </Parameter>
                 <Parameter ID="52" Name="timeConnect" DataType="DateTime">
@@ -54,7 +54,7 @@
         <Method ID="15" Name="MessageSend" MethodType="Request">
             <Description>Request to send a message, has no response</Description>
             <ParamList>
-                <Parameter ID="57" Name="sender" DataType="sParticipant">
+                <Parameter ID="57" Name="sender" DataType="Participant">
                     <Description>The participant structure of message sender</Description>
                 </Parameter>
                 <Parameter ID="58" Name="msgText" DataType="String">
@@ -68,7 +68,7 @@
         <Method ID="19" Name="MessageType" MethodType="Request">
             <Description>The request to send message while typing a text. Has no response.</Description>
             <ParamList>
-                <Parameter ID="60" Name="participant" DataType="sParticipant">
+                <Parameter ID="60" Name="participant" DataType="Participant">
                     <Description>The structure of participant while sending message during typing.</Description>
                 </Parameter>
                 <Parameter ID="61" Name="msgText" DataType="String">
@@ -79,7 +79,7 @@
         <Method ID="22" Name="ChatLeave" MethodType="Request">
             <Description>The request to leave chat-room. Has no response.</Description>
             <ParamList>
-                <Parameter ID="62" Name="participant" DataType="sParticipant">
+                <Parameter ID="62" Name="participant" DataType="Participant">
                     <Description>The structure of chat-room participant.</Description>
                 </Parameter>
                 <Parameter ID="63" Name="timeLeave" DataType="DateTime">
@@ -90,7 +90,7 @@
         <Method ID="25" Name="MessageSent" MethodType="Broadcast">
             <Description>Informs all connected servicing clients that the message is sent.</Description>
             <ParamList>
-                <Parameter ID="64" Name="sender" DataType="sParticipant">
+                <Parameter ID="64" Name="sender" DataType="Participant">
                     <Description>The structure of participant, who sent the message.</Description>
                 </Parameter>
                 <Parameter ID="65" Name="msgText" DataType="String">
@@ -104,7 +104,7 @@
         <Method ID="29" Name="MessageTyped" MethodType="Broadcast">
             <Description>Informs all connected servicing client that the text was typed.</Description>
             <ParamList>
-                <Parameter ID="67" Name="participant" DataType="sParticipant">
+                <Parameter ID="67" Name="participant" DataType="Participant">
                     <Description>The structure of participant, who initiated message during typing.</Description>
                 </Parameter>
                 <Parameter ID="68" Name="msgText" DataType="String">
@@ -115,7 +115,7 @@
         <Method ID="32" Name="ParticipantJoined" MethodType="Broadcast">
             <Description>Informs new participant joined chat-room</Description>
             <ParamList>
-                <Parameter ID="69" Name="participant" DataType="sParticipant">
+                <Parameter ID="69" Name="participant" DataType="Participant">
                     <Description>The structure of participant, joined chat-room.</Description>
                 </Parameter>
                 <Parameter ID="70" Name="timeJoined" DataType="DateTime">
@@ -126,7 +126,7 @@
         <Method ID="35" Name="ParticipantLeft" MethodType="Broadcast">
             <Description>Informs that a participant left chat-room.</Description>
             <ParamList>
-                <Parameter ID="71" Name="participant" DataType="sParticipant">
+                <Parameter ID="71" Name="participant" DataType="Participant">
                     <Description>The structure of participant, who left the chat-room.</Description>
                 </Parameter>
                 <Parameter ID="72" Name="timeLeft" DataType="DateTime">

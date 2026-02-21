@@ -1351,20 +1351,20 @@ private:
     /**
      * \brief   Locking state of every object within array.
      **/
-    LockState            mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
+    LockState           mLockedStates[NECommon::MAXIMUM_WAITING_OBJECTS];
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
-    SyncObject * const *  mSyncObjArray;
+    SyncObject* const*  mSyncObjArray;
     /**
      * \brief   Size of synchronization object. 
      *          Cannot be more than MAX_SIZE_OF_ARRAY (64)
      **/
-    const int32_t               mSizeCount;
+    const int32_t       mSizeCount;
     /**
      * \brief   Flag, indicating whether auto-locking is enabled or disabled.
      **/
-    const bool              mAutoLock;
+    const bool          mAutoLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls

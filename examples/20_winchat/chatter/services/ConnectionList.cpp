@@ -42,25 +42,25 @@ bool ConnectionList::serviceConnected( NEService::ServiceConnectionState status,
     return result;
 }
 
-void ConnectionList::broadcastClientDisconnected( const ConnectionManager::sConnection & clientData )
+void ConnectionList::broadcastClientDisconnected( const ConnectionManager::ConnectionRecord & clientData )
 {
     if (mConnectionHandler.RemoveConnection(clientData))
     {
-        ConnectionManager::sConnection * data = new ConnectionManager::sConnection( clientData );
+        ConnectionManager::ConnectionRecord * data = new ConnectionManager::ConnectionRecord( clientData );
         DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdRemoveConnection, 1, reinterpret_cast<LPARAM>(data) );
     }
 }
 
-void ConnectionList::broadcastClientConnected( const ConnectionManager::sConnection & newClient )
+void ConnectionList::broadcastClientConnected( const ConnectionManager::ConnectionRecord & newClient )
 {
     if (mConnectionHandler.AddConnection(newClient))
     {
-        ConnectionManager::sConnection * data = new ConnectionManager::sConnection(newClient);
+        ConnectionManager::ConnectionRecord * data = new ConnectionManager::ConnectionRecord(newClient);
         DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdAddConnection, 1, reinterpret_cast<LPARAM>(data));
     }
 }
 
-void ConnectionList::responseRegisterConnection( const ConnectionManager::sConnection & connection, const ConnectionManager::ListConnections & connectionList, bool success )
+void ConnectionList::responseRegisterConnection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success )
 {
     LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
     LOG_DBG("[ %s ] to register connection [ %s ]", success ? "SUCCEEDED" : "FAILED", connection.nickName.getString());

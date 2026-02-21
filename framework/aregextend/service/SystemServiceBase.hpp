@@ -131,8 +131,8 @@ public:
      *          found no failure and the application can continue working.
      *          To interrupt the application, return false.
      **/
-    virtual bool parseOptions( int32_t argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount );
-    virtual bool parseOptions( int32_t argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount);
+    virtual bool parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount );
+    virtual bool parseOptions( int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount);
 
     /**
      * \brief   Checks the listed options and prepares to dispatch.
@@ -152,7 +152,7 @@ public:
      * \return  If operation succeeded, returns true. Otherwise, if the option is not recognized or value is unexpected,
      *          returns false.
      **/
-    virtual bool dispatchOption(const OptionParser::sOption& opt);
+    virtual bool dispatchOption(const OptionParser::InputOption& opt);
 
     /**
      * \brief   Is the main entry point to install, uninstall, register and start service.

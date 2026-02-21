@@ -27,112 +27,6 @@
 #include <new>
 #include <string.h>
 
-/************************************************************************
- * \brief   MACRO. Main defines to simplify data access.
- ************************************************************************/
-/**
- * \brief   Alignment type
- **/
-#define ALIGNED_TYPE            NEMemory::uAlign
-/**
- * \brief   Aligns passed value to the size of uAlign object.
- **/
-#define ALIGNED_TYPE_SIZE(x)    NEMath::alignSize(sizeof(x), sizeof(NEMemory::uAlign))
-
-/**
- * \brief   Gets boolean value of align object.
- **/
-#define ARG_BOOL(aln)           static_cast<NEMemory::uAlign>(aln).alignBool
-/**
- * \brief   Gets char value of align object.
- **/
-#define ARG_CHAR(aln)           static_cast<NEMemory::uAlign>(aln).alignChar
-/**
- * \brief   Gets uint8_t value of align object.
- **/
-#define ARG_UCHAR(aln)          static_cast<NEMemory::uAlign>(aln).alignUChar
-/**
- * \brief   Gets wide char value of align object.
- **/
-#define ARG_WCHAR(aln)          static_cast<NEMemory::uAlign>(aln).alignWChar
-/**
- * \brief   Gets int16_t value of align object.
- **/
-#define ARG_SHORT(aln)          static_cast<NEMemory::uAlign>(aln).alignShort
-/**
- * \brief   Gets uint16_t value of align object.
- **/
-#define ARG_USHORT(aln)         static_cast<NEMemory::uAlign>(aln).alignUShort
-/**
- * \brief   Gets int32_t value of align object.
- **/
-#define ARG_INT(aln)            static_cast<NEMemory::uAlign>(aln).alignInt
-/**
- * \brief   Gets uint32_t value of align object.
- **/
-#define ARG_UINT(aln)           static_cast<NEMemory::uAlign>(aln).alignUInt
-/**
- * \brief   Gets long value of align object.
- **/
-#define ARG_LONG(aln)           static_cast<NEMemory::uAlign>(aln).alignLong
-/**
- * \brief   Gets unsigned long value of align object.
- **/
-#define ARG_ULONG(aln)          static_cast<NEMemory::uAlign>(aln).algnULong
-/**
- * \brief   Gets 64-bit integer value of align object.
- **/
-#define ARG_INT64(aln)          static_cast<NEMemory::uAlign>(aln).alignInt64
-/**
- * \brief   Gets 64-bit unsigned integer value of align object.
- **/
-#define ARG_UINT64(aln)         static_cast<NEMemory::uAlign>(aln).alignUInt64
-/**
- * \brief   Gets float value of align object.
- **/
-#define ARG_FLOAT(aln)          static_cast<NEMemory::uAlign>(aln).alignFloat
-/**
- * \brief   Gets double value of align object.
- **/
-#define ARG_DOUBLE(aln)         static_cast<NEMemory::uAlign>(aln).alignDouble
-/**
- * \brief   Gets long double value of align object.
- **/
-#define ARG_LDOUBLE(aln)        static_cast<NEMemory::uAlign>(aln).alignLDouble
-/**
- * \brief   Gets pointer value of align object.
- **/
-#define ARG_PTR(aln)            static_cast<NEMemory::uAlign>(aln).alignPtr
-/**
- * \brief   Gets pointer to class value of align object.
- **/
-#define ARG_CLSPTR(aln)         static_cast<NEMemory::uAlign>(aln).alignClsPtr
-
-#ifdef _DEBUG
-
-    /**
-     * \brief   Set 1 if want to zero allocated memory.
-     *          Set 0 if no need to zero allocated memory
-     **/
-    #define DBG_SET_MEM_ZERO                0
-
-    #if DBG_SET_MEM_ZERO
-
-        #define DBG_ZERO_MEM(buf, size)     { if ((buf) != nullptr)  NEMemory::memZero((buf), size); }
-
-    #else   // DBG_SET_MEM_ZERO
-
-        #define DBG_ZERO_MEM(buf, size)
-
-    #endif  // DBG_SET_MEM_ZERO
-
-#else   // _DEBUG
-
-    #define DBG_ZERO_MEM(buf, size)
-
-#endif  // _DEBUG
-
-
 //////////////////////////////////////////////////////////////////////////
 // NEMemory namespace declaration
 //////////////////////////////////////////////////////////////////////////
@@ -150,15 +44,13 @@ namespace NEMemory
 // Internal types used for alignment
 //////////////////////////////////////////////////////////////////////////
     
-    class _EmptyClass;                                          //!< Dummy class declaration
-    typedef void ( *                _EmptyMethod     ) ();  //!< Dummy pointer to global function declaration
-    typedef void (_EmptyClass::*    _EmptyClassMethod) ();  //!< Dummy pointer to class function declaration
-    typedef int32_t   _EmptyClass::*    _EmptyClassMember;          //!< Dummy pointer to class variable declaration
+    class _EmptyClass;                                  //!< Dummy class declaration
+    typedef void   (*EmptyMethod)();                    //!< Dummy pointer to global function declaration
+    typedef void   (_EmptyClass::*_EmptyClassMethod)(); //!< Dummy pointer to class function declaration
+    typedef int32_t _EmptyClass::*_EmptyClassMember;    //!< Dummy pointer to class variable declaration
 
     /**
      * \brief   NEMemory::BufferData
-     *          Defines Buffer Data type. The size of buffer should be aligned
-     *          to size of uAlign union type
      **/
     using BufferData = uint8_t;
 
@@ -174,40 +66,38 @@ namespace NEMemory
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::uAlign union declaration
+    // NEMemory::Primitive union declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::uAlign
-     *          Align union, defines possible variation of
-     *          primitives. It is used to align buffer allocation
-     *          It can be also used for single primitive element 
-     *          serialization / deserialization.
-     *          Pointers to class function and variables should be
-     *          treated with special care. Do not serialize them.
+     * \brief   NEMemory::Primitive
+     *          Union of all C++ primitive types, sized to the largest member.
+     *          Used as the alignment unit for buffer allocation and as a
+     *          container for storing or serializing a single primitive value.
+     *
+     * \note    Do not serialize pointer-to-function or pointer-to-member members.
      **/
-    union uAlign
+    union Primitive
     {
-        Align<bool>                          alignBool;      //!< boolean value
-        Align<char>                          alignChar;      //!< char value
-        Align<uint8_t>                 alignUChar;     //!< uint8_t value
-        Align<wchar_t>                       alignWChar;     //!< wide char value
-        Align<int16_t>                         alignShort;     //!< int16_t value
-        Align<uint16_t>                alignUShort;    //!< uint16_t value
-        Align<int32_t>                           alignInt;       //!< int32_t value
-        Align<uint32_t>                  alignUInt;      //!< uint32_t value
-        Align<long double>                   alignLDouble;   //!< long double value
-        Align<long>                          alignLong;      //!< long value
-        Align<unsigned long>                 alignULong;     //!< unsigned long value
-        Align<int64_t>                       alignInt64;     //!< 64-bit integer value
-        Align<uint64_t>                      alignUInt64;    //!< 64-bit unsigned integer value
-        Align<float>                         alignFloat;     //!< float value
-        Align<double>                        alignDouble;    //!< double
-        Align<void *>                        alignPtr;       //!< pointer value
-        Align<void (*)()>              alignFunc;      //!< pointer to function value
-        Align<_EmptyClass *>                 alignClsPtr;    //!< pointer to class value
-        Align<void (_EmptyClass::*)()> alignClsFunc;   //!< pointer to class function value
-        Align<int32_t _EmptyClass::*>            alignClsVar;    //!< pointer to class variable value
-
+        Align<bool>                     valBool;    //!< boolean value
+        Align<char>                     valChar;    //!< char value
+        Align<uint8_t>                  valUChar;   //!< uint8_t value
+        Align<wchar_t>                  valWChar;   //!< wide char value
+        Align<int16_t>                  valShort;   //!< int16_t value
+        Align<uint16_t>                 valUShort;  //!< uint16_t value
+        Align<int32_t>                  valInt;     //!< int32_t value
+        Align<uint32_t>                 valUInt;    //!< uint32_t value
+        Align<long double>              valLDouble; //!< long double value
+        Align<long>                     valLong;    //!< long value
+        Align<unsigned long>            valULong;   //!< unsigned long value
+        Align<int64_t>                  valInt64;   //!< 64-bit integer value
+        Align<uint64_t>                 valUInt64;  //!< 64-bit unsigned integer value
+        Align<float>                    valFloat;   //!< float value
+        Align<double>                   valDouble;  //!< double
+        Align<void *>                   valPtr;     //!< pointer value
+        Align<void (*)()>               valFunc;    //!< pointer to function value
+        Align<_EmptyClass *>            valClsPtr;  //!< pointer to class value
+        Align<void (_EmptyClass::*)()>  valClsFunc; //!< pointer to class function value
+        Align<int32_t _EmptyClass::*>   valClsVar;  //!< pointer to class variable value
     };
 
     /**
@@ -248,7 +138,7 @@ namespace NEMemory
      *          Constant. Defines the minimum size of Byte Buffer data
      *          Also defines the size to align buffer allocation.
      **/
-    constexpr uint32_t      BLOCK_SIZE      { sizeof( NEMemory::uAlign ) * 8 };
+    constexpr uint32_t      BLOCK_SIZE      { sizeof( uint64_t ) * 8 };
     /**
      * \brief   NEMemory::INVALID_SIZE
      *          Constant. Defines invalid buffer size.
@@ -279,23 +169,23 @@ namespace NEMemory
      *
      * \see     ThreadLocalStorage::GetStorageItem()
      **/
-    constexpr  NEMemory::uAlign InvalidElement{{0}};
+    constexpr  NEMemory::Primitive  InvalidElement{{0}};
 
     /**
-     * \brief   Compares 2 NEMemory::uAlign elements, returns true if they are equal
+     * \brief   Compares 2 NEMemory::Primitive elements, returns true if they are equal
      * \param   lsh     Left-Hand Operand
      * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 NEMemory::uAlign elements are equal
+     * \return  Returns true if 2 NEMemory::Primitive elements are equal
      **/
-    inline bool operator == (const NEMemory::uAlign & lsh, const NEMemory::uAlign & rhs);
+    inline bool operator == (const NEMemory::Primitive & lsh, const NEMemory::Primitive & rhs);
 
     /**
-     * \brief   Compares 2 NEMemory::uAlign elements, returns true if they are not equal
+     * \brief   Compares 2 NEMemory::Primitive elements, returns true if they are not equal
      * \param   lsh     Left-Hand Operand
      * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 NEMemory::uAlign elements are not equal
+     * \return  Returns true if 2 NEMemory::Primitive elements are not equal
      **/
-    inline bool operator != (const NEMemory::uAlign & lsh, const NEMemory::uAlign & rhs);
+    inline bool operator != (const NEMemory::Primitive & lsh, const NEMemory::Primitive & rhs);
 
     //////////////////////////////////////////////////////////////////////////
     // NEMemory::BufferHeader structure declaration
@@ -336,90 +226,90 @@ namespace NEMemory
     // NEMemory::sRemoteBuferHeader structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::sRemoteMessageHeader
+     * \brief   NEMemory::MessageHeader
      *          Structure of binary buffer for Remote data transfer.
      *          It is extended type of BufferHeader with additions
      *          of message ID, message sequence number, cookie and checksum.
      **/
-    typedef struct S_RemoteMessageHeader
+    struct MessageHeader
     {
         /**
          * \brief   The common buffer header information
          **/
-        BufferHeader    rbhBufHeader;
+        BufferHeader    rbhBufHeader{ };
         /**
          * \brief   An ID of target object, receiving message.
          *          In remote messaging, this is Cookie of target
          **/
-        ITEM_ID         rbhTarget;
+        ITEM_ID         rbhTarget   { 0 };
         /**
          * \brief   Data checksum value for validation check-up.
          *          Should be ignored if value is NEMemory::IGNORE_CHECKSUM
          **/
-        uint32_t    rbhChecksum;
+        uint32_t        rbhChecksum{ 0 };
         /**
          * \brief   An ID of source object, sending message.
          *          In remote messaging, this is Cookie of source
          **/
-        ITEM_ID         rbhSource;
+        ITEM_ID         rbhSource{ 0 };
         /**
          * \brief   The Remote message ID registered in the system
          **/
-        uint32_t    rbhMessageId;
+        uint32_t        rbhMessageId{ 0 };
         /**
          * \brief   The result of processing message.
          **/
-        uint32_t    rbhResult;
+        uint32_t        rbhResult{ 0 };
         /**
          * \brief   The Remote message sequence number set during messaging
          **/
-        SequenceNumber  rbhSequenceNr;
-    } sRemoteMessageHeader;
+        SequenceNumber  rbhSequenceNr{ 0 };
+    };
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::sByteBuffer structure declaration
+    // NEMemory::RawBuffer structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::sByteBuffer
+     * \brief   NEMemory::RawBuffer
      *          Specify the Byte Buffer object.
      *          Contains the size of complete object,
      *          buffer information and elements followed Byte Buffer object.
      **/
-    typedef struct S_ByteBuffer
+    struct RawBuffer
     {
         /**
          * \brief   Byte Buffer information
          **/
-        BufferHeader    bufHeader;
+        BufferHeader    bufHeader   { };
         /**
          * \brief   Byte Buffer Data followed after structure.
          *          This is referring to the first element in the data buffer.
          **/
-        BufferData      bufData[4];
-    } sByteBuffer;
+        BufferData      bufData[4]  { 0 };
+    };
 
 
     //////////////////////////////////////////////////////////////////////////
     // NEMemory::sRpcMessageBuffer structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::sRemoteMessage
+     * \brief   NEMemory::RawMessage
      *          Specify the Byte Buffer object.
      *          Contains the size of complete object,
      *          buffer information and elements followed Byte Buffer object.
      **/
-    typedef struct S_RemoteMessage
+    struct RawMessage
     {
         /**
          * \brief   Byte Buffer information
          **/
-        sRemoteMessageHeader    rbHeader;
+        MessageHeader    rbHeader{ };
         /**
          * \brief   Byte Buffer Data followed after structure.
          *          This is referring to the first element in the data buffer.
          **/
-        BufferData              rbData[4];
-    } sRemoteMessage;
+        BufferData              rbData[4]{ 0 };
+    };
 
     /**
      * \brief   Returns the pointer to data buffer for writing. 
@@ -427,7 +317,7 @@ namespace NEMemory
      * \param   byteBuffer  The pointer to byte-buffer object.
      * \return  Returns data buffer to write.
      **/
-    inline uint8_t * getBufferDataWrite( sByteBuffer * byteBuffer );
+    inline uint8_t * getBufferDataWrite( RawBuffer * byteBuffer );
 
     /**
      * \brief   Returns the pointer to data buffer for reading. 
@@ -435,7 +325,7 @@ namespace NEMemory
      * \param   byteBuffer  The pointer to byte-buffer object.
      * \return  Returns data buffer to read.
      **/
-    inline const uint8_t * getBufferDataRead( const sByteBuffer * byteBuffer );
+    inline const uint8_t * getBufferDataRead( const RawBuffer * byteBuffer );
 
     /**
      * \brief	Constructs elements in allocated buffer, i.e. calls default constructor to initialize element
@@ -680,55 +570,55 @@ namespace NEMemory
 #include "areg/base/IOStream.hpp"
 
 /************************************************************************
- * \brief   Streaming of NEMemory::uAlign
+ * \brief   Streaming of NEMemory::Primitive
  *          Global streaming operators to read and write to streaming object
  ************************************************************************/
 
 /**
- * \brief   Support streaming operator for NEMemory::uAlign type.
- *          Read NEMemory::uAlign from streaming object
+ * \brief   Support streaming operator for NEMemory::Primitive type.
+ *          Read NEMemory::Primitive from streaming object
  * \param   stream  The streaming object to read
- * \param   input   The NEMemory::uAlign item to initialize from stream
+ * \param   input   The NEMemory::Primitive item to initialize from stream
  * \return  Reading streaming object
  **/
-inline const InStream & operator >> (const InStream & stream, NEMemory::uAlign & input)
+inline const InStream & operator >> (const InStream & stream, NEMemory::Primitive & input)
 {
-    stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(NEMemory::uAlign) );
+    stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(NEMemory::Primitive) );
     return stream;
 }
 
 /**
- * \brief   Support streaming operator for NEMemory::uAlign type.
- *          Write NEMemory::uAlign to streaming object
+ * \brief   Support streaming operator for NEMemory::Primitive type.
+ *          Write NEMemory::Primitive to streaming object
  * \param   stream  The streaming object to write
- * \param   output  The NEMemory::uAlign item to write to stream
+ * \param   output  The NEMemory::Primitive item to write to stream
  * \return  Writing streaming object
  **/
-inline OutStream & operator << (OutStream & stream, const NEMemory::uAlign & output)
+inline OutStream & operator << (OutStream & stream, const NEMemory::Primitive & output)
 {
-    stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(NEMemory::uAlign) );
+    stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(NEMemory::Primitive) );
     return stream;
 }
 
 /************************************************************************
- * \brief   Streaming of NEMemory::uAlign
+ * \brief   Streaming of NEMemory::Primitive
  *          Global comparing operators
  ************************************************************************/
  
 /**
- * \brief   compares to NEMemory::uAlign values and returns true if they are equal.
+ * \brief   compares to NEMemory::Primitive values and returns true if they are equal.
  **/
-inline bool NEMemory::operator == ( const NEMemory::uAlign& lsh, const NEMemory::uAlign& rhs )
+inline bool NEMemory::operator == ( const NEMemory::Primitive& lsh, const NEMemory::Primitive& rhs )
 {
-    return ((&lsh == &rhs) || (lsh.alignInt64.mElement == rhs.alignInt64.mElement));
+    return ((&lsh == &rhs) || (lsh.valInt64.mElement == rhs.valInt64.mElement));
 }
 
 /**
- * \brief   compares to NEMemory::uAlign values and returns true if they are not equal.
+ * \brief   compares to NEMemory::Primitive values and returns true if they are not equal.
  **/
-inline bool NEMemory::operator != ( const NEMemory::uAlign& lsh, const NEMemory::uAlign& rhs )
+inline bool NEMemory::operator != ( const NEMemory::Primitive& lsh, const NEMemory::Primitive& rhs )
 {
-    return ((&lsh != &rhs) && (lsh.alignInt64.mElement != rhs.alignInt64.mElement));
+    return ((&lsh != &rhs) && (lsh.valInt64.mElement != rhs.valInt64.mElement));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -814,12 +704,12 @@ inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uin
 // Byte buffer functions
 /************************************************************************/
 
-inline uint8_t * NEMemory::getBufferDataWrite(NEMemory::sByteBuffer * byteBuffer)
+inline uint8_t * NEMemory::getBufferDataWrite(NEMemory::RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
-inline const uint8_t * NEMemory::getBufferDataRead(const sByteBuffer * byteBuffer)
+inline const uint8_t * NEMemory::getBufferDataRead(const RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<const uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }

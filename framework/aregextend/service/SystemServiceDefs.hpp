@@ -55,7 +55,7 @@ namespace NESystemService
     /**
      * \brief   The default setup for the system service executable options.
      **/
-    const OptionParser::sOptionSetup ServiceOptionSetup[ ]
+    const OptionParser::OptionSetup ServiceOptionSetup[ ]
     {
           //!< Default command.
           { ""  , ""            , static_cast<int32_t>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }

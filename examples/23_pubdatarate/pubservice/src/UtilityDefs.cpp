@@ -15,7 +15,7 @@
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
 
-bool NEUtilities::sOptionData::parseCommand(const String& cmd)
+bool NEUtilities::OptionValues::parseCommand(const String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
 
@@ -32,7 +32,7 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
         entry.trimAll();
 
         bool found{ false };
-        for (const auto& opt : OptionList)
+        for (const auto& opt : OptionSpecs)
         {
             if (entry.startsWith(opt.cmdShort))
             {
@@ -63,7 +63,7 @@ bool NEUtilities::sOptionData::parseCommand(const String& cmd)
     return (hasError() == false);
 }
 
-bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t whichValue)
+bool NEUtilities::OptionValues::setValue(const OptionSpec& whichOpt, uint32_t whichValue)
 {
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
     LOG_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
@@ -127,7 +127,7 @@ bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t which
     return result;
 }
 
-const NEUtilities::sOptionData& NEUtilities::sOptionData::normalizeOptions(const sOptionData& oldOptions)
+const NEUtilities::OptionValues& NEUtilities::OptionValues::normalizeOptions(const OptionValues& oldOptions)
 {
     if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdWidth)) == 0)
     {

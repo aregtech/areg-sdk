@@ -46,7 +46,7 @@ void SystemServiceBase::resetDefaultOptions()
     mCommunication.enableCalculateDataRate(NESystemService::DEFAULT_VERBOSE);
 }
 
-bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount )
+bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount )
 {
     bool result{ false };
 
@@ -72,7 +72,7 @@ bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const Op
     return result;
 }
 
-bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount)
+bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount)
 {
     bool result{ false };
 
@@ -105,14 +105,14 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
 
     for (uint32_t i = 0; i < opts.getSize(); ++i)
     {
-        const OptionParser::sOption& opt = opts[i];
+        const OptionParser::InputOption& opt = opts[i];
         result &= dispatchOption(opt);
     }
 
     return result;
 }
 
-bool SystemServiceBase::dispatchOption(const OptionParser::sOption& opt)
+bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
 {
     bool result{ false };
     bool outHelp{ false };

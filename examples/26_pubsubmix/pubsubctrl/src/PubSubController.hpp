@@ -46,7 +46,7 @@ private:
     };
 
     //!< The list of valid options
-    static const OptionParser::sOptionSetup ValidOptions[];
+    static const OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

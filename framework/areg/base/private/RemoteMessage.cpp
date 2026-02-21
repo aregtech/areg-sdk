@@ -26,9 +26,9 @@
 #include <string.h>
 #include <cstddef>
 
-inline uint32_t RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
+inline uint32_t RemoteMessage::_checksumCalculate( const NEMemory::RawMessage & remoteMessage )
 {
-    const uint32_t offset   = offsetof( NEMemory::sRemoteMessageHeader, rbhSource );
+    const uint32_t offset   = offsetof( NEMemory::MessageHeader, rbhSource );
     const uint8_t * data  = reinterpret_cast<const uint8_t *>(&remoteMessage.rbHeader.rbhSource);
     const uint32_t remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
     const uint32_t used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
@@ -65,8 +65,8 @@ uint32_t RemoteMessage::initBuffer(uint8_t *newBuffer, uint32_t bufLength, bool 
         uint32_t dataOffset { getDataOffset() };
         uint32_t dataLength { bufLength - dataOffset };
 
-        NEMemory::memZero(newBuffer, sizeof(NEMemory::sRemoteMessage));
-        NEMemory::sRemoteMessageHeader & header = NEMemory::constructElems<NEMemory::sRemoteMessage>(newBuffer, 1)->rbHeader;
+        NEMemory::memZero(newBuffer, sizeof(NEMemory::RawMessage));
+        NEMemory::MessageHeader & header = NEMemory::constructElems<NEMemory::RawMessage>(newBuffer, 1)->rbHeader;
 
         header.rbhBufHeader.biBufSize   = bufLength;
         header.rbhBufHeader.biLength    = dataLength;
@@ -76,7 +76,7 @@ uint32_t RemoteMessage::initBuffer(uint8_t *newBuffer, uint32_t bufLength, bool 
 
         if (isValid())
         {
-            const NEMemory::sRemoteMessageHeader & hdrSrc = { _getHeader() };
+            const NEMemory::MessageHeader & hdrSrc = { _getHeader() };
             header.rbhTarget    = hdrSrc.rbhTarget;
             header.rbhSource    = hdrSrc.rbhSource;
             header.rbhMessageId = hdrSrc.rbhMessageId;
@@ -86,7 +86,7 @@ uint32_t RemoteMessage::initBuffer(uint8_t *newBuffer, uint32_t bufLength, bool 
 
         if ( makeCopy )
         {
-            uint8_t * dstBuf{ NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::sByteBuffer *>(&header.rbhBufHeader)) };
+            uint8_t * dstBuf{ NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::RawBuffer *>(&header.rbhBufHeader)) };
             const uint8_t* srcBuf { NEMemory::getBufferDataRead(mByteBuffer.get()) };
             uint32_t srcCount { getSizeUsed() };
             srcCount = std::min(srcCount, dataLength);
@@ -109,8 +109,8 @@ void RemoteMessage::bufferCompletionFix() const
 {
     if ( isValid() )
     {
-        const NEMemory::sRemoteMessage & msg = _getRemoteMessage();
-        const NEMemory::sRemoteMessageHeader & header = msg.rbHeader;
+        const NEMemory::RawMessage & msg = _getRemoteMessage();
+        const NEMemory::MessageHeader & header = msg.rbHeader;
 
         uint32_t checksum   = RemoteMessage::_checksumCalculate( msg );
         uint32_t dataUsed   = header.rbhBufHeader.biUsed;
@@ -120,18 +120,18 @@ void RemoteMessage::bufferCompletionFix() const
         dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(NEMemory::BufferData)));
         dataLen = NEMath::alignSize(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
 
-        bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(NEMemory::sRemoteMessage)));
+        bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(NEMemory::RawMessage)));
         bufSize = NEMath::alignSize(bufSize, static_cast<uint32_t>(sizeof(int32_t)));
 
         ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
-        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
-        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
-        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhChecksum              = checksum;
+        const_cast<NEMemory::MessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
+        const_cast<NEMemory::MessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
+        const_cast<NEMemory::MessageHeader &>(header).rbhChecksum              = checksum;
     }
 }
 
-uint8_t * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
+uint8_t * RemoteMessage::initMessage(const NEMemory::MessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
 {
     invalidate();
 
@@ -144,9 +144,9 @@ uint8_t * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHe
     uint8_t * result  = DEBUG_NEW uint8_t[sizeBuffer];
     if ( result != nullptr )
     {
-        NEMemory::memZero(result, sizeof(NEMemory::sRemoteMessage));
-        NEMemory::sRemoteMessage * msg      = NEMemory::constructElems<NEMemory::sRemoteMessage>(result, 1);
-        NEMemory::sRemoteMessageHeader & dst= msg->rbHeader;
+        NEMemory::memZero(result, sizeof(NEMemory::RawMessage));
+        NEMemory::RawMessage * msg      = NEMemory::constructElems<NEMemory::RawMessage>(result, 1);
+        NEMemory::MessageHeader & dst= msg->rbHeader;
         dst.rbhBufHeader.biBufSize  = sizeBuffer;
         dst.rbhBufHeader.biLength   = sizeData;
         dst.rbhBufHeader.biOffset   = getDataOffset();
@@ -160,7 +160,7 @@ uint8_t * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHe
         dst.rbhSequenceNr           = rmHeader.rbhSequenceNr;
         msg->rbData[0]              = static_cast<NEMemory::BufferData>(0);
 
-        mByteBuffer = std::shared_ptr<NEMemory::sByteBuffer>(reinterpret_cast<NEMemory::sByteBuffer *>(msg), ByteBufferDeleter());
+        mByteBuffer = std::shared_ptr<NEMemory::RawBuffer>(reinterpret_cast<NEMemory::RawBuffer *>(msg), ByteBufferDeleter());
     }
 
     return getBuffer();
@@ -197,10 +197,10 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
 
 uint32_t RemoteMessage::getDataOffset() const
 {
-    return offsetof(NEMemory::sRemoteMessage, rbData);
+    return offsetof(NEMemory::RawMessage, rbData);
 }
 
 uint32_t RemoteMessage::getHeaderSize() const
 {
-    return sizeof(NEMemory::sRemoteMessage);
+    return sizeof(NEMemory::RawMessage);
 }

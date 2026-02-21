@@ -33,8 +33,8 @@ public:
     void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
     void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
-    void OnAddConnection( ConnectionManager::sConnection & data );
-    void OnRemoveConnection( ConnectionManager::sConnection & data );
+    void OnAddConnection( ConnectionManager::ConnectionRecord & data );
+    void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
     void OnUpdateConnection();
     void OnDisconnectTriggered();
 
@@ -66,11 +66,11 @@ private:
 
     inline int32_t getSelectedConnections( DirectConnection::sInitiator & outParticipant, DirectConnection::ListParticipants & outListParticipants );
 
-    inline void addConnection( const ConnectionManager::sConnection & connection );
+    inline void addConnection( const ConnectionManager::ConnectionRecord & connection );
 
-    inline int32_t findConnection( const ConnectionManager::sConnection & connection ) const;
+    inline int32_t findConnection( const ConnectionManager::ConnectionRecord & connection ) const;
 
-    inline void removeConnection( const ConnectionManager::sConnection & connection );
+    inline void removeConnection( const ConnectionManager::ConnectionRecord & connection );
 
     inline void unloadModel();
 

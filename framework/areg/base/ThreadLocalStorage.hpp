@@ -58,7 +58,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
 
     //!< Definition of storage item to store.
-    using StorageItem       = std::pair<String, NEMemory::uAlign>;
+    using StorageItem       = std::pair<String, NEMemory::Primitive>;
     //!< Definition of storage list object to store items.
     using StorageList       = LinkedList<ThreadLocalStorage::StorageItem>;
 
@@ -123,7 +123,7 @@ public:
      *          Otherwise it returns NEMemory::InvalidElement, if there is no element
      *          with specified name.
      **/
-    NEMemory::uAlign getStorageItem( const String & Key ) const;
+    NEMemory::Primitive getStorageItem( const String & Key ) const;
 
     /**
      * \brief   Saves specified item in thread local storage object.
@@ -134,7 +134,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, NEMemory::uAlign Value);
+    void setStorageItem(const String & Key, NEMemory::Primitive Value);
 
     /**
      * \brief   Saves pointer value in thread local storage object.
@@ -189,7 +189,7 @@ public:
      * \return  Returns the value of returned element. If element does not
      *          exist, it will return dummy zero value.
      **/
-    NEMemory::uAlign removeStoragteItem(const String & Key);
+    NEMemory::Primitive removeStoragteItem(const String & Key);
 
     /**
      * \brief   Removes all items in thread local storage

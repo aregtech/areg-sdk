@@ -38,14 +38,14 @@ LogCollectorServerService::LogCollectorServerService()
 {
 }
 
-void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEService::sServiceConnectedInstance& instance)
+void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEService::ConnectedInstance& instance)
 {
     Lock lock(mLock);
 
     ServiceCommunicationBase::addInstance(cookie, instance);
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
-        NELogging::sLogMessage logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
+        NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
         String::formatString( logMsgHello.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
@@ -68,14 +68,14 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
     Lock lock(mLock);
 
     ArrayList<ITEM_ID> listIds;
-    NEService::sServiceConnectedInstance instance;
+    NEService::ConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
     ServiceCommunicationBase::removeInstance(cookie);
    
     mLoggerProcessor.clientDisconnected(cookie);
     if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
-        NELogging::sLogMessage logMsgBye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
+        NELogging::LogEntry logMsgBye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgBye.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
@@ -111,7 +111,7 @@ void LogCollectorServerService::removeAllInstances()
             }
         }
 
-        NELogging::sLogMessage logMsgClose(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
+        NELogging::LogEntry logMsgClose(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgClose.logMessage, NELogging::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
         NELogging::logAnyMessageLocal(logMsgClose);
         ServiceCommunicationBase::removeAllInstances();

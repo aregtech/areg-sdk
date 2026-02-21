@@ -80,7 +80,7 @@ namespace NEUtilities
     inline const char * getString(NEUtilities::OptionFlag flag);
 
     //! The structure of options command
-    struct sOptions
+    struct OptionSpec
     {
         std::string_view    cmdShort;   //!< The int16_t name of the option command
         std::string_view    cmdLong;    //!< The long name of the option command
@@ -90,7 +90,7 @@ namespace NEUtilities
     };
 
     //! List of supported commands and options.
-    constexpr sOptions  OptionList[]
+    constexpr OptionSpec  OptionSpecs[]
     {
           {"-w=", "--width=",   OptionFlag::CmdWidth,         32,     32'768} //! Width in pixels
         , {"-h=", "--height",   OptionFlag::CmdHeight,        32,     32'768} //! Height in pixels
@@ -120,7 +120,7 @@ namespace NEUtilities
     static constexpr uint32_t CHANNELS_SOURCE   { 1 };
 
     //! The option data class
-    struct sOptionData
+    struct OptionValues
     {
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -158,14 +158,14 @@ namespace NEUtilities
          * \param   whichValue  The value to set for the option.
          * \return  Returns true if operation succeeds.
          */
-        bool setValue(const sOptions & whichOpt, uint32_t whichValue);
+        bool setValue(const OptionSpec & whichOpt, uint32_t whichValue);
 
         /**
          * \brief   Normalizes the option structure and takes the values from the give option.
          * 
          * \param   newOptions  The option to consider when normalize.
         */
-        const sOptionData& normalizeOptions(const sOptionData& newOptions);
+        const OptionValues& normalizeOptions(const OptionValues& newOptions);
 
         /**
          * \brief   Returns true if the option has command to print the info.
@@ -259,7 +259,7 @@ namespace NEUtilities
          * 
          * \param   newOption   New options as a data source.
          */
-        inline void update(const sOptionData& newOption);
+        inline void update(const OptionValues& newOption);
 
     };
 }
@@ -267,37 +267,37 @@ namespace NEUtilities
 //////////////////////////////////////////////////////////////////////////
 // NEUtilities namespace inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline bool NEUtilities::sOptionData::hasPrintInfo() const
+inline bool NEUtilities::OptionValues::hasPrintInfo() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdInformation)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasPrintHelp() const
+inline bool NEUtilities::OptionValues::hasPrintHelp() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdHelp)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasStart() const
+inline bool NEUtilities::OptionValues::hasStart() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStart)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasStop() const
+inline bool NEUtilities::OptionValues::hasStop() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdStop)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasQuit() const
+inline bool NEUtilities::OptionValues::hasQuit() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::CmdQuit)) != 0);
 }
 
-inline bool NEUtilities::sOptionData::hasError() const
+inline bool NEUtilities::OptionValues::hasError() const
 {
     return ((mFlags & static_cast<uint32_t>(OptionFlag::Error)) != 0);
 }
 
-inline uint32_t NEUtilities::sOptionData::blocksCount() const
+inline uint32_t NEUtilities::OptionValues::blocksCount() const
 {
     if ((mLines != 0) && (mHeight != 0))
     {
@@ -310,47 +310,47 @@ inline uint32_t NEUtilities::sOptionData::blocksCount() const
     }
 }
 
-inline uint32_t NEUtilities::sOptionData::pixelsPerImage() const
+inline uint32_t NEUtilities::OptionValues::pixelsPerImage() const
 {
     return (mWidth * mHeight);
 }
 
-inline uint32_t NEUtilities::sOptionData::pixelsPerBlock() const
+inline uint32_t NEUtilities::OptionValues::pixelsPerBlock() const
 {
     return (mWidth * mLines);
 }
 
-inline uint32_t NEUtilities::sOptionData::bytesPerLine() const
+inline uint32_t NEUtilities::OptionValues::bytesPerLine() const
 {
     return ((((mWidth * BITS_PER_PIXEL) + 31) / 32) * 4);
 }
 
-inline uint32_t NEUtilities::sOptionData::bytesPerBlock() const
+inline uint32_t NEUtilities::OptionValues::bytesPerBlock() const
 {
     return (bytesPerLine() * mLines);
 }
 
-inline uint32_t NEUtilities::sOptionData::bytesPerImage() const
+inline uint32_t NEUtilities::OptionValues::bytesPerImage() const
 {
     return (bytesPerLine() * mHeight);
 }
 
-inline uint64_t NEUtilities::sOptionData::nsPerLine() const
+inline uint64_t NEUtilities::OptionValues::nsPerLine() const
 {
     return static_cast<uint64_t>(mPixelTime) * mWidth;
 }
 
-inline uint64_t NEUtilities::sOptionData::nsPerBlock() const
+inline uint64_t NEUtilities::OptionValues::nsPerBlock() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerBlock();
 }
 
-inline uint64_t NEUtilities::sOptionData::nsPerImage() const
+inline uint64_t NEUtilities::OptionValues::nsPerImage() const
 {
     return static_cast<uint64_t>(mPixelTime) * pixelsPerImage();
 }
 
-inline uint64_t NEUtilities::sOptionData::nsPerBlock(uint32_t startRowIndex, uint32_t rowCount) const
+inline uint64_t NEUtilities::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t rowCount) const
 {
     if ((startRowIndex + rowCount) > mHeight)
         rowCount = mHeight - startRowIndex;
@@ -358,7 +358,7 @@ inline uint64_t NEUtilities::sOptionData::nsPerBlock(uint32_t startRowIndex, uin
     return nsPerLine() * rowCount;
 }
 
-inline String NEUtilities::sOptionData::getState() const
+inline String NEUtilities::OptionValues::getState() const
 {
     if (hasStart())
         return String("STARTED");
@@ -366,7 +366,7 @@ inline String NEUtilities::sOptionData::getState() const
         return String("STOPPED");
 }
 
-inline void NEUtilities::sOptionData::update(const sOptionData& newOption)
+inline void NEUtilities::OptionValues::update(const OptionValues& newOption)
 {
     mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 

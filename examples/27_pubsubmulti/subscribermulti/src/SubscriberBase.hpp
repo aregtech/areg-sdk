@@ -31,7 +31,7 @@ protected:
      * \param   entry   The dependency entry.
      * \param   owner   The owning component.
      **/
-    SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr);
+    SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::Coord coordInt, NEMath::Coord coordStr);
 
     virtual ~SubscriberBase() = default;
 
@@ -69,8 +69,8 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    const NEMath::sCoord    mCoordInteger;      //!< The coordinates to print integer value change information
-    const NEMath::sCoord    mCoordString;       //!< The coordinates to print string value change information
+    const NEMath::Coord    mCoordInteger;      //!< The coordinates to print integer value change information
+    const NEMath::Coord    mCoordString;       //!< The coordinates to print string value change information
     uint32_t                mOldInteger;        //!< Old integer value to compare when output on console.
     bool                    mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
     String                  mOldString;         //!< Old string value to compare when output on console.

@@ -73,7 +73,7 @@ private:
     /**
      * \brief   The setup to validate input options of the log collector.
      **/
-    static const OptionParser::sOptionSetup ValidOptions[ ];
+    static const OptionParser::OptionSetup ValidOptions[ ];
 
 //////////////////////////////////////////////////////////////////////////
 // statics
@@ -161,7 +161,7 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    std::pair<const OptionParser::sOptionSetup*, int32_t> getAppOptions() const override;
+    std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const override;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
@@ -297,14 +297,14 @@ private:
      * \param   optScope    The option entry that contains scope priority update instruction.
      *                      If the command contains a list of scopes to update, the should be split by ';'.
      **/
-    static void _processUpdateScopes(const OptionParser::sOption& optScope);
+    static void _processUpdateScopes(const OptionParser::InputOption& optScope);
 
     /**
      * \brief   Triggered to trigger querying the list of registered scopes.
      * \param   optScope    The option entry that contains query command and list of client application IDs to request scope list.
      *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
      **/
-    static void _processQueryScopes(const OptionParser::sOption& optScope);
+    static void _processQueryScopes(const OptionParser::InputOption& optScope);
 
     /**
      * \brief   Creates a list of remote messages to send to update log scope priorities.
@@ -315,7 +315,7 @@ private:
      * \param[out]  msgList     On output it contains a list a messages to send to the targets.
      *                          If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
      **/
-    static void _createScopeMessage(const OptionParser::sOption& optScope, ArrayList<RemoteMessage> & msgList);
+    static void _createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage> & msgList);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.

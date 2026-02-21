@@ -116,9 +116,9 @@ private:
     PubSubMix::sInteger   mOldInteger;    //!< Old integer value to compare when output on console.
     bool                    mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
     PubSubMix::sString    mOldString;     //!< Old string value to compare when output on console.
-    NEMath::sCoord          mCoordInt;      //!< The coordinate to output the information about integer update.
-    NEMath::sCoord          mCoordStr;      //!< The coordinate to output the information about string update
-    NEMath::sCoord          mCoordSep;      //!< The coordinate to output a separation line.
+    NEMath::Coord          mCoordInt;      //!< The coordinate to output the information about integer update.
+    NEMath::Coord          mCoordStr;      //!< The coordinate to output the information about string update
+    NEMath::Coord          mCoordSep;      //!< The coordinate to output a separation line.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
