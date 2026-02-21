@@ -141,9 +141,9 @@ public:
 public:
 
     /**
-     * \brief   Converting operator, converts object to unsigned int primitive
+     * \brief   Converting operator, converts object to uint32_t primitive
      **/
-    explicit inline operator unsigned int() const;
+    explicit inline operator uint32_t() const;
 
     /**
      * \brief   Assigning operator, copies data from given null-terminated wide-char string source
@@ -405,7 +405,7 @@ public:
      *          Return zero if nothing is copied.
      *          Returns negative value if error occurred (for example, formating syntax error).
      **/
-    static int formatString( char * strDst, int count, const char * format, ... );
+    static int32_t formatString( char * strDst, int32_t count, const char * format, ... );
 
     /**
      * \brief   Formats the string. The classic rules similar of 'vsprintf' are applied.
@@ -417,7 +417,7 @@ public:
      *          Return zero if nothing is copied.
      *          Returns negative value if error occurred (for example, formating syntax error).
      **/
-    static int formatStringList( char * strDst, int count, const char * format, va_list argptr );
+    static int32_t formatStringList( char * strDst, int32_t count, const char * format, va_list argptr );
 
 /************************************************************************/
 // Non-static methods
@@ -695,10 +695,10 @@ namespace std
     template<>
     struct hash<String>
     {
-        //! An operator to convert String object to unsigned int.
-        inline unsigned int operator()(const String& key) const
+        //! An operator to convert String object to uint32_t.
+        inline uint32_t operator()(const String& key) const
         {
-            return static_cast<unsigned int>(std::hash<std::string>{}(key.getData()));
+            return static_cast<uint32_t>(std::hash<std::string>{}(key.getData()));
         }
     };
 }
@@ -760,9 +760,9 @@ inline String::String(uint32_t count)
 {
 }
 
-inline String::operator unsigned int() const
+inline String::operator uint32_t() const
 {
-    return static_cast<unsigned int>(std::hash<std::string>{}(mData));
+    return static_cast<uint32_t>(std::hash<std::string>{}(mData));
 }
 
 inline String& String::operator = (const wchar_t* src)

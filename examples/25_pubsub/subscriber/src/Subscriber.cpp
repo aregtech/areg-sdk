@@ -110,7 +110,7 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
     console.refreshScreen();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::DataState state)
+void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();

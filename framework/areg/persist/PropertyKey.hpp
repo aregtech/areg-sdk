@@ -134,7 +134,7 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of Key object.
      **/
-    explicit operator unsigned int () const;
+    explicit operator uint32_t () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and properties
@@ -357,10 +357,10 @@ namespace std
     template<>
     struct hash<PropertyKey>
     {
-        //! A function to convert PropertyKey object to unsigned int.
-        inline unsigned int operator()(const PropertyKey& key) const
+        //! A function to convert PropertyKey object to uint32_t.
+        inline uint32_t operator()(const PropertyKey& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }

@@ -72,7 +72,7 @@ String Channel::convToString() const
     constexpr const char * format{ "%llu.%llu.%llu" };
 
     char buffer[ 128 ]{ 0 };
-    int len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
+    int32_t len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
     return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 

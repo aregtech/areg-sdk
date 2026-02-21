@@ -157,7 +157,7 @@ public:
      * \brief   Converts Server Info object to unsigned integer.
      *          The conversion is done based on Service Info conversion mechanism.
      **/
-    explicit operator unsigned int () const;
+    explicit operator uint32_t () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -216,10 +216,10 @@ namespace std
     //! Calculates the hash value of the ServerInfo object
     template<> struct hash<ServerInfo>
     {
-        //! A function to convert ServerInfo object to unsigned int.
-        inline unsigned int operator()(const ServerInfo& key) const
+        //! A function to convert ServerInfo object to uint32_t.
+        inline uint32_t operator()(const ServerInfo& key) const
         {
-            return static_cast<unsigned int>(static_cast<const ServiceAddress &>(key.getAddress()));
+            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.getAddress()));
         }
     };
 

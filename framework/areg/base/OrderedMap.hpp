@@ -46,7 +46,7 @@
  *
  *          For example:
  *          class MyClass {
- *              int     mData;
+ *              int32_t     mData;
  *          }
  *
  *          namespace std {

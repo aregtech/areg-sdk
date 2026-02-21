@@ -137,7 +137,7 @@ bool WaitableEventPosix::checkCanSignalMultipleThreads() const
     return true;
 }
 
-void WaitableEventPosix::notifyReleasedThreads(int numThreads)
+void WaitableEventPosix::notifyReleasedThreads(int32_t numThreads)
 {
     ObjectLockPosix lock(*this);
 

@@ -367,15 +367,15 @@ bool ComponentLoader::addModel( const NERegistry::Model & newModel )
     return succeed;
 }
 
-int ComponentLoader::loadAllModels()
+int32_t ComponentLoader::loadAllModels()
 {
     return loadModel(String::EmptyString);
 }
 
-int ComponentLoader::loadModel( const String & modelName )
+int32_t ComponentLoader::loadModel( const String & modelName )
 {
     Lock lock(mLock);
-    int result{ 0 };
+    int32_t result{ 0 };
     for (uint32_t i = 0; i < mModelList.getSize(); ++i)
     {
         NERegistry::Model & model = mModelList[i];
@@ -585,7 +585,7 @@ const NERegistry::ComponentThreadEntry * ComponentLoader::findThreadEntryByName(
         for ( uint32_t i = 0; i < mModelList.getSize(); ++i )
         {
             const NERegistry::Model & model = mModelList[i];
-            int index = model.findThread(threadName);
+            int32_t index = model.findThread(threadName);
             if ( index != NECommon::INVALID_INDEX )
             {
                 const NERegistry::ComponentThreadEntry & entry = model.getThreadList().mListThreads.getAt(static_cast<uint32_t>(index));
@@ -610,7 +610,7 @@ const NERegistry::ComponentEntry * ComponentLoader::findComponentEntryByName( co
             for ( uint32_t j = 0; i < threadList.mListThreads.getSize(); ++i )
             {
                 const NERegistry::ComponentThreadEntry & thread   = threadList.mListThreads.getAt(j);
-                int index = thread.findComponentEntry(roleName);
+                int32_t index = thread.findComponentEntry(roleName);
                 if ( index != NECommon::INVALID_INDEX )
                 {
                     const NERegistry::ComponentEntry & entry = thread.mComponents.mListComponents.getAt(static_cast<uint32_t>(index));

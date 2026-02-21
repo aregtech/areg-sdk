@@ -13,8 +13,8 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::WindowCommand::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_ServiceConnected );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_responseChatJoin );

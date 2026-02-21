@@ -68,7 +68,7 @@ protected:
      * \param   clientID    The ID of registered client to make message output
      * \see     responseHelloWorld
      **/
-    void requestHelloWorld( unsigned int clientID ) override;
+    void requestHelloWorld( uint32_t clientID ) override;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -83,7 +83,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
     ClientList      mClientList;    //!< The list of registered clients
-    unsigned int    mNumMessages;   //!< The number or processed messages on console.
+    uint32_t    mNumMessages;   //!< The number or processed messages on console.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -120,7 +120,7 @@ BOOL CentralApp::InitInstance()
 
 
 
-int CentralApp::ExitInstance( )
+int32_t CentralApp::ExitInstance( )
 {
     Application::releaseApplication();
 

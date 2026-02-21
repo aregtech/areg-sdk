@@ -65,11 +65,11 @@ namespace
 
 const OptionParser::sOptionSetup Publisher::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int>(OptionFlag::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int>(OptionFlag::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int>(OptionFlag::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////

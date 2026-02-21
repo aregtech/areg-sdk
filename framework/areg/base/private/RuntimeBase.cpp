@@ -61,12 +61,12 @@ bool RuntimeBase::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) con
     return (RuntimeBase::_getClassId() == classId);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass(unsigned int classMagic) const
+bool RuntimeBase::isInstanceOfRuntimeClass(uint32_t classMagic) const
 {
     return (RuntimeBase::_getClassId().getMagic() == classMagic);
 }
 
-unsigned int RuntimeBase::getRuntimeClassNumber() const
+uint32_t RuntimeBase::getRuntimeClassNumber() const
 {
     return RuntimeBase::_getClassId().getMagic();
 }

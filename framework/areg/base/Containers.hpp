@@ -69,7 +69,7 @@
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class IntegerHashMap  : public HashMap<unsigned int, VALUE>
+class IntegerHashMap  : public HashMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -253,7 +253,7 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class IntegerMap : public OrderedMap<unsigned int, VALUE>
+class IntegerMap : public OrderedMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -400,7 +400,7 @@ public:
 /**
   * \brief   Array of integer elements
  **/
-using IntegerArray  = ArrayList<unsigned int>;
+using IntegerArray  = ArrayList<uint32_t>;
 
 /**
  * \brief   Array of string elements
@@ -415,7 +415,7 @@ using PointerArray  = ArrayList<void *>;
 /**
  * \brief   Hash Map where keys are values are integers.
  **/
-using IntegerToIntegerHashMap   = IntegerHashMap<unsigned int>;
+using IntegerToIntegerHashMap   = IntegerHashMap<uint32_t>;
 
 /**
  * \brief   Hash Map where keys are integers and values are strings
@@ -430,7 +430,7 @@ using IntegerToPointergHashMap  = IntegerHashMap<void *>;
 /**
  * \brief   Hash Map where keys are strings and values are integers.
  **/
-using StringToIntegerHashMap    = StringHashMap<unsigned int>;
+using StringToIntegerHashMap    = StringHashMap<uint32_t>;
 
 /**
  * \brief   Hash Map where keys are strings and values are strings.
@@ -445,7 +445,7 @@ using StringToPointergHashMap   = StringHashMap<void *>;
 /**
  * \brief   Hash Map where keys are pointers and values are integers.
  **/
-using PointerToIntegerHashMap   = PtrHashMap<unsigned int>;
+using PointerToIntegerHashMap   = PtrHashMap<uint32_t>;
 
 /**
  * \brief   Hash Map where keys are pointers and values are strings.
@@ -455,7 +455,7 @@ using PointerToStringHashMap    = PtrHashMap<String>;
 /**
  * \brief   Sorted Map where keys are values are integers.
  **/
-using IntegerToIntegerMap = IntegerMap<unsigned int>;
+using IntegerToIntegerMap = IntegerMap<uint32_t>;
 
 /**
  * \brief   Sorted Map where keys are integers and values are strings
@@ -470,7 +470,7 @@ using IntegerToPointergMap = IntegerMap<void*>;
 /**
  * \brief   Sorted Map where keys are strings and values are integers.
  **/
-using StringToIntegerMap = StringMap<unsigned int>;
+using StringToIntegerMap = StringMap<uint32_t>;
 
 /**
  * \brief   Sorted Map where keys are strings and values are strings.
@@ -485,7 +485,7 @@ using StringToPointergMap = StringMap<void*>;
 /**
  * \brief   Sorted Map where keys are pointers and values are integers.
  **/
-using PointerToIntegerMap = PtrMap<unsigned int>;
+using PointerToIntegerMap = PtrMap<uint32_t>;
 
 /**
  * \brief   Sorted Map where keys are pointers and values are strings.
@@ -495,7 +495,7 @@ using PointerToStringMap = PtrMap<String>;
 /**
  * \brief   Linked List where values are integers.
  **/
-using IntegerList   = LinkedList<unsigned int>;
+using IntegerList   = LinkedList<uint32_t>;
 
 /**
  * \brief   Linked List where values are strings.
@@ -510,7 +510,7 @@ using PointerList   = LinkedList<void *>;
 /**
 * \brief   Sorted List class where values are integers.
  **/
-using SortedIntegerList = SortedLinkedList<unsigned int>;
+using SortedIntegerList = SortedLinkedList<uint32_t>;
 
 /**
  * \brief   Sorted List class where values are strings.
@@ -601,7 +601,7 @@ private:
 
 template <typename VALUE>
 IntegerHashMap<VALUE>::IntegerHashMap(uint32_t hashSize)
-    : HashMap<unsigned int, VALUE> (hashSize)
+    : HashMap<uint32_t, VALUE> (hashSize)
 {
 }
 

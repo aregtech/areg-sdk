@@ -77,7 +77,7 @@ public:
     /**
      * \brief   Converts and returns 32-bit integer value of the scope.
      **/
-    inline operator unsigned int () const;
+    inline operator uint32_t () const;
 
     /**
      * \brief   Writes the scope data into the stream.
@@ -99,7 +99,7 @@ public:
      * \brief   Sets scope log message priority level by integer value.
      * \param   newPrio     Scope log message priority level to set.
      **/
-    inline void setPriority( unsigned int newPrio );
+    inline void setPriority( uint32_t newPrio );
 
     /**
      * \brief   Sets scope log message priority level by name.
@@ -143,12 +143,12 @@ public:
     /**
      * \brief   Returns the value of log message priority.
      **/
-    inline unsigned int getPriority() const;
+    inline uint32_t getPriority() const;
 
     /**
      * \brief   Returns the ID of log scope.
      **/
-    inline unsigned int getScopeId() const;
+    inline uint32_t getScopeId() const;
 
     /**
      * \brief   Returns the name of the log scope.
@@ -167,11 +167,11 @@ private:
     /**
      * \brief   The ID of log scope. It cannot be changed
      **/
-    const unsigned int  mScopeId;
+    const uint32_t  mScopeId;
     /**
      * \brief   The log message priority of the scope.
      **/
-    unsigned int        mScopePrio;
+    uint32_t        mScopePrio;
     /**
      * \brief   The name of log scope. It cannot be changed
      **/
@@ -223,10 +223,10 @@ namespace std
     template<>
     struct hash<LogScope>
     {
-        //! A function to convert LogScope object to unsigned int.
-        inline unsigned int operator()(const LogScope& key) const
+        //! A function to convert LogScope object to uint32_t.
+        inline uint32_t operator()(const LogScope& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -258,19 +258,19 @@ inline LogScope & LogScope::self()
     return (*this);
 }
 
-inline LogScope::operator unsigned int () const
+inline LogScope::operator uint32_t () const
 {
     return mScopeId;
 }
 
-inline void LogScope::setPriority( unsigned int newPrio )
+inline void LogScope::setPriority( uint32_t newPrio )
 {
     mScopePrio  = newPrio;
 }
 
 inline void LogScope::addPriority( NELogging::LogPriority addPrio )
 {
-    mScopePrio  |= static_cast<unsigned int>(addPrio);
+    mScopePrio  |= static_cast<uint32_t>(addPrio);
 }
 
 void LogScope::addPriority( const char * addPrio )
@@ -285,7 +285,7 @@ void LogScope::addPriority( const String & addPrio )
 
 inline void LogScope::removePriority( NELogging::LogPriority remPrio )
 {
-    mScopePrio  &= ~static_cast<unsigned int>(remPrio);
+    mScopePrio  &= ~static_cast<uint32_t>(remPrio);
 }
 
 void LogScope::removePriority( const char * remPrio )
@@ -298,12 +298,12 @@ void LogScope::removePriority( const String & remPrio )
     removePriority( NELogging::stringToLogPrio(remPrio) );
 }
 
-inline unsigned int LogScope::getPriority() const
+inline uint32_t LogScope::getPriority() const
 {
     return mScopePrio;
 }
 
-inline unsigned int LogScope::getScopeId() const
+inline uint32_t LogScope::getScopeId() const
 {
     return mScopeId;
 }

@@ -147,7 +147,7 @@ public:
     /**
      * \brief   Coverts data of Stub service object into 32-bit integer value.
      **/
-    explicit operator unsigned int () const;
+    explicit operator uint32_t () const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -212,10 +212,10 @@ namespace std
     //! Calculates the hash value of the ServiceStub object
     template<> struct hash<ServiceStub>
     {
-        //! A function to convert ServiceStub object to unsigned int.
-        inline unsigned int operator()(const ServiceStub& key) const
+        //! A function to convert ServiceStub object to uint32_t.
+        inline uint32_t operator()(const ServiceStub& key) const
         {
-            return static_cast<unsigned int>(static_cast<const ServiceAddress &>(key.getServiceAddress()));
+            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.getServiceAddress()));
         }
     };
 

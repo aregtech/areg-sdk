@@ -161,7 +161,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
         break;
 
     default:
-        LOG_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
+        LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }
@@ -277,7 +277,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
     default:
         {
             LOG_SCOPE( areg_component_RemoteEventFactory_createStreamFromEvent );
-            LOG_ERR( "Unexpected event value [ %d ]", static_cast<int>(eventStreamable.getEventType( )) );
+            LOG_ERR( "Unexpected event value [ %d ]", static_cast<int32_t>(eventStreamable.getEventType( )) );
             ASSERT( false );  // unsupported remote streaming events
         }
         break;
@@ -354,7 +354,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
         break;
 
     default:
-        LOG_ERR("Unexpected event value [ %d ]", static_cast<int>(eventType));
+        LOG_ERR("Unexpected event value [ %d ]", static_cast<int32_t>(eventType));
         ASSERT(false);  // unsupported remote streaming events
         break;
     }

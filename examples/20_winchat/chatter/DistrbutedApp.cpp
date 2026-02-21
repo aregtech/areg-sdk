@@ -114,7 +114,7 @@ BOOL DistrbutedApp::InitInstance()
     return FALSE;
 }
 
-int DistrbutedApp::ExitInstance( )
+int32_t DistrbutedApp::ExitInstance( )
 {
     Application::releaseApplication( );
     return CWinApp::ExitInstance( );

@@ -35,19 +35,19 @@ Identifier::Identifier()
 {
 }
 
-Identifier::Identifier( unsigned int idValue, const char * idName )
+Identifier::Identifier( uint32_t idValue, const char * idName )
     : mValue    (idValue)
     , mName     (idName)
 {
 }
 
-Identifier::Identifier( unsigned int idValue, const std::string_view& idName )
+Identifier::Identifier( uint32_t idValue, const std::string_view& idName )
     : mValue    (idValue)
     , mName     (idName)
 {
 }
 
-Identifier::Identifier( unsigned int idValue, const String& idName )
+Identifier::Identifier( uint32_t idValue, const String& idName )
     : mValue    (idValue)
     , mName     (idName)
 {

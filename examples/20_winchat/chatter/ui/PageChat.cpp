@@ -10,8 +10,8 @@
 #include "areg/base/DateTime.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::WindowCommand::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 LPCTSTR PageChat::HEADER_TITILES[] =
 {
@@ -106,7 +106,7 @@ BOOL PageChat::OnInitDialog( )
 
     SetChatWindow( reinterpret_cast<ptr_type>(GetSafeHwnd()) );
     setHeaders( );
-    srand(static_cast<unsigned int>(time(nullptr)));
+    srand(static_cast<uint32_t>(time(nullptr)));
 
     const DirectConnection::sInitiator & initiator    = GetInitiator();
     const DirectConnection::ListParticipants & parties= GetParticipantList();
@@ -284,10 +284,10 @@ void PageChat::OnEditUpdateChat(CCmdUI * pCmdUI)
 
 void PageChat::setHeaders()
 {
-    int count = std::size( PageChat::HEADER_TITILES );
+    int32_t count = std::size( PageChat::HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
-    int width1, width2;
+    int32_t width1, width2;
     chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
@@ -347,7 +347,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
 {
     if ( message.IsEmpty() == false )
     {
-        int pos = mLastItem;
+        int32_t pos = mLastItem;
         for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )
@@ -563,7 +563,7 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
 
 void PageChat::OnEnChangeChatTimer()
 {
-    int oldTimer = mTimerValue;
+    int32_t oldTimer = mTimerValue;
     UpdateData(TRUE);
     if (mDoAutotype && oldTimer != mTimerValue)
     {
@@ -576,7 +576,7 @@ void PageChat::OnEnChangeChatTimer()
 void PageChat::OnDeltaposChatTimerSpin(NMHDR* pNMHDR, LRESULT* pResult)
 {
     LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-    int oldTimer = mTimerValue;
+    int32_t oldTimer = mTimerValue;
 
     mTimerValue += pNMUpDown->iDelta;
     if (mTimerValue < TIMER_MIN_VALUE)

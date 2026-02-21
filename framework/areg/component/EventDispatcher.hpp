@@ -89,7 +89,7 @@ public:
      * \brief   Function is called from Thread object when it is going to exit.
      * \return  Return thread exit error code.
      **/
-    int onThreadExit() override;
+    int32_t onThreadExit() override;
 
 /************************************************************************/
 // EventRouter interface overrides

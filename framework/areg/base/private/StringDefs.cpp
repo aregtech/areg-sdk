@@ -24,7 +24,7 @@ namespace
 {
 /************************************************************************/
 // Defines
-// No special meaning, only short meanings
+// No special meaning, only int16_t meanings
 /************************************************************************/
 // Dummy
 constexpr uint16_t DUMMY   { static_cast<uint16_t>(NEString::CharCategory::Undefined) };
@@ -53,7 +53,7 @@ constexpr uint16_t LET_LO{ static_cast<uint16_t>(NEString::CharCategory::LetterL
  * \brief   The table of first 256 symbols based on UTF-8 code page.
  *          Reference: https://www.charset.org/utf-8
  **/
-constexpr unsigned short  UTF8_256_Table[] =
+constexpr uint16_t  UTF8_256_Table[] =
 {
     /*   0 -   0 */   EOFS  | EOFL | CTRL                                                                           //   '\0', Null, end of string
     /*   1 -   4 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , EOFL | CTRL           //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
@@ -126,7 +126,7 @@ constexpr unsigned short  UTF8_256_Table[] =
  * \brief   The table lower case letters and symbols based on first 256 of UTF-8 code page.
  *          Reference: https://www.charset.org/utf-8
  **/
-constexpr unsigned char  UTF8_256_Table_lower[] =
+constexpr uint8_t  UTF8_256_Table_lower[] =
 {
     /*   0 -   0 */     0                                                                                           //   '\0', end of string
     /*   1 -   4 */ ,   1                   ,   2                   ,   3                   ,   4                   //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
@@ -199,7 +199,7 @@ constexpr unsigned char  UTF8_256_Table_lower[] =
  * \brief   The table upper case letters and symbols based on first 256 of UTF-8 code page.
  *          Reference: https://www.charset.org/utf-8
  **/
-constexpr unsigned char  UTF8_256_Table_upper[] =
+constexpr uint8_t  UTF8_256_Table_upper[] =
 {
     /*   0 -   0 */     0                                                                                           //   '\0', end of string
     /*   1 -   4 */ ,   1                   ,   2                   ,   3                   ,   4                   //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
@@ -273,17 +273,17 @@ constexpr unsigned char  UTF8_256_Table_upper[] =
 // NEString namespace global method implementation
 /************************************************************************/
 
-AREG_API_IMPL uint16_t NEString::getUTF8_256CharDef( int ch )
+AREG_API_IMPL uint16_t NEString::getUTF8_256CharDef( int32_t ch )
 {
-    return static_cast<unsigned short>(ch >= -128 && ch <= 127 ? UTF8_256_Table[static_cast<unsigned char>(ch & 0xFF)] : DUMMY);
+    return static_cast<uint16_t>(ch >= -128 && ch <= 127 ? UTF8_256_Table[static_cast<uint8_t>(ch & 0xFF)] : DUMMY);
 }
 
-AREG_API_IMPL unsigned int NEString::makeUTF8_256LowerChar( int ch )
+AREG_API_IMPL uint32_t NEString::makeUTF8_256LowerChar( int32_t ch )
 {
-    return (ch >= -128 && ch <= 127 ? static_cast<unsigned int>(UTF8_256_Table_lower[static_cast<unsigned char>(ch & 0xFF)]) : static_cast<unsigned int>(ch));
+    return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_lower[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }
 
-AREG_API_IMPL unsigned int NEString::makeUTF8_256UpperChar( int ch )
+AREG_API_IMPL uint32_t NEString::makeUTF8_256UpperChar( int32_t ch )
 {
-    return (ch >= -128 && ch <= 127 ? static_cast<unsigned int>(UTF8_256_Table_upper[static_cast<unsigned char>(ch & 0xFF)]) : static_cast<unsigned int>(ch));
+    return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_upper[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }

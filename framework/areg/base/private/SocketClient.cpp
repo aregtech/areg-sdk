@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "areg/base/SocketClient.hpp"
 
-SocketClient::SocketClient( const char * hostName, unsigned short portNr )
+SocketClient::SocketClient( const char * hostName, uint16_t portNr )
     : Socket  ( )
 {
     mAddress.resolveAddress(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, false);
@@ -26,7 +26,7 @@ SocketClient::SocketClient(const NESocket::SocketAddress & remoteAddress)
     mAddress = remoteAddress;
 }
 
-bool SocketClient::createSocket(const char * hostName, unsigned short portNr)
+bool SocketClient::createSocket(const char * hostName, uint16_t portNr)
 {
     return ( mAddress.resolveAddress(hostName, portNr, false) && createSocket());
 }

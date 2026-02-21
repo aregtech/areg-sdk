@@ -93,7 +93,7 @@ protected:
      * \param   nodeName    The name of the node.
      * \param   prio        The logging priority flags set bitwise.
      **/
-    ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, unsigned int prio = static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) );
+    ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio = static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) );
 
     //!< Copies, moves and destroys the node object.
     ScopeNodeBase( const ScopeNodeBase & src );
@@ -158,7 +158,7 @@ public:
      * \return  Returns created node. It is either a node or a leaf.
      * \note    Only the root and nodes can create nodes or leafs. The leafs return invalid node.
      **/
-    virtual const ScopeNodeBase & makeChildNode( String & scopePath, unsigned int prioStates ) const;
+    virtual const ScopeNodeBase & makeChildNode( String & scopePath, uint32_t prioStates ) const;
 
     /**
      * \brief   Adds a child node to the node if it does not contain a child of the same type
@@ -183,7 +183,7 @@ public:
      * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
      *          it created new entry or updated the existing.
      **/
-    virtual std::pair<ScopeNodeBase &, bool> addChildNode( String & scopePath, unsigned int prioStates );
+    virtual std::pair<ScopeNodeBase &, bool> addChildNode( String & scopePath, uint32_t prioStates );
 
     /**
      * \brief   Creates a scope name (scope path) by adding the prefix to the node name.
@@ -211,7 +211,7 @@ public:
      *          Only the root and nodes can group child entries.
      * \return  Returns number of nodes that where removed.
      **/
-    virtual unsigned int groupChildNodes();
+    virtual uint32_t groupChildNodes();
 
     /**
      * \brief   Generates the scope setting and updates in the configuration.
@@ -222,7 +222,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    virtual unsigned int updateConfigNode(ConfigManager& config, const String & parentPath ) const;
+    virtual uint32_t updateConfigNode(ConfigManager& config, const String & parentPath ) const;
 
     /**
      * \brief   Recursively groups child nodes. The grouping starts from the last node in the
@@ -230,7 +230,7 @@ public:
      *          Normally,the grouping starts from root node.
      * \return  Returns the number of nodes that it totally grouped.
      **/
-    virtual unsigned int groupRecursive();
+    virtual uint32_t groupRecursive();
 
     /**
      * \brief   Removes the priority nodes of specified log priority.
@@ -238,7 +238,7 @@ public:
      *          the priority.
      * \return  Returns the number of nodes that are removed.
      **/
-    virtual unsigned int removePriorityNodesRecursive( unsigned int prioRemove );
+    virtual uint32_t removePriorityNodesRecursive( uint32_t prioRemove );
 
     /**
      * \brief   Returns true if a node has no children nodes.
@@ -263,17 +263,17 @@ public:
     /**
      * \brief   Returns the node priority flag.
      **/
-    inline unsigned int getPriority() const;
+    inline uint32_t getPriority() const;
 
     /**
      * \brief   Sets the node priority flag.
      **/
-    inline void setPriority( unsigned int prio );
+    inline void setPriority( uint32_t prio );
 
     /**
      * \brief   Adds log priority bits.
      **/
-    inline void addPriority( unsigned int prio );
+    inline void addPriority( uint32_t prio );
 
     /**
      * \brief   Returns true if the object is the root. The root does not have a parent
@@ -338,7 +338,7 @@ public:
      * \param[in]       prioStates  The log priority bitwise flag to add to nodes.
      * \return  Returns the number of nodes created or updated.
      **/
-    unsigned int addChildRecursive( String & scopePath, unsigned int prioStates );
+    uint32_t addChildRecursive( String & scopePath, uint32_t prioStates );
 
     /**
      * \brief   Recursively creates a child node out of Scope object, which contains
@@ -348,7 +348,7 @@ public:
      * \param   logScope  The logging scope, which contains the scope name and the log priority.
      * \return  Returns the number of nodes created or updated.
      **/
-    unsigned int addChildRecursive( const LogScope & logScope );
+    uint32_t addChildRecursive( const LogScope & logScope );
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -367,13 +367,13 @@ protected:
     const ScopeNodeBase::NodeType  mNodeType;
     
     //!< The priority flags set bitwise.
-    unsigned int                mPrioStates;
+    uint32_t                mPrioStates;
 
     //!< The name of the node.
     String                      mNodeName;
 
     //!< Bitwise flag, indicating the groupings of nodes.
-    unsigned int                mGrouping;
+    uint32_t                mGrouping;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden, only for internal use
@@ -399,17 +399,17 @@ inline void ScopeNodeBase::setNodeName( const String newName )
     mNodeName = newName;
 }
 
-inline unsigned int ScopeNodeBase::getPriority() const
+inline uint32_t ScopeNodeBase::getPriority() const
 {
     return mPrioStates;
 }
 
-inline void ScopeNodeBase::setPriority( unsigned int prio )
+inline void ScopeNodeBase::setPriority( uint32_t prio )
 {
     mPrioStates = prio;
 }
 
-inline void ScopeNodeBase::addPriority( unsigned int prio )
+inline void ScopeNodeBase::addPriority( uint32_t prio )
 {
     mPrioStates |= prio;
 }

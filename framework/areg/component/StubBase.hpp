@@ -32,7 +32,7 @@
 /************************************************************************
  * Definition of Session ID. Used when unblocking request
  ************************************************************************/
-using SessionID = unsigned int;
+using SessionID = uint32_t;
 
 /************************************************************************
  * Dependencies
@@ -73,7 +73,7 @@ private:
     /**
      * \brief   Constant. Defines Invalid Message ID
      */
-    static constexpr unsigned int   INVALID_MESSAGE_ID  { static_cast<unsigned int>(NEService::INVALID_MESSAGE_ID) };
+    static constexpr uint32_t   INVALID_MESSAGE_ID  { static_cast<uint32_t>(NEService::INVALID_MESSAGE_ID) };
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -100,12 +100,12 @@ protected:
         /**
          * \brief   Initialize Message ID. The Proxy Address should be set. If needed, update sequence number.
          **/
-        inline Listener(unsigned int reqId);
+        inline Listener(uint32_t reqId);
 
         /**
          * \brief   Initialize message ID and sequence number. The target Proxy Address should be set manually.
          **/
-        inline Listener(unsigned int reqId, const SequenceNumber & seqId);
+        inline Listener(uint32_t reqId, const SequenceNumber & seqId);
 
         /**
          * \brief   Creates Listener from given parameters.
@@ -113,7 +113,7 @@ protected:
          * \param   seqId   The Sequence number.
          * \param   proxy   The target proxy address.
          **/
-        inline Listener(unsigned int reqId, const SequenceNumber & seqId, const ProxyAddress & proxy);
+        inline Listener(uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy);
 
         /**
          * \brief   Copies listener data from given source.
@@ -159,7 +159,7 @@ protected:
         /**
          * \brief   The message ID of Listener object.
          **/
-        unsigned int    mMessageId;
+        uint32_t    mMessageId;
         /**
          * \brief   Sequence number of Listener
          **/
@@ -328,7 +328,7 @@ public:
      *
      * \param   msgId   The attribute message ID to notify clients.
      **/
-    virtual void sendNotification( unsigned int msgId ) = 0;
+    virtual void sendNotification( uint32_t msgId ) = 0;
 
     /**
      * \brief   Sends error message to clients.
@@ -344,7 +344,7 @@ public:
      *                      This parameter has sense only for request IDs.
      *                      It is ignored for response and attributes IDs.
      **/
-    virtual void errorRequest( unsigned int msgId, bool msgCancel ) = 0;
+    virtual void errorRequest( uint32_t msgId, bool msgCancel ) = 0;
 
 protected:
 
@@ -359,7 +359,7 @@ protected:
      * \param   data    The buffer of data to send to client. Can be Invalid buffer
      * \return  Returns valid pointer to Response event object
      **/
-    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::ResultType result, const EventDataStream & data ) const;
+    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, NEService::ResultType result, const EventDataStream & data ) const;
 
     /**
      * \brief   Overwrite method to create remote service request event from streaming object for 
@@ -439,49 +439,49 @@ protected:
      *
      * \remark  Overwrite to implement method
      **/
-    unsigned int getNumberOfRequests() const;
+    uint32_t getNumberOfRequests() const;
 
     /**
      * \brief   Returns number of responses of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    unsigned int getNumberOfResponses() const;
+    uint32_t getNumberOfResponses() const;
 
     /**
      * \brief   Returns number of attributes of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    unsigned int getNumberOfAttributes() const;
+    uint32_t getNumberOfAttributes() const;
 
     /**
      * \brief   Returns pointer of array of requests IDs of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    const unsigned int * getRequestIds() const;
+    const uint32_t * getRequestIds() const;
 
     /**
      * \brief   Returns pointer of array of response IDs of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    const unsigned int * getResponseIds() const;
+    const uint32_t * getResponseIds() const;
 
     /**
      * \brief   Returns pointer of array of attribute IDs of Service Interface
      *
      * \remark  Overwrite to implement method
      **/
-    const unsigned int * getAttributeIds() const;
+    const uint32_t * getAttributeIds() const;
 
     /**
      * \brief   Returns true if specified request is in pending list,
      *          is not released and marked as busy.
      *          Used internally.
      **/
-    bool isBusy(unsigned int requestId) const;
+    bool isBusy(uint32_t requestId) const;
 
     /**
      * \brief   Prepares Request, adds request listener to th listener list
@@ -491,7 +491,7 @@ protected:
      * \param   seqNr       The sequence number of call request.
      * \param   requestId   The triggered request ID .
      **/
-    void prepareRequest(StubBase::Listener & listener, const SequenceNumber & seqNr, unsigned int requestId);
+    void prepareRequest(StubBase::Listener & listener, const SequenceNumber & seqNr, uint32_t requestId);
 
     /**
      * \brief   Search and add all listeners, which have same specified request ID 
@@ -502,7 +502,7 @@ protected:
      *                          specified request ID.
      * \return  Returns the size of filtered listener list.
      **/
-    uint32_t findListeners(unsigned int requestId, StubListenerList & out_listners) const;
+    uint32_t findListeners(uint32_t requestId, StubListenerList & out_listners) const;
 
     /**
      * \brief   Searches notification listener in the list of listeners and returns true
@@ -513,7 +513,7 @@ protected:
      * \param   notifySource    The address of Proxy source.
      * \return  Returns true if notification listener is already registered in the list of listeners.
      **/
-    bool existNotificationListener( unsigned int msgId, const ProxyAddress & notifySource ) const;
+    bool existNotificationListener( uint32_t msgId, const ProxyAddress & notifySource ) const;
 
     /**
      * \brief   Adds new notification listener in the list.
@@ -526,7 +526,7 @@ protected:
      * \return  Returns true, if list does not contain notification listener entry and new entry was added with success.
      *          Otherwise function returns false.
      **/
-    bool addNotificationListener( unsigned int msgId, const ProxyAddress & notifySource );
+    bool addNotificationListener( uint32_t msgId, const ProxyAddress & notifySource );
 
     /**
      * \brief   Removes notification listener from the listener list.
@@ -536,7 +536,7 @@ protected:
      * \param   msgId           The ID of notification message (normally, either attribute or response message ID).
      * \param   notifySource    The address of Proxy source.
      **/
-    void removeNotificationListener( unsigned int msgId, const ProxyAddress & notifySource );
+    void removeNotificationListener( uint32_t msgId, const ProxyAddress & notifySource );
 
     /**
      * \brief   Returns all listeners for specified proxy and on output returns
@@ -599,7 +599,7 @@ protected:
      * \param   attrId  The ID of attribute to invalidate.
      * \note    The function does not check the validity of ID
      **/
-    void invalidateAttribute(unsigned int attrId);
+    void invalidateAttribute(uint32_t attrId);
 
 
     /**
@@ -609,7 +609,7 @@ protected:
      * \param   data    The buffer of serialized data to send to proxy. Can be Invalid buffer
      * \param   result  The result to send to proxy objects.
      **/
-    void sendUpdateEvent(unsigned int msgId, const EventDataStream & data, NEService::ResultType result) const;
+    void sendUpdateEvent(uint32_t msgId, const EventDataStream & data, NEService::ResultType result) const;
 
     /**
      * \brief   Send once the data update notification event to the specified target.
@@ -618,14 +618,14 @@ protected:
      * \param   data    The data to send to the target. Can be Invalid buffer
      * \param   result  The result of data update to send to the target object.
      **/
-    void sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::ResultType result ) const;
+    void sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const;
 
     /**
      * \brief   Sends response event to proxy. The list of proxy listeners is selected by message ID.
      * \param   respId  The ID of response to send to proxy objects
      * \param   data    The buffer of serialized data to send to proxy (should be serialized arguments of response call)
      **/
-    void sendResponseEvent(unsigned int respId, const EventDataStream & data);
+    void sendResponseEvent(uint32_t respId, const EventDataStream & data);
 
     /**
      * \brief   Sends busy response on request from client side. If the stub already processing request, 
@@ -645,7 +645,7 @@ protected:
      * \param   seqNr           The sequence number of call.
      * \return  Returns true if request can be executed and the appropriate response is prepared.
      **/
-    bool canExecuteRequest( StubBase::Listener & whichListener, unsigned int whichResponse, const SequenceNumber & seqNr);
+    bool canExecuteRequest( StubBase::Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -692,7 +692,7 @@ private:
     /**
      * \brief   Used to generate unique session ID. The uniqueness is provided within single stub object scope
      **/
-    unsigned int                        mSessionId;
+    uint32_t                        mSessionId;
 
 private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
@@ -744,21 +744,21 @@ inline StubBase::Listener::Listener()
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId )
+inline StubBase::Listener::Listener( uint32_t reqId )
     : mMessageId ( reqId )
     , mSequenceNr( 0 )
     , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, const SequenceNumber & seqId )
+inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, const SequenceNumber & seqId, const ProxyAddress& proxy )
+inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress& proxy )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( proxy )

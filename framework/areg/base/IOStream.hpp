@@ -85,9 +85,9 @@ class ByteBuffer;
  **/
 #define AREG_IMPLEMENT_STREAMABLE(data_type)                                                                    \
     inline const InStream& operator >> (const InStream& stream, data_type & input)                          \
-    {   stream.read( reinterpret_cast<unsigned char *>(&input), sizeof(data_type) ); return stream; }           \
+    {   stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(data_type) ); return stream; }           \
     inline OutStream& operator << (OutStream& stream, const data_type& output)                              \
-    {   stream.write( reinterpret_cast<const unsigned char *>(&output), sizeof(data_type) ); return stream; }
+    {   stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(data_type) ); return stream; }
 
 /**
  * \brief   Declares friend stream operators with DLL export/import specifier.
@@ -172,7 +172,7 @@ public:
      * \param	size	The size in bytes of available buffer.
      * \return	Returns the size in bytes of copied data.
      **/
-    virtual unsigned int read( unsigned char * buffer, unsigned int size ) const = 0;
+    virtual uint32_t read( uint8_t * buffer, uint32_t size ) const = 0;
 
     /**
      * \brief   Reads data from input stream object, copies into given Byte Buffer object
@@ -180,7 +180,7 @@ public:
      * \param   buffer  The instance of Byte Buffer object to copy data.
      * \return	Returns the size in bytes of copied data.
      **/
-    virtual unsigned int read( ByteBuffer & buffer ) const = 0;
+    virtual uint32_t read( ByteBuffer & buffer ) const = 0;
 
     /**
      * \brief   Reads string data from input stream object, copies into given string object
@@ -188,7 +188,7 @@ public:
      * \param   ascii   The instance of ASCII string object to copy data.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( String & ascii ) const = 0;
+    virtual uint32_t read( String & ascii ) const = 0;
 
     /**
      * \brief   Reads string data from input stream object, copies into given wide-string object
@@ -196,7 +196,7 @@ public:
      * \param   wide    The instance of wide-string object to copy data.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wide ) const = 0;
+    virtual uint32_t read( WideString & wide ) const = 0;
 
     /**
      * \brief   Resets cursor position and moves to the begin of data.
@@ -209,7 +209,7 @@ protected:
      *          i.e. remaining readable size. The returns value is less or equal to
      *          the size of streamable buffer.
      **/
-    virtual unsigned int getSizeReadable() const = 0;
+    virtual uint32_t getSizeReadable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -292,7 +292,7 @@ public:
       * \param	size	The size in bytes of data buffer.
       * \return	Returns the size in bytes of written data.
       **/
-    virtual unsigned int write( const unsigned char * buffer, unsigned int size ) = 0;
+    virtual uint32_t write( const uint8_t * buffer, uint32_t size ) = 0;
 
      /**
       * \brief	Writes data to output stream object from given byte-buffer object and
@@ -300,7 +300,7 @@ public:
       * \param	buffer	The instance of byte-buffer object as a data source.
       * \return	Returns the size in bytes of written data.
       **/
-    virtual unsigned int write( const ByteBuffer & buffer ) = 0;
+    virtual uint32_t write( const ByteBuffer & buffer ) = 0;
 
      /**
       * \brief	Writes data to output stream object from given ASCII-string object and
@@ -308,7 +308,7 @@ public:
       * \param	ascii	The instance of ASCII-string object as a data source.
       * \return	Returns the size in bytes of written data.
       **/
-    virtual unsigned int write( const String & ascii )  = 0;
+    virtual uint32_t write( const String & ascii )  = 0;
 
     /**
      * \brief	Writes data to output stream object from given wide-string object and
@@ -316,7 +316,7 @@ public:
      * \param	wide 	The instance of wide-string object as a data source.
      * \return	Returns the size in bytes of written data.
      **/
-    virtual unsigned int write( const WideString & wide ) = 0;
+    virtual uint32_t write( const WideString & wide ) = 0;
 
     /**
      * \brief	Flushes cached data to output stream object.
@@ -328,7 +328,7 @@ protected:
      * \brief	Returns the size in bytes of available space in the stream to write data, 
      *          i.e. remaining writable size.
      **/
-    virtual unsigned int getSizeWritable() const = 0;
+    virtual uint32_t getSizeWritable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -365,11 +365,11 @@ public:
     AREG_DECLARE_STREAMABLE(bool);           //!< Declare primitive type bool as streamable
     AREG_DECLARE_STREAMABLE(char);           //!< Declare primitive type char as streamable
     AREG_DECLARE_STREAMABLE(wchar_t);        //!< Declare primitive type wchar_t as streamable
-    AREG_DECLARE_STREAMABLE(unsigned char);  //!< Declare primitive type unsigned char as streamable
-    AREG_DECLARE_STREAMABLE(short);          //!< Declare primitive type short as streamable
-    AREG_DECLARE_STREAMABLE(unsigned short); //!< Declare primitive type unsigned short as streamable
-    AREG_DECLARE_STREAMABLE(int);            //!< Declare primitive type int as streamable
-    AREG_DECLARE_STREAMABLE(unsigned int);   //!< Declare primitive type unsigned int as streamable
+    AREG_DECLARE_STREAMABLE(uint8_t);  //!< Declare primitive type uint8_t as streamable
+    AREG_DECLARE_STREAMABLE(int16_t);          //!< Declare primitive type int16_t as streamable
+    AREG_DECLARE_STREAMABLE(uint16_t); //!< Declare primitive type uint16_t as streamable
+    AREG_DECLARE_STREAMABLE(int32_t);            //!< Declare primitive type int32_t as streamable
+    AREG_DECLARE_STREAMABLE(uint32_t);   //!< Declare primitive type uint32_t as streamable
     AREG_DECLARE_STREAMABLE(int64_t);        //!< Declare primitive type int64_t as streamable
     AREG_DECLARE_STREAMABLE(uint64_t);       //!< Declare primitive type uint64_t as streamable
     AREG_DECLARE_STREAMABLE(float);          //!< Declare primitive type float as streamable
@@ -471,7 +471,7 @@ private:
 AREG_IMPLEMENT_STREAMABLE(bool)
 AREG_IMPLEMENT_STREAMABLE(char)
 AREG_IMPLEMENT_STREAMABLE(wchar_t)
-AREG_IMPLEMENT_STREAMABLE(unsigned char)
+AREG_IMPLEMENT_STREAMABLE(uint8_t)
 AREG_IMPLEMENT_STREAMABLE(int16_t)
 AREG_IMPLEMENT_STREAMABLE(uint16_t)
 AREG_IMPLEMENT_STREAMABLE(int32_t)
@@ -485,15 +485,15 @@ inline OutStream & operator << (OutStream & stream, const char * output)
 {
     if (output != nullptr)
     {
-        constexpr unsigned int single = static_cast<unsigned int>(sizeof(char));
-        unsigned int length = 0;
+        constexpr uint32_t single = static_cast<uint32_t>(sizeof(char));
+        uint32_t length = 0;
         const char * src = output;
         while (*src ++ != '\0')
         {
             ++ length;
         }
         
-        stream.write(reinterpret_cast<const unsigned char *>(output), (length + 1) * single);
+        stream.write(reinterpret_cast<const uint8_t *>(output), (length + 1) * single);
     }
 
     return stream;
@@ -503,15 +503,15 @@ inline OutStream & operator << (OutStream & stream, const wchar_t * output)
 {
     if (output != nullptr)
     {
-        constexpr unsigned int single = static_cast<unsigned int>(sizeof(wchar_t));
-        unsigned int length = 0;
+        constexpr uint32_t single = static_cast<uint32_t>(sizeof(wchar_t));
+        uint32_t length = 0;
         const wchar_t * src = output;
         while (*src ++ != L'\0')
         {
             ++ length;
         }
 
-        stream.write(reinterpret_cast<const unsigned char *>(output), (length + 1) * single);
+        stream.write(reinterpret_cast<const uint8_t *>(output), (length + 1) * single);
     }
 
     return stream;
@@ -520,16 +520,16 @@ inline OutStream & operator << (OutStream & stream, const wchar_t * output)
 template<typename CharType>
 inline OutStream& operator << (OutStream& stream, const std::basic_string<CharType>& output)
 {
-    constexpr unsigned int single = static_cast<unsigned int>(sizeof(CharType));
-    stream.write(reinterpret_cast<const unsigned char*>(output.c_str()), static_cast<unsigned int>(output.length() + 1) * single);
+    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
+    stream.write(reinterpret_cast<const uint8_t*>(output.c_str()), static_cast<uint32_t>(output.length() + 1) * single);
     return stream;
 }
 
 template<typename CharType>
 inline OutStream& operator << (OutStream& stream, const std::basic_string_view<CharType>& output)
 {
-    constexpr unsigned int single = static_cast<unsigned int>(sizeof(CharType));
-    stream.write(reinterpret_cast<const unsigned char*>(output.data()), static_cast<unsigned int>(output.length() + 1) * single);
+    constexpr uint32_t single = static_cast<uint32_t>(sizeof(CharType));
+    stream.write(reinterpret_cast<const uint8_t*>(output.data()), static_cast<uint32_t>(output.length() + 1) * single);
     return stream;
 }
 
@@ -552,7 +552,7 @@ inline const InStream& operator >> (const InStream& stream, std::basic_string<Ch
 template<typename ElemType>
 inline OutStream& operator << (OutStream& stream, const std::deque<ElemType>& output)
 {
-    stream << static_cast<unsigned int>(output.size());
+    stream << static_cast<uint32_t>(output.size());
     for (const auto& elem : output)
     {
         stream << elem;
@@ -566,7 +566,7 @@ inline const InStream& operator >> (const InStream& stream, std::deque<ElemType>
 {
     input.clear();
 
-    unsigned int size = 0;
+    uint32_t size = 0;
     stream >> size;
     input.resize(size);
     for (auto& elem : input)
@@ -580,7 +580,7 @@ inline const InStream& operator >> (const InStream& stream, std::deque<ElemType>
 template<typename ElemType>
 inline OutStream& operator << (OutStream& stream, const std::list<ElemType>& output)
 {
-    stream << static_cast<unsigned int>(output.size());
+    stream << static_cast<uint32_t>(output.size());
     for (const auto& elem : output)
     {
         stream << elem;
@@ -594,7 +594,7 @@ inline const InStream& operator >> (const InStream& stream, std::list<ElemType>&
 {
     input.clear();
 
-    unsigned int size = 0;
+    uint32_t size = 0;
     stream >> size;
     input.resize(size);
     for (auto& elem : input)
@@ -608,7 +608,7 @@ inline const InStream& operator >> (const InStream& stream, std::list<ElemType>&
 template<typename ElemType>
 inline OutStream& operator << (OutStream& stream, const std::vector<ElemType>& output)
 {
-    stream << static_cast<unsigned int>(output.size());
+    stream << static_cast<uint32_t>(output.size());
     for (const auto& elem : output)
     {
         stream << elem;
@@ -622,7 +622,7 @@ inline const InStream& operator >> (const InStream& stream, std::vector<ElemType
 {
     input.clear();
 
-    unsigned int size = 0;
+    uint32_t size = 0;
     stream >> size;
     input.resize(size);
     for (auto& elem : input)
@@ -652,7 +652,7 @@ inline const InStream& operator >> (const InStream& stream, std::pair<Key, Value
 template<typename Key, typename Value>
 inline OutStream& operator << (OutStream& stream, const std::map<Key, Value>& output)
 {
-    stream << static_cast<unsigned int>(output.size());
+    stream << static_cast<uint32_t>(output.size());
     for (const std::pair<Key, Value> & elem : output)
     {
         stream << elem;
@@ -666,9 +666,9 @@ inline const InStream& operator >> (const InStream& stream, std::map<Key, Value>
 {
     input.clear();
 
-    unsigned int size = 0;
+    uint32_t size = 0;
     stream >> size;
-    for (unsigned int i = 0; i < size; ++i)
+    for (uint32_t i = 0; i < size; ++i)
     {
         std::pair<Key, Value> elem;
         stream >> elem;
@@ -681,7 +681,7 @@ inline const InStream& operator >> (const InStream& stream, std::map<Key, Value>
 template<typename Key, typename Value>
 inline OutStream& operator << (OutStream& stream, const std::unordered_map<Key, Value>& output)
 {
-    stream << static_cast<unsigned int>(output.size());
+    stream << static_cast<uint32_t>(output.size());
     for (const std::pair<Key, Value>& elem : output)
     {
         stream << elem;
@@ -695,9 +695,9 @@ inline const InStream& operator >> (const InStream& stream, std::unordered_map<K
 {
     input.clear();
 
-    unsigned int size = 0;
+    uint32_t size = 0;
     stream >> size;
-    for (unsigned int i = 0; i < size; ++i)
+    for (uint32_t i = 0; i < size; ++i)
     {
         std::pair<Key, Value> elem;
         stream >> elem;

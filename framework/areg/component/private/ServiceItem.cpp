@@ -93,7 +93,7 @@ String ServiceItem::convToString() const
           .append(NECommon::COMPONENT_PATH_SEPARATOR)
           .append(mServiceVersion.convToString())
           .append(NECommon::COMPONENT_PATH_SEPARATOR)
-          .append(String::makeString(static_cast<int>(mServiceType), NEString::Radix::Decimal));
+          .append(String::makeString(static_cast<int32_t>(mServiceType), NEString::Radix::Decimal));
 
     return result;
 }
@@ -111,15 +111,15 @@ void ServiceItem::convFromString(  const char* pathService, const char** out_nex
         *out_nextPart = strSource;
 }
 
-unsigned int ServiceItem::_magicNumber(const ServiceItem svcItem)
+uint32_t ServiceItem::_magicNumber(const ServiceItem svcItem)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = NEMath::CHECKSUM_IGNORE;
 
     if (svcItem.isValidated())
     {
         result = NEMath::crc32Init();
         result = NEMath::crc32Start(result, svcItem.mServiceName.getString());
-        result = NEMath::crc32Start(result, static_cast<unsigned char>(svcItem.mServiceType));
+        result = NEMath::crc32Start(result, static_cast<uint8_t>(svcItem.mServiceType));
         result = NEMath::crc32Finish(result);
     }
 

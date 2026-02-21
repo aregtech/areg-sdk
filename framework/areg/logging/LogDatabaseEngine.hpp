@@ -127,7 +127,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool logScopeDeactivate(const ITEM_ID & cookie, unsigned int scopeId, const DateTime & timestamp) = 0;
+    virtual bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

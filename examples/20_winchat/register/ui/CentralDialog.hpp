@@ -29,7 +29,7 @@ public:
     enum { TITLE = IDS_APPLICATION_TITLE };
 
 public:
-    static bool StartConnection( const String & ipAddress, unsigned short portNr );
+    static bool StartConnection( const String & ipAddress, uint16_t portNr );
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support

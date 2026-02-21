@@ -24,7 +24,7 @@
 namespace
 {
     //!< Print a separator line
-    void printSeparator(char ch = '*', int count = 20)
+    void printSeparator(char ch = '*', int32_t count = 20)
     {
         std::cout << std::string(count, ch) << std::endl;
     }

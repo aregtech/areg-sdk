@@ -116,9 +116,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   This operator converts thread address data to unsigned int value
+     * \brief   This operator converts thread address data to uint32_t value
      **/
-    inline explicit operator unsigned int () const;
+    inline explicit operator uint32_t () const;
     /**
      * \brief   Assigning operator to copy data from given source. 
      **/
@@ -208,7 +208,7 @@ private:
     /**
      * \brief   Returns the calculated hash-key value of specified thread address object.
      **/
-    static unsigned int _magicNumber( const ThreadAddress & addrThread );
+    static uint32_t _magicNumber( const ThreadAddress & addrThread );
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadAddress member variables
@@ -221,7 +221,7 @@ private:
     /**
      * \brief   The calculated number of thread address.
      **/
-    unsigned int    mMagicNum;
+    uint32_t    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,10 +234,10 @@ namespace std
 {
     template<> struct hash<ThreadAddress>
     {
-        //! A function to convert ThreadAddress object to unsigned int.
-        inline unsigned int operator()(const ThreadAddress& key) const
+        //! A function to convert ThreadAddress object to uint32_t.
+        inline uint32_t operator()(const ThreadAddress& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -290,7 +290,7 @@ inline bool ThreadAddress::operator < (const ThreadAddress& other) const
     return (mMagicNum < other.mMagicNum);
 }
 
-inline ThreadAddress::operator unsigned int() const
+inline ThreadAddress::operator uint32_t() const
 {
     return mMagicNum;
 }

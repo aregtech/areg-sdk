@@ -55,7 +55,7 @@ void Mutex::_osCreateMutex( bool initLock )
     }
 }
 
-bool Mutex::_osLockMutex( unsigned int timeout )
+bool Mutex::_osLockMutex( uint32_t timeout )
 {
     bool result = false;
 
@@ -94,7 +94,7 @@ bool SyncEvent::_osUnlockEvent( void * /* eventHandle */ )
     return ( ::SetEvent( static_cast<HANDLE>(mSyncObject) ) != FALSE );
 }
 
-bool SyncEvent::_osLockEvent(unsigned int timeout)
+bool SyncEvent::_osLockEvent(uint32_t timeout)
 {
     return ( WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0 );
 }
@@ -127,7 +127,7 @@ void Semaphore::_osReleaseSemaphore()
 {
 }
 
-bool Semaphore::_osLock(unsigned int timeout)
+bool Semaphore::_osLock(uint32_t timeout)
 {
     return (WaitForSingleObject( static_cast<HANDLE>(mSyncObject), timeout ) == WAIT_OBJECT_0);
 }
@@ -143,7 +143,7 @@ bool Semaphore::_osUnlock()
 
 void CriticalSection::_osCreateCriticalSection()
 {
-    mSyncObject = static_cast<void *>( DEBUG_NEW unsigned char [sizeof(CRITICAL_SECTION)] );
+    mSyncObject = static_cast<void *>( DEBUG_NEW uint8_t [sizeof(CRITICAL_SECTION)] );
     NEMemory::constructElems<CRITICAL_SECTION>( mSyncObject, 1 );
     InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
 }
@@ -152,7 +152,7 @@ void CriticalSection::_osReleaseCriticalSection()
 {
     LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
     DeleteCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
-    delete[] reinterpret_cast<unsigned char *>(mSyncObject);
+    delete[] reinterpret_cast<uint8_t *>(mSyncObject);
     mSyncObject = nullptr;
 }
 
@@ -202,7 +202,7 @@ SpinLock::~SpinLock()
     }
 }
 
-bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
     return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->lock( ) : false);
@@ -258,7 +258,7 @@ void ResourceLock::_osReleaseResourceLock()
     mSyncObject = nullptr;
 }
 
-bool ResourceLock::_osLock(unsigned int timeout)
+bool ResourceLock::_osLock(uint32_t timeout)
 {
     return reinterpret_cast<Lockable *>(mSyncObject)->lock(timeout);
 }
@@ -299,14 +299,14 @@ void SyncTimer::_osReleaseTime()
     CloseHandle( static_cast<HANDLE>(mSyncObject) );
 }
 
-bool SyncTimer::_osLock( unsigned int timeout )
+bool SyncTimer::_osLock( uint32_t timeout )
 {
     return (WaitForSingleObject( static_cast<HANDLE>(mSyncObject), timeout ) == WAIT_OBJECT_0);
 }
 
 bool SyncTimer::_osSetTimer()
 {
-    constexpr int NANOSECONDS_COEF_100  { 10'000 };
+    constexpr int32_t NANOSECONDS_COEF_100  { 10'000 };
 
     LARGE_INTEGER dueTime{};
     dueTime.QuadPart = -(static_cast<LONGLONG>(mTimeout) * NANOSECONDS_COEF_100);
@@ -323,7 +323,7 @@ bool SyncTimer::_osCancelTimer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int MultiLock::_osLock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+int32_t MultiLock::_osLock( uint32_t timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
     void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS] { };
     for ( int i = 0; i < mSizeCount; ++ i)
@@ -331,14 +331,14 @@ int MultiLock::_osLock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bo
         syncHandles[i] = mSyncObjArray[i]->getHandle( );
     }
 
-    int index = MultiLock::LOCK_INDEX_INVALID;
-    unsigned int maxEvent= static_cast<uint32_t>(WAIT_OBJECT_0) + static_cast<uint32_t>(mSizeCount);
-    unsigned int result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<uint32_t>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
+    int32_t index = MultiLock::LOCK_INDEX_INVALID;
+    uint32_t maxEvent= static_cast<uint32_t>(WAIT_OBJECT_0) + static_cast<uint32_t>(mSizeCount);
+    uint32_t result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<uint32_t>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
     if (result < maxEvent)
     {
         if (waitForAll == false)
         {
-            index = static_cast<int>(result - WAIT_OBJECT_0);
+            index = static_cast<int32_t>(result - WAIT_OBJECT_0);
             ASSERT((index >= 0) && index < mSizeCount);
             mLockedStates[index] = MultiLock::LockState::Locked;
         }

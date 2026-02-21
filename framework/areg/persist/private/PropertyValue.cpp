@@ -46,7 +46,7 @@ PropertyValue::PropertyValue( const char * value )
     parseValue(value);
 }
 
-PropertyValue::PropertyValue(unsigned int intValue)
+PropertyValue::PropertyValue(uint32_t intValue)
     : mValue( String::makeString(intValue, NEString::Radix::Decimal) )
 {
 }
@@ -91,7 +91,7 @@ PropertyValue& PropertyValue::operator = (String && value) noexcept
     return (*this);
 }
 
-PropertyValue & PropertyValue::operator = (unsigned int intValue)
+PropertyValue & PropertyValue::operator = (uint32_t intValue)
 {
     mValue.fromUInt32(intValue);
     return (*this);
@@ -125,7 +125,7 @@ bool PropertyValue::operator != ( const PropertyValue & other ) const
     return (mValue != other.mValue);
 }
 
-PropertyValue::operator unsigned int() const
+PropertyValue::operator uint32_t() const
 {
     return getInteger(NEString::Radix::Decimal);
 }
@@ -170,7 +170,7 @@ const String & PropertyValue::getString() const
     return mValue;
 }
 
-unsigned int PropertyValue::getInteger( NEString::Radix radix /*= NEString::Decimal*/ ) const
+uint32_t PropertyValue::getInteger( NEString::Radix radix /*= NEString::Decimal*/ ) const
 {
     return mValue.toUInt32( static_cast<NEString::Radix>(radix) );
 }
@@ -180,9 +180,9 @@ double PropertyValue::getDouble() const
     return mValue.toDouble( );
 }
 
-unsigned int PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) const
+uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) const
 {
-    unsigned int result = Identifier::BAD_IDENTIFIER_VALUE;
+    uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
     if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
     {
         std::vector<StringBase<char>> list { mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
@@ -225,7 +225,7 @@ void PropertyValue::setBoolean(bool newValue)
     mValue = String::makeString(newValue);
 }
 
-void PropertyValue::setInteger(unsigned int intValue, NEString::Radix radix /*= NEString::Decimal*/ )
+void PropertyValue::setInteger(uint32_t intValue, NEString::Radix radix /*= NEString::Decimal*/ )
 {
     mValue = String::makeString(intValue, radix);
 }
@@ -259,7 +259,7 @@ ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identif
     return result;
 }
 
-void PropertyValue::setIdentifierList(unsigned int idBits, const std::vector<Identifier>& lookupList)
+void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList)
 {
     mValue.clear();
     for (const auto& entry : lookupList)

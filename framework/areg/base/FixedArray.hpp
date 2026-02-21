@@ -56,7 +56,7 @@
 
  *              In this case, this can be defined in following way:
  *
- *              typedef FixedArray<int>           FixedArray;
+ *              typedef FixedArray<int32_t>           FixedArray;
  *              typedef FixedArray<FixedArray*>   FixedMatrix;
  *              FixedMatrix matrix(3);
  *              matrix[0] = new FixedArray(3);
@@ -275,7 +275,7 @@ public:
      * \param	startAt	    The index to start searching.
      * \return	If found, returns valid index of element in array. Otherwise, returns INVALID_INDEX aka -1.
      **/
-    inline int find(const VALUE& elemSearch, uint32_t startAt = 0) const;
+    inline int32_t find(const VALUE& elemSearch, uint32_t startAt = 0) const;
 
     /**
      * \brief   Resize the array, set new length and copy existing data.
@@ -533,7 +533,7 @@ inline void FixedArray<VALUE>::move(FixedArray< VALUE > && src) noexcept
 }
 
 template< typename VALUE >
-inline int FixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /* = 0 */) const
+inline int32_t FixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /* = 0 */) const
 {
     int32_t result = NECommon::INVALID_INDEX;
     for (uint32_t i = startAt; i < mElemCount; ++i)

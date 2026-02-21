@@ -75,16 +75,16 @@ namespace
 
 const OptionParser::sOptionSetup LogObserver::ValidOptions[ ]
 {
-      { "-e", "--query"     , static_cast<int>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-f", "--config"    , static_cast<int>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-o", "--scope"     , static_cast<int>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-x", "--stop"      , static_cast<int>(LoggerOption::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-x", "--stop"      , static_cast<int32_t>(LoggerOption::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 LogObserver & LogObserver::getInstance()
@@ -293,9 +293,9 @@ void LogObserver::callbackLogMessage(const sLogMessage* /* logMessage */)
 }
 
 #ifdef  DEBUG
-void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t size)
+void LogObserver::callbackLogMessageEx(const uint8_t* logBuffer, uint32_t size)
 #else   // DEBUG
-void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t /*size*/)
+void LogObserver::callbackLogMessageEx(const uint8_t* logBuffer, uint32_t /*size*/)
 #endif  // DEBUG
 {
     if (logBuffer != nullptr)
@@ -306,7 +306,7 @@ void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t 
     }
 }
 
-void LogObserver::logMain( int argc, char ** argv )
+void LogObserver::logMain( int32_t argc, char ** argv )
 {
     sObserverEvents evts
     {
@@ -601,7 +601,7 @@ bool LogObserver::_processInfoInstances()
 bool LogObserver::_processUpdateScopes(const OptionParser::sOption& optScope)
 {
     bool result{ false };
-    ASSERT(optScope.inCommand == static_cast<int>(LoggerOption::CMD_LogUpdateScope));
+    ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
 
     const OptionParser::StrList& optValues{ optScope.inString };
@@ -768,7 +768,7 @@ inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable *
 {
     constexpr NEPersistence::ConfigEntry prioConfKey{ NEPersistence::ConfigEntry::LogScope };
     const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
-    unsigned int prios = static_cast<unsigned int>(NELogging::LogPriority::PrioNotset);
+    uint32_t prios = static_cast<uint32_t>(NELogging::LogPriority::PrioNotset);
     const String prio{ NELogging::makePrioString(prios) };
 
     config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);

@@ -137,9 +137,9 @@ bool Property::operator != (const Property & other) const
     return (this != &other ? mProperty != other.mProperty : false);
 }
 
-Property::operator unsigned int () const
+Property::operator uint32_t () const
 {
-    return static_cast<unsigned int>(mProperty.mValue.first);
+    return static_cast<uint32_t>(mProperty.mValue.first);
 }
 
 void Property::parseKey(const String & keySet)

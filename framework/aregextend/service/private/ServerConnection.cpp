@@ -24,7 +24,7 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId )
 {
 }
 
-ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, unsigned short portNr)
+ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr)
     : ServerConnectionBase  ( hostName, portNr)
     , SocketConnectionBase  ( )
     , mChannelId            ( channelId )

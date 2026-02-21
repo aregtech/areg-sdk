@@ -27,7 +27,7 @@ NEService::StateArray::StateArray(uint32_t count)
     resetStates();
 }
 
-NEService::StateArray::StateArray( unsigned char* thisBuffer, int elemCount )
+NEService::StateArray::StateArray( uint8_t* thisBuffer, int32_t elemCount )
     : StateArrayBase( )
     , mExternal     (true)
 {
@@ -53,10 +53,10 @@ NEService::ParameterArray::ParameterArray( const NEService::SInterfaceData& ifDa
     : mElemCount (0)
     , mParamList(nullptr)
 {
-    construct(ifData.idResponseParamCountMap, static_cast<int>(ifData.idResponseCount));
+    construct(ifData.idResponseParamCountMap, static_cast<int32_t>(ifData.idResponseCount));
 }
 
-NEService::ParameterArray::ParameterArray( const unsigned int* paramCountMap, int count )
+NEService::ParameterArray::ParameterArray( const uint32_t* paramCountMap, int32_t count )
 {
     construct(paramCountMap, count);
 }
@@ -73,7 +73,7 @@ NEService::ParameterArray::~ParameterArray()
 {
     if (mParamList != nullptr)
     {
-        delete[] reinterpret_cast <unsigned char *>(mParamList);
+        delete[] reinterpret_cast <uint8_t *>(mParamList);
     }
 
     mParamList= nullptr;
@@ -86,7 +86,7 @@ NEService::ParameterArray & NEService::ParameterArray::operator = ( NEService::P
     {
         if ( mParamList != nullptr )
         {
-            delete[] reinterpret_cast <unsigned char *>(mParamList);
+            delete[] reinterpret_cast <uint8_t *>(mParamList);
         }
 
         mElemCount  = src.mElemCount;
@@ -98,11 +98,11 @@ NEService::ParameterArray & NEService::ParameterArray::operator = ( NEService::P
     return (*this);
 }
 
-void NEService::ParameterArray::construct( const unsigned int * params, int count )
+void NEService::ParameterArray::construct( const uint32_t * params, int32_t count )
 {
     if ( (params != nullptr) && (count > 0) )
     {
-        uint32_t single = static_cast<unsigned int>(sizeof(NEService::StateArray *));
+        uint32_t single = static_cast<uint32_t>(sizeof(NEService::StateArray *));
         // count pointers to state array
         uint32_t size   = static_cast<uint32_t>(count) * single;
 
@@ -113,7 +113,7 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
         size += static_cast<uint32_t>( sizeof(NEService::StateArray) );
 
         // here we start having parameter list.
-        unsigned int skipBegin  = size;
+        uint32_t skipBegin  = size;
         // space for parameters
         size += countParamSpace(params, count);
 
@@ -144,7 +144,7 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
                     // if parameter count is not zero
                     param = reinterpret_cast<NEService::StateArray *>(paramElem);
                     // initialize by calling private construct, implemented for this case.
-                    new (param) NEService::StateArray(paramElem + sizeof(NEService::StateArray), static_cast<int>(params[i]));
+                    new (param) NEService::StateArray(paramElem + sizeof(NEService::StateArray), static_cast<int32_t>(params[i]));
 
                     // go to next elem
                     uint32_t next = static_cast<uint32_t>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::DataState));
@@ -159,20 +159,20 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
     }
 }
 
-unsigned int NEService::ParameterArray::countParamSpace( const unsigned int* params, int count )
+uint32_t NEService::ParameterArray::countParamSpace( const uint32_t* params, int32_t count )
 {
-    unsigned int result = 0;
+    uint32_t result = 0;
     // space for size of class NEService::StateArray + 
     // space for size of NEService::DataState multiplied on number of parameters.
     // If number of parameters is zero, do not reserve.
     for ( int i = 0; i < count; ++ i )
-        result += params[i] != 0 ? static_cast<unsigned int>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::DataState)) : 0;
+        result += params[i] != 0 ? static_cast<uint32_t>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::DataState)) : 0;
     return result;
 }
 
-void NEService::ParameterArray::resetParamState( unsigned int whichParam )
+void NEService::ParameterArray::resetParamState( uint32_t whichParam )
 {
-    ASSERT((static_cast<int>(whichParam) >= 0) && (static_cast<int>(whichParam) < mElemCount));
+    ASSERT((static_cast<int32_t>(whichParam) >= 0) && (static_cast<int32_t>(whichParam) < mElemCount));
     mParamList[whichParam]->resetStates();
 }
 
@@ -195,7 +195,7 @@ void NEService::ProxyData::resetStates()
     mParamState.resetAllStates();
 }
 
-void NEService::ProxyData::setDataState( unsigned int msgId, NEService::DataState newState )
+void NEService::ProxyData::setDataState( uint32_t msgId, NEService::DataState newState )
 {
     if ( NEService::isAttributeId(msgId) )
     {
@@ -215,7 +215,7 @@ void NEService::ProxyData::setDataState( unsigned int msgId, NEService::DataStat
     // else ignore
 }
 
-NEService::DataState NEService::ProxyData::getDataState( unsigned int msgId ) const
+NEService::DataState NEService::ProxyData::getDataState( uint32_t msgId ) const
 {
     NEService::DataState result = NEService::DataState::DataUnexpectedError;
     if (NEService::isAttributeId(msgId))
@@ -227,12 +227,12 @@ NEService::DataState NEService::ProxyData::getDataState( unsigned int msgId ) co
     return result;
 }
 
-unsigned int NEService::ProxyData::getResponseId( unsigned int requestId ) const
+uint32_t NEService::ProxyData::getResponseId( uint32_t requestId ) const
 {
-    unsigned int index = NEService::reqIndex(requestId);
+    uint32_t index = NEService::reqIndex(requestId);
     return  (
-                (static_cast<int>(index) >= 0) && (index < mIfData.idRequestCount) ? 
-                        static_cast<unsigned int>(mIfData.idRequestToResponseMap[index]) :
+                (static_cast<int32_t>(index) >= 0) && (index < mIfData.idRequestCount) ? 
+                        static_cast<uint32_t>(mIfData.idRequestToResponseMap[index]) :
                         NEService::INVALID_MESSAGE_ID
             );
 }

@@ -52,14 +52,14 @@ void ServiceClient::responseHelloWorld()
 }
 
 #if AREG_LOGS
-void ServiceClient::broadcastReachedMaximum( int maxNumber )
+void ServiceClient::broadcastReachedMaximum( int32_t maxNumber )
 {
     LOG_SCOPE(examples_13_locservice_ServiceClient_broadcastReachedMaximum );
     LOG_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     requestShutdownService( );
 }
 #else   // AREG_LOGS
-void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
+void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 {
     requestShutdownService( );
 }

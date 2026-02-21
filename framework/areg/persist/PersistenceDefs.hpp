@@ -379,142 +379,142 @@ namespace NEPersistence
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getConfigVersion()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ConfigVersion)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ConfigVersion)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceList()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceList)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceList)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogVersion()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogVersion)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogVersion)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogTarget()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogTarget)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogTarget)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogStatus()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogStatus)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogStatus)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogEnable()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogEnable)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogEnable)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogFileLocation()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogFileLocation)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogFileLocation)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogFileAppend()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogFileAppend)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogFileAppend)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogRemoteQueueSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogRemoteQueueSize)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogRemoteQueueSize)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogLayoutEnter()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogLayoutEnter)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutEnter)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogLayoutMessage()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogLayoutMessage)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutMessage)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogLayoutExit()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogLayoutExit)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutExit)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogScope()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogScope)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogScope)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceConnection()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceConnection)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceConnection)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceEnable()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceEnable)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceEnable)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceName()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceName)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceName)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServiceAddress()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServiceAddress)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceAddress)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getServicePort()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::ServicePort)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServicePort)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseEngine()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseEngine)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseEngine)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseName()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseName)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseName)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseLocation()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseLocation)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseLocation)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseDriver()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseDriver)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseDriver)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseAddress()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseAddress)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseAddress)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabasePort()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabasePort)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabasePort)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseUser()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabaseUsername)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseUsername)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getLogDatabasePassword()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::LogDatabasePassword)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabasePassword)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getDefaultBufferBlockSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::DefaultBufferBlock)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultBufferBlock)];
 }
 
 const NEPersistence::sPropertyKey& NEPersistence::getDefaultMessageQueueSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::ConfigEntry::DefaultMessageQueue)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultMessageQueue)];
 }
 
 #endif  // AREG_PERSIST_PERSISTENCEDEFS_HPP

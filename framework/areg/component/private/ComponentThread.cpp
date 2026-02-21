@@ -93,9 +93,9 @@ bool ComponentThread::runDispatcher()
     return result;
 }
 
-int ComponentThread::createComponents()
+int32_t ComponentThread::createComponents()
 {
-    int result = 0;
+    int32_t result = 0;
     const NERegistry::ComponentList& comList = ComponentLoader::findComponentList(getName());
     if (comList.isValid())
     {
@@ -225,7 +225,7 @@ inline void ComponentThread::_shutdownComponents()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition( );
     while ( mListComponent.isValidPosition( pos ) )
@@ -238,7 +238,7 @@ Thread::ThreadCompletion ComponentThread::shutdownThread( unsigned int waitForSt
     return DispatcherThread::shutdownThread( waitForStopMs );
 }
 
-bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
+bool ComponentThread::completionWait( uint32_t waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition();
     while ( mListComponent.isValidPosition(pos) )
@@ -251,7 +251,7 @@ bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommo
     return DispatcherThread::completionWait(waitForCompleteMs);
 }
 
-int ComponentThread::onThreadExit()
+int32_t ComponentThread::onThreadExit()
 {
     shutdownComponents();
     destroyComponents();

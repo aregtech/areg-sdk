@@ -39,7 +39,7 @@
  *
  *          To access first element in Hash Map, get the first Position (call function
  *          firstPosition()). Each next element is accessed by calling next position.
- *          The type KEY should be possible to convert to unsigned int type required to
+ *          The type KEY should be possible to convert to uint32_t type required to
  *          calculate the Hash. If KEY type is an object it should have implemented
  *          hasher std::hash<KEY>, KEY comparing operator or KEY comparing function
  *          std::equal_to<KEY>. In addition, the KEY and VALUE types should have
@@ -47,14 +47,14 @@
  *
  *          For example:
  *          class MyClass {
- *              int     mData;
+ *              int32_t     mData;
  *          }
  *
  *          namespace std {
  *
  *              // Hasher
  *              template<> struct hash<MyClass> {
- *                  unsigned int operator()(const MyClass& my) const
+ *                  uint32_t operator()(const MyClass& my) const
  *                  {   return mData; }
  *              }
  *

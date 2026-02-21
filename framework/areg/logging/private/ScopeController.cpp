@@ -31,16 +31,16 @@ inline bool ScopeController::_isScopeGroup( const String & scopeName )
 
 void ScopeController::registerScope( LogScope & scope )
 {
-    ASSERT( mMapLogScope.findResourceObject( static_cast<unsigned int>(scope) ) == nullptr );
-    mMapLogScope.registerResourceObject( static_cast<unsigned int>(scope), &scope );
+    ASSERT( mMapLogScope.findResourceObject( static_cast<uint32_t>(scope) ) == nullptr );
+    mMapLogScope.registerResourceObject( static_cast<uint32_t>(scope), &scope );
 }
 
 void ScopeController::unregisterScope( LogScope & scope )
 {
-    mMapLogScope.unregisterResourceObject( static_cast<unsigned int>(scope) );
+    mMapLogScope.unregisterResourceObject( static_cast<uint32_t>(scope) );
 }
 
-void ScopeController::setScopePriority( unsigned int scopeId, unsigned int newPrio )
+void ScopeController::setScopePriority( uint32_t scopeId, uint32_t newPrio )
 {
     mMapLogScope.lock( );
 
@@ -53,7 +53,7 @@ void ScopeController::setScopePriority( unsigned int scopeId, unsigned int newPr
     mMapLogScope.unlock( );
 }
 
-void ScopeController::addScopePriority( unsigned int scopeId, NELogging::LogPriority addPrio )
+void ScopeController::addScopePriority( uint32_t scopeId, NELogging::LogPriority addPrio )
 {
     mMapLogScope.lock( );
 
@@ -66,7 +66,7 @@ void ScopeController::addScopePriority( unsigned int scopeId, NELogging::LogPrio
     mMapLogScope.unlock( );
 }
 
-void ScopeController::removeScopePriority( unsigned int scopeId, NELogging::LogPriority remPrio )
+void ScopeController::removeScopePriority( uint32_t scopeId, NELogging::LogPriority remPrio )
 {
     mMapLogScope.lock( );
 
@@ -79,9 +79,9 @@ void ScopeController::removeScopePriority( unsigned int scopeId, NELogging::LogP
     mMapLogScope.unlock( );
 }
 
-int ScopeController::setScopeGroupPriority( const String & scopeGroupName, unsigned int newPrio )
+int32_t ScopeController::setScopeGroupPriority( const String & scopeGroupName, uint32_t newPrio )
 {
-    int result{ 0 };
+    int32_t result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
     {
         mMapLogScope.lock( );
@@ -111,9 +111,9 @@ int ScopeController::setScopeGroupPriority( const String & scopeGroupName, unsig
     return result;
 }
 
-int ScopeController::addScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority addPrio )
+int32_t ScopeController::addScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority addPrio )
 {
-    int result{ 0 };
+    int32_t result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
     {
         mMapLogScope.lock( );
@@ -134,9 +134,9 @@ int ScopeController::addScopeGroupPriority( const String & scopeGroupName, NELog
     return result;
 }
 
-int ScopeController::removeScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority remPrio )
+int32_t ScopeController::removeScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority remPrio )
 {
-    int result{ 0 };
+    int32_t result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
     {
         mMapLogScope.lock( );
@@ -165,7 +165,7 @@ void ScopeController::resetScopes()
     {
         LogScope * scope = mMapLogScope.valueAtPosition(pos);
         ASSERT(scope != nullptr);
-        scope->setPriority(static_cast<unsigned int>(NELogging::LogPriority::PrioNotset));
+        scope->setPriority(static_cast<uint32_t>(NELogging::LogPriority::PrioNotset));
     }
 
     mConfigScopeList.clear();
@@ -189,11 +189,11 @@ void ScopeController::configureScopes( const Property & prop )
     ASSERT( Key.isValid( ) );
     ASSERT( Key.getKeyType() == NEPersistence::ConfigEntry::LogScope );
 
-    unsigned int prio = Value.getIndetifier( NEApplication::LogScopePriorityIndentifiers );
+    uint32_t prio = Value.getIndetifier( NEApplication::LogScopePriorityIndentifiers );
     configureScopes(Key.getPosition(), prio);
 }
 
-void ScopeController::configureScopes( const String & scopeName, unsigned int scopePrio )
+void ScopeController::configureScopes( const String & scopeName, uint32_t scopePrio )
 {
     if ( _isScopeGroup( scopeName ) )
     {
@@ -217,15 +217,15 @@ void ScopeController::configureScopes()
 
 void ScopeController::activateScope( LogScope & logScope )
 {
-    unsigned int logPrio{ NELogOptions::DEFAULT_LOG_PRIORITY };
+    uint32_t logPrio{ NELogOptions::DEFAULT_LOG_PRIORITY };
     mConfigScopeGroup.find(NELogOptions::LOG_SCOPES_GRPOUP, logPrio );
     activateScope( logScope, logPrio );
 }
 
-void ScopeController::activateScope( LogScope & logScope, unsigned int defaultPrio )
+void ScopeController::activateScope( LogScope & logScope, uint32_t defaultPrio )
 {
     const String & scopeName = logScope.getScopeName( );
-    unsigned int scopePrio{ defaultPrio };
+    uint32_t scopePrio{ defaultPrio };
 
     if ( mConfigScopeList.find( scopeName, scopePrio ) )
     {
@@ -268,7 +268,7 @@ void ScopeController::changeScopeActivityStatus( bool makeActive )
 
     if ( makeActive )
     {
-        unsigned int defaultPrio = NELogOptions::DEFAULT_LOG_PRIORITY;
+        uint32_t defaultPrio = NELogOptions::DEFAULT_LOG_PRIORITY;
         mConfigScopeGroup.find( NELogOptions::LOG_SCOPES_GRPOUP, defaultPrio );
 
         for ( auto pos = mMapLogScope.firstPosition( ); mMapLogScope.isValidPosition( pos ); pos = mMapLogScope.nextPosition( pos ) )
@@ -287,7 +287,7 @@ void ScopeController::changeScopeActivityStatus( bool makeActive )
     mMapLogScope.unlock( );
 }
 
-void ScopeController::changeScopeActivityStatus( const String & scopeName, unsigned int scopeId, unsigned int logPrio )
+void ScopeController::changeScopeActivityStatus( const String & scopeName, uint32_t scopeId, uint32_t logPrio )
 {
     if ( _isScopeGroup( scopeName ) )
     {

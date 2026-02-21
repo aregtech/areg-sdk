@@ -96,7 +96,7 @@ inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
     mLogManager.writeLogMessage( *logMessage );
 }
 
-inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, unsigned int scopeCount )
+inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount )
 {
     String scopeName{ };
     uint32_t scopeId{ };

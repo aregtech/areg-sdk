@@ -76,7 +76,7 @@ protected:
      **/
     ResponseEvent( const ProxyAddress & proxyTarget
                  , const NEService::ResultType result
-                 , unsigned int respId
+                 , uint32_t respId
                  , Event::EventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
@@ -93,7 +93,7 @@ protected:
     ResponseEvent( const EventDataStream & args
                  , const ProxyAddress & proxyTarget
                  , NEService::ResultType result
-                 , unsigned int respId
+                 , uint32_t respId
                  , Event::EventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::getEmptyString() );
@@ -218,7 +218,7 @@ protected:
      **/
     LocalResponseEvent( const ProxyAddress & proxyTarget
                       , NEService::ResultType result
-                      , unsigned int respId
+                      , uint32_t respId
                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
 
     /**
@@ -234,7 +234,7 @@ protected:
     LocalResponseEvent( const EventDataStream & args
                       , const ProxyAddress & proxyTarget
                       , NEService::ResultType result
-                      , unsigned int respId
+                      , uint32_t respId
                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                       , const String & name = String::getEmptyString() );
 
@@ -297,7 +297,7 @@ protected:
      **/
     RemoteResponseEvent( const ProxyAddress & proxyTarget
                        , NEService::ResultType result
-                       , unsigned int respId
+                       , uint32_t respId
                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
@@ -313,7 +313,7 @@ protected:
     RemoteResponseEvent( const EventDataStream & args
                        , const ProxyAddress & proxyTarget
                        , NEService::ResultType result
-                       , unsigned int respId
+                       , uint32_t respId
                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                        , const String & name = String::getEmptyString() );
 

@@ -46,7 +46,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessa
 
 ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , NERemoteService::RemoteServiceKind service
-                                                , unsigned int connectTypes
+                                                , uint32_t connectTypes
                                                 , const String & dispatcher
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
     : RemoteMessageHandler        ( )
@@ -103,7 +103,7 @@ bool ServiceCommunicationBase::setupServiceConnectionData(NERemoteService::Remot
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 String address{ config.getConnectionAddress() };
-                unsigned short port{ config.getConnectionPort() };
+                uint16_t port{ config.getConnectionPort() };
                 result = mServerConnection.setAddress(address, port);
             }
         }
@@ -112,7 +112,7 @@ bool ServiceCommunicationBase::setupServiceConnectionData(NERemoteService::Remot
     return result;
 }
 
-void ServiceCommunicationBase::applyServiceConnectionData(const String & hostName, unsigned short portNr)
+void ServiceCommunicationBase::applyServiceConnectionData(const String & hostName, uint16_t portNr)
 {
     mServerConnection.setAddress( hostName, portNr );
 }
@@ -432,7 +432,7 @@ void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgR
                         , static_cast<uint32_t>(source)
                         , static_cast<uint32_t>(cookie)
                         , static_cast<const char *>(whichSource.getAddress().getHostAddress())
-                        , static_cast<int>(whichSource.getAddress().getHostPort( ))
+                        , static_cast<int32_t>(whichSource.getAddress().getHostPort( ))
                         , static_cast<id_type>(target));
 
         if ( (source >= NEService::COOKIE_REMOTE_SERVICE) && NEService::isExecutableId(static_cast<uint32_t>(msgId)) )

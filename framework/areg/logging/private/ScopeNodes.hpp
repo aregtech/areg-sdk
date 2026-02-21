@@ -95,7 +95,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    unsigned int updateConfigNode( ConfigManager & config, const String & parentPath ) const override;
+    uint32_t updateConfigNode( ConfigManager & config, const String & parentPath ) const override;
 
 };
 
@@ -141,7 +141,7 @@ protected:
     /**
      * \brief   Protected constructor required by root node.
      **/
-    ScopeNode( ScopeNodeBase::NodeType nodeType, const String & name, unsigned int prio );
+    ScopeNode( ScopeNodeBase::NodeType nodeType, const String & name, uint32_t prio );
 
 //////////////////////////////////////////////////////////////////////////
 // Assigning operators
@@ -174,7 +174,7 @@ public:
   * \return  Returns created node. It is either a node or a leaf.
   * \note    Only the root and nodes can create nodes or leafs. The leafs return invalid node.
   **/
-    const ScopeNodeBase & makeChildNode( String & scopePath, unsigned int prioStates ) const override;
+    const ScopeNodeBase & makeChildNode( String & scopePath, uint32_t prioStates ) const override;
 
     /**
      * \brief   Adds a child node to the node if it does not contain a child of the same type
@@ -199,7 +199,7 @@ public:
      * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
      *          it created new entry or updated the existing.
      **/
-    std::pair<ScopeNodeBase &, bool> addChildNode( String & scopePath, unsigned int prioStates ) override;
+    std::pair<ScopeNodeBase &, bool> addChildNode( String & scopePath, uint32_t prioStates ) override;
 
     /**
      * \brief   Creates a scope name (scope path) by adding the prefix to the node name.
@@ -227,7 +227,7 @@ public:
      *          Only the root and nodes can group child entries.
      * \return  Returns number of nodes that where removed.
      **/
-    unsigned int groupChildNodes() override;
+    uint32_t groupChildNodes() override;
 
     /**
      * \brief   Generates the scope setting and updates in the configuration.
@@ -238,7 +238,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    unsigned int updateConfigNode(ConfigManager& config, const String & parentPath ) const override;
+    uint32_t updateConfigNode(ConfigManager& config, const String & parentPath ) const override;
 
     /**
      * \brief   Recursively groups child nodes. The grouping starts from the last node in the
@@ -246,7 +246,7 @@ public:
      *          Normally,the grouping starts from root node.
      * \return  Returns the number of nodes that it totally grouped.
      **/
-    unsigned int groupRecursive() override;
+    uint32_t groupRecursive() override;
 
     /**
      * \brief   Removes the priority nodes of specified log priority.
@@ -254,7 +254,7 @@ public:
      *          the priority.
      * \return  Returns the number of nodes that are removed.
      **/
-    unsigned int removePriorityNodesRecursive( unsigned int prioRemove ) override;
+    uint32_t removePriorityNodesRecursive( uint32_t prioRemove ) override;
 
     /**
      * \brief   Returns true if a node has no children nodes.
@@ -278,7 +278,7 @@ public:
     /**
      * \brief   Returns the total number of children.
      **/
-    inline unsigned int childNodeCount() const;
+    inline uint32_t childNodeCount() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -343,7 +343,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    unsigned int updateConfigNode(ConfigManager& config, const String & parentPath ) const override;
+    uint32_t updateConfigNode(ConfigManager& config, const String & parentPath ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -366,7 +366,7 @@ inline const ScopeNode::LeafList & ScopeNode::getLeafs() const
     return mChildLeafs;
 }
 
-inline unsigned int ScopeNode::childNodeCount() const
+inline uint32_t ScopeNode::childNodeCount() const
 {
     return (mChildLeafs.getSize( ) + mChildNodes.getSize( ));
 }

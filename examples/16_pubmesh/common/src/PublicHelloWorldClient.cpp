@@ -26,7 +26,7 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_broadcastService
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
 
-PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout)
+PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout)
     : PublicHelloWorldClientBase( dependency, owner )
     , SystemShutdownClientBase  ( mesh::PublicControllerService, owner )
     , TimerConsumer             ( )
@@ -99,7 +99,7 @@ void PublicHelloWorldClient::responseRegister( const PublicHelloWorld::sClientRe
     }
 }
 
-void PublicHelloWorldClient::responseHelloWorld(unsigned int clientID)
+void PublicHelloWorldClient::responseHelloWorld(uint32_t clientID)
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_responseHelloWorld);
     if ( (clientID != 0) && (mClient.crID == clientID) )

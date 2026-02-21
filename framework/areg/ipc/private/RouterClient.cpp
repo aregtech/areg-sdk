@@ -179,7 +179,7 @@ void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & w
 
     if (Application::isServicingReady())
     {
-        unsigned int msgId{ msgFailed.getMessageId() };
+        uint32_t msgId{ msgFailed.getMessageId() };
         if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
         {
             LOG_WARN("Failed to send message [ %u ] to target [ %llu ], source is [ %llu ], the target socket [ %u ] is [ %s : %s ]"
@@ -248,7 +248,7 @@ void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
 
     if (Application::isServicingReady())
     {
-        unsigned int msgId{ msgUnprocessed.getMessageId() };
+        uint32_t msgId{ msgUnprocessed.getMessageId() };
         if ( NEService::isExecutableId(msgId) )
         {
             LOG_DBG("The message [ %u ] for target [ %llu ] and from source [ %llu ] is unprocessed, replying with failed message"
@@ -391,7 +391,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
         case NEService::FuncIdRange::EmptyFunctionId:          // fall through
         default:
             {
-                if ( NEService::isExecutableId(static_cast<unsigned int>(msgId)) )
+                if ( NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
                 {
                     StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
                     if ( eventRemote != nullptr )

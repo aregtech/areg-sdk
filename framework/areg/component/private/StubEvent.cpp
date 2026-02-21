@@ -117,7 +117,7 @@ inline void StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEve
     Component *curComponent   = Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
     ComponentThread::setCurrentComponent(curComponent);
 
-    unsigned int reqId = notifyRequest.getRequestId();
+    uint32_t reqId = notifyRequest.getRequestId();
     if (NEService::isAttributeId(reqId) || NEService::isResponseId(reqId))
     {
         processAttributeEvent(notifyRequest);
@@ -132,7 +132,7 @@ inline void StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEve
 
 inline void StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
+    if ( notifyConnect.getRequestId() == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
     {
         if (notifyConnect.getRequestType() == NEService::RequestType::ServiceConnection)
         {

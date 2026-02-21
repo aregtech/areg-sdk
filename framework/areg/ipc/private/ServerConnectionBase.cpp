@@ -27,7 +27,7 @@ ServerConnectionBase::ServerConnectionBase()
 {
 }
 
-ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
+ServerConnectionBase::ServerConnectionBase(const String & hostName, uint16_t portNr)
     : mServerSocket         ( hostName, portNr )
     , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
@@ -49,7 +49,7 @@ ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serve
 {
 }
 
-bool ServerConnectionBase::createSocket(const String & hostName, unsigned short portNr)
+bool ServerConnectionBase::createSocket(const String & hostName, uint16_t portNr)
 {
     Lock lock(mLock);
     return mServerSocket.createSocket(hostName, portNr);
@@ -73,7 +73,7 @@ void ServerConnectionBase::closeSocket()
     mServerSocket.closeSocket();
 }
 
-bool ServerConnectionBase::serverListen(int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE */)
+bool ServerConnectionBase::serverListen(int32_t maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE */)
 {
     return mServerSocket.listenConnection(maxQueueSize);
 }

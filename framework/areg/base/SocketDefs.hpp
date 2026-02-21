@@ -148,7 +148,7 @@ namespace NESocket
          *                      or server socket. The server socket supposed to bind.
          * \return  Returns true if succeeded to resolve name.
          **/
-        bool resolveAddress( const std::string_view & hostName, unsigned short portNr, bool isServer );
+        bool resolveAddress( const std::string_view & hostName, uint16_t portNr, bool isServer );
 
         /**
          * \brief   Resolves and retrieves the address of the peer to which a socket is connected.
@@ -180,7 +180,7 @@ namespace NESocket
         /**
          * \brief   Returns port number of host.
          **/
-        inline unsigned short getHostPort() const;
+        inline uint16_t getHostPort() const;
 
         /**
          * \brief   Resets the IP-address and port number of address
@@ -207,7 +207,7 @@ namespace NESocket
         /**
          * \brief   The port number of socket to connect.
          **/
-        unsigned short  mPortNr;
+        uint16_t  mPortNr;
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -314,7 +314,7 @@ namespace NESocket
      * \brief   NESocket::InvalidSocket
      *          Constant, identifying invalid port number
      **/
-    constexpr unsigned short            InvalidPort                 { 0 };
+    constexpr uint16_t            InvalidPort                 { 0 };
     /**
      * \brief   NESocket::LocalHost
      *          Constant, identifying local host
@@ -340,32 +340,32 @@ namespace NESocket
      * \brief   NESocket::PACKET_MIN_SIZE
      *          The minimum size of packet when send or receive data.
      **/
-    constexpr unsigned int              PACKET_MIN_SIZE             { 512 };
+    constexpr uint32_t              PACKET_MIN_SIZE             { 512 };
 
     /**
      * \brief   NESocket::PACKET_DEFAULT_SIZE
      *          The default size of packet when send or receive data.
      **/
-    constexpr unsigned int              PACKET_DEFAULT_SIZE         { 1500 };
+    constexpr uint32_t              PACKET_DEFAULT_SIZE         { 1500 };
 
     /**
      * \brief   NESocket::PACKET_MAX_SIZE
      *          The maximum size of packet when send or receive data.
      **/
-    constexpr unsigned int              PACKET_MAX_SIZE             { 65536 };
+    constexpr uint32_t              PACKET_MAX_SIZE             { 65536 };
 
     /**
      * \brief   NESocket::PACKET_INVALID_SIZE
      *          Packet invalid size.
      **/
-    constexpr unsigned int              PACKET_INVALID_SIZE         { 0 };
+    constexpr uint32_t              PACKET_INVALID_SIZE         { 0 };
 
     /**
      * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
      *          Constant, identifying maximum number of listeners in the queue.
      *          Used by server socket when set to listen connection.
      **/
-    extern AREG_API const int           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
+    extern AREG_API const int32_t           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace functions
@@ -436,7 +436,7 @@ namespace NESocket
      * \return  Returns valid socket descriptor, if could create socket and connect to remote peer.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE clientSocketConnect( const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE clientSocketConnect( const std::string_view & hostName, uint16_t portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   NESocket::serverSocketConnect
@@ -460,7 +460,7 @@ namespace NESocket
      * \return  Returns valid socket descriptor, if could create socket and bind to specified address.
      *          Otherwise, it returns NESocket::InvalidSocketHandle value.
      **/
-    AREG_API SOCKETHANDLE serverSocketConnect( const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE serverSocketConnect( const std::string_view & hostName, uint16_t portNr, NESocket::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   NESocket::serverListenConnection
@@ -470,7 +470,7 @@ namespace NESocket
      * \param   maxQueueSize    The maximum number of queue.
      * \return  Returns true if server is listening and ready to accept connections.
      **/
-    AREG_API bool serverListenConnection( SOCKETHANDLE serverSocket, int maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE);
+    AREG_API bool serverListenConnection( SOCKETHANDLE serverSocket, int32_t maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE);
 
     /**
      * \brief   NESocket::serverAcceptConnection
@@ -490,7 +490,7 @@ namespace NESocket
      *          If server socket is not valid anymore, returns NESocket::FailedSocketHandle.
      *          In all other failure cases, returns NESocket::InvalidSocketHandle.
      **/
-    AREG_API SOCKETHANDLE serverAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr = nullptr );
+    AREG_API SOCKETHANDLE serverAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int32_t entriesCount, NESocket::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   NESocket::getMaxSendSize
@@ -498,7 +498,7 @@ namespace NESocket
      *          This value may vary by protocol.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API unsigned int getMaxSendSize( SOCKETHANDLE hSocket );
+    AREG_API uint32_t getMaxSendSize( SOCKETHANDLE hSocket );
 
     /**
      * \brief   NESocket::setMaxSendSize
@@ -508,14 +508,14 @@ namespace NESocket
      *                      The minimum size is NESocket::PACKET_MIN_SIZE,
      *                      the maximum is NESocket::PACKET_MAX_SIZE.
      **/
-    AREG_API unsigned int setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize);
+    AREG_API uint32_t setMaxSendSize(SOCKETHANDLE hSocket, uint32_t sendSize);
 
     /**
      * \brief   NESocket::getMaxReceiveSize
      *          Maximum size of packet in bytes to receive data.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API unsigned int getMaxReceiveSize( SOCKETHANDLE hSocket );
+    AREG_API uint32_t getMaxReceiveSize( SOCKETHANDLE hSocket );
 
     /**
      * \brief   NESocket::setMaxReceiveSize
@@ -526,7 +526,7 @@ namespace NESocket
      *                      The maximum is NESocket::PACKET_MAX_SIZE.
      *                      The default seize is NESocket::PACKET_DEFAULT_SIZE.
      **/
-    AREG_API unsigned int setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize);
+    AREG_API uint32_t setMaxReceiveSize(SOCKETHANDLE hSocket, uint32_t recvSize);
 
     /**
      * \brief   NESocket::sendData
@@ -542,7 +542,7 @@ namespace NESocket
      *          If failles, returns negative number.
      *          Returns zero if buffer is empty and nothing to sent.
      **/
-    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
+    AREG_API int32_t sendData( SOCKETHANDLE hSocket, const uint8_t * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
 
     /**
      * \brief   NESocket::receiveData
@@ -559,7 +559,7 @@ namespace NESocket
      *          In case of failure, the specified socket should be closed.
      *          Returns zero if buffer is empty and nothing to receive.
      **/
-    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
+    AREG_API int32_t receiveData( SOCKETHANDLE hSocket, uint8_t * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
 
     /**
      * \brief   NESocket::disableSend
@@ -590,7 +590,7 @@ namespace NESocket
      * \param   hSocket     The socket handle to check.
      * \return  Returns number of bytes available to read from specified socket buffer.
      **/
-    AREG_API unsigned int pendingRead( SOCKETHANDLE hSocket );
+    AREG_API uint32_t pendingRead( SOCKETHANDLE hSocket );
 
     /**
      * \brief   NESocket::getHostname
@@ -662,7 +662,7 @@ inline const String& NESocket::SocketAddress::getHostName() const
     return mHostName;
 }
 
-inline unsigned short NESocket::SocketAddress::getHostPort() const
+inline uint16_t NESocket::SocketAddress::getHostPort() const
 {
     return mPortNr;
 }

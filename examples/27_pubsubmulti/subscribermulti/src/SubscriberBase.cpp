@@ -67,7 +67,7 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
     console.refreshScreen();
 }
 
-void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::DataState state)
+void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
     ++ mIntEventCount;

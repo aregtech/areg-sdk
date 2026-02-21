@@ -50,7 +50,7 @@ public:
      * \param   dateRegister    The connection registration time-stamp
      * \see     responseRegisterConnection
      **/
-    void requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister ) override;
+    void requestRegisterConnection( const String & nickName, uint32_t cookie, uint32_t connectCookie, const DateTime & dateRegister ) override;
 
     /**
      * \brief   Request call.
@@ -60,7 +60,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no response
      **/
-    void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime ) override;
+    void requestDisconnect( const String & nickName, uint32_t cookie, const DateTime & dateTime ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessager Interface Requests
@@ -76,7 +76,7 @@ public:
      * \param   dateTime    The time-stamp create on local host of initiator
      * \note    Has no response
      **/
-    void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime ) override;
+    void requestSendMessage( const String & nickName, uint32_t cookie, const String & newMessage, const DateTime & dateTime ) override;
 
     /**
      * \brief   Request call.
@@ -86,7 +86,7 @@ public:
      * \param   newMessage  The message typed.
      * \note    Has no response
      **/
-    void requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage ) override;
+    void requestKeyTyping( const String & nickName, uint32_t cookie, const String & newMessage ) override;
 
 public:
 

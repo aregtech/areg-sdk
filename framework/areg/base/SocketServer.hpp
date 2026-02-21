@@ -67,7 +67,7 @@ public:
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
      **/
-    SocketServer( const char * hostName, unsigned short portNr );
+    SocketServer( const char * hostName, uint16_t portNr );
 
     /**
      * \brief   Initialization constructor. Creates instance of object
@@ -100,7 +100,7 @@ public:
      * \param   portNr      The valid port number to bind.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const char * hostName, unsigned short portNr ) override;
+    bool createSocket( const char * hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Before listening and accepting connection from clients, 
@@ -119,7 +119,7 @@ public:
      * \param   maxQueueSize    The maximum size of pending connection queue. If not positive value (0 or negative),
      *                          it will be use maximum NESocket::MAXIMUM_LISTEN_QUEUE_SIZE value
      **/
-    virtual bool listenConnection( int maxQueueSize );
+    virtual bool listenConnection( int32_t maxQueueSize );
 
     /**
      * \brief   Call to wait for connection event. Function is blocking call until connection
@@ -140,7 +140,7 @@ public:
      *          out_addrNewAccepted parameter contains address of accepted socket. 
      *          If function fails, returns invalid socket handle.
      **/
-    virtual SOCKETHANDLE waitConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int entriesCount);
+    virtual SOCKETHANDLE waitConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

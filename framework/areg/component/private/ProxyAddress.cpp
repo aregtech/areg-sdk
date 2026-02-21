@@ -144,7 +144,7 @@ ProxyAddress::ProxyAddress(const ServiceAddress & source)
     : ServiceAddress(static_cast<const ServiceAddress&>(source))
     , mThreadName   ("")
     , mChannel      ( )
-    , mMagicNum     (static_cast<unsigned int>(source))
+    , mMagicNum     (static_cast<uint32_t>(source))
 {
 }
 
@@ -152,7 +152,7 @@ ProxyAddress::ProxyAddress( ServiceAddress && source)
     : ServiceAddress(std::move(source))
     , mThreadName   ("")
     , mChannel      ( )
-    , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(self())))
+    , mMagicNum     (static_cast<uint32_t>(static_cast<const ServiceAddress &>(self())))
 {
 }
 
@@ -230,15 +230,15 @@ void ProxyAddress::invalidateChannel()
     mChannel.invalidate();
 }
 
-unsigned int ProxyAddress::_magicNumber(const ProxyAddress & proxy)
+uint32_t ProxyAddress::_magicNumber(const ProxyAddress & proxy)
 {
-    unsigned int result     = NEMath::CHECKSUM_IGNORE;
+    uint32_t result     = NEMath::CHECKSUM_IGNORE;
 
     if ( proxy.isValidated() )
     {
         result = NEMath::crc32Init();
         result = NEMath::crc32Start( result, proxy.mServiceName.getString() );
-        result = NEMath::crc32Start( result, static_cast<unsigned char>(proxy.mServiceType) );
+        result = NEMath::crc32Start( result, static_cast<uint8_t>(proxy.mServiceType) );
         result = NEMath::crc32Start( result, proxy.mRoleName.getString() );
         result = NEMath::crc32Start( result, proxy.mThreadName.getString() );
         result = NEMath::crc32Finish(result);

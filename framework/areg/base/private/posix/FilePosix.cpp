@@ -234,16 +234,16 @@ bool File::_osOpenFile()
     return (file != nullptr);
 }
 
-unsigned int File::_osReadFile(unsigned char* buffer, unsigned int size) const
+uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size > 0));
 
-    unsigned int result{ 0 };
+    uint32_t result{ 0 };
     ssize_t sizeRead = ::read(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
     if (sizeRead > 0)
     {
-        result = static_cast<unsigned int>(sizeRead);
+        result = static_cast<uint32_t>(sizeRead);
     }
 #ifdef  _DEBUG
     else if (sizeRead < 0)
@@ -259,13 +259,13 @@ unsigned int File::_osReadFile(unsigned char* buffer, unsigned int size) const
     return result;
 }
 
-unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
+uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
 
-    int result = ::write(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
-    if (result != static_cast<int>(size))
+    int32_t result = ::write(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
+    if (result != static_cast<int32_t>(size))
     {
         AREG_OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(errno));
         result = 0;
@@ -274,24 +274,24 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     return result;
 }
 
-unsigned int File::_osSetPositionFile(int offset, Cursor::SeekOrigin startAt) const
+uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
-    unsigned int result = Cursor::INVALID_CURSOR_POSITION;
+    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
 
     sPosixFile* file = reinterpret_cast<sPosixFile*>(mFileHandle);
     switch (startAt)
     {
     case Cursor::SeekOrigin::Begin:
-        result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_SET));
+        result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_SET));
         break;
 
     case Cursor::SeekOrigin::Current:
-        result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_CUR));
+        result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_CUR));
         break;
 
     case Cursor::SeekOrigin::End:
-        result = static_cast<unsigned int>(lseek(file->fd, offset, SEEK_END));
+        result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_END));
         break;
 
     default:
@@ -302,10 +302,10 @@ unsigned int File::_osSetPositionFile(int offset, Cursor::SeekOrigin startAt) co
     return result;
 }
 
-unsigned int File::_osGetPositionFile() const
+uint32_t File::_osGetPositionFile() const
 {
     ASSERT(mFileHandle != nullptr);
-    return static_cast<unsigned int>( lseek(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
+    return static_cast<uint32_t>( lseek(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
 }
 
 bool File::_osTruncateFile()
@@ -324,7 +324,7 @@ void File::_osFlushFile()
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, unsigned int /*unique*/)
+uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
@@ -343,10 +343,10 @@ unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const
         ::close(fno);
     }
 
-    return static_cast<unsigned int>(strlen(buffer));
+    return static_cast<uint32_t>(strlen(buffer));
 }
 
-unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const File::SpecialFolder specialFolder)
+uint32_t File::_osGetSpecialDir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
     buffer[0] = NEString::EndOfString;
@@ -371,9 +371,9 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c.%s%c%s"
                     , filePath
-                    , static_cast<int>(File::PATH_SEPARATOR)
+                    , static_cast<int32_t>(File::PATH_SEPARATOR)
                     , Process::getInstance().getAppName().getString()
-                    , static_cast<int>(File::PATH_SEPARATOR)
+                    , static_cast<int32_t>(File::PATH_SEPARATOR)
                     , DIR_NAME_APPDATA);
         break;
 
@@ -387,7 +387,7 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
         break;
     }
 
-    return static_cast<unsigned int>(strlen(buffer));
+    return static_cast<uint32_t>(strlen(buffer));
 }
 
 #endif //  defined(_POSIX) || defined(POSIX)

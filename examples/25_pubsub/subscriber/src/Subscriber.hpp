@@ -76,7 +76,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    void onIntegerAlwaysUpdate( unsigned int IntegerAlways, NEService::DataState state ) override;
+    void onIntegerAlwaysUpdate( uint32_t IntegerAlways, NEService::DataState state ) override;
 
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains

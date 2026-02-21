@@ -103,7 +103,7 @@ private:
      * \param   stream      The buffer with scope name, scope ID and scope priority.
      * \param   scopeCount  The number of scopes in the binary buffer.
      **/
-    void _changeScopePriority( const SharedBuffer & stream, unsigned int scopeCount );
+    void _changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

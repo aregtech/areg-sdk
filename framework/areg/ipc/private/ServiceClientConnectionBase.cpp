@@ -40,7 +40,7 @@ DEF_LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 
 ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , NERemoteService::RemoteServiceKind service
-                                                        , unsigned int connectTypes
+                                                        , uint32_t connectTypes
                                                         , NEService::MessageSource msgSource
                                                         , ConnectionConsumer& connectionConsumer
                                                         , RemoteMessageHandler & messageHandler
@@ -142,7 +142,7 @@ bool ServiceClientConnectionBase::setupServiceConnectionData(NERemoteService::Re
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 String address{ config.getConnectionAddress() };
-                unsigned short port{ config.getConnectionPort() };
+                uint16_t port{ config.getConnectionPort() };
                 result = mClientConnection.setAddress(address, port);
             }
         }
@@ -151,7 +151,7 @@ bool ServiceClientConnectionBase::setupServiceConnectionData(NERemoteService::Re
     return result;
 }
 
-void ServiceClientConnectionBase::applyServiceConnectionData( const String & hostName, unsigned short portNr )
+void ServiceClientConnectionBase::applyServiceConnectionData( const String & hostName, uint16_t portNr )
 {
     Lock lock( mLock );
     mClientConnection.setAddress( hostName, portNr );
@@ -163,7 +163,7 @@ bool ServiceClientConnectionBase::connectServiceHost()
     bool result{ false };
     if (mClientConnection.isValid() == false)
     {
-        if ((mConnectTypes & static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip)) != 0)
+        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)) != 0)
         {
             ConnectionConfiguration config(mService, NERemoteService::ConnectionType::Tcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())

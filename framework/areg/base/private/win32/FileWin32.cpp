@@ -73,7 +73,7 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
         fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
         String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
         char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
-        unsigned int length = ::SearchPathA(searchPath, fileName, fileExtension, File::MAXIMUM_PATH, buffer, &fileName);
+        uint32_t length = ::SearchPathA(searchPath, fileName, fileExtension, File::MAXIMUM_PATH, buffer, &fileName);
         result = length != 0 && length <= File::MAXIMUM_PATH ? buffer : "";
 
         delete [] buffer;
@@ -156,23 +156,23 @@ bool File::_osOpenFile()
     return result;
 }
 
-unsigned int File::_osReadFile(unsigned char* buffer, unsigned int size) const
+uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size > 0));
 
-    unsigned int result{ 0 };
+    uint32_t result{ 0 };
     DWORD sizeRead{ 0 };
 
     if (::ReadFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeRead, nullptr))
     {
-        result = static_cast<unsigned int>(sizeRead);
+        result = static_cast<uint32_t>(sizeRead);
     }
 
     return result;
 }
 
-unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
+uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
@@ -180,10 +180,10 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     DWORD sizeWrite{ 0 };
     ::WriteFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeWrite, nullptr);
 
-    return static_cast<unsigned int>(sizeWrite);
+    return static_cast<uint32_t>(sizeWrite);
 }
 
-unsigned int File::_osSetPositionFile(int offset, Cursor::SeekOrigin startAt) const
+uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
 
@@ -209,13 +209,13 @@ unsigned int File::_osSetPositionFile(int offset, Cursor::SeekOrigin startAt) co
         moveOffset = 0;
     }
 
-    return static_cast<unsigned int>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod)));
+    return static_cast<uint32_t>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod)));
 }
 
-unsigned int File::_osGetPositionFile() const
+uint32_t File::_osGetPositionFile() const
 {
     ASSERT(mFileHandle != nullptr);
-    return static_cast<unsigned int>( SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT) );
+    return static_cast<uint32_t>( SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT) );
 }
 
 bool File::_osTruncateFile()
@@ -239,13 +239,13 @@ void File::_osFlushFile()
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, unsigned int unique)
+uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t unique)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
-    return static_cast<unsigned int>(::GetTempFileNameA(folder, prefix, unique, buffer) != 0 ? strlen(buffer) : 0);
+    return static_cast<uint32_t>(::GetTempFileNameA(folder, prefix, unique, buffer) != 0 ? strlen(buffer) : 0);
 }
 
 /**
@@ -255,12 +255,12 @@ unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const
  * \return  If function succeeds, the return value is full path of special folder.
  *          Otherwise, it returns empty string.
  **/
-unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const File::SpecialFolder specialFolder)
+uint32_t File::_osGetSpecialDir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
     buffer[0] = NEString::EndOfString;
 
-    int csidl = -1;
+    int32_t csidl = -1;
     switch (specialFolder)
     {
     case File::SpecialFolder::UserHome:
@@ -288,7 +288,7 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int length, const Fil
         SHGetFolderPathA(nullptr, csidl, nullptr, SHGFP_TYPE_CURRENT, buffer);
     }
 
-    return static_cast<unsigned int>(strlen(buffer));
+    return static_cast<uint32_t>(strlen(buffer));
 }
 
 #endif // _WIN32

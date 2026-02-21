@@ -26,44 +26,44 @@
 #include <string.h>
 #include <cstddef>
 
-inline unsigned int RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
+inline uint32_t RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
 {
-    const unsigned int offset   = offsetof( NEMemory::sRemoteMessageHeader, rbhSource );
-    const unsigned char * data  = reinterpret_cast<const unsigned char *>(&remoteMessage.rbHeader.rbhSource);
-    const unsigned int remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
-    const unsigned int used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
-    const unsigned int length   = used + remain;
+    const uint32_t offset   = offsetof( NEMemory::sRemoteMessageHeader, rbhSource );
+    const uint8_t * data  = reinterpret_cast<const uint8_t *>(&remoteMessage.rbHeader.rbhSource);
+    const uint32_t remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
+    const uint32_t used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
+    const uint32_t length   = used + remain;
 
-    return NEMath::crc32Calculate( data, static_cast<int>(length) );
+    return NEMath::crc32Calculate( data, static_cast<int32_t>(length) );
 }
 
-RemoteMessage::RemoteMessage(unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
+RemoteMessage::RemoteMessage(uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/)
     : SharedBuffer  ( blockSize )
 {
 }
 
-RemoteMessage::RemoteMessage(unsigned int reserveSize, unsigned int blockSize)
+RemoteMessage::RemoteMessage(uint32_t reserveSize, uint32_t blockSize)
     : SharedBuffer  ( blockSize )
 {
     reserve(reserveSize, false);
 }
 
-RemoteMessage::RemoteMessage(const unsigned char * buffer, unsigned int size, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
+RemoteMessage::RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/)
     : SharedBuffer  ( blockSize )
 {
     reserve(size, false);
     writeData(buffer, size);
 }
 
-unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bufLength, bool makeCopy) const
+uint32_t RemoteMessage::initBuffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const
 {
-    unsigned int result{ Cursor::INVALID_CURSOR_POSITION };
+    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
 
     if (newBuffer != nullptr)
     {
         result = 0;
-        unsigned int dataOffset { getDataOffset() };
-        unsigned int dataLength { bufLength - dataOffset };
+        uint32_t dataOffset { getDataOffset() };
+        uint32_t dataLength { bufLength - dataOffset };
 
         NEMemory::memZero(newBuffer, sizeof(NEMemory::sRemoteMessage));
         NEMemory::sRemoteMessageHeader & header = NEMemory::constructElems<NEMemory::sRemoteMessage>(newBuffer, 1)->rbHeader;
@@ -86,9 +86,9 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
 
         if ( makeCopy )
         {
-            unsigned char * dstBuf{ NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::sByteBuffer *>(&header.rbhBufHeader)) };
-            const unsigned char* srcBuf { NEMemory::getBufferDataRead(mByteBuffer.get()) };
-            unsigned int srcCount { getSizeUsed() };
+            uint8_t * dstBuf{ NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::sByteBuffer *>(&header.rbhBufHeader)) };
+            const uint8_t* srcBuf { NEMemory::getBufferDataRead(mByteBuffer.get()) };
+            uint32_t srcCount { getSizeUsed() };
             srcCount = std::min(srcCount, dataLength);
             result   = srcCount;
 
@@ -112,16 +112,16 @@ void RemoteMessage::bufferCompletionFix() const
         const NEMemory::sRemoteMessage & msg = _getRemoteMessage();
         const NEMemory::sRemoteMessageHeader & header = msg.rbHeader;
 
-        unsigned int checksum   = RemoteMessage::_checksumCalculate( msg );
-        unsigned int dataUsed   = header.rbhBufHeader.biUsed;
-        unsigned int dataLen    = header.rbhBufHeader.biUsed;
-        unsigned int bufSize    = header.rbhBufHeader.biOffset + dataUsed;
+        uint32_t checksum   = RemoteMessage::_checksumCalculate( msg );
+        uint32_t dataUsed   = header.rbhBufHeader.biUsed;
+        uint32_t dataLen    = header.rbhBufHeader.biUsed;
+        uint32_t bufSize    = header.rbhBufHeader.biOffset + dataUsed;
 
         dataLen = std::max(dataLen, static_cast<uint32_t>(sizeof(NEMemory::BufferData)));
-        dataLen = NEMath::alignSize(dataLen, static_cast<uint32_t>(sizeof(int)));
+        dataLen = NEMath::alignSize(dataLen, static_cast<uint32_t>(sizeof(int32_t)));
 
         bufSize = std::max(bufSize, static_cast<uint32_t>(sizeof(NEMemory::sRemoteMessage)));
-        bufSize = NEMath::alignSize(bufSize, static_cast<uint32_t>(sizeof(int)));
+        bufSize = NEMath::alignSize(bufSize, static_cast<uint32_t>(sizeof(int32_t)));
 
         ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
@@ -131,17 +131,17 @@ void RemoteMessage::bufferCompletionFix() const
     }
 }
 
-unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHeader, unsigned int reserve /*= 0*/ )
+uint8_t * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHeader, uint32_t reserve /*= 0*/ )
 {
     invalidate();
 
     reserve = std::max(reserve, 1u);
-    unsigned int sizeUsed   = std::max(rmHeader.rbhBufHeader.biUsed, reserve);
-    unsigned int hdrSize    = getHeaderSize();
-    unsigned int msgSize    = hdrSize + sizeUsed;
-    unsigned int sizeBuffer = NEMath::alignSize(msgSize, mBlockSize);
-    unsigned int sizeData   = sizeBuffer - hdrSize;
-    unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer];
+    uint32_t sizeUsed   = std::max(rmHeader.rbhBufHeader.biUsed, reserve);
+    uint32_t hdrSize    = getHeaderSize();
+    uint32_t msgSize    = hdrSize + sizeUsed;
+    uint32_t sizeBuffer = NEMath::alignSize(msgSize, mBlockSize);
+    uint32_t sizeData   = sizeBuffer - hdrSize;
+    uint8_t * result  = DEBUG_NEW uint8_t[sizeBuffer];
     if ( result != nullptr )
     {
         NEMemory::memZero(result, sizeof(NEMemory::sRemoteMessage));
@@ -169,8 +169,8 @@ unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader 
 RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID & target /*= 0*/) const
 {
     RemoteMessage result;
-    unsigned int reserved{ getSizeUsed() };
-    unsigned char * dst{ result.initMessage(getRemoteMessage()->rbHeader, reserved) };
+    uint32_t reserved{ getSizeUsed() };
+    uint8_t * dst{ result.initMessage(getRemoteMessage()->rbHeader, reserved) };
 
     if (dst != nullptr)
     {
@@ -186,7 +186,7 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
 
         if (reserved != 0u)
         {
-            const unsigned char * src{ getBuffer() };
+            const uint8_t * src{ getBuffer() };
             NEMemory::memCopy(dst, reserved, src, reserved);
             result.setSizeUsed(reserved);
         }
@@ -195,12 +195,12 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
     return result;
 }
 
-unsigned int RemoteMessage::getDataOffset() const
+uint32_t RemoteMessage::getDataOffset() const
 {
     return offsetof(NEMemory::sRemoteMessage, rbData);
 }
 
-unsigned int RemoteMessage::getHeaderSize() const
+uint32_t RemoteMessage::getHeaderSize() const
 {
     return sizeof(NEMemory::sRemoteMessage);
 }

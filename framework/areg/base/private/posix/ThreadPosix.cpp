@@ -64,8 +64,8 @@ namespace
 /************************************************************************/
 void * Thread::_posixThreadRoutine( void * data )
 {
-    int oldState{ 0 };
-    int oldType{ 0 };
+    int32_t oldState{ 0 };
+    int32_t oldType{ 0 };
     ::pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldType);
 
@@ -117,12 +117,12 @@ void Thread::_osCloseHandle(  THREADHANDLE handle )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::_osSleep(unsigned int timeout)
+void Thread::_osSleep(uint32_t timeout)
 {
     // since _POSIX_C_SOURCE >= 199309L use nanosleep
     // otherwise, can use:
-    //      unsigned int sec    = ms / 1000;
-    //      unsigned int micro  = (ms % 1000) * 1000;
+    //      uint32_t sec    = ms / 1000;
+    //      uint32_t micro  = (ms % 1000) * 1000;
     //      sleep(sec);
     //      usleep(micro);
 
@@ -137,7 +137,7 @@ id_type Thread::_osGetCurrentThreadId()
     return NEUtilities::convToNum<id_type, pthread_t>(pthread_self());
 }
 
-Thread::ThreadCompletion Thread::_osDestroyThread(unsigned int waitForStopMs)
+Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
     Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
@@ -232,16 +232,16 @@ Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
      * if priority of a thread is changed, a real-time scheduling policy must be used,
      * possible policies are SCHED_FIFO and SCHED_RR. We use SCHED_RR (round robin) here.
      **/
-    static constexpr int schedPolicy{ SCHED_RR };
-    static const int minPriority{ sched_get_priority_min( schedPolicy ) };
-    static const int maxPriority{ sched_get_priority_max( schedPolicy ) };
-    static const int deltaPrio  { (maxPriority - minPriority) / 4 };
+    static constexpr int32_t schedPolicy{ SCHED_RR };
+    static const int32_t minPriority{ sched_get_priority_min( schedPolicy ) };
+    static const int32_t maxPriority{ sched_get_priority_max( schedPolicy ) };
+    static const int32_t deltaPrio  { (maxPriority - minPriority) / 4 };
 
     Lock  lock(mSyncObject);
     Thread::ThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
-        int schedPrio       { std::numeric_limits<int32_t>::min() };
+        int32_t schedPrio       { std::numeric_limits<int32_t>::min() };
         pthread_t threadId  { NEUtilities::convToPtr<pthread_t, id_type>(mThreadId) };
         switch (newPriority)
         {

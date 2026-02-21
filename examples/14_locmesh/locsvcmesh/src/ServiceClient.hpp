@@ -25,7 +25,7 @@ class ServiceClient : protected HelloWorldClientBase
                     , private   TimerConsumer
 {
     //!< Timeout to wait before sending message
-    static constexpr unsigned int   TIMEOUT_VALUE   { 100 };
+    static constexpr uint32_t   TIMEOUT_VALUE   { 100 };
 
 public:
 
@@ -49,7 +49,7 @@ protected:
      * \param   clientId    Thegiven ID of the client that requested to output message.
      * \see     requestHelloWorld
      **/
-    void responseHelloWorld( const String & clientName, unsigned int clientId ) override;
+    void responseHelloWorld( const String & clientName, uint32_t clientId ) override;
 
     /**
      * \brief   Server broadcast.
@@ -57,7 +57,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    void broadcastReachedMaximum( int maxNumber ) override;
+    void broadcastReachedMaximum( int32_t maxNumber ) override;
 
 
 /************************************************************************/
@@ -105,7 +105,7 @@ private:
 // member variables
 //////////////////////////////////////////////////////////////////////////
     Timer           mTimer; //!< The timer to trigger to send request to output message
-    unsigned int    mID;    //!< The ID given by service.
+    uint32_t    mID;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

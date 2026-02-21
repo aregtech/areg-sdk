@@ -26,7 +26,7 @@ class ServiceClient : public    Component
                     , private   TimerConsumer
 {
 private:
-    static constexpr unsigned int   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request
+    static constexpr uint32_t   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -55,7 +55,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   maxNumber   The maximum number of requests.
      **/
-    void broadcastReachedMaximum( int maxNumber ) override;
+    void broadcastReachedMaximum( int32_t maxNumber ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -95,7 +95,7 @@ private:
 // member variables
 //////////////////////////////////////////////////////////////////////////
     Timer           mTimer; //!< The timer to trigger to send request to output message
-    unsigned int    mID;    //!< The ID given by service.
+    uint32_t    mID;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

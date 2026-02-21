@@ -81,7 +81,7 @@ public:
      *                      If request fails, also request ID.
      * \param	seqNr	    The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, NEService::ResultType notifyType, unsigned int notifyId, const SequenceNumber & seqNr );
+    NotificationEventData( const ProxyBase & proxy, NEService::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -138,11 +138,11 @@ public:
     /**
      * \brief   Returns notification message ID.
      **/
-    inline unsigned int getNotifyId() const;
+    inline uint32_t getNotifyId() const;
     /**
      * \brief   Sets notification message ID
      **/
-    inline void setNotifyId( unsigned int notifyId );
+    inline void setNotifyId( uint32_t notifyId );
 
     /**
      * \brief   Returns the sequence number of a caller.
@@ -168,7 +168,7 @@ private:
     /**
      * \brief   Notification message ID
      **/
-    unsigned int            mNotifyId;
+    uint32_t            mNotifyId;
     /**
      * \brief   Call sequence number.
      **/
@@ -372,12 +372,12 @@ inline void NotificationEventData::setNotifyType( NEService::ResultType notifyTy
     mNotifyType = notifyType;
 }
 
-inline unsigned int NotificationEventData::getNotifyId() const
+inline uint32_t NotificationEventData::getNotifyId() const
 {
     return mNotifyId;
 }
 
-inline void NotificationEventData::setNotifyId( unsigned int notifyId )
+inline void NotificationEventData::setNotifyId( uint32_t notifyId )
 {
     mNotifyId = notifyId;
 }

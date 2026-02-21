@@ -191,7 +191,7 @@ protected:
      * \param	size	The size in bytes of available buffer
      * \return	Returns the size in bytes of copied data
      **/
-    unsigned int read( unsigned char* buffer, unsigned int size ) const override;
+    uint32_t read( uint8_t* buffer, uint32_t size ) const override;
 
     /**
      * \brief   Reads data from input stream object, copies into give Byte Buffer object
@@ -201,7 +201,7 @@ protected:
      * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
      * \return	Returns the size in bytes of copied data
      **/
-    unsigned int read( ByteBuffer & buffer ) const override;
+    uint32_t read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -209,7 +209,7 @@ protected:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( String & ascii ) const override;
+    uint32_t read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -217,7 +217,7 @@ protected:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    unsigned int read( WideString & wide ) const override;
+    uint32_t read( WideString & wide ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -231,7 +231,7 @@ protected:
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
      **/
-    unsigned int write( const unsigned char* buffer, unsigned int size ) override;
+    uint32_t write( const uint8_t* buffer, uint32_t size ) override;
 
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
@@ -240,7 +240,7 @@ protected:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    unsigned int write( const ByteBuffer & buffer ) override;
+    uint32_t write( const ByteBuffer & buffer ) override;
 
     /**
     * \brief   Writes string data from given ASCII String object to output stream object.
@@ -248,7 +248,7 @@ protected:
     * \param   ascii     The buffer of String containing data to stream to Output Stream.
     * \return  Returns the size in bytes of copied string data.
     **/
-    unsigned int write( const String & ascii ) override;
+    uint32_t write( const String & ascii ) override;
 
     /**
     * \brief   Writes string data from given wide-char String object to output stream object.
@@ -256,7 +256,7 @@ protected:
     * \param   wide  The buffer of String containing data to stream to Output Stream.
     * \return  Returns the size in bytes of copied string data.
     **/
-    unsigned int write( const WideString & wide ) override;
+    uint32_t write( const WideString & wide ) override;
 
     /**
      * \brief	Flushes cached data to output stream object.
@@ -272,7 +272,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already read from stream, the available readable size is 'n - x'.
      **/
-    unsigned int getSizeReadable() const override;
+    uint32_t getSizeReadable() const override;
 
     /**
      * \brief	Returns size in bytes of available space that can be written, 
@@ -281,7 +281,7 @@ protected:
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
      *          already written to stream, the available writable size is 'n - x'.
      **/
-    unsigned int getSizeWritable() const override;
+    uint32_t getSizeWritable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

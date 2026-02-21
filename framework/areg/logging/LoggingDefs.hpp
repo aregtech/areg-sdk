@@ -53,7 +53,7 @@ namespace NELogging
      * \brief   The list of the scopes. It is a pair, where the key is the ID of the scope
      *          and the value is the pointer to the scope.
      **/
-    using ScopeList     = HashMap<unsigned int, LogScope*>;
+    using ScopeList     = HashMap<uint32_t, LogScope*>;
 
     /**
      * \brief   Alias of the map position.
@@ -170,13 +170,13 @@ namespace NELogging
      *          Flag, indicating whether there is any priority set to output message.
      *          The log has priority if one of first 5 bits are set.
      **/
-    constexpr unsigned int  HAS_MESSAGE_PRIORITY    { 0x1F }; // 63, bit set 0001 1111
+    constexpr uint32_t  HAS_MESSAGE_PRIORITY    { 0x1F }; // 63, bit set 0001 1111
 
     /**
      * \brief   NELogging::LOG_SCOPE_ID_NONE
      *          Constant, defines no scope ID. It is used to output message without scope
      **/
-    constexpr unsigned int  LOG_SCOPE_ID_NONE     { 0 };
+    constexpr uint32_t  LOG_SCOPE_ID_NONE     { 0 };
 
     /**
      * \brief   The string value of no priority
@@ -240,7 +240,7 @@ namespace NELogging
      * \param   priorities      The bitwise set of priorities integer value to convert to string.
      * \return  Returns converted string that may contain logical OR ('|') if more than one priority is set.
      **/
-    AREG_API String makePrioString(unsigned int priorities);
+    AREG_API String makePrioString(uint32_t priorities);
 
     /**
      * \brief   Converts the human readable string with priorities separate by logical OR ('|')
@@ -249,7 +249,7 @@ namespace NELogging
      *                  to convert into integer.
      * \return  Returns converted integer value where the priorities are set bitwise.
      **/
-    AREG_API unsigned int makePriorities(const String& prio);
+    AREG_API uint32_t makePriorities(const String& prio);
 
     /**
      * \brief   NELogging::LOG_MESSAGE_IZE
@@ -306,7 +306,7 @@ namespace NELogging
          * \param   message     The message text to output on target. Can be empty.
          * \param   msgLen      The length of the message string.
          **/
-        sLogMessage(NELogging::LogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, unsigned int msgLen);
+        sLogMessage(NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
@@ -329,14 +329,14 @@ namespace NELogging
         ITEM_ID                     logThreadId;    //!< The ID the thread in the local process.
         TIME64                      logTimestamp;   //!< The timestamp of generated log.
         TIME64                      logReceived;    //!< The timestamp when the log message is updated.
-        unsigned int                logDuration;    //!< The duration in microseconds after scope message is instantiated in the method call.
-        unsigned int                logScopeId;     //!< The ID of log scope that generated log message
-        unsigned int                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
-        unsigned int                logMessageLen;  //!< The actual length of the log message
+        uint32_t                logDuration;    //!< The duration in microseconds after scope message is instantiated in the method call.
+        uint32_t                logScopeId;     //!< The ID of log scope that generated log message
+        uint32_t                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
+        uint32_t                logMessageLen;  //!< The actual length of the log message
         char                        logMessage[LOG_MESSAGE_IZE];//!< The message text to output, with maximum NELogging::LOG_MESSAGE_IZE characters.
-        unsigned int                logThreadLen;               //!< The length of the thread name;
+        uint32_t                logThreadLen;               //!< The length of the thread name;
         char                        logThread[LOG_NAMES_SIZE];  //!< The name of the thread that generated the log. Valid only for remote logging
-        unsigned int                logModuleLen;               //!< The length of the module name.
+        uint32_t                logModuleLen;               //!< The length of the module name.
         char                        logModule[LOG_NAMES_SIZE];  //!< The name of the module that generated the log. Valid only for remote logging.
     };
 
@@ -437,7 +437,7 @@ namespace NELogging
      * \param   scopeName   The name of scope.
      * \return  Returns the ID of given scope name.
      **/
-    AREG_API unsigned int makeScopeId( const char * scopeName );
+    AREG_API uint32_t makeScopeId( const char * scopeName );
 
     /**
      * \brief   Returns the ID of given scope name.
@@ -446,7 +446,7 @@ namespace NELogging
      *                      the return value is zero.
      * \return  Returns the ID of given scope name.
      **/
-    AREG_API unsigned int makeScopeIdEx(const char* scopeName);
+    AREG_API uint32_t makeScopeIdEx(const char* scopeName);
 
     /**
      * \brief   Call to change the log scope priority.
@@ -454,7 +454,7 @@ namespace NELogging
      * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
      * \return  Returns true if scope found and priority changed.
      **/
-    AREG_API unsigned int setScopePriority( const char * scopeName, unsigned int newPrio );
+    AREG_API uint32_t setScopePriority( const char * scopeName, uint32_t newPrio );
 
     /**
      * \brief   If scope with the give name found, returns the combined priority of scope; 
@@ -463,7 +463,7 @@ namespace NELogging
      * \return  If found the scope, returns the actual priority of the scope.
      *          Otherwise, returns invalid priority.
      **/
-    AREG_API unsigned int getScopePriority( const char * scopeName );
+    AREG_API uint32_t getScopePriority( const char * scopeName );
 
     /**
      * \brief   Creates a network message to make a log.
@@ -524,7 +524,7 @@ namespace NELogging
      * \param   scopePrio   The logging priority of the scope.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, unsigned int scopeId, unsigned int scopePrio);
+    AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, uint32_t scopeId, uint32_t scopePrio);
 
     /**
      * \brief   Creates a message to query instances connected to the service.
@@ -608,8 +608,8 @@ AREG_IMPLEMENT_STREAMABLE(NELogging::LogMessageType)
  **/
 inline const InStream & operator >> (const InStream& stream, NELogging::sLogMessage& input)
 {
-    stream.read(reinterpret_cast<unsigned char *>(&input), offsetof(NELogging::sLogMessage, logMessage));
-    stream.read(reinterpret_cast<unsigned char *>(input.logMessage), input.logMessageLen + 1);
+    stream.read(reinterpret_cast<uint8_t *>(&input), offsetof(NELogging::sLogMessage, logMessage));
+    stream.read(reinterpret_cast<uint8_t *>(input.logMessage), input.logMessageLen + 1);
     return stream;
 }
 
@@ -620,8 +620,8 @@ inline const InStream & operator >> (const InStream& stream, NELogging::sLogMess
  **/
 inline OutStream& operator << (OutStream& stream, const NELogging::sLogMessage& output)
 {
-    stream.write(reinterpret_cast<const unsigned char *>(&output), offsetof(NELogging::sLogMessage, logMessage));
-    stream.write(reinterpret_cast<const unsigned char *>(output.logMessage), output.logMessageLen + 1);
+    stream.write(reinterpret_cast<const uint8_t *>(&output), offsetof(NELogging::sLogMessage, logMessage));
+    stream.write(reinterpret_cast<const uint8_t *>(output.logMessage), output.logMessageLen + 1);
     return stream;
 }
 
@@ -715,17 +715,17 @@ inline NELogging::sScopeInfo::sScopeInfo(const char* name, uint32_t id, uint32_t
 
 inline bool NELogging::isValidLogPriority( NELogging::LogPriority prio )
 {
-    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NELogging::LogPriority::PrioValid)) != 0;
+    return (static_cast<uint32_t>(prio) & static_cast<uint32_t>(NELogging::LogPriority::PrioValid)) != 0;
 }
 
 inline bool NELogging::isLogPriority( NELogging::LogPriority prio )
 {
-    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NELogging::LogPriority::PrioValidLogs)) != 0;
+    return (static_cast<uint32_t>(prio) & static_cast<uint32_t>(NELogging::LogPriority::PrioValidLogs)) != 0;
 }
 
 inline bool NELogging::isEnablingLog( NELogging::LogPriority prio )
 {
-    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NELogging::LogPriority::PrioLogs)) != 0;
+    return (static_cast<uint32_t>(prio) & static_cast<uint32_t>(NELogging::LogPriority::PrioLogs)) != 0;
 }
 
 inline bool NELogging::isLogScope( NELogging::LogPriority prio )

@@ -79,7 +79,7 @@ bool ServiceManager::isServiceManagerStarted()
     return ServiceManager::getInstance().isReady();
 }
 
-void ServiceManager::queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive )
+void ServiceManager::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance( );
     sizeSend    = serviceManager.mServiceClient.queryBytesSent( );
@@ -162,14 +162,14 @@ void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
 bool ServiceManager::_routingServiceConfigure()
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    ServiceManagerEventData data(ServiceManagerEventData::configureConnection(NERemoteService::RemoteServiceKind::Router, static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip)));
+    ServiceManagerEventData data(ServiceManagerEventData::configureConnection(NERemoteService::RemoteServiceKind::Router, static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)));
 
     return ServiceManagerEvent::sendEvent( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager) 
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceStart( unsigned int connectTypes )
+bool ServiceManager::_routingServiceStart( uint32_t connectTypes )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEventData data(ServiceManagerEventData::startConnection(NERemoteService::RemoteServiceKind::Router, connectTypes));
@@ -178,7 +178,7 @@ bool ServiceManager::_routingServiceStart( unsigned int connectTypes )
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceStart( const String & ipAddress, unsigned short portNr )
+bool ServiceManager::_routingServiceStart( const String & ipAddress, uint16_t portNr )
 {
     bool result = false;
     if ( (ipAddress.isEmpty() == false) && (portNr != NESocket::InvalidPort) )

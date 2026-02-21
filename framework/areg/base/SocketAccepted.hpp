@@ -94,7 +94,7 @@ private:
      * \brief   Plays no role for accepted sockets. Always returns true;
      * \return  Returns true.
      **/
-    bool createSocket( const char * /*hostName*/, unsigned short /*portNr*/ ) override;
+    bool createSocket( const char * /*hostName*/, uint16_t /*portNr*/ ) override;
 
     /**
      * \brief   Plays no role for accepted sockets. Always returns true;
@@ -115,7 +115,7 @@ private:
      *                      server or for client.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool setAddress( const char * hostName, unsigned short portNr, bool isServer );
+    bool setAddress( const char * hostName, uint16_t portNr, bool isServer );
 
     /**
      * \brief   Sets socket address. The address should be either invalid

@@ -139,7 +139,7 @@ StubAddress::StubAddress(const ServiceAddress & source)
     : ServiceAddress(static_cast<const ServiceAddress&>(source))
     , mThreadName   (ThreadAddress::getInvalidThreadAddress().getThreadName())
     , mChannel      ( )
-    , mMagicNum     (static_cast<unsigned int>(source))
+    , mMagicNum     (static_cast<uint32_t>(source))
 {
     if (ServiceAddress::isValid())
         mChannel.setCookie(NEService::COOKIE_LOCAL);
@@ -149,7 +149,7 @@ StubAddress::StubAddress( ServiceAddress && source)
     : ServiceAddress(std::move(source))
     , mThreadName   (ThreadAddress::getInvalidThreadAddress().getThreadName())
     , mChannel      ( )
-    , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(self())))
+    , mMagicNum     (static_cast<uint32_t>(static_cast<const ServiceAddress &>(self())))
 {
     if (ServiceAddress::isValid())
         mChannel.setCookie(NEService::COOKIE_LOCAL);
@@ -259,15 +259,15 @@ void StubAddress::convFromString(const char* pathStub, const char** out_nextPart
         *out_nextPart = strSource;
 }
 
-unsigned int StubAddress::_magicNumber(const StubAddress & addrStub)
+uint32_t StubAddress::_magicNumber(const StubAddress & addrStub)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = NEMath::CHECKSUM_IGNORE;
 
     if (addrStub.isValidated())
     {
         result = NEMath::crc32Init();
         result = NEMath::crc32Start( result, addrStub.mServiceName.getString() );
-        result = NEMath::crc32Start( result, static_cast<unsigned char>(addrStub.mServiceType) );
+        result = NEMath::crc32Start( result, static_cast<uint8_t>(addrStub.mServiceType) );
         result = NEMath::crc32Start( result, addrStub.mRoleName.getString() );
         result = NEMath::crc32Start( result, addrStub.mThreadName.getString() );
         result = NEMath::crc32Finish(result);

@@ -98,23 +98,23 @@ DEF_LOG_SCOPE(logcollector_app_logcollector_setState);
 
 const OptionParser::sOptionSetup LogCollector::ValidOptions[ ]
 {
-      { "-a", "--save"      , static_cast<int>(LoggerOption::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-b", "--unsave"    , static_cast<int>(LoggerOption::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-c", "--console"   , static_cast<int>(LoggerOption::CMD_LogConsole)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-e", "--query"     , static_cast<int>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-f", "--config"    , static_cast<int>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int>(LoggerOption::CMD_LogInstall)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-o", "--scope"     , static_cast<int>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int>(LoggerOption::CMD_LogService)      , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , { "-t", "--silent"    , static_cast<int>(LoggerOption::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int>(LoggerOption::CMD_LogUninstall)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int>(LoggerOption::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-a", "--save"      , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-b", "--unsave"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-c", "--console"   , static_cast<int32_t>(LoggerOption::CMD_LogConsole)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int32_t>(LoggerOption::CMD_LogInstall)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int32_t>(LoggerOption::CMD_LogService)      , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int32_t>(LoggerOption::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int32_t>(LoggerOption::CMD_LogUninstall)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int32_t>(LoggerOption::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 LogCollector & LogCollector::getInstance()
@@ -209,11 +209,11 @@ void LogCollector::runService()
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
 }
 
-std::pair<const OptionParser::sOptionSetup*, int> LogCollector::getAppOptions() const
+std::pair<const OptionParser::sOptionSetup*, int32_t> LogCollector::getAppOptions() const
 {
-    static  std::pair< const OptionParser::sOptionSetup*, int> _opts( std::pair< const OptionParser::sOptionSetup*
-                                                                    , int>(LogCollector::ValidOptions
-                                                                    , static_cast<int>(std::size(LogCollector::ValidOptions))));
+    static  std::pair< const OptionParser::sOptionSetup*, int32_t> _opts( std::pair< const OptionParser::sOptionSetup*
+                                                                    , int32_t>(LogCollector::ValidOptions
+                                                                    , static_cast<int32_t>(std::size(LogCollector::ValidOptions))));
     return _opts;
 }
 
@@ -495,13 +495,13 @@ void LogCollector::_outputInstances( const NEService::MapInstances & instances )
         ++ coord.posY;
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
-        int i{ 1 };
+        int32_t i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
             NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
-            unsigned int id{ static_cast<unsigned int>(cookie) };
+            uint32_t id{ static_cast<uint32_t>(cookie) };
 
             console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
             ++ coord.posY;
@@ -523,13 +523,13 @@ void LogCollector::_outputInstances( const NEService::MapInstances & instances )
         printf( "%s\n", _table.data() );
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
 
-        int i{ 1 };
+        int32_t i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
             NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
-            unsigned int id{ static_cast<unsigned int>(cookie) };
+            uint32_t id{ static_cast<uint32_t>(cookie) };
 
             printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
         }
@@ -651,7 +651,7 @@ void LogCollector::_processQueryScopes(const OptionParser::sOption& optScope)
 
 void LogCollector::_createScopeMessage(const OptionParser::sOption& optScope, ArrayList<RemoteMessage>& msgList)
 {
-    ASSERT(optScope.inCommand == static_cast<int>(LoggerOption::CMD_LogUpdateScope));
+    ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
 
     const OptionParser::StrList& optValues{ optScope.inString };
@@ -763,9 +763,9 @@ inline void LogCollector::_enableLocalLogs(ConfigManager& config, bool enable)
 {
     constexpr NEPersistence::ConfigEntry prioConfKey{ NEPersistence::ConfigEntry::LogScope };
     const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
-    unsigned int prios = enable
-                ? static_cast<unsigned int>(NELogging::LogPriority::PrioNotset) | static_cast<unsigned int>(NELogging::LogPriority::PrioNotset)
-                : static_cast<unsigned int>(NELogging::LogPriority::PrioNotset);
+    uint32_t prios = enable
+                ? static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) | static_cast<uint32_t>(NELogging::LogPriority::PrioNotset)
+                : static_cast<uint32_t>(NELogging::LogPriority::PrioNotset);
     const String prio{ NELogging::makePrioString(prios) };
 
     config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);

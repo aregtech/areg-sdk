@@ -77,7 +77,7 @@ void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceS
     }
 }
 
-void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
+void ServiceClient::responseStartSleep( uint32_t timeoutSleep )
 {
     LOG_SCOPE(examples_22_pubclient_ServiceClient_responseStartSleep);
     LOG_DBG("Completed service sleep, current timeout is [ %u ]", timeoutSleep);

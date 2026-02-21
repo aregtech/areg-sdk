@@ -51,32 +51,32 @@ public:
      * \brief   SystemServiceBase::RESULT_SUCCEEDED
      *          Returns value indicating no error, i.e. operation succeeded.
      **/
-    static constexpr int        RESULT_SUCCEEDED        { 0 };
+    static constexpr int32_t        RESULT_SUCCEEDED        { 0 };
 
     /**
      * \brief   SystemServiceBase::RESULT_FAILED_INIT
      *          Returns value indicating error during initialization.
      **/
-    static constexpr int        RESULT_FAILED_INIT      { 1 };
+    static constexpr int32_t        RESULT_FAILED_INIT      { 1 };
 
     /**
      * \brief   SystemServiceBase::RESULT_FAILED_INSTALL
      *          Returns value indicating error during installation of the service.
      *          Valid for Windows OS and ignored in Linux.
      **/
-    static constexpr int        RESULT_FAILED_INSTALL   { 2 };
+    static constexpr int32_t        RESULT_FAILED_INSTALL   { 2 };
 
     /**
      * \brief   SystemServiceBase::RESULT_FAILED_RUN
      *          Returns value indicating error during run.
      **/
-    static constexpr int        RESULT_FAILED_RUN       { 3 };
+    static constexpr int32_t        RESULT_FAILED_RUN       { 3 };
 
     /**
      * \brief   SystemServiceBase::RESULT_IGNORED
      *          Returns value indicating that the operation was ignored.
      **/
-    static constexpr int        RESULT_IGNORED          { 4 };
+    static constexpr int32_t        RESULT_IGNORED          { 4 };
 
     /**
      * \brief   SystemServiceBase::ServiceControl
@@ -131,8 +131,8 @@ public:
      *          found no failure and the application can continue working.
      *          To interrupt the application, return false.
      **/
-    virtual bool parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount );
-    virtual bool parseOptions( int argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount);
+    virtual bool parseOptions( int32_t argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount );
+    virtual bool parseOptions( int32_t argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount);
 
     /**
      * \brief   Checks the listed options and prepares to dispatch.
@@ -163,7 +163,7 @@ public:
      *                      or need to use default value.
      * \return  The result of execution.
      **/
-    virtual int serviceMain(NESystemService::ServiceOption optStartup, const char* argument);
+    virtual int32_t serviceMain(NESystemService::ServiceOption optStartup, const char* argument);
 
     /**
      * \brief   Sends remote message to the target specified in the message structure.
@@ -246,7 +246,7 @@ public:
      *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
      *          In all other cases it should return RESULT_FAILED_INIT.
      **/
-    virtual int startServiceDispatcher() = 0;
+    virtual int32_t startServiceDispatcher() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

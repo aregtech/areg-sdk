@@ -99,7 +99,7 @@ inline void MutexPosix::_initPosixMutex( bool isRecursive )
     }
 }
 
-bool MutexPosix::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
+bool MutexPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 {
     bool result = false;
     if ( mMutexValid )

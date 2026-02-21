@@ -438,7 +438,7 @@ private:
     /**
      * \brief   The array of state to indicate state changes. For parent state, this will indicate the current active child state
      **/
-    FsmState                      mCurrentStates[static_cast<int>(FsmState::STATE_SIZE)]
+    FsmState                      mCurrentStates[static_cast<int32_t>(FsmState::STATE_SIZE)]
     {
         /* UNDEFINED                 */   TrafficLightFSM::FsmState::UNDEFINED
 
@@ -463,7 +463,7 @@ private:
     /**
      * \brief   The fixed tree of parent states
      **/
-    static constexpr    FsmState  sParrentStates[static_cast<int>(FsmState::STATE_SIZE)]
+    static constexpr    FsmState  sParrentStates[static_cast<int32_t>(FsmState::STATE_SIZE)]
     {
         /* UNDEFINED                 */   TrafficLightFSM::FsmState::UNDEFINED
 
@@ -484,7 +484,7 @@ private:
     /**
      * \brief   The fixed tree of child states
      **/
-    static constexpr    FsmState  sChildStates[static_cast<int>(FsmState::STATE_SIZE)]
+    static constexpr    FsmState  sChildStates[static_cast<int32_t>(FsmState::STATE_SIZE)]
 {
     /* UNDEFINED                    */     TrafficLightFSM::FsmState::UNDEFINED
 

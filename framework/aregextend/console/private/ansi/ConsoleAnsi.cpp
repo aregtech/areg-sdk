@@ -126,15 +126,15 @@ void Console::_osOutputText(const std::string_view& text) const
 Console::Coord Console::_osGetCursorPosition() const
 {
     Lock lock(mLock);
-    constexpr int _EOY{ static_cast<int>(';') };
-    constexpr int _EOX{ static_cast<int>('R') };
-    constexpr int _ZERO{ static_cast<int>('0') };
+    constexpr int32_t _EOY{ static_cast<int32_t>(';') };
+    constexpr int32_t _EOX{ static_cast<int32_t>('R') };
+    constexpr int32_t _ZERO{ static_cast<int32_t>('0') };
 
     Console::Coord result{ 0, 0 };
     printf("\x1B[6n");
     if ((getchar() == '\x1B') && (getchar() == '['))
     {
-        int ch = getchar();
+        int32_t ch = getchar();
         while (ch != _EOY)
         {
             result.posY = result.posY * 10 + (ch - _ZERO);

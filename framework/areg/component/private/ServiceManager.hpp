@@ -174,7 +174,7 @@ public:
      * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
      *                          received since the last call of the method.
      **/
-    static void queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive );
+    static void queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive );
 
 private:
 //////////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ private:
      * \return  Returns true if succeeded to start router client.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart(unsigned int connectTypes);
+    static bool _routingServiceStart(uint32_t connectTypes);
 
     /**
      * \brief   Call to start connection to remote Routing Service. If called, it overwrites IP-Address and
@@ -263,7 +263,7 @@ private:
      * \return  Returns true if router client successfully started.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const String & ipAddress, unsigned short portNr );
+    static bool _routingServiceStart( const String & ipAddress, uint16_t portNr );
 
     /**
      * \brief   Call to stop router client.

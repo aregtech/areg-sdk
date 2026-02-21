@@ -70,7 +70,7 @@ void LogScope::setPriority(const String& newPrio)
 
 LogScope::LogScope(const char* /*scopeName*/, NELogging::LogPriority /*priority*/ /*= NELogging::PrioNotset*/)
     : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid) )
+    , mScopePrio    ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
     , mScopeName    ( )
     , mIsRegistered (false)
 {
@@ -78,7 +78,7 @@ LogScope::LogScope(const char* /*scopeName*/, NELogging::LogPriority /*priority*
 
 LogScope::LogScope(const InStream& /*stream*/ )
     : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<unsigned int>(NELogging::LogPriority::PrioInvalid) )
+    , mScopePrio    ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
     , mScopeName    ( )
     , mIsRegistered (false)
 {

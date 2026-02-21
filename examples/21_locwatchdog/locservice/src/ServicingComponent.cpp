@@ -36,7 +36,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     setServiceState(HelloWatchdog::ComponentState::Initialized);
 }
 
-void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
+void ServicingComponent::requestStartSleep( uint32_t timeoutSleep )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
 

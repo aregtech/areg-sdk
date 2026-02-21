@@ -280,7 +280,7 @@ public:
      * \param   propList    The list of new properties to add.
      * \return  Returns number of properties added to the writable list of the module.
      **/
-    inline int addModuleProperties(const NEPersistence::ListProperties& propList);
+    inline int32_t addModuleProperties(const NEPersistence::ListProperties& propList);
 
     /**
      * \brief   Overwrites the existing list of writable properties. All existing properties will be lost.
@@ -314,7 +314,7 @@ public:
      * \param   keyType     The property key type.
      * \return  Returns the number of entries removed from the writable list.
      **/
-    int removeModuleProperties(const String& section, const String& property, NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
+    int32_t removeModuleProperties(const String& section, const String& property, NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes all configuration entries from the writable list matching the specified section.
@@ -599,7 +599,7 @@ public:
      * \param   scopeName   The name of the scope to add.
      * \param   prio        The scope priority of the scope.
      **/
-    void addModuleLogScope(const String& scopeName, unsigned int prio);
+    void addModuleLogScope(const String& scopeName, uint32_t prio);
 
     /**
      * \brief   Remotes a property entry of specified scope name.
@@ -611,7 +611,7 @@ public:
     /**
      * \brief   Removes all scopes of the module and return number of removed entries.
      **/
-    int removeModuleScopes();
+    int32_t removeModuleScopes();
 
 /************************************************************************
  * Remote service properties.
@@ -937,9 +937,9 @@ inline PropertyValue * ConfigManager::getModulePropertyValue( const String& sect
     return (result != nullptr ? &const_cast<Property *>(result)->getValue() : nullptr);
 }
 
-inline int ConfigManager::addModuleProperties(const NEPersistence::ListProperties& propList)
+inline int32_t ConfigManager::addModuleProperties(const NEPersistence::ListProperties& propList)
 {
-    int result{ 0 };
+    int32_t result{ 0 };
     Lock lock(mLock);
     const std::vector<Property>& list = propList.getData();
     for (const auto& prop : list)

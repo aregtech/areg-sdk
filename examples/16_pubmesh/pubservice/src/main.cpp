@@ -30,7 +30,7 @@
 //!<\brief  The local service component.
 class LocalServiceComponent : public Component
 {
-    static constexpr unsigned int TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
+    static constexpr uint32_t TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
 
 public:
     LocalServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )

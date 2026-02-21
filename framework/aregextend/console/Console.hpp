@@ -273,7 +273,7 @@ public:
      * \param   bufSize The size of the buffer.
      * \return  Returns true if the data was successfully read and the buffer contains not empty data, otherwise false.
      **/
-    static bool readConsoleData(char* buffer, unsigned int bufSize);
+    static bool readConsoleData(char* buffer, uint32_t bufSize);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden, OS specific methods.

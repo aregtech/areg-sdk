@@ -103,7 +103,7 @@ int main( )
         console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);
 
         // Set this value to have correct outputs on console, it plays no other role.
-        ComponentLoader::setComponentData(SecondRole, std::make_any<int>(1));
+        ComponentLoader::setComponentData(SecondRole, std::make_any<int32_t>(1));
 
         // load model to initialize components
         Application::loadModel( _modelName );

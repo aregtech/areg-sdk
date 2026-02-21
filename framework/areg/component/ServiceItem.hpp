@@ -154,7 +154,7 @@ public:
     /**
      * \brief   Converts service item to 32-bit unsigned integer value.
      **/
-    inline explicit operator unsigned int () const;
+    inline explicit operator uint32_t () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -248,7 +248,7 @@ private:
     /**
      * \brief   Returns the calculated hash-key value of specified service item.
      **/
-    static unsigned int _magicNumber( const ServiceItem svcItem );
+    static uint32_t _magicNumber( const ServiceItem svcItem );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -274,7 +274,7 @@ private:
     /**
      * \brief   The calculated number of service item
      **/
-    unsigned int            mMagicNum;
+    uint32_t            mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -288,10 +288,10 @@ namespace std
     template<>
     struct hash<ServiceItem>
     {
-        //! A function to convert ServiceItem object to unsigned int.
-        inline unsigned int operator()(const ServiceItem& key) const
+        //! A function to convert ServiceItem object to uint32_t.
+        inline uint32_t operator()(const ServiceItem& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -387,7 +387,7 @@ inline bool ServiceItem::operator != (const ServiceItem & other ) const
     return (mMagicNum != other.mMagicNum);
 }
 
-inline ServiceItem::operator unsigned int () const
+inline ServiceItem::operator uint32_t () const
 {
     return mMagicNum;
 }

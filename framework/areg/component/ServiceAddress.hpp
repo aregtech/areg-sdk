@@ -154,7 +154,7 @@ public:
     /**
      * \brief   Converts service address to 32-bit unsigned integer value.
      **/
-    inline explicit operator unsigned int () const;
+    inline explicit operator uint32_t () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -221,7 +221,7 @@ private:
     /**
      * \brief   Calculates the number of specified service address object.
      **/
-    static unsigned int _magicNumber( const ServiceAddress addrService );
+    static uint32_t _magicNumber( const ServiceAddress addrService );
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -239,7 +239,7 @@ private:
     /**
      * \brief   The calculated number of service address
      **/
-    unsigned int    mMagicNum;
+    uint32_t    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -253,10 +253,10 @@ namespace std
     template<>
     struct hash<ServiceAddress>
     {
-        //! A function to convert ServiceAddress object to unsigned int.
-        inline unsigned int operator()(const ServiceAddress& key) const
+        //! A function to convert ServiceAddress object to uint32_t.
+        inline uint32_t operator()(const ServiceAddress& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -299,7 +299,7 @@ inline bool ServiceAddress::operator != (const ServiceAddress & other) const
     return (mMagicNum != other.mMagicNum);
 }
 
-inline ServiceAddress::operator unsigned int () const
+inline ServiceAddress::operator uint32_t () const
 {
     return mMagicNum;
 }

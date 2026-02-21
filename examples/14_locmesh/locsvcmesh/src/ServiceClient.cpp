@@ -55,7 +55,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
     return result;
 }
 
-void ServiceClient::responseHelloWorld( const String & clientName, unsigned int clientId )
+void ServiceClient::responseHelloWorld( const String & clientName, uint32_t clientId )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientName.getString(), clientId);
@@ -63,7 +63,7 @@ void ServiceClient::responseHelloWorld( const String & clientName, unsigned int 
     mID = clientId;
 }
 
-void ServiceClient::broadcastReachedMaximum( int /* maxNumber */ )
+void ServiceClient::broadcastReachedMaximum( int32_t /* maxNumber */ )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_broadcastReachedMaximum);
     LOG_WARN("Service notify reached message output maximum, starting shutdown procedure");

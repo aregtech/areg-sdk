@@ -79,7 +79,7 @@ public:
      *                      Otherwise, it runs only once.
      * \return  Returns true if succeeded to start timer.
      **/
-    bool setTimer( unsigned int msTimeout, bool isPeriodic );
+    bool setTimer( uint32_t msTimeout, bool isPeriodic );
 
     /**
      * \brief   Stops the running timer.
@@ -137,7 +137,7 @@ protected:
      *                      object is in signaled state. 0 means that no thread
      *                      was released by the object.
      **/
-    void notifyReleasedThreads( int numThreads ) override;
+    void notifyReleasedThreads( int32_t numThreads ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -165,7 +165,7 @@ protected:
     /**
      * \brief   Timeout is milliseconds to run.
      **/
-    unsigned int    mTimeout;
+    uint32_t    mTimeout;
     /**
      * \brief   Flag, indicates whether timer is in signaled or non-signaled state.
      **/
@@ -173,7 +173,7 @@ protected:
     /**
      * \brief   Counts how many times the timer was fired. Used by periodic timers.
      **/
-    unsigned int    mFiredCount;
+    uint32_t    mFiredCount;
     /**
      * \brief   POSIX timer structure.
      **/

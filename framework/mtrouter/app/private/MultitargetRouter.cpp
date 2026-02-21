@@ -94,18 +94,18 @@ DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_setState);
 
 const OptionParser::sOptionSetup MultitargetRouter::ValidOptions[ ]
 {
-      { "-c", "--console"   , static_cast<int>(RouterOption::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int>(RouterOption::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int>(RouterOption::CMD_RouterInstall)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int>(RouterOption::CMD_RouterLoad)      , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(RouterOption::CMD_RouterInstances) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int>(RouterOption::CMD_RouterPause)     , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(RouterOption::CMD_RouterQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(RouterOption::CMD_RouterRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int>(RouterOption::CMD_RouterService)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , { "-t", "--silent"    , static_cast<int>(RouterOption::CMD_RouterSilent)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int>(RouterOption::CMD_RouterUninstall) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int>(RouterOption::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-c", "--console"   , static_cast<int32_t>(RouterOption::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int32_t>(RouterOption::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int32_t>(RouterOption::CMD_RouterInstall)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int32_t>(RouterOption::CMD_RouterLoad)      , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int32_t>(RouterOption::CMD_RouterInstances) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int32_t>(RouterOption::CMD_RouterPause)     , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int32_t>(RouterOption::CMD_RouterQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int32_t>(RouterOption::CMD_RouterRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int32_t>(RouterOption::CMD_RouterService)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int32_t>(RouterOption::CMD_RouterSilent)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int32_t>(RouterOption::CMD_RouterUninstall) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int32_t>(RouterOption::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 MultitargetRouter & MultitargetRouter::getInstance()
@@ -194,9 +194,9 @@ void MultitargetRouter::runConsoleInputSimple()
     } while ( quit == false );
 }
 
-std::pair<const OptionParser::sOptionSetup*, int> MultitargetRouter::getAppOptions() const
+std::pair<const OptionParser::sOptionSetup*, int32_t> MultitargetRouter::getAppOptions() const
 {
-    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MultitargetRouter::ValidOptions, static_cast<int>(std::size(MultitargetRouter::ValidOptions))));
+    static  std::pair< const OptionParser::sOptionSetup*, int32_t> _opts(std::pair< const OptionParser::sOptionSetup*, int32_t>(MultitargetRouter::ValidOptions, static_cast<int32_t>(std::size(MultitargetRouter::ValidOptions))));
     return _opts;
 }
 
@@ -454,13 +454,13 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
         ++ coord.posY;
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
-        int i{ 1 };
+        int32_t i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
             NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
-            unsigned int id{ static_cast<unsigned int>(cookie) };
+            uint32_t id{ static_cast<uint32_t>(cookie) };
 
             console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
             ++ coord.posY;
@@ -482,13 +482,13 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
         printf( "%s\n", _table.data() );
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
 
-        int i{ 1 };
+        int32_t i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
             NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
-            unsigned int id{ static_cast<unsigned int>(cookie) };
+            uint32_t id{ static_cast<uint32_t>(cookie) };
 
             printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
         }

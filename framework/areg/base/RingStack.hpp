@@ -642,7 +642,7 @@ template <typename VALUE>
 RingStackBase<VALUE>::RingStackBase( Lockable & syncObject, uint32_t initCapacity /*= 0*/, NECommon::OverlapPolicy onOverlap /*= NECommon::OverlapPolicy::Stop*/ )
     : mSyncObj  ( syncObject )
     , mOnOverlap( onOverlap )
-    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
+    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[initCapacity * sizeof(VALUE)]) : nullptr )
     , mElemCount( 0u )
     , mCapacity ( mStackList != nullptr ? initCapacity : 0 )
     , mHeadPos  ( 0u )
@@ -687,7 +687,7 @@ template <typename VALUE>
 RingStackBase<VALUE>::~RingStackBase()
 {
     _emptyStack();
-    delete[] reinterpret_cast<unsigned char*>(mStackList);
+    delete[] reinterpret_cast<uint8_t*>(mStackList);
     mStackList = nullptr;
     mCapacity = 0;
 }
@@ -849,7 +849,7 @@ void RingStackBase<VALUE>::release()
 {
     Lock lock(mSyncObj);
     _emptyStack();
-    delete[] reinterpret_cast<unsigned char*>(mStackList);
+    delete[] reinterpret_cast<uint8_t*>(mStackList);
     mStackList = nullptr;
     mCapacity = 0;
 }
@@ -861,14 +861,14 @@ void RingStackBase<VALUE>::freeExtra()
         return;
 
     uint32_t capacity = mElemCount;
-    VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[capacity * sizeof(VALUE)]) : nullptr;
+    VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[capacity * sizeof(VALUE)]) : nullptr;
     if (newList != nullptr)
     {
         if (mStackList != nullptr)
         {
             _copyElems(newList, mStackList, mHeadPos, mTailPos, mElemCount, capacity);
             _emptyStack();
-            delete[] reinterpret_cast<unsigned char*>(mStackList);
+            delete[] reinterpret_cast<uint8_t*>(mStackList);
         }
 
         mStackList  = newList;
@@ -882,7 +882,7 @@ void RingStackBase<VALUE>::freeExtra()
         if (mStackList != nullptr)
         {
             _emptyStack();
-            delete[] reinterpret_cast<unsigned char*>(mStackList);
+            delete[] reinterpret_cast<uint8_t*>(mStackList);
             mStackList = nullptr;
         }
 
@@ -1013,7 +1013,7 @@ uint32_t RingStackBase<VALUE>::reserve(uint32_t newCapacity )
 
     if ( newCapacity > mCapacity )
     {
-        VALUE * newList = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity * sizeof(VALUE)] ) : nullptr;
+        VALUE * newList = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW uint8_t[ newCapacity * sizeof(VALUE)] ) : nullptr;
         if (newList != nullptr)
         {
             uint32_t elemCount = mElemCount;
@@ -1021,7 +1021,7 @@ uint32_t RingStackBase<VALUE>::reserve(uint32_t newCapacity )
             {
                 _copyElems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
                 _emptyStack();
-                delete[] reinterpret_cast<unsigned char*>(mStackList);
+                delete[] reinterpret_cast<uint8_t*>(mStackList);
             }
 
             mStackList = newList;
@@ -1174,9 +1174,9 @@ void RingStackBase<VALUE>::_copyStack(const RingStackBase<VALUE>& source)
 
     if (mCapacity < srcCapacity)
     {
-        delete[] reinterpret_cast<unsigned char*>(mStackList);
+        delete[] reinterpret_cast<uint8_t*>(mStackList);
         mStackList  = nullptr;
-        newList     = srcCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[srcCapacity * sizeof(VALUE)]) : nullptr;
+        newList     = srcCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW uint8_t[srcCapacity * sizeof(VALUE)]) : nullptr;
         mCapacity   = srcCapacity;
     }
 

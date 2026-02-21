@@ -120,10 +120,10 @@ bool ServiceStub::operator == ( const ServiceStub & stubService ) const
     return static_cast<const ServiceAddress &>(mStubAddress) == static_cast<const ServiceAddress &>(stubService.mStubAddress);
 }
 
-ServiceStub::operator unsigned int () const
+ServiceStub::operator uint32_t () const
 {
     const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mStubAddress);
-    return static_cast<unsigned int>(addrService);
+    return static_cast<uint32_t>(addrService);
 }
 
 bool ServiceStub::isValid() const

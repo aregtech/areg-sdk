@@ -26,7 +26,7 @@ ClientConnection::ClientConnection()
 {
 }
 
-ClientConnection::ClientConnection(const String & hostName, unsigned short portNr)
+ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
     : SocketConnectionBase    ( )
     , mClientSocket ( hostName, portNr )
     , mCookie       ( NEService::COOKIE_UNKNOWN )
@@ -41,7 +41,7 @@ ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress
 }
 
 
-bool ClientConnection::createSocket(const String & hostName, unsigned short portNr)
+bool ClientConnection::createSocket(const String & hostName, uint16_t portNr)
 {
     setCookie( mClientSocket.createSocket(hostName, portNr) ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
     return mClientSocket.isValid();

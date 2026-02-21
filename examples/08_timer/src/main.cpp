@@ -42,9 +42,9 @@ DEF_LOG_SCOPE(timer_main_main);
 class TimerDispatcher   : public DispatcherThread
                         , private TimerConsumer
 {
-    static constexpr unsigned int TIMEOUT_ONE_TIME{ NECommon::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
-    static constexpr unsigned int TIMEOUT_PERIODIC_TIME{ NECommon::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
-    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME{ NECommon::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
+    static constexpr uint32_t TIMEOUT_ONE_TIME{ NECommon::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
+    static constexpr uint32_t TIMEOUT_PERIODIC_TIME{ NECommon::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
+    static constexpr uint32_t TIMEOUT_CONTINUOUS_TIME{ NECommon::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
 
 public:
     explicit TimerDispatcher(const String & name)
@@ -61,7 +61,7 @@ public:
     void startTimers()
     {
         LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
-        auto start = [&](Timer & t, unsigned int timeout, int count)
+        auto start = [&](Timer & t, uint32_t timeout, int32_t count)
         {
             if (t.startTimer(timeout, static_cast<DispatcherThread&>(*this), count))
             {
@@ -118,7 +118,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
-    constexpr unsigned int TIMEOUT_APPLICATION = NECommon::TIMEOUT_1_SEC * 5;
+    constexpr uint32_t TIMEOUT_APPLICATION = NECommon::TIMEOUT_1_SEC * 5;
 
     void startTimerThread(TimerDispatcher & thread)
     {

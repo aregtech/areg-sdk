@@ -43,8 +43,8 @@ void TimerManager::_posixTimerExpiredRoutine( TimerPosix* posixTimer )
 
     if ( (timer != nullptr) && (posixTimer->isValid( )) )
     {
-        unsigned int highValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
-        unsigned int lowValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
+        uint32_t lowValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
         posixTimer->timerExpired( );
         timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }
@@ -59,8 +59,8 @@ void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
 
     if ( (timer != nullptr) && (posixTimer->isValid( )) )
     {
-        unsigned int highValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
-        unsigned int lowValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
+        uint32_t lowValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
         posixTimer->timerExpired( );
         timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }

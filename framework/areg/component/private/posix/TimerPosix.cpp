@@ -208,8 +208,8 @@ inline bool TimerPosix::_startTimer()
             _stopTimer();
         }
 
-        unsigned int msTimeout = mContext->getTimeout();
-        unsigned int eventCount= mContext->getEventCount();
+        uint32_t msTimeout = mContext->getTimeout();
+        uint32_t eventCount= mContext->getEventCount();
 
         if ((msTimeout != 0) && (eventCount != 0))
         {
@@ -259,8 +259,8 @@ inline bool TimerPosix::_startTimer()
         }
 
 
-        unsigned int msTimeout = mContext->getTimeout();
-        unsigned int eventCount= mContext->getEventCount();
+        uint32_t msTimeout = mContext->getTimeout();
+        uint32_t eventCount= mContext->getEventCount();
 
         if ((msTimeout != 0) && (eventCount != 0))
         {

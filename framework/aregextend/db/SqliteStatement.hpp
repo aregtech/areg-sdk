@@ -139,8 +139,8 @@ public:
      * \param   value   The integer value to bind.
      * \return  True if binding was successful, false otherwise.
      */
-    bool bindInt32(int index, int32_t value);
-    bool bindUint32(int index, uint32_t value);
+    bool bindInt32(int32_t index, int32_t value);
+    bool bindUint32(int32_t index, uint32_t value);
 
     /**
      * \brief   Binds a 64-bit integer value to the specified parameter index.
@@ -148,8 +148,8 @@ public:
      * \param   value   The 64-bit integer value to bind.
      * \return  True if binding was successful, false otherwise.
      */
-    bool bindInt64(int index, int64_t value);
-    bool bindUint64(int index, uint64_t value);
+    bool bindInt64(int32_t index, int64_t value);
+    bool bindUint64(int32_t index, uint64_t value);
 
     /**
      * \brief   Binds a double value to the specified parameter index.
@@ -157,8 +157,8 @@ public:
      * \param   value   The double value to bind.
      * \return  True if binding was successful, false otherwise.
      */
-    bool bindDouble(int index, double value);
-    bool bindFloat(int index, float value);
+    bool bindDouble(int32_t index, double value);
+    bool bindFloat(int32_t index, float value);
 
     /**
      * \brief   Binds a text value to the specified parameter index.
@@ -166,14 +166,14 @@ public:
      * \param   value   The string value to bind.
      * \return  True if binding was successful, false otherwise.
      */
-    bool bindText(int index, const String& value);
+    bool bindText(int32_t index, const String& value);
 
     /**
      * \brief   Binds a NULL value to the specified parameter index.
      * \param   index   The 0-based parameter index.
      * \return  True if binding was successful, false otherwise.
      */
-    bool bindNull(int index);
+    bool bindNull(int32_t index);
 
     /**
      * \brief   Clears all parameter bindings for the prepared statement.
@@ -185,100 +185,100 @@ public:
      * \param   index   The 0-based column index.
      * \return  The integer value of the column.
      */
-    int32_t getInt32(int index) const;
-    uint32_t getUint32(int index) const;
+    int32_t getInt32(int32_t index) const;
+    uint32_t getUint32(int32_t index) const;
 
     /**
      * \brief   Retrieves the 64-bit integer value of the specified column in the current row.
      * \param   index  The 0-based column index.
      * \return  The 64-bit integer value of the column.
      */
-    int64_t getInt64(int index) const;
-    uint64_t getUint64(int index) const;
+    int64_t getInt64(int32_t index) const;
+    uint64_t getUint64(int32_t index) const;
 
     /**
      * \brief   Retrieves the double value of the specified column in the current row.
      * \param   index  The 0-based column index.
      * \return  The double value of the column.
      */
-    double getDouble(int index) const;
-    float getFloat(int index) const;
+    double getDouble(int32_t index) const;
+    float getFloat(int32_t index) const;
 
     /**
      * \brief   Retrieves the text value of the specified column in the current row.
      * \param   index  The 0-based column index.
      * \return  The string value of the column.
      */
-    String getText(int index) const;
+    String getText(int32_t index) const;
 
     /**
      * \brief   Checks if the specified column in the current row is NULL.
      * \param   index  The 0-based column index.
      * \return  True if the column is NULL, false otherwise.
      */
-    bool isNull(int column) const;
+    bool isNull(int32_t column) const;
 
     /**
      * \brief   Checks if the specified column index is valid for the current result set.
      * \param   index  The 0-based column index.
      * \return  True if the column index is valid, false otherwise.
      */
-    bool isColumnValid(int index) const;
+    bool isColumnValid(int32_t index) const;
 
     /**
      * \brief   Checks if the specified column contains a string value.
      * \param   index  The 0-based column index.
      * \return  True if the column is a string, false otherwise.
      */
-    bool isString(int index) const;
+    bool isString(int32_t index) const;
 
     /**
      * \brief   Checks if the specified column contains a 32-bit integer value.
      * \param   index  The 0-based column index.
      * \return  True if the column is a 32-bit integer, false otherwise.
      */
-    bool isInteger(int index) const;
+    bool isInteger(int32_t index) const;
 
     /**
      * \brief   Checks if the specified column contains a 64-bit integer value.
      * \param   index  The 0-based column index.
      * \return  True if the column is a 64-bit integer, false otherwise.
      */
-    bool isInteger64(int index) const;
+    bool isInteger64(int32_t index) const;
 
     /**
      * \brief   Checks if the specified column contains a double value.
      * \param   index  The 0-based column index.
      * \return  True if the column is a double, false otherwise.
      */
-    bool isDouble(int index) const;
+    bool isDouble(int32_t index) const;
 
     /**
      * \brief   Returns the number of columns in the result set.
      * \return  The number of columns.
      */
-    int getColumnCount() const;
+    int32_t getColumnCount() const;
 
     /**
      * \brief   Returns the name of the specified column.
      * \param   index  The 0-based column index.
      * \return  The name of the column.
      */
-    String getColumnName(int index) const;
+    String getColumnName(int32_t index) const;
 
     /**
      * \brief   Returns the index of the column with the specified name.
      * \param   columnName The name of the column.
      * \return  The 0-based index of the column, or -1 if not found.
      */
-    int getColumnIndex(const String& columnName) const;
+    int32_t getColumnIndex(const String& columnName) const;
 
     /**
      * \brief   Returns the type of the specified column.
      * \param   index  The 0-based column index.
      * \return  The column type as ColumnType.
      */
-    SqliteStatement::ColumnType getColumnType(int index) const;
+    SqliteStatement::ColumnType getColumnType(int32_t index) const;
 
     /**
      * \brief   Returns a SqliteRow object representing the current row.

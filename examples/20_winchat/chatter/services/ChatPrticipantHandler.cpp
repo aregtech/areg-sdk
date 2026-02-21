@@ -33,10 +33,10 @@ ChatPrticipantHandler::~ChatPrticipantHandler()
 {
 }
 
-int ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
+int32_t ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
     Lock lock( mLock );
-    int result = 0;
+    int32_t result = 0;
     if ( mInitiator == initiator )
     {
         for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
@@ -55,7 +55,7 @@ int ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, c
 bool ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant )
 {
     Lock lock( mLock );
-    int result = 0;
+    int32_t result = 0;
     if ( (mInitiator == initiator) && (findPosition( participant ) == NECommon::INVALID_INDEX) )
     {
         mListParticipants.add( participant );
@@ -64,16 +64,16 @@ bool ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, 
     return (result == 1);
 }
 
-int ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
+int32_t ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
     Lock lock( mLock );
-    int result = 0;
+    int32_t result = 0;
     if ( mInitiator == initiator )
     {
         for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
         {
             const chat::sParticipant & connection = listParticipants[i];
-            int pos = findPosition(connection);
+            int32_t pos = findPosition(connection);
             if ( pos != NECommon::INVALID_INDEX )
             {
                 mListParticipants.removeAt(static_cast<uint32_t>(pos));
@@ -87,10 +87,10 @@ int ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator
 bool ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant )
 {
     Lock lock( mLock );
-    int result = 0;
+    int32_t result = 0;
     if ( mInitiator == initiator )
     {
-        int pos = findPosition( participant );
+        int32_t pos = findPosition( participant );
         if ( pos != NECommon::INVALID_INDEX )
         {
             mListParticipants.removeAt( static_cast<uint32_t>(pos) );
@@ -133,14 +133,14 @@ void ChatPrticipantHandler::Invalidate()
     mWndChat            = static_cast<ptr_type>(0);
 }
 
-int ChatPrticipantHandler::findPosition( const chat::sParticipant & participant ) const
+int32_t ChatPrticipantHandler::findPosition( const chat::sParticipant & participant ) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int32_t result = NECommon::INVALID_INDEX;
     for (uint32_t i = 0; i < mListParticipants.getSize( ); ++ i )
     {
         if ( participant == mListParticipants[i] )
         {
-            result = static_cast<int>(i);
+            result = static_cast<int32_t>(i);
             break;
         }
     }

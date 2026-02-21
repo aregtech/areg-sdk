@@ -154,7 +154,7 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
+    Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = NECommon::DO_NOT_WAIT ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -164,7 +164,7 @@ public:
      * \param   waitForCompleteMs   The timeout to wait for completion.
      * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
      **/
-    bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
+    bool completionWait( uint32_t waitForCompleteMs = NECommon::WAIT_INFINITE ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -217,7 +217,7 @@ protected:
      *          This method is triggered after exiting from Run() function.
      * \return  Return thread exit error code.
      **/
-    int onThreadExit() override;
+    int32_t onThreadExit() override;
 
 /************************************************************************/
 // ComponentThread overrides
@@ -230,7 +230,7 @@ protected:
      *          object. Overwrite for additional operations.
      * \return	Returns number of instantiated components.
      **/
-    virtual int createComponents();
+    virtual int32_t createComponents();
 
     /**
      * \brief	Called after components are created.

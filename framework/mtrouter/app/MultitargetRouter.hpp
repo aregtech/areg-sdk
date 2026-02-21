@@ -152,7 +152,7 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    std::pair<const OptionParser::sOptionSetup*, int> getAppOptions() const override;
+    std::pair<const OptionParser::sOptionSetup*, int32_t> getAppOptions() const override;
 
     /**
      * \brief   Returns the UNICODE name of the service application.

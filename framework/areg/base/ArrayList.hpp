@@ -370,7 +370,7 @@ public:
      * \param	startAt	    The index to start searching.
      * \return	If found, returns valid index of element in array. Otherwise, returns -1.
      **/
-    int find( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
+    int32_t find( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
     /**
      * \brief	Sets new size of array. If needed, either increases or truncates
@@ -400,7 +400,7 @@ public:
      *                      so that there are 'count' elements can be inserted. If the value is negative,
      *                      the elements are narrowed, so that there are 'count' elements are removed.
      **/
-    void shift( uint32_t startAt, int count);
+    void shift( uint32_t startAt, int32_t count);
 
     /**
      * \brief   Return the fist entry in the array. The array must not be empty.
@@ -902,7 +902,7 @@ void ArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArray, uint3
         else
         {
             ASSERT(isValidIndex(startAt));
-            shift(startAt, static_cast<int>(count));
+            shift(startAt, static_cast<int32_t>(count));
         }
 
         for (uint32_t i = 0; i < count; ++i)
@@ -928,7 +928,7 @@ void ArrayList< VALUE >::insertAt(uint32_t startAt, const std::vector< VALUE >& 
         int32_t limit = 0;
         if ((getSize() + newArray.size()) > NECommon::MAX_CONTAINER_SIZE)
         {
-            limit = static_cast<int>(NECommon::MAX_CONTAINER_SIZE - (getSize() + static_cast<uint32_t>(newArray.size())));
+            limit = static_cast<int32_t>(NECommon::MAX_CONTAINER_SIZE - (getSize() + static_cast<uint32_t>(newArray.size())));
         }
 
         ARRAYPOS cit = getPosition(startAt);
@@ -975,7 +975,7 @@ bool ArrayList< VALUE >::removeElem( const VALUE & elemRemove, uint32_t searchAt
     bool result = false;
     if (searchAt < static_cast<uint32_t>(mValueList.size()))
     {
-        auto it = std::find(mValueList.begin() + static_cast<int>(searchAt), mValueList.end(), elemRemove);
+        auto it = std::find(mValueList.begin() + static_cast<int32_t>(searchAt), mValueList.end(), elemRemove);
         if (it != mValueList.end())
         {
             mValueList.erase(it);
@@ -987,12 +987,12 @@ bool ArrayList< VALUE >::removeElem( const VALUE & elemRemove, uint32_t searchAt
 }
 
 template<typename VALUE >
-int ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+int32_t ArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
-    int result = NECommon::INVALID_INDEX;
+    int32_t result = NECommon::INVALID_INDEX;
     if (startAt < static_cast<uint32_t>(mValueList.size()))
     {
-        result = static_cast<int>(startAt) - 1;
+        result = static_cast<int32_t>(startAt) - 1;
         auto it = std::find_if( mValueList.begin() + static_cast<int32_t>(startAt), mValueList.end()
                               , [&](const auto& elem) { ++result; return (elemSearch == elem);});
 
@@ -1024,20 +1024,20 @@ inline uint32_t ArrayList< VALUE >::getCapacity() const
 }
 
 template<typename VALUE >
-void ArrayList< VALUE >::shift(uint32_t startAt, int  count)
+void ArrayList< VALUE >::shift(uint32_t startAt, int32_t  count)
 {
     if ((mValueList.size() != 0) && (startAt < mValueList.size()) && (count != 0))
     {
         if (count > 0)
         {
-            if (static_cast<uint32_t>(static_cast<int>(getSize()) + count) > NECommon::MAX_CONTAINER_SIZE)
+            if (static_cast<uint32_t>(static_cast<int32_t>(getSize()) + count) > NECommon::MAX_CONTAINER_SIZE)
             {
-                count = static_cast<int>(NECommon::MAX_CONTAINER_SIZE - getSize());
+                count = static_cast<int32_t>(NECommon::MAX_CONTAINER_SIZE - getSize());
             }
 
             VALUE* values = mValueList.data();
             uint32_t size = static_cast<uint32_t>(mValueList.size());
-            mValueList.resize(static_cast<uint32_t>(static_cast<int>(size) + count));
+            mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) + count));
             NEMemory::moveElems<VALUE>(values + startAt + count, values + startAt, size - startAt);
         }
         else if (startAt != 0)
@@ -1048,11 +1048,11 @@ void ArrayList< VALUE >::shift(uint32_t startAt, int  count)
             count *= -1;
             if (startAt < static_cast<uint32_t>(count))
             {
-                count = static_cast<int>(startAt);
+                count = static_cast<int32_t>(startAt);
             }
 
             NEMemory::moveElems<VALUE>(values + startAt - count, values + startAt, size - startAt);
-            mValueList.resize(static_cast<uint32_t>(static_cast<int>(size) - count));
+            mValueList.resize(static_cast<uint32_t>(static_cast<int32_t>(size) - count));
         }
     }
 }

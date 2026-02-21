@@ -149,7 +149,7 @@ namespace NEService
     /**
      * \brief   From passed message ID finds data type
      **/
-    inline NEService::MessageDataType getMessageDataType( unsigned int msgId );
+    inline NEService::MessageDataType getMessageDataType( uint32_t msgId );
 
     /**
      * \brief   NEService::ServiceConnectionState
@@ -376,68 +376,68 @@ namespace NEService
     /**
      * \brief   Predefined range of function message IDs
      **/
-    constexpr unsigned int  FUNC_RANGE          { static_cast<unsigned int>(4095) };  /*0x0FFF*/
+    constexpr uint32_t  FUNC_RANGE          { static_cast<uint32_t>(4095) };  /*0x0FFF*/
 
     /**
      * \brief   The first ID of valid service interface function call
      **/
-    constexpr unsigned int  SERVICE_FUNCTION    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };    /*0x1000*/
+    constexpr uint32_t  SERVICE_FUNCTION    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };    /*0x1000*/
 
     /**
      * \brief   NEService::REQUEST_ID_FIRST
      *          The first ID in request call.
      **/
-    constexpr unsigned int  REQUEST_ID_FIRST    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };
+    constexpr uint32_t  REQUEST_ID_FIRST    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };
     /**
      * \brief   NEService::REQUEST_ID_LAST
      *          The last ID in request call.
      **/
-    constexpr unsigned int  REQUEST_ID_LAST     { REQUEST_ID_FIRST + FUNC_RANGE };
+    constexpr uint32_t  REQUEST_ID_LAST     { REQUEST_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::RESPONSE_ID_FIRST
      *          The first ID in response call.
      **/
-    constexpr unsigned int  RESPONSE_ID_FIRST   { static_cast<uint32_t>(ServiceCallType::ResponseFunction) };
+    constexpr uint32_t  RESPONSE_ID_FIRST   { static_cast<uint32_t>(ServiceCallType::ResponseFunction) };
     /**
      * \brief   NEService::RESPONSE_ID_LAST
      *          The last ID in response call.
      **/
-    constexpr unsigned int  RESPONSE_ID_LAST    { RESPONSE_ID_FIRST + FUNC_RANGE };
+    constexpr uint32_t  RESPONSE_ID_LAST    { RESPONSE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::ATTRIBUTE_ID_FIRST
      *          The first ID in attribute call.
      **/
-    constexpr unsigned int  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(ServiceCallType::AttributeUpdate) };
+    constexpr uint32_t  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(ServiceCallType::AttributeUpdate) };
     /**
      * \brief   NEService::ATTRIBUTE_ID_LAST
      *          The last ID in attribute call.
      **/
-    constexpr unsigned int  ATTRIBUTE_ID_LAST   { ATTRIBUTE_ID_FIRST + FUNC_RANGE };
+    constexpr uint32_t  ATTRIBUTE_ID_LAST   { ATTRIBUTE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::SERVICE_ID_FIRST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::ServiceCallType::ServiceRegisteration) };
+    constexpr uint32_t  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::ServiceCallType::ServiceRegisteration) };
     /**
      * \brief   NEService::SERVICE_ID_LAST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
+    constexpr uint32_t  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::RESPONSE_ID_NONE
      *          Constant no response. Used to indicate that the request has no response.
      **/
-    constexpr unsigned int  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCallType::NoFunction) };
+    constexpr uint32_t  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCallType::NoFunction) };
 
     /**
      * \brief   NEService::INVALID_MESSAGE_ID
      *          The invalid message ID
      **/
-    constexpr unsigned int  INVALID_MESSAGE_ID  { static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
+    constexpr uint32_t  INVALID_MESSAGE_ID  { static_cast<uint32_t>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   Predefined range of function calls
@@ -520,72 +520,72 @@ namespace NEService
     /**
      * \brief   Converts request message ID to array index. Returns INVALID_INDEX if empty.
      **/
-    inline constexpr unsigned int reqIndex(unsigned int msgId)
+    inline constexpr uint32_t reqIndex(uint32_t msgId)
     {
-        return (msgId != static_cast<unsigned int>(FuncIdRange::EmptyFunctionId))
-                ? msgId - static_cast<unsigned int>(FuncIdRange::RequestFirstId)
-                : static_cast<unsigned int>(NECommon::INVALID_INDEX);
+        return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
+                ? msgId - static_cast<uint32_t>(FuncIdRange::RequestFirstId)
+                : static_cast<uint32_t>(NECommon::INVALID_INDEX);
     }
 
     /**
      * \brief   Converts response message ID to array index. Returns INVALID_INDEX if empty.
      **/
-    inline constexpr unsigned int respIndex(unsigned int msgId)
+    inline constexpr uint32_t respIndex(uint32_t msgId)
     {
-        return (msgId != static_cast<unsigned int>(FuncIdRange::EmptyFunctionId))
-                ? msgId - static_cast<unsigned int>(FuncIdRange::ResponseFirstId)
-                : static_cast<unsigned int>(NECommon::INVALID_INDEX);
+        return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
+                ? msgId - static_cast<uint32_t>(FuncIdRange::ResponseFirstId)
+                : static_cast<uint32_t>(NECommon::INVALID_INDEX);
     }
 
     /**
      * \brief   Converts attribute message ID to array index. Returns INVALID_INDEX if empty.
      **/
-    inline constexpr unsigned int attrIndex(unsigned int msgId)
+    inline constexpr uint32_t attrIndex(uint32_t msgId)
     {
-        return (msgId != static_cast<unsigned int>(FuncIdRange::EmptyFunctionId))
-                ? msgId - static_cast<unsigned int>(FuncIdRange::AttributeFirstId)
-                : static_cast<unsigned int>(NECommon::INVALID_INDEX);
+        return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
+                ? msgId - static_cast<uint32_t>(FuncIdRange::AttributeFirstId)
+                : static_cast<uint32_t>(NECommon::INVALID_INDEX);
     }
 
     /**
      * \brief   Returns true if message ID is in range of attribute call.
      **/
-    inline bool isAttributeId(unsigned int msgId);
+    inline bool isAttributeId(uint32_t msgId);
 
     /**
      * \brief   Returns true if message ID is in range of response call
      **/
-    inline bool isResponseId(unsigned int msgId);
+    inline bool isResponseId(uint32_t msgId);
 
     /**
      * \brief   Returns true if message ID is in range of request call
      **/
-    inline bool isRequestId(unsigned int msgId);
+    inline bool isRequestId(uint32_t msgId);
 
     /**
      * \brief   Returns true if message ID is a registration call
      **/
-    inline bool isServiceRegistryId( unsigned int msgId );
+    inline bool isServiceRegistryId( uint32_t msgId );
 
     /**
      * \brief   Returns true if message ID is version notification
      **/
-    inline bool isVersionNotifyId(unsigned int msgId);
+    inline bool isVersionNotifyId(uint32_t msgId);
 
     /**
      * \brief   Returns true if message ID is service connect
      **/
-    inline bool isConnectNotifyId(unsigned int msgId);
+    inline bool isConnectNotifyId(uint32_t msgId);
 
     /**
      * \brief   Returns true if message ID is either request, or response, or attribute notification.
      **/
-    inline bool isExecutableId( unsigned int msgId );
+    inline bool isExecutableId( uint32_t msgId );
 
     /**
      * \brief   Returns true if message ID is empty function
      **/
-    inline bool isEmptyFunctionId(unsigned int msgId);
+    inline bool isEmptyFunctionId(uint32_t msgId);
 
     class ParameterArray;
 
@@ -613,7 +613,7 @@ namespace NEService
          *          Does not make hard-copy, only assigns given
          *          parameters
          **/
-        StateArray(unsigned char* thisBffer, int elemCount);
+        StateArray(uint8_t* thisBffer, int32_t elemCount);
 
         /**
          * \brief   Destructor
@@ -627,11 +627,11 @@ namespace NEService
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline const NEService::DataState& operator [] (unsigned int index) const;
+        inline const NEService::DataState& operator [] (uint32_t index) const;
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline NEService::DataState& operator [] (unsigned int index);
+        inline NEService::DataState& operator [] (uint32_t index);
 
         /**
          * \brief   Returns the number of elements in the array.
@@ -653,7 +653,7 @@ namespace NEService
          * \param   whichIndex  The index of entry in array which state should be changed
          * \param   newState    The state to set
          **/
-        inline void setState(int whichIndex, NEService::DataState newState);
+        inline void setState(int32_t whichIndex, NEService::DataState newState);
 
         /**
          * \brief   All entries are set to the same given state
@@ -705,32 +705,32 @@ namespace NEService
         /**
          * \brief   Number of requests in service interface
          **/
-        unsigned int        idRequestCount{ 0u };
+        uint32_t        idRequestCount{ 0u };
 
         /**
          * \brief   Number of responses in service interface, including broadcasts
          **/
-        unsigned int        idResponseCount{ 0u };
+        uint32_t        idResponseCount{ 0u };
 
         /**
          * \brief   Number of attributes in service interface
          **/
-        unsigned int        idAttributeCount{ 0u };
+        uint32_t        idAttributeCount{ 0u };
 
         /**
          * \brief   The list of requests. It is nullptr if the list is empty.
          **/
-        const unsigned int* idRequestList{ nullptr };
+        const uint32_t* idRequestList{ nullptr };
 
         /**
          * \brief   The list of responses. It is nullptr if the list is empty.
          **/
-        const unsigned int* idResponseList{ nullptr };
+        const uint32_t* idResponseList{ nullptr };
 
         /**
          * \brief   The list of attributes. It is nullptr if the list is empty.
          **/
-        const unsigned int* idAttributeList{ nullptr };
+        const uint32_t* idAttributeList{ nullptr };
 
         /**
          * \brief   Request to Response map. All requests are accessed by index 
@@ -740,14 +740,14 @@ namespace NEService
          *          have response, it should have value NEService::RESPONSE_ID_NONE
          *          The size of this map should be equal to idRequestCount.
          **/
-        const unsigned int* idRequestToResponseMap{ nullptr };
+        const uint32_t* idRequestToResponseMap{ nullptr };
 
         /**
          * \brief   Map of parameter count in every response. Every response index
          *          is calculated by formula ('response ID' - NEService::FuncIdRange::ResponseFirstId)
          *          The size of this map should be equal to idResponseCount.
          **/
-        const unsigned int* idResponseParamCountMap{ nullptr };
+        const uint32_t* idResponseParamCountMap{ nullptr };
 
     } SInterfaceData;
 
@@ -787,7 +787,7 @@ namespace NEService
      * @\example    Parameter Array
      *
      *          For example, if there is a response function prototype
-     *          responseAREG(const bool &param1, const int &param2)
+     *          responseAREG(const bool &param1, const int32_t &param2)
      *          the 'param1' state can be accessed by index pair
      *          param1State = states[NEService::respIndex(UPD_ID_responseAREG)][0];
      **/
@@ -815,7 +815,7 @@ namespace NEService
          * \param   paramCountMap   The map table of number of parameters in every response
          * \param   count           Number of entries in map table
          **/
-        ParameterArray(const unsigned int* paramCountMap, int count);
+        ParameterArray(const uint32_t* paramCountMap, int32_t count);
 
         /**
          * \brief   Moves data from given source.
@@ -845,14 +845,14 @@ namespace NEService
          *          ('response ID' - NEService::FuncIdRange::ResponseFirstId) or use
          *          NEService::respIndex() macro
          **/
-        inline NEService::StateArray & operator [] (unsigned int index);
+        inline NEService::StateArray & operator [] (uint32_t index);
         /**
          * \brief   Access read-only state by given index of array.
          *          The index is calculated by formula
          *          ('response ID' - NEService::FuncIdRange::ResponseFirstId) or use
          *          NEService::respIndex() macro
          **/
-        inline const NEService::StateArray & operator [] (unsigned int index) const;
+        inline const NEService::StateArray & operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -868,7 +868,7 @@ namespace NEService
          *                  First parameter has index zero
          * \return  The state of parameter in call.
          **/
-        inline NEService::DataState getAt(unsigned int row, unsigned int col) const;
+        inline NEService::DataState getAt(uint32_t row, uint32_t col) const;
 
         /**
          * \brief   Sets state of parameter of certain response.
@@ -878,13 +878,13 @@ namespace NEService
          *                      First parameter has index zero
          * \param   newValue    The state to set for parameter
          **/
-        inline void setAt(unsigned int row, unsigned int col, NEService::DataState newValue);
+        inline void setAt(uint32_t row, uint32_t col, NEService::DataState newValue);
 
         /**
          * \brief   Returns true if specified response index has parameters.
          *          The response index is calculated by macro NEService::respIndex('response ID')
          **/
-        inline bool hasParameters(unsigned int whichRespIndex) const;
+        inline bool hasParameters(uint32_t whichRespIndex) const;
         /**
          * \brief   Returns true if valid response index. For example,
          *          the response ID RESPONSE_ID_NONE does not have valid
@@ -894,7 +894,7 @@ namespace NEService
          *                          macro NEService::respIndex('response ID')
          * \return  Returns true if given index is valid
          **/
-        inline bool isValidParamIndex(unsigned int whichRespIndex) const;
+        inline bool isValidParamIndex(uint32_t whichRespIndex) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -911,14 +911,14 @@ namespace NEService
          * \param   whichParam  The index of entry, should be calculated by NEService::respIndex('response ID')
          * \param   newState    The state to set
          **/
-        inline void setParamState(unsigned int whichParam, NEService::DataState newState);
+        inline void setParamState(uint32_t whichParam, NEService::DataState newState);
 
         /**
          * \brief   Resets all states of parameter of specified entry index.
          *          The index should be calculated by NEService::respIndex('response ID')
          * \param   whichParam  The index of entry, should be calculated by NEService::respIndex('response ID')
          **/
-        void resetParamState(unsigned int whichParam);
+        void resetParamState(uint32_t whichParam);
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -929,12 +929,12 @@ namespace NEService
          * \param   params  Parameter count table
          * \param   count   Number of entries in table
          **/
-        void construct(const unsigned int* params, int count);
+        void construct(const uint32_t* params, int32_t count);
 
         /**
          * \brief   Counts size in bytes required for states
          **/
-        unsigned int countParamSpace(const unsigned int* params, int count);
+        uint32_t countParamSpace(const uint32_t* params, int32_t count);
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -945,7 +945,7 @@ namespace NEService
          * \brief   Number of entries in parameter array.
          *          Should be equal to number of response in service interface
          **/
-        int                         mElemCount;
+        int32_t                         mElemCount;
 
         /**
          * \brief   Table of parameter states
@@ -1012,29 +1012,29 @@ namespace NEService
          *                      it will set state for all parameters of that response, 
          *                      if any exist.
          **/
-        void setDataState(unsigned int msgId, NEService::DataState newState);
+        void setDataState(uint32_t msgId, NEService::DataState newState);
 
         /**
          * \brief   Returns data state of given message (attribute or response) ID.
          **/
-        NEService::DataState getDataState(unsigned int msgId) const;
+        NEService::DataState getDataState(uint32_t msgId) const;
 
         /**
          * \brief   Returns the response message ID of given request message ID.
          *          If message is wrong and/or is not in request to response map,
          *          it will return NEService::INVALID_MESSAGE_ID
          **/
-        unsigned int getResponseId(unsigned int requestId) const;
+        uint32_t getResponseId(uint32_t requestId) const;
 
         /**
          * \brief   Returns data state of given attribute ID
          **/
-        inline NEService::DataState getAttributeState(unsigned int msgId) const;
+        inline NEService::DataState getAttributeState(uint32_t msgId) const;
 
         /**
          * \brief   Returns parameter state of given response ID
          **/
-        inline NEService::DataState getParamState(unsigned int msgId) const;
+        inline NEService::DataState getParamState(uint32_t msgId) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -1172,51 +1172,51 @@ inline NEService::ServiceConnectionState NEService::serviceConnection( NEService
     }
 }
 
-inline bool NEService::isRequestId(unsigned int msgId)
+inline bool NEService::isRequestId(uint32_t msgId)
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::RequestFunction)) != 0);
+    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::RequestFunction)) != 0);
 }
 
-inline bool NEService::isResponseId(unsigned int msgId)
+inline bool NEService::isResponseId(uint32_t msgId)
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::ResponseFunction)) != 0);
+    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::ResponseFunction)) != 0);
 }
 
-inline bool NEService::isAttributeId(unsigned int msgId)
+inline bool NEService::isAttributeId(uint32_t msgId)
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::AttributeUpdate)) != 0);
+    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::AttributeUpdate)) != 0);
 }
 
-inline bool NEService::isServiceRegistryId( unsigned int msgId )
+inline bool NEService::isServiceRegistryId( uint32_t msgId )
 {
-    return ((msgId & static_cast<unsigned int>(NEService::ServiceCallType::ServiceRegisteration)) != 0);
+    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::ServiceRegisteration)) != 0);
 }
 
-inline bool NEService::isEmptyFunctionId(unsigned int msgId)
+inline bool NEService::isEmptyFunctionId(uint32_t msgId)
 {
-    return (msgId == static_cast<unsigned int>(NEService::FuncIdRange::EmptyFunctionId));
+    return (msgId == static_cast<uint32_t>(NEService::FuncIdRange::EmptyFunctionId));
 }
 
-inline bool NEService::isVersionNotifyId( unsigned int msgId )
+inline bool NEService::isVersionNotifyId( uint32_t msgId )
 {
-    return (msgId == static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderVersion));
+    return (msgId == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderVersion));
 }
 
-inline bool NEService::isConnectNotifyId( unsigned int msgId )
+inline bool NEService::isConnectNotifyId( uint32_t msgId )
 {
-    return (msgId == static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection));
+    return (msgId == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection));
 }
 
-inline bool NEService::isExecutableId(unsigned int msgId)
+inline bool NEService::isExecutableId(uint32_t msgId)
 {
-    return ( (msgId  & static_cast<unsigned int>(NEService::ServiceCallType::RequestFunction)     ) != 0 ||
-             (msgId  & static_cast<unsigned int>(NEService::ServiceCallType::ResponseFunction)    ) != 0 ||
-             (msgId  & static_cast<unsigned int>(NEService::ServiceCallType::AttributeUpdate)   ) != 0 ||
-             (msgId == static_cast<unsigned int>(NEService::ServiceCallType::NoFunction)  ) );
+    return ( (msgId  & static_cast<uint32_t>(NEService::ServiceCallType::RequestFunction)     ) != 0 ||
+             (msgId  & static_cast<uint32_t>(NEService::ServiceCallType::ResponseFunction)    ) != 0 ||
+             (msgId  & static_cast<uint32_t>(NEService::ServiceCallType::AttributeUpdate)   ) != 0 ||
+             (msgId == static_cast<uint32_t>(NEService::ServiceCallType::NoFunction)  ) );
 }
 
 
-inline NEService::MessageDataType NEService::getMessageDataType( unsigned int msgId )
+inline NEService::MessageDataType NEService::getMessageDataType( uint32_t msgId )
 {
     if ( NEService::isRequestId(msgId) )
         return NEService::MessageDataType::RequestData;
@@ -1234,12 +1234,12 @@ inline NEService::MessageDataType NEService::getMessageDataType( unsigned int ms
 // class NEService::StateArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::DataState& NEService::StateArray::operator [] (unsigned int index) const
+inline const NEService::DataState& NEService::StateArray::operator [] (uint32_t index) const
 {
     return StateArrayBase::operator[](index);
 }
 
-inline NEService::DataState& NEService::StateArray::operator [] (unsigned int index)
+inline NEService::DataState& NEService::StateArray::operator [] (uint32_t index)
 {
     return StateArrayBase::operator[](index);
 }
@@ -1259,7 +1259,7 @@ inline bool NEService::StateArray::hasParams() const
     return (isEmpty() == false);
 }
 
-inline void NEService::StateArray::setState(int whichIndex, NEService::DataState newState)
+inline void NEService::StateArray::setState(int32_t whichIndex, NEService::DataState newState)
 {
     mValueList[whichIndex] = newState;
 }
@@ -1273,31 +1273,31 @@ inline void NEService::StateArray::setAllState(NEService::DataState newState)
 //////////////////////////////////////////////////////////////////////////
 // class NEService::ParameterArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline NEService::StateArray& NEService::ParameterArray::operator [] ( unsigned int index )
+inline NEService::StateArray& NEService::ParameterArray::operator [] ( uint32_t index )
 {
     ASSERT(isValidParamIndex(index));
     return *(mParamList[index]);
 }
 
-inline const NEService::StateArray& NEService::ParameterArray::operator [] ( unsigned int index ) const
+inline const NEService::StateArray& NEService::ParameterArray::operator [] ( uint32_t index ) const
 {
     ASSERT(isValidParamIndex(index));
     return *(mParamList[index]);
 }
 
-inline NEService::DataState NEService::ParameterArray::getAt( unsigned int row, unsigned int col ) const
+inline NEService::DataState NEService::ParameterArray::getAt( uint32_t row, uint32_t col ) const
 {
     ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
     return mParamList[row]->getAt(static_cast<uint32_t>(col));
 }
 
-inline void NEService::ParameterArray::setAt( unsigned int row, unsigned int col, NEService::DataState newValue )
+inline void NEService::ParameterArray::setAt( uint32_t row, uint32_t col, NEService::DataState newValue )
 {
     ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
     mParamList[row]->setAt(static_cast<uint32_t>(col), newValue);
 }
 
-inline bool NEService::ParameterArray::hasParameters( unsigned int whichRespIndex ) const
+inline bool NEService::ParameterArray::hasParameters( uint32_t whichRespIndex ) const
 {
     ASSERT(isValidParamIndex(whichRespIndex));
     return mParamList[whichRespIndex]->hasParams();
@@ -1311,12 +1311,12 @@ inline void NEService::ParameterArray::resetAllStates()
     }
 }
 
-inline bool NEService::ParameterArray::isValidParamIndex(unsigned int whichRespIndex) const
+inline bool NEService::ParameterArray::isValidParamIndex(uint32_t whichRespIndex) const
 {
-    return ((static_cast<int>(whichRespIndex) >= 0) && (static_cast<int>(whichRespIndex) < mElemCount));
+    return ((static_cast<int32_t>(whichRespIndex) >= 0) && (static_cast<int32_t>(whichRespIndex) < mElemCount));
 }
 
-inline void NEService::ParameterArray::setParamState(unsigned int whichParam, NEService::DataState newState)
+inline void NEService::ParameterArray::setParamState(uint32_t whichParam, NEService::DataState newState)
 {
     ASSERT(isValidParamIndex(whichParam));
     mParamList[whichParam]->setAllState(newState);
@@ -1326,12 +1326,12 @@ inline void NEService::ParameterArray::setParamState(unsigned int whichParam, NE
 // class NEService::ProxyData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::DataState NEService::ProxyData::getAttributeState( unsigned int msgId ) const
+inline NEService::DataState NEService::ProxyData::getAttributeState( uint32_t msgId ) const
 {
     return NEService::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[NEService::attrIndex(msgId)];
 }
 
-inline NEService::DataState NEService::ProxyData::getParamState( unsigned int msgId ) const
+inline NEService::DataState NEService::ProxyData::getParamState( uint32_t msgId ) const
 {
     const NEService::StateArray& param = mParamState[NEService::respIndex(msgId)];
     return (param.hasParams() ? param[0u] : NEService::DataState::DataIsUnavailable);

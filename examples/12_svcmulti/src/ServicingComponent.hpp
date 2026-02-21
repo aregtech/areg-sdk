@@ -28,8 +28,8 @@ class ServicingComponent    : public    Component
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static const unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
-    static const int            TIMER_EVENTS    { 30 };   					    //!< Fired timer count.
+    static const uint32_t   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
+    static const int32_t            TIMER_EVENTS    { 30 };   					    //!< Fired timer count.
 
 public:
 
@@ -74,14 +74,14 @@ protected:
     /**
      * \brief   Sends update notification message to all clients.
      **/
-    virtual void sendNotification( unsigned int /*msgId*/ ) override
+    virtual void sendNotification( uint32_t /*msgId*/ ) override
     {
     }
 
     /**
      * \brief   Sends error message to clients.
      **/
-    virtual void errorRequest( unsigned int /*msgId*/, bool /*msgCancel*/ ) override
+    virtual void errorRequest( uint32_t /*msgId*/, bool /*msgCancel*/ ) override
     {
     }
 
@@ -105,7 +105,7 @@ protected:
 
 private:
     Timer   mTimer; //!< The timer to run in component thread.
-    int     mCount; //!< The timer event count.
+    int32_t     mCount; //!< The timer event count.
 
 private:
     inline ServicingComponent & self()

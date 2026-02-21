@@ -62,7 +62,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
     return result;
 }
 
-void ServiceClient::responseIdentifier( unsigned int clientId )
+void ServiceClient::responseIdentifier( uint32_t clientId )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_responseIdentifier );
     ASSERT( mClientId == HelloUnblock::InvalidId );
@@ -86,7 +86,7 @@ void ServiceClient::responseIdentifier( unsigned int clientId )
     mTimer.startTimer(HelloUnblock::ClientTimeot, Timer::CONTINUOUSLY);
 }
 
-void ServiceClient::responseHelloUnblock( unsigned int clientId, unsigned int seqNr )
+void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_responseHelloUnblock );
     ASSERT( mSequenceList.isEmpty( ) == false );

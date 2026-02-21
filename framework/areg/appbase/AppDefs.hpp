@@ -103,7 +103,7 @@ namespace NEApplication
      * \brief   NEApplication::DEFAULT_ROUTER_PORT
      *          Default connection port number of routing service.
      **/
-    constexpr unsigned short    DEFAULT_ROUTER_PORT         { 8181 };
+    constexpr uint16_t    DEFAULT_ROUTER_PORT         { 8181 };
 
     /**
      * \brief   NEApplication::DEFAULT_LOGGER_SERVICE_NAME
@@ -121,7 +121,7 @@ namespace NEApplication
      * \brief   NEApplication::DEFAULT_LOGGER_PORT
      *          Default connection port number of routing service.
      **/
-    constexpr unsigned short    DEFAULT_LOGGER_PORT         { 8282 };
+    constexpr uint16_t    DEFAULT_LOGGER_PORT         { 8282 };
 
     /**
      * \brief   NEApplication::DEFAULT_SERVICE_HOST
@@ -191,7 +191,7 @@ namespace NEApplication
      **/
     struct sEntryTypesEnabling
     {
-        unsigned int        ltId;
+        uint32_t        ltId;
         std::string_view    ltIdName;
         bool                ltEnabled;
     };
@@ -203,11 +203,11 @@ namespace NEApplication
      **/
     constexpr sEntryTypesEnabling DefaultLogTypes []
         {
-              { static_cast<unsigned int>(NELogging::LogTarget::Undefined)  , {"unknown"}, false }
-            , { static_cast<unsigned int>(NELogging::LogTarget::Remote)     , {"remote" }, false }
-            , { static_cast<unsigned int>(NELogging::LogTarget::File)       , {"file"   }, true  }
-            , { static_cast<unsigned int>(NELogging::LogTarget::Debug)      , {"debug"  }, false }
-            , { static_cast<unsigned int>(NELogging::LogTarget::Database)   , {"db"     }, false}
+              { static_cast<uint32_t>(NELogging::LogTarget::Undefined)  , {"unknown"}, false }
+            , { static_cast<uint32_t>(NELogging::LogTarget::Remote)     , {"remote" }, false }
+            , { static_cast<uint32_t>(NELogging::LogTarget::File)       , {"file"   }, true  }
+            , { static_cast<uint32_t>(NELogging::LogTarget::Debug)      , {"debug"  }, false }
+            , { static_cast<uint32_t>(NELogging::LogTarget::Database)   , {"db"     }, false}
         };
 
     /**
@@ -217,11 +217,11 @@ namespace NEApplication
      **/
     constexpr sEntryTypesEnabling DefaultConnections[]
         {
-              { static_cast<unsigned int>(NERemoteService::ConnectionType::Undefined)   , {"unknown"}, false }
-            , { static_cast<unsigned int>(NERemoteService::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
-            , { static_cast<unsigned int>(NERemoteService::ConnectionType::Udp)         , {"udp"    }, false }
-            , { static_cast<unsigned int>(NERemoteService::ConnectionType::Web)         , {"web"    }, false }
-            , { static_cast<unsigned int>(NERemoteService::ConnectionType::SharedMemory), {"sm"     }, false }
+              { static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined)   , {"unknown"}, false }
+            , { static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
+            , { static_cast<uint32_t>(NERemoteService::ConnectionType::Udp)         , {"udp"    }, false }
+            , { static_cast<uint32_t>(NERemoteService::ConnectionType::Web)         , {"web"    }, false }
+            , { static_cast<uint32_t>(NERemoteService::ConnectionType::SharedMemory), {"sm"     }, false }
         };
 
     /**
@@ -230,12 +230,12 @@ namespace NEApplication
      **/
     constexpr sEntryTypesEnabling DefaultRemotetServices[]
         {
-              { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Unknown) , {"unknown"}, false }
-            , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Router)  , {"router" }, true  }
+              { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown) , {"unknown"}, false }
+            , { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Router)  , {"router" }, true  }
 #ifdef DEBUG
-            , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Logger)  , {"logger" }, true  }
+            , { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Logger)  , {"logger" }, true  }
 #else   // DEBUG
-            , { static_cast<unsigned int>(NERemoteService::RemoteServiceKind::Logger)  , {"logger" }, false }
+            , { static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Logger)  , {"logger" }, false }
 #endif  // DEBUG
         };
 

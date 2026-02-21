@@ -44,7 +44,7 @@ protected:
     {
         std::cout << "Thread [" << getName() << "] started..." << std::endl;
 
-        int numDigit{};
+        int32_t numDigit{};
         float numPI{};
         String strMsg{};
 

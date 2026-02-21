@@ -258,70 +258,70 @@ public:
      * \brief   Breaks the date-time value and returns the calculated year.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getYear() const;
+    uint32_t getYear() const;
 
     /**
      * \brief   Breaks the date-time value and returns the calculated month within the year.
      *          The first month is January and the last month is the December.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMonth() const;
+    uint32_t getMonth() const;
 
     /**
      * \brief   Breaks the date-time value and returns the day within the month.
      *          The first day is 1 and the last day depends on month.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getDay() const;
+    uint32_t getDay() const;
 
     /**
      * \brief   Breaks the date-time value and returns the hour within the day.
      *          The returned value is between 0 and 23.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getHours() const;
+    uint32_t getHours() const;
 
     /**
      * \brief   Breaks the date-time value and returns the minutes within the hour.
      *          The returned value is between 0 and 59.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMinutex() const;
+    uint32_t getMinutex() const;
 
     /**
      * \brief   Breaks the date-time value and returns the seconds within the minute.
      *          The returned value is between 0 and 59.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getSecons() const;
+    uint32_t getSecons() const;
 
     /**
      * \brief   Breaks the date-time value and returns the milliseconds within the second.
      *          The returned value is between 0 and 999.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMilliscones() const;
+    uint32_t getMilliscones() const;
 
     /**
      * \brief   Breaks the date-time value and returns the microseconds within the millisecond.
      *          The returned value is between 0 and 999.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getMicroseconds() const;
+    uint32_t getMicroseconds() const;
 
     /**
      * \brief   Breaks the date-time value and returns the day of the year.
      *          The returned value is between 1 and 365 / 366.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getDayOfTheYear() const;
+    uint32_t getDayOfTheYear() const;
 
     /**
      * \brief   Breaks the date-time value and returns the day of the week.
      *          The returned value is between 1 and 7.
      *          The date-time value is in microseconds passed since Unix epoch.
      **/
-    unsigned int getDayOfTheWeek() const;
+    uint32_t getDayOfTheWeek() const;
 
     /**
      * \brief   Converts existing date and time value in microseconds passed since Unix epoch to system time structure.

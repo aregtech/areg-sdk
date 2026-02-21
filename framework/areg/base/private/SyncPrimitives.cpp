@@ -87,11 +87,11 @@ SyncEvent::~SyncEvent()
 //////////////////////////////////////////////////////////////////////////
 // Semaphore class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Semaphore::Semaphore( int maxCount, int initCount /* = 0 */ )
+Semaphore::Semaphore( int32_t maxCount, int32_t initCount /* = 0 */ )
     : Lockable( SyncObject::SyncKind::SoSemaphore )
 
     , mMaxCount( std::max( maxCount, 1 ) )
-    , mCurrCount( NEMath::isInRange<int>(initCount, 0, mMaxCount) ? initCount : 0 )
+    , mCurrCount( NEMath::isInRange<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
 {
     _osCreateSemaphore( );
 }
@@ -102,7 +102,7 @@ Semaphore::~Semaphore()
     _osReleaseSemaphore( );
 }
 
-bool Semaphore::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+bool Semaphore::lock( uint32_t timeout /* = NECommon::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     bool result = false;
@@ -162,7 +162,7 @@ SpinLock::SpinLock()
 {
 }
 
-bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
 {
     for ( ; ; )
     {
@@ -208,7 +208,7 @@ NolockSyncObject::NolockSyncObject()
 //////////////////////////////////////////////////////////////////////////
 // SyncTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SyncTimer::SyncTimer( unsigned int msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
+SyncTimer::SyncTimer( uint32_t msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
     : SyncObject  ( SyncObject::SyncKind::SoTimer )
 
     , mTimeout      ( msTimeout )
@@ -257,7 +257,7 @@ Lock::~Lock()
 //////////////////////////////////////////////////////////////////////////
 // MultiLock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-MultiLock::MultiLock(SyncObject* pObjects[], int count, bool autoLock /* = true */)
+MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
     , mSizeCount    (std::min(count, NECommon::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
@@ -290,7 +290,7 @@ bool MultiLock::unlock()
     return true;
 }
 
-bool MultiLock::unlock( int index )
+bool MultiLock::unlock( int32_t index )
 {
     bool result = false;
     if ( (index >= 0) && (index < mSizeCount) )

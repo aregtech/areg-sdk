@@ -58,13 +58,13 @@ public:
      * \brief   Timer::DEFAULT_MAXIMUM_QUEUE
      *          Default number of maximum queued number of timer events in dispatcher thread.
      **/
-    static constexpr int            DEFAULT_MAXIMUM_QUEUE= static_cast<int>(5);            /*0x00000005*/
+    static constexpr int32_t            DEFAULT_MAXIMUM_QUEUE= static_cast<int32_t>(5);            /*0x00000005*/
 
     /**
      * \brief   Timer::IGNORE_TIMER_QUEUE
      *          Defined to ignore number of maximum queued timer events in dispatcher thread.
      **/
-    static constexpr int            IGNORE_TIMER_QUEUE    = static_cast<int>(0);            /*0x00000000*/
+    static constexpr int32_t            IGNORE_TIMER_QUEUE    = static_cast<int32_t>(0);            /*0x00000000*/
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -93,7 +93,7 @@ public:
     explicit Timer( TimerConsumer & timerConsumer
                   , const String & timerName = String::getEmptyString()
                   , uint32_t timeoutMs       = NECommon::INVALID_TIMEOUT
-                  , int maxQueued            = Timer::IGNORE_TIMER_QUEUE );
+                  , int32_t maxQueued            = Timer::IGNORE_TIMER_QUEUE );
     /**
      * \brief   Destructor
      **/
@@ -122,7 +122,7 @@ public:
      *                      reached specified number.
      * \return  Returns true if Timer was successfully started.
      **/
-    bool startTimer(unsigned int timeoutInMs, unsigned int eventCount = TimerBase::CONTINUOUSLY);
+    bool startTimer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY);
 
     /**
      * \brief   Call to start timer. The system will send and the
@@ -145,7 +145,7 @@ public:
      *                      reaching specified number.
      * \return  Returns true if Timer was successfully started.
      **/
-    bool startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread, unsigned int eventCount = TimerBase::CONTINUOUSLY);
+    bool startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = TimerBase::CONTINUOUSLY);
 
     /**
      * \brief   Call to stop previously started timer.
@@ -184,7 +184,7 @@ private:
      * \return  Returns true, if timer should still remain active.
      *          Otherwise, should return false to stop the timer.
      **/
-    bool timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_type context);
+    bool timerIsExpired(uint32_t highValue, uint32_t lowValue, ptr_type context);
 
     /**
      * \brief   Called by timer manager when timer is starting.
@@ -195,7 +195,7 @@ private:
      * \param   lowValue    The low 32-bit value to set.
      * \param   context     The optional timer context. It is OS and timer specific, can be an ID value.
      **/
-    void timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type context);
+    void timerStarting(uint32_t highValue, uint32_t lowValue, ptr_type context);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -209,13 +209,13 @@ private:
     /**
      * \brief   Number of timer events, currently queued dispatcher.
      **/
-    int                 mCurrentQueued;
+    int32_t                 mCurrentQueued;
     /**
      * \brief   Maximum number of events, which should be queued in dispatcher.
      *          If currently queued events are more or equal than the maximum number
      *          of events currently queued in dispatcher thread, 
      **/
-    const int           mMaxQueued;
+    const int32_t           mMaxQueued;
     /**
      * \brief   The Dispatcher thread where currently the timer is dispatched.
      **/

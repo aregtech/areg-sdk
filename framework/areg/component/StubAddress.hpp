@@ -204,7 +204,7 @@ public:
     /**
      * \brief   Converts the stub address to 32-bit integer.
      **/
-    inline explicit operator unsigned int () const;
+    inline explicit operator uint32_t () const;
 
 /************************************************************************/
 // Friend global operators for streaming
@@ -356,7 +356,7 @@ private:
     /**
      * \brief   Returns the calculated hash-key value of specified stub address object.
      **/
-    static unsigned int _magicNumber( const StubAddress & addrStub );
+    static uint32_t _magicNumber( const StubAddress & addrStub );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -375,7 +375,7 @@ private:
     /**
      * \brief   The calculated number of stub address.
      **/
-    unsigned int    mMagicNum;
+    uint32_t    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -390,9 +390,9 @@ namespace std
     template<> struct hash<StubAddress>
     {
         //! A function operator to convert StubAddress object to hash value.
-        inline unsigned int operator()(const StubAddress& key) const
+        inline uint32_t operator()(const StubAddress& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 
@@ -482,7 +482,7 @@ inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
     return isProxyCompatible(addrProxy);
 }
 
-inline StubAddress::operator unsigned int () const
+inline StubAddress::operator uint32_t () const
 {
     return mMagicNum;
 }

@@ -156,7 +156,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, unsigned int Value);
+    void setStorageItem(const String & Key, uint32_t Value);
 
     /**
      * \brief   Saves 64-bit integer value in thread local storage object.

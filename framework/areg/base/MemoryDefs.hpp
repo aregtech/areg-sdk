@@ -48,7 +48,7 @@
  **/
 #define ARG_CHAR(aln)           static_cast<NEMemory::uAlign>(aln).alignChar
 /**
- * \brief   Gets unsigned char value of align object.
+ * \brief   Gets uint8_t value of align object.
  **/
 #define ARG_UCHAR(aln)          static_cast<NEMemory::uAlign>(aln).alignUChar
 /**
@@ -56,19 +56,19 @@
  **/
 #define ARG_WCHAR(aln)          static_cast<NEMemory::uAlign>(aln).alignWChar
 /**
- * \brief   Gets short value of align object.
+ * \brief   Gets int16_t value of align object.
  **/
 #define ARG_SHORT(aln)          static_cast<NEMemory::uAlign>(aln).alignShort
 /**
- * \brief   Gets unsigned short value of align object.
+ * \brief   Gets uint16_t value of align object.
  **/
 #define ARG_USHORT(aln)         static_cast<NEMemory::uAlign>(aln).alignUShort
 /**
- * \brief   Gets int value of align object.
+ * \brief   Gets int32_t value of align object.
  **/
 #define ARG_INT(aln)            static_cast<NEMemory::uAlign>(aln).alignInt
 /**
- * \brief   Gets unsigned int value of align object.
+ * \brief   Gets uint32_t value of align object.
  **/
 #define ARG_UINT(aln)           static_cast<NEMemory::uAlign>(aln).alignUInt
 /**
@@ -153,14 +153,14 @@ namespace NEMemory
     class _EmptyClass;                                          //!< Dummy class declaration
     typedef void ( *                _EmptyMethod     ) ();  //!< Dummy pointer to global function declaration
     typedef void (_EmptyClass::*    _EmptyClassMethod) ();  //!< Dummy pointer to class function declaration
-    typedef int   _EmptyClass::*    _EmptyClassMember;          //!< Dummy pointer to class variable declaration
+    typedef int32_t   _EmptyClass::*    _EmptyClassMember;          //!< Dummy pointer to class variable declaration
 
     /**
      * \brief   NEMemory::BufferData
      *          Defines Buffer Data type. The size of buffer should be aligned
      *          to size of uAlign union type
      **/
-    using BufferData = unsigned char;
+    using BufferData = uint8_t;
 
     /**
      * \brief   Align structure template
@@ -189,12 +189,12 @@ namespace NEMemory
     {
         Align<bool>                          alignBool;      //!< boolean value
         Align<char>                          alignChar;      //!< char value
-        Align<unsigned char>                 alignUChar;     //!< unsigned char value
+        Align<uint8_t>                 alignUChar;     //!< uint8_t value
         Align<wchar_t>                       alignWChar;     //!< wide char value
-        Align<short>                         alignShort;     //!< short value
-        Align<unsigned short>                alignUShort;    //!< unsigned short value
-        Align<int>                           alignInt;       //!< int value
-        Align<unsigned int>                  alignUInt;      //!< unsigned int value
+        Align<int16_t>                         alignShort;     //!< int16_t value
+        Align<uint16_t>                alignUShort;    //!< uint16_t value
+        Align<int32_t>                           alignInt;       //!< int32_t value
+        Align<uint32_t>                  alignUInt;      //!< uint32_t value
         Align<long double>                   alignLDouble;   //!< long double value
         Align<long>                          alignLong;      //!< long value
         Align<unsigned long>                 alignULong;     //!< unsigned long value
@@ -206,7 +206,7 @@ namespace NEMemory
         Align<void (*)()>              alignFunc;      //!< pointer to function value
         Align<_EmptyClass *>                 alignClsPtr;    //!< pointer to class value
         Align<void (_EmptyClass::*)()> alignClsFunc;   //!< pointer to class function value
-        Align<int _EmptyClass::*>            alignClsVar;    //!< pointer to class variable value
+        Align<int32_t _EmptyClass::*>            alignClsVar;    //!< pointer to class variable value
 
     };
 
@@ -248,28 +248,28 @@ namespace NEMemory
      *          Constant. Defines the minimum size of Byte Buffer data
      *          Also defines the size to align buffer allocation.
      **/
-    constexpr unsigned int      BLOCK_SIZE      { sizeof( NEMemory::uAlign ) * 8 };
+    constexpr uint32_t      BLOCK_SIZE      { sizeof( NEMemory::uAlign ) * 8 };
     /**
      * \brief   NEMemory::INVALID_SIZE
      *          Constant. Defines invalid buffer size.
      **/
-    constexpr unsigned int      INVALID_SIZE    { ~0u };
+    constexpr uint32_t      INVALID_SIZE    { ~0u };
 
     /**
      * \brief   NEMemory::IGNORE_VALUE
      *          Constant. Defines ignore value for remote buffer, i.e. not set and should be ignored.
      **/
-    constexpr unsigned int      IGNORE_VALUE    { 0u };
+    constexpr uint32_t      IGNORE_VALUE    { 0u };
     /**
      * \brief   NEMemory::INVALID_VALUE
      *          Constant. Defines invalid value for remote buffer.
      **/
-    constexpr unsigned int      INVALID_VALUE   { ~0u };
+    constexpr uint32_t      INVALID_VALUE   { ~0u };
     /**
      * \brief   NEMemory::MESSAGE_SUCCESS
      *          Constants. Defines the message result success.
      **/
-    constexpr unsigned int      MESSAGE_SUCCESS { static_cast<unsigned int>(NEMemory::MessageResult::Succeed) };
+    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(NEMemory::MessageResult::Succeed) };
 
     /**
      * \brief   NEMemory::InvalidElement
@@ -312,15 +312,15 @@ namespace NEMemory
          * \brief   The actual size of complete binary Buffer object,
          *          including header and allocated sizes
          **/
-        unsigned int    biBufSize   { 0 };
+        uint32_t    biBufSize   { 0 };
         /**
          * \brief   The length in bytes of totally allocated buffer.
          **/
-        unsigned int    biLength   { 0 };
+        uint32_t    biLength   { 0 };
         /**
          * \brief   The size of buffer header. The buffer data should start after header size offset
          **/
-        unsigned int    biOffset   { 0 };
+        uint32_t    biOffset   { 0 };
         /**
          * \brief   The type of buffer. For RPC communication this should be external type.
          **/
@@ -329,7 +329,7 @@ namespace NEMemory
          * \brief   The length in bytes of used space in buffer.
          *          Cannot be more than biLength value.
          **/
-        unsigned int    biUsed      { 0 };
+        uint32_t    biUsed      { 0 };
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -356,7 +356,7 @@ namespace NEMemory
          * \brief   Data checksum value for validation check-up.
          *          Should be ignored if value is NEMemory::IGNORE_CHECKSUM
          **/
-        unsigned int    rbhChecksum;
+        uint32_t    rbhChecksum;
         /**
          * \brief   An ID of source object, sending message.
          *          In remote messaging, this is Cookie of source
@@ -365,11 +365,11 @@ namespace NEMemory
         /**
          * \brief   The Remote message ID registered in the system
          **/
-        unsigned int    rbhMessageId;
+        uint32_t    rbhMessageId;
         /**
          * \brief   The result of processing message.
          **/
-        unsigned int    rbhResult;
+        uint32_t    rbhResult;
         /**
          * \brief   The Remote message sequence number set during messaging
          **/
@@ -427,7 +427,7 @@ namespace NEMemory
      * \param   byteBuffer  The pointer to byte-buffer object.
      * \return  Returns data buffer to write.
      **/
-    inline unsigned char * getBufferDataWrite( sByteBuffer * byteBuffer );
+    inline uint8_t * getBufferDataWrite( sByteBuffer * byteBuffer );
 
     /**
      * \brief   Returns the pointer to data buffer for reading. 
@@ -435,7 +435,7 @@ namespace NEMemory
      * \param   byteBuffer  The pointer to byte-buffer object.
      * \return  Returns data buffer to read.
      **/
-    inline const unsigned char * getBufferDataRead( const sByteBuffer * byteBuffer );
+    inline const uint8_t * getBufferDataRead( const sByteBuffer * byteBuffer );
 
     /**
      * \brief	Constructs elements in allocated buffer, i.e. calls default constructor to initialize element
@@ -522,7 +522,7 @@ namespace NEMemory
      *          The following example is creating 100 elements and sets same value:
      *
      *          struct MyStruct {
-     *              int     data;   // since
+     *              int32_t     data;   // since
      *          };
      *          MyStruct buffer[100];   // <= create buffer of 100 elements
      *          MyStruct zero = {0};    // <= create one element with value
@@ -593,7 +593,7 @@ namespace NEMemory
      * \param   length  The length of buffer in bytes.
      * \param   symbol  The symbol to fill the buffer.
      **/
-    inline void memSet( void * buffer, uint32_t length, unsigned char symbol );
+    inline void memSet( void * buffer, uint32_t length, uint8_t symbol );
 
     /**
      * \brief   Sets zero in a buffer.
@@ -693,7 +693,7 @@ namespace NEMemory
  **/
 inline const InStream & operator >> (const InStream & stream, NEMemory::uAlign & input)
 {
-    stream.read( reinterpret_cast<unsigned char *>(&input), sizeof(NEMemory::uAlign) );
+    stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(NEMemory::uAlign) );
     return stream;
 }
 
@@ -706,7 +706,7 @@ inline const InStream & operator >> (const InStream & stream, NEMemory::uAlign &
  **/
 inline OutStream & operator << (OutStream & stream, const NEMemory::uAlign & output)
 {
-    stream.write( reinterpret_cast<const unsigned char *>(&output), sizeof(NEMemory::uAlign) );
+    stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(NEMemory::uAlign) );
     return stream;
 }
 
@@ -739,7 +739,7 @@ inline bool NEMemory::operator != ( const NEMemory::uAlign& lsh, const NEMemory:
 // Comparing operators
 /************************************************************************/
 
-inline void NEMemory::memSet( void * buffer, uint32_t length, unsigned char symbol )
+inline void NEMemory::memSet( void * buffer, uint32_t length, uint8_t symbol )
 {
     if ( (buffer != nullptr) && (length > 0) )
     {
@@ -814,14 +814,14 @@ inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uin
 // Byte buffer functions
 /************************************************************************/
 
-inline unsigned char * NEMemory::getBufferDataWrite(NEMemory::sByteBuffer * byteBuffer)
+inline uint8_t * NEMemory::getBufferDataWrite(NEMemory::sByteBuffer * byteBuffer)
 {
-    return (byteBuffer != nullptr ? reinterpret_cast<unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
+    return (byteBuffer != nullptr ? reinterpret_cast<uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
-inline const unsigned char * NEMemory::getBufferDataRead(const sByteBuffer * byteBuffer)
+inline const uint8_t * NEMemory::getBufferDataRead(const sByteBuffer * byteBuffer)
 {
-    return (byteBuffer != nullptr ? reinterpret_cast<const unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
+    return (byteBuffer != nullptr ? reinterpret_cast<const uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
 /************************************************************************/
@@ -971,7 +971,7 @@ inline void NEMemory::zeroElements( ELEM * elemList, uint32_t elemCount )
 {
     if ( elemCount > 0 )
     {
-        constexpr uint32_t one = static_cast<int>(sizeof(ELEM));
+        constexpr uint32_t one = static_cast<int32_t>(sizeof(ELEM));
         NEMemory::memZero( reinterpret_cast<void *>(elemList), elemCount * one );
     }
 }
@@ -979,7 +979,7 @@ inline void NEMemory::zeroElements( ELEM * elemList, uint32_t elemCount )
 template<typename BufType>
 BufType* NEMemory::BufferAllocator<BufType>::operator ( ) (uint32_t space)
 {
-    unsigned char* result = DEBUG_NEW unsigned char[space];
+    uint8_t* result = DEBUG_NEW uint8_t[space];
     return ::new(result) BufType;
 }
 
@@ -988,7 +988,7 @@ void NEMemory::BufferDeleter<BufType>::operator ( ) (void * buffer)
 {
     if ( buffer != nullptr )
     {
-        delete [] reinterpret_cast<unsigned char *>(buffer);
+        delete [] reinterpret_cast<uint8_t *>(buffer);
     }
 }
 

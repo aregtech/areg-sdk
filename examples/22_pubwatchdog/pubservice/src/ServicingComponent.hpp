@@ -44,7 +44,7 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds to suspend the thread.
      * \see     responseStartSleep
      **/
-    void requestStartSleep( unsigned int timeoutSleep ) override;
+    void requestStartSleep( uint32_t timeoutSleep ) override;
 
     /**
      * \brief   Request call.

@@ -121,14 +121,14 @@ void ServiceAddress::convFromString(const char * pathService, const char** out_n
         *out_nextPart = strSource;
 }
 
-unsigned int ServiceAddress::_magicNumber(const ServiceAddress addrService)
+uint32_t ServiceAddress::_magicNumber(const ServiceAddress addrService)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = NEMath::CHECKSUM_IGNORE;
     if ( addrService.isValidated() )
     {
         result = NEMath::crc32Init();
         result = NEMath::crc32Start( result, addrService.mServiceName.getString() );
-        result = NEMath::crc32Start( result, static_cast<unsigned char>(addrService.mServiceType));
+        result = NEMath::crc32Start( result, static_cast<uint8_t>(addrService.mServiceType));
         result = NEMath::crc32Start( result, addrService.mRoleName.getString() );
         result = NEMath::crc32Finish(result);
     }

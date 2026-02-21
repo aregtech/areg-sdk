@@ -75,7 +75,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    unsigned int getPosition() const;
+    uint32_t getPosition() const;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -90,7 +90,7 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    unsigned int setPosition( int offset, Cursor::SeekOrigin startAt ) const;
+    uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -105,7 +105,7 @@ private:
      * \brief   Current position of Byte Buffer cursor.
      *          Value Cursor::INVALID_CURSOR_POSITION means invalid position.
      **/
-    mutable unsigned int    mPosition;
+    mutable uint32_t    mPosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Disabled methods

@@ -51,7 +51,7 @@ protected:
      * \brief   ByteBuffer::MAX_BUF_LENGTH
      *          Maximum length of byte buffer. It is defined as 64 Mb.
      **/
-    static constexpr unsigned int   MAX_BUF_LENGTH  { 0x04000000u };
+    static constexpr uint32_t   MAX_BUF_LENGTH  { 0x04000000u };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -120,7 +120,7 @@ public:
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
-    virtual unsigned int reserve(unsigned int size, bool copy);
+    virtual uint32_t reserve(uint32_t size, bool copy);
 
 /************************************************************************/
 // ByteBuffer Attributes and operations
@@ -139,24 +139,24 @@ public:
     /**
      * \brief   Returns the use
      **/
-    inline unsigned int getSizeUsed() const;
+    inline uint32_t getSizeUsed() const;
     
     /**
      * \brief	Sets the used size value in byte buffer object.
      *          It should not be more than the length of buffer.
      * \param	newSize	The new size in bytes to set in byte buffer object.
      **/
-    inline void setSizeUsed(unsigned int newSize);
+    inline void setSizeUsed(uint32_t newSize);
 
     /**
      * \brief   Returns the constant pointer to the data buffer of byte buffer
      **/
-    inline const unsigned char * getBuffer() const;
+    inline const uint8_t * getBuffer() const;
 
     /**
      * \brief   Returns pointer to the data buffer of byte buffer
      **/
-    inline unsigned char * getBuffer();
+    inline uint8_t * getBuffer();
 
     /**
      * \brief   Checks whether the buffer is valid or not.
@@ -168,7 +168,7 @@ public:
      * \brief   Returns the size in byte of byte buffer
      *          If empty, returns zero
      **/
-    inline unsigned int getSizeAvailable() const;
+    inline uint32_t getSizeAvailable() const;
 
     /**
      * \brief   Returns type of byte buffer. 
@@ -190,13 +190,13 @@ protected:
      * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 
      *          there is no data to read. Can be only used to manipulate with cursor.
      **/
-    inline const unsigned char * getEndOfBuffer() const;
+    inline const uint8_t * getEndOfBuffer() const;
 
     /**
      * \brief   Returns end-of-buffer, i.e. end of used space. So that, if length of buffer is
      *          bigger than used space, there can be still data written. 
      **/
-    inline unsigned char * getEndOfBuffer();
+    inline uint8_t * getEndOfBuffer();
 
 /************************************************************************/
 // ByteBuffer protected overrides
@@ -216,24 +216,24 @@ protected:
      *          If no data is copied, it will return position at the beginning of buffer.
      *          If data is copied, will return the position of written data.
      **/
-    virtual unsigned int initBuffer(unsigned char * newBuffer, unsigned int bufLength, bool makeCopy) const;
+    virtual uint32_t initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const;
 
     /**
      * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
      **/
-    virtual unsigned int getAlignedSize() const;
+    virtual uint32_t getAlignedSize() const;
 
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    virtual unsigned int getDataOffset() const = 0;
+    virtual uint32_t getDataOffset() const = 0;
 
     /**
      * \brief   Returns the size of data byte structure (header and one byte).
      *          This is a minimum size of byte buffer to reserve when initializing buffer.
      *          The size can differ for shared and remote message.
      **/
-    virtual unsigned int getHeaderSize() const = 0;
+    virtual uint32_t getHeaderSize() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -278,17 +278,17 @@ inline bool ByteBuffer::isEmpty() const
     return (isValid() == false) || (mByteBuffer->bufHeader.biUsed == 0);
 }
 
-inline unsigned int ByteBuffer::getSizeUsed() const
+inline uint32_t ByteBuffer::getSizeUsed() const
 {
     return (isValid() ? mByteBuffer->bufHeader.biUsed : 0);
 }
 
-inline const unsigned char* ByteBuffer::getBuffer() const
+inline const uint8_t* ByteBuffer::getBuffer() const
 {
     return NEMemory::getBufferDataRead(mByteBuffer.get());
 }
 
-inline unsigned char* ByteBuffer::getBuffer()
+inline uint8_t* ByteBuffer::getBuffer()
 {
     return NEMemory::getBufferDataWrite(mByteBuffer.get());
 }
@@ -298,7 +298,7 @@ inline bool ByteBuffer::isValid() const
     return (mByteBuffer.get() != nullptr);
 }
 
-inline unsigned int ByteBuffer::getSizeAvailable() const
+inline uint32_t ByteBuffer::getSizeAvailable() const
 {
     return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
 }
@@ -308,7 +308,7 @@ inline NEMemory::BufferType ByteBuffer::getType() const
     return (isValid() ? mByteBuffer->bufHeader.biBufType : NEMemory::BufferType::Unknown);
 }
 
-inline void ByteBuffer::setSizeUsed(unsigned int newSize)
+inline void ByteBuffer::setSizeUsed(uint32_t newSize)
 {
     if (isValid() && newSize <= getSizeAvailable())
     {
@@ -316,12 +316,12 @@ inline void ByteBuffer::setSizeUsed(unsigned int newSize)
     }
 }
 
-inline const unsigned char * ByteBuffer::getEndOfBuffer() const
+inline const uint8_t * ByteBuffer::getEndOfBuffer() const
 {
     return (isValid() ? NEMemory::getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
 }
 
-inline unsigned char * ByteBuffer::getEndOfBuffer()
+inline uint8_t * ByteBuffer::getEndOfBuffer()
 {
     return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }

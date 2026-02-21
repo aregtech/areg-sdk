@@ -259,7 +259,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    bool logScopeDeactivate(const ITEM_ID & cookie, unsigned int scopeId, const DateTime & timestamp) override;
+    bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) override;
 
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
@@ -374,7 +374,7 @@ public:
      * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, int maxEntries = -1);
+    static int32_t getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, int32_t maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
@@ -386,7 +386,7 @@ public:
      * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int getLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int maxEntries = -1);
+    static int32_t getLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries = -1);
 
     /**
      * \brief   Fills log instances in the specified array. The array should be initialized and it should have enough space to set data.
@@ -398,7 +398,7 @@ public:
      *                              and prepared to extract instance information.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& infos, SqliteStatement& stmt);
+    static int32_t fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& infos, SqliteStatement& stmt);
 
     /**
      * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -415,7 +415,7 @@ public:
      * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
+    static int32_t fillInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
 
     /**
      * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -432,7 +432,7 @@ public:
      * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int fillLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int maxEntries = -1);
+    static int32_t fillLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database.

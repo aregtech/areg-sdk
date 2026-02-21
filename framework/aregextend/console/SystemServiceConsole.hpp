@@ -114,7 +114,7 @@ protected:
      *
      * \param   msgId   The attribute message ID to notify clients.
      **/
-    void sendNotification( unsigned int msgId ) override;
+    void sendNotification( uint32_t msgId ) override;
 
     /**
      * \brief   Sends error message to clients.
@@ -130,7 +130,7 @@ protected:
      *                      This parameter has sense only for request IDs.
      *                      It is ignored for response and attributes IDs.
      **/
-    void errorRequest( unsigned int msgId, bool msgCancel ) override;
+    void errorRequest( uint32_t msgId, bool msgCancel ) override;
 
 /************************************************************************/
 // StubEventConsumer class overrides.

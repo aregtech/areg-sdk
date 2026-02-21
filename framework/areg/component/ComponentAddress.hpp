@@ -164,7 +164,7 @@ public:
     /**
      * \brief   Converting operator.
      **/
-    inline explicit operator unsigned int () const;
+    inline explicit operator uint32_t () const;
 
     /**
      * \brief   Copies address data from given source.
@@ -249,7 +249,7 @@ private:
     /**
      * \brief   Returns the calculated numeric value of specified component address object.
      **/
-    static unsigned int _magicNumber( const ComponentAddress & addrComp );
+    static uint32_t _magicNumber( const ComponentAddress & addrComp );
 
 private:
 /************************************************************************/
@@ -266,7 +266,7 @@ private:
     /**
      * \brief   The numeric value of Component Address object
      **/
-    unsigned int    mMagicNum;
+    uint32_t    mMagicNum;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -280,10 +280,10 @@ namespace std
     template<>
     struct hash<ComponentAddress>
     {
-        //! A function to convert ComponentAddress object to unsigned int.
-        inline unsigned int operator()(const ComponentAddress& key) const
+        //! A function to convert ComponentAddress object to uint32_t.
+        inline uint32_t operator()(const ComponentAddress& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -324,7 +324,7 @@ inline bool ComponentAddress::operator != ( const ComponentAddress& other ) cons
     return (mThreadAddress != other.mThreadAddress) || (mRoleName != other.mRoleName);
 }
 
-ComponentAddress::operator unsigned int () const
+ComponentAddress::operator uint32_t () const
 {
     return mMagicNum;
 }

@@ -128,9 +128,9 @@ void ThreadAddress::convFromString(const char * threadPath, const char** out_nex
     }
 }
 
-unsigned int ThreadAddress::_magicNumber(const ThreadAddress & addrThread)
+uint32_t ThreadAddress::_magicNumber(const ThreadAddress & addrThread)
 {
-    unsigned int result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = NEMath::CHECKSUM_IGNORE;
     if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME))
     {
         result = NEMath::crc32Calculate(addrThread.mThreadName.getString());

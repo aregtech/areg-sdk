@@ -16,8 +16,8 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::WindowCommand::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NEDistributedApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 // PageNetworkSetup dialog
 
@@ -382,7 +382,7 @@ BOOL PageNetworkSetup::OnInitDialog( )
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
     ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
-    unsigned char field0, field1, field2, field3;
+    uint8_t field0, field1, field2, field3;
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {
         mBrokerPort = static_cast<USHORT>(config.getConnectionPort());

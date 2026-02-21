@@ -63,7 +63,7 @@ public:
      * \brief   Initialization constructor. Major, Minor and Patch
      *          number will be initialized by give values.
      **/
-    Version(unsigned int major, unsigned int minor, unsigned int patch = 0);
+    Version(uint32_t major, uint32_t minor, uint32_t patch = 0);
     /**
      * \brief   Initialization constructor.
      *          Major, Minor and Patch versions are taken from readable string.
@@ -178,15 +178,15 @@ public:
     /**
      * \brief   Return Major number of version.
      **/
-    inline unsigned int getMajor() const;
+    inline uint32_t getMajor() const;
     /**
      * \brief   Returns Minor number of version
      **/
-    inline unsigned int getMinor() const;
+    inline uint32_t getMinor() const;
     /**
      * \brief   Returns Patch number of version
      **/
-    inline unsigned int getPatch() const;
+    inline uint32_t getPatch() const;
 
     /**
      * \brief   Returns true, if version is not invalid..
@@ -228,32 +228,32 @@ private:
     /**
      * \brief   Major version number
      **/
-    unsigned int    mMajor;
+    uint32_t    mMajor;
     /**
      * \brief   Minor version number
      **/
-    unsigned int    mMinor;
+    uint32_t    mMinor;
     /**
      * \brief   Patching version number
      **/
-    unsigned int    mPatch;
+    uint32_t    mPatch;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Version class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline unsigned int Version::getMajor() const
+inline uint32_t Version::getMajor() const
 {
     return mMajor;
 }
 
-inline unsigned int Version::getMinor() const
+inline uint32_t Version::getMinor() const
 {
     return  mMinor;
 }
 
-inline unsigned int Version::getPatch() const
+inline uint32_t Version::getPatch() const
 {
     return mPatch;
 }

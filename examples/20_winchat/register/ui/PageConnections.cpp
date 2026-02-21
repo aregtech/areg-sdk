@@ -14,8 +14,8 @@
 
 // PageConnections
 
-#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::WindowCommand::CmdFirst))
-#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<uint32_t>(NECentralApp::WindowCommand::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<uint32_t>(elem) + FIRST_MESSAGE)
 
 LPCTSTR PageConnections::HEADER_TITILES[] =
 {
@@ -156,10 +156,10 @@ void PageConnections::OnEditBroadcastUpdate( CCmdUI* pCmdUI )
 
 void PageConnections::setHeaders()
 {
-    int count = std::size( HEADER_TITILES );
+    int32_t count = std::size( HEADER_TITILES );
     CRect rc( 0, 0, 0, 0 );
     mCtrlList.GetClientRect( &rc );
-    int width1, width2;
+    int32_t width1, width2;
     chat::getWidths( rc.Width(), count, width1, width2 );
 
     for ( int i = 0; i < count; ++ i )
@@ -217,14 +217,14 @@ LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
     return 0L;
 }
 
-int PageConnections::findInTyping( unsigned int cookie )
+int32_t PageConnections::findInTyping( uint32_t cookie )
 {
-    int result = NECommon::INVALID_INDEX;
+    int32_t result = NECommon::INVALID_INDEX;
     for (uint32_t i = 0; i < mTypingList.getSize( ); ++i )
     {
         if (cookie == mTypingList[i]->dataSave)
         {
-            result = static_cast<int>(i);
+            result = static_cast<int32_t>(i);
             break;
         }
     }
@@ -239,7 +239,7 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
     {
         if ( mRegistered != 0 )
             -- mRegistered;
-        int count = mCtrlList.GetItemCount();
+        int32_t count = mCtrlList.GetItemCount();
 
         for ( int i = mLastItem; i < count; ++ i )
         {
@@ -266,7 +266,7 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
     chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
     if ( data != nullptr )
     {
-        int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
+        int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != NECommon::INVALID_INDEX )
         {
             chat::sMessageData *temp = mTypingList.getAt(rmIndex);
@@ -301,7 +301,7 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
     bool isEmpty = data != nullptr ? NEString::isEmpty<TCHAR>( data->message ) : true;
     if ( data != nullptr )
     {
-        int rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
+        int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != NECommon::INVALID_INDEX )
         {
             chat::sMessageData *temp = mTypingList.getAt( rmIndex );

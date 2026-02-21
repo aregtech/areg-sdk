@@ -65,7 +65,7 @@ protected:
      * \param   timeoutSleep    The timeout in milliseconds while thread was in suspended mode.
      * \see     requestStartSleep
      **/
-    void responseStartSleep( unsigned int timeoutSleep ) override;
+    void responseStartSleep( uint32_t timeoutSleep ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

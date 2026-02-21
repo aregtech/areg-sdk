@@ -56,7 +56,7 @@ public:
     /**
      * \brief   Process environment. Currently support only 32- or 64-bit processes.
      **/
-    enum class Bitness : int
+    enum class Bitness : int32_t
     {
           BitsUnknown   = 0
         , Bits32        = sizeof(uint32_t)
@@ -137,7 +137,7 @@ public:
      **/
     inline Process::Bitness getEnvironment() const;
 
-    unsigned int getBitness() const;
+    uint32_t getBitness() const;
 
     /**
      * \brief   returns the value of the environment variable var, 

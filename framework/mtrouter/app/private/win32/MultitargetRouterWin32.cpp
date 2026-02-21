@@ -49,10 +49,10 @@
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
-    int result{ ServiceApplicationBase::RESULT_FAILED_RUN };
+    int32_t result{ ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
     MultitargetRouter& router = MultitargetRouter::getInstance();
-    router.parseOptions(static_cast<int>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    router.parseOptions(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
     result = router.serviceMain(router.getCurrentOption(), nullptr);
     NESystemService::deleteArguments(argvTemp, argc);
 
@@ -73,9 +73,9 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     {
         MultitargetRouter& router = MultitargetRouter::getInstance();
         router.setState(NESystemService::ServicePhase::Starting);
-        char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int>(argc));
+        char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
         router.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
-        NESystemService::deleteArguments(argvTemp, static_cast<int>(argc));
+        NESystemService::deleteArguments(argvTemp, static_cast<int32_t>(argc));
         router.setState(NESystemService::ServicePhase::Stopped);
     }
     catch (const std::exception & /*ex*/)

@@ -49,7 +49,7 @@ DEF_LOG_SCOPE(areg_component_ProxyBase_stopProxy);
 // ProxyBase::Listener class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyBase::Listener::Listener()
-    : mMessageId    (static_cast<unsigned int>(NEService::FuncIdRange::EmptyFunctionId))
+    : mMessageId    (static_cast<uint32_t>(NEService::FuncIdRange::EmptyFunctionId))
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
     , mListener     (nullptr)
 {
@@ -69,21 +69,21 @@ ProxyBase::Listener::Listener( Listener && src ) noexcept
 {
 }
 
-ProxyBase::Listener::Listener( unsigned int msgId )
+ProxyBase::Listener::Listener( uint32_t msgId )
     : mMessageId    (msgId)
     , mSequenceNr   (NEService::SEQUENCE_NUMBER_NOTIFY)
     , mListener     (nullptr)
 {
 }
 
-ProxyBase::Listener::Listener( unsigned int msgId, const SequenceNumber & seqNr )
+ProxyBase::Listener::Listener( uint32_t msgId, const SequenceNumber & seqNr )
     : mMessageId    (msgId)
     , mSequenceNr   (seqNr)
     , mListener     (nullptr)
 {
 }
 
-ProxyBase::Listener::Listener( unsigned int msgId, const SequenceNumber & seqNr, NotificationConsumer* caller )
+ProxyBase::Listener::Listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller )
     : mMessageId    (msgId)
     , mSequenceNr   (seqNr)
     , mListener     (caller)
@@ -207,7 +207,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
             {
                 LOG_DBG("Add Service Connect notification for client [ %p ]", &connect);
 
-                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection)
+                static_cast<void>(proxy->addListener( static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection)
                                                     , NEService::SEQUENCE_NUMBER_NOTIFY
                                                     , static_cast<NotificationConsumer *>(&connect), true ));
                 ++ proxy->mProxyInstCount;
@@ -234,10 +234,10 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 }
 
 
-int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
+int32_t ProxyBase::findThreadProxies(DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::thread_proxies().findResource(ownerThread.getName());
-    int result = proxyList != nullptr ? static_cast<int32_t>(proxyList->getSize()) : 0;
+    int32_t result = proxyList != nullptr ? static_cast<int32_t>(proxyList->getSize()) : 0;
     if ( result > 0 )
     {
         threadProxyList = static_cast<const ArrayList<std::shared_ptr<ProxyBase>> &>(*proxyList);
@@ -246,7 +246,7 @@ int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, ArrayList<std::
     return result;
 }
 
-RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::ResultType errCode, const SequenceNumber & seqNr)
+RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, uint32_t msgId, NEService::ResultType errCode, const SequenceNumber & seqNr)
 {
     LOG_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
@@ -302,14 +302,14 @@ void ProxyBase::unregisterServiceListeners()
 
 void ProxyBase::freeProxy( ProxyListener & connect )
 {
-    int exists = mListConnect.find(&connect, 0);
+    int32_t exists = mListConnect.find(&connect, 0);
     if ( exists >= 0 )
     {
         mListConnect.removeAt(static_cast<uint32_t>(exists));
         connect.serviceConnected(NEService::ServiceConnectionState::Disconnected, self());
     }
 
-    removeListener( static_cast<unsigned int>(NEService::FuncIdRange::ResponseServiceProviderConnection)
+    removeListener( static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection)
                   , NEService::SEQUENCE_NUMBER_NOTIFY
                   , static_cast<NotificationConsumer *>(&connect));
 
@@ -419,7 +419,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
     }
 }
 
-void ProxyBase::setNotification( unsigned int msgId, NotificationConsumer* caller, bool alwaysNotify /*= false*/ )
+void ProxyBase::setNotification( uint32_t msgId, NotificationConsumer* caller, bool alwaysNotify /*= false*/ )
 {
     if (isConnected())
     {
@@ -465,7 +465,7 @@ void ProxyBase::setNotification( unsigned int msgId, NotificationConsumer* calle
     }
 }
 
-void ProxyBase::clearNotification( unsigned int msgId, NotificationConsumer* caller )
+void ProxyBase::clearNotification( uint32_t msgId, NotificationConsumer* caller )
 {
     removeListener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, caller);
     if (hasNotificationListener(msgId) == false)
@@ -486,7 +486,7 @@ void ProxyBase::unregisterListener( NotificationConsumer *consumer )
         const ProxyBase::Listener& elem = mListenerList[index];
         if (elem.mListener == consumer)
         {
-            unsigned int msgId = elem.mMessageId;
+            uint32_t msgId = elem.mMessageId;
             mListenerList.removeAt(index);
             LOG_DBG("Removes proxy client listener of message [ %u ] at index [ %d ]", msgId, index);
 
@@ -503,7 +503,7 @@ void ProxyBase::unregisterListener( NotificationConsumer *consumer )
     }
 }
 
-uint32_t ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList, unsigned int msgId, const SequenceNumber & seqNrToSearch )
+uint32_t ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList, uint32_t msgId, const SequenceNumber & seqNrToSearch )
 {
     LOG_SCOPE(areg_component_ProxyBase_prepareListeners);
     ProxyBase::Listener searchListener(msgId, NEService::SEQUENCE_NUMBER_ANY);
@@ -529,7 +529,7 @@ uint32_t ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listener
     return out_listenerList.getSize();
 }
 
-void ProxyBase::notifyListeners( unsigned int respId, NEService::ResultType result, const SequenceNumber & seqNrToSearch )
+void ProxyBase::notifyListeners( uint32_t respId, NEService::ResultType result, const SequenceNumber & seqNrToSearch )
 {
     ProxyBase::ProxyListenerList listenerList;
     prepareListeners(listenerList, respId, seqNrToSearch);
@@ -540,7 +540,7 @@ void ProxyBase::notifyListeners( unsigned int respId, NEService::ResultType resu
     }
 }
 
-void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer* caller )
+void ProxyBase::sendNotificationEvent( uint32_t msgId, NEService::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer* caller )
 {
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent* eventElem = createNotificationEvent(data);
@@ -580,12 +580,12 @@ std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& pr
     return map_proxies().findResourceObject(proxyAddress);
 }
 
-void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& args, NotificationConsumer *caller )
+void ProxyBase::sendRequestEvent( uint32_t reqId, const EventDataStream& args, NotificationConsumer *caller )
 {
     ServiceRequestEvent* evenElem = createRequestEvent(args, reqId);
     if ( evenElem != nullptr )
     {
-        unsigned int respId = getProxyData().getResponseId(static_cast<unsigned int>(reqId));
+        uint32_t respId = getProxyData().getResponseId(static_cast<uint32_t>(reqId));
         ASSERT(NEService::isResponseId(respId) || (respId == NEService::RESPONSE_ID_NONE));
 
         if (respId != NEService::RESPONSE_ID_NONE)
@@ -598,7 +598,7 @@ void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& arg
     }
 }
 
-void ProxyBase::sendNotificationRequestEvent( unsigned int msgId, NEService::RequestType reqType )
+void ProxyBase::sendNotificationRequestEvent( uint32_t msgId, NEService::RequestType reqType )
 {
     ServiceRequestEvent* notifyEvent = createNotificationRequestEvent(msgId, reqType);
     if (notifyEvent != nullptr)
@@ -634,7 +634,7 @@ bool ProxyBase::isServiceListenerRegistered( NotificationConsumer & caller ) con
     return result;
 }
 
-void ProxyBase::processServiceAvailableEvent( NotificationConsumer & consumer, unsigned int delayEvent)
+void ProxyBase::processServiceAvailableEvent( NotificationConsumer & consumer, uint32_t delayEvent)
 {
     if (isConnected() && isServiceListenerRegistered( consumer ) )
     {
@@ -653,7 +653,7 @@ RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const InStream & /* s
 }
 
 RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAddress &  /* addrProxy */
-                                                                , unsigned int          /* msgId */
+                                                                , uint32_t          /* msgId */
                                                                 , NEService::ResultType/* reason */
                                                                 , const SequenceNumber &/* seqNr */ ) const
 {

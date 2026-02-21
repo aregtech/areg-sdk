@@ -165,9 +165,9 @@ bool PropertyKey::operator != ( const PropertyKey & other ) const
     return (*this == other ? false : true);
 }
 
-PropertyKey::operator unsigned int () const
+PropertyKey::operator uint32_t () const
 {
-    unsigned int result{ NEMath::CHECKSUM_IGNORE };
+    uint32_t result{ NEMath::CHECKSUM_IGNORE };
     if (mSection.isEmpty() == false)
     {
         result = NEMath::crc32Init();

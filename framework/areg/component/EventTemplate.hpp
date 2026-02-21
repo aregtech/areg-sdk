@@ -68,7 +68,7 @@
  *  class ClassData1
  *  {
  *  public:
- *      unsigned int    mData1;
+ *      uint32_t    mData1;
  *  };
  *
  *  class ClassData2
@@ -611,7 +611,7 @@ void AregImpl_##ConsumerClass<DATA_CLASS>::startEventProcessing( Event & eventEl
 /**                                                                                                                         **/                     \
 /** ---- Extended Part ----                                                                                                 **/                     \
 /** Declaration of Extended version of ConsumerClass, derive from ConsumerClass template                                    **/                     \
-/** The Extended consumer class is registering consumer int the Worker / Component thread when it is initialized.           **/                     \
+/** The Extended consumer class is registering consumer int32_t the Worker / Component thread when it is initialized.           **/                     \
 /** The worker / component thread should already run that we are able to find in resource map                               **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \

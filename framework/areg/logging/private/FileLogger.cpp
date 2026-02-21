@@ -34,7 +34,7 @@ bool FileLogger::openLogger()
         if ( fileName.isEmpty() == false )
         {
             bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
-            unsigned int mode = static_cast<uint32_t>(File::OpenMode::Write) | 
+            uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write) | 
                                 static_cast<uint32_t>(File::OpenMode::Read) |
                                 static_cast<uint32_t>(File::OpenMode::ShareRead) |
                                 static_cast<uint32_t>(File::OpenMode::ShareWrite) |

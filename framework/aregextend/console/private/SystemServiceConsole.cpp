@@ -80,11 +80,11 @@ void SystemServiceConsole::processTimer(Timer & /*timer*/)
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
 //////////////////////////////////////////////////////////////////////////
-void SystemServiceConsole::sendNotification( unsigned int /* msgId */ )
+void SystemServiceConsole::sendNotification( uint32_t /* msgId */ )
 {
 }
 
-void SystemServiceConsole::errorRequest( unsigned int /* msgId */, bool /* msgCancel */ )
+void SystemServiceConsole::errorRequest( uint32_t /* msgId */, bool /* msgCancel */ )
 {
 }
 

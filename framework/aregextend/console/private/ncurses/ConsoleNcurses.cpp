@@ -120,7 +120,7 @@ Console::Coord Console::_osGetCursorPosition() const
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        int posX{ 0 }, posY{ 0 };
+        int32_t posX{ 0 }, posY{ 0 };
         getyx(reinterpret_cast<WINDOW*>(mContext), posY, posX);
         pos.posX = static_cast<int16_t>(posX);
         pos.posY = static_cast<int16_t>(posY);
@@ -146,7 +146,7 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
     // Use getnstr which operates on stdscr (the standard screen).
     // This is a static method, so we cannot use mContext (non-static member).
     // ncurses provides stdscr as a global after initscr() is called.
-    if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int>(size)) != OK))
+    if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int32_t>(size)) != OK))
         return false;
 
     NEString::trimAll<char>(buffer);

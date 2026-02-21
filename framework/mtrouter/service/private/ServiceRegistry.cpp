@@ -217,7 +217,7 @@ ServiceRegistry::MAPPOS ServiceRegistry::findService( const ServiceAddress & add
 void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceList);
-    LOG_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
+    LOG_DBG("Filter service list for cookie [ %u ]", static_cast<uint32_t>(cookie));
 
     for (ServiceRegistryBase::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
@@ -228,7 +228,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
         if ( svcStub.isValid() && ((cookie == NEService::COOKIE_ANY) || (addrStub.getCookie() == cookie)) )
         {
             LOG_INFO("The cookie [ %u ] of service [ %s ] with status [ %s ] match criteria."
-                        , static_cast<unsigned int>(addrStub.getCookie())
+                        , static_cast<uint32_t>(addrStub.getCookie())
                         , StubAddress::convAddressToPath(addrStub).getString()
                         , NEService::getString(svcStub.getServiceStatus()));
 
@@ -238,7 +238,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
         {
             LOG_DBG("Ignore stub [ %s ] with cookie [ %u ] and status [ %s ]"
                         , StubAddress::convAddressToPath(addrStub).getString()
-                        , static_cast<unsigned int>(addrStub.getCookie())
+                        , static_cast<uint32_t>(addrStub.getCookie())
                         , NEService::getString(svcStub.getServiceStatus()));
         }
 
@@ -249,7 +249,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
             if ( svcProxy.isValid() && ((cookie == NEService::COOKIE_ANY) || (addrProxy.getCookie() == cookie)) )
             {
                 LOG_INFO("The cookie [ %u ] of proxy [ %s ] with status [ %s ] match criteria."
-                            , static_cast<unsigned int>(addrProxy.getCookie())
+                            , static_cast<uint32_t>(addrProxy.getCookie())
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
                             , NEService::getString(svcProxy.getServiceStatus()));
 
@@ -259,7 +259,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
             {
                 LOG_DBG("Ignore proxy [ %s ] with cookie [ %u ] and status [ %s ]"
                             , ProxyAddress::convAddressToPath(addrProxy).getString()
-                            , static_cast<unsigned int>(addrProxy.getCookie())
+                            , static_cast<uint32_t>(addrProxy.getCookie())
                             , NEService::getString(svcProxy.getServiceStatus()));
             }
         }
@@ -269,7 +269,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , ArrayList<StubAddr
 void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, ArrayList<StubAddress> & stubSource, ArrayList<ProxyAddress> & proxySources)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceSources);
-    LOG_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));
+    LOG_DBG("Pickup services with [ %u ] sources ", static_cast<uint32_t>(cookie));
 
     for (ServiceRegistry::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
@@ -279,14 +279,14 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, ArrayList<StubAd
 
         if (svcStub.isValid() && (cookie == addrStub.getSource()))
         {
-            LOG_INFO("Found stub [ %s ] of source [ %u ]", addrStub.convToString().getString(), static_cast<unsigned int>(cookie));
+            LOG_INFO("Found stub [ %s ] of source [ %u ]", addrStub.convToString().getString(), static_cast<uint32_t>(cookie));
             stubSource.add(addrStub);
         }
         else
         {
             LOG_DBG("Ignore stub [ %s ], it is either invalid or different source than [ %u ]"
                         , addrStub.convToString().getString()
-                        , static_cast<unsigned int>(cookie));
+                        , static_cast<uint32_t>(cookie));
         }
 
         for (ListServiceProxiesBase::LISTPOS posList = listProxies.firstPosition(); listProxies.isValidPosition(posList); posList = listProxies.nextPosition(posList) )
@@ -296,12 +296,12 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, ArrayList<StubAd
 
             if (svcProxy.isValid() && (cookie == addrProxy.getSource()))
             {
-                LOG_INFO("Found proxy [ %s ] of source [ %u ]", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
+                LOG_INFO("Found proxy [ %s ] of source [ %u ]", addrProxy.convToString().getString(), static_cast<uint32_t>(cookie));
                 proxySources.add(addrProxy);
             }
             else
             {
-                LOG_DBG("Ignore proxy [ %s ], it is either invalid or has different source than [ %u ]", addrProxy.convToString().getString(), static_cast<unsigned int>(cookie));
+                LOG_DBG("Ignore proxy [ %s ], it is either invalid or has different source than [ %u ]", addrProxy.convToString().getString(), static_cast<uint32_t>(cookie));
             }
         }
     }

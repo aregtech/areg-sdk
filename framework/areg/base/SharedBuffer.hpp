@@ -68,7 +68,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    explicit SharedBuffer(unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    explicit SharedBuffer(uint32_t blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief   Reserves the space in the byte buffer to write data and sets block size.
@@ -76,7 +76,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer( unsigned int reserveSize, unsigned int blockSize );
+    SharedBuffer( uint32_t reserveSize, uint32_t blockSize );
 
     /**
      * \brief	Reserves space and writes given data into byte buffer.
@@ -85,7 +85,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer( const unsigned char * buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE );
+    SharedBuffer( const uint8_t * buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE );
 
     /**
      * \brief	Reserves requested space in bytes and writes given data into byte buffer.
@@ -98,7 +98,7 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE);
+    SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief	Initialization constructor, writes given null-terminated string into byte buffer.
@@ -108,8 +108,8 @@ public:
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
-    explicit SharedBuffer( const char * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
-    explicit SharedBuffer( const wchar_t * textString, unsigned int blockSize = NEMemory::BLOCK_SIZE );
+    explicit SharedBuffer( const char * textString, uint32_t blockSize = NEMemory::BLOCK_SIZE );
+    explicit SharedBuffer( const wchar_t * textString, uint32_t blockSize = NEMemory::BLOCK_SIZE );
 
     /**
      * \brief	Copy constructor. It does not copy data from src, it will refer to the same shared
@@ -212,12 +212,12 @@ public:
      *          If it is an end of position, it will return nullptr
      *          In other cases it will return (GetBuffer() + GetCursorPosition())
      **/
-    const unsigned char* getBufferAtCurrentPosition() const;
+    const uint8_t* getBufferAtCurrentPosition() const;
 
     /**
      * \brief   Returns the size of block set in the constructor.
      **/
-    inline unsigned int getBlockSize() const;
+    inline uint32_t getBlockSize() const;
 
     /**
      * \brief   Clones and returns the cloned shared buffer. The existing buffer has no change.
@@ -237,7 +237,7 @@ public:
      *          Check current position validation before accessing data in streaming object.
      * \return	Returns the current position of pointer relative to begin in streaming data.
      **/
-    unsigned int getPosition() const override;
+    uint32_t getPosition() const override;
 
     /**
      * \brief	Sets the pointer position and returns current position in streaming data
@@ -252,7 +252,7 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
      **/
-    unsigned int setPosition( int offset, Cursor::SeekOrigin startAt ) const override;
+    uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const override;
 
 /************************************************************************/
 // ByteBuffer interface overrides, not implemented in BufferStreamBase
@@ -283,17 +283,17 @@ protected:
     /**
      * \brief   Returns the offset value from the beginning of byte buffer, which should be set
      **/
-    unsigned int getDataOffset() const override;
+    uint32_t getDataOffset() const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    unsigned int getHeaderSize() const override;
+    uint32_t getHeaderSize() const override;
 
     /**
      * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
      **/
-    unsigned int getAlignedSize() const override;
+    uint32_t getAlignedSize() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -312,7 +312,7 @@ protected:
      * \brief   The size of block to increase at once every time when need to resize.
      *          This value is a constant and cannot be changed. Set during initialization.
      **/
-    const unsigned int          mBlockSize;
+    const uint32_t          mBlockSize;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -346,7 +346,7 @@ inline bool SharedBuffer::operator != ( const SharedBuffer &other ) const
 
 inline bool SharedBuffer::isBeginOfBuffer() const
 {
-    unsigned int curPos = getPosition();
+    uint32_t curPos = getPosition();
     return ((isValid() == false) || (curPos == 0) || (curPos == Cursor::INVALID_CURSOR_POSITION));
 }
 
@@ -355,7 +355,7 @@ inline bool SharedBuffer::isEndOfBuffer() const
     return ( isValid() && (getPosition() == getSizeUsed()) );
 }
 
-inline unsigned int SharedBuffer::getBlockSize() const
+inline uint32_t SharedBuffer::getBlockSize() const
 {
     return mBlockSize;
 }

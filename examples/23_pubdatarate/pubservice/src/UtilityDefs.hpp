@@ -82,7 +82,7 @@ namespace NEUtilities
     //! The structure of options command
     struct sOptions
     {
-        std::string_view    cmdShort;   //!< The short name of the option command
+        std::string_view    cmdShort;   //!< The int16_t name of the option command
         std::string_view    cmdLong;    //!< The long name of the option command
         OptionFlag        cmdValue;   //!< The appropriate value
         uint32_t            minValue;   //!< The minimum value of the command, ignore if zero

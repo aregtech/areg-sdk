@@ -462,7 +462,7 @@ protected:
      * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    virtual void onLogRegisterScopes(ITEM_ID cookie, const sLogScope* scopes, int count) = 0;
+    virtual void onLogRegisterScopes(ITEM_ID cookie, const sLogScope* scopes, int32_t count) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
@@ -470,7 +470,7 @@ protected:
      * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    virtual void onLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, int count) = 0;
+    virtual void onLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, int32_t count) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive message to log.

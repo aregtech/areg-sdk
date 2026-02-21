@@ -25,7 +25,7 @@ namespace chat
     const TCHAR* const  SERVER_NAME                         = _T( "<Register>" );
 
     const char * const  DAY_FORMAT                          = "YYYY-MM-DD ";
-    const int           DAY_FORMAT_LEN                      = 11;
+    const int32_t           DAY_FORMAT_LEN                      = 11;
 
     typedef struct S_ChatParticipant
     {
@@ -39,8 +39,8 @@ namespace chat
         return (lsh.cookie == rsh.cookie ? lsh.nickName == rsh.nickName : false);
     }
 
-    const   int     MAXLEN_NICKNAME = 64;
-    const   int     MAXLEN_MESSAGE  = 512;
+    const   int32_t     MAXLEN_NICKNAME = 64;
+    const   int32_t     MAXLEN_MESSAGE  = 512;
 
     typedef struct S_MessageData
     {
@@ -56,7 +56,7 @@ namespace chat
      **/
     inline chat::sMessageData * newData();
 
-    inline void getWidths( int widthTotal, int columns, int & width1, int & width2 );
+    inline void getWidths( int32_t widthTotal, int32_t columns, int32_t & width1, int32_t & width2 );
 
     /**
      * \brief   Invalid session ID
@@ -138,7 +138,7 @@ namespace chat
 	    inline bool operator != ( const chat::sConnection & other ) const;
 
 	    /**
-	     * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
+	     * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
 	     inline operator size_t () const;
@@ -232,7 +232,7 @@ namespace chat
 	    inline bool operator != ( const chat::sParticipant & other ) const;
 
 	    /**
-	     * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
+	     * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
          *          The conversion is a sum of each field of structure
 	     **/
 	     inline operator size_t () const;
@@ -276,7 +276,7 @@ namespace chat
 
 }
 
-inline void chat::getWidths( int widthTotal, int columns, int & width1, int & width2 )
+inline void chat::getWidths( int32_t widthTotal, int32_t columns, int32_t & width1, int32_t & width2 )
 {
     width1 = width2 = widthTotal / (columns + 0);
     // width2 = (widthTotal - width1) / (columns - 1);
@@ -351,12 +351,12 @@ inline bool chat::sConnection::operator != ( const chat::sConnection & other ) c
     return  ( this == &other ? false : (this->cookie != other.cookie) || (this->nickName == other.nickName) );
 }
 /**
- * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
+ * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
  inline chat::sConnection::operator size_t () const
  {
-    return  ( static_cast<size_t>( cookie ) + static_cast<unsigned int>( nickName ) );
+    return  ( static_cast<size_t>( cookie ) + static_cast<uint32_t>( nickName ) );
  }
 
 /**
@@ -398,10 +398,10 @@ namespace std
 {
     template<> struct hash<chat::sConnection>
     {
-        //! A function to convert chat::sConnection object to unsigned int.
-        inline unsigned int operator()(const chat::sConnection & key) const
+        //! A function to convert chat::sConnection object to uint32_t.
+        inline uint32_t operator()(const chat::sConnection & key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }
@@ -467,12 +467,12 @@ inline bool chat::sParticipant::operator != ( const chat::sParticipant & other )
             );
 }
 /**
- * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
+ * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
  inline chat::sParticipant::operator size_t () const
  {
-    return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<unsigned int>( nickName ) );
+    return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<uint32_t>( nickName ) );
  }
 /**
  * \brief   Streaming operator. Reads and instantiates chat::sParticipant structure field entries from stream.
@@ -511,10 +511,10 @@ namespace std
 {
     template<> struct hash<chat::sParticipant>
     {
-        //! A function to convert chat::sParticipant object to unsigned int.
-        inline unsigned int operator()(const chat::sParticipant& key) const
+        //! A function to convert chat::sParticipant object to uint32_t.
+        inline uint32_t operator()(const chat::sParticipant& key) const
         {
-            return static_cast<unsigned int>(key);
+            return static_cast<uint32_t>(key);
         }
     };
 }

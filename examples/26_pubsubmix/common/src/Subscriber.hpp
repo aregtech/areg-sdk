@@ -45,7 +45,7 @@ public:
      *                      This parameter helps to compute the position for each
      *                      subscriber, so that it can output information.
      **/
-    Subscriber( const NERegistry::DependencyEntry & entry, Component & owner, int position );
+    Subscriber( const NERegistry::DependencyEntry & entry, Component & owner, int32_t position );
 
     virtual ~Subscriber() = default;
 

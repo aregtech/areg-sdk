@@ -229,7 +229,7 @@ public:
      *                          At the moment, only TCP/IP is possible.
      * \return  Returns true if Message Router client successfully started.
      **/
-    static bool startMessageRouting(unsigned int connectTypes);
+    static bool startMessageRouting(uint32_t connectTypes);
 
     /**
      * \brief   Call to start Message Router client. If Service Manager is not started yet, it starts
@@ -239,7 +239,7 @@ public:
      * \param   portNr      Should be valid Port Number of remote Router Service.
      * \return  Returns true if Message Router client successfully started.
      **/
-    static bool startMessageRouting( const char * ipAddress, unsigned short portNr );
+    static bool startMessageRouting( const char * ipAddress, uint16_t portNr );
 
     /**
      * \brief   Stops Message Router client.
@@ -306,7 +306,7 @@ public:
      *                      If NECommon::WAIT_INFINITE, waits until signal is set.
      * \return  Returns true, if application quit event signal is set. If timeout expired, returns false.
      **/
-    static bool waitAppQuit( unsigned int waitTimeout = NECommon::WAIT_INFINITE);
+    static bool waitAppQuit( uint32_t waitTimeout = NECommon::WAIT_INFINITE);
 
     /**
      * \brief   Sets application quit signal event. So that, the waiting signal thread can be released
@@ -332,7 +332,7 @@ public:
      * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
      *                          received since the last call of the method.
      **/
-    static void queryCommunicationData( unsigned int & sizeSend, unsigned int & sizeReceive );
+    static void queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive );
 
     /**
      * \brief   Returns the name of the executable process.

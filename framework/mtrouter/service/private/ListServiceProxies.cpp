@@ -84,9 +84,9 @@ ServiceProxy ListServiceProxies::unregisterService( const ProxyAddress & addrPro
     return result;
 }
 
-int ListServiceProxies::stubServiceAvailable( const StubAddress & addrStub )
+int32_t ListServiceProxies::stubServiceAvailable( const StubAddress & addrStub )
 {
-    int result = 0;
+    int32_t result = 0;
     for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
     {
         ServiceProxy & proxyService = valueAtPosition(pos);
@@ -96,9 +96,9 @@ int ListServiceProxies::stubServiceAvailable( const StubAddress & addrStub )
     return result;
 }
 
-int ListServiceProxies::stubServiceUnavailable()
+int32_t ListServiceProxies::stubServiceUnavailable()
 {
-    int result = 0;
+    int32_t result = 0;
     for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
     {
         ServiceProxy & proxyService = valueAtPosition(pos);
@@ -107,9 +107,9 @@ int ListServiceProxies::stubServiceUnavailable()
     return result;
 }
 
-int ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies, const ITEM_ID & cookie)
+int32_t ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies, const ITEM_ID & cookie)
 {
-    int result = 0;
+    int32_t result = 0;
     for ( LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
     {
         ServiceProxy & proxyService = valueAtPosition(pos);

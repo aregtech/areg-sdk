@@ -51,7 +51,7 @@ void ServiceComponent::requestIdentifier()
     responseIdentifier( clientId );
 }
 
-void ServiceComponent::requestHelloUblock( unsigned int clientId, unsigned int seqNr )
+void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
 

@@ -68,7 +68,7 @@ public:
      * \param   msgPrio     The priority of message to log.
      * \param   message     The text message to log.
      **/
-    inline LogMessage(NELogging::LogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const String & message );
+    inline LogMessage(NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const String & message );
 
     /**
      * \brief   Initializes message log structure, sets the logging type value,
@@ -82,7 +82,7 @@ public:
      * \param   message     The text message to log.
      * \param   msgLen      The length of the message to log.
      **/
-    inline LogMessage( NELogging::LogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, unsigned int msgLen );
+    inline LogMessage( NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen );
 
     /**
      * \brief   Initializes message log structure for scope enter or exit event.
@@ -94,7 +94,7 @@ public:
      *                      The duration is ignored and set to 0 if the scopeStamp is 0.
      * \param   logScope    The log scope object with scope name and ID to set.
      **/
-    LogMessage( NELogging::LogMessageType msgType, unsigned int sessionid, TIME64 scopeStamp, const LogScope & logScope );
+    LogMessage( NELogging::LogMessageType msgType, uint32_t sessionid, TIME64 scopeStamp, const LogScope & logScope );
 
     /**
      * \brief   Copies logging message data from given source.
@@ -138,7 +138,7 @@ public:
     /**
      * \brief   Returns the ID of log scope.
      **/
-    inline unsigned int getScopeId() const;
+    inline uint32_t getScopeId() const;
 
     /**
      * \brief   Returns the time-stamp of created message log.
@@ -203,7 +203,7 @@ public:
     /**
      * \brief   Sets message text in log
      **/
-    void setMessage( const char * message, int msgLen );
+    void setMessage( const char * message, int32_t msgLen );
 #endif  // AREG_LOGS
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -223,12 +223,12 @@ inline LogMessage::LogMessage( NELogging::LogMessageType msgType )
 {
 }
 
-inline LogMessage::LogMessage( NELogging::LogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const String & message )
+inline LogMessage::LogMessage( NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const String & message )
     : NELogging::sLogMessage( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
 {
 }
 
-inline LogMessage::LogMessage( NELogging::LogMessageType msgType, unsigned int scopeId, unsigned int sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, unsigned int msgLen )
+inline LogMessage::LogMessage( NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen )
     : NELogging::sLogMessage( msgType, scopeId, sessionId, scopeStamp, msgPrio, message, msgLen )
 {
 }
@@ -254,7 +254,7 @@ inline id_type LogMessage::getThreadId() const
     return static_cast<id_type>(this->logThreadId);
 }
 
-inline unsigned int LogMessage::getScopeId() const
+inline uint32_t LogMessage::getScopeId() const
 {
     return this->logScopeId;
 }
@@ -316,12 +316,12 @@ inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/)
 {
 }
 
-inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, unsigned int /*scopeId*/, unsigned int /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const String& /*message*/)
+inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const String& /*message*/)
     : NELogging::sLogMessage()
 {
 }
 
-inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, unsigned int /*scopeId*/, unsigned int /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
+inline LogMessage::LogMessage(NELogging::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, NELogging::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
     : NELogging::sLogMessage()
 {
 }

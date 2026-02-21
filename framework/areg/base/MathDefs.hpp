@@ -113,7 +113,7 @@ namespace NEMath
      * \brief   NEMath::CHECKSUM_IGNORE
      *          No checksum is set, ignore.
      **/
-    constexpr unsigned int  CHECKSUM_IGNORE     { 0u };
+    constexpr uint32_t  CHECKSUM_IGNORE     { 0u };
 
 /************************************************************************/
 // NEMath namespace structures
@@ -319,21 +319,21 @@ namespace NEMath
      * \param	hi	    High bits to set
      * \param	lo	    Low bits to set
      **/
-    inline void setBits( sLargeInteger & out_num, unsigned int hi, unsigned int lo);
+    inline void setBits( sLargeInteger & out_num, uint32_t hi, uint32_t lo);
 
     /**
      * \brief	Returns High Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns High Bits value of Large Number
      **/
-    inline unsigned int getHighBits(const sLargeInteger & num);
+    inline uint32_t getHighBits(const sLargeInteger & num);
 
     /**
      * \brief	Returns Low Bits value of Large Number
      * \param	num	    Large Number structure
      * \return	Returns Low Bits value of Large Number
      **/
-    inline unsigned int getLowBits(const sLargeInteger & num);
+    inline uint32_t getLowBits(const sLargeInteger & num);
 
 /************************************************************************/
 // NEMath namespace utility functions, check-sum operations
@@ -346,7 +346,7 @@ namespace NEMath
      * \param	size	The size in bytes of given buffer
      * \return	32-bit value of Cyclic Redundancy Check (CRC)
      **/
-    AREG_API unsigned int crc32Calculate( const unsigned char * data, int size );
+    AREG_API uint32_t crc32Calculate( const uint8_t * data, int32_t size );
 
      /**
      * \brief	Cyclic Redundancy Check (CRC) calculation function on 
@@ -355,7 +355,7 @@ namespace NEMath
      * \param	strData Pointer to null-terminated string to calculate CRC
      * \return	32-bit value of Cyclic Redundancy Check (CRC)
      **/
-   AREG_API unsigned int crc32Calculate( const char * strData  );
+   AREG_API uint32_t crc32Calculate( const char * strData  );
     /**
      * \brief	Cyclic Redundancy Check (CRC) calculation function on 
      *          standard IEEE 802.3, using lookup table (fast calculate).
@@ -363,12 +363,12 @@ namespace NEMath
      * \param	strData Pointer to null-terminated wide-string to calculate CRC
      * \return	32-bit value of Cyclic Redundancy Check (CRC)
      **/
-    AREG_API unsigned int crc32Calculate( const wchar_t * strData );
+    AREG_API uint32_t crc32Calculate( const wchar_t * strData );
 
     /**
      * \brief	Return initial 32-bit value of Cyclic Redundancy Check (CRC)
      **/
-    AREG_API unsigned int crc32Init();
+    AREG_API uint32_t crc32Init();
 
     /**
      * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation.
@@ -385,7 +385,7 @@ namespace NEMath
      * \param	size	    The size in bytes of given buffer.
      * \return	32-bit value.
      **/
-    AREG_API unsigned int crc32Start( unsigned int crcInit, const unsigned char * data, int size );
+    AREG_API uint32_t crc32Start( uint32_t crcInit, const uint8_t * data, int32_t size );
 
     /**
      * \brief   NEMath::Crc32Start
@@ -403,7 +403,7 @@ namespace NEMath
      * \param	data	    Pointer to binary data to calculate 32-bit CRC
      * \return	32-bit value.
      **/
-    AREG_API unsigned int crc32Start( unsigned int crcInit, const char * data );
+    AREG_API uint32_t crc32Start( uint32_t crcInit, const char * data );
     
     /**
      * \brief   NEMath::Crc32Start
@@ -420,7 +420,7 @@ namespace NEMath
      * \param	uch	        The first unsigned 8-bit value to start calculating CRC.
      * \return	32-bit value.
      **/
-    AREG_API unsigned int crc32Start( unsigned int crcInit, unsigned char uch );
+    AREG_API uint32_t crc32Start( uint32_t crcInit, uint8_t uch );
     /**
      * \brief	Returns 32-bit value of Cyclic Redundancy Check (CRC)
      *          as an end of calculation. This function is expected to be called
@@ -428,7 +428,7 @@ namespace NEMath
      * \param	crc	        The value returned by crc32Start()
      * \return	32-bit CRC value
      **/
-    AREG_API unsigned int crc32Finish( unsigned int crc );
+    AREG_API uint32_t crc32Finish( uint32_t crc );
 
     /**
      * \brief   Rounds passed double value to nearest integer
@@ -637,18 +637,18 @@ inline char NEMath::getChar(NEMath::NumericSign sign)
     }
 }
 
-inline void NEMath::setBits( sLargeInteger &num, unsigned int hi, unsigned int lo )
+inline void NEMath::setBits( sLargeInteger &num, uint32_t hi, uint32_t lo )
 {
     num.hiBits = hi;
     num.loBits = lo;
 }
 
-inline unsigned int NEMath::getHighBits( const sLargeInteger &num )
+inline uint32_t NEMath::getHighBits( const sLargeInteger &num )
 {
     return (num.hiBits);
 }
 
-inline unsigned int NEMath::getLowBits( const sLargeInteger &num )
+inline uint32_t NEMath::getLowBits( const sLargeInteger &num )
 {
     return (num.loBits);
 }
