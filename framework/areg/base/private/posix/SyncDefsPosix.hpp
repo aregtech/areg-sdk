@@ -36,7 +36,7 @@
  * \brief   This namespace contains main constants and helper methods
  *          shared between other synchronization objects.
  **/
-namespace areg { namespace os {
+namespace areg::os {
 
     /**
      * \brief   areg::os::POSIX_SUCCESS
@@ -150,7 +150,7 @@ namespace areg { namespace os {
      **/
     inline void convTimeout( timespec & out_result, unsigned int msTimeout );
 
-} } // namespace areg::os
+} // namespace areg::os
 
 //////////////////////////////////////////////////////////////////////////
 // NESyncTypesIX namespace inline function implementation
