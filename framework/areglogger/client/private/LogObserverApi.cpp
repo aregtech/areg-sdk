@@ -37,25 +37,25 @@
 
 namespace
 {
-    struct sLogObserverStruct
+    struct LogObserverStruct
     {
         /// The mutex to protect the log observer state and counter
         Mutex           losLock     { false };
         /// The log observer initialized counter
         uint32_t        losCounter  { 0 };
         /// The log observer state
-        eObserverStates losState    { eObserverStates::ObserverUninitialized };
+        ObserverState losState    { ObserverState::ObserverUninitialized };
         /// The log observer events
-        sObserverEvents losEvents   { };
+        ObserverEvents losEvents   { };
     };
     
-    sLogObserverStruct& logObserverData()
+    LogObserverStruct& logObserverData()
     {
-        static sLogObserverStruct _theObserver;
+        static LogObserverStruct _theObserver;
         return _theObserver;
     }
 
-    void _setCallbacks(sObserverEvents & dstCallbacks, const sObserverEvents* srcCallbacks)
+    void _setCallbacks(ObserverEvents & dstCallbacks, const ObserverEvents* srcCallbacks)
     {
         if (srcCallbacks != nullptr)
         {
@@ -89,30 +89,30 @@ namespace
         }
     }
 
-    inline bool _isInitialized(eObserverStates state)
+    inline bool _isInitialized(ObserverState state)
     {
-        return (state != eObserverStates::ObserverUninitialized);
+        return (state != ObserverState::ObserverUninitialized);
     }
 
-    inline bool _isDisconnected(eObserverStates state)
+    inline bool _isDisconnected(ObserverState state)
     {
-        return (state == eObserverStates::ObserverDisconnected);
+        return (state == ObserverState::ObserverDisconnected);
     }
 
-    inline bool _isConnected(eObserverStates state)
+    inline bool _isConnected(ObserverState state)
     {
-        return (state >= eObserverStates::ObserverConnected);
+        return (state >= ObserverState::ObserverConnected);
     }
 
-    inline bool _isStarted(eObserverStates state)
+    inline bool _isStarted(ObserverState state)
     {
-        return (state == eObserverStates::ObserverConnected);
+        return (state == ObserverState::ObserverConnected);
     }
 }
 
-LOGGER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, const char* configFilePath /* = nullptr */)
+LOGGER_API_IMPL bool logObserverInitialize(const ObserverEvents * callbacks, const char* configFilePath /* = nullptr */)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
 
     ++theObserver.losCounter;
@@ -120,7 +120,7 @@ LOGGER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, co
     if (_isInitialized(theObserver.losState) == false)
     {
         LoggerClient& client = LoggerClient::getInstance();
-        theObserver.losState = eObserverStates::ObserverDisconnected;
+        theObserver.losState = ObserverState::ObserverDisconnected;
         _setCallbacks(theObserver.losEvents, callbacks);
         client.setCallbacks(&theObserver.losEvents);
         Application::initApplication(false, false, false, true, false, configFilePath, static_cast<ConfigListener *>(&client));
@@ -131,7 +131,7 @@ LOGGER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, co
 
 LOGGER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ipAddress /*= nullptr*/, uint16_t portNr /* = 0 */)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
 
     if (_isDisconnected(theObserver.losState))
@@ -140,7 +140,7 @@ LOGGER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ip
         client.openLoggingDatabase(dbPath);
         if (client.startLoggerClient(ipAddress, portNr))
         {
-            theObserver.losState = eObserverStates::ObserverConnected;
+            theObserver.losState = ObserverState::ObserverConnected;
         }
     }
 
@@ -149,7 +149,7 @@ LOGGER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ip
 
 LOGGER_API_IMPL void logObserverDisconnectLogger()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
 
     if (_isConnected(theObserver.losState))
@@ -157,19 +157,19 @@ LOGGER_API_IMPL void logObserverDisconnectLogger()
         LoggerClient& client = LoggerClient::getInstance();
         client.stopLoggerClient();
         client.closeLoggingDatabase();
-        theObserver.losState = eObserverStates::ObserverDisconnected;
+        theObserver.losState = ObserverState::ObserverDisconnected;
     }
 }
 
 LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
 
     bool result{ _isInitialized(theObserver.losState) };
     if (_isConnected(theObserver.losState))
     {
-        theObserver.losState = doPause ? eObserverStates::ObserverPaused : eObserverStates::ObserverConnected;
+        theObserver.losState = doPause ? ObserverState::ObserverPaused : ObserverState::ObserverConnected;
         LoggerClient::getInstance().setPaused(doPause);
     }
 
@@ -178,7 +178,7 @@ LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
 
 LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* = NULL*/)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     bool result{ false };
     if (_isConnected(theObserver.losState))
@@ -186,7 +186,7 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
         LoggerClient& client = LoggerClient::getInstance();
         if (doStop)
         {
-            theObserver.losState = eObserverStates::ObserverPaused;
+            theObserver.losState = ObserverState::ObserverPaused;
             client.setPaused(true);
             client.closeLoggingDatabase();
             result = true;
@@ -195,7 +195,7 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
         {
             if (client.openLoggingDatabase(dbPath))
             {
-                theObserver.losState = eObserverStates::ObserverConnected;
+                theObserver.losState = ObserverState::ObserverConnected;
                 client.setPaused(false);
                 result = true;
             }
@@ -206,16 +206,16 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
 }
 
 
-LOGGER_API_IMPL eObserverStates logObserverCurrentState()
+LOGGER_API_IMPL ObserverState logObserverCurrentState()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     return theObserver.losState;
 }
 
 LOGGER_API_IMPL void logObserverRelease()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
 
     if (theObserver.losCounter != 0)
@@ -228,20 +228,20 @@ LOGGER_API_IMPL void logObserverRelease()
         client.stopLoggerClient();
         Application::releaseApplication();
         _setCallbacks(theObserver.losEvents, nullptr);
-        theObserver.losState = eObserverStates::ObserverUninitialized;
+        theObserver.losState = ObserverState::ObserverUninitialized;
     }
 }
 
 LOGGER_API_IMPL bool logObserverIsInitialized()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     return _isInitialized(theObserver.losState);
 }
 
 LOGGER_API_IMPL bool logObserverIsConnected()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     bool result{ false };
     if (_isInitialized(theObserver.losState))
@@ -255,14 +255,14 @@ LOGGER_API_IMPL bool logObserverIsConnected()
 
 LOGGER_API_IMPL bool logObserverIsStarted()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     return _isStarted(theObserver.losState);
 }
 
 LOGGER_API_IMPL const char* logObserverLoggerAddress()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     const char * result{ nullptr };
     if (_isInitialized(theObserver.losState))
@@ -276,7 +276,7 @@ LOGGER_API_IMPL const char* logObserverLoggerAddress()
 
 LOGGER_API_IMPL uint16_t logObserverLoggerPort()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     uint16_t result{ NESocket::InvalidPort };
     if (_isInitialized(theObserver.losState))
@@ -290,7 +290,7 @@ LOGGER_API_IMPL uint16_t logObserverLoggerPort()
 
 LOGGER_API_IMPL bool logObserverConfigLoggerEnabled()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     bool result{ false };
     if (_isInitialized(theObserver.losState))
@@ -304,7 +304,7 @@ LOGGER_API_IMPL bool logObserverConfigLoggerEnabled()
 
 LOGGER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t space)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     bool result{ false };
     if (_isInitialized(theObserver.losState))
@@ -322,7 +322,7 @@ LOGGER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t s
 
 LOGGER_API_IMPL uint16_t logObserverConfigLoggerPort()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
     uint16_t result{ NESocket::InvalidPort };
     if (_isInitialized(theObserver.losState))
@@ -336,7 +336,7 @@ LOGGER_API_IMPL uint16_t logObserverConfigLoggerPort()
 
 LOGGER_API_IMPL bool logObserverRequestInstances()
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
@@ -349,7 +349,7 @@ LOGGER_API_IMPL bool logObserverRequestInstances()
 
 LOGGER_API_IMPL bool logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
@@ -360,9 +360,9 @@ LOGGER_API_IMPL bool logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
     return result;
 }
 
-LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count)
+LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState) && (target != ID_IGNORE))
@@ -370,7 +370,7 @@ LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLo
         NELogging::ScopeNames scopeList(count);
         for (uint32_t i = 0; i < count; ++i)
         {
-            scopeList.add(NELogging::sScopeInfo(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
+            scopeList.add(NELogging::ScopeEntry(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
         }
 
         result = LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
@@ -381,7 +381,7 @@ LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLo
 
 LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED */)
 {
-    sLogObserverStruct& theObserver { logObserverData() };
+    LogObserverStruct& theObserver { logObserverData() };
     bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))

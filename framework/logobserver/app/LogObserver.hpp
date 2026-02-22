@@ -44,9 +44,9 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-struct sLogInstance;
-struct sLogMessage;
-struct sLogScope;
+struct LogInstance;
+struct LogEntry;
+struct ScopeInfo;
 
 //////////////////////////////////////////////////////////////////////////
 // LogObserver class declaration
@@ -83,7 +83,7 @@ private:
     /**
      * \brief   The structure to fill text of observer status and error message on certain action
      **/
-    struct sObserverStatus
+    struct ObserverStatus
     {
         LoggerOption      osOption;   //!< The action
         std::string_view    osStatus;   //!< The status message to display when action succeeds
@@ -93,12 +93,12 @@ private:
     /**
      * \brief   The setup to validate input options of the Log Observer.
      **/
-    static const OptionParser::sOptionSetup ValidOptions[];
+    static const OptionParser::OptionSetup ValidOptions[];
 
     /**
      * \brief   The list of actions, associated status and error messages.
      **/
-    static constexpr sObserverStatus    ObserverStatus[]
+    static constexpr ObserverStatus    _observerStatus[]
     {
           // ----------------------------------------------------------------------------------------------------
           // | Option                           |  status                                           |  error    |
@@ -225,7 +225,7 @@ private:
      * \param   instances   The pointer to the list of the connected instances.
      * \param   count       The number of entries in the list.
      **/
-    static void callbackConnectedInstances(const sLogInstance* instances, uint32_t count);
+    static void callbackConnectedInstances(const LogInstance* instances, uint32_t count);
 
     /**
      * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
@@ -236,30 +236,30 @@ private:
 
     /**
      * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.
-     * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+     * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
      * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    static void callbackLogScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count);
+    static void callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count);
 
     /**
      * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
-     * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+     * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
      * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    static void callbackLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, uint32_t count);
+    static void callbackLogUpdateScopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count);
 
     /**
      * \brief   The callback of the event triggered when receive message to log.
      * \param   logMessage  The pointer to the log message to log.
      **/
-    static void callbackLogMessage(const sLogMessage* logMessage);
+    static void callbackLogMessage(const LogEntry* logMessage);
 
     /**
      * \brief   The callback of the event triggered when receive remote message to log.
-     *          The buffer indicates to the NELogging::sLogMessage structure.
-     * \param   logBuffer   The pointer to the NELogging::sLogMessage structure to log messages.
+     *          The buffer indicates to the NELogging::LogEntry structure.
+     * \param   logBuffer   The pointer to the NELogging::LogEntry structure to log messages.
      * \param   size        The size of the buffer with log message.
      **/
     static void callbackLogMessageEx(const uint8_t * logBuffer, uint32_t size);
@@ -313,7 +313,7 @@ private:
      *                      that should save configuration.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processSaveConfig(const OptionParser::sOption& optSave);
+    static bool _processSaveConfig(const OptionParser::InputOption& optSave);
 
     /**
      * \brief   Triggered to print the help message on console.
@@ -333,7 +333,7 @@ private:
      *                      If the command contains a list of scopes to update, the should be split by ';'.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processUpdateScopes(const OptionParser::sOption& optScope);
+    static bool _processUpdateScopes(const OptionParser::InputOption& optScope);
 
     /**
      * \brief   Triggered to pause logging. The lob observer is paused if it does not write logs in the file.
@@ -357,7 +357,7 @@ private:
      *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processQueryScopes(const OptionParser::sOption& optScope);
+    static bool _processQueryScopes(const OptionParser::InputOption& optScope);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.

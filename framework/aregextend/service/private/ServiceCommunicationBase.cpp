@@ -74,7 +74,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
 {
 }
 
-void ServiceCommunicationBase::addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance & instance)
+void ServiceCommunicationBase::addInstance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance)
 {
     Lock lock(mLock);
     mInstanceMap.addIfUnique(cookie, instance);
@@ -455,7 +455,7 @@ void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgR
         }
         else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::FuncIdRange::SystemServiceConnect) )
         {
-            NEService::sServiceConnectedInstance instance{};
+            NEService::ConnectedInstance instance{};
             msgReceived >> instance;
             instance.ciTimestamp = static_cast<TIME64>(DateTime::getNow());
             instance.ciCookie = cookie;

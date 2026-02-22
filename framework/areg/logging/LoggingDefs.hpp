@@ -61,16 +61,16 @@ namespace NELogging
     using SCOPEPOS      = ScopeList::MAPPOS;
 
     /**
-     * \brief   NELogging::sScopeInfo
+     * \brief   NELogging::ScopeEntry
      *          The structure to keep scope information. It is used to generate scope priority update messages.
      *          The structure contains scope name, scope ID and scope priority values.
      **/
-    struct sScopeInfo
+    struct ScopeEntry
     {
         /**
          * \brief   Default constructor
          **/
-        inline sScopeInfo();
+        inline ScopeEntry();
 
         /**
          * \brief   Constructor that initializes the scope name, scope ID and the scope priority.
@@ -78,7 +78,7 @@ namespace NELogging
          * \param   id      The scope ID. Can be 0 if the ID is unknown or the name is a scope group.
          * \param   prio    The scope message priority.
          **/
-        inline sScopeInfo(const char* name, uint32_t id, uint32_t prio);
+        inline ScopeEntry(const char* name, uint32_t id, uint32_t prio);
 
         uint32_t    scopeId;    //!< The scope ID, can be 0 (NELogging::LOG_SCOPE_ID_NONE). For scope group should be 0.
         uint32_t    scopePrio;  //!< The scope priority.
@@ -86,7 +86,7 @@ namespace NELogging
     };
 
     //!< The list of scope update structure.
-    using ScopeNames    = ArrayList<sScopeInfo>;
+    using ScopeNames    = ArrayList<ScopeEntry>;
 
     /**
      * \brief   NELogging::LogTarget
@@ -285,16 +285,16 @@ namespace NELogging
     };
 
     /**
-     * \brief   NELogging::sLogMessage
+     * \brief   NELogging::LogEntry
      *          The structure of logging message object to output on target (log collector or observer).
      **/
-    struct AREG_API sLogMessage
+    struct AREG_API LogEntry
     {
         /**
          * \brief   Initializes logging message of specified type.
          * \param   msgType     The logging message type.
          **/
-        sLogMessage( NELogging::LogMessageType msgType = NELogging::LogMessageType::Undefined );
+        LogEntry( NELogging::LogMessageType msgType = NELogging::LogMessageType::Undefined );
         /**
          * \brief   Initializes logging message and sets specified data.
          * \param   msgType     The logging message type.
@@ -306,38 +306,38 @@ namespace NELogging
          * \param   message     The message text to output on target. Can be empty.
          * \param   msgLen      The length of the message string.
          **/
-        sLogMessage(NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen);
+        LogEntry(NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
          **/
-        sLogMessage( const sLogMessage & src );
+        LogEntry( const LogEntry & src );
 
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
          **/
-        sLogMessage & operator = (const sLogMessage & src);
+        LogEntry & operator = (const LogEntry & src);
 
-        NELogging::LogDataType     logDataType;    //!< The type of log message data.
-        NELogging::LogMessageType  logMsgType;     //!< The type of the logging message.
-        NELogging::LogPriority     logMessagePrio; //!< The log message priority
-        ITEM_ID                     logSource;      //!< The ID of the source that generated logging message.
-        ITEM_ID                     logTarget;      //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
-        ITEM_ID                     logCookie;      //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
-        ITEM_ID                     logModuleId;    //!< The ID of the process in the local machine.
-        ITEM_ID                     logThreadId;    //!< The ID the thread in the local process.
-        TIME64                      logTimestamp;   //!< The timestamp of generated log.
-        TIME64                      logReceived;    //!< The timestamp when the log message is updated.
-        uint32_t                logDuration;    //!< The duration in microseconds after scope message is instantiated in the method call.
-        uint32_t                logScopeId;     //!< The ID of log scope that generated log message
-        uint32_t                logSessionId;   //!< The session ID of the logging message, valid only in case of remote logging.
-        uint32_t                logMessageLen;  //!< The actual length of the log message
-        char                        logMessage[LOG_MESSAGE_IZE];//!< The message text to output, with maximum NELogging::LOG_MESSAGE_IZE characters.
-        uint32_t                logThreadLen;               //!< The length of the thread name;
-        char                        logThread[LOG_NAMES_SIZE];  //!< The name of the thread that generated the log. Valid only for remote logging
-        uint32_t                logModuleLen;               //!< The length of the module name.
-        char                        logModule[LOG_NAMES_SIZE];  //!< The name of the module that generated the log. Valid only for remote logging.
+        NELogging::LogDataType      logDataType{ LogDataType::Local };          //!< The type of log message data.
+        NELogging::LogMessageType   logMsgType{ LogMessageType::Undefined };    //!< The type of the logging message.
+        NELogging::LogPriority      logMessagePrio{ LogPriority::PrioInvalid }; //!< The log message priority
+        ITEM_ID                     logSource{ 0 };     //!< The ID of the source that generated logging message.
+        ITEM_ID                     logTarget{ 0 };     //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
+        ITEM_ID                     logCookie{ 0 };     //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
+        ITEM_ID                     logModuleId{ 0 };   //!< The ID of the process in the local machine.
+        ITEM_ID                     logThreadId{ 0 };   //!< The ID the thread in the local process.
+        TIME64                      logTimestamp{ 0 };  //!< The timestamp of generated log.
+        TIME64                      logReceived{ 0 };   //!< The timestamp when the log message is updated.
+        uint32_t                    logDuration{ 0 };   //!< The duration in microseconds after scope message is instantiated in the method call.
+        uint32_t                    logScopeId{ 0 };    //!< The ID of log scope that generated log message
+        uint32_t                    logSessionId{ 0 };  //!< The session ID of the logging message, valid only in case of remote logging.
+        uint32_t                    logMessageLen{ 0 }; //!< The actual length of the log message
+        char                        logMessage[LOG_MESSAGE_IZE]{0}; //!< The message text to output, with maximum NELogging::LOG_MESSAGE_IZE characters.
+        uint32_t                    logThreadLen{ 0 };              //!< The length of the thread name;
+        char                        logThread[LOG_NAMES_SIZE]{ 0 }; //!< The name of the thread that generated the log. Valid only for remote logging
+        uint32_t                    logModuleLen{ 0 };              //!< The length of the module name.
+        char                        logModule[LOG_NAMES_SIZE]{ 0 }; //!< The name of the module that generated the log. Valid only for remote logging.
     };
 
     /**
@@ -472,7 +472,7 @@ namespace NELogging
      * \param   srcCookie   The cookie of the source generated message.
      * \return  Returns message object for network communication.
      **/
-    AREG_API RemoteMessage createLogMessage(const NELogging::sLogMessage& logMessage, NELogging::LogDataType dataType, const ITEM_ID & srcCookie);
+    AREG_API RemoteMessage createLogMessage(const NELogging::LogEntry& logMessage, NELogging::LogDataType dataType, const ITEM_ID & srcCookie);
 
     /**
      * \brief   Triggers an event to log the message, contained in the buffer.
@@ -484,13 +484,13 @@ namespace NELogging
      * \brief   Log local custom message ignoring process and thread names.
      * \param   logMessage  The structure that contains information to log a message.
      **/
-    AREG_API void logAnyMessageLocal(const NELogging::sLogMessage& logMessage);
+    AREG_API void logAnyMessageLocal(const NELogging::LogEntry& logMessage);
 
     /**
      * \brief   Log custom message considering process and thread names.
      * \param   logMessage  The structure that contains information to log a message.
      **/
-    AREG_API void logAnyMessage(const NELogging::sLogMessage& logMessage);
+    AREG_API void logAnyMessage(const NELogging::LogEntry& logMessage);
 
     /**
      * \brief   Creates a message for logging service to register scopes with message priority.
@@ -606,9 +606,9 @@ AREG_IMPLEMENT_STREAMABLE(NELogging::LogMessageType)
  * \param   stream  The source of log message data.
  * \param   input   On output this contains structured logging message.
  **/
-inline const InStream & operator >> (const InStream& stream, NELogging::sLogMessage& input)
+inline const InStream & operator >> (const InStream& stream, NELogging::LogEntry& input)
 {
-    stream.read(reinterpret_cast<uint8_t *>(&input), offsetof(NELogging::sLogMessage, logMessage));
+    stream.read(reinterpret_cast<uint8_t *>(&input), offsetof(NELogging::LogEntry, logMessage));
     stream.read(reinterpret_cast<uint8_t *>(input.logMessage), input.logMessageLen + 1);
     return stream;
 }
@@ -618,9 +618,9 @@ inline const InStream & operator >> (const InStream& stream, NELogging::sLogMess
  * \param   stream  The streaming object to save log message.
  * \param   output  The source of log message to serialize message.
  **/
-inline OutStream& operator << (OutStream& stream, const NELogging::sLogMessage& output)
+inline OutStream& operator << (OutStream& stream, const NELogging::LogEntry& output)
 {
-    stream.write(reinterpret_cast<const uint8_t *>(&output), offsetof(NELogging::sLogMessage, logMessage));
+    stream.write(reinterpret_cast<const uint8_t *>(&output), offsetof(NELogging::LogEntry, logMessage));
     stream.write(reinterpret_cast<const uint8_t *>(output.logMessage), output.logMessageLen + 1);
     return stream;
 }
@@ -630,7 +630,7 @@ inline OutStream& operator << (OutStream& stream, const NELogging::sLogMessage& 
  * \param   stream  The source of data that contains scope update structure information.
  * \param   input   On output this contains structured scope update data.
  **/
-inline const InStream& operator >> (const InStream& stream, NELogging::sScopeInfo & input)
+inline const InStream& operator >> (const InStream& stream, NELogging::ScopeEntry & input)
 {
     stream >> input.scopeId >> input.scopePrio >> input.scopeName;
     return stream;
@@ -641,7 +641,7 @@ inline const InStream& operator >> (const InStream& stream, NELogging::sScopeInf
  * \param   stream  The streaming object to save scope update information.
  * \param   output  The source of scope update structure to serialize message.
  **/
-inline OutStream& operator << (OutStream& stream, const NELogging::sScopeInfo & output)
+inline OutStream& operator << (OutStream& stream, const NELogging::ScopeEntry & output)
 {
     stream << output.scopeId << output.scopePrio << output.scopeName;
     return stream;
@@ -699,14 +699,14 @@ inline const char* NELogging::getString(NELogging::LogPriority prio)
     }
 }
 
-inline NELogging::sScopeInfo::sScopeInfo()
+inline NELogging::ScopeEntry::ScopeEntry()
     : scopeId   ( 0u )
     , scopePrio ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
     , scopeName (String::EmptyString)
 {
 }
 
-inline NELogging::sScopeInfo::sScopeInfo(const char* name, uint32_t id, uint32_t prio)
+inline NELogging::ScopeEntry::ScopeEntry(const char* name, uint32_t id, uint32_t prio)
     : scopeId   (id)
     , scopePrio (prio)
     , scopeName (name)

@@ -13,7 +13,7 @@ class ChatPrticipantHandler;
 class DirectConnectionClient  : public DirectConnectionClientBase
 {
 public:
-    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::sParticipant & target );
+    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
     virtual ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +32,7 @@ protected:
      * \see     requestConnectoinSetup
      **/
     virtual void responseConnectoinSetup( bool succeeded
-                                        , const DirectConnection::sParticipant & target
+                                        , const DirectConnection::Participant & target
                                         , const DirectConnection::sInitiator & initiator
                                         , const DirectConnection::ListParticipants & listParticipants ) override;
 

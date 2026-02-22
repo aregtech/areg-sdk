@@ -29,7 +29,7 @@ class DirectChatService : public Component
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const DirectMessager::sParticipant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
+    static NERegistry::Model GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
     DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
@@ -47,7 +47,7 @@ protected:
      * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
-    void requestChatJoin( const DirectMessager::sParticipant & participant, const DateTime & timeConnect ) override;
+    void requestChatJoin( const DirectMessager::Participant & participant, const DateTime & timeConnect ) override;
 
     /**
      * \brief   Request call.
@@ -57,7 +57,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    void requestMessageSend( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void requestMessageSend( const DirectMessager::Participant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Request call.
@@ -66,7 +66,7 @@ protected:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    void requestMessageType( const DirectMessager::sParticipant & participant, const String & msgText ) override;
+    void requestMessageType( const DirectMessager::Participant & participant, const String & msgText ) override;
 
     /**
      * \brief   Request call.
@@ -75,7 +75,7 @@ protected:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    void requestChatLeave( const DirectMessager::sParticipant & participant, const DateTime & timeLeave ) override;
+    void requestChatLeave( const DirectMessager::Participant & participant, const DateTime & timeLeave ) override;
 
 protected:
 

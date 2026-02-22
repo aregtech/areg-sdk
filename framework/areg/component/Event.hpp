@@ -137,7 +137,7 @@ public:
      * \brief   Event::EventType
      *          Event types.
      **/
-    typedef enum class E_EventType  : uint32_t
+    enum class EventType    : uint32_t
     {
           EventUnknown              =    0  /*0x0000*/  //!< Unknown event type.      Bit set: 0000 0000 0000 0000
 
@@ -173,7 +173,7 @@ public:
         , EventCustomInternal       =32785  /*0x8011*/  //!< Custom Notification.     Bit set: 1000 0000 0001 0001
         , EventCustomExternal       =32786  /*0x8012*/  //!< Custom Thread event.     Bit set: 1000 0000 0001 0010
 
-    } EventType;
+    };
 
     /**
      * \return Returns string value of Event::EventType

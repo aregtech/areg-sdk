@@ -7,10 +7,10 @@ each application has one instance of implemented service where
 the role name is a nick name of a registered application.</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="2" Name="sParticipant" Type="Imported">
+        <DataType ID="2" Name="Participant" Type="Imported">
             <Location>common/ChatDefs.hpp</Location>
             <Namespace>chat</Namespace>
-            <ImportedObject>sParticipant</ImportedObject>
+            <ImportedObject>Participant</ImportedObject>
             <Description/>
         </DataType>
         <DataType ID="3" Name="sInitiator" Type="Imported">
@@ -55,7 +55,7 @@ the role name is a nick name of a registered application.</Description>
                 <Parameter ID="53" Name="succeeded" DataType="bool">
                     <Description>Flag, indicating whether the connection setup succeeded or not.</Description>
                 </Parameter>
-                <Parameter ID="54" Name="target" DataType="sParticipant">
+                <Parameter ID="54" Name="target" DataType="Participant">
                     <Description>The targeted participant to include in chat-room</Description>
                 </Parameter>
                 <Parameter ID="55" Name="initiator" DataType="sInitiator">

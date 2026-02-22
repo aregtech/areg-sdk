@@ -27,14 +27,14 @@ namespace chat
     const char * const  DAY_FORMAT                          = "YYYY-MM-DD ";
     const int32_t           DAY_FORMAT_LEN                      = 11;
 
-    typedef struct S_ChatParticipant
+    struct ChatParticipant
     {
         String      nickName;
         uint32_t    cookie;
 
-    } sChatParticipant;
+    };
 
-    inline bool operator == (const sChatParticipant & lsh, const sChatParticipant & rsh)
+    inline bool operator == (const ChatParticipant & lsh, const ChatParticipant & rsh)
     {
         return (lsh.cookie == rsh.cookie ? lsh.nickName == rsh.nickName : false);
     }
@@ -42,19 +42,19 @@ namespace chat
     const   int32_t     MAXLEN_NICKNAME = 64;
     const   int32_t     MAXLEN_MESSAGE  = 512;
 
-    typedef struct S_MessageData
+    struct MessageData
     {
         TCHAR       nickName[MAXLEN_NICKNAME + 1];
         TCHAR       message[ MAXLEN_MESSAGE  + 1];
         uint64_t    dataSave;
         uint64_t    timeSend;
         uint64_t    timeReceived;
-    } sMessageData;
+    } ;
 
     /**
      * \brief creates new message data.
      **/
-    inline chat::sMessageData * newData();
+    inline chat:: MessageData * newData();
 
     inline void getWidths( int32_t widthTotal, int32_t columns, int32_t & width1, int32_t & width2 );
 
@@ -85,10 +85,10 @@ namespace chat
     const String  InvalidNickname     = "";
 
 	/************************************************************************
-	 * \brief   chat::sConnection
+	 * \brief   chat::ConnectionRecord
 	 *          Connection data
 	 ************************************************************************/
-	struct sConnection
+	struct ConnectionRecord
 	{
 
 	//////////////////////////////////////////////////////////////////////////
@@ -98,20 +98,20 @@ namespace chat
 	    /**
 	     * \brief   Every field of structure should have default constructor.
 	     **/
-	    inline sConnection();
+	    inline ConnectionRecord();
         /**
-         * \brief   Initialize sConnection data by setting parameters.
+         * \brief   Initialize ConnectionRecord data by setting parameters.
          **/
-        inline sConnection( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime );
+        inline ConnectionRecord( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime );
 	    /**
 	     * \brief   Copies data from given source. Every filed of structure should have copy constructor.
-	     * \param   src     The source of sConnection structure to copy data
+	     * \param   src     The source of ConnectionRecord structure to copy data
 	     **/
-	    inline sConnection( const sConnection & src );
+	    inline ConnectionRecord( const ConnectionRecord & src );
 	    /**
 	     * \brief   Destructor. No extra function is called, every field of structure should be able to be cleaned.
 	     **/
-	    inline ~sConnection();
+	    inline ~ConnectionRecord();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Basic operators
@@ -119,23 +119,23 @@ namespace chat
 
 	    /**
 	     * \brief   Copies data from given source
-	     * \param   src     The source of sConnection structure to copy data.
+	     * \param   src     The source of ConnectionRecord structure to copy data.
 	     **/
-	    inline const chat::sConnection & operator = ( const chat::sConnection & src );
+	    inline const chat::ConnectionRecord & operator = ( const chat::ConnectionRecord & src );
 
 	    /**
-	     * \brief   Checks equality and returns true if 2 instances of sConnection are equal
-	     * \param   other   The instance of sConnection to compare
+	     * \brief   Checks equality and returns true if 2 instances of ConnectionRecord are equal
+	     * \param   other   The instance of ConnectionRecord to compare
 	     * \return  Returns true if 2 instances are equal
 	     **/
-	    inline bool operator == ( const chat::sConnection & other ) const;
+	    inline bool operator == ( const chat::ConnectionRecord & other ) const;
 
         /**
-         * \brief   Checks inequality and returns true if 2 instances of sConnection are not equal
-         * \param   other   The instance of sConnection to compare
+         * \brief   Checks inequality and returns true if 2 instances of ConnectionRecord are not equal
+         * \param   other   The instance of ConnectionRecord to compare
          * \return  Returns true if 2 instances are not equal
          **/
-	    inline bool operator != ( const chat::sConnection & other ) const;
+	    inline bool operator != ( const chat::ConnectionRecord & other ) const;
 
 	    /**
 	     * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
@@ -144,7 +144,7 @@ namespace chat
 	     inline operator size_t () const;
 
 	//////////////////////////////////////////////////////////////////////////
-	// sConnection fields
+	// ConnectionRecord fields
 	///////////////////////////////////////////////////////////////////////////
 
 	    /**
@@ -172,21 +172,21 @@ namespace chat
 
 	/**
 	 * \brief	chat::ListConnections
-	 *			Internal custom type definition of ArrayList<sConnection>
+	 *			Internal custom type definition of ArrayList<ConnectionRecord>
 	 **/
-    using ListConnections   = ArrayList<sConnection>;
+    using ListConnections   = ArrayList<ConnectionRecord>;
 
 	/**
 	 * \brief	chat::MapConnections
-     *			Internal custom type definition of HashMap<uint32_t, sConnection>
+     *			Internal custom type definition of HashMap<uint32_t, ConnectionRecord>
      **/
-    using MapConnections    = HashMap<uint32_t, sConnection >;
+    using MapConnections    = HashMap<uint32_t, ConnectionRecord >;
 
 	/************************************************************************
-	 * \brief   chat::sParticipant
+	 * \brief   chat::Participant
 	 *          DESCRIPTION MISSED
 	 ************************************************************************/
-	struct sParticipant
+	struct Participant
 	{
 
 	//////////////////////////////////////////////////////////////////////////
@@ -196,16 +196,16 @@ namespace chat
 	    /**
 	     * \brief   Every field of structure should have default constructor.
 	     **/
-	    inline sParticipant();
+	    inline Participant();
 	    /**
 	     * \brief   Copies data from given source. Every filed of structure should have copy constructor.
-	     * \param   src     The source of sParticipant structure to copy data
+	     * \param   src     The source of Participant structure to copy data
 	     **/
-	    inline sParticipant( const sParticipant & src );
+	    inline Participant( const Participant & src );
 	    /**
 	     * \brief   Destructor. No extra function is called, every field of structure should be able to be cleaned.
 	     **/
-	    inline ~sParticipant();
+	    inline ~Participant();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Basic operators
@@ -213,23 +213,23 @@ namespace chat
 
 	    /**
 	     * \brief   Copies data from given source
-	     * \param   src     The source of sParticipant structure to copy data.
+	     * \param   src     The source of Participant structure to copy data.
 	     **/
-	    inline const chat::sParticipant & operator = ( const chat::sParticipant & src );
+	    inline const chat::Participant & operator = ( const chat::Participant & src );
 
 	    /**
-	     * \brief   Checks equality and returns true if 2 instances of sParticipant are equal
-	     * \param   other   The instance of sParticipant to compare
+	     * \brief   Checks equality and returns true if 2 instances of Participant are equal
+	     * \param   other   The instance of Participant to compare
 	     * \return  Returns true if 2 instances are equal
 	     **/
-	    inline bool operator == ( const chat::sParticipant & other ) const;
+	    inline bool operator == ( const chat::Participant & other ) const;
 
         /**
-         * \brief   Checks inequality and returns true if 2 instances of sParticipant are not equal
-         * \param   other   The instance of sParticipant to compare
+         * \brief   Checks inequality and returns true if 2 instances of Participant are not equal
+         * \param   other   The instance of Participant to compare
          * \return  Returns true if 2 instances are not equal
          **/
-	    inline bool operator != ( const chat::sParticipant & other ) const;
+	    inline bool operator != ( const chat::Participant & other ) const;
 
 	    /**
 	     * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
@@ -238,7 +238,7 @@ namespace chat
 	     inline operator size_t () const;
 
 	//////////////////////////////////////////////////////////////////////////
-	// sParticipant fields
+	// Participant fields
 	///////////////////////////////////////////////////////////////////////////
 
 	    /**
@@ -260,13 +260,13 @@ namespace chat
 
 	};
 
-    using sInitiator        = sParticipant;
+    using sInitiator        = Participant;
 
 	/**
 	 * \brief	chat::ListConnections
-	 *			Internal custom type definition of ArrayList<sConnection>
+	 *			Internal custom type definition of ArrayList<ConnectionRecord>
 	 **/
-	using ListParticipants  = ArrayList<sParticipant>;
+	using ListParticipants  = ArrayList<Participant>;
 
 	/**
 	 * \brief	chat::MapDirectConnections
@@ -283,13 +283,13 @@ inline void chat::getWidths( int32_t widthTotal, int32_t columns, int32_t & widt
 }
 
 /************************************************************************
- * chat::sConnection structure
+ * chat::ConnectionRecord structure
  ************************************************************************/
 
 /**
  * Every field of structure should have default constructor.
  **/
-inline chat::sConnection::sConnection()
+inline chat::ConnectionRecord::ConnectionRecord()
     : cookie          ( InvalidCookie )
     , nickName        (  )
     , connectTime     (  )
@@ -297,9 +297,9 @@ inline chat::sConnection::sConnection()
 {
 }
 /**
- * \brief   Initialize sConnection data by setting parameters.
+ * \brief   Initialize ConnectionRecord data by setting parameters.
  **/
-inline chat::sConnection::sConnection( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime )
+inline chat::ConnectionRecord::ConnectionRecord( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime )
     : cookie          ( _cookie )
     , nickName        ( _nickName )
     , connectTime     ( _connectTime )
@@ -309,7 +309,7 @@ inline chat::sConnection::sConnection( const uint32_t & _cookie, const String & 
 /**
  * Every filed of structure should have copy constructor.
  **/
-inline chat::sConnection::sConnection( const chat::sConnection & src )
+inline chat::ConnectionRecord::ConnectionRecord( const chat::ConnectionRecord & src )
     : cookie          ( src.cookie )
     , nickName        ( src.nickName )
     , connectTime     ( src.connectTime )
@@ -319,15 +319,15 @@ inline chat::sConnection::sConnection( const chat::sConnection & src )
 /**
  * No extra function is called, every field of structure should be able to be cleaned.
  **/
-inline chat::sConnection::~sConnection()
+inline chat::ConnectionRecord::~ConnectionRecord()
 {
 }
 /**
  * Copies data from given source.
  **/
-inline const chat::sConnection & chat::sConnection::operator = ( const chat::sConnection & src )
+inline const chat::ConnectionRecord & chat::ConnectionRecord::operator = ( const chat::ConnectionRecord & src )
 {
-    if ( static_cast<const chat::sConnection *>(this) != &src )
+    if ( static_cast<const chat::ConnectionRecord *>(this) != &src )
     {
         this->cookie          = src.cookie;
         this->nickName        = src.nickName;
@@ -337,16 +337,16 @@ inline const chat::sConnection & chat::sConnection::operator = ( const chat::sCo
     return (*this);
 }
 /**
- * Checks equality of 2 instances of chat::sConnection objects.
+ * Checks equality of 2 instances of chat::ConnectionRecord objects.
  **/
-inline bool chat::sConnection::operator == ( const chat::sConnection & other ) const
+inline bool chat::ConnectionRecord::operator == ( const chat::ConnectionRecord & other ) const
 {
     return  ( this == &other ? true : (this->cookie == other.cookie) && (this->nickName == other.nickName) );
 }
 /**
- * Checks inequality of 2 instances of chat::sConnection objects.
+ * Checks inequality of 2 instances of chat::ConnectionRecord objects.
  **/
-inline bool chat::sConnection::operator != ( const chat::sConnection & other ) const
+inline bool chat::ConnectionRecord::operator != ( const chat::ConnectionRecord & other ) const
 {
     return  ( this == &other ? false : (this->cookie != other.cookie) || (this->nickName == other.nickName) );
 }
@@ -354,18 +354,18 @@ inline bool chat::sConnection::operator != ( const chat::sConnection & other ) c
  * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline chat::sConnection::operator size_t () const
+ inline chat::ConnectionRecord::operator size_t () const
  {
     return  ( static_cast<size_t>( cookie ) + static_cast<uint32_t>( nickName ) );
  }
 
 /**
- * \brief   Streaming operator. Reads and instantiates chat::sConnection structure field entries from stream.
+ * \brief   Streaming operator. Reads and instantiates chat::ConnectionRecord structure field entries from stream.
  * \param   stream      The streaming object to read fields data of structure
- * \param   input       The instance of chat::sConnection structure to write data
+ * \param   input       The instance of chat::ConnectionRecord structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const InStream & operator >> ( const InStream & stream, chat::sConnection & input )
+inline const InStream & operator >> ( const InStream & stream, chat::ConnectionRecord & input )
 {
     stream  >> input.cookie;
     stream  >> input.nickName;
@@ -374,12 +374,12 @@ inline const InStream & operator >> ( const InStream & stream, chat::sConnection
     return stream;
 }
 /**
- * \brief   Streaming operator. Writes chat::sConnection structure field entries to stream object.
+ * \brief   Streaming operator. Writes chat::ConnectionRecord structure field entries to stream object.
  * \param   stream      The streaming object to write fields data from structure
- * \param   output      The instance of chat::sConnection structure to read data
+ * \param   output      The instance of chat::ConnectionRecord structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline OutStream & operator << ( OutStream & stream, const chat::sConnection & output )
+inline OutStream & operator << ( OutStream & stream, const chat::ConnectionRecord & output )
 {
     stream  << output.cookie;
     stream  << output.nickName;
@@ -389,17 +389,17 @@ inline OutStream & operator << ( OutStream & stream, const chat::sConnection & o
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of chat::sConnection object
+// Hasher of chat::ConnectionRecord object
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A template to calculate hash value of the chat::sConnection.
+ * \brief   A template to calculate hash value of the chat::ConnectionRecord.
  */
 namespace std
 {
-    template<> struct hash<chat::sConnection>
+    template<> struct hash<chat::ConnectionRecord>
     {
-        //! A function to convert chat::sConnection object to uint32_t.
-        inline uint32_t operator()(const chat::sConnection & key) const
+        //! A function to convert chat::ConnectionRecord object to uint32_t.
+        inline uint32_t operator()(const chat::ConnectionRecord & key) const
         {
             return static_cast<uint32_t>(key);
         }
@@ -407,13 +407,13 @@ namespace std
 }
 
 /************************************************************************
- * chat::sParticipant structure
+ * chat::Participant structure
  ************************************************************************/
 
 /**
  * Every field of structure should have default constructor.
  **/
-inline chat::sParticipant::sParticipant()
+inline chat::Participant::Participant()
     : sessionId   ( InvalidSession )
     , cookie      ( InvalidCookie )
     , nickName    (  )
@@ -421,7 +421,7 @@ inline chat::sParticipant::sParticipant()
 /**
  * Every filed of structure should have copy constructor.
  **/
-inline chat::sParticipant::sParticipant( const chat::sParticipant & src )
+inline chat::Participant::Participant( const chat::Participant & src )
     : sessionId   ( src.sessionId )
     , cookie      ( src.cookie )
     , nickName    ( src.nickName )
@@ -429,14 +429,14 @@ inline chat::sParticipant::sParticipant( const chat::sParticipant & src )
 /**
  * No extra function is called, every field of structure should be able to be cleaned.
  **/
-inline chat::sParticipant::~sParticipant()
+inline chat::Participant::~Participant()
 {      }
 /**
  * Copies data from given source.
  **/
-inline const chat::sParticipant & chat::sParticipant::operator = ( const chat::sParticipant & src )
+inline const chat::Participant & chat::Participant::operator = ( const chat::Participant & src )
 {
-    if ( static_cast<const chat::sParticipant *>(this) != &src )
+    if ( static_cast<const chat::Participant *>(this) != &src )
     {
         this->sessionId   = src.sessionId;
         this->cookie      = src.cookie;
@@ -445,9 +445,9 @@ inline const chat::sParticipant & chat::sParticipant::operator = ( const chat::s
     return (*this);
 }
 /**
- * Checks equality of 2 instances of chat::sParticipant objects.
+ * Checks equality of 2 instances of chat::Participant objects.
  **/
-inline bool chat::sParticipant::operator == ( const chat::sParticipant & other ) const
+inline bool chat::Participant::operator == ( const chat::Participant & other ) const
 {
     return  (   this == &other ? true :
                     ( this->sessionId   == other.sessionId )
@@ -456,9 +456,9 @@ inline bool chat::sParticipant::operator == ( const chat::sParticipant & other )
             );
 }
 /**
- * Checks inequality of 2 instances of chat::sParticipant objects.
+ * Checks inequality of 2 instances of chat::Participant objects.
  **/
-inline bool chat::sParticipant::operator != ( const chat::sParticipant & other ) const
+inline bool chat::Participant::operator != ( const chat::Participant & other ) const
 {
     return  (   this == &other ? false :
                     ( this->sessionId   != other.sessionId )
@@ -470,17 +470,17 @@ inline bool chat::sParticipant::operator != ( const chat::sParticipant & other )
  * \brief   Converts data to uint32_t, which might be used as a hash key value in map object.
  *          The conversion is a sum of each field of structure
  **/
- inline chat::sParticipant::operator size_t () const
+ inline chat::Participant::operator size_t () const
  {
     return  ( static_cast<size_t>( sessionId ) + static_cast<size_t>( cookie ) + static_cast<uint32_t>( nickName ) );
  }
 /**
- * \brief   Streaming operator. Reads and instantiates chat::sParticipant structure field entries from stream.
+ * \brief   Streaming operator. Reads and instantiates chat::Participant structure field entries from stream.
  * \param   stream      The streaming object to read fields data of structure
- * \param   input       The instance of chat::sParticipant structure to write data
+ * \param   input       The instance of chat::Participant structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const InStream & operator >> ( const InStream & stream, chat::sParticipant & input )
+inline const InStream & operator >> ( const InStream & stream, chat::Participant & input )
 {
     stream  >> input.sessionId;
     stream  >> input.cookie;
@@ -488,12 +488,12 @@ inline const InStream & operator >> ( const InStream & stream, chat::sParticipan
     return stream;
 }
 /**
- * \brief   Streaming operator. Writes chat::sParticipant structure field entries to stream object.
+ * \brief   Streaming operator. Writes chat::Participant structure field entries to stream object.
  * \param   stream      The streaming object to write fields data from structure
- * \param   output      The instance of chat::sParticipant structure to read data
+ * \param   output      The instance of chat::Participant structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline OutStream & operator << ( OutStream & stream, const chat::sParticipant & output )
+inline OutStream & operator << ( OutStream & stream, const chat::Participant & output )
 {
     stream  << output.sessionId;
     stream  << output.cookie;
@@ -502,17 +502,17 @@ inline OutStream & operator << ( OutStream & stream, const chat::sParticipant & 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Hasher of chat::sParticipant object
+// Hasher of chat::Participant object
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A template to calculate hash value of the chat::sParticipant.
+ * \brief   A template to calculate hash value of the chat::Participant.
  */
 namespace std
 {
-    template<> struct hash<chat::sParticipant>
+    template<> struct hash<chat::Participant>
     {
-        //! A function to convert chat::sParticipant object to uint32_t.
-        inline uint32_t operator()(const chat::sParticipant& key) const
+        //! A function to convert chat::Participant object to uint32_t.
+        inline uint32_t operator()(const chat::Participant& key) const
         {
             return static_cast<uint32_t>(key);
         }
@@ -520,12 +520,12 @@ namespace std
 }
 
 
-inline chat::sMessageData * chat::newData( )
+inline chat:: MessageData * chat::newData( )
 {
-    chat::sMessageData * result = DEBUG_NEW chat::sMessageData;
+    chat:: MessageData * result = DEBUG_NEW chat:: MessageData;
     if ( result != nullptr )
     {
-        NEMemory::memZero(reinterpret_cast<void *>(result), sizeof( chat::sMessageData ));
+        NEMemory::memZero(reinterpret_cast<void *>(result), sizeof( chat:: MessageData ));
     }
 
     return result;

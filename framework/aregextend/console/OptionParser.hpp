@@ -72,7 +72,7 @@
  *              7. FREESTYLE_DATA   -- the value of the option is any string, same as STRING_NO_RANGE.
  * 
  *          If parsing an option fails, for example, if the value is out of range or the closing quote ("\"") of the string is missed,
- *          the `inField` field of the sOption contains error flag, which can be checked by static method `hasInputError(uint32_t flags)`.
+ *          the `inField` field of the InputOption contains error flag, which can be checked by static method `hasInputError(uint32_t flags)`.
  *
  *          Example:   These are examples of setting options:
  *              1. Command line simple options: '-a', '-b', '-c'
@@ -95,19 +95,19 @@
  *                  --width=123 --height=456
  * 
  *              This is an example of setting up the option validation:
- *              const OptionParser::sOptionSetup setup[]
+ *              const OptionParser::OptionSetup setup[]
  *              {
  *                    {"-c", "--copy"  , 1, OptionParser::FREESTYLE_DATA, {}, {}, {}}
  *                  , {"-m", "--move"  , 2, OptionParser::FREESTYLE_DATA, {}, {}, {}}
  *                  , {"-r", "--remove", 3, OptionParser::FREESTYLE_DATA, {}, {}, {}}
  *              };
- *              Depending on the option, the field `inCommand` of the `sOption` structure indicates the command.
+ *              Depending on the option, the field `inCommand` of the `InputOption` structure indicates the command.
  *              For example, if the option is "-m ./file.txt ./folder/", the `inCommand` value will be 2 and the
  *              `inString` value contains 2 string entries: "./file.txt" and "./folder/".
  * 
  *              If option value is restricted to a specific range, developers should specify them in the setup.
  *              The following is an example of the option with range:
- *              const OptionParser::sOptionSetup setup[]
+ *              const OptionParser::OptionSetup setup[]
  *              {
  *                    {"-j", "--job"   , 1, OptionParser::INTEGER_IN_RANGE, {1, 32}, {}, {}}
  *                  , {"-c", "--config", 2, OptionParser::STRING_IN_RANGE , {     }, {}, {"Debug", "Release"}}
@@ -132,13 +132,13 @@
  *                  , Rectangle = 2
  *              };
  * 
- *              const OptionParser::sOptionSetup setup[]
+ *              const OptionParser::OptionSetup setup[]
  *              {
  *                    {"-t", "--tri"   , static_cast<int32_t>(Figure::Triangle) , OptionParser::STRING_NO_RANGE, {}, {}, {}}
  *                  , {"-r", "--rect"  , static_cast<int32_t>(Figure::Rectangle), OptionParser::STRING_NO_RANGE, {}, {}, {}}
  *              };
  *              And the option string can be: '-t "{1,1}, {5, 10}, {20, 3}" --rect "{1, 10}, 5, 3"'
- *              This is parsed to create 2 sOption object with one string in each, where `inCommand` indicates
+ *              This is parsed to create 2 InputOption object with one string in each, where `inCommand` indicates
  *              '1' for triangle with string '{1,1}, {5, 10}, {20, 3}' and '2' with string '{1, 10}, 5, 3'
  *              Then you may parse the strings to set the data of the objects.
  *              Note, that since the string contains string, they should be included in the quote.
@@ -223,30 +223,27 @@ public:
     /**
      * \brief   The union that specifies either integer or a digit with floating point.
      **/
-    union uValues
+    union OptValue
     {
-        int32_t     valInt;     //!< Signed integer
+        int32_t valInt;     //!< Signed integer
         float   valFloat;   //!< Signed floating point
     };
 
-    //!< Fixed list of strings
-    typedef std::vector<std::string_view> FixedStrList;
-
-    //!< List of strings
-    typedef std::vector<String> StrList;
+    using FixedStrList  = std::vector<std::string_view>;//!< Fixed list of strings
+    using StrList       = std::vector<String>;          //!< List of strings
 
     /**
      * \brief   The entry to setup options for validation.
      *          It should be initialized in the list to pass in the constructor before
      *          parsing the options.
      **/
-    struct sOptionSetup
+    struct OptionSetup
     {
         std::string_view    optShort        {        }; //!< The int16_t name of the option.
         std::string_view    optLong         {        }; //!< The long name of the option.
-        int32_t                 optCmmand       { -1     }; //!< The digital value of the command.
+        int32_t             optCmmand       { -1     }; //!< The digital value of the command.
         uint32_t            optField        { 0      }; //!< The flag indicating the valid fields.
-        Range<int32_t>          optRangeInt     { 0, 0   }; //!< Range of valid integer values, ignored if no range.
+        Range<int32_t>      optRangeInt     { 0, 0   }; //!< Range of valid integer values, ignored if no range.
         Range<float>        optRangeFloat   { 0., 0. }; //!< Range of valid floating point values, ignored if no range
         FixedStrList        optRangeStrings {        }; //!< Range of valid strings, no case sensitive
     };
@@ -254,19 +251,17 @@ public:
     /**
      * \brief   The input option entry
      **/
-    struct sOption
+    struct InputOption
     {
         int32_t         inCommand   { -1 }; //!< The digital value of the command.
         uint32_t    inField     { 0  }; //!< The flag indicating the valid fields and values.
         int32_t         inRefSetup  { -1 }; //!< The reference index in the list of options setup, -1 is invalid index
-        uValues     inValue     { 0  }; //!< Either integer or float value, depending on `inField`.
+        OptValue     inValue     { 0  }; //!< Either integer or float value, depending on `inField`.
         StrList     inString    {    }; //!< The list of the strings, the `inField` should indicate string value
     };
 
-    //!< The list of option validity setup.
-    using OptionSetupList   = ArrayList<sOptionSetup>;
-    //!< The list of input options.
-    using InputOptionList   = ArrayList<sOption>;
+    using OptionSetupList   = ArrayList<OptionSetup>;   //!< The list of option validity setup.
+    using InputOptionList   = ArrayList<InputOption>;   //!< The list of input options.
 
 private:
     //!< Delimiter for "equal"
@@ -319,7 +314,7 @@ public:
      * \brief   Returns the option default validation entry.
      *          If using, set as a first entry in the setup list.
      **/
-    static const OptionParser::sOptionSetup getDefaultOptionSetup();
+    static const OptionParser::OptionSetup getDefaultOptionSetup();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -341,13 +336,13 @@ public:
      * \brief   Copies the option validation setup from the given list.
      *          If empty, creates sets the option default validation entry.
      **/
-    explicit OptionParser( const std::vector<sOptionSetup> & initList );
+    explicit OptionParser( const std::vector<OptionSetup> & initList );
 
     /**
      * \brief   Copies the option validation setup from the given list.
      *          If empty, creates sets the option default validation entry.
      **/
-    explicit OptionParser( std::vector<sOptionSetup> && initList ) noexcept;
+    explicit OptionParser( std::vector<OptionSetup> && initList ) noexcept;
 
     /**
      * \brief   Copies the option validation setup from the given list.
@@ -355,7 +350,7 @@ public:
      * \param   initEntries     The list of entries.
      * \param   count           The number of entries in the list.
      **/
-    OptionParser( const sOptionSetup * initEntries, uint32_t count );
+    OptionParser( const OptionSetup * initEntries, uint32_t count );
 
     /**
      * \brief   Copies the option validation setup from the given source.
@@ -471,7 +466,7 @@ private:
      *                      Otherwise, it should contain only the option string.
      * \param   refSetup    The index of option validation entries that had matching.
      **/
-    OptionParser::sOption _setupInput( bool isShort, String cmdLine, uint32_t refSetup );
+    OptionParser::InputOption _setupInput( bool isShort, String cmdLine, uint32_t refSetup );
 
     /**
      * \brief   Called to set value in the option. Depending on the flags and the validation range
@@ -480,22 +475,22 @@ private:
      * \param   opt         The option to set the value.
      * \param   refSetup    The index in the option validation setup to look for validation.
      **/
-    void _setInputValue( String & newValue, sOption & opt, uint32_t refSetup );
+    void _setInputValue( String & newValue, InputOption & opt, uint32_t refSetup );
 
     /**
      * \brief   Sets the integer value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( int32_t newValue, sOption & opt, const sOptionSetup & valid );
+    void _setValue( int32_t newValue, InputOption & opt, const OptionSetup & valid );
 
     /**
      * \brief   Sets the float value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( float newValue, sOption & opt, const sOptionSetup & valid );
+    void _setValue( float newValue, InputOption & opt, const OptionSetup & valid );
 
     /**
      * \brief   Sets the string value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( const String & newValue, sOption & opt, const sOptionSetup & valid );
+    void _setValue( const String & newValue, InputOption & opt, const OptionSetup & valid );
 
     /**
      * \brief   Checks the matching of the option. The option should not be

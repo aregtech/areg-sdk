@@ -8,7 +8,7 @@
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 
- DirectConnectionClient::DirectConnectionClient( Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::sParticipant & target )
+ DirectConnectionClient::DirectConnectionClient( Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
     : DirectConnectionClientBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).getString(), owner )
 
     , mParticipantsHandler          ( participantsHandler )
@@ -33,7 +33,7 @@ bool DirectConnectionClient::serviceConnected( NEService::ServiceConnectionState
 
 #ifdef  DEBUG
 void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
-                                                    , const DirectConnection::sParticipant & /* target */
+                                                    , const DirectConnection::Participant & /* target */
                                                     , const DirectConnection::sInitiator & initiator
                                                     , const DirectConnection::ListParticipants & /* listParticipants */ )
 {
@@ -41,7 +41,7 @@ void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
 }
 #else   // DEBUG
 void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
-                                                    , const DirectConnection::sParticipant & /* target */
+                                                    , const DirectConnection::Participant & /* target */
                                                     , const DirectConnection::sInitiator & /*initiator*/
                                                     , const DirectConnection::ListParticipants & /* listParticipants */ )
 {

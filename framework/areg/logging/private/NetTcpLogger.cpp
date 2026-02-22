@@ -87,7 +87,7 @@ void NetTcpLogger::closeLogger()
     unregisterForServiceClientCommands();
 }
 
-void NetTcpLogger::logMessage(const NELogging::sLogMessage& logMessage)
+void NetTcpLogger::logMessage(const NELogging::LogEntry& logMessage)
 {
     if (mIsEnabled)
     {
@@ -120,7 +120,7 @@ void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
     {
         RemoteMessage msgLog{ mRingStack.pop() };
         msgLog.setSource(cookie);
-        reinterpret_cast<NELogging::sLogMessage*>(msgLog.getBuffer())->logCookie = cookie;
+        reinterpret_cast<NELogging::LogEntry*>(msgLog.getBuffer())->logCookie = cookie;
         sendMessage(msgLog, Event::EventPriority::NormalPrio);
     }
 }
@@ -172,7 +172,7 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
         case NEService::FuncIdRange::ServiceLogUpdateScopes:
             {
                 uint32_t scopeCount{ 0 };
-                NELogging::sScopeInfo scopeInfo{};
+                NELogging::ScopeEntry scopeInfo{};
                 msgReceived >> scopeCount;
                 for ( uint32_t i = 0; i < scopeCount; ++ i)
                 {

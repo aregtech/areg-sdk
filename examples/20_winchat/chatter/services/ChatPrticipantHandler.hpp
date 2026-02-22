@@ -27,7 +27,7 @@ public:
     ChatPrticipantHandler( const String & serviceName
                          , const chat::sInitiator & initiator
                          , const chat::ListParticipants & listPaticipants
-                         , const chat::sParticipant & ownerConnection);
+                         , const chat::Participant & ownerConnection);
     virtual ~ChatPrticipantHandler();
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,21 +59,21 @@ public:
 
     inline DirectMessagingClient * GetChatClient() const;
 
-    inline void SetConnectionOwner( const chat::sParticipant & ownerConnection );
+    inline void SetConnectionOwner( const chat::Participant & ownerConnection );
 
-    inline const chat::sParticipant & GetConnectionOwner() const;
+    inline const chat::Participant & GetConnectionOwner() const;
 
     void SetInitiator( const chat::sInitiator & initiator );
 
     int32_t AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
 
-    bool AddParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant );
+    bool AddParticipant( const chat::sInitiator & initiator, const chat::Participant & participant );
 
     int32_t RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants );
 
-    bool RemoveParticipant( const chat::sInitiator & initiator, const chat::sParticipant & participant );
+    bool RemoveParticipant( const chat::sInitiator & initiator, const chat::Participant & participant );
 
-    bool ParticipantExist( const chat::sParticipant & participant ) const;
+    bool ParticipantExist( const chat::Participant & participant ) const;
 
     bool IsEmpty() const;
 
@@ -84,14 +84,14 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    int32_t findPosition( const chat::sParticipant & participant ) const;
+    int32_t findPosition( const chat::Participant & participant ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     String                      mServiceName;
-    chat::sParticipant      mOwnerConnection;
+    chat::Participant      mOwnerConnection;
     chat::sInitiator        mInitiator;
     chat::ListParticipants  mListParticipants;
     DirectChatService *         mConnectionService;
@@ -175,13 +175,13 @@ inline DirectChatService * ChatPrticipantHandler::GetConnectionService() const
     return mConnectionService;
 }
 
-inline void ChatPrticipantHandler::SetConnectionOwner( const chat::sParticipant & ownerConnection )
+inline void ChatPrticipantHandler::SetConnectionOwner( const chat::Participant & ownerConnection )
 {
     Lock lock( mLock );
     mOwnerConnection    = ownerConnection;
 }
 
-inline const chat::sParticipant & ChatPrticipantHandler::GetConnectionOwner() const
+inline const chat::Participant & ChatPrticipantHandler::GetConnectionOwner() const
 {
     Lock lock( mLock );
     return mOwnerConnection;

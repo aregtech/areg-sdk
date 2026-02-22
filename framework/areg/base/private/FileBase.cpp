@@ -710,7 +710,7 @@ void FileBase::normalizeName(String & name)
 {
     // replace all "%time%"
     char fmt[128] { 0 };
-    NEUtilities::sSystemTime st;
+    NEUtilities::CalendarTime st;
     DateTime::getNow(st, true);
     String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
     name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, NEString::START_POS, true);

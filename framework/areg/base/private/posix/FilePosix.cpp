@@ -54,11 +54,11 @@ namespace
     constexpr char  USER_HOME_DIR[]         { "~" };
     constexpr char  USER_TEMP_DIR[]         { "~/tmp" };
 
-    typedef struct S_PosixFile
+    struct PosixFile
     {
         //!< The POSIX file description. Invalid or not used if -1 (POSIX_INVALID_FD)
         int fd  = POSIX_INVALID_FD;
-    } sPosixFile;
+    };
 
     //////////////////////////////////////////////////////////////////////////
     // local statics
@@ -105,7 +105,7 @@ void File::_osCloseFile()
 {
     if ( isOpened( ) )
     {
-        sPosixFile * file = reinterpret_cast<sPosixFile *>(mFileHandle);
+        PosixFile * file = reinterpret_cast<PosixFile *>(mFileHandle);
 
         if (file->fd != POSIX_INVALID_FD)
         {
@@ -120,12 +120,12 @@ void File::_osCloseFile()
 
 bool File::_osOpenFile()
 {
-    sPosixFile * file = nullptr;
+    PosixFile * file = nullptr;
 
     if (isOpened() == false)
     {
         std::error_code err;
-        file = DEBUG_NEW sPosixFile;
+        file = DEBUG_NEW PosixFile;
         if ( (mFileName.isEmpty() == false) && (file != nullptr) )
         {
             mFileMode = normalizeMode(mFileMode);
@@ -240,7 +240,7 @@ uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
     ASSERT((buffer != nullptr) && (size > 0));
 
     uint32_t result{ 0 };
-    ssize_t sizeRead = ::read(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
+    ssize_t sizeRead = ::read(reinterpret_cast<PosixFile*>(mFileHandle)->fd, buffer, size);
     if (sizeRead > 0)
     {
         result = static_cast<uint32_t>(sizeRead);
@@ -264,7 +264,7 @@ uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
 
-    int32_t result = ::write(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, buffer, size);
+    int32_t result = ::write(reinterpret_cast<PosixFile*>(mFileHandle)->fd, buffer, size);
     if (result != static_cast<int32_t>(size))
     {
         AREG_OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(errno));
@@ -279,7 +279,7 @@ uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) co
     ASSERT(mFileHandle != nullptr);
     uint32_t result = Cursor::INVALID_CURSOR_POSITION;
 
-    sPosixFile* file = reinterpret_cast<sPosixFile*>(mFileHandle);
+    PosixFile* file = reinterpret_cast<PosixFile*>(mFileHandle);
     switch (startAt)
     {
     case Cursor::SeekOrigin::Begin:
@@ -305,19 +305,19 @@ uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) co
 uint32_t File::_osGetPositionFile() const
 {
     ASSERT(mFileHandle != nullptr);
-    return static_cast<uint32_t>( lseek(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
+    return static_cast<uint32_t>( lseek(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
 }
 
 bool File::_osTruncateFile()
 {
     ASSERT(mFileHandle != nullptr);
-    return (NECommon::RETURNED_OK == ftruncate(reinterpret_cast<sPosixFile*>(mFileHandle)->fd, 0));
+    return (NECommon::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
 }
 
 void File::_osFlushFile()
 {
     ASSERT(mFileHandle != nullptr);
-    fsync(reinterpret_cast<sPosixFile*>(mFileHandle)->fd);
+    fsync(reinterpret_cast<PosixFile*>(mFileHandle)->fd);
 }
 
 //////////////////////////////////////////////////////////////////////////

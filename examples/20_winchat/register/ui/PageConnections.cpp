@@ -44,7 +44,7 @@ PageConnections::~PageConnections()
 {
     for (uint32_t i = 0; i < mTypingList.getSize(); ++ i )
     {
-        chat::sMessageData * data = mTypingList.getAt(i);
+        chat:: MessageData * data = mTypingList.getAt(i);
         delete data;
     }
 
@@ -201,7 +201,7 @@ BOOL PageConnections::OnInitDialog( )
 
 LRESULT PageConnections::OnCmdRegistered( WPARAM /*wParam*/, LPARAM lParam)
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         ++ mRegistered;
@@ -234,7 +234,7 @@ int32_t PageConnections::findInTyping( uint32_t cookie )
 
 LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         if ( mRegistered != 0 )
@@ -263,13 +263,13 @@ LRESULT PageConnections::OnCmdUnregistered( WPARAM /*wParam*/, LPARAM lParam)
 
 LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != NECommon::INVALID_INDEX )
         {
-            chat::sMessageData *temp = mTypingList.getAt(rmIndex);
+            chat:: MessageData *temp = mTypingList.getAt(rmIndex);
             mTypingList.removeAt( rmIndex, 1 );
             delete temp;
         }
@@ -297,14 +297,14 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM /*wParam*/, LPARAM lParam )
 
 LRESULT PageConnections::OnCmdTypeMessage( WPARAM /*wParam*/, LPARAM lParam )
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     bool isEmpty = data != nullptr ? NEString::isEmpty<TCHAR>( data->message ) : true;
     if ( data != nullptr )
     {
         int32_t rmIndex = findInTyping( static_cast<uint32_t>(data->dataSave) );
         if ( rmIndex != NECommon::INVALID_INDEX )
         {
-            chat::sMessageData *temp = mTypingList.getAt( rmIndex );
+            chat:: MessageData *temp = mTypingList.getAt( rmIndex );
             if ( isEmpty )
                 mTypingList.removeAt(rmIndex);
             else

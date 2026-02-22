@@ -91,7 +91,7 @@ inline void LogEventProcessor::_loggingSaveScopes()
 
 inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
 {
-    const NELogging::sLogMessage * logMessage = reinterpret_cast<const NELogging::sLogMessage *>(data.getBuffer( ));
+    const NELogging::LogEntry * logMessage = reinterpret_cast<const NELogging::LogEntry *>(data.getBuffer( ));
     ASSERT( logMessage != nullptr );
     mLogManager.writeLogMessage( *logMessage );
 }

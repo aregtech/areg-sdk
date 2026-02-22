@@ -49,7 +49,7 @@ NEService::StateArray::~StateArray()
 // class NEService::ParameterArray implementation
 //////////////////////////////////////////////////////////////////////////
 
-NEService::ParameterArray::ParameterArray( const NEService::SInterfaceData& ifData )
+NEService::ParameterArray::ParameterArray( const NEService::InterfaceData& ifData )
     : mElemCount (0)
     , mParamList(nullptr)
 {
@@ -179,7 +179,7 @@ void NEService::ParameterArray::resetParamState( uint32_t whichParam )
 //////////////////////////////////////////////////////////////////////////
 // class NEService::ProxyData implementation
 //////////////////////////////////////////////////////////////////////////
-NEService::ProxyData::ProxyData( const NEService::SInterfaceData& ifData )
+NEService::ProxyData::ProxyData( const NEService::InterfaceData& ifData )
     : mImplVersion  (NEService::DataState::DataIsUnavailable)
     , mIfData       (ifData)
     , mAttrState    (static_cast<uint32_t>(ifData.idAttributeCount))
@@ -239,12 +239,12 @@ uint32_t NEService::ProxyData::getResponseId( uint32_t requestId ) const
 
 AREG_API_IMPL const Version NEService::EmptyServiceVersion (1, 0, 0);
 
-AREG_API_IMPL NEService::SInterfaceData & NEService::getEmptyInterface()
+AREG_API_IMPL NEService::InterfaceData & NEService::getEmptyInterface()
 {
     /**
      * \brief   System Service Interface data
      **/
-    static NEService::SInterfaceData _InterfaceData = 
+    static NEService::InterfaceData _InterfaceData = 
     {
           NEService::EmptyServiceName
         , NEService::EmptyServiceVersion

@@ -32,7 +32,7 @@ public:
 	PageChat( const String & serviceName
               , const DirectConnection::sInitiator & initiator
               , const DirectConnection::ListParticipants & listParties
-              , const DirectConnection::sParticipant & ownerConnection
+              , const DirectConnection::Participant & ownerConnection
               , bool isInitiator );
 	virtual ~PageChat() = default;
 

@@ -29,7 +29,7 @@ class DistributedDialog : public CPropertySheet
                         , public ConnectionHandler
 {
 public:
-    static bool OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat::sMessageData * data );
+    static bool OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat:: MessageData * data );
 
     static DistributedDialog * GetDialog();
 

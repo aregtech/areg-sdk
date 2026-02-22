@@ -48,7 +48,7 @@ protected:
      * \param   msgText     The message, which was sent.
      * \param   timeSent    The time-stamp when the message was sent.
      **/
-    void broadcastMessageSent( const DirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void broadcastMessageSent( const DirectMessager::Participant & sender, const String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Server broadcast.
@@ -58,7 +58,7 @@ protected:
      * \param   participant The structure of participant, who initiated message during typing.
      * \param   msgText     The text message while typing.
      **/
-    void broadcastMessageTyped( const DirectMessager::sParticipant & participant, const String & msgText ) override;
+    void broadcastMessageTyped( const DirectMessager::Participant & participant, const String & msgText ) override;
 
     /**
      * \brief   Server broadcast.
@@ -68,7 +68,7 @@ protected:
      * \param   participant The structure of participant, joined chat-room.
      * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
-    void broadcastParticipantJoined( const DirectMessager::sParticipant & participant, const DateTime & timeJoined ) override;
+    void broadcastParticipantJoined( const DirectMessager::Participant & participant, const DateTime & timeJoined ) override;
 
     /**
      * \brief   Server broadcast.
@@ -78,7 +78,7 @@ protected:
      * \param   participant The structure of participant, who left the chat-room.
      * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
-    void broadcastParticipantLeft( const DirectMessager::sParticipant & participant, const DateTime & timeLeft ) override;
+    void broadcastParticipantLeft( const DirectMessager::Participant & participant, const DateTime & timeLeft ) override;
 
     /**
      * \brief   Server broadcast.
@@ -110,7 +110,7 @@ protected:
 private:
     inline DirectMessagingClient & self();
 
-    inline void updateChatOutput( NEDistributedApp::WindowCommand cmdSend, const DirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
+    inline void updateChatOutput( NEDistributedApp::WindowCommand cmdSend, const DirectMessager::Participant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
 
     inline void postMessage(NEDistributedApp::WindowCommand cmdSend, ptr_type wParam, ptr_type lParam);
 

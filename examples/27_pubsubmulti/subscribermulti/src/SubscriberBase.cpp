@@ -19,7 +19,7 @@ DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlw
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
 
 
-SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::sCoord coordInt, NEMath::sCoord coordStr)
+SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::Coord coordInt, NEMath::Coord coordStr)
     : PubSubClientBase  ( entry, owner )
     , mCoordInteger     ( coordInt )
     , mCoordString      ( coordStr )

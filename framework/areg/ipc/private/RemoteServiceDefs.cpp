@@ -86,15 +86,15 @@ namespace
 
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageHelloServer()
+AREG_API_IMPL const NEMemory::RawMessage & NERemoteService::getMessageHelloServer()
 {
-    static constexpr NEMemory::sRemoteMessage _messageHelloServer
+    static constexpr NEMemory::RawMessage _messageHelloServer
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                  sizeof(NEMemory::RawMessage)          // biBufSize
                 , sizeof(uint8_t)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , sizeof(NEMemory::MessageHeader)    // biOffset
                 , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
@@ -111,15 +111,15 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageHelloS
     return _messageHelloServer;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeServer()
+AREG_API_IMPL const NEMemory::RawMessage & NERemoteService::getMessageByeServer()
 {
-    static constexpr NEMemory::sRemoteMessage _messageByeServer
+    static constexpr NEMemory::RawMessage _messageByeServer
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                  sizeof(NEMemory::RawMessage)          // biBufSize
                 , sizeof(uint8_t)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , sizeof(NEMemory::MessageHeader)    // biOffset
                 , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
@@ -136,15 +136,15 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeSer
     return _messageByeServer;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotifyClientConnection()
+AREG_API_IMPL const NEMemory::RawMessage & NERemoteService::getMessageNotifyClientConnection()
 {
-    static constexpr NEMemory::sRemoteMessage _messageAcceptClient
+    static constexpr NEMemory::RawMessage _messageAcceptClient
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                  sizeof(NEMemory::RawMessage)          // biBufSize
                 , sizeof(uint8_t)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , sizeof(NEMemory::MessageHeader)    // biOffset
                 , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
@@ -161,15 +161,15 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
     return _messageAcceptClient;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegisterService()
+AREG_API_IMPL const NEMemory::RawMessage & NERemoteService::getMessageRegisterService()
 {
-    static constexpr NEMemory::sRemoteMessage _messageRegisterService
+    static constexpr NEMemory::RawMessage _messageRegisterService
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                  sizeof(NEMemory::RawMessage)          // biBufSize
                 , sizeof(uint8_t)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , sizeof(NEMemory::MessageHeader)    // biOffset
                 , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
@@ -186,15 +186,15 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegist
     return _messageRegisterService;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageQueryInstances()
+AREG_API_IMPL const NEMemory::RawMessage & NERemoteService::getMessageQueryInstances()
 {
-    static constexpr NEMemory::sRemoteMessage _messageQueryService
+    static constexpr NEMemory::RawMessage _messageQueryService
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                  sizeof(NEMemory::RawMessage)          // biBufSize
                 , sizeof(uint8_t)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , sizeof(NEMemory::MessageHeader)    // biOffset
                 , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
@@ -212,15 +212,15 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageQueryI
 }
 
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotifyInstances()
+AREG_API_IMPL const NEMemory::RawMessage & NERemoteService::getMessageNotifyInstances()
 {
-    static constexpr NEMemory::sRemoteMessage _messageQueryService
+    static constexpr NEMemory::RawMessage _messageQueryService
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                  sizeof(NEMemory::RawMessage)          // biBufSize
                 , sizeof(uint8_t)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , sizeof(NEMemory::MessageHeader)    // biOffset
                 , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
@@ -237,15 +237,15 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotify
     return _messageQueryService;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegisterNotify()
+AREG_API_IMPL const NEMemory::RawMessage & NERemoteService::getMessageRegisterNotify()
 {
-    static constexpr NEMemory::sRemoteMessage _messageRegisterNotify
+    static constexpr NEMemory::RawMessage _messageRegisterNotify
     {
         {
             {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                  sizeof(NEMemory::RawMessage)          // biBufSize
                 , sizeof(uint8_t)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , sizeof(NEMemory::MessageHeader)    // biOffset
                 , NEMemory::BufferType::Remote       // biBufType
                 , 0                                         // biUsed
             }
@@ -443,7 +443,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID 
         msgHelloServer.setTarget(target);
         msgHelloServer.setSource( NEService::SOURCE_UNKNOWN );
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
-        NEService::sServiceConnectedInstance instance{ };
+        NEService::ConnectedInstance instance{ };
         instance.ciSource   = msgSource;
         instance.ciBitness  = static_cast<NEService::InstanceBitness>(Process::getInstance().getBitness());
         instance.ciCookie   = source;

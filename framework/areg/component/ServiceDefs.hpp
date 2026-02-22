@@ -678,14 +678,14 @@ namespace NEService
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // S_InterfaceData structure declaration
+    // InterfaceData structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   Interface data structure. Contains information of service
      *          interface required by Proxy object. Should be initialized
      *          for every service interface.
      **/
-    typedef struct AREG_API S_InterfaceData
+    struct AREG_API InterfaceData
     {
         /**
          * \brief   The name of service interface.
@@ -749,7 +749,7 @@ namespace NEService
          **/
         const uint32_t* idResponseParamCountMap{ nullptr };
 
-    } SInterfaceData;
+    };
 
     //////////////////////////////////////////////////////////////////////////
     // Empty service interface
@@ -765,7 +765,7 @@ namespace NEService
     /**
      * \brief   Returns the instance of empty local service interface.
      **/
-    AREG_API NEService::SInterfaceData & getEmptyInterface();
+    AREG_API NEService::InterfaceData & getEmptyInterface();
 
     //////////////////////////////////////////////////////////////////////////
     // Invalid service
@@ -805,7 +805,7 @@ namespace NEService
          * \param   ifData  The service interface data structure containing
          *                  parameter map table
          **/
-        ParameterArray(const NEService::SInterfaceData& ifData);
+        ParameterArray(const NEService::InterfaceData& ifData);
 
 
         /**
@@ -986,7 +986,7 @@ namespace NEService
          * \brief   Initialize data from given service interface data object.
          * \param   ifData  Service Interface data object.
          **/
-        ProxyData(const NEService::SInterfaceData & ifData);
+        ProxyData(const NEService::InterfaceData & ifData);
         /**
          * \brief   Destructor
          **/
@@ -1049,7 +1049,7 @@ namespace NEService
         /**
          * \brief   Service Interface data
          **/
-        const NEService::SInterfaceData &   mIfData;        // fixed service interface data
+        const NEService::InterfaceData &   mIfData;        // fixed service interface data
 
         /**
          * \brief   Table of attribute states
@@ -1071,10 +1071,10 @@ namespace NEService
 
 
     /**
-     * \brief   NEService::sServiceConnectedInstance
+     * \brief   NEService::ConnectedInstance
      *          Service connected instance of application.
      **/
-    struct sServiceConnectedInstance
+    struct ConnectedInstance
     {
         //!< The type of the application
         NEService::MessageSource   ciSource    { NEService::MessageSource::SourceUndefined };
@@ -1093,7 +1093,7 @@ namespace NEService
     /**
      * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.
      **/
-    using MapInstances = OrderedMap<ITEM_ID, NEService::sServiceConnectedInstance>;
+    using MapInstances = OrderedMap<ITEM_ID, NEService::ConnectedInstance>;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1338,14 +1338,14 @@ inline NEService::DataState NEService::ProxyData::getParamState( uint32_t msgId 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::sServiceConnectedInstance serialization
+// class NEService::ConnectedInstance serialization
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Serializes the instance structure to the stream.
  * \param   stream  The streaming object to serialize.
  * \param   output  The single structure of instance to serialize.
  **/
-inline OutStream& operator << (OutStream& stream, const NEService::sServiceConnectedInstance & output)
+inline OutStream& operator << (OutStream& stream, const NEService::ConnectedInstance & output)
 {
     stream << output.ciSource << output.ciBitness << output.ciCookie << output.ciTimestamp << output.ciInstance << output.ciLocation;
     return stream;
@@ -1356,7 +1356,7 @@ inline OutStream& operator << (OutStream& stream, const NEService::sServiceConne
  * \param   stream  The streaming object that contains the information of the connected instance.
  * \param   input  The single structure of instance to initialize.
  **/
-inline const InStream& operator >> (const InStream& stream, NEService::sServiceConnectedInstance & input)
+inline const InStream& operator >> (const InStream& stream, NEService::ConnectedInstance & input)
 {
     stream >> input.ciSource >> input.ciBitness >> input.ciCookie >> input.ciTimestamp >> input.ciInstance >> input.ciLocation;
     return stream;

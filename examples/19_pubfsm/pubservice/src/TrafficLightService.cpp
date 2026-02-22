@@ -33,10 +33,10 @@ TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entr
     : Component                     ( entry, owner )
     , PowerManagerStub              ( static_cast<Component &>(self()) )
     , TrafficControllerStub         ( static_cast<Component &>(self()) )
-    , IETrafficLightActionHandler   ( )
+    , TrafficLightActionHandler   ( )
 
     , mConsoleInput                 ( entry.mRoleName, static_cast<Component &>(self()) )
-    , mLightFsm                     ( static_cast<IETrafficLightActionHandler &>(self()) )
+    , mLightFsm                     ( static_cast<TrafficLightActionHandler &>(self()) )
 {
 
 }

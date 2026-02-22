@@ -88,7 +88,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
 
         for (uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
-            const chat::sConnection & connection = listConnections.getAt(i);
+            const chat::ConnectionRecord & connection = listConnections.getAt(i);
             if ( (connection.cookie != cookie) && (connection.nickName != nickName) )
             {
                 ASSERT(connection.nickName.isEmpty() == false);
@@ -102,13 +102,13 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
     }
 }
 
-void PageMessaging::OnAddConnection( ConnectionManager::sConnection & data )
+void PageMessaging::OnAddConnection( ConnectionManager::ConnectionRecord & data )
 {
     if ( (mConnectionHandler.GetCookie() != data.cookie) && (mConnectionHandler.GetNickName() != data.nickName) )
         outputMessage( data.nickName, "Is connected and registered", data.connectTime, data.connectedTime, data.cookie );
 }
 
-void PageMessaging::OnRemoveConnection( ConnectionManager::sConnection & data )
+void PageMessaging::OnRemoveConnection( ConnectionManager::ConnectionRecord & data )
 {
     outputMessage( data.nickName, "Is unregistered and disconnected", data.connectTime, data.connectedTime, data.cookie );
 }
@@ -308,19 +308,19 @@ void PageMessaging::OnChangeEditMessageAll( )
     }
 }
 
-void PageMessaging::OnTypeMessage( uint32_t /*cookie*/, chat::sMessageData& data)
+void PageMessaging::OnTypeMessage( uint32_t /*cookie*/, chat:: MessageData& data)
 {
     outputTyping( CString( data.nickName ), CString( data.message ), static_cast<uint32_t>(data.dataSave) );
 }
 
-void PageMessaging::OnSendMessage( uint32_t /*cookie*/, chat::sMessageData& data)
+void PageMessaging::OnSendMessage( uint32_t /*cookie*/, chat:: MessageData& data)
 {
     outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
 }
 
 LRESULT PageMessaging::OnOutputMessage( WPARAM /*wParam*/, LPARAM lParam)
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr)
     {
         outputMessage( data->nickName, data->message, data->timeSend, data->timeReceived, static_cast<uint32_t>(data->dataSave) );

@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/MemoryDefs.hpp"
 #include "areg/base/SocketDefs.hpp"
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/persist/PersistenceDefs.hpp"
@@ -85,38 +86,38 @@ namespace NERemoteService
     /**
      * \brief   Returns fixed predefined message to start server connection
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageHelloServer();
+    AREG_API const NEMemory::RawMessage & getMessageHelloServer();
 
     /**
      * \brief   Returns fixed predefined message to stop server connection
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageByeServer();
+    AREG_API const NEMemory::RawMessage & getMessageByeServer();
 
     /**
      * \brief   Returns fixed message to notify client connection statuses such as
      *          connection accepted, connection rejected and connection is closed.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyClientConnection();
+    AREG_API const NEMemory::RawMessage & getMessageNotifyClientConnection();
 
     /**
      * \brief   Returns fixed message to start service registration
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterService();
+    AREG_API const NEMemory::RawMessage & getMessageRegisterService();
 
     /**
      * \brief   Returns fixed message to query service the connected instances. Only log observers can query.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageQueryInstances();
+    AREG_API const NEMemory::RawMessage & getMessageQueryInstances();
 
     /**
      * \brief   Returns fixed message to notify log observers the connected instances. Only log observers receive the message.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyInstances();
+    AREG_API const NEMemory::RawMessage & getMessageNotifyInstances();
 
     /**
      * \brief   Returns fixed message to register notification
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterNotify();
+    AREG_API const NEMemory::RawMessage & getMessageRegisterNotify();
 
     /**
      * \brief   NERemoteService::CreateConnectRequest

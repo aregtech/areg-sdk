@@ -285,13 +285,13 @@ bool Application::isElementStored( const String & elemName )
     return theApp.mStorage.contains(elemName);
 }
 
-NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::uAlign elem )
+NEMemory::Primitive Application::storeElement( const String & elemName, NEMemory::Primitive elem )
 {
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
 
     MapAppStorage::MAPPOS pos = theApp.mStorage.find(elemName);
-    NEMemory::uAlign result = NEMemory::InvalidElement;
+    NEMemory::Primitive result = NEMemory::InvalidElement;
     if (theApp.mStorage.isValidPosition(pos))
     {
         result = theApp.mStorage.valueAtPosition(pos);
@@ -302,7 +302,7 @@ NEMemory::uAlign Application::storeElement( const String & elemName, NEMemory::u
     return result;
 }
 
-NEMemory::uAlign Application::getStoredElement( const String & elemName )
+NEMemory::Primitive Application::getStoredElement( const String & elemName )
 {
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );

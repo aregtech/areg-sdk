@@ -43,10 +43,9 @@
 class LogDatabaseEngine;
 class LogScope;
 class LogMessage;
-class IELogger;
 namespace NELogging
 {
-    struct sLogMessage;
+    struct LogEntry;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -84,7 +83,7 @@ public:
      * \brief   Triggers an event to log message created locally in the same process.
      * \param   logData The logging message object, which will be sent to all loggers.
      **/
-    static void logMessage( const NELogging::sLogMessage & logData );
+    static void logMessage( const NELogging::LogEntry & logData );
 
     /**
      * \brief   Triggers an event to log message contained in the shared buffer.
@@ -413,7 +412,7 @@ private:
      * \brief   Writes a log message to the existing loggers.
      * \param   logMessage  The message to log.
      **/
-    void writeLogMessage( const NELogging::sLogMessage & logMessage );
+    void writeLogMessage( const NELogging::LogEntry & logMessage );
 
     /**
      * \brief   Sends log event with the preferred priority.

@@ -46,7 +46,7 @@ public:
         , Current       //!< Set cursor position relative to current position in streaming data
         , End           //!< Set cursor position relative to end of streaming data
 
-    } eCursorPosition;
+    };
 
     /**
      * \brief   Cursor::INVALID_CURSOR_POSITION

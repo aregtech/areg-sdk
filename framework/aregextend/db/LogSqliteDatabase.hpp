@@ -42,7 +42,7 @@ class LogSqliteDatabase : public LogDatabaseEngine
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< The structure of a filter by scopes and priorities
-    struct sScopeFilter
+    struct ScopeFilter
     {
         uint32_t    scopeId     { 0u }; //!< Scope ID
         uint32_t    scopePrio   { 0u }; //!< Scope log prio
@@ -196,7 +196,7 @@ public:
      * \param   message     The structure of the message to log.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    bool logMessage(const NELogging::sLogMessage & message) override;
+    bool logMessage(const NELogging::LogEntry & message) override;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -204,7 +204,7 @@ public:
      * \param   timestamp   The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    bool logInstanceConnected(const NEService::sServiceConnectedInstance & instance, const DateTime & timestamp) override;
+    bool logInstanceConnected(const NEService::ConnectedInstance & instance, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when an instance of log source is disconnected.
@@ -222,7 +222,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    bool logScopeActivate(const NELogging::sScopeInfo & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopeActivate(const NELogging::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -310,8 +310,8 @@ public:
      *          This query will receive list of all registered instances.
      * \param[out]  infos   On output, the vector contains information of connected instances.
      **/
-    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
-    std::vector< NEService::sServiceConnectedInstance> getLogInstanceInfos();
+    void getLogInstanceInfos(std::vector< NEService::ConnectedInstance>& infos);
+    std::vector< NEService::ConnectedInstance> getLogInstanceInfos();
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
@@ -319,8 +319,8 @@ public:
      * \param[out]  scopes  On output, the vector contains information of log scopes.
      * \param[in]   instID  The ID of the instance.
      **/
-    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
-    std::vector<NELogging::sScopeInfo> getLogInstScopes(ITEM_ID instId);
+    void getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId);
+    std::vector<NELogging::ScopeEntry> getLogInstScopes(ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
@@ -374,7 +374,7 @@ public:
      * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int32_t getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, int32_t maxEntries = -1);
+    static int32_t getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, SqliteStatement& stmt, int32_t maxEntries = -1);
 
     /**
      * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
@@ -398,7 +398,7 @@ public:
      *                              and prepared to extract instance information.
      * \return  Returns number of entries set in the array.
      **/
-    static int32_t fillLogInstances(std::vector< NEService::sServiceConnectedInstance>& infos, SqliteStatement& stmt);
+    static int32_t fillLogInstances(std::vector< NEService::ConnectedInstance>& infos, SqliteStatement& stmt);
 
     /**
      * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -415,7 +415,7 @@ public:
      * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int32_t fillInstScopes(std::vector<NELogging::sScopeInfo>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
+    static int32_t fillInstScopes(std::vector<NELogging::ScopeEntry>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
 
     /**
      * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -462,7 +462,7 @@ public:
      * \param   filter  The scope prio filters to setup
      * \return  Returns number of log entries after applying filter.
      **/
-    uint32_t setupFilterLogs(ITEM_ID instId, const ArrayList<sScopeFilter>& filter);
+    uint32_t setupFilterLogs(ITEM_ID instId, const ArrayList<ScopeFilter>& filter);
 
     /**
      * \brief   Sets up the statement to extract filtered logs from database for the given instance and returns the number of filtered logs to extract.
@@ -545,18 +545,18 @@ private:
     inline static void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
 
     /**
-     * \brief   Extracts the log instance from the SqliteStatement and copies it to the NEService::sServiceConnectedInstance.
+     * \brief   Extracts the log instance from the SqliteStatement and copies it to the NEService::ConnectedInstance.
      * \param   stmt    The SqliteStatement to extract the log instance.
-     * \param   inst    The NEService::sServiceConnectedInstance to copy the log instance.
+     * \param   inst    The NEService::ConnectedInstance to copy the log instance.
      **/
-    inline static void _copyLogInstances(SqliteStatement& stmt, NEService::sServiceConnectedInstance & inst);
+    inline static void _copyLogInstances(SqliteStatement& stmt, NEService::ConnectedInstance & inst);
 
     /**
-     * \brief   Extracts the log scope from the SqliteStatement and copies it to the NELogging::sScopeInfo.
+     * \brief   Extracts the log scope from the SqliteStatement and copies it to the NELogging::ScopeEntry.
      * \param   stmt    The SqliteStatement to extract the log scope.
-     * \param   scope   The NELogging::sScopeInfo to copy the log scope.
+     * \param   scope   The NELogging::ScopeEntry to copy the log scope.
      **/
-    inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::sScopeInfo& scope);
+    inline static void _copyLogScopes(SqliteStatement& stmt, NELogging::ScopeEntry& scope);
 
     /**
      * \brief   Updates the filter information for the specified instance.
@@ -564,7 +564,7 @@ private:
      * \param   filter  The list of scopes and filter mask to apply
      * \return  Returns true if operation succeeded.
      **/
-    inline uint32_t _updaeFilterLogScopes(ITEM_ID instId, const ArrayList<sScopeFilter>& filter);
+    inline uint32_t _updaeFilterLogScopes(ITEM_ID instId, const ArrayList<ScopeFilter>& filter);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

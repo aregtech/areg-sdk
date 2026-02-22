@@ -168,7 +168,7 @@ ProxyBase::MapThreadProxyList& ProxyBase::thread_proxies()
 
 
 std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
-                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , const NEService::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , const String & ownerThread /*= String::getEmptyString()*/)
@@ -177,7 +177,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 }
 
 std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
-                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , const NEService::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , DispatcherThread & ownerThread )
@@ -263,7 +263,7 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase::ProxyBase(const String & roleName, const NEService::InterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
 
     : ProxyEventConsumer  ( mProxyAddress )
 

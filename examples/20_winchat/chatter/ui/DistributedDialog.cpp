@@ -379,7 +379,7 @@ DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
 LRESULT DistributedDialog::OnCmdAddConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdAddConnection);
-    ConnectionManager::sConnection * data = reinterpret_cast<ConnectionManager::sConnection *>(lParam);
+    ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
         LOG_DBG("Adding new connection [ %s ]", data->nickName.getString());
@@ -397,7 +397,7 @@ DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
 LRESULT DistributedDialog::OnCmdRemoveConnection( WPARAM /*wParam*/, LPARAM lParam)
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdRemoveConnection);
-    ConnectionManager::sConnection * data = reinterpret_cast<ConnectionManager::sConnection *>(lParam);
+    ConnectionManager::ConnectionRecord * data = reinterpret_cast<ConnectionManager::ConnectionRecord *>(lParam);
     if ( data != nullptr )
     {
         LOG_DBG("Removing a connection [ %s ]", data->nickName.getString());
@@ -474,7 +474,7 @@ LRESULT DistributedDialog::OnCmdChatClosed( WPARAM /*wParam*/, LPARAM lParam)
 
 LRESULT DistributedDialog::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         if ( wParam != static_cast<WPARAM>(chat::InvalidCookie) )
@@ -486,7 +486,7 @@ LRESULT DistributedDialog::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 
 LRESULT DistributedDialog::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
 {
-    chat::sMessageData * data = reinterpret_cast<chat::sMessageData *>(lParam);
+    chat:: MessageData * data = reinterpret_cast<chat:: MessageData *>(lParam);
     if ( data != nullptr )
     {
         if ( wParam != static_cast<WPARAM>(chat::InvalidCookie) )
@@ -496,7 +496,7 @@ LRESULT DistributedDialog::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-bool DistributedDialog::OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat::sMessageData * data )
+bool DistributedDialog::OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat:: MessageData * data )
 {
     bool result = false;
     if ( data != nullptr )
@@ -516,7 +516,7 @@ bool DistributedDialog::OutputMessage( NEDistributedApp::WindowCommand cmd, void
 
 PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParties, bool isInitiator )
 {
-    DirectConnection::sParticipant owner;
+    DirectConnection::Participant owner;
     if ( isInitiator )
     {
         owner.nickName  = initiator.nickName;

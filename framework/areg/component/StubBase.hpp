@@ -210,7 +210,7 @@ protected:
      * \param   siData          The service interface data, containing service name
      *                          service version and service type
      **/
-    StubBase( Component & masterComp, const NEService::SInterfaceData & siData );
+    StubBase( Component & masterComp, const NEService::InterfaceData & siData );
 
     /**
      * \brief   Destructor.
@@ -659,7 +659,7 @@ protected:
     /**
      * \brief   Instance of Servicing interface data.
      **/
-    const NEService::SInterfaceData &   mInterface;
+    const NEService::InterfaceData &   mInterface;
 
     /**
      * \brief   The address object of stub

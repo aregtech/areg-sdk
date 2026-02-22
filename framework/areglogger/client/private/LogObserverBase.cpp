@@ -194,7 +194,7 @@ bool LogObserverBase::requestScopes(ITEM_ID target /*= NEService::TARGET_ALL*/)
     return logObserverRequestScopes(target);
 }
 
-bool LogObserverBase::requestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count)
+bool LogObserverBase::requestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
 {
     return logObserverRequestChangeScopePrio(target, scopes, count);
 }
@@ -234,12 +234,12 @@ void LogObserverBase::getPriorityNames(std::vector<String>& names)
     LoggerClient::getInstance().getPriorityNames(names);
 }
 
-void LogObserverBase::getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos)
+void LogObserverBase::getLogInstanceInfos(std::vector< NEService::ConnectedInstance>& infos)
 {
     LoggerClient::getInstance().getLogInstanceInfos(infos);
 }
 
-void LogObserverBase::getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId)
+void LogObserverBase::getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId)
 {
     LoggerClient::getInstance().getLogInstScopes(scopes, instId);
 }

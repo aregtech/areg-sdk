@@ -43,7 +43,7 @@ namespace NEUtilities
                 : 0LL);
     }
 
-    void _osSystemTimeNow( NEUtilities::sSystemTime & sysTime, bool localTime )
+    void _osSystemTimeNow( NEUtilities::CalendarTime & sysTime, bool localTime )
     {
         struct timespec ts { 0 };
         struct tm now { 0 };
@@ -77,7 +77,7 @@ namespace NEUtilities
         localtime_r(&_timer, &utcTime);
     }
 
-    bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& localTime)
+    bool _osConvToLocalTime(const TIME64& utcTime, CalendarTime& localTime)
     {
         bool result = false;
 
@@ -104,7 +104,7 @@ namespace NEUtilities
         return (::localtime_r(&secs, &localTm) != nullptr);
     }
 
-    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime)
+    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::CalendarTime& sysTime)
     {
         time_t secs;
         uint16_t milli{ 0 };

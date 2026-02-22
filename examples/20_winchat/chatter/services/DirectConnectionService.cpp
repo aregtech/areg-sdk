@@ -85,7 +85,7 @@ uint64_t DirectConnectionService::getSession( const DirectConnection::ListPartic
     uint64_t result = DirectConnection::InvalidSession;
     for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
     {
-        const DirectConnection::sParticipant & participant = listParticipants[i];
+        const DirectConnection::Participant & participant = listParticipants[i];
         if ( (participant.nickName == mNickName) && (participant.cookie == mCookie) )
         {
             result = participant.sessionId;
@@ -102,7 +102,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
     ASSERT(mNickName.isEmpty() == false);
     ASSERT(mCookie != DirectConnection::InvalidCookie);
 
-    DirectConnection::sParticipant participant;
+    DirectConnection::Participant participant;
     participant.nickName = mNickName;
     participant.cookie   = mCookie;
     participant.sessionId= DirectConnection::InvalidSession;
@@ -211,7 +211,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
             DirectConnection::ListParticipants listRegistered( mapParticpants.getAt( initiator ) );
             for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
             {
-                const DirectConnection::sParticipant & particpant = listParticipants[i];
+                const DirectConnection::Participant & particpant = listParticipants[i];
                 for (uint32_t j = 0; j < listRegistered.getSize(); ++ j )
                 {
                     if ( particpant == listRegistered[j] )

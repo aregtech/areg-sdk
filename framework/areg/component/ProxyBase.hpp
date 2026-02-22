@@ -435,7 +435,7 @@ public:
      * \return  Returns pointer to Proxy object.
      **/
     static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
-                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , const NEService::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , const String & ownerThread = String::getEmptyString() );
@@ -458,7 +458,7 @@ public:
      * \return  Returns pointer to Proxy object.
      **/
     static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
-                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , const NEService::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
                                                        , DispatcherThread & ownerThread );
@@ -515,7 +515,7 @@ protected:
      * \param   ownerThread     The instance of Proxy owner thread to dispatch messages.
      *                          If nullptr, the messages are dispatched in current thread.
      **/
-    ProxyBase( const String & roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
+    ProxyBase( const String & roleName, const NEService::InterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
 
 public:
     /**

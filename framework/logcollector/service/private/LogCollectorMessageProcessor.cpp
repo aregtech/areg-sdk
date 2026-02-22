@@ -37,7 +37,7 @@ void LogCollectorMessageProcessor::queryConnectedInstances(const RemoteMessage &
         auto srcPos = instances.find(source);
         if (instances.isValidPosition(srcPos))
         {
-            const NEService::sServiceConnectedInstance& instance = instances.valueAtPosition(srcPos);
+            const NEService::ConnectedInstance& instance = instances.valueAtPosition(srcPos);
             if (isLogObserver(instance.ciSource))
             {
                 notifyConnectedInstances(mLoggerService.getInstances(), source);
@@ -221,7 +221,7 @@ void LogCollectorMessageProcessor::clientDisconnected(const ITEM_ID& cookie)
 void LogCollectorMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::FuncIdRange::ServiceLogMessage));
-    ASSERT(NELogging::LogDataType::Remote == reinterpret_cast<const NELogging::sLogMessage *>(msgReceived.getBuffer())->logDataType);
+    ASSERT(NELogging::LogDataType::Remote == reinterpret_cast<const NELogging::LogEntry *>(msgReceived.getBuffer())->logDataType);
     _forwardMessageToObservers(msgReceived);
 }
 

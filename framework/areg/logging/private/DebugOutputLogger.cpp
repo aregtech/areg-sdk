@@ -48,7 +48,7 @@ bool DebugOutputLogger::openLogger()
             if (mIsOpened)
             {
                 Process& curProcess = Process::getInstance();
-                NELogging::sLogMessage logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
+                NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
                 String::formatString( logMsgHello.logMessage
                                     , NELogging::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
@@ -71,7 +71,7 @@ void DebugOutputLogger::closeLogger()
     if ( mIsOpened )
     {
         Process & curProcess = Process::getInstance();
-        NELogging::sLogMessage logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
+        NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
         String::formatString( logMsgGoodbye.logMessage
                             , NELogging::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
@@ -88,7 +88,7 @@ void DebugOutputLogger::closeLogger()
 
 #if defined(OUTPUT_DEBUG)
 
-void DebugOutputLogger::logMessage(const NELogging::sLogMessage & logMessage)
+void DebugOutputLogger::logMessage(const NELogging::LogEntry & logMessage)
 {
     if ( mIsOpened )
     {
@@ -117,7 +117,7 @@ void DebugOutputLogger::logMessage(const NELogging::sLogMessage & logMessage)
 
 #else // !defined(OUTPUT_DEBUG)
 
-void DebugOutputLogger::logMessage(const NELogging::sLogMessage & /*logMessage*/)
+void DebugOutputLogger::logMessage(const NELogging::LogEntry & /*logMessage*/)
 {
 }
 

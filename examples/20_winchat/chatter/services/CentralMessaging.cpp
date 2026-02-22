@@ -55,7 +55,7 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t c
     {
         ASSERT(nickName != mConnectionHandler.GetNickName());
 
-        chat::sMessageData * data = chat::newData();
+        chat:: MessageData * data = chat::newData();
         if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString() );
@@ -76,7 +76,7 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t coo
     {
         ASSERT( nickName != mConnectionHandler.GetNickName( ) );
 
-        chat::sMessageData * data = chat::newData( );
+        chat:: MessageData * data = chat::newData( );
         if ( data != nullptr )
         {
             NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
@@ -94,7 +94,7 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
-    chat::sMessageData * data = chat::newData( );
+    chat:: MessageData * data = chat::newData( );
     if ( data != nullptr )
     {
         NEString::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );

@@ -106,7 +106,7 @@ StubAddress::StubAddress(const ServiceItem & service, const String & roleName, c
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString() */)
+StubAddress::StubAddress(const NEService::InterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString() */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )

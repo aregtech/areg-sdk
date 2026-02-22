@@ -45,7 +45,7 @@ protected:
     /**
      * \brief   Shared pointer allocator / deleter.
      **/
-    using ByteBufferDeleter     = NEMemory::BufferDeleter<NEMemory::sByteBuffer>;
+    using ByteBufferDeleter     = NEMemory::BufferDeleter<NEMemory::RawBuffer>;
 
     /**
      * \brief   ByteBuffer::MAX_BUF_LENGTH
@@ -65,7 +65,7 @@ protected:
     /**
      * \brief   Initializes byte-buffer from given source
      **/
-    ByteBuffer( NEMemory::sByteBuffer & byteBuffer );
+    ByteBuffer( NEMemory::RawBuffer & byteBuffer );
 
     /**
      * \brief   Moves byte-buffer from given source
@@ -129,7 +129,7 @@ public:
     /**
      * \brief   Returns pointer to the byte buffer.
      **/
-    inline const NEMemory::sByteBuffer * getByteBuffer()  const;
+    inline const NEMemory::RawBuffer * getByteBuffer()  const;
 
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
@@ -184,7 +184,7 @@ protected:
     /**
      * \brief   Returns pointer to the byte buffer.
      **/
-    inline NEMemory::sByteBuffer * getByteBuffer();
+    inline NEMemory::RawBuffer * getByteBuffer();
 
     /**
      * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 
@@ -219,7 +219,7 @@ protected:
     virtual uint32_t initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const;
 
     /**
-     * \brief   Returns the size to align the buffer. By default it is sizeof(NEMemory::uAlign)
+     * \brief   Returns the size to align the buffer.
      **/
     virtual uint32_t getAlignedSize() const;
 
@@ -246,7 +246,7 @@ protected:
     /**
      * \brief   Pointer to Byte Buffer structure.
      **/
-    mutable std::shared_ptr<NEMemory::sByteBuffer> mByteBuffer;
+    mutable std::shared_ptr<NEMemory::RawBuffer> mByteBuffer;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -263,12 +263,12 @@ private:
 // ByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEMemory::sByteBuffer * ByteBuffer::getByteBuffer() const
+inline const NEMemory::RawBuffer * ByteBuffer::getByteBuffer() const
 {
     return mByteBuffer.get();
 }
 
-inline NEMemory::sByteBuffer * ByteBuffer::getByteBuffer()
+inline NEMemory::RawBuffer * ByteBuffer::getByteBuffer()
 {
     return mByteBuffer.get( );
 }

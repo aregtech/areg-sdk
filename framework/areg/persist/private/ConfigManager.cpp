@@ -538,7 +538,7 @@ Version ConfigManager::getConfigVersion() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ConfigVersion;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getConfigVersion();
+    const NEPersistence::ConfigKey& key = NEPersistence::getConfigVersion();
 
     const Property* prop = _getProperty(mReadonlyProperties, key.section, NEPersistence::SYNTAX_ALL_MODULES, key.property, key.position, confKey, true);
 
@@ -560,7 +560,7 @@ std::vector<Identifier> ConfigManager::getServiceList() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServiceList;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceList();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServiceList();
 
     const Property* prop = getProperty(key.section, key.property, key.position, confKey);
 
@@ -577,7 +577,7 @@ std::vector<Identifier> ConfigManager::getLogTargets() const
 {
     Lock lock(mLock);
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogTarget;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogTarget();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogTarget();
 
     const Property* prop = getProperty(key.section, key.property, key.position, confKey);
 
@@ -595,7 +595,7 @@ bool ConfigManager::getLoggingStatus() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogStatus;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogStatus();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogStatus();
 
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
     return (value != nullptr ? value->getBoolean() : NEApplication::DEFAULT_LOG_ENABLED);
@@ -606,7 +606,7 @@ Version ConfigManager::getLogVersion() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogVersion;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogVersion();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogVersion();
 
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
     Version result;
@@ -629,7 +629,7 @@ bool ConfigManager::getLogEnabled(const String& logType) const
     if (getLoggingStatus())
     {
         constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogEnable;
-        const NEPersistence::sPropertyKey& key = NEPersistence::getLogEnable();
+        const NEPersistence::ConfigKey& key = NEPersistence::getLogEnable();
 
         const PropertyValue* value = getPropertyValue(key.section, key.property, logType, confKey);
         result = (value != nullptr ? value->getBoolean() : NEApplication::DEFAULT_LOG_ENABLED);
@@ -659,7 +659,7 @@ String ConfigManager::getLogFileLocation() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogFileLocation;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileLocation();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogFileLocation();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
     String result;
@@ -679,7 +679,7 @@ bool ConfigManager::getLogFileAppend() const
 {
     Lock lock(mLock);
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogFileAppend;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileAppend();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogFileAppend();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
     return (value != nullptr ? value->getBoolean() : false);
 }
@@ -688,7 +688,7 @@ void ConfigManager::setLogFileAppend(bool newValue, bool isTemporary /*= false*/
 {
     Lock lock(mLock);
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogFileAppend;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileAppend();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogFileAppend();
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
 
@@ -697,7 +697,7 @@ uint32_t ConfigManager::getLogRemoteQueueSize() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogRemoteQueueSize;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogRemoteQueueSize();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
     return (value != nullptr ? value->getInteger() : NEApplication::DEFAULT_LOG_QUEUE_SIZE);
 }
@@ -707,7 +707,7 @@ void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogRemoteQueueSize;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogRemoteQueueSize();
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
 
@@ -716,7 +716,7 @@ String ConfigManager::getLogLayoutEnter() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogLayoutEnter;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutEnter();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogLayoutEnter();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
     String result;
@@ -737,7 +737,7 @@ void ConfigManager::setLogLayoutEnter(const String& newValue, bool isTemporary /
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogLayoutEnter;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutEnter();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogLayoutEnter();
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
@@ -746,7 +746,7 @@ String ConfigManager::getLogLayoutMessage() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogLayoutMessage;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutMessage();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogLayoutMessage();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
     String result;
@@ -767,7 +767,7 @@ void ConfigManager::setLogLayoutMessage(const String& newValue, bool isTemporary
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogLayoutMessage;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutMessage();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogLayoutMessage();
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
@@ -776,7 +776,7 @@ String ConfigManager::getLogLayoutExit() const
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogLayoutExit;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutExit();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogLayoutExit();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
     String result;
@@ -797,7 +797,7 @@ void ConfigManager::setLogLayoutExit(const String& newValue, bool isTemporary /*
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogLayoutExit;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutExit();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogLayoutExit();
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
@@ -851,7 +851,7 @@ void ConfigManager::addModuleLogScope(const String& scopeName, const String& pri
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey{ NEPersistence::ConfigEntry::LogScope };
-    const NEPersistence::sPropertyKey& key{ NEPersistence::getLogScope() };
+    const NEPersistence::ConfigKey& key{ NEPersistence::getLogScope() };
     setModuleProperty(key.section, key.property, scopeName, prio, confKey, false);
 }
 
@@ -867,7 +867,7 @@ bool ConfigManager::removeScope(const String& scopeName)
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey{ NEPersistence::ConfigEntry::LogScope };
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogScope();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogScope();
     uint32_t pos = _findPosition(mWritableProperties, 0, key.section, mModule, key.property, scopeName, true, confKey);
     if (pos != NECommon::INVALID_POSITION)
     {
@@ -880,7 +880,7 @@ bool ConfigManager::removeScope(const String& scopeName)
 int32_t ConfigManager::removeModuleScopes()
 {
     constexpr NEPersistence::ConfigEntry confKey{ NEPersistence::ConfigEntry::LogScope };
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogScope();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogScope();
     return removeModuleProperties(key.section, key.property, confKey);
 }
 
@@ -889,7 +889,7 @@ std::vector<Identifier> ConfigManager::getRemoteServiceConnections(const String&
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServiceConnection;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceConnection();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServiceConnection();
 
     std::vector<Identifier> result;
     const PropertyValue* value = getPropertyValue(service, key.property, key.position, confKey);
@@ -906,7 +906,7 @@ String ConfigManager::getRemoteServiceName(const String& service, const String& 
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServiceName;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceName();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServiceName();
     const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
     return (value != nullptr ? value->getString() : String(String::EmptyString));
 }
@@ -927,7 +927,7 @@ bool ConfigManager::getRemoteServiceEnable(const String& service, const String& 
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServiceEnable;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceEnable();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServiceEnable();
     const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
     return (value != nullptr ? value->getBoolean() : NEApplication::DEFAULT_SERVICE_ENABLED);
 }
@@ -948,7 +948,7 @@ void ConfigManager::setRemoteServiceEnable(const String& service, const String& 
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServiceEnable;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceEnable();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServiceEnable();
     setModuleProperty(service, key.property, connectType, String::makeString(newValue), confKey, isTemporary);
 }
 
@@ -968,7 +968,7 @@ String ConfigManager::getRemoteServiceAddress(const String& service, const Strin
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServiceAddress;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceAddress();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServiceAddress();
     const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
 
     String result;
@@ -1000,7 +1000,7 @@ void ConfigManager::setRemoteServiceAddress(const String& service, const String&
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServiceAddress;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServiceAddress();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServiceAddress();
     setModuleProperty(service, key.property, connectType, newValue, confKey, isTemporary);
 }
 
@@ -1020,7 +1020,7 @@ uint16_t ConfigManager::getRemoteServicePort(const String& service, const String
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServicePort;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServicePort();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServicePort();
     const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
     return static_cast<uint16_t>(value != nullptr ? value->getInteger() : NEApplication::DEFAULT_ROUTER_PORT);
 }
@@ -1041,7 +1041,7 @@ void ConfigManager::setRemoteServicePort(const String& service, const String& co
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::ServicePort;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getServicePort();
+    const NEPersistence::ConfigKey& key = NEPersistence::getServicePort();
     setModuleProperty(service, key.property, connectType, String::makeString(static_cast<uint32_t>(newValue)), confKey, isTemporary);
 }
 
@@ -1058,21 +1058,21 @@ void ConfigManager::setRemoteServicePort(NERemoteService::RemoteServiceKind serv
 
 String ConfigManager::getLogDatabaseProperty(const String& whichPosition)
 {
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogDatabaseName();
     const PropertyValue* value = getPropertyValue(key.section, key.property, whichPosition);
     return (value != nullptr ? value->getValue() : String::getEmptyString());
 }
 
 void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const String& newValue, bool isTemporary /*= false*/)
 {
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogDatabaseName();
     setModuleProperty(key.section, key.property, whichPosition, newValue, NEPersistence::ConfigEntry::AnyKey, isTemporary);
 }
 
 uint32_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= NEString::EmptyStringA*/)
 {
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::DefaultBufferBlock;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultBufferBlockSize();
+    const NEPersistence::ConfigKey& key = NEPersistence::getDefaultBufferBlockSize();
     const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
     return (prop != nullptr ? prop->getValue().getInteger() : 0u);
 }
@@ -1080,7 +1080,7 @@ uint32_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= 
 uint32_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*= NEString::EmptyStringA*/)
 {
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::DefaultMessageQueue;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getDefaultMessageQueueSize();
+    const NEPersistence::ConfigKey& key = NEPersistence::getDefaultMessageQueueSize();
     const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? NEPersistence::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
     return ( prop != nullptr ? prop->getValue().getInteger() : std::numeric_limits<uint32_t>::max() );
 }

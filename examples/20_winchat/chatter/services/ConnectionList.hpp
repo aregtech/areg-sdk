@@ -27,7 +27,7 @@ protected:
      * \param   success         Flag, indicating whether the request to register connection succeeded or not.
      * \see     requestRegisterConnection
      **/
-    void responseRegisterConnection( const ConnectionManager::sConnection & connection, const ConnectionManager::ListConnections & connectionList, bool success ) override;
+    void responseRegisterConnection( const ConnectionManager::ConnectionRecord & connection, const ConnectionManager::ListConnections & connectionList, bool success ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when new client connection is accepted
@@ -35,7 +35,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
-    void broadcastClientConnected( const ConnectionManager::sConnection & clientConnected ) override;
+    void broadcastClientConnected( const ConnectionManager::ConnectionRecord & clientConnected ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when client is disconnected
@@ -43,7 +43,7 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/
-    void broadcastClientDisconnected( const ConnectionManager::sConnection & clientLeft ) override;
+    void broadcastClientDisconnected( const ConnectionManager::ConnectionRecord & clientLeft ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

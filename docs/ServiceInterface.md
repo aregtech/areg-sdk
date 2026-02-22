@@ -112,7 +112,7 @@ The `<DataTypeList>` section defines custom types. All types must be serializabl
 Reference types from external headers:
 
 ```xml
-<DataType ID="11" Name="uAlign" Type="Imported">
+<DataType ID="11" Name="Primitive" Type="Imported">
     <Namespace>NEMemory</Namespace>
     <Location>areg/base/MemoryDefs.hpp</Location>
 </DataType>

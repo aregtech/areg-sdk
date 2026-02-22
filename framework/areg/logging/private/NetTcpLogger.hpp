@@ -112,7 +112,7 @@ public:
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    void logMessage( const NELogging::sLogMessage & logMessage ) override;
+    void logMessage( const NELogging::LogEntry & logMessage ) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).

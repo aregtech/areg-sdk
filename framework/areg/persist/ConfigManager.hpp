@@ -984,7 +984,7 @@ inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= 
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogStatus;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogStatus();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogStatus();
 
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
@@ -999,7 +999,7 @@ inline void ConfigManager::setLogEnabled(const String& logType, bool newValue, b
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogEnable;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogEnable();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogEnable();
     setModuleProperty(key.section, key.property, logType, String::makeString(newValue), confKey, isTemporary);
 }
 
@@ -1013,7 +1013,7 @@ inline void ConfigManager::setLogFileLocation(const String& newValue, bool isTem
     Lock lock(mLock);
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogFileLocation;
-    const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileLocation();
+    const NEPersistence::ConfigKey& key = NEPersistence::getLogFileLocation();
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 

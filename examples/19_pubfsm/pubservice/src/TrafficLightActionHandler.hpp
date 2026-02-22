@@ -1,6 +1,6 @@
 
 //////////////////////////////////////////////////////////////////////////
-// Begin generate IETrafficLightActionHandler.hpp file
+// Begin generate TrafficLightActionHandler.hpp file
 //////////////////////////////////////////////////////////////////////////
 
 #pragma once
@@ -12,7 +12,7 @@
  ************************************************************************/
 
 /************************************************************************
- * \file            pubservice/src/IETrafficLightActionHandler.hpp
+ * \file            pubservice/src/TrafficLightActionHandler.hpp
  * \ingroup         TrafficLight State Machine
  * \brief           This is an automatic generated code of TrafficLight action handler.
  ************************************************************************/
@@ -24,17 +24,17 @@
 #include "pubservice/src/TrafficLightDefs.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// IETrafficLightActionHandler class declaration 
+// TrafficLightActionHandler class declaration 
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   IETrafficLightActionHandler action handler interface.
+ * \brief   TrafficLightActionHandler action handler interface.
  *          In this classes are declared all action methods of
  *          TrafficLight State Machine.
  *          To implement State Machine, inherit this class, implement
  *          all action methods. The action handler is triggered from
  *          TrafficLight State Machine on state change or on trigger call.
  **/
-class IETrafficLightActionHandler
+class TrafficLightActionHandler
 {
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,14 +43,14 @@ class IETrafficLightActionHandler
 protected:
 
    /**
-    * \brief   IETrafficLightActionHandler constructor is hidden from direct call
+    * \brief   TrafficLightActionHandler constructor is hidden from direct call
     **/
-   IETrafficLightActionHandler() = default;
+   TrafficLightActionHandler() = default;
 
    /**
-    * \brief   IETrafficLightActionHandler destructor
+    * \brief   TrafficLightActionHandler destructor
     **/
-   virtual ~IETrafficLightActionHandler() = default;
+   virtual ~TrafficLightActionHandler() = default;
    
 
 //////////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IETrafficLightActionHandler action overrides
+// TrafficLightActionHandler action overrides
 /************************************************************************/
 
    /**
@@ -102,9 +102,9 @@ public:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    AREG_NOCOPY_NOMOVE( IETrafficLightActionHandler );
+    AREG_NOCOPY_NOMOVE( TrafficLightActionHandler );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// End generate IETrafficLightActionHandler.hpp file
+// End generate TrafficLightActionHandler.hpp file
 //////////////////////////////////////////////////////////////////////////

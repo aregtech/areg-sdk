@@ -228,7 +228,7 @@ uint32_t SharedBuffer::getDataOffset() const
 
 uint32_t SharedBuffer::getHeaderSize() const
 {
-    return sizeof(NEMemory::sByteBuffer);
+    return sizeof(NEMemory::RawBuffer);
 }
 
 uint32_t SharedBuffer::getAlignedSize() const

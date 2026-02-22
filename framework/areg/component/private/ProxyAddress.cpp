@@ -113,7 +113,7 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString()*/)
+ProxyAddress::ProxyAddress(const NEService::InterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString()*/)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )

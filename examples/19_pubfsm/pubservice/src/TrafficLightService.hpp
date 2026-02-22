@@ -16,7 +16,7 @@
 #include "areg/component/Component.hpp"
 #include "examples/19_pubfsm/services/PowerManagerStub.hpp"
 #include "examples/19_pubfsm/services/TrafficControllerStub.hpp"
-#include "pubservice/src/IETrafficLightActionHandler.hpp"
+#include "pubservice/src/TrafficLightActionHandler.hpp"
 
 #include "pubservice/src/PowerControllerClient.hpp"
 #include "pubservice/src/TrafficLightFSM.hpp"
@@ -34,7 +34,7 @@
 class TrafficLightService   : public    Component
                             , protected PowerManagerStub
                             , protected TrafficControllerStub
-                            , protected IETrafficLightActionHandler
+                            , protected TrafficLightActionHandler
 {
 public:
     /**
@@ -83,7 +83,7 @@ protected:
     void requestStopTrafficLight() override;
 
 /************************************************************************/
-// IETrafficLightActionHandler action overrides
+// TrafficLightActionHandler action overrides
 /************************************************************************/
 
    /**

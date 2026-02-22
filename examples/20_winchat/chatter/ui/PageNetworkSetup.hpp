@@ -29,8 +29,8 @@ public:
     void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
     void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
-    void OnAddConnection( ConnectionManager::sConnection & data );
-    void OnRemoveConnection( ConnectionManager::sConnection & data );
+    void OnAddConnection( ConnectionManager::ConnectionRecord & data );
+    void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
     void OnUpdateConnection();
     void OnDisconnectTriggered();
 

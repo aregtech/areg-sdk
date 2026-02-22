@@ -74,7 +74,7 @@ inline StubBase::MapStubResource& StubBase::map_providers()
 
 
 
-StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & siData )
+StubBase::StubBase( Component & masterComp, const NEService::InterfaceData & siData )
     : StubEventConsumer   ( mAddress )
 
     , mComponent            (masterComp)

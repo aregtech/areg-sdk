@@ -4,11 +4,11 @@
         <Description>The connection manager to register each application with client</Description>
     </Overview>
     <DataTypeList>
-        <DataType ID="3" Name="sConnection" Type="Imported">
+        <DataType ID="3" Name="ConnectionRecord" Type="Imported">
             <Location>common/ChatDefs.hpp</Location>
             <Namespace>chat</Namespace>
-            <ImportedObject>sConnection</ImportedObject>
-            <Description>Imported sConnection structure.</Description>
+            <ImportedObject>ConnectionRecord</ImportedObject>
+            <Description>Imported ConnectionRecord structure.</Description>
         </DataType>
         <DataType ID="4" Name="ListConnections" Type="Imported">
             <Location>common/ChatDefs.hpp</Location>
@@ -81,7 +81,7 @@
         <Method ID="24" Name="RegisterConnection" MethodType="Response">
             <Description>The result of request to register direct connection service.</Description>
             <ParamList>
-                <Parameter ID="58" Name="connection" DataType="sConnection">
+                <Parameter ID="58" Name="connection" DataType="ConnectionRecord">
                     <Description>The connection structure after registration.</Description>
                 </Parameter>
                 <Parameter ID="59" Name="connectionList" DataType="ListConnections">
@@ -134,7 +134,7 @@
         <Method ID="40" Name="ClientConnected" MethodType="Broadcast">
             <Description>Notifies that a new client has been connected.</Description>
             <ParamList>
-                <Parameter ID="69" Name="clientConnected" DataType="sConnection">
+                <Parameter ID="69" Name="clientConnected" DataType="ConnectionRecord">
                     <Description>New client data, which contains nick name and connected date-time</Description>
                 </Parameter>
             </ParamList>
@@ -142,7 +142,7 @@
         <Method ID="43" Name="ClientDisconnected" MethodType="Broadcast">
             <Description>Notifies a client has been disconnected.</Description>
             <ParamList>
-                <Parameter ID="70" Name="clientLeft" DataType="sConnection">
+                <Parameter ID="70" Name="clientLeft" DataType="ConnectionRecord">
                     <Description>The connection data of disconnected client.</Description>
                 </Parameter>
             </ParamList>

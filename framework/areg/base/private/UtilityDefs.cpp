@@ -47,7 +47,7 @@ namespace NEUtilities
      * \param[out]  sysTime     The structure to break the current date and time.
      * \param[in]   localTime   The flag, indicating whether the time should be local or in UTC.
      **/
-    extern void _osSystemTimeNow( sSystemTime & sysTime, bool localTime );
+    extern void _osSystemTimeNow( CalendarTime & sysTime, bool localTime );
 
     /**
      * \brief   Converts the UTC time broken in the structure of `tm` to the local time.
@@ -62,7 +62,7 @@ namespace NEUtilities
      * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure.
      * \return  Returns true if operation succeeded. Otherwise, returns false.
      **/
-    extern bool _osConvToLocalTime(const TIME64& utcTime, sSystemTime& localTime);
+    extern bool _osConvToLocalTime(const TIME64& utcTime, CalendarTime& localTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
@@ -81,7 +81,7 @@ namespace NEUtilities
      * \param[out]  sysTime     The broken time structure. On output this contains structured calendar structure,
      *                          including milliseconds and microseconds.
      **/
-    extern void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::sSystemTime& sysTime);
+    extern void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::CalendarTime& sysTime);
 
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
@@ -96,7 +96,7 @@ namespace NEUtilities
 // Local static methods.
 /************************************************************************/
 
-    static NEMath::Ordering _compareLargeIntegers( const NEMath::uLargeInteger & lhs, const NEMath::uLargeInteger & rhs )
+    static NEMath::Ordering _compareLargeIntegers( const NEMath::Int64Parts & lhs, const NEMath::Int64Parts & rhs )
     {
         NEMath::Ordering result = NEMath::Ordering::Equal;
         if ( lhs.u.highPart < rhs.u.highPart )
@@ -116,7 +116,7 @@ namespace NEUtilities
 // NEUtilities namespace global functions
 /************************************************************************/
 
-AREG_API_IMPL time_t NEUtilities::convToSeconds(const sSystemTime & sysTime)
+AREG_API_IMPL time_t NEUtilities::convToSeconds(const CalendarTime & sysTime)
 {
     const int32_t year{ sysTime.stYear - 1900 };
     return    static_cast<time_t>(sysTime.stSecond)
@@ -131,7 +131,7 @@ AREG_API_IMPL time_t NEUtilities::convToSeconds(const sSystemTime & sysTime)
 
 AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const TIME64 & lhs, const TIME64 & rhs )
 {
-    NEMath::uLargeInteger lhsLi, rshLi;
+    NEMath::Int64Parts lhsLi, rshLi;
     lhsLi.quadPart  = lhs;
     rshLi.quadPart  = rhs;
 
@@ -146,7 +146,7 @@ AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& time, time_t& secs, 
     micro = static_cast<uint16_t>(rest % NEUtilities::MILLISEC_TO_MICROSECS);
 }
 
-AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & sysTime, struct tm & time)
+AREG_API_IMPL void NEUtilities::convToTm(const CalendarTime & sysTime, struct tm & time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -177,7 +177,7 @@ AREG_API_IMPL void NEUtilities::convToTm(const TIME64& timeMicro, tm& time)
     _osConvToTm(timeMicro, time);
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, sSystemTime & sysTime)
+AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, CalendarTime & sysTime)
 {
     sysTime.stSecond    = static_cast<int32_t>(time.tm_sec);
     sysTime.stMinute    = static_cast<int32_t>(time.tm_min);
@@ -189,7 +189,7 @@ AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, sSystem
     sysTime.stDayOfYear = static_cast<int32_t>(time.tm_yday +    1);
 }
 
-AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const NEUtilities::sSystemTime & lhs, const NEUtilities::sSystemTime & rhs )
+AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const NEUtilities::CalendarTime & lhs, const NEUtilities::CalendarTime & rhs )
 {
     TIME64 lhsTm{ NEUtilities::convToTime(lhs) };
     TIME64 rshTm{ NEUtilities::convToTime(rhs) };
@@ -248,7 +248,7 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
     {
         *out_buffer = '\0';
         const char* spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
-        NEMath::uLargeInteger time{};
+        NEMath::Int64Parts time{};
         auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
         time.quadPart = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
 
@@ -274,13 +274,13 @@ AREG_API_IMPL uint64_t NEUtilities::getTickCount()
     return _osGetTickCount();
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime & utcTime, sSystemTime & localTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const CalendarTime & utcTime, CalendarTime & localTime )
 {
     TIME64 quad = NEUtilities::convToTime(utcTime);
     return NEUtilities::convToLocalTime(quad, localTime);
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & utcTime, sSystemTime & localTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & utcTime, CalendarTime & localTime )
 {
     return _osConvToLocalTime(utcTime, localTime);
 }
@@ -290,7 +290,7 @@ AREG_API_IMPL bool NEUtilities::convToLocalTm(const TIME64 & utcTime, tm& localT
     return _osConvToLocalTm(utcTime, localTm);
 }
 
-AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & sysTime, bool localTime )
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::CalendarTime & sysTime, bool localTime )
 {
     _osSystemTimeNow( sysTime, localTime );
 }
@@ -300,7 +300,7 @@ AREG_API_IMPL TIME64 NEUtilities::systemTimeNow()
     return _osSystemTimeNow();
 }
 
-AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::CalendarTime & sysTime )
 {
     const int32_t year{ sysTime.stYear - 1900 };
 
@@ -328,7 +328,7 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime(const tm& time)
             + static_cast<TIME64>((time.tm_year + 299) / 400) * NEUtilities::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & timeValue, NEUtilities::sSystemTime & sysTime )
+AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & timeValue, NEUtilities::CalendarTime & sysTime )
 {
     _osConvToSystemTime(timeValue, sysTime);
 }

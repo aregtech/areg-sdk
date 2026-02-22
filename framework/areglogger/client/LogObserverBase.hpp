@@ -286,7 +286,7 @@ public:
      *          This query will receive list of all registered instances.
      * \param   infos   On output, contains the list of information of all registered instances in database.
      **/
-    void getLogInstanceInfos(std::vector< NEService::sServiceConnectedInstance>& infos);
+    void getLogInstanceInfos(std::vector< NEService::ConnectedInstance>& infos);
 
     /**
      * \brief   Call to query and get information of log scopes of specified instance from log database.
@@ -294,7 +294,7 @@ public:
      * \param   scopes  On output, contains the list of all registered scopes in database related with the specified instance ID.
      * \param   instID  The ID of the instance.
      **/
-    void getLogInstScopes(std::vector<NELogging::sScopeInfo>& scopes, ITEM_ID instId);
+    void getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId);
 
     /**
      * \brief   Call to get all log messages from log database.
@@ -365,7 +365,7 @@ public:
      * \param   count   The number of scope entries in the list.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool requestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count);
+    bool requestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count);
 
     /**
      * \brief   Requests to save current configuration of the specified target. This is normally called when update the log priority of the instance,
@@ -442,14 +442,14 @@ protected:
      * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
      * \param   instances   The list of the connected instances.
      **/
-    virtual void onLogInstancesConnect(const std::vector< NEService::sServiceConnectedInstance > & instances) = 0;
+    virtual void onLogInstancesConnect(const std::vector< NEService::ConnectedInstance > & instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
      * \param   instances   The list of IDs of the disconnected instances.
      * \param   count       The number of entries in the list.
      **/
-    virtual void onLogInstancesDisconnect(const std::vector< NEService::sServiceConnectedInstance > & instances) = 0;
+    virtual void onLogInstancesDisconnect(const std::vector< NEService::ConnectedInstance > & instances) = 0;
 
     /**
      * \brief   The callback of the event triggered when connection with the log collector service is lost.
@@ -458,19 +458,19 @@ protected:
 
     /**
      * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.
-     * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+     * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
      * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    virtual void onLogRegisterScopes(ITEM_ID cookie, const sLogScope* scopes, int32_t count) = 0;
+    virtual void onLogRegisterScopes(ITEM_ID cookie, const ScopeInfo* scopes, int32_t count) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
-     * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+     * \param   cookie  The cookie ID of the connected instance / application. Same as LogInstance::liCookie
      * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    virtual void onLogUpdateScopes(ITEM_ID cookie, const sLogScope* scopes, int32_t count) = 0;
+    virtual void onLogUpdateScopes(ITEM_ID cookie, const ScopeInfo* scopes, int32_t count) = 0;
 
     /**
      * \brief   The callback of the event triggered when receive message to log.

@@ -34,12 +34,12 @@ public:
     void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
     void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
     void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
-    void OnAddConnection( ConnectionManager::sConnection & data );
-    void OnRemoveConnection( ConnectionManager::sConnection & data );
+    void OnAddConnection( ConnectionManager::ConnectionRecord & data );
+    void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
     void OnUpdateConnection();
     void OnDisconnectTriggered();
-    void OnTypeMessage( uint32_t cookie, chat::sMessageData & data );
-    void OnSendMessage( uint32_t cookie, chat::sMessageData & data );
+    void OnTypeMessage( uint32_t cookie, chat:: MessageData & data );
+    void OnSendMessage( uint32_t cookie, chat:: MessageData & data );
 
     void OnDefaultClicked();
 

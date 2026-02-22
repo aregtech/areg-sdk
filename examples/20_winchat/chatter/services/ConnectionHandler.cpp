@@ -29,7 +29,7 @@ bool ConnectionHandler::IsValid() const
     return (GetCookie() != ConnectionManager::InvalidCookie) && (mNickName.isEmpty() == false);
 }
 
-bool ConnectionHandler::AddConnection(const chat::sConnection & newConnection)
+bool ConnectionHandler::AddConnection(const chat::ConnectionRecord & newConnection)
 {
     Lock lock(mLock);
     int32_t pos = NECommon::INVALID_INDEX;
@@ -49,7 +49,7 @@ int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConn
     int32_t result = 0;
     for (uint32_t i = 0; i < listConnections.getSize(); ++i)
     {
-        const chat::sConnection & entry = listConnections.getAt(i);
+        const chat::ConnectionRecord & entry = listConnections.getAt(i);
         if (entry.nickName != mNickName)
         {
             if (findConnection(entry) == NECommon::INVALID_INDEX)
@@ -63,7 +63,7 @@ int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConn
     return result;
 }
 
-bool ConnectionHandler::RemoveConnection(const chat::sConnection & connection)
+bool ConnectionHandler::RemoveConnection(const chat::ConnectionRecord & connection)
 {
     Lock lock(mLock);
     int32_t pos = findConnection(connection);
@@ -75,18 +75,18 @@ bool ConnectionHandler::RemoveConnection(const chat::sConnection & connection)
     return (pos != NECommon::INVALID_INDEX);
 }
 
-bool ConnectionHandler::ConnectionExist(const chat::sConnection & connection)
+bool ConnectionHandler::ConnectionExist(const chat::ConnectionRecord & connection)
 {
     Lock lock(mLock);
     return ( findConnection(connection) != NECommon::INVALID_INDEX);
 }
 
-int32_t ConnectionHandler::findConnection(const chat::sConnection & connection) const
+int32_t ConnectionHandler::findConnection(const chat::ConnectionRecord & connection) const
 {
     int32_t result = NECommon::INVALID_INDEX;
     for (uint32_t i = 0; i < mListConnections.getSize(); ++i)
     {
-        const chat::sConnection & entry = mListConnections.getAt(i);
+        const chat::ConnectionRecord & entry = mListConnections.getAt(i);
         if (entry.nickName == connection.nickName)
         {
             result = static_cast<int32_t>(i);
