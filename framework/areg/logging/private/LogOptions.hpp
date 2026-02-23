@@ -33,10 +33,10 @@
   *         log enable / disable, scope (group of scopes) defines, 
   *         log target (file, remote host), comments, etc.
   **/
-namespace NELogOptions
+namespace areg
 {
     /**
-     * \brief   NELogging::LayoutToken
+     * \brief   areg::LayoutToken
      *          The syntax of specifiers to parse and create layouts to output messages.
      * 
      * \example Formatting message out for scope:
@@ -120,14 +120,14 @@ namespace NELogOptions
     /**
      * \brief   The default logging priority
      **/
-    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) };
+    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate
      **/
     constexpr std::pair<std::string_view, uint32_t>  DEFAULT_LOG_ENABLED_SCOPES[]
     {
-          { {"*"}       , static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) }
+          { {"*"}       , static_cast<uint32_t>(areg::LogPriority::PrioNotset) }
     };
 }
 

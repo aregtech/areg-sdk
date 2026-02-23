@@ -48,7 +48,7 @@ class SyncLockAndWaitPosix;
  * \brief   LockAndWait object that makes locking of single and multiple objects and waits until
  *          one or all objects are signaled. The waiting criteria depends on the flag.
  *          There is a limitation of waiting objects at once, and the maximum numbers are
- *          equal to NECommon::MAXIMUM_WAITING_OBJECTS.
+ *          equal to areg::MAXIMUM_WAITING_OBJECTS.
  *          Use static methods for waiting functionalities. The internal methods are hidden.
  **/
 class SyncLockAndWaitPosix
@@ -161,7 +161,7 @@ private:
 
     };
     /**
-     * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
+     * \brief   The fixed array of waitable. The maximum size of array is areg::MAXIMUM_WAITING_OBJECTS
      **/
     using WaitingList   = FixedArray<WaitablePosix *>;
 
@@ -178,41 +178,41 @@ public:
      *          For more details see the description of each waitable object.
      * \param   syncWait    The waitable object to check the signaled state.
      * \param   msTimeout   The timeout in milliseconds to wait until waitable is signaled.
-     *                      If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
+     *                      If areg::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                      Any other value indicates timeout to wait.
      * \return  It returns one of following values:
-     *              - NESyncTypesIX::SyncSignal::First if waitable was signaled;
-     *              - NESyncTypesIX::SyncSignal::Timeout if waiting timeout is expired;
-     *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
-     *              - NESyncTypesIX::SyncSignal::FirstError if error happened. For example, the waitable is invalidated.
+     *              - areg::os::SyncSignal::First if waitable was signaled;
+     *              - areg::os::SyncSignal::Timeout if waiting timeout is expired;
+     *              - areg::os::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
+     *              - areg::os::SyncSignal::FirstError if error happened. For example, the waitable is invalidated.
      **/
-    static int32_t waitForSingleObject( WaitablePosix & syncWait, uint32_t msTimeout = NECommon::WAIT_INFINITE );
+    static int32_t waitForSingleObject( WaitablePosix & syncWait, uint32_t msTimeout = areg::WAIT_INFINITE );
 
     /**
      * \brief   Call to lock and wait the list of synchronization objects until one or all objects are signaled.
      *          The waiting criteria depends on waitable signal state, waitAll parameter and timeout.
-     *          There can be maximum NECommon::MAXIMUM_WAITING_OBJECTS in the list to wait. This limitation is synchronized
+     *          There can be maximum areg::MAXIMUM_WAITING_OBJECTS in the list to wait. This limitation is synchronized
      *          with Microsoft limitation. In practice, normally there are very few events in the list.
      *          In case of some waitable such as Mutex, this call takes the ownership. in case of Synchronization Events
      *          this may reset signaled state or leave in signaled state, depending on Synchronization Event types.
      *          For more details see the description of each waitable object.
      * \param   listWaitables   The list of waitables to check the signaled state. There should be no more than 
-     *                          NECommon::MAXIMUM_WAITING_OBJECTS entries in the list.
+     *                          areg::MAXIMUM_WAITING_OBJECTS entries in the list.
      * \param   count           The number of waitables in the list. There should be no more than 
-     *                          NECommon::MAXIMUM_WAITING_OBJECTS entries.
+     *                          areg::MAXIMUM_WAITING_OBJECTS entries.
      * \param   waitAll         If true, the call is locks the thread until all waitables in the list are signaled.
      *                          If false, any waitable in signaled state unlocks the thread.
      * \param   msTimeout       The timeout in milliseconds to wait until waitable is signaled.
-     *                          If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
+     *                          If areg::WAIT_INFINITE, it will wait until event is signaled or failed.
      *                          Any other value indicates timeout to wait.
      * \return  It returns one of following values:
-     *              - NESyncTypesIX::SyncSignal::First + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
-     *              - NESyncTypesIX::SyncSignal::All if 'waitAll' flag is true and all waitables are signaled.
-     *              - NESyncTypesIX::SyncSignal::Timeout if waiting timeout is expired;
-     *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
-     *              - NESyncTypesIX::SyncSignal::FirstError + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
+     *              - areg::os::SyncSignal::First + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
+     *              - areg::os::SyncSignal::All if 'waitAll' flag is true and all waitables are signaled.
+     *              - areg::os::SyncSignal::Timeout if waiting timeout is expired;
+     *              - areg::os::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
+     *              - areg::os::SyncSignal::FirstError + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
      **/
-    static int32_t waitForMultipleObjects( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = NECommon::WAIT_INFINITE);
+    static int32_t waitForMultipleObjects( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = areg::WAIT_INFINITE);
 
     /**
      * \brief   Called by waitable object to indicate that it is in signaled state.
@@ -257,13 +257,13 @@ public:
 private:
     /**
      * \brief   Initializes WaitAndLock object, sets flags and checks signaled sate of waitables.
-     * \param   listWaitables   The list of waitables. The maximum number of entries should be NECommon::MAXIMUM_WAITING_OBJECTS
-     * \param   count           The number of waitables in the list. The maximum number of entries should be NECommon::MAXIMUM_WAITING_OBJECTS.
+     * \param   listWaitables   The list of waitables. The maximum number of entries should be areg::MAXIMUM_WAITING_OBJECTS
+     * \param   count           The number of waitables in the list. The maximum number of entries should be areg::MAXIMUM_WAITING_OBJECTS.
      * \param   matchCondition  The signaled state matching criteria. Either it should have exact match, i.e. wait all events to be signaled,
      *                          or it should wait for any event to be in signaled state.
      * \param   msTimeout       Initializes the timeout in milliseconds to wait.
      **/
-    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, NESyncTypesIX::WaitCondition matchCondition, uint32_t msTimeout );
+    SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, areg::os::WaitCondition matchCondition, uint32_t msTimeout );
 
     /**
      * \brief   Destructor.
@@ -365,7 +365,7 @@ private:
     /**
      * \brief   Describes the lock and wait condition.
      **/
-    const NESyncTypesIX::WaitCondition   mMatchCondition;
+    const areg::os::WaitCondition   mMatchCondition;
     /**
      * \brief   Timeout in milliseconds to wait when blocks the thread.
      **/

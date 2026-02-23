@@ -275,7 +275,7 @@ int32_t SqliteStatement::getColumnIndex(const String& columnName) const
         }
     }
 
-    return NECommon::INVALID_INDEX; // Column not found
+    return areg::INVALID_INDEX; // Column not found
 }
 
 SqliteStatement::ColumnType SqliteStatement::getColumnType(int32_t index) const

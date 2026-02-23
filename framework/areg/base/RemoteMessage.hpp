@@ -46,15 +46,15 @@ public:
     /**
      * \brief   Initialize object by default values.
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size)
      **/
-    explicit RemoteMessage(uint32_t blockSize = NEMemory::BLOCK_SIZE);
+    explicit RemoteMessage(uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief   Constructor to reserve space for byte buffer object.
      * \param   reserveSize Size in bytes to reserve
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size)
      **/
     RemoteMessage( uint32_t reserveSize, uint32_t blockSize );
 
@@ -63,9 +63,9 @@ public:
      * \param	buffer      The data to initialize byte buffer.
      * \param	size        The length in bytes of data.
      * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size).
+     *                      It is aligned to areg::BLOCK_SIZE (minimum size).
      **/
-    RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE);
+    RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize = areg::BLOCK_SIZE);
 
     /**
      * \brief	It does not make hard copy of data from given source, it will refer to the same shared
@@ -134,7 +134,7 @@ public:
     /**
      * \brief   Returns remote message structure data
      **/
-    inline const NEMemory::RawMessage * getRemoteMessage() const;
+    inline const areg::RawMessage * getRemoteMessage() const;
 
     /**
      * \brief   Returns checksum value of Remote Buffer.
@@ -221,7 +221,7 @@ public:
      * \param   reserve     The size in bytes to reserve in the buffer
      * \return  Returns pointer to allocated data buffer to copy data.
      **/
-    uint8_t * initMessage( const NEMemory::MessageHeader & rmHeader, uint32_t reserve = 0 );
+    uint8_t * initMessage( const areg::MessageHeader & rmHeader, uint32_t reserve = 0 );
 
     /**
      * \brief   Clones the message buffer with the data.
@@ -272,49 +272,49 @@ private:
     /**
      * \brief   Returns converted instance of Remote Message header.
      **/
-    inline const NEMemory::MessageHeader & _getHeader() const;
-    inline NEMemory::MessageHeader & _getHeader();
+    inline const areg::MessageHeader & _getHeader() const;
+    inline areg::MessageHeader & _getHeader();
 
     /**
      * \brief   Returns converted instance of Remote Buffer
      **/
-    inline const NEMemory::RawMessage & _getRemoteMessage() const;
-    inline NEMemory::RawMessage & _getRemoteMessage();
+    inline const areg::RawMessage & _getRemoteMessage() const;
+    inline areg::RawMessage & _getRemoteMessage();
 
     /**
      * \brief   Calculates and returns the checksum value of given remote message
      **/
-    static uint32_t _checksumCalculate( const NEMemory::RawMessage & remoteMessage );
+    static uint32_t _checksumCalculate( const areg::RawMessage & remoteMessage );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteMessage class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline const NEMemory::MessageHeader & RemoteMessage::_getHeader() const
+inline const areg::MessageHeader & RemoteMessage::_getHeader() const
 {
-    return reinterpret_cast<const NEMemory::MessageHeader &>(*getByteBuffer());
+    return reinterpret_cast<const areg::MessageHeader &>(*getByteBuffer());
 }
 
-inline NEMemory::MessageHeader & RemoteMessage::_getHeader()
+inline areg::MessageHeader & RemoteMessage::_getHeader()
 {
     ASSERT(mByteBuffer.get() != nullptr);
-    return reinterpret_cast<NEMemory::MessageHeader &>(*(mByteBuffer.get()));
+    return reinterpret_cast<areg::MessageHeader &>(*(mByteBuffer.get()));
 }
 
-inline const NEMemory::RawMessage & RemoteMessage::_getRemoteMessage() const
+inline const areg::RawMessage & RemoteMessage::_getRemoteMessage() const
 {
-    return reinterpret_cast<const NEMemory::RawMessage &>(*getByteBuffer());
+    return reinterpret_cast<const areg::RawMessage &>(*getByteBuffer());
 }
 
-inline NEMemory::RawMessage & RemoteMessage::_getRemoteMessage()
+inline areg::RawMessage & RemoteMessage::_getRemoteMessage()
 {
     ASSERT( mByteBuffer.get( ) != nullptr );
-    return reinterpret_cast<NEMemory::RawMessage &>(*mByteBuffer.get());
+    return reinterpret_cast<areg::RawMessage &>(*mByteBuffer.get());
 }
 
-inline const NEMemory::RawMessage * RemoteMessage::getRemoteMessage() const
+inline const areg::RawMessage * RemoteMessage::getRemoteMessage() const
 {
-    return reinterpret_cast<const NEMemory::RawMessage *>(getByteBuffer());
+    return reinterpret_cast<const areg::RawMessage *>(getByteBuffer());
 }
 
 inline uint32_t RemoteMessage::getChecksum() const

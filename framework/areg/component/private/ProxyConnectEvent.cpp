@@ -27,10 +27,10 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, NEService::ServiceConnectionState connectStatus )
+ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, areg::ServiceConnectionState connectStatus )
     : ServiceResponseEvent  ( target
-                            , NEService::ResultType::DataOK
-                            , static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection)
+                            , areg::ResultType::DataOK
+                            , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , Event::EventType::EventLocalProxyConnect )
     , mStubAddress          ( implAddress )
     , mConnectionStatus     ( connectStatus )
@@ -47,7 +47,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyCo
 ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
     : ServiceResponseEvent  ( stream )
     , mStubAddress          ( stream )
-    , mConnectionStatus     ( NEService::ServiceConnectionState::Unknown )
+    , mConnectionStatus     ( areg::ServiceConnectionState::Unknown )
 {
      stream >> mConnectionStatus;
 }

@@ -36,16 +36,16 @@ AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 WorkerThread::WorkerThread( const String & threadName
                           , Component & bindingComponent
                           , WorkerThreadConsumer & threadConsumer
-                          , uint32_t watchdogTimeout/* = NECommon::WATCHDOG_IGNORE    */
-                          , uint32_t stackSizeKb    /* = NECommon::STACK_SIZE_DEFAULT */
-                          , uint32_t maxQueue       /* = NECommon::IGNORE_VALUE */ )
+                          , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
+                          , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
+                          , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )
     : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
 
     , mBindingComponent     ( bindingComponent )
     , mWorkerThreadConsumer ( threadConsumer )
     , mWatchdog             ( self(), watchdogTimeout )
 {
-    ASSERT(NEString::isEmpty<char>(threadName) == false);
+    ASSERT(areg::isEmpty<char>(threadName) == false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ void WorkerThread::terminateSelf()
     mHasStarted = false;
     removeAllEvents();
     mEventExit.setEvent();
-    Thread::shutdownThread(NECommon::TIMEOUT_10_MS);
+    Thread::shutdownThread(areg::TIMEOUT_10_MS);
 
     delete this;
 }

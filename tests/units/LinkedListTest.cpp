@@ -586,9 +586,9 @@ TEST(LinkedListTest, TestAscending)
     LinkedList list1(_arr1, _len), res1(_res1, _len);
     list1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
     list1.getElements(_dat1, _len);
-    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::Ordering::Equal);
+    EXPECT_NE(areg::memCompare(_dat1, _arr1, _len), areg::Ordering::Equal);
     EXPECT_EQ(list1.getSize(), _len);
-    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::Ordering::Equal);
+    EXPECT_EQ(areg::memCompare(_dat1, _res1, _len), areg::Ordering::Equal);
 }
 
 /**
@@ -605,7 +605,7 @@ TEST(LinkedListTest, TestDescending)
     LinkedList list1(_arr1, _len), res1(_res1, _len);
     list1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });
     list1.getElements(_dat1, _len);
-    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::Ordering::Equal);
+    EXPECT_NE(areg::memCompare(_dat1, _arr1, _len), areg::Ordering::Equal);
     EXPECT_EQ(list1.getSize(), _len);
-    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::Ordering::Equal);
+    EXPECT_EQ(areg::memCompare(_dat1, _res1, _len), areg::Ordering::Equal);
 }

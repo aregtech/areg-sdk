@@ -44,7 +44,7 @@ BEGIN_MODEL(_modelName)
         // Define the console service
         BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
             // register dummy 'empty service'.
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
         END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
     // end of thread description
@@ -58,7 +58,7 @@ namespace
     constexpr std::string_view _msgHelp []
     {
           {"Usage of Areg Multi-target Message Router (mtrouter) :"}
-        , NESystemService::MSG_SEPARATOR
+        , aregext::MSG_SEPARATOR
         , {"-c, --console   : Command to run mtrouter as a console application (default option). Usage: \'mtrouter --console\'"}
         , {"-h, --help      : Command to display this message on console."}
         , {"-i, --install   : Command to install mtrouter as a service. Valid only for Windows OS. Usage: \'mtrouter --install\'"}
@@ -71,7 +71,7 @@ namespace
         , {"-t, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
         , {"-u, --uninstall : Command to uninstall mtrouter as a service. Valid only for Windows OS. Usage: \'mtrouter --uninstall\'"}
         , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
-        , NESystemService::MSG_SEPARATOR
+        , aregext::MSG_SEPARATOR
     };
 }
 
@@ -118,7 +118,7 @@ MultitargetRouter & MultitargetRouter::getInstance()
 void MultitargetRouter::printStatus(const String& status)
 {
 
-    if (MultitargetRouter::getInstance().getCurrentOption() == NESystemService::ServiceOption::CMD_Console)
+    if (MultitargetRouter::getInstance().getCurrentOption() == aregext::ServiceOption::CMD_Console)
     {
         Console& console{ Console::getInstance() };
         Console::Coord curPos{ console.getCursorCurPosition() };
@@ -164,7 +164,7 @@ void MultitargetRouter::runConsoleInputExtended()
         // No verbose mode.
         // Set local callback, output message and wait for user input.
         console.enableConsoleInput( true );
-        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+        console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
         console.waitForInput( getOptionCheckCallback( ) );
     }
 
@@ -185,7 +185,7 @@ void MultitargetRouter::runConsoleInputSimple()
 
     do
     {
-        printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+        printf( "%s", aregext::FORMAT_WAIT_QUIT.data( ) );
         if (inputConsoleData(cmd, bufSize) == false)
             continue;
 
@@ -202,49 +202,49 @@ std::pair<const OptionParser::OptionSetup*, int32_t> MultitargetRouter::getAppOp
 
 wchar_t* MultitargetRouter::getServiceNameW() const
 {
-    return NEMultitargetRouterSettings::SERVICE_NAME_WIDE;
+    return mtrouter::SERVICE_NAME_WIDE;
 }
 
 char* MultitargetRouter::getServiceNameA() const
 {
-    return NEMultitargetRouterSettings::SERVICE_NAME_ASCII;
+    return mtrouter::SERVICE_NAME_ASCII;
 }
 
 wchar_t* MultitargetRouter::getServiceDisplayNameW() const
 {
-    return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE;
+    return mtrouter::SERVICE_DISPLAY_NAME_WIDE;
 }
 
 char* MultitargetRouter::getServiceDisplayNameA() const
 {
-    return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII;
+    return mtrouter::SERVICE_DISPLAY_NAME_ASCII;
 }
 
 wchar_t* MultitargetRouter::getServiceDescriptionW() const
 {
-    return NEMultitargetRouterSettings::SERVICE_DESCRIBE_WIDE;
+    return mtrouter::SERVICE_DESCRIBE_WIDE;
 }
 
 char* MultitargetRouter::getServiceDescriptionA() const
 {
-    return NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII;
+    return mtrouter::SERVICE_DESCRIBE_ASCII;
 }
 
-NERemoteService::RemoteServiceKind MultitargetRouter::getServiceType() const
+areg::RemoteServiceKind MultitargetRouter::getServiceType() const
 {
-    return NERemoteService::RemoteServiceKind::Router;
+    return areg::RemoteServiceKind::Router;
 }
 
-NERemoteService::ConnectionType MultitargetRouter::getConnectionType() const
+areg::ConnectionType MultitargetRouter::getConnectionType() const
 {
-    return NERemoteService::ConnectionType::Tcpip;
+    return areg::ConnectionType::Tcpip;
 }
 
 void MultitargetRouter::printHelp( bool /* isCmdLine */ )
 {
 #if     AREG_EXTENDED
 
-    Console::Coord line{ NESystemService::COORD_INFO_MSG };
+    Console::Coord line{ aregext::COORD_INFO_MSG };
     Console& console = Console::getInstance();
     console.lockConsole();
     for (const auto& text : _msgHelp)
@@ -355,15 +355,15 @@ bool MultitargetRouter::_checkCommand(const String& cmd)
     {
         if ( hasError )
         {
-            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
+            console.outputMsg( aregext::COORD_ERROR_MSG, aregext::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
         }
 
-        console.clearLine( NESystemService::COORD_USER_INPUT );
-        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+        console.clearLine( aregext::COORD_USER_INPUT );
+        console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
     }
     else
     {
-        console.outputTxt( NESystemService::COORD_INFO_MSG, NESystemService::FORMAT_QUIT_APP );
+        console.outputTxt( aregext::COORD_INFO_MSG, aregext::FORMAT_QUIT_APP );
     }
 
     console.refreshScreen( );
@@ -375,13 +375,13 @@ bool MultitargetRouter::_checkCommand(const String& cmd)
     {
         if ( hasError )
         {
-            printf( NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString() );
+            printf( aregext::FORMAT_MSG_ERROR.data( ), cmd.getString() );
             printf( "\n" );
         }
     }
     else
     {
-        printf( "%s\n", NESystemService::FORMAT_QUIT_APP.data( ) );
+        printf( "%s\n", aregext::FORMAT_QUIT_APP.data( ) );
     }
 
 #endif  // AREG_EXTENDED
@@ -395,14 +395,14 @@ void MultitargetRouter::_outputTitle()
 
     Console & console = Console::getInstance( );
     console.lockConsole();
-    console.outputTxt( NESystemService::COORD_TITLE, NEMultitargetRouterSettings::APP_TITLE.data( ) );
-    console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
+    console.outputTxt( aregext::COORD_TITLE, mtrouter::APP_TITLE.data( ) );
+    console.outputTxt( aregext::COORD_SUBTITLE, aregext::MSG_SEPARATOR.data( ) );
     console.unlockConsole();
 
 #else   // !AREG_EXTENDED
 
-    printf( "%s\n", NEMultitargetRouterSettings::APP_TITLE.data( ) );
-    printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+    printf( "%s\n", mtrouter::APP_TITLE.data( ) );
+    printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
 
 #endif  // AREG_EXTENDED
 }
@@ -412,10 +412,10 @@ void MultitargetRouter::_outputInfo( const String & info )
 #if AREG_EXTENDED
 
     Console & console = Console::getInstance( );
-    Console::Coord coord{NESystemService::COORD_INFO_MSG};
+    Console::Coord coord{aregext::COORD_INFO_MSG};
     console.lockConsole( );
 
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
     ++ coord.posY;
     console.outputStr( coord, info );
 
@@ -428,7 +428,7 @@ void MultitargetRouter::_outputInfo( const String & info )
 #endif  // AREG_EXTENDED
 }
 
-void MultitargetRouter::_outputInstances( const NEService::MapInstances & instances )
+void MultitargetRouter::_outputInstances( const areg::MapInstances & instances )
 {
     static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
@@ -436,29 +436,29 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
 #if AREG_EXTENDED
 
     Console & console = Console::getInstance( );
-    Console::Coord coord{NESystemService::COORD_INFO_MSG};
+    Console::Coord coord{aregext::COORD_INFO_MSG};
     console.lockConsole( );
 
     if ( instances.isEmpty( ) )
     {
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputStr( coord, _empty );
         ++ coord.posY;
     }
     else
     {
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputTxt( coord, _table );
         ++ coord.posY;
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         int32_t i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            NEService::ConnectedInstance instance;
+            areg::ConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             uint32_t id{ static_cast<uint32_t>(cookie) };
 
@@ -467,7 +467,7 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
         }
     }
 
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
     console.unlockConsole( );
 
 #else   // !AREG_EXTENDED
@@ -478,15 +478,15 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
     }
     else
     {
-        printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+        printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
         printf( "%s\n", _table.data() );
-        printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+        printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
 
         int32_t i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            NEService::ConnectedInstance instance;
+            areg::ConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             uint32_t id{ static_cast<uint32_t>(cookie) };
 
@@ -494,7 +494,7 @@ void MultitargetRouter::_outputInstances( const NEService::MapInstances & instan
         }
     }
 
-    printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+    printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
 
 #endif  // AREG_EXTENDED
 }
@@ -513,15 +513,15 @@ void MultitargetRouter::_setVerboseMode( bool makeVerbose )
 
         if ( makeVerbose == false )
         {
-            console.clearLine( NESystemService::COORD_SEND_RATE );
-            console.clearLine( NESystemService::COORD_RECV_RATE );
-            console.outputTxt( NESystemService::COORD_INFO_MSG, _silence );
+            console.clearLine( aregext::COORD_SEND_RATE );
+            console.clearLine( aregext::COORD_RECV_RATE );
+            console.outputTxt( aregext::COORD_INFO_MSG, _silence );
         }
         else
         {
-            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
+            console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputTxt( aregext::COORD_INFO_MSG, _verbose);
         }
 
         console.refreshScreen( );
@@ -547,11 +547,11 @@ void MultitargetRouter::_cleanHelp()
 {
 #if     AREG_EXTENDED
 
-    Console::Coord line{ NESystemService::COORD_INFO_MSG };
+    Console::Coord line{ aregext::COORD_INFO_MSG };
     Console& console = Console::getInstance();
     console.lockConsole();
 
-    console.clearLine(NESystemService::COORD_USER_INPUT);
+    console.clearLine(aregext::COORD_USER_INPUT);
     uint32_t count = std::size(_msgHelp);
     for (uint32_t i = 0; i < count; ++ i)
     {

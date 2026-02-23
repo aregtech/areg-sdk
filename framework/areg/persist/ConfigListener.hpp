@@ -87,7 +87,7 @@ public:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    virtual void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) = 0;
+    virtual void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

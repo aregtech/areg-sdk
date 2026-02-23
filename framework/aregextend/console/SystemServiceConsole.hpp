@@ -53,7 +53,7 @@ protected:
      * \param   entry       The component entry object set in the model.
      * \param   owner       The instance of component owner thread.
      **/
-    SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner );
 
     /**
      * \brief   Destructor.
@@ -118,9 +118,9 @@ protected:
 
     /**
      * \brief   Sends error message to clients.
-     *          If message ID is a request, it should send result NEService::RequestError or NEService::RequestCanceled, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::Invalid.
-     *          If message ID is an attribute, it should send result NEService::ResultDataInvalid
+     *          If message ID is a request, it should send result areg::RequestError or areg::RequestCanceled, depending on msgCancel flag.
+     *          If message ID is a response, it should send result areg::Invalid.
+     *          If message ID is an attribute, it should send result areg::ResultDataInvalid
      *          and invalidate attribute data value.
      *
      *          Overwrite to implement method

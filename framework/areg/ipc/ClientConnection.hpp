@@ -64,7 +64,7 @@ public:
      *          Specified remoteAddress is a remote server address to connect.
      * \param   remoteAddress   Address of remote host to connect.
      **/
-    ClientConnection( const NESocket::SocketAddress & remoteAddress );
+    ClientConnection( const areg::SocketAddress & remoteAddress );
 
     /**
      * \brief   Destructor.
@@ -93,7 +93,7 @@ public:
     /**
      * \brief   Return Socket Address object.
      **/
-    const NESocket::SocketAddress & getAddress() const;
+    const areg::SocketAddress & getAddress() const;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will 
@@ -113,7 +113,7 @@ public:
      *          or already resolved with IP-address.
      * \param   newAddress  The new address to set.
      **/
-    void setAddress( const NESocket::SocketAddress & newAddress );
+    void setAddress( const areg::SocketAddress & newAddress );
 
     /**
      * \brief   Returns true if existing socket descriptor is valid.
@@ -240,7 +240,7 @@ inline void ClientConnection::setCookie(const ITEM_ID & newCookie )
     mCookie = newCookie;
 }
 
-inline const NESocket::SocketAddress & ClientConnection::getAddress() const
+inline const areg::SocketAddress & ClientConnection::getAddress() const
 {
     return mClientSocket.getAddress();
 }
@@ -250,7 +250,7 @@ inline bool ClientConnection::setAddress(const String& hostName, uint16_t portNr
     return mClientSocket.setAddress(hostName, portNr, false);
 }
 
-inline void ClientConnection::setAddress( const NESocket::SocketAddress & newAddress )
+inline void ClientConnection::setAddress( const areg::SocketAddress & newAddress )
 {
     mClientSocket.setAddress(newAddress);
 }

@@ -105,7 +105,7 @@ id_type Thread::_osGetCurrentThreadId()
 
 Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
 {
-    mSyncObject.lock(NECommon::WAIT_INFINITE);
+    mSyncObject.lock(areg::WAIT_INFINITE);
 
     Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
 
@@ -115,7 +115,7 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
         _unregisterThread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
 
-        if ((waitForStopMs != NECommon::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
+        if ((waitForStopMs != areg::DO_NOT_WAIT) && (mWaitForExit.lock(waitForStopMs) == false))
         {
 #ifdef  _DEBUG
             //////////////////////////////////////////////////////////////////////////
@@ -148,10 +148,10 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
         {
             // The thread completed job normally
             result = Thread::ThreadCompletion::Completed;
-            ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
+            ASSERT (waitForStopMs != areg::WAIT_INFINITE || isRunning() == false);
         }
 
-        mSyncObject.lock(NECommon::WAIT_INFINITE);
+        mSyncObject.lock(areg::WAIT_INFINITE);
     }
     else
     {
@@ -173,8 +173,8 @@ bool Thread::_osCreateSystemThread()
         mWaitForExit.resetEvent( );
 
         unsigned long threadId  { 0 };
-        unsigned long dwFlags   { mStackSizeKB != NECommon::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
-        unsigned long dwStack   { mStackSizeKB * NECommon::ONE_KILOBYTE };
+        unsigned long dwFlags   { mStackSizeKB != areg::STACK_SIZE_DEFAULT ? 0u : STACK_SIZE_PARAM_IS_A_RESERVATION };
+        unsigned long dwStack   { mStackSizeKB * areg::ONE_KILOBYTE };
         HANDLE handle = ::CreateThread( nullptr
                                       , dwStack
                                       , (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine)

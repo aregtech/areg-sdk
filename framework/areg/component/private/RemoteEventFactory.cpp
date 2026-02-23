@@ -48,7 +48,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
             stream >> addrStub;
             if ( comChannel.getCookie() == addrStub.getCookie() )
             {
-                addrStub.setCookie( NEService::COOKIE_LOCAL );
+                addrStub.setCookie( areg::COOKIE_LOCAL );
             }
 
             const StubBase * stub = StubBase::findStubByAddress(addrStub);
@@ -79,7 +79,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
             stream >> addrStub;
             if ( comChannel.getCookie() == addrStub.getCookie() )
             {
-                addrStub.setCookie( NEService::COOKIE_LOCAL );
+                addrStub.setCookie( areg::COOKIE_LOCAL );
             }
 
             const StubBase * stub = StubBase::findStubByAddress(addrStub);
@@ -110,7 +110,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
             ProxyAddress addrProxy;
             stream >> addrProxy;
             if ( comChannel.getCookie() == addrProxy.getCookie() )
-                addrProxy.setCookie( NEService::COOKIE_LOCAL );
+                addrProxy.setCookie( areg::COOKIE_LOCAL );
             std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress(addrProxy);
             if ( proxy != nullptr )
             {
@@ -189,7 +189,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setSource( comChannel.getCookie() );
                     stream.setTarget( stubEvent->getTargetStub().getCookie() );
                     stream.setMessageId( stubEvent->getRequestId() );
-                    stream.setResult( NEMemory::MESSAGE_SUCCESS );
+                    stream.setResult( areg::MESSAGE_SUCCESS );
                     stream.setSequenceNr( stubEvent->getSequenceNumber() );
                 }
             }
@@ -212,7 +212,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setSource( comChannel.getCookie() );
                     stream.setTarget( stubEvent->getTargetStub().getCookie() );
                     stream.setMessageId( stubEvent->getRequestId() );
-                    stream.setResult( NEMemory::MESSAGE_SUCCESS );
+                    stream.setResult( areg::MESSAGE_SUCCESS );
                     stream.setSequenceNr( stubEvent->getSequenceNumber() );
                 }
             }
@@ -235,7 +235,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setSource( comChannel.getCookie() );
                     stream.setTarget( proxyEvent->getTargetProxy().getCookie() );
                     stream.setMessageId( proxyEvent->getResponseId() );
-                    stream.setResult( NEMemory::MESSAGE_SUCCESS );
+                    stream.setResult( areg::MESSAGE_SUCCESS );
                     stream.setSequenceNr( proxyEvent->getSequenceNumber() );
                 }
             }
@@ -305,7 +305,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
             const ProxyAddress & addrProxy = eventRequest.getEventSource();
             result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventRequest.getRequestId()
-                                                                                         , NEService::ResultType::MessageUndelivered
+                                                                                         , areg::ResultType::MessageUndelivered
                                                                                          , eventRequest.getSequenceNumber()) );
         }
         break;
@@ -317,7 +317,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
             const ProxyAddress & addrProxy = eventNotify.getEventSource();
             result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventNotify.getRequestId()
-                                                                                         , NEService::ResultType::MessageUndelivered
+                                                                                         , areg::ResultType::MessageUndelivered
                                                                                          , eventNotify.getSequenceNumber()) );
         }
         break;

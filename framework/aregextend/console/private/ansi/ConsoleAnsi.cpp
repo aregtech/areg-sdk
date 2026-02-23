@@ -177,8 +177,8 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
     #endif // defined(_POSIX) || defined(POSIX)
 #endif // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 
-    NEString::trimAll<char>(buffer);
-    return ( NEString::isEmpty(buffer) == false );
+    areg::trimAll<char>(buffer);
+    return ( areg::isEmpty(buffer) == false );
 }
 
 void Console::_osRefreshScreen() const

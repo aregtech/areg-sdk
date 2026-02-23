@@ -39,35 +39,35 @@ ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, cons
 ServiceAddress::ServiceAddress()
     : ServiceItem   ( )
     , mRoleName     ( String::getEmptyString(), 0 )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
 ServiceAddress::ServiceAddress( const String & serviceName
                               , const Version & serviceVersion
-                              , NEService::ServiceType serviceType
+                              , areg::ServiceType serviceType
                               , const String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & roleName )
     : ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
-    mRoleName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mRoleName.truncate( areg::ITEM_NAMES_MAX_LENGTH );
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
 ServiceAddress::ServiceAddress( const StubAddress & addrStub )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrStub) )
     , mRoleName     ( addrStub.getRoleName() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
@@ -75,7 +75,7 @@ ServiceAddress::ServiceAddress( const StubAddress & addrStub )
 ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrProxy) )
     , mRoleName     ( addrProxy.getRoleName() )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
@@ -83,7 +83,7 @@ ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
 ServiceAddress::ServiceAddress( const InStream & stream )
     : ServiceItem   ( stream )
     , mRoleName     ( stream )
-    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+    , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
@@ -105,7 +105,7 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 String ServiceAddress::convToString() const
 {
     String result( ServiceItem::convToString() );
-    result.append(NECommon::COMPONENT_PATH_SEPARATOR).append(mRoleName);
+    result.append(areg::COMPONENT_PATH_SEPARATOR).append(mRoleName);
 
     return result;
 }
@@ -114,7 +114,7 @@ void ServiceAddress::convFromString(const char * pathService, const char** out_n
 {
     const char* strSource   = pathService;
     ServiceItem::convFromString(pathService, &strSource);
-    mRoleName   = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mRoleName   = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magicNumber(*this);
 
     if (out_nextPart != nullptr)
@@ -123,14 +123,14 @@ void ServiceAddress::convFromString(const char * pathService, const char** out_n
 
 uint32_t ServiceAddress::_magicNumber(const ServiceAddress addrService)
 {
-    uint32_t result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = areg::CHECKSUM_IGNORE;
     if ( addrService.isValidated() )
     {
-        result = NEMath::crc32Init();
-        result = NEMath::crc32Start( result, addrService.mServiceName.getString() );
-        result = NEMath::crc32Start( result, static_cast<uint8_t>(addrService.mServiceType));
-        result = NEMath::crc32Start( result, addrService.mRoleName.getString() );
-        result = NEMath::crc32Finish(result);
+        result = areg::crc32Init();
+        result = areg::crc32Start( result, addrService.mServiceName.getString() );
+        result = areg::crc32Start( result, static_cast<uint8_t>(addrService.mServiceType));
+        result = areg::crc32Start( result, addrService.mRoleName.getString() );
+        result = areg::crc32Finish(result);
     }
 
     return result;

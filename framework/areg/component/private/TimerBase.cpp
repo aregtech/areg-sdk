@@ -24,7 +24,7 @@ uint32_t TimerBase::getTickCount()
 
 TimerBase::TimerBase( const TimerType timerType
                     , const String& timerName
-                    , uint32_t timeoutMs    /*= NECommon::INVALID_TIMEOUT*/
+                    , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
                     , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
     : mTimerType    ( timerType )
     , mHandle       ( nullptr   )
@@ -46,7 +46,7 @@ bool TimerBase::createWaitableTimer()
 {
     Lock lock( mLock );
 
-    if ( (mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT) )
+    if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
     {
         mHandle = _osCreateWaitableTimer( );
     }

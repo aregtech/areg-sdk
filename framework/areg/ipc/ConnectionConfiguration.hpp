@@ -50,7 +50,7 @@ public:
      * \param   service     The type of the service to read configuration properties.
      * \param   connectType The type of the connection to read configuration properties.
      **/
-    ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType);
+    ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType);
 
     /**
      * \brief   Destructor.

@@ -144,7 +144,7 @@ bool Semaphore::_osUnlock()
 void CriticalSection::_osCreateCriticalSection()
 {
     mSyncObject = static_cast<void *>( DEBUG_NEW uint8_t [sizeof(CRITICAL_SECTION)] );
-    NEMemory::constructElems<CRITICAL_SECTION>( mSyncObject, 1 );
+    areg::constructElems<CRITICAL_SECTION>( mSyncObject, 1 );
     InitializeCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSyncObject) );
 }
 
@@ -202,7 +202,7 @@ SpinLock::~SpinLock()
     }
 }
 
-bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
+bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
     return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->lock( ) : false);
@@ -244,7 +244,7 @@ void ResourceLock::_osCreateResourceLock( bool initLock )
     mSyncObject = new CriticalSection( );
     if ( initLock )
     {
-        reinterpret_cast<Lockable *>(mSyncObject)->lock( NECommon::WAIT_INFINITE );
+        reinterpret_cast<Lockable *>(mSyncObject)->lock( areg::WAIT_INFINITE );
     }
 
 #endif
@@ -323,9 +323,9 @@ bool SyncTimer::_osCancelTimer()
 // MultiLock class implementation
 //////////////////////////////////////////////////////////////////////////
 
-int32_t MultiLock::_osLock( uint32_t timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+int32_t MultiLock::_osLock( uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
-    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS] { };
+    void * syncHandles[areg::MAXIMUM_WAITING_OBJECTS] { };
     for ( int i = 0; i < mSizeCount; ++ i)
     {
         syncHandles[i] = mSyncObjArray[i]->getHandle( );
@@ -418,7 +418,7 @@ Wait::WaitResolution Wait::_osWaitFor(const Wait::Duration& timeout) const
         
         do
         {
-            ::Sleep(NECommon::DO_NOT_WAIT);
+            ::Sleep(areg::DO_NOT_WAIT);
             ::QueryPerformanceCounter(&dueTime);
         } while (dueTime.QuadPart < deadline);
 

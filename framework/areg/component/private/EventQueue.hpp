@@ -180,7 +180,7 @@ public:
      *                          be signaled when receive new Event or when
      *                          the Queue is empty.
      * \param   maxQueue        The maximum number of event elements in the queue.
-     *                          The value NECommon::IGNORE_VALUE (0) means ignore the maximum size.
+     *                          The value areg::IGNORE_VALUE (0) means ignore the maximum size.
      **/
     ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue );
 
@@ -221,7 +221,7 @@ public:
     /**
      * \brief   Initialize internal queue with the default queue size.
      * \param   maxQueue        The maximum number of event elements in the queue.
-     *                          The value NECommon::IGNORE_VALUE (0) means ignore the maximum size.
+     *                          The value areg::IGNORE_VALUE (0) means ignore the maximum size.
      **/
     InternalEventQueue( uint32_t maxQueue);
 

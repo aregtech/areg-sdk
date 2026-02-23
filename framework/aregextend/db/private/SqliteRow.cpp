@@ -163,5 +163,5 @@ int32_t SqliteRow::getColumnIndex(const String& columnName) const
         }
     }
 
-    return NECommon::INVALID_INDEX; // Column not found
+    return areg::INVALID_INDEX; // Column not found
 }

@@ -161,7 +161,7 @@ bool FileBuffer::remove()
 
 uint32_t FileBuffer::getLength() const
 {
-    return (isOpened() ? mSharedBuffer.getSizeUsed() : NEMemory::INVALID_SIZE);
+    return (isOpened() ? mSharedBuffer.getSizeUsed() : areg::INVALID_SIZE);
 }
 
 bool FileBuffer::isOpened() const
@@ -171,7 +171,7 @@ bool FileBuffer::isOpened() const
 
 uint32_t FileBuffer::reserve(uint32_t newSize)
 {
-    return (isOpened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
+    return (isOpened() ? mSharedBuffer.reserve(newSize, false) : areg::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate()

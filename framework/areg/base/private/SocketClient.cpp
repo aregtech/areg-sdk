@@ -17,10 +17,10 @@
 SocketClient::SocketClient( const char * hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolveAddress(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, false);
+    mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
 }
 
-SocketClient::SocketClient(const NESocket::SocketAddress & remoteAddress)
+SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
     : Socket  ( )
 {
     mAddress = remoteAddress;
@@ -37,12 +37,12 @@ bool SocketClient::createSocket()
 
     if ( mAddress.isValid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
-        if ( hSocket != NESocket::InvalidSocketHandle )
+    	SOCKETHANDLE hSocket = areg::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+        if ( hSocket != areg::InvalidSocketHandle )
         {
         	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
-            mSendSize = NESocket::getMaxSendSize(hSocket);
-            mRecvSize = NESocket::getMaxReceiveSize(hSocket);
+            mSendSize = areg::getMaxSendSize(hSocket);
+            mRecvSize = areg::getMaxReceiveSize(hSocket);
         }
     }
 

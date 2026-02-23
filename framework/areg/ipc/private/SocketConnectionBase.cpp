@@ -26,9 +26,9 @@ int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, cons
     if ( in_message.isValid() && clientSocket.isValid() )
     {
         in_message.bufferCompletionFix();
-        const NEMemory::MessageHeader & buffer = reinterpret_cast<const NEMemory::MessageHeader &>( *in_message.getByteBuffer() );
-        result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(NEMemory::MessageHeader) );
-        if ((result == sizeof(NEMemory::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
+        const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.getByteBuffer() );
+        result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
+        if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
         {
             ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
             // send the aligned length.
@@ -44,13 +44,13 @@ int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const 
     int32_t result{ -1 };
     if ( clientSocket.isValid() && clientSocket.isAlive() )
     {
-        NEMemory::MessageHeader msgHeader{};
+        areg::MessageHeader msgHeader{};
 
         out_message.invalidate();
-        result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(NEMemory::MessageHeader));
-        if ( result == sizeof(NEMemory::MessageHeader) )
+        result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+        if ( result == sizeof(areg::MessageHeader) )
         {
-            result = sizeof(NEMemory::MessageHeader);
+            result = sizeof(areg::MessageHeader);
             uint8_t * buffer = out_message.initMessage( msgHeader );
             if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
             {
@@ -69,7 +69,7 @@ int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const 
         }
         else
         {
-            result = (result > 0) && (result != sizeof(NEMemory::MessageHeader)) ? 0 : result;
+            result = (result > 0) && (result != sizeof(areg::MessageHeader)) ? 0 : result;
         }
     }
 

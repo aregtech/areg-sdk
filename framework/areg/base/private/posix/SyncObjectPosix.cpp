@@ -26,9 +26,9 @@
 // SyncObjectPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-SyncObjectPosix::SyncObjectPosix( NESyncTypesIX::SyncKind syncType, const char* asciiName /* = nullptr */ )
+SyncObjectPosix::SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName /* = nullptr */ )
     : mSyncType ( syncType )
-    , mSyncName ( asciiName != nullptr ? asciiName : NEString::EmptyStringA )
+    , mSyncName ( asciiName != nullptr ? asciiName : areg::EmptyStringA )
 {
 }
 

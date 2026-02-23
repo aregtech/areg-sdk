@@ -52,12 +52,12 @@ class AREG_API LogScope
 public:
     /**
      * \brief   Sets the name of scope, which should be unique and cannot be changed,
-     *          and sets message priority. By default, the message priority NELogging::PrioNotset,
+     *          and sets message priority. By default, the message priority areg::PrioNotset,
      *          which means the logging of message is disabled.
      * \param   scopeName   The unique name of the log scope.
      * \param   priority    The message priority of log scope.
      **/
-    LogScope( const char * scopeName, NELogging::LogPriority priority = NELogging::LogPriority::PrioNotset );
+    LogScope( const char * scopeName, areg::LogPriority priority = areg::LogPriority::PrioNotset );
 
     /**
      * \brief   Initializes the logging scope object from the stream.
@@ -113,7 +113,7 @@ public:
      *          The priority level is added bitwise.
      * \param   addPrio     The log message priority level to add.
      **/
-    inline void addPriority( NELogging::LogPriority addPrio );
+    inline void addPriority( areg::LogPriority addPrio );
 
     /**
      * \brief   Adds priority level to the existing priority level of the scope,
@@ -129,7 +129,7 @@ public:
      *          The operation is made bitwise.
      * \param   remPrio     The log priority level to remove.
      **/
-    inline void removePriority( NELogging::LogPriority remPrio );
+    inline void removePriority( areg::LogPriority remPrio );
 
     /**
      * \brief   Removes priority level from the existing priority level of the scope,
@@ -268,34 +268,34 @@ inline void LogScope::setPriority( uint32_t newPrio )
     mScopePrio  = newPrio;
 }
 
-inline void LogScope::addPriority( NELogging::LogPriority addPrio )
+inline void LogScope::addPriority( areg::LogPriority addPrio )
 {
     mScopePrio  |= static_cast<uint32_t>(addPrio);
 }
 
 void LogScope::addPriority( const char * addPrio )
 {
-    addPriority( NELogging::stringToLogPrio(addPrio) );
+    addPriority( areg::stringToLogPrio(addPrio) );
 }
 
 void LogScope::addPriority( const String & addPrio )
 {
-    addPriority( NELogging::stringToLogPrio(addPrio) );
+    addPriority( areg::stringToLogPrio(addPrio) );
 }
 
-inline void LogScope::removePriority( NELogging::LogPriority remPrio )
+inline void LogScope::removePriority( areg::LogPriority remPrio )
 {
     mScopePrio  &= ~static_cast<uint32_t>(remPrio);
 }
 
 void LogScope::removePriority( const char * remPrio )
 {
-    removePriority( NELogging::stringToLogPrio(remPrio) );
+    removePriority( areg::stringToLogPrio(remPrio) );
 }
 
 void LogScope::removePriority( const String & remPrio )
 {
-    removePriority( NELogging::stringToLogPrio(remPrio) );
+    removePriority( areg::stringToLogPrio(remPrio) );
 }
 
 inline uint32_t LogScope::getPriority() const

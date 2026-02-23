@@ -105,7 +105,7 @@ public:
      *          and bound to host and port. Specified remoteAddress will be set as server address.
      * \param   serverAddress   The address of server socket.
      **/
-    ServerConnectionBase( const NESocket::SocketAddress & serverAddress );
+    ServerConnectionBase( const areg::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -120,7 +120,7 @@ public:
     /**
      * \brief   Return Socket Address object.
      **/
-    inline const NESocket::SocketAddress & getAddress() const;
+    inline const areg::SocketAddress & getAddress() const;
 
     /**
      * \brief   Sets Socket Address. If hostName is not IP-address, it will
@@ -140,7 +140,7 @@ public:
      *          or already resolved with IP-address.
      * \param   newAddress  The new address to set.
      **/
-    inline void setAddress( const NESocket::SocketAddress & newAddress );
+    inline void setAddress( const areg::SocketAddress & newAddress );
 
     /**
      * \brief   Returns true if existing socket descriptor is valid.
@@ -231,7 +231,7 @@ public:
      *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
      * \param   maxQueueSize    The maximum size of the socket queue in the list.
      **/
-    bool serverListen( int32_t maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
+    bool serverListen( int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE );
 
     /**
      * \brief   Call to wait for connection event. Function is blocking call until connection
@@ -250,7 +250,7 @@ public:
      *          out_addrNewAccepted parameter contains address of accepted socket.
      *          If function fails, returns invalid socket handle.
      **/
-    SOCKETHANDLE waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted);
+    SOCKETHANDLE waitForConnectionEvent(areg::SocketAddress & out_addrNewAccepted);
 
     /**
      * \brief   Call to accept connection. Nothing will happen if connection was already accepted.
@@ -353,13 +353,13 @@ inline bool ServerConnectionBase::setAddress(const String & hostName, uint16_t p
     return mServerSocket.setAddress(hostName, portNr, true);
 }
 
-inline void ServerConnectionBase::setAddress( const NESocket::SocketAddress & newAddress )
+inline void ServerConnectionBase::setAddress( const areg::SocketAddress & newAddress )
 {
     Lock lock(mLock);
     mServerSocket.setAddress(newAddress);
 }
 
-inline const NESocket::SocketAddress & ServerConnectionBase::getAddress() const
+inline const areg::SocketAddress & ServerConnectionBase::getAddress() const
 {
     Lock lock(mLock);
     return mServerSocket.getAddress();
@@ -393,7 +393,7 @@ inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
     Lock lock( mLock );
 
     MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
-    return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
+    return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : areg::COOKIE_UNKNOWN );
 }
 
 inline SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const

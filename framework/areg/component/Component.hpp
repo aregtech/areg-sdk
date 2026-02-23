@@ -99,20 +99,20 @@ public:
      * \brief   This function is loading component. The component loading information
      *          like component create and delete functions, worker thread information
      *          is taken from component entry object.
-     * \param   entry           The NERegistry::ComponentEntry containing component loading information.
+     * \param   entry           The areg::ComponentEntry containing component loading information.
      * \param   componentThread The thread, which is loading component and dispatching messages
      * \return  Returns pointer to instantiated component.
      **/
-    static Component * loadComponent( const NERegistry::ComponentEntry & entry, ComponentThread & componentThread);
+    static Component * loadComponent( const areg::ComponentEntry & entry, ComponentThread & componentThread);
 
     /**
      * \brief   This function is unloading component.
      *          like component create and delete functions, worker thread information
      *          is taken from component entry object.
      * \param   comItem The component object, which should be unloaded.
-     * \param   entry   The NERegistry::ComponentEntry containing component loading information.
+     * \param   entry   The areg::ComponentEntry containing component loading information.
      **/
-    static void unloadComponent( Component & comItem, const NERegistry::ComponentEntry & entry);
+    static void unloadComponent( Component & comItem, const areg::ComponentEntry & entry);
 
 /************************************************************************/
 // static utility functions to search component and check existence
@@ -164,7 +164,7 @@ public:
      * \param	regEntry	The registry entry object with the role name of the component.
      * \param	ownerThread The instance of the thread, which owns the component.
      **/
-    Component( const NERegistry::ComponentEntry & regEntry, ComponentThread & ownerThread );
+    Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread );
 
     /**
      * \brief	Instantiates the component object and dispatches the events in the current thread.
@@ -242,17 +242,17 @@ public:
      * \param	threadName	    Worker thread name to created. Should be unique within system.
      * \param   consumer        Worker Thread consumer object, which start and stop functions will be triggered.
      * \param   ownerThread     The component thread, which owns worker thread,
-     * \param   watchdogTimeout The watchdog timeout in milliseconds. Pass `NECommon::WATCHDOG_IGNORE` (0) to ignore the watchdog timeout.
+     * \param   watchdogTimeout The watchdog timeout in milliseconds. Pass `areg::WATCHDOG_IGNORE` (0) to ignore the watchdog timeout.
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+     *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      * \return	Pointer to created worker thread object.
      **/
     WorkerThread * createWorkerThread( const String & threadName
                                      , WorkerThreadConsumer & consumer
                                      , ComponentThread & ownerThread
-                                     , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE
-                                     , uint32_t stackSizeKb     = NECommon::STACK_SIZE_DEFAULT
-                                     , uint32_t maxQeueue       = NECommon::IGNORE_VALUE);
+                                     , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
+                                     , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
+                                     , uint32_t maxQeueue       = areg::IGNORE_VALUE);
 
     /**
      * \brief	Stops and deletes worker thread by given name

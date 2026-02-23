@@ -138,7 +138,7 @@ public:
      *          is not registered yet, or returns ServerInfo::SERVER_REGISTERED
      *          if Server is registered and runs.
      **/
-    NEService::ServiceConnectionState getServerState( const StubAddress & whichServer ) const;
+    areg::ServiceConnectionState getServerState( const StubAddress & whichServer ) const;
 
     /**
      * \brief   Returns Client Info List related with specified server.

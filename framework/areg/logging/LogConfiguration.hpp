@@ -91,7 +91,7 @@ public:
      *                      is enabled or disabled. If true, the logging for specified type
      *                      is enabled.
      **/
-    void setLogEnabled(NELogging::LogTarget logType, bool isEnabled);
+    void setLogEnabled(areg::LogTarget logType, bool isEnabled);
 
     /**
      * \brief   Gets and sets the property value of logging version.
@@ -205,15 +205,15 @@ public:
     /**
      * \brief   Gets and sets the database service address that contains IP-address and port number.
      **/
-    NESocket::SocketAddress getDatabaseAddress() const;
-    void setDatabaseAddress(const NESocket::SocketAddress& dbAddress, bool isTemporary = false);
+    areg::SocketAddress getDatabaseAddress() const;
+    void setDatabaseAddress(const areg::SocketAddress& dbAddress, bool isTemporary = false);
     void setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database user name and user password.
      **/
-    NESocket::UserData getDatabaseUser() const;
-    void setDatabaseUser(const NESocket::UserData& dbUser, bool isTemporary = false);
+    areg::UserData getDatabaseUser() const;
+    void setDatabaseUser(const areg::UserData& dbUser, bool isTemporary = false);
     void setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
 
     /**

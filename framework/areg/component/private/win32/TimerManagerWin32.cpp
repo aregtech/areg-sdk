@@ -64,11 +64,11 @@ bool TimerManager::_osSystemTimerStart( Timer & timer )
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = timer.getEventCount() > 1 ? static_cast<long>(timer.getTimeout()) : 0;
-    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(timer.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(timer.getTimeout()) * areg::MILLISEC_TO_100NS);  // timer from now
     dueTime *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger;
-    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::loDword(dueTime));
-    timeTrigger.HighPart = static_cast<LONG >(NEMath::hiDword(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::loDword(dueTime));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hiDword(dueTime));
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );

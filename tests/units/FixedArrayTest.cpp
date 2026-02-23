@@ -170,8 +170,8 @@ TEST(FixedArrayTest, TestSearchElem)
 
         EXPECT_EQ(notEmpty.find(static_cast<int>(i), 0u), static_cast<int>(i));
         EXPECT_EQ(notEmpty.find(static_cast<int>(i), i), static_cast<int>(i));
-        EXPECT_EQ(notEmpty.find(static_cast<int>(i), i + elemCount), NECommon::INVALID_INDEX);
-        EXPECT_EQ(notEmpty.find(static_cast<int>(i + elemCount), 0u), NECommon::INVALID_INDEX);
+        EXPECT_EQ(notEmpty.find(static_cast<int>(i), i + elemCount), areg::INVALID_INDEX);
+        EXPECT_EQ(notEmpty.find(static_cast<int>(i + elemCount), 0u), areg::INVALID_INDEX);
     }
 }
 

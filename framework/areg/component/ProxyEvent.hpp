@@ -209,10 +209,10 @@ protected:
      * \param   Server      The address of connected service stub server.
      * \param   Channel     Communication channel object to deliver events.
      * \param   Status      The service connection status. 
-     *                      The connection status should be NEService::Connected
+     *                      The connection status should be areg::Connected
      *                      To be able to send message to service target from Proxy client.
      **/
-    virtual void serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, NEService::ServiceConnectionState Status ) = 0;
+    virtual void serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, areg::ServiceConnectionState Status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

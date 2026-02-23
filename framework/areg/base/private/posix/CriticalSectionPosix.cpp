@@ -27,7 +27,7 @@
 // CriticalSectionPosix class implementation.
 //////////////////////////////////////////////////////////////////////////
 CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
-    : SyncObjectPosix   ( NESyncTypesIX::SyncKind::SoSpinLock, "CriticalSection" )
+    : SyncObjectPosix   ( areg::os::SyncKind::SoSpinLock, "CriticalSection" )
 
     , mSpinLock             ( )
 {

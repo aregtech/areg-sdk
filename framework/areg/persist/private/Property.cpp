@@ -162,7 +162,7 @@ const PropertyKey & Property::getKey() const
     return mProperty.mValue.first;
 }
 
-NEPersistence::ConfigEntry Property::getPropertyType() const
+areg::ConfigEntry Property::getPropertyType() const
 {
     return mProperty.mValue.first.getKeyType();
 }
@@ -209,14 +209,14 @@ void Property::setComment(const String & comment)
 
 void Property::addComment(const String & comment)
 {
-    if (comment.startsWith(NEPersistence::SYNTAX_COMMENT))
+    if (comment.startsWith(areg::SYNTAX_COMMENT))
     {
         mComment += comment;
     }
     else
     {
         // if does not begin with "# "
-        mComment += NEPersistence::SYNTAX_COMMENT;
+        mComment += areg::SYNTAX_COMMENT;
         mComment += comment;
     }
 }
@@ -252,17 +252,17 @@ bool Property::parseProperty(const String & strProperties)
     String data;
     if ( strProperties.getLength() > 1)
     {
-        NEString::CharPos pos = strProperties.findFirst(NEPersistence::SYNTAX_COMMENT.data());
+        areg::CharPos pos = strProperties.findFirst(areg::SYNTAX_COMMENT.data());
 
         if (strProperties.isValidPosition(pos))
         {
-            if (pos != NEString::START_POS)
+            if (pos != areg::START_POS)
             {
                 addComment(strProperties.getBuffer(pos));
                 strProperties.substring(data, 0, pos);
             }
         }
-        else if (pos == NEString::END_POS)
+        else if (pos == areg::END_POS)
         {
             data = strProperties;
         }
@@ -270,7 +270,7 @@ bool Property::parseProperty(const String & strProperties)
         if (data.isEmpty() == false )
         {
             const char* value{ nullptr };
-            const String key{ String::getSubstring(data.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value) };
+            const String key{ String::getSubstring(data.getString(), areg::SYNTAX_EQUAL.data(), &value) };
 
             mProperty.mValue.first.parseKey(key);
             mProperty.mValue.second.parseValue(value);
@@ -299,21 +299,21 @@ String Property::convToString() const
 
     if ( !key.isEmpty() && !value.isEmpty() )
     {
-        key.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-           .append(NEPersistence::SYNTAX_EQUAL)
-           .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+        key.append(areg::SYNTAX_WHITESPACE_DELIMITER)
+           .append(areg::SYNTAX_EQUAL)
+           .append(areg::SYNTAX_WHITESPACE_DELIMITER)
            .append(value);
     }
 
     if ( mComment.isEmpty() == false )
     {
-        if (mComment.isValidPosition(mComment.findFirst(NEPersistence::SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
+        if (mComment.isValidPosition(mComment.findFirst(areg::SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
         {
-            result.append(mComment).append(NEPersistence::SYNTAX_LINEEND).append(key);
+            result.append(mComment).append(areg::SYNTAX_LINEEND).append(key);
         }
         else
         {
-            result.append(key).append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
+            result.append(key).append(areg::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
         }
     }
     else

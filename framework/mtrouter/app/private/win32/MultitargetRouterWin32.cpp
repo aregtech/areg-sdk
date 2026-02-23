@@ -50,11 +50,11 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
     int32_t result{ ServiceApplicationBase::RESULT_FAILED_RUN };
-    char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
+    char** argvTemp = aregext::convertArguments<TCHAR>(argv, argc);
     MultitargetRouter& router = MultitargetRouter::getInstance();
-    router.parseOptions(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    router.parseOptions(static_cast<int32_t>(argc), argvTemp, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     result = router.serviceMain(router.getCurrentOption(), nullptr);
-    NESystemService::deleteArguments(argvTemp, argc);
+    aregext::deleteArguments(argvTemp, argc);
 
     return result;
 }
@@ -62,7 +62,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 int main(int argc, char* argv[], char* envp[])
 {
     MultitargetRouter& router = MultitargetRouter::getInstance();
-    router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
+    router.parseOptions(argc, argv, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }
 #endif  // _MINGW
@@ -72,11 +72,11 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     try
     {
         MultitargetRouter& router = MultitargetRouter::getInstance();
-        router.setState(NESystemService::ServicePhase::Starting);
-        char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
-        router.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
-        NESystemService::deleteArguments(argvTemp, static_cast<int32_t>(argc));
-        router.setState(NESystemService::ServicePhase::Stopped);
+        router.setState(aregext::ServicePhase::Starting);
+        char** argvTemp = aregext::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
+        router.serviceMain(aregext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
+        aregext::deleteArguments(argvTemp, static_cast<int32_t>(argc));
+        router.setState(aregext::ServicePhase::Stopped);
     }
     catch (const std::exception & /*ex*/)
     {

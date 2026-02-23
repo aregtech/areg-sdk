@@ -69,7 +69,7 @@ public:
      * \brief   Sets date and time value from given system time structure.
      * \param   sysTime     System time structure to get date and time values.
      **/
-    explicit DateTime( const NEUtilities::CalendarTime & sysTime );
+    explicit DateTime( const areg::CalendarTime & sysTime );
 
     /**
      * \brief   Copies data and time data from given source.
@@ -207,7 +207,7 @@ public:
      * \param[out]  timeData    On output, it will contain the time values.
      * \param[in]   localTime   If true, timeData is converted to local time.
      **/
-    static void getNow( NEUtilities::CalendarTime & timeData, bool localTime );
+    static void getNow( areg::CalendarTime & timeData, bool localTime );
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed since the system was started.
@@ -226,7 +226,7 @@ public:
      * \param[out]  result      On output this contains formated string of DateTime.
      * \param[in]   formatName  The formating to convert DateTime.
      **/
-    static void formatTime(const DateTime &dateTime, String& result, const std::string_view& formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT);
+    static void formatTime(const DateTime &dateTime, String& result, const std::string_view& formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT);
 
 /************************************************************************/
 // Non-static operations
@@ -236,7 +236,7 @@ public:
      * \brief   Formats time and outputs as a string. The caller should specify the
      *          the time format name for output
      **/
-    String formatTime( const std::string_view & formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT) const;
+    String formatTime( const std::string_view & formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const;
 
     /**
      * \brief   Returns the time data.
@@ -328,14 +328,14 @@ public:
      *          On output, the sysTime contains converted and broken date and time values.
      * \param[out]  sysTime     The System Time structure to break the data.
      **/
-    void getDateTime(NEUtilities::CalendarTime& sysTime);
+    void getDateTime(areg::CalendarTime& sysTime);
 
     /**
      * \brief   Calculates and sets the value in microseconds passed since Unix epoch.
      *          The date and time information is in 'sysTime' parameter.
      * \param[in]   sysTime     The System Time structure as a source of data.
      **/
-    void setDateTime(const NEUtilities::CalendarTime& sysTime);
+    void setDateTime(const areg::CalendarTime& sysTime);
 
     /**
      * \brief   Converts existing date and time value in microseconds passed since Unix epoch to tm structure.

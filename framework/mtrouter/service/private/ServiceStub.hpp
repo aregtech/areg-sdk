@@ -166,7 +166,7 @@ public:
     /**
      * \brief   Returns the current connection status of Stub service
      **/
-    inline NEService::ServiceConnectionState getServiceStatus() const;
+    inline areg::ServiceConnectionState getServiceStatus() const;
 
     /**
      * \brief   Returns Stub remote address of service
@@ -181,14 +181,14 @@ public:
     /**
      * \brief   Sets new connection status of Stub service
      **/
-    void setServiceStatus( NEService::ServiceConnectionState newStatus );
+    void setServiceStatus( areg::ServiceConnectionState newStatus );
 
     /**
      * \brief   Sets service data. Sets Stub address and connection status.
      * \param   addrStub        The address of remote Stub to set.
      * \param   connectStatus   The connection status to set.
      **/
-    void setService( const StubAddress & addrStub, NEService::ServiceConnectionState connectStatus = NEService::ServiceConnectionState::Connected );
+    void setService( const StubAddress & addrStub, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Connected );
 
 private:
     /**
@@ -198,7 +198,7 @@ private:
     /**
      * \brief   The connection status of service.
      **/
-    NEService::ServiceConnectionState   mConnectStatus;
+    areg::ServiceConnectionState   mConnectStatus;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -236,15 +236,15 @@ namespace std
 
 inline bool ServiceStub::isConnected() const
 {
-    return ( mConnectStatus == NEService::ServiceConnectionState::Connected );
+    return ( mConnectStatus == areg::ServiceConnectionState::Connected );
 }
 
 inline bool ServiceStub::isWaiting() const
 {
-    return ( mConnectStatus == NEService::ServiceConnectionState::Pending );
+    return ( mConnectStatus == areg::ServiceConnectionState::Pending );
 }
 
-inline NEService::ServiceConnectionState ServiceStub::getServiceStatus() const
+inline areg::ServiceConnectionState ServiceStub::getServiceStatus() const
 {
     return mConnectStatus;
 }

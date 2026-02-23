@@ -236,18 +236,18 @@ protected:
 
     /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
-     *          registration status. If succeeded, the value is NEService::Connected
+     *          registration status. If succeeded, the value is areg::Connected
      * \param   stubTarget  The address of registered service provider
      * \param   status      The connection status of the service provider.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState status ) = 0;
+    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, areg::ServiceConnectionState status ) = 0;
 
     /**
      * \brief   Send by system when client is requested connect / disconnect
      * \param   proxyAddress    The address of the service consumer proxy.
      * \param   status          The service consumer connection status.
      **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status ) = 0;
+    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

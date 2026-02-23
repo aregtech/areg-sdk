@@ -79,12 +79,12 @@ public:
     /**
      * \brief   Returns the list of read-only configuration properties.
      **/
-    inline const NEPersistence::ListProperties & getReadonlyProperties() const;
+    inline const areg::ListProperties & getReadonlyProperties() const;
 
     /**
      * \brief   Returns the list of writable configuration properties.
      **/
-    inline const NEPersistence::ListProperties & getModuleProperties() const;
+    inline const areg::ListProperties & getModuleProperties() const;
 
     /**
      * \brief	Locks the access resources of configuration manager. The current thread
@@ -134,7 +134,7 @@ public:
     /**
      * \brief   Returns merged list of read-only and writable properties of the specified section.
      **/
-    NEPersistence::ListProperties getSectionProperties(const String& section) const;
+    areg::ListProperties getSectionProperties(const String& section) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified parameters.
@@ -149,7 +149,7 @@ public:
     const Property * getProperty( const String& section
                                 , const String& property
                                 , const String& position
-                                , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
+                                , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -175,7 +175,7 @@ public:
     const Property * getModuleProperty( const String& section
                                       , const String& property
                                       , const String& position
-                                      , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
+                                      , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified key parameters.
@@ -206,7 +206,7 @@ public:
                           , const String& property
                           , const String& position
                           , const String& value
-                          , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey
+                          , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey
                           , bool isTemporary = false);
 
     /**
@@ -235,7 +235,7 @@ public:
     inline const PropertyValue * getPropertyValue( const String& section
                                                  , const String& property
                                                  , const String& position = String::EmptyString
-                                                 , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
+                                                 , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer to the value of the property searched by specified parameters.
@@ -259,11 +259,11 @@ public:
     inline const PropertyValue * getModulePropertyValue( const String& section
                                                        , const String& property
                                                        , const String& position = String::EmptyString
-                                                       , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
+                                                       , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
     inline PropertyValue * getModulePropertyValue( const String& section
                                                  , const String& property
                                                  , const String& position = String::EmptyString
-                                                 , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
+                                                 , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
 
     /**
      * \brief   Returns the pointer to the value of the module specific property searched by specified key parameter.
@@ -280,12 +280,12 @@ public:
      * \param   propList    The list of new properties to add.
      * \return  Returns number of properties added to the writable list of the module.
      **/
-    inline int32_t addModuleProperties(const NEPersistence::ListProperties& propList);
+    inline int32_t addModuleProperties(const areg::ListProperties& propList);
 
     /**
      * \brief   Overwrites the existing list of writable properties. All existing properties will be lost.
      **/
-    inline void replaceModuleProperty(const NEPersistence::ListProperties& listProperties);
+    inline void replaceModuleProperty(const areg::ListProperties& listProperties);
 
     /**
      * \brief   Removes the existing configuration entry from the writable list.
@@ -298,7 +298,7 @@ public:
     void removeModuleProperty( const String& section
                              , const String& property
                              , const String& position = String::EmptyString
-                             , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
+                             , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes the existing configuration entry from the writable list.
@@ -314,7 +314,7 @@ public:
      * \param   keyType     The property key type.
      * \return  Returns the number of entries removed from the writable list.
      **/
-    int32_t removeModuleProperties(const String& section, const String& property, NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
+    int32_t removeModuleProperties(const String& section, const String& property, areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes all configuration entries from the writable list matching the specified section.
@@ -326,9 +326,9 @@ public:
      * \brief   Reads the configuration from the specified configuration file.
      *          The file should be either full or relative path.
      *          If the specified file path is empty, it uses default 
-     *          NEApplication::DEFAULT_CONFIG_FILE file path.
+     *          areg::DEFAULT_CONFIG_FILE file path.
      * \param   filePath    The relative of full path to the configuration file.
-     *                      If empty, uses NEApplication::DEFAULT_CONFIG_FILE file path.
+     *                      If empty, uses areg::DEFAULT_CONFIG_FILE file path.
      * \param   listener    The pointer to the configuration listener to notify
      *                      before and after reading configuration from the file.
      *                      If nullptr, no notification is triggered.
@@ -340,7 +340,7 @@ public:
      * \brief   Reads the configuration from the specified configuration file.
      *          The file should be either full or relative path.
      *          If the specified file path is empty, it uses default
-     *          NEApplication::DEFAULT_CONFIG_FILE file path.
+     *          areg::DEFAULT_CONFIG_FILE file path.
      * \param   file        The instance of file object opened for reading.
      * \param   listener    The pointer to the configuration listener to notify
      *                      before and after reading configuration from the file.
@@ -356,7 +356,7 @@ public:
      * \param   filePath    The relative of full path to the configuration file to write.
      *                      If file is empty, uses the same name of previously opened file.
      *                      If the current configuration file path is empty (defaults are initialized),
-     *                      it uses NEApplication::DEFAULT_CONFIG_FILE file to save.
+     *                      it uses areg::DEFAULT_CONFIG_FILE file to save.
      * \param   listener    The pointer to the configuration listener to notify
      *                      before and after saving configuration to the file.
      *                      If nullptr, no notification is triggered.
@@ -384,7 +384,7 @@ public:
      * \param   listener        The pointer to the configuration listener to notify configuration data set/
      *                          If nullptr, no notification is triggered.
      **/
-    void setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigListener * listener = nullptr);
+    void setConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigListener * listener = nullptr);
 
     /**
      * \brief   Releases all module specific entries.
@@ -417,7 +417,7 @@ public:
     Version getLogVersion() const;
 
     /**
-     * \brief   Returns list of logging targets specified in the NELogging::LogTarget.
+     * \brief   Returns list of logging targets specified in the areg::LogTarget.
      **/
     std::vector<Identifier> getLogTargets() const;
 
@@ -437,15 +437,15 @@ public:
     inline void setLoggingStatus(bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NELogging::LogTarget.
-     * \param   logType     The string value of NELogging::LogTarget.
+     * \brief   Returns log enable or disable state for the target defined in areg::LogTarget.
+     * \param   logType     The string value of areg::LogTarget.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     bool getLogEnabled(const String& logType) const;
 
     /**
-     * \brief   Returns log enable or disable state for the target defined in NELogging::LogTarget.
-     * \param   logType     The Identifier object containing NELogging::LogTarget value and string equivalent.
+     * \brief   Returns log enable or disable state for the target defined in areg::LogTarget.
+     * \param   logType     The Identifier object containing areg::LogTarget value and string equivalent.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
     inline bool getLogEnabled(const Identifier& logType) const;
@@ -455,11 +455,11 @@ public:
      * \param   logType     The logging target to check.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
-    bool getLogEnabled(NELogging::LogTarget logType) const;
+    bool getLogEnabled(areg::LogTarget logType) const;
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::LogTarget.
-     * \param   logType     The Identifier object containing NELogging::LogTarget value and string equivalent.
+     * \brief   Sets the logging state for the target defined in areg::LogTarget.
+     * \param   logType     The Identifier object containing areg::LogTarget value and string equivalent.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -467,8 +467,8 @@ public:
     inline void setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::LogTarget.
-     * \param   logType     The string value of NELogging::LogTarget.
+     * \brief   Sets the logging state for the target defined in areg::LogTarget.
+     * \param   logType     The string value of areg::LogTarget.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -476,13 +476,13 @@ public:
     inline void setLogEnabled(const String& logType, bool newValue, bool isTemporary = false);
 
     /**
-     * \brief   Sets the logging state for the target defined in NELogging::LogTarget.
+     * \brief   Sets the logging state for the target defined in areg::LogTarget.
      * \param   logType     The logging target to set enabling flag.
      * \param   newValue    If 'true' enables the logging for the target output.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setLogEnabled(NELogging::LogTarget logType, bool newValue, bool isTemporary = false);
+    void setLogEnabled(areg::LogTarget logType, bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the path of the log file that contains messages.
@@ -640,7 +640,7 @@ public:
      * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
-    String getRemoteServiceName(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
+    String getRemoteServiceName(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
 
     /**
      * \brief   Returns the remote service connection enabled or disabled flag.
@@ -658,7 +658,7 @@ public:
      * \return  If returns true, the specified remote service supports the specified connection type.
      *          Otherwise, it does not support
      **/
-    bool getRemoteServiceEnable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
+    bool getRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
 
     /**
      * \brief   Sets the enabled flag of the specified connection of the remote service.
@@ -676,7 +676,7 @@ public:
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setRemoteServiceEnable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, bool newValue, bool isTemporary = false);
+    void setRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the address of the remote service that supports the specified connection.
@@ -690,7 +690,7 @@ public:
      * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
-    String getRemoteServiceAddress(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
+    String getRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
 
     /**
      * \brief   Sets the address of the remote service to establish specified connection.
@@ -708,7 +708,7 @@ public:
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setRemoteServiceAddress(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, const String& newValue, bool isTemporary = false);
+    void setRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const String& newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the port number the remote service that supports the specified connection.
@@ -722,7 +722,7 @@ public:
      * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
-    uint16_t getRemoteServicePort(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType) const;
+    uint16_t getRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const;
 
     /**
      * \brief   Sets the port number of the remote service to establish specified connection.
@@ -740,7 +740,7 @@ public:
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    void setRemoteServicePort(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, uint16_t newValue, bool isTemporary = false);
+    void setRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool isTemporary = false);
 
     /**
      * \brief   Returns the log database property entry of specified position.
@@ -763,14 +763,14 @@ public:
      * \param   whichModule     The name of the module or `*` for generic settings.
      * \return  Returns the buffer block size in bytes to set when grow buffer.
      **/
-    uint32_t getDefaultBufferBlockSize(const String& whichModule = NEString::EmptyStringA);
+    uint32_t getDefaultBufferBlockSize(const String& whichModule = areg::EmptyStringA);
 
     /**
      * \brief   Returns the default message queue size set in the configuration file.
      * \param   whichModule     The name of the module or `*` for generic settings.
      * \return  Returns the default message queue size to set for message queues.
      **/
-    uint32_t getDefaultMessageQueueSize(const String& whichModule = NEString::EmptyStringA);
+    uint32_t getDefaultMessageQueueSize(const String& whichModule = areg::EmptyStringA);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -789,12 +789,12 @@ private:
     /**
      * \brief   The list of writable properties of the configuration, which can be modified for current process.
      **/
-    NEPersistence::ListProperties   mWritableProperties;
+    areg::ListProperties   mWritableProperties;
 
     /**
      * \brief   The list of read-only properties of the configuration, which cannot be modified.
      **/
-    NEPersistence::ListProperties  mReadonlyProperties;
+    areg::ListProperties  mReadonlyProperties;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -837,13 +837,13 @@ inline const String& ConfigManager::getConfigFile() const
     return mFilePath;
 }
 
-inline const NEPersistence::ListProperties& ConfigManager::getReadonlyProperties() const
+inline const areg::ListProperties& ConfigManager::getReadonlyProperties() const
 {
     Lock lock(mLock);
     return mReadonlyProperties;
 }
 
-inline const NEPersistence::ListProperties& ConfigManager::getModuleProperties() const
+inline const areg::ListProperties& ConfigManager::getModuleProperties() const
 {
     Lock lock(mLock);
     return mWritableProperties;
@@ -892,7 +892,7 @@ inline void ConfigManager::setModuleProperty(const PropertyKey& key, const Strin
 inline const PropertyValue * ConfigManager::getPropertyValue( const String& section
                                                             , const String& property
                                                             , const String& position /*= String::EmptyString*/
-                                                            , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
+                                                            , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -913,7 +913,7 @@ inline const PropertyValue* ConfigManager::getModulePropertyValue(const Property
 inline const PropertyValue * ConfigManager::getModulePropertyValue( const String& section
                                                                   , const String& property
                                                                   , const String& position /*= String::EmptyString*/
-                                                                  , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
+                                                                  , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -929,7 +929,7 @@ inline PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& k
 inline PropertyValue * ConfigManager::getModulePropertyValue( const String& section
                                                            , const String& property
                                                            , const String& position /*= String::EmptyString*/
-                                                           , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/)
+                                                           , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/)
 {
     Lock lock(mLock);
 
@@ -937,7 +937,7 @@ inline PropertyValue * ConfigManager::getModulePropertyValue( const String& sect
     return (result != nullptr ? &const_cast<Property *>(result)->getValue() : nullptr);
 }
 
-inline int32_t ConfigManager::addModuleProperties(const NEPersistence::ListProperties& propList)
+inline int32_t ConfigManager::addModuleProperties(const areg::ListProperties& propList)
 {
     int32_t result{ 0 };
     Lock lock(mLock);
@@ -954,7 +954,7 @@ inline int32_t ConfigManager::addModuleProperties(const NEPersistence::ListPrope
     return result;
 }
 
-inline void ConfigManager::replaceModuleProperty(const NEPersistence::ListProperties& listProperties)
+inline void ConfigManager::replaceModuleProperty(const areg::ListProperties& listProperties)
 {
     Lock lock(mLock);
     mWritableProperties = listProperties;
@@ -983,8 +983,8 @@ inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= 
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogStatus;
-    const NEPersistence::ConfigKey& key = NEPersistence::getLogStatus();
+    constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogStatus;
+    const areg::ConfigKey& key = areg::getLogStatus();
 
     setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
@@ -998,8 +998,8 @@ inline void ConfigManager::setLogEnabled(const String& logType, bool newValue, b
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogEnable;
-    const NEPersistence::ConfigKey& key = NEPersistence::getLogEnable();
+    constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogEnable;
+    const areg::ConfigKey& key = areg::getLogEnable();
     setModuleProperty(key.section, key.property, logType, String::makeString(newValue), confKey, isTemporary);
 }
 
@@ -1012,8 +1012,8 @@ inline void ConfigManager::setLogFileLocation(const String& newValue, bool isTem
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogFileLocation;
-    const NEPersistence::ConfigKey& key = NEPersistence::getLogFileLocation();
+    constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogFileLocation;
+    const areg::ConfigKey& key = areg::getLogFileLocation();
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 

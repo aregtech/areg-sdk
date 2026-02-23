@@ -91,13 +91,13 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
                     , ProxyAddress::convAddressToPath(out_client.getAddress()).getString()
                     , pos->first.getAddress().isRemoteAddress() ? "REMOTE" : "LOCAL"
                     , StubAddress::convAddressToPath(pos->first.getAddress()).getString()
-                    , NEService::getString(pos->first.getConnectionStatus())
+                    , areg::getString(pos->first.getConnectionStatus())
                     , pos->second.getSize());
 
         if (pos->second.isEmpty())
         {
             const StubAddress & addrStub = pos->first.getAddress();
-            if (addrStub.getSource() == NEService::SOURCE_UNKNOWN || addrStub.isRemoteAddress())
+            if (addrStub.getSource() == areg::SOURCE_UNKNOWN || addrStub.isRemoteAddress())
             {
                 removePosition(pos);
             }
@@ -130,13 +130,13 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
     ClientList& value = ServerListBase::valueAtPosition(pos);
 
     key = server;
-    key.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::ServiceConnectionState::Connected : NEService::ServiceConnectionState::Pending );
+    key.setConnectionStatus( addrStub.getSource() != areg::SOURCE_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending );
     value.serverAvailable(key, out_clinetList);
 
     LOG_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
                     , addrStub.isRemoteAddress() ? "REMOTE" : "LOCAL"
                     , StubAddress::convAddressToPath(addrStub).getString()
-                    , NEService::getString(server.getConnectionStatus())
+                    , areg::getString(server.getConnectionStatus())
                     , out_clinetList.getSize());
 
     return key;
@@ -176,10 +176,10 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
     return result;
 }
 
-NEService::ServiceConnectionState ServerList::getServerState(const StubAddress & whichServer) const
+areg::ServiceConnectionState ServerList::getServerState(const StubAddress & whichServer) const
 {
     ServerListBase::MAPPOS pos = findServer(whichServer);
-    return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : NEService::ServiceConnectionState::Unknown);
+    return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : areg::ServiceConnectionState::Unknown);
 }
 
 const ClientList & ServerList::getClientList(const StubAddress & whichServer) const

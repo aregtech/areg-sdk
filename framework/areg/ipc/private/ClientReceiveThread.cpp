@@ -24,7 +24,7 @@
 DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
 ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
-    : DispatcherThread  (namePrefix + NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
+    : DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mBytesReceive     ( 0 )
@@ -46,7 +46,7 @@ bool ClientReceiveThread::runDispatcher()
 
     do
     {
-        whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
+        whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
             whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit

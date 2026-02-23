@@ -59,7 +59,7 @@ void ServiceApplicationBase::_osDeleteService()
 {
 }
 
-bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
+bool ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -67,25 +67,25 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     {
         switch (newState)
         {
-        case NESystemService::ServicePhase::Stopped:
+        case aregext::ServicePhase::Stopped:
             break;
 
-        case NESystemService::ServicePhase::Starting:
+        case aregext::ServicePhase::Starting:
             break;
 
-        case NESystemService::ServicePhase::Stopping:
+        case aregext::ServicePhase::Stopping:
             break;
 
-        case NESystemService::ServicePhase::Running:
+        case aregext::ServicePhase::Running:
             break;
 
-        case NESystemService::ServicePhase::Continuing:
+        case aregext::ServicePhase::Continuing:
             break;
 
-        case NESystemService::ServicePhase::Pausing:
+        case aregext::ServicePhase::Pausing:
             break;
 
-        case NESystemService::ServicePhase::Paused:
+        case aregext::ServicePhase::Paused:
             break;
 
         default:

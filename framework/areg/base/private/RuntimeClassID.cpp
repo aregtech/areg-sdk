@@ -40,29 +40,29 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 RuntimeClassID::RuntimeClassID()
     : mClassName(BAD_CLASS_ID)
-    , mMagicNum (NEMath::CHECKSUM_IGNORE)
+    , mMagicNum (areg::CHECKSUM_IGNORE)
 {
 }
 
 RuntimeClassID::RuntimeClassID( const char * className )
     : mClassName(BAD_CLASS_ID)
-    , mMagicNum (NEMath::CHECKSUM_IGNORE)
+    , mMagicNum (areg::CHECKSUM_IGNORE)
 {
-    if (NEString::isEmpty<char>(className) == false)
+    if (areg::isEmpty<char>(className) == false)
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32Calculate(className);
+        mMagicNum   = areg::crc32Calculate(className);
     }
 }
 
 RuntimeClassID::RuntimeClassID( const String& className )
     : mClassName(BAD_CLASS_ID)
-    , mMagicNum (NEMath::CHECKSUM_IGNORE)
+    , mMagicNum (areg::CHECKSUM_IGNORE)
 {
     if (className.isEmpty() == false)
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32Calculate(className);
+        mMagicNum   = areg::crc32Calculate(className);
     }
 }
 
@@ -89,25 +89,25 @@ void RuntimeClassID::setName( const String& className )
     if ( className.isEmpty() || (className == BAD_CLASS_ID))
     {
         mClassName  = BAD_CLASS_ID;
-        mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        mMagicNum   = areg::CHECKSUM_IGNORE;
     }
     else
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32Calculate(className.getString());
+        mMagicNum   = areg::crc32Calculate(className.getString());
     }
 }
 
 void RuntimeClassID::setName( const char* className )
 {
-    if ( NEString::isEmpty<char>(className) || (BAD_CLASS_ID == className) )
+    if ( areg::isEmpty<char>(className) || (BAD_CLASS_ID == className) )
     {
         mClassName  = BAD_CLASS_ID;
-        mMagicNum   = NEMath::CHECKSUM_IGNORE;
+        mMagicNum   = areg::CHECKSUM_IGNORE;
     }
     else
     {
         mClassName  = className;
-        mMagicNum   = NEMath::crc32Calculate(className);
+        mMagicNum   = areg::crc32Calculate(className);
     }
 }

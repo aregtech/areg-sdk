@@ -302,7 +302,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 32-bit integer
      **/
-    static int32_t makeInt32( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static int32_t makeInt32( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 32-bit unsigned integer
      * \param   strDigit    The string with digits.
@@ -310,7 +310,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 32-bit unsigned integer
      **/
-    static uint32_t makeUInt32( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static uint32_t makeUInt32( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 64-bit integer
      * \param   strDigit    The string with digits. Can contain negative or positive sign in front
@@ -318,7 +318,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 64-bit integer
      **/
-    static int64_t makeInt64( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static int64_t makeInt64( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 64-bit unsigned integer
      * \param   strDigit    The string with digits.
@@ -326,7 +326,7 @@ public:
      * \param   end [out]   If not nullptr, on output this contains value of pointer to the next character in strDigit buffer after the numerical value.
      * \return  Returns the 64-bit unsigned integer
      **/
-    static uint64_t makeUInt64( const wchar_t * strDigit, NEString::Radix radix = NEString::Radix::Decimal, const wchar_t ** end = nullptr );
+    static uint64_t makeUInt64( const wchar_t * strDigit, areg::Radix radix = areg::Radix::Decimal, const wchar_t ** end = nullptr );
     /**
      * \brief   Converts given string of digits to 32-bit digit with floating point
      * \param   strDigit    The string with digits.
@@ -355,28 +355,28 @@ public:
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString makeString( int32_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString makeString( int32_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts given unsigned 32-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString makeString( uint32_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString makeString( uint32_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts given signed 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString makeString( int64_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString makeString( int64_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts given unsigned 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString makeString( uint64_t number, NEString::Radix radix = NEString::Radix::Decimal );
+    static WideString makeString( uint64_t number, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
@@ -450,7 +450,7 @@ public:
      * \param   count   The number of characters to copy. By default, it copies all characters.
      * \return  Returns modified string.
      **/
-    WideString& assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    WideString& assign(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -459,17 +459,7 @@ public:
      * \param   count   The number of characters to copy. By default, it copies all characters.
      * \return  Returns modified string.
      **/
-    inline WideString& assign(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
-
-    /**
-     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-     *          If string has not enough space to copy characters, it will reallocate the space.
-     * \param   source  The source of string to copy characters.
-     * \param   pos     The position in source string to start to copy.
-     * \param   count   The number of characters to copy. By default, it copies all characters.
-     * \return  Returns modified string.
-     **/
-    inline WideString& assign(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -479,7 +469,7 @@ public:
      * \param   count   The number of characters to copy. By default, it copies all characters.
      * \return  Returns modified string.
      **/
-    inline WideString& assign(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const std::wstring& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -489,7 +479,17 @@ public:
      * \param   count   The number of characters to copy. By default, it copies all characters.
      * \return  Returns modified string.
      **/
-    inline WideString& assign(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& assign(const std::wstring_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& assign(const WideString& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -506,7 +506,7 @@ public:
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
      * \return  Returns modified string.
      **/
-    WideString& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    WideString& append(const char* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -515,18 +515,7 @@ public:
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
      * \return  Returns modified string.
      **/
-    inline WideString& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
-
-    /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
-     *          and by amount of characters to append.
-     * \param   source  The source of string to append characters.
-     * \param   pos     If specified the valid zero-based position in the given string to append.
-     *                  Otherwise, it append starting from the beginning.
-     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
-     * \return  Returns modified string.
-     **/
-    inline WideString& append(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const wchar_t* source, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -537,7 +526,7 @@ public:
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
      * \return  Returns modified string.
      **/
-    inline WideString& append(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const std::wstring& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -548,7 +537,18 @@ public:
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
      * \return  Returns modified string.
      **/
-    inline WideString& append(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline WideString& append(const std::wstring_view& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     * \param   source  The source of string to append characters.
+     * \param   pos     If specified the valid zero-based position in the given string to append.
+     *                  Otherwise, it append starting from the beginning.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const WideString& source, areg::CharPos pos = areg::START_POS, areg::CharCount count = areg::COUNT_ALL);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
@@ -563,25 +563,25 @@ public:
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 32-bit integer
      **/
-    inline int32_t toInt32( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline int32_t toInt32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 32-bit unsigned integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 32-bit unsigned integer
      **/
-    inline uint32_t toUInt32( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline uint32_t toUInt32( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 64-bit integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 64-bit integer
      **/
-    inline int64_t toInt64( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline int64_t toInt64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 64-bit unsigned integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 64-bit unsigned integer
      **/
-    inline uint64_t toUInt64( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    inline uint64_t toUInt64( areg::Radix radix = areg::Radix::Decimal ) const;
     /**
      * \brief   Converts string of digits to 32-bit digit with floating point
      * \return  Returns the 32-bit digit with floating point
@@ -609,7 +609,7 @@ public:
      *          If need to convert negative number to Hexadecimal or Octal,
      *          might make sense to use FromUInt32 method.
      **/
-    inline WideString & fromInt32( int32_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & fromInt32( int32_t value, areg::Radix radix = areg::Radix::Decimal );
 
     /**
      * \brief   Converts and sets 32-bit unsigned digit in the string based on radix bases.
@@ -621,7 +621,7 @@ public:
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
      *          are filled with
      **/
-    inline WideString & fromUInt32( uint32_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & fromUInt32( uint32_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts and sets 64-bit signed digit in the string based on radix bases.
      * \param   value   The 64-bit signed integer value to set in the string.
@@ -633,7 +633,7 @@ public:
      *          If need to convert negative number to Hexadecimal or Octal,
      *          might make sense to use FromUInt32 method.
      **/
-    inline WideString & fromInt64( int64_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & fromInt64( int64_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts and sets 64-bit unsigned digit in the string based on radix bases.
      * \param   value   The 64-bit unsigned integer value to set in the string.
@@ -644,7 +644,7 @@ public:
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
      *          are filled with
      **/
-    inline WideString & fromUInt64( uint64_t value, NEString::Radix radix = NEString::Radix::Decimal );
+    inline WideString & fromUInt64( uint64_t value, areg::Radix radix = areg::Radix::Decimal );
     /**
      * \brief   Converts and sets float digit in the string.
      * \param   value   The value of number with floating point to set in the string.
@@ -730,24 +730,24 @@ inline WideString::WideString(std::wstring&& source) noexcept
 inline WideString::WideString(const std::string& source)
     : StringBase<wchar_t>()
 {
-    assign(source.c_str(), static_cast<NEString::CharCount>(source.length()));
+    assign(source.c_str(), static_cast<areg::CharCount>(source.length()));
 }
 
 inline WideString::WideString(const char* source)
     : StringBase<wchar_t>()
 {
-    assign(source, NEString::COUNT_ALL);
+    assign(source, areg::COUNT_ALL);
 }
 
 inline WideString::WideString(const wchar_t* source, uint32_t charCount)
-    : StringBase<wchar_t>(source, static_cast<NEString::CharCount>(charCount))
+    : StringBase<wchar_t>(source, static_cast<areg::CharCount>(charCount))
 {
 }
 
 inline WideString::WideString(const char* source, uint32_t charCount)
     : StringBase<wchar_t>()
 {
-    assign(source, static_cast<NEString::CharCount>(charCount));
+    assign(source, static_cast<areg::CharCount>(charCount));
 }
 
 inline WideString::WideString( wchar_t ch )
@@ -767,7 +767,7 @@ inline WideString::operator uint32_t() const
 
 inline WideString& WideString::operator = (const char* src)
 {
-    assign(src, NEString::COUNT_ALL);
+    assign(src, areg::COUNT_ALL);
     return (*this);
 }
 
@@ -791,7 +791,7 @@ inline WideString& WideString::operator = (const std::wstring& src)
 
 inline WideString& WideString::operator = (const std::string& src)
 {
-    assign(src.c_str(), static_cast<NEString::CharCount>(src.length()));
+    assign(src.c_str(), static_cast<areg::CharCount>(src.length()));
     return (*this);
 }
 
@@ -907,7 +907,7 @@ inline WideString& WideString::operator += (const wchar_t chSource)
 
 inline WideString& WideString::operator += (const char* src)
 {
-    append(src, NEString::COUNT_ALL);
+    append(src, areg::COUNT_ALL);
     return (*this);
 }
 
@@ -919,7 +919,7 @@ WideString& WideString::operator += (const char chSource)
 
 inline WideString& WideString::operator += (const std::string& src)
 {
-    append(src.c_str(), static_cast<NEString::CharCount>(src.length()));
+    append(src.c_str(), static_cast<areg::CharCount>(src.length()));
     return (*this);
 }
 
@@ -1012,22 +1012,22 @@ inline OutStream& operator << (OutStream& stream, const WideString& output)
     return stream;
 }
 
-inline int32_t WideString::toInt32( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline int32_t WideString::toInt32( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::makeInt32(getString(), radix, nullptr );
 }
 
-inline uint32_t WideString::toUInt32( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline uint32_t WideString::toUInt32( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::makeUInt32(getString(), radix, nullptr );
 }
 
-inline int64_t WideString::toInt64( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline int64_t WideString::toInt64( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::makeInt64(getString(), radix, nullptr );
 }
 
-inline uint64_t WideString::toUInt64( NEString::Radix radix /*= NEString::Decimal */ ) const
+inline uint64_t WideString::toUInt64( areg::Radix radix /*= areg::Decimal */ ) const
 {
     return WideString::makeUInt64(getString(), radix, nullptr );
 }
@@ -1044,28 +1044,28 @@ inline double WideString::toDouble() const
 
 inline bool WideString::toBool() const
 {
-    return (isEmpty() || NEString::compareIgnoreCase<wchar_t, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::Ordering::Equal ? false : true);
+    return (isEmpty() || areg::compareIgnoreCase<wchar_t, char>(getString(), areg::BOOLEAN_FALSE.data()) == areg::Ordering::Equal ? false : true);
 }
 
-inline WideString & WideString::fromInt32( int32_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::fromInt32( int32_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     *this = WideString::makeString(value, radix);
     return (*this);
 }
 
-inline WideString & WideString::fromUInt32( uint32_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::fromUInt32( uint32_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
-inline WideString & WideString::fromInt64( int64_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::fromInt64( int64_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
-inline WideString & WideString::fromUInt64( uint64_t value, NEString::Radix radix /*= NEString::Decimal */ )
+inline WideString & WideString::fromUInt64( uint64_t value, areg::Radix radix /*= areg::Decimal */ )
 {
     (*this) = WideString::makeString( value, radix );
     return (*this);
@@ -1089,25 +1089,25 @@ inline WideString & WideString::fromBool( bool value )
     return (*this);
 }
 
-inline WideString& WideString::assign(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const wchar_t* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(source, count);
     return (*this);
 }
 
-inline WideString& WideString::assign(const std::wstring& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const std::wstring& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(static_cast<const std::basic_string<wchar_t> &>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::assign(const std::wstring_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const std::wstring_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(static_cast<const std::basic_string_view<wchar_t> &>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::assign(const WideString& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::assign(const WideString& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::assign(source, pos, count);
     return (*this);
@@ -1119,25 +1119,25 @@ inline WideString & WideString::assign(const wchar_t ch)
     return (*this);
 }
 
-inline WideString& WideString::append(const wchar_t* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const wchar_t* source, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(source, count);
     return (*this);
 }
 
-inline WideString& WideString::append(const std::wstring& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const std::wstring& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(static_cast<const std::basic_string<wchar_t>&>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::append(const std::wstring_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const std::wstring_view& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(static_cast<const std::basic_string_view<wchar_t>&>(source), pos, count);
     return (*this);
 }
 
-inline WideString& WideString::append(const WideString& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline WideString& WideString::append(const WideString& source, areg::CharPos pos /*= areg::START_POS*/, areg::CharCount count /*= areg::COUNT_ALL*/)
 {
     Base::append(static_cast<const Base&>(source), pos, count);
     return (*this);

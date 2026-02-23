@@ -46,7 +46,7 @@ public:
      * \param   hSocket         Socket descriptor to set
      * \param   sockAddress     Address of accepted client socket
      **/
-    explicit SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress );
+    explicit SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress );
 
     /**
      * \brief   Copy constructor.
@@ -122,7 +122,7 @@ private:
      *          or already resolved with IP-address.
      * \param   newAddress  The new address to set.
      **/
-    void setAddress( const NESocket::SocketAddress & newAddress );
+    void setAddress( const areg::SocketAddress & newAddress );
 };
 
 #endif  // AREG_BASE_SOCKETACPTED_HPP

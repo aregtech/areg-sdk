@@ -258,8 +258,8 @@ private:
 
     /**
      * \brief   The callback of the event triggered when receive remote message to log.
-     *          The buffer indicates to the NELogging::LogEntry structure.
-     * \param   logBuffer   The pointer to the NELogging::LogEntry structure to log messages.
+     *          The buffer indicates to the areg::LogEntry structure.
+     * \param   logBuffer   The pointer to the areg::LogEntry structure to log messages.
      * \param   size        The size of the buffer with log message.
      **/
     static void callbackLogMessageEx(const uint8_t * logBuffer, uint32_t size);

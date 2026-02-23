@@ -278,7 +278,7 @@ LOGGER_API_IMPL uint16_t logObserverLoggerPort()
 {
     LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
-    uint16_t result{ NESocket::InvalidPort };
+    uint16_t result{ areg::InvalidPort };
     if (_isInitialized(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::getInstance();
@@ -311,9 +311,9 @@ LOGGER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t s
     {
         LoggerClient& client = LoggerClient::getInstance();
         String addr{ client.getConfigLoggerAddress() };
-        if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<NEString::CharCount>(space)))
+        if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<areg::CharCount>(space)))
         {
-            result = NEString::copyString<char, char>(addrBuffer, static_cast<NEString::CharCount>(space), addr.getString(), addr.getLength()) > 0;
+            result = areg::copyString<char, char>(addrBuffer, static_cast<areg::CharCount>(space), addr.getString(), addr.getLength()) > 0;
         }
     }
 
@@ -324,7 +324,7 @@ LOGGER_API_IMPL uint16_t logObserverConfigLoggerPort()
 {
     LogObserverStruct& theObserver { logObserverData() };
     Lock lock(theObserver.losLock);
-    uint16_t result{ NESocket::InvalidPort };
+    uint16_t result{ areg::InvalidPort };
     if (_isInitialized(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::getInstance();
@@ -367,10 +367,10 @@ LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const Sco
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState) && (target != ID_IGNORE))
     {
-        NELogging::ScopeNames scopeList(count);
+        areg::ScopeNames scopeList(count);
         for (uint32_t i = 0; i < count; ++i)
         {
-            scopeList.add(NELogging::ScopeEntry(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
+            scopeList.add(areg::ScopeEntry(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
         }
 
         result = LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
@@ -395,9 +395,9 @@ LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED
 LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t space)
 {
     String path{ LoggerClient::getInstance().getActiveDatabasePath() };
-    if ((dbPath != nullptr) && (path.getLength() > static_cast<NEString::CharCount>(space)))
+    if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
     {
-        return static_cast<int32_t>(NEString::copyString<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.getString(), path.getLength()));
+        return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
     }
     else
     {
@@ -408,9 +408,9 @@ LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t s
 LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t space)
 {
     String path{ LoggerClient::getInstance().getInitialDatabasePath() };
-    if ((dbPath != nullptr) && (path.getLength() > static_cast<NEString::CharCount>(space)))
+    if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
     {
-        return static_cast<int32_t>(NEString::copyString<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.getString(), path.getLength()));
+        return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
     }
     else
     {
@@ -421,9 +421,9 @@ LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t 
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t space)
 {
     String path{ LoggerClient::getInstance().getConfigDatabasePath() };
-    if ((dbPath != nullptr) && (path.getLength() > static_cast<NEString::CharCount>(space)))
+    if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
     {
-        return static_cast<int32_t>(NEString::copyString<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.getString(), path.getLength()));
+        return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
     }
     else
     {
@@ -434,9 +434,9 @@ LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t s
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseLocation(char* dbLocation, int32_t space)
 {
     String location{ LoggerClient::getInstance().getConfigDatabaseLocation() };
-    if ((dbLocation != nullptr) && (location.getLength() > static_cast<NEString::CharCount>(space)))
+    if ((dbLocation != nullptr) && (location.getLength() > static_cast<areg::CharCount>(space)))
     {
-        return static_cast<int32_t>(NEString::copyString<char, char>(dbLocation, static_cast<NEString::CharCount>(space), location.getString(), location.getLength()));
+        return static_cast<int32_t>(areg::copyString<char, char>(dbLocation, static_cast<areg::CharCount>(space), location.getString(), location.getLength()));
     }
     else
     {
@@ -452,9 +452,9 @@ LOGGER_API_IMPL bool logObserverSetConfigDatabaseLocation(const char* dbLocation
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseName(char* dbName, int32_t space)
 {
     String name{ LoggerClient::getInstance().getConfigDatabaseName() };
-    if ((dbName != nullptr) && (name.getLength() > static_cast<NEString::CharCount>(space)))
+    if ((dbName != nullptr) && (name.getLength() > static_cast<areg::CharCount>(space)))
     {
-        return static_cast<int32_t>(NEString::copyString<char, char>(dbName, static_cast<NEString::CharCount>(space), name.getString(), name.getLength()));
+        return static_cast<int32_t>(areg::copyString<char, char>(dbName, static_cast<areg::CharCount>(space), name.getString(), name.getLength()));
     }
     else
     {

@@ -90,7 +90,7 @@ protected:
      **/
     TimerBase( const TimerType timerType
              , const String & timerName
-             , uint32_t timeoutMs   = NECommon::INVALID_TIMEOUT
+             , uint32_t timeoutMs   = areg::INVALID_TIMEOUT
              , uint32_t eventCount  = TimerBase::CONTINUOUSLY );
 
 public:
@@ -149,7 +149,7 @@ public:
 
     /**
      * \brief   Returns true if timer is valid. The valid timer has timeout
-     *          not equal to NECommon::INVALID_TIMEOUT;
+     *          not equal to areg::INVALID_TIMEOUT;
      **/
     inline bool isValid() const;
 
@@ -237,7 +237,7 @@ private:
 
 inline bool TimerBase::isValid() const
 {
-    return ((mTimeoutInMs != NECommon::INVALID_TIMEOUT) && (mHandle != nullptr));
+    return ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mHandle != nullptr));
 }
 
 inline void TimerBase::setEventCount(uint32_t eventCount)

@@ -71,7 +71,7 @@ protected:
     ServiceRequestEvent( const ProxyAddress & proxyAddress
                        , const StubAddress & target
                        , uint32_t reqId
-                       , NEService::RequestType reqType
+                       , areg::RequestType reqType
                        , Event::EventType eventType );
 
     /**
@@ -108,7 +108,7 @@ public:
     /**
      * \brief   Returns request type to process.
      **/
-    inline NEService::RequestType getRequestType() const;
+    inline areg::RequestType getRequestType() const;
 
     /**
      * \brief   Returns sequence number set in info.
@@ -158,7 +158,7 @@ protected:
     /**
      * \brief   Request type. Normally, either notification or request call.
      **/
-    NEService::RequestType    mRequestType;
+    areg::RequestType    mRequestType;
 
     /**
      * \brief   Sequence number.
@@ -192,7 +192,7 @@ inline uint32_t ServiceRequestEvent::getRequestId() const
     return mMessageId;
 }
 
-inline NEService::RequestType ServiceRequestEvent::getRequestType() const
+inline areg::RequestType ServiceRequestEvent::getRequestType() const
 {
     return mRequestType;
 }

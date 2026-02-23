@@ -43,5 +43,5 @@ TEST(GUnitTestDummy, BasicString )
 
     String hello( _hello );
     hello = hello.makeUpper( );
-    EXPECT_EQ( hello.compare( _hello, false ), NEMath::Ordering::Equal );
+    EXPECT_EQ( hello.compare( _hello, false ), areg::Ordering::Equal );
 }

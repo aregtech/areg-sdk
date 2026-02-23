@@ -173,13 +173,13 @@ public:
      *          The Server Info state is updated only when Stub address is set.
      *          No separate Set-method presented
      **/
-    inline NEService::ServiceConnectionState getConnectionStatus() const;
+    inline areg::ServiceConnectionState getConnectionStatus() const;
 
     /**
      * \brief   Changes the network connection status.
      * \param   newConnection   The service connection status.
      **/
-    void setConnectionStatus( NEService::ServiceConnectionState newConnection );
+    void setConnectionStatus( areg::ServiceConnectionState newConnection );
 
     /**
      * \brief   Returns true if server status is Connected
@@ -202,7 +202,7 @@ private:
     /**
      * \brief   The State of Server Info. State Registered set only when Stub address is valid.
      **/
-    NEService::ServiceConnectionState  mServerState;
+    areg::ServiceConnectionState  mServerState;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -243,19 +243,19 @@ inline const StubAddress& ServerInfo::getAddress() const
     return mServerAddress;
 }
 
-inline NEService::ServiceConnectionState ServerInfo::getConnectionStatus() const
+inline areg::ServiceConnectionState ServerInfo::getConnectionStatus() const
 {
     return mServerState;
 }
 
 inline bool ServerInfo::isConnected() const
 {
-    return mServerState == NEService::ServiceConnectionState::Connected;
+    return mServerState == areg::ServiceConnectionState::Connected;
 }
 
 inline bool ServerInfo::isWaiting() const
 {
-    return mServerState == NEService::ServiceConnectionState::Pending;
+    return mServerState == areg::ServiceConnectionState::Pending;
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_SERVERINFO_HPP

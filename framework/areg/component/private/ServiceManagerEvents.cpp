@@ -43,7 +43,7 @@ ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddres
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, NEService::DisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy );
     OutStream & stream = data.getWriteStream();
@@ -62,7 +62,7 @@ ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress 
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, NEService::DisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, areg::DisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub );
     OutStream & stream = data.getWriteStream();
@@ -72,7 +72,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddre
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
+ServiceManagerEventData ServiceManagerEventData::configureConnection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection );
     OutStream & stream = data.getWriteStream();
@@ -81,7 +81,7 @@ ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteSer
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
+ServiceManagerEventData ServiceManagerEventData::startConnection(areg::RemoteServiceKind service, uint32_t connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
     OutStream & stream = data.getWriteStream();

@@ -71,7 +71,7 @@ public:
      * \param   logPrio The priority level of the message for logging targets.
      * \param   format  The formatted message string to forward.
      **/
-    static void log( NELogging::LogPriority logPrio, const char * format, ... );
+    static void log( areg::LogPriority logPrio, const char * format, ... );
 
     /**
      * \brief   Outputs a Debug priority message to logging targets.
@@ -119,7 +119,7 @@ public:
      * \param   logPrio The priority of the message.
      * \param   format  The formatted message string to log.
      **/
-    void logMessage( NELogging::LogPriority logPrio, const char * format, ...);
+    void logMessage( areg::LogPriority logPrio, const char * format, ...);
 
     /**
      * \brief   Checks if Scope Priority logging is enabled for the Log Scope.
@@ -161,7 +161,7 @@ public:
      * \param   msgPrio     The priority level of the message to check.
      * \return  Returns true if the specified priority is enabled; otherwise, false.
      **/
-    inline bool isPrioEnabled( NELogging::LogPriority msgPrio ) const;
+    inline bool isPrioEnabled( areg::LogPriority msgPrio ) const;
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -177,7 +177,7 @@ private:
      * \param   format      The formatted text to output.
      * \param   args        The list of arguments to apply to the formatted text.
      **/
-    static void _sendLog( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * format, va_list args );
+    static void _sendLog( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args );
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -207,42 +207,42 @@ private:
 
 inline bool ScopeMessage::isScopeEnabled() const
 {
-    return (mScopePrio &  static_cast<uint32_t>(NELogging::LogPriority::PrioScope));
+    return (mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope));
 }
 
 inline bool ScopeMessage::isDbgEnabled() const
 {
-    return (mScopePrio >= static_cast<uint32_t>(NELogging::LogPriority::PrioDebug));
+    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioDebug));
 }
 
 inline bool ScopeMessage::isInfoEnabled() const
 {
-    return (mScopePrio >= static_cast<uint32_t>(NELogging::LogPriority::PrioInfo));
+    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioInfo));
 }
 
 inline bool ScopeMessage::isWarnEnabled() const
 {
-    return (mScopePrio >= static_cast<uint32_t>(NELogging::LogPriority::PrioWarning));
+    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioWarning));
 }
 
 inline bool ScopeMessage::isErrEnabled() const
 {
-    return (mScopePrio >= static_cast<uint32_t>(NELogging::LogPriority::PrioError));
+    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioError));
 }
 
 inline bool ScopeMessage::isFatalEnabled() const
 {
-    return (mScopePrio >= static_cast<uint32_t>(NELogging::LogPriority::PrioFatal));
+    return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioFatal));
 }
 
 inline bool ScopeMessage::isLogEnabled() const
 {
-    return (mScopePrio != static_cast<uint32_t>(NELogging::LogPriority::PrioNotset));
+    return (mScopePrio != static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
-inline bool ScopeMessage::isPrioEnabled(NELogging::LogPriority msgPrio) const
+inline bool ScopeMessage::isPrioEnabled(areg::LogPriority msgPrio) const
 {
-    return (msgPrio == NELogging::LogPriority::PrioScope ? mScopePrio &  static_cast<uint32_t>(NELogging::LogPriority::PrioScope) : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
+    return (msgPrio == areg::LogPriority::PrioScope ? mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope) : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
 }
 
 #endif  // AREG_LOGS

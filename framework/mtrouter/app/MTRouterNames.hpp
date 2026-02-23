@@ -25,17 +25,17 @@
 /**
  * \brief   Basic constants of the mulitast router service
  **/
-namespace NEMultitargetRouterSettings
+namespace mtrouter
 {
     /**
      * \brief   The ASCII name of the Multitarget router as a system service.
      **/
-    extern char *       SERVICE_NAME_ASCII  /*= NEApplication::ROUTER_SERVICE_NAME_ASCII*/;
+    extern char *       SERVICE_NAME_ASCII  /*= areg::ROUTER_SERVICE_NAME_ASCII*/;
 
     /**
      * \brief   The UNICODE name of the Multitarget router as a system service.
      **/
-    extern wchar_t *    SERVICE_NAME_WIDE   /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
+    extern wchar_t *    SERVICE_NAME_WIDE   /*= areg::ROUTER_SERVICE_NAME_WIDE*/;
 
     /**
      * \brief   The ASCII display name of the Multitarget router service to show in the service list.
@@ -67,6 +67,6 @@ namespace NEMultitargetRouterSettings
      **/
     constexpr std::string_view   APP_TITLE  { "Areg Multi-target Message Router console application ..." };
 
-} // namespace NEMultitargetRouterSettings
+} // namespace mtrouter
 
 #endif  // AREG_MTROUTER_APP_MTROUTERNAMES_HPP

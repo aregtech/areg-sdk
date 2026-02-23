@@ -73,7 +73,7 @@ private:
     /**
      * \brief   Constant. Defines Invalid Message ID
      */
-    static constexpr uint32_t   INVALID_MESSAGE_ID  { static_cast<uint32_t>(NEService::INVALID_MESSAGE_ID) };
+    static constexpr uint32_t   INVALID_MESSAGE_ID  { static_cast<uint32_t>(areg::INVALID_MESSAGE_ID) };
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -210,7 +210,7 @@ protected:
      * \param   siData          The service interface data, containing service name
      *                          service version and service type
      **/
-    StubBase( Component & masterComp, const NEService::InterfaceData & siData );
+    StubBase( Component & masterComp, const areg::InterfaceData & siData );
 
     /**
      * \brief   Destructor.
@@ -313,7 +313,7 @@ public:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    virtual bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status );
+    virtual bool clientConnected( const ProxyAddress & client, areg::ServiceConnectionState status );
 
 /************************************************************************/
 // StubBase overrides. Public pure virtual methods 
@@ -332,9 +332,9 @@ public:
 
     /**
      * \brief   Sends error message to clients.
-     *          If message ID is a request, it should send result NEService::RequestError or NEService::RequestCanceled, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::RequestInvalid.
-     *          If message ID is an attribute, it should send result NEService::ResultDataInvalid
+     *          If message ID is a request, it should send result areg::RequestError or areg::RequestCanceled, depending on msgCancel flag.
+     *          If message ID is a response, it should send result areg::RequestInvalid.
+     *          If message ID is an attribute, it should send result areg::ResultDataInvalid
      *          and invalidate attribute data value.
      *
      *          Overwrite to implement method
@@ -359,7 +359,7 @@ protected:
      * \param   data    The buffer of data to send to client. Can be Invalid buffer
      * \return  Returns valid pointer to Response event object
      **/
-    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, NEService::ResultType result, const EventDataStream & data ) const;
+    virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const EventDataStream & data ) const;
 
     /**
      * \brief   Overwrite method to create remote service request event from streaming object for 
@@ -401,18 +401,18 @@ protected:
 
     /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
-     *          registration status. If succeeded, the value is NEService::Connected
+     *          registration status. If succeeded, the value is areg::Connected
      * \param   stubTarget  The address of registered service provider
      * \param   status      The connection status of the service provider.
      **/
-    void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState status ) override;
+    void processStubRegisteredEvent( const StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
 
     /**
      * \brief   Send by system when client is requested connect / disconnect
      * \param   proxyAddress    The address of the service consumer proxy.
      * \param   status          The service consumer connection status.
      **/
-    void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status ) override;
+    void processClientConnectEvent( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) override;
 
     /**
      * \brief   Triggered to process generic stub event.
@@ -609,7 +609,7 @@ protected:
      * \param   data    The buffer of serialized data to send to proxy. Can be Invalid buffer
      * \param   result  The result to send to proxy objects.
      **/
-    void sendUpdateEvent(uint32_t msgId, const EventDataStream & data, NEService::ResultType result) const;
+    void sendUpdateEvent(uint32_t msgId, const EventDataStream & data, areg::ResultType result) const;
 
     /**
      * \brief   Send once the data update notification event to the specified target.
@@ -618,7 +618,7 @@ protected:
      * \param   data    The data to send to the target. Can be Invalid buffer
      * \param   result  The result of data update to send to the target object.
      **/
-    void sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const;
+    void sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const;
 
     /**
      * \brief   Sends response event to proxy. The list of proxy listeners is selected by message ID.
@@ -659,7 +659,7 @@ protected:
     /**
      * \brief   Instance of Servicing interface data.
      **/
-    const NEService::InterfaceData &   mInterface;
+    const areg::InterfaceData &   mInterface;
 
     /**
      * \brief   The address object of stub
@@ -669,7 +669,7 @@ protected:
     /**
      * \brief   The service connection status
      **/
-    NEService::ServiceConnectionState       mConnectionStatus;
+    areg::ServiceConnectionState       mConnectionStatus;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)

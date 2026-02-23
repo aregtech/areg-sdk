@@ -41,10 +41,10 @@ struct _EXCEPTION_POINTERS;
 //////////////////////////////////////////////////////////////////////////
 // NEDebug namespace declaration
 //////////////////////////////////////////////////////////////////////////
-namespace NEDebug
+namespace areg
 {
     /**
-     * \brief   NEDebug::DebugPriority
+     * \brief   areg::DebugPriority
      *          Defines message priority in debug output window.
      *          There is no filter of messages in priority, but
      *          by using these constants, user makes appropriate 
@@ -61,7 +61,7 @@ namespace NEDebug
     };
 
     /**
-     * \brief   NEDebug::MAX_DEBUG_BUFFER_SIZE
+     * \brief   areg::MAX_DEBUG_BUFFER_SIZE
      *          The maximum buffer size for message output.
      **/
     constexpr uint32_t  MAX_DEBUG_BUFFER_SIZE       = 1024;
@@ -76,24 +76,24 @@ namespace NEDebug
     };
 
     /**
-     * \brief   NEDebug::getPrioPrefix()
+     * \brief   areg::getPrioPrefix()
      *          Returns prefix string of specified priority
      * \param   priority    The priority of message
      * \return  Returns one of defined prefixes, depending of priority.
-     *          By default, the priority is  NEDebug::PrioDbg
+     *          By default, the priority is  areg::PrioDbg
      **/
-    inline constexpr std::string_view getPrioPrefix( NEDebug::DebugPriority priority );
+    inline constexpr std::string_view getPrioPrefix( areg::DebugPriority priority );
 
     /**
-     * \brief   NEDebug::outputConsole()
+     * \brief   areg::outputConsole()
      *          Makes message output in Debug Output Window
      * \param   priority    The priority of message
      * \param   msg         The message to output. Before output, the message is formated.
      **/
-    void AREG_API outputConsole(NEDebug::DebugPriority priority, const char* msg, ...);
+    void AREG_API outputConsole(areg::DebugPriority priority, const char* msg, ...);
 
     /**
-     * \brief   NEDebug::outputConsole()
+     * \brief   areg::outputConsole()
      *          Makes message output in Debug Output Window without changing string.
      *          No priority level or new line special characters will be added.
      * \param   msg         The message to output. Before output, the message is formated.
@@ -128,9 +128,9 @@ namespace NEDebug
 //////////////////////////////////////////////////////////////////////////
 // NEDebug namespace inline function implementation.
 //////////////////////////////////////////////////////////////////////////
-inline constexpr std::string_view NEDebug::getPrioPrefix( NEDebug::DebugPriority priority )
+inline constexpr std::string_view areg::getPrioPrefix( areg::DebugPriority priority )
 {
-    return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int32_t>(priority) ];
+    return areg::PREFIX_DBG_PRIORITIES[ static_cast<int32_t>(priority) ];
 }
 
 #endif  // AREG_BASE_PRIVATE_DEBUGDEFS_HPP

@@ -97,7 +97,7 @@ bool ReadConverter::getString( String & Value ) const
     while ( getChar(ch) )
     {
         result = true;
-        if ( NEString::isEndOfString<char>(ch) )
+        if ( areg::isEndOfString<char>(ch) )
             break;
         Value += ch;
     }
@@ -113,7 +113,7 @@ bool ReadConverter::getString( WideString & Value ) const
     while ( getChar(ch) )
     {
         result = true;
-        if ( NEString::isEndOfString(ch) )
+        if ( areg::isEndOfString(ch) )
             break;
 
         Value += ch;
@@ -129,9 +129,9 @@ bool ReadConverter::readLine( String & Value ) const
     while ( getChar(ch) )
     {
         result = true;
-        if ( NEString::isEndOfLine<char>(ch) )
+        if ( areg::isEndOfLine<char>(ch) )
         {
-            if (getChar(ch) && (NEString::isCarriageReturn<char>(ch) == false) && (NEString::isEndOfString<char>(ch) == false))
+            if (getChar(ch) && (areg::isCarriageReturn<char>(ch) == false) && (areg::isEndOfString<char>(ch) == false))
             {
                 mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(char)), Cursor::SeekOrigin::Current);
             }
@@ -152,9 +152,9 @@ bool ReadConverter::readLine( WideString & Value ) const
     while (getChar(ch))
     {
         result = true;
-        if (NEString::isEndOfLine<wchar_t>(ch))
+        if (areg::isEndOfLine<wchar_t>(ch))
         {
-            if ( getChar( ch ) && (NEString::isCarriageReturn<wchar_t>( ch ) == false) && (NEString::isEndOfString<wchar_t>( ch ) == false) )
+            if ( getChar( ch ) && (areg::isCarriageReturn<wchar_t>( ch ) == false) && (areg::isEndOfString<wchar_t>( ch ) == false) )
             {
                 mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(wchar_t)), Cursor::SeekOrigin::Current);
             }

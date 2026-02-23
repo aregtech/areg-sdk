@@ -410,7 +410,7 @@ template < typename RESOURCE_KEY
          , class Tracker        /*= ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>::lock() const
 {
-    mSyncObj.lock( NECommon::WAIT_INFINITE );
+    mSyncObj.lock( areg::WAIT_INFINITE );
 }
 
 template < typename RESOURCE_KEY

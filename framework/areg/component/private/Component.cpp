@@ -40,17 +40,17 @@ Component::MapComponentResource& Component::resource_map()
     return _mapResource;
 }
 
-Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, ComponentThread & componentThread )
+Component* Component::loadComponent(const areg::ComponentEntry &entry, ComponentThread & componentThread )
 {
     ASSERT(entry.mFuncCreate != nullptr);
 
     Component* component = entry.mFuncCreate(entry, componentThread);
     if (component != nullptr)
     {
-        const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
+        const areg::WorkerThreadList& wThreads = entry.getWorkerThreads();
         for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++ i)
         {
-            const NERegistry::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
+            const areg::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
             WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
             if (consumer != nullptr)
             {
@@ -72,11 +72,11 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
     return component;
 }
 
-void Component::unloadComponent( Component& comItem, const NERegistry::ComponentEntry& entry )
+void Component::unloadComponent( Component& comItem, const areg::ComponentEntry& entry )
 {
     ASSERT(entry.mFuncDelete != nullptr);
 
-    const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
+    const areg::WorkerThreadList& wThreads = entry.getWorkerThreads();
     for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++i)
     {
         comItem.deleteWorkerThread(wThreads.mListWorkers[i].mThreadName.getString());
@@ -89,12 +89,12 @@ Component* Component::findComponentByName( const String & roleName )
 {
     ASSERT(roleName.isEmpty() == false);
     
-    return Component::resource_map().findResourceObject(NEMath::crc32Calculate(roleName.getString()));
+    return Component::resource_map().findResourceObject(areg::crc32Calculate(roleName.getString()));
 }
 
 Component * Component::findComponentByNumber(uint32_t magicNum)
 {
-    ASSERT(magicNum != NEMath::CHECKSUM_IGNORE);
+    ASSERT(magicNum != areg::CHECKSUM_IGNORE);
 
     return Component::resource_map().findResourceObject(magicNum);
 }
@@ -108,7 +108,7 @@ Component* Component::findComponentByAddress( const ComponentAddress& comAddress
 bool Component::existComponent( const String & roleName )
 {
     ASSERT(roleName.isEmpty() == false);
-    return Component::resource_map().existResource(NEMath::crc32Calculate(roleName.getString()));
+    return Component::resource_map().existResource(areg::crc32Calculate(roleName.getString()));
 }
 
 ComponentThread& Component::_getCurrentComponentThread()
@@ -131,7 +131,7 @@ Component::Component( const String & roleName, ComponentThread & ownerThread )
     Component::resource_map().registerResourceObject(mMagicNum, this);
 }
 
-Component::Component( const NERegistry::ComponentEntry & regEntry, ComponentThread & ownerThread )
+Component::Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread )
     : RuntimeObject ( )
 
     , mComponentInfo( ownerThread, regEntry.mRoleName)
@@ -163,9 +163,9 @@ Component::~Component()
 WorkerThread* Component::createWorkerThread(  const String & threadName
                                             , WorkerThreadConsumer& consumer
                                             , ComponentThread & /* ownerThread */
-                                            , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE */
-                                            , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT */
-                                            , uint32_t maxQeueue        /* = NECommon::IGNORE_VALUE */)
+                                            , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE */
+                                            , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT */
+                                            , uint32_t maxQeueue        /* = areg::IGNORE_VALUE */)
 {
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread == nullptr)
@@ -173,7 +173,7 @@ WorkerThread* Component::createWorkerThread(  const String & threadName
         workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
         if (workThread != nullptr)
         {
-            if (workThread->createThread(NECommon::WAIT_INFINITE))
+            if (workThread->createThread(areg::WAIT_INFINITE))
             {
                 mComponentInfo.registerWorkerThread(*workThread);
             }
@@ -193,7 +193,7 @@ void Component::deleteWorkerThread( const String & threadName )
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread != nullptr)
     {
-        workThread->shutdownThread(NECommon::WAIT_INFINITE);
+        workThread->shutdownThread(areg::WAIT_INFINITE);
         mComponentInfo.unregisterWorkerThread(*workThread);
         delete workThread;
     }
@@ -218,7 +218,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
+        workerThread->shutdownThread( areg::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }
@@ -229,7 +229,7 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
+        workerThread->shutdownThread( areg::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }
@@ -294,10 +294,10 @@ void Component::notifyWorkerThreadStarted(WorkerThreadConsumer& /*consumer*/, Wo
 
 uint32_t Component::_magicNumber(Component & comp)
 {
-    uint32_t result = NEMath::CHECKSUM_IGNORE;
+    uint32_t result = areg::CHECKSUM_IGNORE;
     if ( comp.getAddress().isValid() )
     {
-        result = NEMath::crc32Calculate(comp.getRoleName().getString());
+        result = areg::crc32Calculate(comp.getRoleName().getString());
     }
 
     return result;
@@ -311,6 +311,6 @@ inline void Component::_shutdownServices()
         ASSERT(stub != nullptr);
 
         stub->shutdownServiceInterface(self());
-        ServiceManager::requestUnregisterServer(stub->getAddress(), NEService::DisconnectReason::ProviderDisconnected);
+        ServiceManager::requestUnregisterServer(stub->getAddress(), areg::DisconnectReason::ProviderDisconnected);
     }
 }

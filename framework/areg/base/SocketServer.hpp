@@ -77,7 +77,7 @@ public:
      *          Specified remoteAddress will be set as server address.
      * \param   serverAddress   The address of server socket.
      **/
-    SocketServer( const NESocket::SocketAddress & serverAddress );
+    SocketServer( const areg::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -117,7 +117,7 @@ public:
      *          local address. A backlog for incoming connections is specified with listen, and the length
      *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
      * \param   maxQueueSize    The maximum size of pending connection queue. If not positive value (0 or negative),
-     *                          it will be use maximum NESocket::MAXIMUM_LISTEN_QUEUE_SIZE value
+     *                          it will be use maximum areg::MAXIMUM_LISTEN_QUEUE_SIZE value
      **/
     virtual bool listenConnection( int32_t maxQueueSize );
 
@@ -140,7 +140,7 @@ public:
      *          out_addrNewAccepted parameter contains address of accepted socket. 
      *          If function fails, returns invalid socket handle.
      **/
-    virtual SOCKETHANDLE waitConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
+    virtual SOCKETHANDLE waitConnectionEvent(areg::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

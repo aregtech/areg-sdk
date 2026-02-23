@@ -96,10 +96,10 @@ Version & Version::convFromString( const String & version )
     mPatch  = 0;
 
     String major, minor, patch;
-    NEString::CharPos pos = NEString::START_POS;
-    pos = version.substring( major, NECommon::OBJECT_SEPARATOR, pos);
-    pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
-    version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
+    areg::CharPos pos = areg::START_POS;
+    pos = version.substring( major, areg::OBJECT_SEPARATOR, pos);
+    pos = version.substring( minor, areg::OBJECT_SEPARATOR, pos);
+    version.substring( patch, areg::OBJECT_SEPARATOR, pos);
 
     mMajor  = major.toUInt32();
     mMinor  = minor.toUInt32();
@@ -110,7 +110,7 @@ Version & Version::convFromString( const String & version )
 
 Version & Version::convFromString( const char * version )
 {
-	return convFromString( String(version != nullptr ? version : NEString::EmptyStringA) );
+	return convFromString( String(version != nullptr ? version : areg::EmptyStringA) );
 }
 
 Version & Version::operator = ( const Version &src )
@@ -159,7 +159,7 @@ String Version::convToString() const
     constexpr const char * format{ "%d%c%d%c%d" };
 
     char buffer[ 128 ]{ 0 };
-    int32_t len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
+    int32_t len = String::formatString( buffer, 128, format, mMajor, areg::OBJECT_SEPARATOR, mMinor, areg::OBJECT_SEPARATOR, mPatch );
     return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 

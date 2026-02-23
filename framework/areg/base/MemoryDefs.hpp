@@ -38,7 +38,7 @@
  *          For more details see types and functions description.
  *
  **/
-namespace NEMemory
+namespace areg
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types used for alignment
@@ -50,7 +50,7 @@ namespace NEMemory
     typedef int32_t _EmptyClass::*_EmptyClassMember;    //!< Dummy pointer to class variable declaration
 
     /**
-     * \brief   NEMemory::BufferData
+     * \brief   areg::BufferData
      **/
     using BufferData = uint8_t;
 
@@ -66,10 +66,10 @@ namespace NEMemory
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::Primitive union declaration
+    // areg::Primitive union declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::Primitive
+     * \brief   areg::Primitive
      *          Union of all C++ primitive types, sized to the largest member.
      *          Used as the alignment unit for buffer allocation and as a
      *          container for storing or serializing a single primitive value.
@@ -114,13 +114,13 @@ namespace NEMemory
     };
 
     /**
-     * \brief   Converts the values of type NEMemory::MessageResult to string, used in logs and output messages.
+     * \brief   Converts the values of type areg::MessageResult to string, used in logs and output messages.
      **/
-    inline const char * getString( NEMemory::MessageResult msgResult );
+    inline const char * getString( areg::MessageResult msgResult );
 
     /**
      * \brief   Types of data buffer
-     *          NEMemory::BufferType
+     *          areg::BufferType
      **/
     enum class BufferType : int8_t
     {
@@ -129,69 +129,64 @@ namespace NEMemory
         , Remote    =  2    //!< Buffer type for remote communication
     };
     /**
-     * \brief   Returns string value of NEMemory::BufferType
+     * \brief   Returns string value of areg::BufferType
      **/
-    inline const char * getString( NEMemory::BufferType val );
+    inline const char * getString( areg::BufferType val );
 
     /**
-     * \brief   NEMemory::BLOCK_SIZE
+     * \brief   areg::BLOCK_SIZE
      *          Constant. Defines the minimum size of Byte Buffer data
      *          Also defines the size to align buffer allocation.
      **/
     constexpr uint32_t      BLOCK_SIZE      { sizeof( uint64_t ) * 8 };
     /**
-     * \brief   NEMemory::INVALID_SIZE
+     * \brief   areg::INVALID_SIZE
      *          Constant. Defines invalid buffer size.
      **/
     constexpr uint32_t      INVALID_SIZE    { ~0u };
 
     /**
-     * \brief   NEMemory::IGNORE_VALUE
-     *          Constant. Defines ignore value for remote buffer, i.e. not set and should be ignored.
-     **/
-    constexpr uint32_t      IGNORE_VALUE    { 0u };
-    /**
-     * \brief   NEMemory::INVALID_VALUE
+     * \brief   areg::INVALID_VALUE
      *          Constant. Defines invalid value for remote buffer.
      **/
     constexpr uint32_t      INVALID_VALUE   { ~0u };
     /**
-     * \brief   NEMemory::MESSAGE_SUCCESS
+     * \brief   areg::MESSAGE_SUCCESS
      *          Constants. Defines the message result success.
      **/
-    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(NEMemory::MessageResult::Succeed) };
+    constexpr uint32_t      MESSAGE_SUCCESS { static_cast<uint32_t>(areg::MessageResult::Succeed) };
 
     /**
-     * \brief   NEMemory::InvalidElement
+     * \brief   areg::InvalidElement
      *          Predefined Invalid Element value. Used to defined invalid element.
      *          For example, it is used in thread local storage object (ThreadLocalStorage)
      *          in case if there is no element found in local storage by given name.
      *
      * \see     ThreadLocalStorage::GetStorageItem()
      **/
-    constexpr  NEMemory::Primitive  InvalidElement{{0}};
+    constexpr  areg::Primitive  InvalidElement{{0}};
 
     /**
-     * \brief   Compares 2 NEMemory::Primitive elements, returns true if they are equal
+     * \brief   Compares 2 areg::Primitive elements, returns true if they are equal
      * \param   lsh     Left-Hand Operand
      * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 NEMemory::Primitive elements are equal
+     * \return  Returns true if 2 areg::Primitive elements are equal
      **/
-    inline bool operator == (const NEMemory::Primitive & lsh, const NEMemory::Primitive & rhs);
+    inline bool operator == (const areg::Primitive & lsh, const areg::Primitive & rhs);
 
     /**
-     * \brief   Compares 2 NEMemory::Primitive elements, returns true if they are not equal
+     * \brief   Compares 2 areg::Primitive elements, returns true if they are not equal
      * \param   lsh     Left-Hand Operand
      * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 NEMemory::Primitive elements are not equal
+     * \return  Returns true if 2 areg::Primitive elements are not equal
      **/
-    inline bool operator != (const NEMemory::Primitive & lsh, const NEMemory::Primitive & rhs);
+    inline bool operator != (const areg::Primitive & lsh, const areg::Primitive & rhs);
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::BufferHeader structure declaration
+    // areg::BufferHeader structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::BufferHeader
+     * \brief   areg::BufferHeader
      *          Structure of Binary Buffer object data header info.
      *          Used in all binary buffers. It stores basic information 
      *          buffer, it's type, allocated and used sizes.
@@ -223,10 +218,10 @@ namespace NEMemory
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::sRemoteBuferHeader structure declaration
+    // areg::sRemoteBuferHeader structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::MessageHeader
+     * \brief   areg::MessageHeader
      *          Structure of binary buffer for Remote data transfer.
      *          It is extended type of BufferHeader with additions
      *          of message ID, message sequence number, cookie and checksum.
@@ -244,7 +239,7 @@ namespace NEMemory
         ITEM_ID         rbhTarget   { 0 };
         /**
          * \brief   Data checksum value for validation check-up.
-         *          Should be ignored if value is NEMemory::IGNORE_CHECKSUM
+         *          Should be ignored if value is areg::IGNORE_CHECKSUM
          **/
         uint32_t        rbhChecksum{ 0 };
         /**
@@ -267,10 +262,10 @@ namespace NEMemory
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::RawBuffer structure declaration
+    // areg::RawBuffer structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::RawBuffer
+     * \brief   areg::RawBuffer
      *          Specify the Byte Buffer object.
      *          Contains the size of complete object,
      *          buffer information and elements followed Byte Buffer object.
@@ -290,10 +285,10 @@ namespace NEMemory
 
 
     //////////////////////////////////////////////////////////////////////////
-    // NEMemory::sRpcMessageBuffer structure declaration
+    // areg::sRpcMessageBuffer structure declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   NEMemory::RawMessage
+     * \brief   areg::RawMessage
      *          Specify the Byte Buffer object.
      *          Contains the size of complete object,
      *          buffer information and elements followed Byte Buffer object.
@@ -408,7 +403,7 @@ namespace NEMemory
      * \param	elemCount	The number of elements allocated in buffer.
      * \note    The type ELEM should have appropriate assignment operator available to set data from type ELEM_TYPE,
      *          i.e. it should have operator 'operator = (ELEM_TYPE src)'.
-     * \example NEMath::SetMemory.
+     * \example areg::SetMemory.
      *          The following example is creating 100 elements and sets same value:
      *
      *          struct MyStruct {
@@ -416,7 +411,7 @@ namespace NEMemory
      *          };
      *          MyStruct buffer[100];   // <= create buffer of 100 elements
      *          MyStruct zero = {0};    // <= create one element with value
-     *          NEMemory::SetMemory<MyStruct, const MyStruct &>(buffer, zero, 100); // <= sets same value to all entries.
+     *          areg::SetMemory<MyStruct, const MyStruct &>(buffer, zero, 100); // <= sets same value to all entries.
      **/
     template <typename ELEM, typename ELEM_TYPE = ELEM>
     inline void setMemory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
@@ -431,8 +426,8 @@ namespace NEMemory
      * \tparam  ELEM    The type of elements to compare
      * \note    If elements type is structure or class, it should be possible
      *          to compare elements by applying comparing operator '==' ( operator == ).
-     *          If not, use method NEMemory::memEqual
-     * \see     NEMemory::memEqual
+     *          If not, use method areg::memEqual
+     * \see     areg::memEqual
      **/
     template <typename ELEM>
     bool equalElements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
@@ -451,7 +446,7 @@ namespace NEMemory
      * \note    If elements type is structure or class, it should be possible
      *          to convert type of elements ELEM_RIGHT to the type 'const ELEM_LEFT' and
      *          ELEM_LEFT should have valid comparing operator (operator ==).
-     * \see     NEMemory::memEqual, NEMemory::equalElement
+     * \see     areg::memEqual, areg::equalElement
      **/
     template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
     bool equalElements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
@@ -515,19 +510,19 @@ namespace NEMemory
 
     /**
      * \brief   Compares 2 chunks of memory object and returns the compare results:
-     *          -   NEMath::Smaller if the content of memLeft is smaller than memRight;
-     *          -   NEMath::Equal   if the content of memLeft is same as memRight;
-     *          -   NEMath::Bigger if the content of memLeft is greater than memRight.
+     *          -   areg::Smaller if the content of memLeft is smaller than memRight;
+     *          -   areg::Equal   if the content of memLeft is same as memRight;
+     *          -   areg::Bigger if the content of memLeft is greater than memRight.
      *          The comparison is done byte by byte.
      * \param   memLeft     The pointer of chunk of buffer to compare.
      * \param   memRight    The pointer of chunk of buffer to compare with.
      * \param   count       The size if bytes to compare.
      * \return  The results are one of:
-     *          -   NEMath::Smaller if the content of memLeft is smaller than memRight;
-     *          -   NEMath::Equal   if the content of memLeft is same as memRight;
-     *          -   NEMath::Bigger if the content of memLeft is greater than memRight.
+     *          -   areg::Smaller if the content of memLeft is smaller than memRight;
+     *          -   areg::Equal   if the content of memLeft is same as memRight;
+     *          -   areg::Bigger if the content of memLeft is greater than memRight.
      **/
-    inline NEMath::Ordering memCompare( const void * memLeft, const void * memRight, uint32_t count);
+    inline areg::Ordering memCompare( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
      * \brief   Compares 2 chunks of memories and return true if they are equal.
@@ -570,53 +565,53 @@ namespace NEMemory
 #include "areg/base/IOStream.hpp"
 
 /************************************************************************
- * \brief   Streaming of NEMemory::Primitive
+ * \brief   Streaming of areg::Primitive
  *          Global streaming operators to read and write to streaming object
  ************************************************************************/
 
 /**
- * \brief   Support streaming operator for NEMemory::Primitive type.
- *          Read NEMemory::Primitive from streaming object
+ * \brief   Support streaming operator for areg::Primitive type.
+ *          Read areg::Primitive from streaming object
  * \param   stream  The streaming object to read
- * \param   input   The NEMemory::Primitive item to initialize from stream
+ * \param   input   The areg::Primitive item to initialize from stream
  * \return  Reading streaming object
  **/
-inline const InStream & operator >> (const InStream & stream, NEMemory::Primitive & input)
+inline const InStream & operator >> (const InStream & stream, areg::Primitive & input)
 {
-    stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(NEMemory::Primitive) );
+    stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(areg::Primitive) );
     return stream;
 }
 
 /**
- * \brief   Support streaming operator for NEMemory::Primitive type.
- *          Write NEMemory::Primitive to streaming object
+ * \brief   Support streaming operator for areg::Primitive type.
+ *          Write areg::Primitive to streaming object
  * \param   stream  The streaming object to write
- * \param   output  The NEMemory::Primitive item to write to stream
+ * \param   output  The areg::Primitive item to write to stream
  * \return  Writing streaming object
  **/
-inline OutStream & operator << (OutStream & stream, const NEMemory::Primitive & output)
+inline OutStream & operator << (OutStream & stream, const areg::Primitive & output)
 {
-    stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(NEMemory::Primitive) );
+    stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(areg::Primitive) );
     return stream;
 }
 
 /************************************************************************
- * \brief   Streaming of NEMemory::Primitive
+ * \brief   Streaming of areg::Primitive
  *          Global comparing operators
  ************************************************************************/
  
 /**
- * \brief   compares to NEMemory::Primitive values and returns true if they are equal.
+ * \brief   compares to areg::Primitive values and returns true if they are equal.
  **/
-inline bool NEMemory::operator == ( const NEMemory::Primitive& lsh, const NEMemory::Primitive& rhs )
+inline bool areg::operator == ( const areg::Primitive& lsh, const areg::Primitive& rhs )
 {
     return ((&lsh == &rhs) || (lsh.valInt64.mElement == rhs.valInt64.mElement));
 }
 
 /**
- * \brief   compares to NEMemory::Primitive values and returns true if they are not equal.
+ * \brief   compares to areg::Primitive values and returns true if they are not equal.
  **/
-inline bool NEMemory::operator != ( const NEMemory::Primitive& lsh, const NEMemory::Primitive& rhs )
+inline bool areg::operator != ( const areg::Primitive& lsh, const areg::Primitive& rhs )
 {
     return ((&lsh != &rhs) && (lsh.valInt64.mElement != rhs.valInt64.mElement));
 }
@@ -629,7 +624,7 @@ inline bool NEMemory::operator != ( const NEMemory::Primitive& lsh, const NEMemo
 // Comparing operators
 /************************************************************************/
 
-inline void NEMemory::memSet( void * buffer, uint32_t length, uint8_t symbol )
+inline void areg::memSet( void * buffer, uint32_t length, uint8_t symbol )
 {
     if ( (buffer != nullptr) && (length > 0) )
     {
@@ -637,12 +632,12 @@ inline void NEMemory::memSet( void * buffer, uint32_t length, uint8_t symbol )
     }
 }
 
-inline void NEMemory::memZero( void * buffer, uint32_t length )
+inline void areg::memZero( void * buffer, uint32_t length )
 {
-    NEMemory::memSet( buffer, length, 0x00u );
+    areg::memSet( buffer, length, 0x00u );
 }
 
-inline void NEMemory::memMove( void * memDst, const void * memSrc, uint32_t count )
+inline void areg::memMove( void * memDst, const void * memSrc, uint32_t count )
 {
     if ( (memDst != nullptr) && (memSrc != nullptr) && (count > 0) )
     {
@@ -650,7 +645,7 @@ inline void NEMemory::memMove( void * memDst, const void * memSrc, uint32_t coun
     }
 }
 
-inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
+inline uint32_t areg::memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
 {
     uint32_t result = 0;
     if (memDst != memSrc)
@@ -669,34 +664,34 @@ inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void 
     return result;
 }
 
-inline NEMath::Ordering NEMemory::memCompare( const void * memLeft, const void * memRight, uint32_t count )
+inline areg::Ordering areg::memCompare( const void * memLeft, const void * memRight, uint32_t count )
 {
-    NEMath::Ordering result = NEMath::Ordering::Equal;
+    areg::Ordering result = areg::Ordering::Equal;
 
     if ( (count == 0) || (memLeft == memRight) )
     {
-        result = NEMath::Ordering::Equal;
+        result = areg::Ordering::Equal;
     }
     else if ( (memLeft != nullptr) && (memRight != nullptr) )
     {
         int32_t cmp = ::memcmp(memLeft, memRight, count);
-        result = (cmp > 0 ? NEMath::Ordering::Bigger : (cmp < 0 ?  NEMath::Ordering::Smaller : NEMath::Ordering::Equal));
+        result = (cmp > 0 ? areg::Ordering::Bigger : (cmp < 0 ?  areg::Ordering::Smaller : areg::Ordering::Equal));
     }
     else if ( memLeft != nullptr )
     {
-        result = NEMath::Ordering::Bigger;
+        result = areg::Ordering::Bigger;
     }
     else
     {
-        result = NEMath::Ordering::Smaller;
+        result = areg::Ordering::Smaller;
     }
 
     return result;
 }
 
-inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uint32_t count )
+inline bool areg::memEqual( const void * memLeft, const void * memRight, uint32_t count )
 {
-    return (NEMath::Ordering::Equal == memCompare(memLeft, memRight, count));
+    return (areg::Ordering::Equal == memCompare(memLeft, memRight, count));
 }
 
 
@@ -704,12 +699,12 @@ inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uin
 // Byte buffer functions
 /************************************************************************/
 
-inline uint8_t * NEMemory::getBufferDataWrite(NEMemory::RawBuffer * byteBuffer)
+inline uint8_t * areg::getBufferDataWrite(areg::RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
-inline const uint8_t * NEMemory::getBufferDataRead(const RawBuffer * byteBuffer)
+inline const uint8_t * areg::getBufferDataRead(const RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<const uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
@@ -719,7 +714,7 @@ inline const uint8_t * NEMemory::getBufferDataRead(const RawBuffer * byteBuffer)
 /************************************************************************/
 
 template <typename ELEM_TYPE>
-inline ELEM_TYPE * NEMemory::constructElems(void *begin, uint32_t elemCount)
+inline ELEM_TYPE * areg::constructElems(void *begin, uint32_t elemCount)
 {
     if ( begin != nullptr )
     {
@@ -741,7 +736,7 @@ inline ELEM_TYPE * NEMemory::constructElems(void *begin, uint32_t elemCount)
 }
 
 template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-inline ELEM_TYPE * NEMemory::constructElemsWithArgument(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg)
+inline ELEM_TYPE * areg::constructElemsWithArgument(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg)
 {
     if ( begin != nullptr )
     {
@@ -763,7 +758,7 @@ inline ELEM_TYPE * NEMemory::constructElemsWithArgument(void *begin, uint32_t el
 }
 
 template <typename ELEM_TYPE>
-inline void NEMemory::destroyElems(ELEM_TYPE *begin, uint32_t elemCount)
+inline void areg::destroyElems(ELEM_TYPE *begin, uint32_t elemCount)
 {
     if ( begin != nullptr )
     {
@@ -776,7 +771,7 @@ inline void NEMemory::destroyElems(ELEM_TYPE *begin, uint32_t elemCount)
 }
 
 template <typename ELEM_DST, typename ELEM_SRC /*= ELEM_DST*/>
-inline void NEMemory::copyElems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount)
+inline void areg::copyElems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount)
 {
     if ((destination != source) && (destination != nullptr) && (source != nullptr) )
     {
@@ -788,7 +783,7 @@ inline void NEMemory::copyElems(ELEM_DST *destination, const ELEM_SRC *source, u
 }
 
 template <typename ELEM_TYPE>
-void NEMemory::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32_t elemCount)
+void areg::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32_t elemCount)
 {
     if (destination < source)
     {
@@ -808,7 +803,7 @@ void NEMemory::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32
 }
 
 template <typename ELEM, typename ELEM_TYPE /*= ELEM*/>
-inline void NEMemory::setMemory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemCount)
+inline void areg::setMemory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemCount)
 {
     if (begin != nullptr )
     {
@@ -820,14 +815,14 @@ inline void NEMemory::setMemory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemC
 }
 
 template <typename ELEM>
-inline bool NEMemory::equalElements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
+inline bool areg::equalElements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
 {
     return equalElements<ELEM, ELEM>(lhs, rhs, count);
 }
 
 
 template <typename ELEM_LEFT, typename ELEM_RIGHT /*= ELEM_LEFT*/>
-inline bool NEMemory::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)
+inline bool areg::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)
 {
     bool result = false;
     if ( (count == 0) || (lhs == rhs) )
@@ -851,30 +846,30 @@ inline bool NEMemory::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs,
 }
 
 template<typename ELEM>
-inline void NEMemory::zeroElement( ELEM & elem )
+inline void areg::zeroElement( ELEM & elem )
 {
-    NEMemory::zeroElements<ELEM>(&elem, 1);
+    areg::zeroElements<ELEM>(&elem, 1);
 }
 
 template<typename ELEM>
-inline void NEMemory::zeroElements( ELEM * elemList, uint32_t elemCount )
+inline void areg::zeroElements( ELEM * elemList, uint32_t elemCount )
 {
     if ( elemCount > 0 )
     {
         constexpr uint32_t one = static_cast<int32_t>(sizeof(ELEM));
-        NEMemory::memZero( reinterpret_cast<void *>(elemList), elemCount * one );
+        areg::memZero( reinterpret_cast<void *>(elemList), elemCount * one );
     }
 }
 
 template<typename BufType>
-BufType* NEMemory::BufferAllocator<BufType>::operator ( ) (uint32_t space)
+BufType* areg::BufferAllocator<BufType>::operator ( ) (uint32_t space)
 {
     uint8_t* result = DEBUG_NEW uint8_t[space];
     return ::new(result) BufType;
 }
 
 template<typename BufType>
-void NEMemory::BufferDeleter<BufType>::operator ( ) (void * buffer)
+void areg::BufferDeleter<BufType>::operator ( ) (void * buffer)
 {
     if ( buffer != nullptr )
     {
@@ -882,39 +877,39 @@ void NEMemory::BufferDeleter<BufType>::operator ( ) (void * buffer)
     }
 }
 
-inline const char * NEMemory::getString( NEMemory::MessageResult msgResult )
+inline const char * areg::getString( areg::MessageResult msgResult )
 {
     switch ( msgResult )
     {
-    case NEMemory::MessageResult::UnknownError:
-        return "NEMemory::UnknownError";
-    case NEMemory::MessageResult::Succeed:
-        return "NEMemory::Succeed";
-    case NEMemory::MessageResult::NoConnection:
-        return "NEMemory::NoConnection";
-    case NEMemory::MessageResult::ProviderUnavailable:
-        return "NEMemory::ProviderUnavailable";
-    case NEMemory::MessageResult::ConsumerRejected:
-        return "NEMemory::ConsumerRejected";
-    case NEMemory::MessageResult::TargetUnavailable:
-        return "NEMemory::TargetUnavailable";
+    case areg::MessageResult::UnknownError:
+        return "areg::UnknownError";
+    case areg::MessageResult::Succeed:
+        return "areg::Succeed";
+    case areg::MessageResult::NoConnection:
+        return "areg::NoConnection";
+    case areg::MessageResult::ProviderUnavailable:
+        return "areg::ProviderUnavailable";
+    case areg::MessageResult::ConsumerRejected:
+        return "areg::ConsumerRejected";
+    case areg::MessageResult::TargetUnavailable:
+        return "areg::TargetUnavailable";
     default:
-        return "ERR: Invalid NEMemory::MessageResult value!!!";
+        return "ERR: Invalid areg::MessageResult value!!!";
     }
 }
 
-inline const char * NEMemory::getString(NEMemory::BufferType val )
+inline const char * areg::getString(areg::BufferType val )
 {
     switch (val)
     {
-    case NEMemory::BufferType::Unknown:
-        return "NEMemory::Unknown";
-    case NEMemory::BufferType::Internal:
-        return "NEMemory::Internal";
-    case NEMemory::BufferType::Remote:
-        return "NEMemory::Remote";
+    case areg::BufferType::Unknown:
+        return "areg::Unknown";
+    case areg::BufferType::Internal:
+        return "areg::Internal";
+    case areg::BufferType::Remote:
+        return "areg::Remote";
     default:
-        return "ERR: Invalid NEMemory::BufferType value!!!";
+        return "ERR: Invalid areg::BufferType value!!!";
     }
 }
 

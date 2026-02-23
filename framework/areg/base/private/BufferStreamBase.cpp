@@ -219,7 +219,7 @@ bool BufferStreamBase::isEqual( const BufferStreamBase &other ) const
     if ( (result == false) && (isValid() && other.isValid()))
     {
         uint32_t used = getSizeUsed();
-        result = (used == other.getSizeUsed()) && NEMemory::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
+        result = (used == other.getSizeUsed()) && areg::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
     }
 
     return result;
@@ -247,8 +247,8 @@ uint32_t BufferStreamBase::insertAt( const uint8_t* buffer, uint32_t size, uint3
                 uint8_t *dst      = getBuffer() + atPos;
                 uint32_t moveSize   = writePos - atPos;
 
-                NEMemory::memMove( dst + size, dst, moveSize );
-                NEMemory::memCopy( dst, size, buffer, size );
+                areg::memMove( dst + size, dst, moveSize );
+                areg::memCopy( dst, size, buffer, size );
 
                 result = size;
 
@@ -275,7 +275,7 @@ uint32_t BufferStreamBase::writeData(const uint8_t* buffer, uint32_t size)
 
     if ((remain != 0) && (size != 0))
     {
-        result = NEMemory::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
+        result = areg::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
         uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
         uint32_t newPos     = writePos + result;
         setSizeUsed( std::max(usedSize, newPos) );
@@ -300,7 +300,7 @@ uint32_t BufferStreamBase::readData(uint8_t* buffer, uint32_t size) const
         if (result != 0)
         {
             const uint8_t* src = getBufferToRead();
-            NEMemory::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
+            areg::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
             mReadPosition.setPosition(static_cast<int32_t>(result), Cursor::SeekOrigin::Current);
         }
     }

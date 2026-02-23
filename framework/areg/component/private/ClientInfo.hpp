@@ -156,12 +156,12 @@ public:
      * \param   newConnection   The address of the Stub of server (service provider).
      *                          If valid address, this will change the state of client to connected.
      **/
-    void setConnectionStatus( NEService::ServiceConnectionState newConnection );
+    void setConnectionStatus( areg::ServiceConnectionState newConnection );
 
     /**
      * \brief   Returns the state of client.
      **/
-    inline NEService::ServiceConnectionState getConnectionStatus() const;
+    inline areg::ServiceConnectionState getConnectionStatus() const;
 
     /**
      * \brief   Returns the address of Proxy of client
@@ -190,7 +190,7 @@ private:
     /**
      * \brief   The current state of client
      **/
-    NEService::ServiceConnectionState  mClientState;
+    areg::ServiceConnectionState  mClientState;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -216,7 +216,7 @@ namespace std
 // ClientInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::ServiceConnectionState ClientInfo::getConnectionStatus() const
+inline areg::ServiceConnectionState ClientInfo::getConnectionStatus() const
 {
     return mClientState;
 }
@@ -228,12 +228,12 @@ inline const ProxyAddress & ClientInfo::getAddress() const
 
 inline bool ClientInfo::isWaitingConnection() const
 {
-    return (mClientState == NEService::ServiceConnectionState::Pending);
+    return (mClientState == areg::ServiceConnectionState::Pending);
 }
 
 inline bool ClientInfo::isConnected() const
 {
-    return (mClientState == NEService::ServiceConnectionState::Connected);
+    return (mClientState == areg::ServiceConnectionState::Connected);
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP

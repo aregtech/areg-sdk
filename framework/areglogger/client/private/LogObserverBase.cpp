@@ -94,7 +94,7 @@ bool LogObserverBase::isStated() const
     return logObserverIsStarted();
 }
 
-const NESocket::SocketAddress& LogObserverBase::getLoggerAddress() const
+const areg::SocketAddress& LogObserverBase::getLoggerAddress() const
 {
     return LoggerClient::getInstance().getAddress();
 }
@@ -126,7 +126,7 @@ std::string LogObserverBase::getConfigLoggerAddress() const
 
 void LogObserverBase::setConfigLoggerAddress(const std::string& address)
 {
-    LoggerClient::getInstance().setConfigLoggerConnection(address, NESocket::InvalidPort);
+    LoggerClient::getInstance().setConfigLoggerConnection(address, areg::InvalidPort);
 }
 
 uint16_t LogObserverBase::getConfigLoggerPort() const
@@ -189,7 +189,7 @@ bool LogObserverBase::requestInstances()
     return logObserverRequestInstances();
 }
 
-bool LogObserverBase::requestScopes(ITEM_ID target /*= NEService::TARGET_ALL*/)
+bool LogObserverBase::requestScopes(ITEM_ID target /*= areg::TARGET_ALL*/)
 {
     return logObserverRequestScopes(target);
 }
@@ -199,7 +199,7 @@ bool LogObserverBase::requestChangeScopePrio(ITEM_ID target, const ScopeInfo* sc
     return logObserverRequestChangeScopePrio(target, scopes, count);
 }
 
-bool LogObserverBase::requestSaveConfig(ITEM_ID target /*= NEService::TARGET_ALL*/)
+bool LogObserverBase::requestSaveConfig(ITEM_ID target /*= areg::TARGET_ALL*/)
 {
     return logObserverRequestSaveConfig(target);
 }
@@ -234,12 +234,12 @@ void LogObserverBase::getPriorityNames(std::vector<String>& names)
     LoggerClient::getInstance().getPriorityNames(names);
 }
 
-void LogObserverBase::getLogInstanceInfos(std::vector< NEService::ConnectedInstance>& infos)
+void LogObserverBase::getLogInstanceInfos(std::vector< areg::ConnectedInstance>& infos)
 {
     LoggerClient::getInstance().getLogInstanceInfos(infos);
 }
 
-void LogObserverBase::getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId)
+void LogObserverBase::getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId)
 {
     LoggerClient::getInstance().getLogInstScopes(scopes, instId);
 }
@@ -249,7 +249,7 @@ void LogObserverBase::getLogMessages(std::vector<SharedBuffer>& messages)
     LoggerClient::getInstance().getLogMessages(messages);
 }
 
-void LogObserverBase::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= NEService::COOKIE_ANY*/)
+void LogObserverBase::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= areg::COOKIE_ANY*/)
 {
     LoggerClient::getInstance().getLogInstMessages(messages, instId);
 }

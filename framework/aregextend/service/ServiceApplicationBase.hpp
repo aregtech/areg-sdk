@@ -125,13 +125,13 @@ public:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::RemoteServiceKind getServiceType() const = 0;
+    virtual areg::RemoteServiceKind getServiceType() const = 0;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::ConnectionType getConnectionType() const = 0;
+    virtual areg::ConnectionType getConnectionType() const = 0;
 
 /************************************************************************/
 // SystemServiceBase overrides
@@ -146,7 +146,7 @@ public:
      *                      or need to use default value.
      * \return  The result of execution.
      **/
-    int32_t serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
+    int32_t serviceMain(aregext::ServiceOption optStartup, const char* argument) override;
 
     /**
      * \brief   Triggered to initialize the service application.
@@ -156,7 +156,7 @@ public:
      * \return  Returns true if succeeded to initialize application and the application can run.
      *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
      **/
-    bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
+    bool serviceInitialize(aregext::ServiceOption option, const char* value, const char* fileConfig) override;
 
     /**
      * \brief   Triggered when application is going to exit.
@@ -214,7 +214,7 @@ public:
     /**
      * \brief   Sets the state of message router service.
      **/
-    bool setState( NESystemService::ServicePhase newState ) override;
+    bool setState( aregext::ServicePhase newState ) override;
 
     /**
      * \brief   Run application as a background process without input or output on console.
@@ -267,7 +267,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.
@@ -313,7 +313,7 @@ private:
     /**
      * \brief   OS specific implementation of changing the state of the log collector service.
      **/
-    bool _osSetState( NESystemService::ServicePhase newState );
+    bool _osSetState( aregext::ServicePhase newState );
 
     /**
      * \brief   OS specific implementation to setup the service and start the dispatcher.

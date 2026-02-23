@@ -217,14 +217,14 @@ public:
     /**
      * \brief   Returns value as a 32-bit unsigned integer
      **/
-    uint32_t getInteger( NEString::Radix radix = NEString::Radix::Decimal ) const;
+    uint32_t getInteger( areg::Radix radix = areg::Radix::Decimal ) const;
 
     /**
      * \brief   Converts and sets value as a 32-bit unsigned integer
      * \param   intValue    The value as a 32-bit unsigned integer to convert and set
      * \param   radix       The conversion criteria of integer. By default, the passed integer is converted as a decimal.
      **/
-    void setInteger( uint32_t intValue, NEString::Radix radix = NEString::Radix::Decimal );
+    void setInteger( uint32_t intValue, areg::Radix radix = areg::Radix::Decimal );
 
     /**
      * \brief   Returns value as a digit with floating point

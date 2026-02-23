@@ -311,7 +311,7 @@ uint32_t File::_osGetPositionFile() const
 bool File::_osTruncateFile()
 {
     ASSERT(mFileHandle != nullptr);
-    return (NECommon::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
+    return (areg::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
 }
 
 void File::_osFlushFile()
@@ -349,7 +349,7 @@ uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const cha
 uint32_t File::_osGetSpecialDir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
+    buffer[0] = areg::EndOfString;
     const char * filePath = nullptr;
 
     switch (specialFolder)

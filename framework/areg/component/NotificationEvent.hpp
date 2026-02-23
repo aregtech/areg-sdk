@@ -76,12 +76,12 @@ public:
      * \param	proxy	    The pointer of Proxy object which triggered
      *                      notification message
      * \param	notifyType	The result flag of notification event. 
-     *                      See details in NEService::ResultType
+     *                      See details in areg::ResultType
      * \param	notifyId	The call ID, usually response ID or attribute ID.
      *                      If request fails, also request ID.
      * \param	seqNr	    The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, NEService::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
+    NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -128,12 +128,12 @@ public:
     /**
      * \brief   Returns the result of notification type.
      **/
-    inline NEService::ResultType getNotifyType() const;
+    inline areg::ResultType getNotifyType() const;
 
     /**
      * \brief   Sets the result of notification
      **/
-    inline void setNotifyType(NEService::ResultType notifyType);
+    inline void setNotifyType(areg::ResultType notifyType);
 
     /**
      * \brief   Returns notification message ID.
@@ -164,7 +164,7 @@ private:
     /**
      * \brief   Notification type (or notification result)
      **/
-    NEService::ResultType mNotifyType;
+    areg::ResultType mNotifyType;
     /**
      * \brief   Notification message ID
      **/
@@ -362,12 +362,12 @@ inline void NotificationEventData::setProxy( const ProxyBase & proxy )
     mProxy = &proxy;
 }
 
-inline NEService::ResultType NotificationEventData::getNotifyType() const
+inline areg::ResultType NotificationEventData::getNotifyType() const
 {
     return mNotifyType;
 }
 
-inline void NotificationEventData::setNotifyType( NEService::ResultType notifyType )
+inline void NotificationEventData::setNotifyType( areg::ResultType notifyType )
 {
     mNotifyType = notifyType;
 }

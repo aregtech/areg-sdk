@@ -46,7 +46,7 @@
 //////////////////////////////////////////////////////////////////////////
 // NEService namespace declaration
 //////////////////////////////////////////////////////////////////////////
-namespace NEService
+namespace areg
 {
     /**
      * \brief   Result types.
@@ -85,9 +85,9 @@ namespace NEService
     };
 
     /**
-     * \brief   Returns string value of NEService::ResultType type
+     * \brief   Returns string value of areg::ResultType type
      **/
-    inline const char* getString(NEService::ResultType resultType);
+    inline const char* getString(areg::ResultType resultType);
 
     /**
      * \brief   Data types
@@ -102,9 +102,9 @@ namespace NEService
         , DataUnexpectedError   = 16389 /*0x4005*/  //!< other errors
     };
     /**
-     * \brief   Returns string value of NEService::DataState type
+     * \brief   Returns string value of areg::DataState type
      **/
-    inline const char* getString(NEService::DataState dataState);
+    inline const char* getString(areg::DataState dataState);
 
     /**
      * \brief   Type of request.
@@ -122,9 +122,9 @@ namespace NEService
         , LoadComponent     = 16391 /*0x4007*/  //!< request load component
     };
     /**
-     * \brief   Returns string value of NEService::RequestType type
+     * \brief   Returns string value of areg::RequestType type
      **/
-    inline const char* getString( NEService::RequestType resultType );
+    inline const char* getString( areg::RequestType resultType );
 
     /**
      * \brief   Message Data types
@@ -142,17 +142,17 @@ namespace NEService
 
     };
     /**
-     * \brief   Returns string value of NEService::MessageDataType type
+     * \brief   Returns string value of areg::MessageDataType type
      **/
-    inline const char* getString( NEService::MessageDataType dataType );
+    inline const char* getString( areg::MessageDataType dataType );
 
     /**
      * \brief   From passed message ID finds data type
      **/
-    inline NEService::MessageDataType getMessageDataType( uint32_t msgId );
+    inline areg::MessageDataType getMessageDataType( uint32_t msgId );
 
     /**
-     * \brief   NEService::ServiceConnectionState
+     * \brief   areg::ServiceConnectionState
      *          Service Connections. Used in service calls
      **/
     enum class ServiceConnectionState   : uint16_t
@@ -168,37 +168,37 @@ namespace NEService
     };
 
     /**
-     * \brief   Returns string value of NEService::ServiceConnectionState type
+     * \brief   Returns string value of areg::ServiceConnectionState type
      **/
-    inline const char* getString( NEService::ServiceConnectionState serviceConnection );
+    inline const char* getString( areg::ServiceConnectionState serviceConnection );
 
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnected( NEService::ServiceConnectionState connectionStatus );
+    inline bool isServiceConnected( areg::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnectionPending( NEService::ServiceConnectionState connectionStatus );
+    inline bool isServiceConnectionPending( areg::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is rejected.
      **/
-    inline bool isServiceRejected( NEService::ServiceConnectionState connectionStatus );
+    inline bool isServiceRejected( areg::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is connection lost.
      **/
-    inline bool isServiceConnectionLost( NEService::ServiceConnectionState connectionStatus );
+    inline bool isServiceConnectionLost( areg::ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the status is not connected.
      **/
-    inline bool isServiceDisconnected( NEService::ServiceConnectionState connectionStatus );
+    inline bool isServiceDisconnected( areg::ServiceConnectionState connectionStatus );
 
     /**
-     * \brief   NEService::DisconnectReason
+     * \brief   areg::DisconnectReason
      *          The service provider and service consumer disconnect reason.
      *          Valid only when service is not connected. Otherwise, it should be ignored.
      **/
@@ -219,12 +219,12 @@ namespace NEService
         , ClientConnectionClosed= 2048  //!< The client requested to disconnect. General reason.
     };
 
-    inline const char * getString( NEService::DisconnectReason reason );
+    inline const char * getString( areg::DisconnectReason reason );
 
-    inline NEService::ServiceConnectionState serviceConnection( NEService::DisconnectReason reason );
+    inline areg::ServiceConnectionState serviceConnection( areg::DisconnectReason reason );
 
     /**
-     * \brief   NEService::RegistrationAction
+     * \brief   areg::RegistrationAction
      *          The service request types.
      **/
     enum class RegistrationAction   : uint16_t
@@ -236,12 +236,12 @@ namespace NEService
     };
     
     /**
-     * \brief   Returns string value of NEService::RegistrationAction type
+     * \brief   Returns string value of areg::RegistrationAction type
      **/
-    inline const char * getString( NEService::RegistrationAction svcRequestType );
+    inline const char * getString( areg::RegistrationAction svcRequestType );
 
     /**
-     * \brief   NEService::ServiceType
+     * \brief   areg::ServiceType
      *          Service Type. Either local or Remote.
      **/
     enum class ServiceType  : uint16_t
@@ -254,12 +254,12 @@ namespace NEService
     };
 
     /**
-     * \brief   Returns string value of NEService::ServiceType type
+     * \brief   Returns string value of areg::ServiceType type
      **/
-    inline const char * getString( NEService::ServiceType srvcType );
+    inline const char * getString( areg::ServiceType srvcType );
 
     /**
-     * \brief   NEService::MessageSource
+     * \brief   areg::MessageSource
      *          The source of the communication message
      **/
     enum class MessageSource    : uint16_t
@@ -273,12 +273,12 @@ namespace NEService
     };
 
     /**
-     * \brief   Returns string value of NEService::ServiceType type
+     * \brief   Returns string value of areg::ServiceType type
      **/
-    inline const char * getString(NEService::MessageSource msgSource);
+    inline const char * getString(areg::MessageSource msgSource);
 
     /**
-     * \brief   NEService::InstanceBitness
+     * \brief   areg::InstanceBitness
      *          The bitness of the executable instance.
      **/
     enum class InstanceBitness  : uint16_t
@@ -289,79 +289,79 @@ namespace NEService
     };
 
     /**
-     * \brief   Returns string value of NEService::ServiceType type
+     * \brief   Returns string value of areg::ServiceType type
      **/
-    inline const char* getString(NEService::InstanceBitness bitness);
+    inline const char* getString(areg::InstanceBitness bitness);
 
     /**
-     * \brief   NEService::SEQUENCE_NUMBER_NOTIFY
+     * \brief   areg::SEQUENCE_NUMBER_NOTIFY
      *          Sequence number predefining notification message ID
      **/
     constexpr SequenceNumber    SEQUENCE_NUMBER_NOTIFY  { static_cast<SequenceNumber>(0) };    /*0x00000000*/
     /**
-     * \brief   NEService::SEQUENCE_NUMBER_ANY
+     * \brief   areg::SEQUENCE_NUMBER_ANY
      *          Any sequence number, used in messages. "Any sequence number" used to find any listener object with same message ID.
      **/
     constexpr SequenceNumber    SEQUENCE_NUMBER_ANY     { static_cast<SequenceNumber>(~0) };    /*0xFFFFFFFF*/
 
     /**
-     * \brief   NEService::COOKIE_UNKNOWN
+     * \brief   areg::COOKIE_UNKNOWN
      *          Unknown cookie
      **/
-    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(NECommon::Cookie::Invalid) };
+    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
     /**
-     * \brief   NEService::COOKIE_LOCAL
+     * \brief   areg::COOKIE_LOCAL
      *          The indication of local service.
      **/
-    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(NECommon::Cookie::Local) };
+    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
     /**
-     * \brief   NEService::COOKIE_ROUTER
+     * \brief   areg::COOKIE_ROUTER
      *          Indicates message router cookie
      **/
-    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(NECommon::Cookie::Router) };
+    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(areg::Cookie::Router) };
     /**
-     * \brief   NEService::COOKIE_LOGGER
+     * \brief   areg::COOKIE_LOGGER
      *          Indicates log collector cookie
      **/
-    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(NECommon::Cookie::Logger) };
+    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(areg::Cookie::Logger) };
     /**
-     * \brief   NEService::COOKIE_ANY
+     * \brief   areg::COOKIE_ANY
      *          Indicates any valid cookie
      **/
-    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(NECommon::Cookie::Any) };
+    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(areg::Cookie::Any) };
     /**
-     * \brief   NEService::TARGET_UNKNOWN
+     * \brief   areg::TARGET_UNKNOWN
      *          The unknown target ID
      **/
-    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(NECommon::Cookie::Invalid) };
+    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
     /**
-     * \brief   NEService::TARGET_LOCAL
+     * \brief   areg::TARGET_LOCAL
      *          The local target ID
      **/
-    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(NECommon::Cookie::Local) };
+    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
     /**
-     * \brief   NEService::TARGET_ALL
+     * \brief   areg::TARGET_ALL
      *          The undefined (all) target ID
      **/
-    constexpr ITEM_ID   TARGET_ALL                  { static_cast<ITEM_ID>(NEService::COOKIE_ANY) };
+    constexpr ITEM_ID   TARGET_ALL                  { static_cast<ITEM_ID>(areg::COOKIE_ANY) };
     /**
-     * \brief   NEService::SOURCE_UNKNOWN
+     * \brief   areg::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(NECommon::Cookie::Invalid) };
+    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
     /**
-     * \brief   NEService::SOURCE_UNKNOWN
+     * \brief   areg::SOURCE_UNKNOWN
      *          The unknown source ID.
      **/
-    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(NECommon::Cookie::Local) };
+    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
     /**
-     * \brief   NEService::COOKIE_REMOTE_SERVICE
+     * \brief   areg::COOKIE_REMOTE_SERVICE
      *          The ID of first valid remote cookie.
      **/
-    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(NECommon::Cookie::FirstRemote) };
+    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(areg::Cookie::FirstRemote) };
 
     /**
-     * \brief   NEService::ServiceCallType
+     * \brief   areg::ServiceCallType
      *          Specifies the service call type
      **/
     enum class ServiceCallType : uint16_t
@@ -384,57 +384,57 @@ namespace NEService
     constexpr uint32_t  SERVICE_FUNCTION    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };    /*0x1000*/
 
     /**
-     * \brief   NEService::REQUEST_ID_FIRST
+     * \brief   areg::REQUEST_ID_FIRST
      *          The first ID in request call.
      **/
     constexpr uint32_t  REQUEST_ID_FIRST    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };
     /**
-     * \brief   NEService::REQUEST_ID_LAST
+     * \brief   areg::REQUEST_ID_LAST
      *          The last ID in request call.
      **/
     constexpr uint32_t  REQUEST_ID_LAST     { REQUEST_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   NEService::RESPONSE_ID_FIRST
+     * \brief   areg::RESPONSE_ID_FIRST
      *          The first ID in response call.
      **/
     constexpr uint32_t  RESPONSE_ID_FIRST   { static_cast<uint32_t>(ServiceCallType::ResponseFunction) };
     /**
-     * \brief   NEService::RESPONSE_ID_LAST
+     * \brief   areg::RESPONSE_ID_LAST
      *          The last ID in response call.
      **/
     constexpr uint32_t  RESPONSE_ID_LAST    { RESPONSE_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   NEService::ATTRIBUTE_ID_FIRST
+     * \brief   areg::ATTRIBUTE_ID_FIRST
      *          The first ID in attribute call.
      **/
     constexpr uint32_t  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(ServiceCallType::AttributeUpdate) };
     /**
-     * \brief   NEService::ATTRIBUTE_ID_LAST
+     * \brief   areg::ATTRIBUTE_ID_LAST
      *          The last ID in attribute call.
      **/
     constexpr uint32_t  ATTRIBUTE_ID_LAST   { ATTRIBUTE_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   NEService::SERVICE_ID_FIRST
+     * \brief   areg::SERVICE_ID_FIRST
      *          The last ID in service call.
      **/
-    constexpr uint32_t  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::ServiceCallType::ServiceRegisteration) };
+    constexpr uint32_t  SERVICE_ID_FIRST    { static_cast<uint32_t>(areg::ServiceCallType::ServiceRegisteration) };
     /**
-     * \brief   NEService::SERVICE_ID_LAST
+     * \brief   areg::SERVICE_ID_LAST
      *          The last ID in service call.
      **/
     constexpr uint32_t  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   NEService::RESPONSE_ID_NONE
+     * \brief   areg::RESPONSE_ID_NONE
      *          Constant no response. Used to indicate that the request has no response.
      **/
     constexpr uint32_t  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCallType::NoFunction) };
 
     /**
-     * \brief   NEService::INVALID_MESSAGE_ID
+     * \brief   areg::INVALID_MESSAGE_ID
      *          The invalid message ID
      **/
     constexpr uint32_t  INVALID_MESSAGE_ID  { static_cast<uint32_t>(~0) };    /*0xFFFFFFFF*/
@@ -513,9 +513,9 @@ namespace NEService
     };
 
     /**
-     * \brief   Returns string value of NEService::FuncIdRange type
+     * \brief   Returns string value of areg::FuncIdRange type
      **/
-    inline const char * getString( NEService::FuncIdRange funcId );
+    inline const char * getString( areg::FuncIdRange funcId );
 
     /**
      * \brief   Converts request message ID to array index. Returns INVALID_INDEX if empty.
@@ -524,7 +524,7 @@ namespace NEService
     {
         return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
                 ? msgId - static_cast<uint32_t>(FuncIdRange::RequestFirstId)
-                : static_cast<uint32_t>(NECommon::INVALID_INDEX);
+                : static_cast<uint32_t>(areg::INVALID_INDEX);
     }
 
     /**
@@ -534,7 +534,7 @@ namespace NEService
     {
         return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
                 ? msgId - static_cast<uint32_t>(FuncIdRange::ResponseFirstId)
-                : static_cast<uint32_t>(NECommon::INVALID_INDEX);
+                : static_cast<uint32_t>(areg::INVALID_INDEX);
     }
 
     /**
@@ -544,7 +544,7 @@ namespace NEService
     {
         return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
                 ? msgId - static_cast<uint32_t>(FuncIdRange::AttributeFirstId)
-                : static_cast<uint32_t>(NECommon::INVALID_INDEX);
+                : static_cast<uint32_t>(areg::INVALID_INDEX);
     }
 
     /**
@@ -592,7 +592,7 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    using StateArrayBase    = FixedArray<NEService::DataState>;
+    using StateArrayBase    = FixedArray<areg::DataState>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/
@@ -627,18 +627,18 @@ namespace NEService
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline const NEService::DataState& operator [] (uint32_t index) const;
+        inline const areg::DataState& operator [] (uint32_t index) const;
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline NEService::DataState& operator [] (uint32_t index);
+        inline areg::DataState& operator [] (uint32_t index);
 
         /**
          * \brief   Returns the number of elements in the array.
          */
         inline uint32_t getSize() const;
         /**
-         * \brief   Resets states in array. All states will be set to NEService::DataIsUnavailable
+         * \brief   Resets states in array. All states will be set to areg::DataIsUnavailable
          **/
         inline void resetStates();
 
@@ -653,13 +653,13 @@ namespace NEService
          * \param   whichIndex  The index of entry in array which state should be changed
          * \param   newState    The state to set
          **/
-        inline void setState(int32_t whichIndex, NEService::DataState newState);
+        inline void setState(int32_t whichIndex, areg::DataState newState);
 
         /**
          * \brief   All entries are set to the same given state
          * \param   newState    The state to set for all entries
          **/
-        inline void setAllState(NEService::DataState newState);
+        inline void setAllState(areg::DataState newState);
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -735,16 +735,16 @@ namespace NEService
         /**
          * \brief   Request to Response map. All requests are accessed by index 
          *          and every request indexed is calculated by calculating 
-         *          ('request ID' - NEService::FuncIdRange::RequestFirstId)
+         *          ('request ID' - areg::FuncIdRange::RequestFirstId)
          *          Every request should have appropriate response value. If request does not
-         *          have response, it should have value NEService::RESPONSE_ID_NONE
+         *          have response, it should have value areg::RESPONSE_ID_NONE
          *          The size of this map should be equal to idRequestCount.
          **/
         const uint32_t* idRequestToResponseMap{ nullptr };
 
         /**
          * \brief   Map of parameter count in every response. Every response index
-         *          is calculated by formula ('response ID' - NEService::FuncIdRange::ResponseFirstId)
+         *          is calculated by formula ('response ID' - areg::FuncIdRange::ResponseFirstId)
          *          The size of this map should be equal to idResponseCount.
          **/
         const uint32_t* idResponseParamCountMap{ nullptr };
@@ -765,7 +765,7 @@ namespace NEService
     /**
      * \brief   Returns the instance of empty local service interface.
      **/
-    AREG_API NEService::InterfaceData & getEmptyInterface();
+    AREG_API areg::InterfaceData & getEmptyInterface();
 
     //////////////////////////////////////////////////////////////////////////
     // Invalid service
@@ -789,7 +789,7 @@ namespace NEService
      *          For example, if there is a response function prototype
      *          responseAREG(const bool &param1, const int32_t &param2)
      *          the 'param1' state can be accessed by index pair
-     *          param1State = states[NEService::respIndex(UPD_ID_responseAREG)][0];
+     *          param1State = states[areg::respIndex(UPD_ID_responseAREG)][0];
      **/
     class AREG_API ParameterArray
     {
@@ -805,7 +805,7 @@ namespace NEService
          * \param   ifData  The service interface data structure containing
          *                  parameter map table
          **/
-        ParameterArray(const NEService::InterfaceData& ifData);
+        ParameterArray(const areg::InterfaceData& ifData);
 
 
         /**
@@ -842,17 +842,17 @@ namespace NEService
         /**
          * \brief   Access state by given index of array allowed for writing.
          *          The index is calculated by formula
-         *          ('response ID' - NEService::FuncIdRange::ResponseFirstId) or use
-         *          NEService::respIndex() macro
+         *          ('response ID' - areg::FuncIdRange::ResponseFirstId) or use
+         *          areg::respIndex() macro
          **/
-        inline NEService::StateArray & operator [] (uint32_t index);
+        inline areg::StateArray & operator [] (uint32_t index);
         /**
          * \brief   Access read-only state by given index of array.
          *          The index is calculated by formula
-         *          ('response ID' - NEService::FuncIdRange::ResponseFirstId) or use
-         *          NEService::respIndex() macro
+         *          ('response ID' - areg::FuncIdRange::ResponseFirstId) or use
+         *          areg::respIndex() macro
          **/
-        inline const NEService::StateArray & operator [] (uint32_t index) const;
+        inline const areg::StateArray & operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -862,36 +862,36 @@ namespace NEService
         /**
          * \brief   Returns the state of parameter of certain response entry
          *          and certain parameter. The parameter entry is calculated
-         *          row = NEService::respIndex('response ID').
-         * \param   row     The index of response call. Should be NEService::respIndex('response ID')
+         *          row = areg::respIndex('response ID').
+         * \param   row     The index of response call. Should be areg::respIndex('response ID')
          * \param   col     The index of parameter entry in response call. 
          *                  First parameter has index zero
          * \return  The state of parameter in call.
          **/
-        inline NEService::DataState getAt(uint32_t row, uint32_t col) const;
+        inline areg::DataState getAt(uint32_t row, uint32_t col) const;
 
         /**
          * \brief   Sets state of parameter of certain response.
          * \param   row         The index of response entry, which can be calculated
-         *                      by macro NEService::respIndex('response ID')
+         *                      by macro areg::respIndex('response ID')
          * \param   col         The index of parameter in response call. 
          *                      First parameter has index zero
          * \param   newValue    The state to set for parameter
          **/
-        inline void setAt(uint32_t row, uint32_t col, NEService::DataState newValue);
+        inline void setAt(uint32_t row, uint32_t col, areg::DataState newValue);
 
         /**
          * \brief   Returns true if specified response index has parameters.
-         *          The response index is calculated by macro NEService::respIndex('response ID')
+         *          The response index is calculated by macro areg::respIndex('response ID')
          **/
         inline bool hasParameters(uint32_t whichRespIndex) const;
         /**
          * \brief   Returns true if valid response index. For example,
          *          the response ID RESPONSE_ID_NONE does not have valid
          *          response index. The index of response is calculated
-         *          by macro NEService::respIndex('response ID')
+         *          by macro areg::respIndex('response ID')
          * \param   whichRespIndex  The index of response, should be calculated by
-         *                          macro NEService::respIndex('response ID')
+         *                          macro areg::respIndex('response ID')
          * \return  Returns true if given index is valid
          **/
         inline bool isValidParamIndex(uint32_t whichRespIndex) const;
@@ -907,16 +907,16 @@ namespace NEService
 
         /**
          * \brief   Sets all parameter states of specified entry.
-         *          The index should be calculated by NEService::respIndex('response ID')
-         * \param   whichParam  The index of entry, should be calculated by NEService::respIndex('response ID')
+         *          The index should be calculated by areg::respIndex('response ID')
+         * \param   whichParam  The index of entry, should be calculated by areg::respIndex('response ID')
          * \param   newState    The state to set
          **/
-        inline void setParamState(uint32_t whichParam, NEService::DataState newState);
+        inline void setParamState(uint32_t whichParam, areg::DataState newState);
 
         /**
          * \brief   Resets all states of parameter of specified entry index.
-         *          The index should be calculated by NEService::respIndex('response ID')
-         * \param   whichParam  The index of entry, should be calculated by NEService::respIndex('response ID')
+         *          The index should be calculated by areg::respIndex('response ID')
+         * \param   whichParam  The index of entry, should be calculated by areg::respIndex('response ID')
          **/
         void resetParamState(uint32_t whichParam);
 
@@ -950,7 +950,7 @@ namespace NEService
         /**
          * \brief   Table of parameter states
          **/
-        NEService::StateArray **    mParamList;
+        areg::StateArray **    mParamList;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -963,14 +963,14 @@ namespace NEService
     /**
      * \brief   Type of parameter array
      **/
-    using ParamState    = NEService::ParameterArray;
+    using ParamState    = areg::ParameterArray;
     /**
      * \brief   Type of state array
      **/
-    using AttrState     = NEService::StateArray;
+    using AttrState     = areg::StateArray;
 
     //////////////////////////////////////////////////////////////////////////
-    // NEService::ProxyData class declaration
+    // areg::ProxyData class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   ProxyData class. 
@@ -986,7 +986,7 @@ namespace NEService
          * \brief   Initialize data from given service interface data object.
          * \param   ifData  Service Interface data object.
          **/
-        ProxyData(const NEService::InterfaceData & ifData);
+        ProxyData(const areg::InterfaceData & ifData);
         /**
          * \brief   Destructor
          **/
@@ -1000,41 +1000,41 @@ namespace NEService
         void resetStates();
 
         /**
-         * \brief	Set state for specified request ID (range in NEService::FuncIdRange)
+         * \brief	Set state for specified request ID (range in areg::FuncIdRange)
          *          First, it will figure our whether it is attribute or response request ID.
          *          Then it will convert to index value and set appropriate entry state.
-         *          If the request ID is NEService::ATTRIBUTE_SI_VERSION, it will only set
+         *          If the request ID is areg::ATTRIBUTE_SI_VERSION, it will only set
          *          state of component implementation version.
-         * \param	msgId	    The function ID in range NEService::FuncIdRange.
+         * \param	msgId	    The function ID in range areg::FuncIdRange.
          *                      Can be either attribute or response range ID.
          *                      Otherwise it is ignored.
          * \param	newState	New state to set. If requested ID is response range,
          *                      it will set state for all parameters of that response, 
          *                      if any exist.
          **/
-        void setDataState(uint32_t msgId, NEService::DataState newState);
+        void setDataState(uint32_t msgId, areg::DataState newState);
 
         /**
          * \brief   Returns data state of given message (attribute or response) ID.
          **/
-        NEService::DataState getDataState(uint32_t msgId) const;
+        areg::DataState getDataState(uint32_t msgId) const;
 
         /**
          * \brief   Returns the response message ID of given request message ID.
          *          If message is wrong and/or is not in request to response map,
-         *          it will return NEService::INVALID_MESSAGE_ID
+         *          it will return areg::INVALID_MESSAGE_ID
          **/
         uint32_t getResponseId(uint32_t requestId) const;
 
         /**
          * \brief   Returns data state of given attribute ID
          **/
-        inline NEService::DataState getAttributeState(uint32_t msgId) const;
+        inline areg::DataState getAttributeState(uint32_t msgId) const;
 
         /**
          * \brief   Returns parameter state of given response ID
          **/
-        inline NEService::DataState getParamState(uint32_t msgId) const;
+        inline areg::DataState getParamState(uint32_t msgId) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -1044,22 +1044,22 @@ namespace NEService
         /**
          * \brief   Implementation version
          **/
-        NEService::DataState           mImplVersion;   // implementation version
+        areg::DataState           mImplVersion;   // implementation version
 
         /**
          * \brief   Service Interface data
          **/
-        const NEService::InterfaceData &   mIfData;        // fixed service interface data
+        const areg::InterfaceData &   mIfData;        // fixed service interface data
 
         /**
          * \brief   Table of attribute states
          **/
-        NEService::AttrState                mAttrState;     // state of attributes
+        areg::AttrState                mAttrState;     // state of attributes
 
         /**
          * \brief   Table of response parameter state
          **/
-        NEService::ParamState               mParamState;    // state of parameters in response call.
+        areg::ParamState               mParamState;    // state of parameters in response call.
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -1071,17 +1071,17 @@ namespace NEService
 
 
     /**
-     * \brief   NEService::ConnectedInstance
+     * \brief   areg::ConnectedInstance
      *          Service connected instance of application.
      **/
     struct ConnectedInstance
     {
         //!< The type of the application
-        NEService::MessageSource   ciSource    { NEService::MessageSource::SourceUndefined };
+        areg::MessageSource   ciSource    { areg::MessageSource::SourceUndefined };
         //!< The bit-set of connected instance
-        NEService::InstanceBitness ciBitness   { NEService::InstanceBitness::BitnessUnknown };
+        areg::InstanceBitness ciBitness   { areg::InstanceBitness::BitnessUnknown };
         //!< The cookie of the connected instance.
-        ITEM_ID                     ciCookie    { NEService::COOKIE_UNKNOWN };
+        ITEM_ID                     ciCookie    { areg::COOKIE_UNKNOWN };
         //!< The connection timestamp
         TIME64                      ciTimestamp { 0 };
         //!< The name of the application
@@ -1093,217 +1093,217 @@ namespace NEService
     /**
      * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.
      **/
-    using MapInstances = OrderedMap<ITEM_ID, NEService::ConnectedInstance>;
+    using MapInstances = OrderedMap<ITEM_ID, areg::ConnectedInstance>;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Global namespace NEService inline function implementation
+// Global namespace areg inline function implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE(NEService::ResultType)
-AREG_IMPLEMENT_STREAMABLE(NEService::DataState)
-AREG_IMPLEMENT_STREAMABLE(NEService::RequestType)
-AREG_IMPLEMENT_STREAMABLE(NEService::MessageDataType)
-AREG_IMPLEMENT_STREAMABLE(NEService::ServiceConnectionState)
-AREG_IMPLEMENT_STREAMABLE(NEService::DisconnectReason)
-AREG_IMPLEMENT_STREAMABLE(NEService::RegistrationAction)
-AREG_IMPLEMENT_STREAMABLE(NEService::ServiceType)
-AREG_IMPLEMENT_STREAMABLE(NEService::InstanceBitness)
-AREG_IMPLEMENT_STREAMABLE(NEService::MessageSource)
-AREG_IMPLEMENT_STREAMABLE(NEService::FuncIdRange)
+AREG_IMPLEMENT_STREAMABLE(areg::ResultType)
+AREG_IMPLEMENT_STREAMABLE(areg::DataState)
+AREG_IMPLEMENT_STREAMABLE(areg::RequestType)
+AREG_IMPLEMENT_STREAMABLE(areg::MessageDataType)
+AREG_IMPLEMENT_STREAMABLE(areg::ServiceConnectionState)
+AREG_IMPLEMENT_STREAMABLE(areg::DisconnectReason)
+AREG_IMPLEMENT_STREAMABLE(areg::RegistrationAction)
+AREG_IMPLEMENT_STREAMABLE(areg::ServiceType)
+AREG_IMPLEMENT_STREAMABLE(areg::InstanceBitness)
+AREG_IMPLEMENT_STREAMABLE(areg::MessageSource)
+AREG_IMPLEMENT_STREAMABLE(areg::FuncIdRange)
 
 //////////////////////////////////////////////////////////////////////////
-// namespace NEService inline function implementation
+// namespace areg inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NEService::isServiceConnected(NEService::ServiceConnectionState connectionStatus)
+inline bool areg::isServiceConnected(areg::ServiceConnectionState connectionStatus)
 {
-    return (connectionStatus == NEService::ServiceConnectionState::Connected);
+    return (connectionStatus == areg::ServiceConnectionState::Connected);
 }
 
-inline bool NEService::isServiceConnectionPending( NEService::ServiceConnectionState connectionStatus )
+inline bool areg::isServiceConnectionPending( areg::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus == NEService::ServiceConnectionState::Pending);
+    return (connectionStatus == areg::ServiceConnectionState::Pending);
 }
 
-inline bool NEService::isServiceRejected( NEService::ServiceConnectionState connectionStatus )
+inline bool areg::isServiceRejected( areg::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus == NEService::ServiceConnectionState::Rejected);
+    return (connectionStatus == areg::ServiceConnectionState::Rejected);
 }
 
-inline bool NEService::isServiceConnectionLost( NEService::ServiceConnectionState connectionStatus )
+inline bool areg::isServiceConnectionLost( areg::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus == NEService::ServiceConnectionState::ConnectionLost);
+    return (connectionStatus == areg::ServiceConnectionState::ConnectionLost);
 }
 
-inline bool NEService::isServiceDisconnected( NEService::ServiceConnectionState connectionStatus )
+inline bool areg::isServiceDisconnected( areg::ServiceConnectionState connectionStatus )
 {
-    return (connectionStatus != NEService::ServiceConnectionState::Connected);
+    return (connectionStatus != areg::ServiceConnectionState::Connected);
 }
 
-inline NEService::ServiceConnectionState NEService::serviceConnection( NEService::DisconnectReason reason )
+inline areg::ServiceConnectionState areg::serviceConnection( areg::DisconnectReason reason )
 {
     switch ( reason )
     {
-    case NEService::DisconnectReason::UndefinedReason:
-        return NEService::ServiceConnectionState::Unknown;
+    case areg::DisconnectReason::UndefinedReason:
+        return areg::ServiceConnectionState::Unknown;
     
-    case NEService::DisconnectReason::ServiceDisconnected:
-    case NEService::DisconnectReason::ServiceLost:
-    case NEService::DisconnectReason::ProviderLost:
-    case NEService::DisconnectReason::ConsumerLost:
-    case NEService::DisconnectReason::ClientConnectionLost:
-        return NEService::ServiceConnectionState::ConnectionLost;
+    case areg::DisconnectReason::ServiceDisconnected:
+    case areg::DisconnectReason::ServiceLost:
+    case areg::DisconnectReason::ProviderLost:
+    case areg::DisconnectReason::ConsumerLost:
+    case areg::DisconnectReason::ClientConnectionLost:
+        return areg::ServiceConnectionState::ConnectionLost;
 
-    case NEService::DisconnectReason::ServiceRejected:
-    case NEService::DisconnectReason::ProviderRejected:
-    case NEService::DisconnectReason::ConsumerNotSupported:
-        return NEService::ServiceConnectionState::Rejected;
+    case areg::DisconnectReason::ServiceRejected:
+    case areg::DisconnectReason::ProviderRejected:
+    case areg::DisconnectReason::ConsumerNotSupported:
+        return areg::ServiceConnectionState::Rejected;
 
-    case NEService::DisconnectReason::ConsumerDisconnected:
-    case NEService::DisconnectReason::ProviderDisconnected:
-    case NEService::DisconnectReason::ClientConnectionClosed:
-        return NEService::ServiceConnectionState::Disconnected;
+    case areg::DisconnectReason::ConsumerDisconnected:
+    case areg::DisconnectReason::ProviderDisconnected:
+    case areg::DisconnectReason::ClientConnectionClosed:
+        return areg::ServiceConnectionState::Disconnected;
 
-    case NEService::DisconnectReason::SystemShutdown:
-        return NEService::ServiceConnectionState::Shutdown;
+    case areg::DisconnectReason::SystemShutdown:
+        return areg::ServiceConnectionState::Shutdown;
 
     default:
-        return NEService::ServiceConnectionState::Connected;
+        return areg::ServiceConnectionState::Connected;
     }
 }
 
-inline bool NEService::isRequestId(uint32_t msgId)
+inline bool areg::isRequestId(uint32_t msgId)
 {
-    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::RequestFunction)) != 0);
+    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)) != 0);
 }
 
-inline bool NEService::isResponseId(uint32_t msgId)
+inline bool areg::isResponseId(uint32_t msgId)
 {
-    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::ResponseFunction)) != 0);
+    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)) != 0);
 }
 
-inline bool NEService::isAttributeId(uint32_t msgId)
+inline bool areg::isAttributeId(uint32_t msgId)
 {
-    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::AttributeUpdate)) != 0);
+    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate)) != 0);
 }
 
-inline bool NEService::isServiceRegistryId( uint32_t msgId )
+inline bool areg::isServiceRegistryId( uint32_t msgId )
 {
-    return ((msgId & static_cast<uint32_t>(NEService::ServiceCallType::ServiceRegisteration)) != 0);
+    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::ServiceRegisteration)) != 0);
 }
 
-inline bool NEService::isEmptyFunctionId(uint32_t msgId)
+inline bool areg::isEmptyFunctionId(uint32_t msgId)
 {
-    return (msgId == static_cast<uint32_t>(NEService::FuncIdRange::EmptyFunctionId));
+    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId));
 }
 
-inline bool NEService::isVersionNotifyId( uint32_t msgId )
+inline bool areg::isVersionNotifyId( uint32_t msgId )
 {
-    return (msgId == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderVersion));
+    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderVersion));
 }
 
-inline bool NEService::isConnectNotifyId( uint32_t msgId )
+inline bool areg::isConnectNotifyId( uint32_t msgId )
 {
-    return (msgId == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection));
+    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection));
 }
 
-inline bool NEService::isExecutableId(uint32_t msgId)
+inline bool areg::isExecutableId(uint32_t msgId)
 {
-    return ( (msgId  & static_cast<uint32_t>(NEService::ServiceCallType::RequestFunction)     ) != 0 ||
-             (msgId  & static_cast<uint32_t>(NEService::ServiceCallType::ResponseFunction)    ) != 0 ||
-             (msgId  & static_cast<uint32_t>(NEService::ServiceCallType::AttributeUpdate)   ) != 0 ||
-             (msgId == static_cast<uint32_t>(NEService::ServiceCallType::NoFunction)  ) );
+    return ( (msgId  & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)     ) != 0 ||
+             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)    ) != 0 ||
+             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate)   ) != 0 ||
+             (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction)  ) );
 }
 
 
-inline NEService::MessageDataType NEService::getMessageDataType( uint32_t msgId )
+inline areg::MessageDataType areg::getMessageDataType( uint32_t msgId )
 {
-    if ( NEService::isRequestId(msgId) )
-        return NEService::MessageDataType::RequestData;
-    else if (NEService::isResponseId(msgId))
-        return NEService::MessageDataType::ResponseData;
-    else if (NEService::isAttributeId(msgId))
-        return NEService::MessageDataType::AttributeData;
-    else if (NEService::isServiceRegistryId(msgId))
-        return NEService::MessageDataType::ServiceData;
+    if ( areg::isRequestId(msgId) )
+        return areg::MessageDataType::RequestData;
+    else if (areg::isResponseId(msgId))
+        return areg::MessageDataType::ResponseData;
+    else if (areg::isAttributeId(msgId))
+        return areg::MessageDataType::AttributeData;
+    else if (areg::isServiceRegistryId(msgId))
+        return areg::MessageDataType::ServiceData;
     else
-        return NEService::MessageDataType::UndefinedData;
+        return areg::MessageDataType::UndefinedData;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::StateArray inline function implementation
+// class areg::StateArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::DataState& NEService::StateArray::operator [] (uint32_t index) const
+inline const areg::DataState& areg::StateArray::operator [] (uint32_t index) const
 {
     return StateArrayBase::operator[](index);
 }
 
-inline NEService::DataState& NEService::StateArray::operator [] (uint32_t index)
+inline areg::DataState& areg::StateArray::operator [] (uint32_t index)
 {
     return StateArrayBase::operator[](index);
 }
 
-inline uint32_t NEService::StateArray::getSize() const
+inline uint32_t areg::StateArray::getSize() const
 {
     return StateArrayBase::getSize();
 }
 
-inline void NEService::StateArray::resetStates()
+inline void areg::StateArray::resetStates()
 {
-    setAllState(NEService::DataState::DataIsUnavailable);
+    setAllState(areg::DataState::DataIsUnavailable);
 }
 
-inline bool NEService::StateArray::hasParams() const
+inline bool areg::StateArray::hasParams() const
 {
     return (isEmpty() == false);
 }
 
-inline void NEService::StateArray::setState(int32_t whichIndex, NEService::DataState newState)
+inline void areg::StateArray::setState(int32_t whichIndex, areg::DataState newState)
 {
     mValueList[whichIndex] = newState;
 }
 
-inline void NEService::StateArray::setAllState(NEService::DataState newState)
+inline void areg::StateArray::setAllState(areg::DataState newState)
 {
     for ( uint32_t i = 0; i < this->mElemCount; ++ i )
         mValueList[i] = newState;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::ParameterArray inline function implementation
+// class areg::ParameterArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline NEService::StateArray& NEService::ParameterArray::operator [] ( uint32_t index )
+inline areg::StateArray& areg::ParameterArray::operator [] ( uint32_t index )
 {
     ASSERT(isValidParamIndex(index));
     return *(mParamList[index]);
 }
 
-inline const NEService::StateArray& NEService::ParameterArray::operator [] ( uint32_t index ) const
+inline const areg::StateArray& areg::ParameterArray::operator [] ( uint32_t index ) const
 {
     ASSERT(isValidParamIndex(index));
     return *(mParamList[index]);
 }
 
-inline NEService::DataState NEService::ParameterArray::getAt( uint32_t row, uint32_t col ) const
+inline areg::DataState areg::ParameterArray::getAt( uint32_t row, uint32_t col ) const
 {
     ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
     return mParamList[row]->getAt(static_cast<uint32_t>(col));
 }
 
-inline void NEService::ParameterArray::setAt( uint32_t row, uint32_t col, NEService::DataState newValue )
+inline void areg::ParameterArray::setAt( uint32_t row, uint32_t col, areg::DataState newValue )
 {
     ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
     mParamList[row]->setAt(static_cast<uint32_t>(col), newValue);
 }
 
-inline bool NEService::ParameterArray::hasParameters( uint32_t whichRespIndex ) const
+inline bool areg::ParameterArray::hasParameters( uint32_t whichRespIndex ) const
 {
     ASSERT(isValidParamIndex(whichRespIndex));
     return mParamList[whichRespIndex]->hasParams();
 }
 
-inline void NEService::ParameterArray::resetAllStates()
+inline void areg::ParameterArray::resetAllStates()
 {
     for (int col = 0; col < mElemCount; ++col)
     {
@@ -1311,41 +1311,41 @@ inline void NEService::ParameterArray::resetAllStates()
     }
 }
 
-inline bool NEService::ParameterArray::isValidParamIndex(uint32_t whichRespIndex) const
+inline bool areg::ParameterArray::isValidParamIndex(uint32_t whichRespIndex) const
 {
     return ((static_cast<int32_t>(whichRespIndex) >= 0) && (static_cast<int32_t>(whichRespIndex) < mElemCount));
 }
 
-inline void NEService::ParameterArray::setParamState(uint32_t whichParam, NEService::DataState newState)
+inline void areg::ParameterArray::setParamState(uint32_t whichParam, areg::DataState newState)
 {
     ASSERT(isValidParamIndex(whichParam));
     mParamList[whichParam]->setAllState(newState);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::ProxyData inline function implementation
+// class areg::ProxyData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::DataState NEService::ProxyData::getAttributeState( uint32_t msgId ) const
+inline areg::DataState areg::ProxyData::getAttributeState( uint32_t msgId ) const
 {
-    return NEService::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[NEService::attrIndex(msgId)];
+    return areg::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[areg::attrIndex(msgId)];
 }
 
-inline NEService::DataState NEService::ProxyData::getParamState( uint32_t msgId ) const
+inline areg::DataState areg::ProxyData::getParamState( uint32_t msgId ) const
 {
-    const NEService::StateArray& param = mParamState[NEService::respIndex(msgId)];
-    return (param.hasParams() ? param[0u] : NEService::DataState::DataIsUnavailable);
+    const areg::StateArray& param = mParamState[areg::respIndex(msgId)];
+    return (param.hasParams() ? param[0u] : areg::DataState::DataIsUnavailable);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NEService::ConnectedInstance serialization
+// class areg::ConnectedInstance serialization
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Serializes the instance structure to the stream.
  * \param   stream  The streaming object to serialize.
  * \param   output  The single structure of instance to serialize.
  **/
-inline OutStream& operator << (OutStream& stream, const NEService::ConnectedInstance & output)
+inline OutStream& operator << (OutStream& stream, const areg::ConnectedInstance & output)
 {
     stream << output.ciSource << output.ciBitness << output.ciCookie << output.ciTimestamp << output.ciInstance << output.ciLocation;
     return stream;
@@ -1356,7 +1356,7 @@ inline OutStream& operator << (OutStream& stream, const NEService::ConnectedInst
  * \param   stream  The streaming object that contains the information of the connected instance.
  * \param   input  The single structure of instance to initialize.
  **/
-inline const InStream& operator >> (const InStream& stream, NEService::ConnectedInstance & input)
+inline const InStream& operator >> (const InStream& stream, areg::ConnectedInstance & input)
 {
     stream >> input.ciSource >> input.ciBitness >> input.ciCookie >> input.ciTimestamp >> input.ciInstance >> input.ciLocation;
     return stream;
@@ -1366,332 +1366,332 @@ inline const InStream& operator >> (const InStream& stream, NEService::Connected
 // class NEService enumerations string conversion
 //////////////////////////////////////////////////////////////////////////
 
-inline const char* NEService::getString(NEService::ResultType resultType)
+inline const char* areg::getString(areg::ResultType resultType)
 {
     switch (resultType)
     {
-    case    NEService::ResultType::Undefined:
-        return "NEService::ResultType::Undefined";
+    case    areg::ResultType::Undefined:
+        return "areg::ResultType::Undefined";
 
-    case    NEService::ResultType::Error:
-        return "NEService::ResultType::Error";
-    case NEService::ResultType::Undelivered:
-        return "NEService::ResultType::Undelivered";
-    case    NEService::ResultType::NotProcessed:
-        return "NEService::ResultType::NotProcessed";
-    case NEService::ResultType::Processed:
-        return "NEService::ResultType::Processed";
+    case    areg::ResultType::Error:
+        return "areg::ResultType::Error";
+    case areg::ResultType::Undelivered:
+        return "areg::ResultType::Undelivered";
+    case    areg::ResultType::NotProcessed:
+        return "areg::ResultType::NotProcessed";
+    case areg::ResultType::Processed:
+        return "areg::ResultType::Processed";
 
-    case NEService::ResultType::MessageUndelivered:
-        return "NEService::ResultType::MessageUndelivered";
+    case areg::ResultType::MessageUndelivered:
+        return "areg::ResultType::MessageUndelivered";
 
-    case    NEService::ResultType::RequestOK:
-        return "NEService::ResultType::RequestOK";
-    case    NEService::ResultType::RequestInvalid:
-        return "NEService::ResultType::RequestInvalid";
-    case    NEService::ResultType::RequestError:
-        return "NEService::ResultType::RequestError";
-    case    NEService::ResultType::RequestBusy:
-        return "NEService::ResultType::RequestBusy";
-    case    NEService::ResultType::RequestCanceled:
-        return "NEService::ResultType::RequestCanceled";
+    case    areg::ResultType::RequestOK:
+        return "areg::ResultType::RequestOK";
+    case    areg::ResultType::RequestInvalid:
+        return "areg::ResultType::RequestInvalid";
+    case    areg::ResultType::RequestError:
+        return "areg::ResultType::RequestError";
+    case    areg::ResultType::RequestBusy:
+        return "areg::ResultType::RequestBusy";
+    case    areg::ResultType::RequestCanceled:
+        return "areg::ResultType::RequestCanceled";
 
-    case    NEService::ResultType::DataOK:
-        return "NEService::ResultType::DataOK";
-    case    NEService::ResultType::DataInvalid:
-        return "NEService::ResultType::DataInvalid";
+    case    areg::ResultType::DataOK:
+        return "areg::ResultType::DataOK";
+    case    areg::ResultType::DataInvalid:
+        return "areg::ResultType::DataInvalid";
 
-    case    NEService::ResultType::ServiceOK:
-        return "NEService::ResultType::ServiceOK";
-    case    NEService::ResultType::ServiceUnavailable:
-        return "NEService::ResultType::ServiceUnavailable";
-    case    NEService::ResultType::Invalid:
-        return "NEService::ResultType::Invalid";
-    case    NEService::ResultType::ServiceRejected:
-        return "NEService::ResultType::ServiceRejected";
+    case    areg::ResultType::ServiceOK:
+        return "areg::ResultType::ServiceOK";
+    case    areg::ResultType::ServiceUnavailable:
+        return "areg::ResultType::ServiceUnavailable";
+    case    areg::ResultType::Invalid:
+        return "areg::ResultType::Invalid";
+    case    areg::ResultType::ServiceRejected:
+        return "areg::ResultType::ServiceRejected";
 
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::ResultType value!";
+        return "ERR: Undefined areg::ResultType value!";
     }
 }
 
-inline const char* NEService::getString(NEService::DataState dataState)
+inline const char* areg::getString(areg::DataState dataState)
 {
     switch (dataState)
     {
-    case    NEService::DataState::DataIsUndefined:
-        return "NEService::DataState::DataIsUndefined";
+    case    areg::DataState::DataIsUndefined:
+        return "areg::DataState::DataIsUndefined";
 
-    case    NEService::DataState::DataIsOK:
-        return "NEService::DataState::DataIsOK";
+    case    areg::DataState::DataIsOK:
+        return "areg::DataState::DataIsOK";
 
-    case    NEService::DataState::DataIsInvalid:
-        return "NEService::DataState::DataIsInvalid";
+    case    areg::DataState::DataIsInvalid:
+        return "areg::DataState::DataIsInvalid";
 
-    case    NEService::DataState::DataIsUnavailable:
-        return "NEService::DataState::DataIsUnavailable";
+    case    areg::DataState::DataIsUnavailable:
+        return "areg::DataState::DataIsUnavailable";
 
-    case    NEService::DataState::DataUnexpectedError:
-        return "NEService::DataState::DataUnexpectedError";
+    case    areg::DataState::DataUnexpectedError:
+        return "areg::DataState::DataUnexpectedError";
 
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::DataState value!";
+        return "ERR: Undefined areg::DataState value!";
     }
 }
 
-inline const char* NEService::getString( NEService::RequestType resultType )
+inline const char* areg::getString( areg::RequestType resultType )
 {
     switch (resultType)
     {
-    case    NEService::RequestType::Unprocessed:
-        return "NEService::RequestType::Unprocessed";
-    case    NEService::RequestType::StartNotify:
-        return "NEService::RequestType::StartNotify";
-    case    NEService::RequestType::StopNotify:
-        return "NEService::RequestType::StopNotify";        
-    case    NEService::RequestType::RemoveAllNotify:
-        return "NEService::RequestType::RemoveAllNotify";
-    case    NEService::RequestType::CallFunction:
-        return "NEService::RequestType::CallFunction";
-    case    NEService::RequestType::ServiceConnection:
-        return "NEService::RequestType::ServiceConnection";
-    case    NEService::RequestType::ClientConnection:
-        return "NEService::RequestType::ClientConnection";
-    case    NEService::RequestType::LoadComponent:
-        return "NEService::RequestType::LoadComponent";
+    case    areg::RequestType::Unprocessed:
+        return "areg::RequestType::Unprocessed";
+    case    areg::RequestType::StartNotify:
+        return "areg::RequestType::StartNotify";
+    case    areg::RequestType::StopNotify:
+        return "areg::RequestType::StopNotify";        
+    case    areg::RequestType::RemoveAllNotify:
+        return "areg::RequestType::RemoveAllNotify";
+    case    areg::RequestType::CallFunction:
+        return "areg::RequestType::CallFunction";
+    case    areg::RequestType::ServiceConnection:
+        return "areg::RequestType::ServiceConnection";
+    case    areg::RequestType::ClientConnection:
+        return "areg::RequestType::ClientConnection";
+    case    areg::RequestType::LoadComponent:
+        return "areg::RequestType::LoadComponent";
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::RequestType value!";
+        return "ERR: Undefined areg::RequestType value!";
     }
 }
 
-inline const char* NEService::getString( NEService::MessageDataType dataType )
+inline const char* areg::getString( areg::MessageDataType dataType )
 {
     switch (dataType)
     {
-    case NEService::MessageDataType::UndefinedData:
-        return "NEService::MessageDataType::UndefinedData";
-    case NEService::MessageDataType::RequestData:
-        return "NEService::MessageDataType::RequestData";
-    case NEService::MessageDataType::ResponseData:
-        return "NEService::MessageDataType::ResponseData";
-    case NEService::MessageDataType::AttributeData:
-        return "NEService::MessageDataType::AttributeData";
-    case NEService::MessageDataType::ServiceData:
-        return "NEService::MessageDataType::ServiceData";
+    case areg::MessageDataType::UndefinedData:
+        return "areg::MessageDataType::UndefinedData";
+    case areg::MessageDataType::RequestData:
+        return "areg::MessageDataType::RequestData";
+    case areg::MessageDataType::ResponseData:
+        return "areg::MessageDataType::ResponseData";
+    case areg::MessageDataType::AttributeData:
+        return "areg::MessageDataType::AttributeData";
+    case areg::MessageDataType::ServiceData:
+        return "areg::MessageDataType::ServiceData";
 
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::MessageDataType value!";
+        return "ERR: Undefined areg::MessageDataType value!";
     }
 }
 
-inline const char* NEService::getString( NEService::ServiceConnectionState serviceConnection )
+inline const char* areg::getString( areg::ServiceConnectionState serviceConnection )
 {
     switch (serviceConnection)
     {
-    case NEService::ServiceConnectionState::Unknown:
-        return "NEService::ServiceConnectionState::Unknown";
-    case NEService::ServiceConnectionState::Connected:
-        return "NEService::ServiceConnectionState::Connected";
-    case NEService::ServiceConnectionState::Pending:
-        return "NEService::ServiceConnectionState::Pending";
-    case NEService::ServiceConnectionState::Disconnected:
-        return "NEService::ServiceConnectionState::Disconnected";
-    case NEService::ServiceConnectionState::ConnectionLost:
-        return "NEService::ServiceConnectionState::ConnectionLost";
-    case NEService::ServiceConnectionState::Rejected:
-        return "NEService::ServiceConnectionState::Rejected";
-    case NEService::ServiceConnectionState::Failed:
-        return "NEService::ServiceConnectionState::Failed";
-    case NEService::ServiceConnectionState::Shutdown:
-        return "NEService::ServiceConnectionState::Shutdown";
+    case areg::ServiceConnectionState::Unknown:
+        return "areg::ServiceConnectionState::Unknown";
+    case areg::ServiceConnectionState::Connected:
+        return "areg::ServiceConnectionState::Connected";
+    case areg::ServiceConnectionState::Pending:
+        return "areg::ServiceConnectionState::Pending";
+    case areg::ServiceConnectionState::Disconnected:
+        return "areg::ServiceConnectionState::Disconnected";
+    case areg::ServiceConnectionState::ConnectionLost:
+        return "areg::ServiceConnectionState::ConnectionLost";
+    case areg::ServiceConnectionState::Rejected:
+        return "areg::ServiceConnectionState::Rejected";
+    case areg::ServiceConnectionState::Failed:
+        return "areg::ServiceConnectionState::Failed";
+    case areg::ServiceConnectionState::Shutdown:
+        return "areg::ServiceConnectionState::Shutdown";
     default:
         ASSERT(false);
-        return "ERR: Undefined NEService::ServiceConnectionState value!";
+        return "ERR: Undefined areg::ServiceConnectionState value!";
     }
 }
 
-inline const char * NEService::getString( NEService::DisconnectReason reason )
+inline const char * areg::getString( areg::DisconnectReason reason )
 {
     switch ( reason )
     {
-    case NEService::DisconnectReason::UndefinedReason:
-        return "NEService::DisconnectReason::UndefinedReason";
-    case NEService::DisconnectReason::ServiceDisconnected:
-        return "NEService::DisconnectReason::ServiceDisconnected";
-    case NEService::DisconnectReason::ServiceLost:
-        return "NEService::DisconnectReason::ServiceLost";
-    case NEService::DisconnectReason::ServiceRejected:
-        return "NEService::DisconnectReason::ServiceRejected";
-    case NEService::DisconnectReason::ProviderDisconnected:
-        return "NEService::DisconnectReason::ProviderDisconnected";
-    case NEService::DisconnectReason::ProviderLost:
-        return "NEService::DisconnectReason::ProviderLost";
-    case NEService::DisconnectReason::ProviderRejected:
-        return "NEService::DisconnectReason::ProviderRejected";
-    case NEService::DisconnectReason::ConsumerDisconnected:
-        return "NEService::DisconnectReason::ConsumerDisconnected";
-    case NEService::DisconnectReason::ConsumerLost:
-        return "NEService::DisconnectReason::ConsumerLost";
-    case NEService::DisconnectReason::ConsumerNotSupported:
-        return "NEService::DisconnectReason::ConsumerNotSupported";
-    case NEService::DisconnectReason::SystemShutdown:
-        return "NEService::DisconnectReason::SystemShutdown";
-    case NEService::DisconnectReason::ClientConnectionLost:
-        return "NEService::DisconnectReason::ClientConnectionLost";
-    case NEService::DisconnectReason::ClientConnectionClosed:
-        return "NEService::DisconnectReason::ClientConnectionClosed";
+    case areg::DisconnectReason::UndefinedReason:
+        return "areg::DisconnectReason::UndefinedReason";
+    case areg::DisconnectReason::ServiceDisconnected:
+        return "areg::DisconnectReason::ServiceDisconnected";
+    case areg::DisconnectReason::ServiceLost:
+        return "areg::DisconnectReason::ServiceLost";
+    case areg::DisconnectReason::ServiceRejected:
+        return "areg::DisconnectReason::ServiceRejected";
+    case areg::DisconnectReason::ProviderDisconnected:
+        return "areg::DisconnectReason::ProviderDisconnected";
+    case areg::DisconnectReason::ProviderLost:
+        return "areg::DisconnectReason::ProviderLost";
+    case areg::DisconnectReason::ProviderRejected:
+        return "areg::DisconnectReason::ProviderRejected";
+    case areg::DisconnectReason::ConsumerDisconnected:
+        return "areg::DisconnectReason::ConsumerDisconnected";
+    case areg::DisconnectReason::ConsumerLost:
+        return "areg::DisconnectReason::ConsumerLost";
+    case areg::DisconnectReason::ConsumerNotSupported:
+        return "areg::DisconnectReason::ConsumerNotSupported";
+    case areg::DisconnectReason::SystemShutdown:
+        return "areg::DisconnectReason::SystemShutdown";
+    case areg::DisconnectReason::ClientConnectionLost:
+        return "areg::DisconnectReason::ClientConnectionLost";
+    case areg::DisconnectReason::ClientConnectionClosed:
+        return "areg::DisconnectReason::ClientConnectionClosed";
     default:
         ASSERT( false );
-        return "ERR: Undefined NEService::DisconnectReason value!";
+        return "ERR: Undefined areg::DisconnectReason value!";
     }
 }
 
-inline const char * NEService::getString( NEService::RegistrationAction svcRequestType )
+inline const char * areg::getString( areg::RegistrationAction svcRequestType )
 {
     switch ( svcRequestType )
     {
-    case NEService::RegistrationAction::RegisterClient:
-        return "NEService::RegistrationAction::RegisterClient";
-    case NEService::RegistrationAction::UnregisterClient:
-        return "NEService::RegistrationAction::UnregisterClient";
-    case NEService::RegistrationAction::RegisterStub:
-        return "NEService::RegisterStub";
-    case NEService::RegistrationAction::UnregisterStub:
-        return "NEService::RegistrationAction::UnregisterStub";
+    case areg::RegistrationAction::RegisterClient:
+        return "areg::RegistrationAction::RegisterClient";
+    case areg::RegistrationAction::UnregisterClient:
+        return "areg::RegistrationAction::UnregisterClient";
+    case areg::RegistrationAction::RegisterStub:
+        return "areg::RegisterStub";
+    case areg::RegistrationAction::UnregisterStub:
+        return "areg::RegistrationAction::UnregisterStub";
     default:
-        return "ERR: Unexpected NEService::RegistrationAction value!!!";
+        return "ERR: Unexpected areg::RegistrationAction value!!!";
     }
 }
 
-inline const char * NEService::getString( NEService::ServiceType srvcType )
+inline const char * areg::getString( areg::ServiceType srvcType )
 {
     switch ( srvcType )
     {
-    case NEService::ServiceType::Local:
-        return "NEService::ServiceType::Local";
-    case NEService::ServiceType::Public:
-        return "NEService::ServiceType::Public";
-    case NEService::ServiceType::Any:
-        return "NEService::ServiceType::Any";
-    case NEService::ServiceType::Invalid:
-        return "NEService::ServiceType::Invalid";
+    case areg::ServiceType::Local:
+        return "areg::ServiceType::Local";
+    case areg::ServiceType::Public:
+        return "areg::ServiceType::Public";
+    case areg::ServiceType::Any:
+        return "areg::ServiceType::Any";
+    case areg::ServiceType::Invalid:
+        return "areg::ServiceType::Invalid";
     default:
-        return "ERR: Unexpected NEService::RegistrationAction value!!!";
+        return "ERR: Unexpected areg::RegistrationAction value!!!";
     }
 }
 
-const char* NEService::getString(NEService::InstanceBitness bitness)
+const char* areg::getString(areg::InstanceBitness bitness)
 {
     switch (bitness)
     {
-    case NEService::InstanceBitness::Bitness32:
-        return "NEService::InstanceBitness::Bitness32";
-    case NEService::InstanceBitness::Bitness64:
-        return "NEService::InstanceBitness::Bitness64";
-    case NEService::InstanceBitness::BitnessUnknown:
-        return "NEService::InstanceBitness::BitnessUnknown";
+    case areg::InstanceBitness::Bitness32:
+        return "areg::InstanceBitness::Bitness32";
+    case areg::InstanceBitness::Bitness64:
+        return "areg::InstanceBitness::Bitness64";
+    case areg::InstanceBitness::BitnessUnknown:
+        return "areg::InstanceBitness::BitnessUnknown";
     default:
-        return "ERR: Unexpected NEService::InstanceBitness value!!!";
+        return "ERR: Unexpected areg::InstanceBitness value!!!";
     }
 }
 
 
-const char * NEService::getString(NEService::MessageSource msgSource)
+const char * areg::getString(areg::MessageSource msgSource)
 {
     switch (msgSource)
     {
-    case NEService::MessageSource::SourceUndefined:
-        return "NEService::MessageSource::SourceUndefined";
-    case NEService::MessageSource::SourceClient:
-        return "NEService::MessageSource::SourceClient";
-    case NEService::MessageSource::SourceService:
-        return "NEService::MessageSource::SourceService";
-    case NEService::MessageSource::SourceObserver:
-        return "NEService::MessageSource::SourceObserver";
-    case NEService::MessageSource::SourceTest:
-        return "NEService::MessageSource::SourceTest";
-    case NEService::MessageSource::SourceSimulation:
-        return "NEService::MessageSource::SourceSimulation";
+    case areg::MessageSource::SourceUndefined:
+        return "areg::MessageSource::SourceUndefined";
+    case areg::MessageSource::SourceClient:
+        return "areg::MessageSource::SourceClient";
+    case areg::MessageSource::SourceService:
+        return "areg::MessageSource::SourceService";
+    case areg::MessageSource::SourceObserver:
+        return "areg::MessageSource::SourceObserver";
+    case areg::MessageSource::SourceTest:
+        return "areg::MessageSource::SourceTest";
+    case areg::MessageSource::SourceSimulation:
+        return "areg::MessageSource::SourceSimulation";
     default:
-        return "ERR: Unexpected NEService::MessageSource value!!!";
+        return "ERR: Unexpected areg::MessageSource value!!!";
     }
 }
 
 
-inline const char * NEService::getString( NEService::FuncIdRange funcId )
+inline const char * areg::getString( areg::FuncIdRange funcId )
 {
     switch ( funcId )
     {
-    case NEService::FuncIdRange::EmptyFunctionId:
-        return "NEService::FuncIdRange::EmptyFunctionId";
-    case NEService::FuncIdRange::ComponentCleanup:
-        return "NEService::FuncIdRange::ComponentCleanup";
-    case NEService::FuncIdRange::RequestRegisterService:
-        return "NEService::FuncIdRange::RequestRegisterService";
-    case NEService::FuncIdRange::RequestServiceProviderVersion:
-        return "NEService::FuncIdRange::RequestServiceProviderVersion";
-    case NEService::FuncIdRange::ResponseServiceProviderVersion:
-        return "NEService::FuncIdRange::ResponseServiceProviderVersion";
-    case NEService::FuncIdRange::RequestServiceProviderConnection:
-        return "NEService::FuncIdRange::RequestServiceProviderConnection";
-    case NEService::FuncIdRange::ResponseServiceProviderConnection:
-        return "NEService::FuncIdRange::ResponseServiceProviderConnection";
-    case NEService::FuncIdRange::SystemServiceConnect:
-        return "NEService::FuncIdRange::SystemServiceConnect";
-    case NEService::FuncIdRange::SystemServiceDisconnect:
-        return "NEService::FuncIdRange::SystemServiceDisconnect";
-    case NEService::FuncIdRange::SystemServiceNotifyConnection:
-        return "NEService::FuncIdRange::SystemServiceNotifyConnection";
-    case NEService::FuncIdRange::SystemServiceQueryInstances:
-        return "NEService::FuncIdRange::SystemServiceQueryInstances";
-    case NEService::FuncIdRange::SystemServiceNotifyInstances:
-        return "NEService::FuncIdRange::SystemServiceNotifyInstances";
-    case NEService::FuncIdRange::SystemServiceRequestRegister:
-        return "NEService::FuncIdRange::SystemServiceRequestRegister";
-    case NEService::FuncIdRange::SystemServiceNotifyRegister:
-        return "NEService::FuncIdRange::SystemServiceNotifyRegister";
-    case NEService::FuncIdRange::ServiceLogRegisterScopes:
-        return "NEService::FuncIdRange::ServiceLogRegisterScopes";
-    case NEService::FuncIdRange::ServiceLogUpdateScopes:
-        return "NEService::FuncIdRange::ServiceLogUpdateScopes";
-    case NEService::FuncIdRange::ServiceLogQueryScopes:
-        return "NEService::FuncIdRange::ServiceLogQueryScopes";
-    case NEService::FuncIdRange::ServiceLogScopesUpdated:
-        return "NEService::FuncIdRange::ServiceLogScopesUpdated";
-    case NEService::FuncIdRange::ServiceSaveLogConfiguration:
-        return "NEService::FuncIdRange::ServiceSaveLogConfiguration";
-    case NEService::FuncIdRange::ServiceLogConfigurationSaved:
-        return "NEService::FuncIdRange::ServiceLogConfigurationSaved";
-    case NEService::FuncIdRange::ServiceLogMessage:
-        return "NEService::FuncIdRange::ServiceLogMessage";
-    case NEService::FuncIdRange::RequestFirstId:
-        return "NEService::FuncIdRange::RequestFirstId";
-    case NEService::FuncIdRange::ResponseFirstId:
-        return "NEService::FuncIdRange::ResponseFirstId";
-    case NEService::FuncIdRange::AttributeFirstId:
-        return "NEService::FuncIdRange::AttributeFirstId";
-    case NEService::FuncIdRange::RequestLastId:
-        return "NEService::FuncIdRange::RequestLastId";
-    case NEService::FuncIdRange::ResponseLastId:
-        return "NEService::FuncIdRange::ResponseLastId";
-    case NEService::FuncIdRange::AttributeLastId:
-        return "NEService::FuncIdRange::AttributeLastId";
-    case NEService::FuncIdRange::ServiceLastId:
-        return "NEService::FuncIdRange::ServiceLastId";
+    case areg::FuncIdRange::EmptyFunctionId:
+        return "areg::FuncIdRange::EmptyFunctionId";
+    case areg::FuncIdRange::ComponentCleanup:
+        return "areg::FuncIdRange::ComponentCleanup";
+    case areg::FuncIdRange::RequestRegisterService:
+        return "areg::FuncIdRange::RequestRegisterService";
+    case areg::FuncIdRange::RequestServiceProviderVersion:
+        return "areg::FuncIdRange::RequestServiceProviderVersion";
+    case areg::FuncIdRange::ResponseServiceProviderVersion:
+        return "areg::FuncIdRange::ResponseServiceProviderVersion";
+    case areg::FuncIdRange::RequestServiceProviderConnection:
+        return "areg::FuncIdRange::RequestServiceProviderConnection";
+    case areg::FuncIdRange::ResponseServiceProviderConnection:
+        return "areg::FuncIdRange::ResponseServiceProviderConnection";
+    case areg::FuncIdRange::SystemServiceConnect:
+        return "areg::FuncIdRange::SystemServiceConnect";
+    case areg::FuncIdRange::SystemServiceDisconnect:
+        return "areg::FuncIdRange::SystemServiceDisconnect";
+    case areg::FuncIdRange::SystemServiceNotifyConnection:
+        return "areg::FuncIdRange::SystemServiceNotifyConnection";
+    case areg::FuncIdRange::SystemServiceQueryInstances:
+        return "areg::FuncIdRange::SystemServiceQueryInstances";
+    case areg::FuncIdRange::SystemServiceNotifyInstances:
+        return "areg::FuncIdRange::SystemServiceNotifyInstances";
+    case areg::FuncIdRange::SystemServiceRequestRegister:
+        return "areg::FuncIdRange::SystemServiceRequestRegister";
+    case areg::FuncIdRange::SystemServiceNotifyRegister:
+        return "areg::FuncIdRange::SystemServiceNotifyRegister";
+    case areg::FuncIdRange::ServiceLogRegisterScopes:
+        return "areg::FuncIdRange::ServiceLogRegisterScopes";
+    case areg::FuncIdRange::ServiceLogUpdateScopes:
+        return "areg::FuncIdRange::ServiceLogUpdateScopes";
+    case areg::FuncIdRange::ServiceLogQueryScopes:
+        return "areg::FuncIdRange::ServiceLogQueryScopes";
+    case areg::FuncIdRange::ServiceLogScopesUpdated:
+        return "areg::FuncIdRange::ServiceLogScopesUpdated";
+    case areg::FuncIdRange::ServiceSaveLogConfiguration:
+        return "areg::FuncIdRange::ServiceSaveLogConfiguration";
+    case areg::FuncIdRange::ServiceLogConfigurationSaved:
+        return "areg::FuncIdRange::ServiceLogConfigurationSaved";
+    case areg::FuncIdRange::ServiceLogMessage:
+        return "areg::FuncIdRange::ServiceLogMessage";
+    case areg::FuncIdRange::RequestFirstId:
+        return "areg::FuncIdRange::RequestFirstId";
+    case areg::FuncIdRange::ResponseFirstId:
+        return "areg::FuncIdRange::ResponseFirstId";
+    case areg::FuncIdRange::AttributeFirstId:
+        return "areg::FuncIdRange::AttributeFirstId";
+    case areg::FuncIdRange::RequestLastId:
+        return "areg::FuncIdRange::RequestLastId";
+    case areg::FuncIdRange::ResponseLastId:
+        return "areg::FuncIdRange::ResponseLastId";
+    case areg::FuncIdRange::AttributeLastId:
+        return "areg::FuncIdRange::AttributeLastId";
+    case areg::FuncIdRange::ServiceLastId:
+        return "areg::FuncIdRange::ServiceLastId";
 
     default:
         {
-            if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(NEService::FuncIdRange::RequestFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(NEService::FuncIdRange::RequestLastId)) )
+            if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::RequestFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::RequestLastId)) )
                 return "Request ID range";
-            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(NEService::FuncIdRange::ResponseFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(NEService::FuncIdRange::ResponseLastId)) )
+            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::ResponseFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::ResponseLastId)) )
                 return "Response ID range";
-            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(NEService::FuncIdRange::AttributeFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(NEService::FuncIdRange::AttributeLastId)) )
+            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::AttributeFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::AttributeLastId)) )
                 return "Attribute ID range";
-            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(NEService::FuncIdRange::RequestRegisterService)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(NEService::FuncIdRange::ServiceLastId)) )
+            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::ServiceLastId)) )
                 return "Service registration ID";
             else
                 return "ERR: Unexpected ID";

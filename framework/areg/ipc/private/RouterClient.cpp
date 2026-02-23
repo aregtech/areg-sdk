@@ -45,16 +45,16 @@ DEF_LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 //////////////////////////////////////////////////////////////////////////
 
 RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer& registerConsumer)
-    : ServiceClientConnectionBase   ( NEService::COOKIE_ROUTER
-                                    , NERemoteService::RemoteServiceKind::Router
-                                    , static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)
-                                    , NEService::MessageSource::SourceClient
+    : ServiceClientConnectionBase   ( areg::COOKIE_ROUTER
+                                    , areg::RemoteServiceKind::Router
+                                    , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
+                                    , areg::MessageSource::SourceClient
                                     , connectionConsumer
                                     , static_cast<RemoteMessageHandler &>(self())
                                     , static_cast<DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
     , RegistrationProvider     ( )
-    , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD, NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM)
+    , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , RemoteEventConsumer         ( )
 
     , mRegisterConsumer (registerConsumer)
@@ -66,13 +66,13 @@ bool RouterClient::connectServiceHost()
     bool result{ true };
     if (isRunning() == false)
     {
-        if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
+        if (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE))
         {
             result = ServiceClientConnectionBase::connectServiceHost();
         }
         else
         {
-            shutdownThread(NECommon::WAIT_INFINITE);
+            shutdownThread(areg::WAIT_INFINITE);
         }
     }
     else if (mClientConnection.isValid() == false)
@@ -92,8 +92,8 @@ void RouterClient::disconnectServiceHost()
     if (isRunning())
     {
         ServiceClientConnectionBase::disconnectServiceHost();
-        completionWait(NECommon::WAIT_INFINITE);
-        shutdownThread(NECommon::DO_NOT_WAIT);
+        completionWait(areg::WAIT_INFINITE);
+        shutdownThread(areg::DO_NOT_WAIT);
     }
 }
 
@@ -120,13 +120,13 @@ bool RouterClient::registerServiceProvider( const StubAddress & stubService )
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage(NERemoteService::createRouterRegisterService(stubService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio );
+        result = sendMessage(areg::createRouterRegisterService(stubService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), Event::EventPriority::HighPrio );
     }
 
     return result;
 }
 
-void RouterClient::unregisterServiceProvider(const StubAddress & stubService, const NEService::DisconnectReason reason )
+void RouterClient::unregisterServiceProvider(const StubAddress & stubService, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceProvider);
 
@@ -137,7 +137,7 @@ void RouterClient::unregisterServiceProvider(const StubAddress & stubService, co
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        sendMessage(NERemoteService::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
+        sendMessage(areg::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie(), areg::COOKIE_ROUTER) );
     }
 }
 
@@ -152,13 +152,13 @@ bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage(NERemoteService::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio);
+        result = sendMessage(areg::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), Event::EventPriority::HighPrio);
     }
 
     return result;
 }
 
-void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, const NEService::DisconnectReason reason )
+void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 
@@ -169,7 +169,7 @@ void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, 
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        sendMessage(NERemoteService::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
+        sendMessage(areg::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie(), areg::COOKIE_ROUTER) );
     }
 }
 
@@ -180,7 +180,7 @@ void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & w
     if (Application::isServicingReady())
     {
         uint32_t msgId{ msgFailed.getMessageId() };
-        if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
+        if ( areg::isExecutableId(msgId) || areg::isConnectNotifyId(msgId) )
         {
             LOG_WARN("Failed to send message [ %u ] to target [ %llu ], source is [ %llu ], the target socket [ %u ] is [ %s : %s ]"
                        , msgId
@@ -249,7 +249,7 @@ void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
     if (Application::isServicingReady())
     {
         uint32_t msgId{ msgUnprocessed.getMessageId() };
-        if ( NEService::isExecutableId(msgId) )
+        if ( areg::isExecutableId(msgId) )
         {
             LOG_DBG("The message [ %u ] for target [ %llu ] and from source [ %llu ] is unprocessed, replying with failed message"
                       , msgId
@@ -283,74 +283,74 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
     LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
     if ( msgReceived.isValid() && whichSource.isValid() )
     {
-        NEService::FuncIdRange msgId{ static_cast<NEService::FuncIdRange>(msgReceived.getMessageId()) };
-        NEMemory::MessageResult result{ static_cast<NEMemory::MessageResult>(msgReceived.getResult()) };
-        LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, NEMemory::getString(result));
+        areg::FuncIdRange msgId{ static_cast<areg::FuncIdRange>(msgReceived.getMessageId()) };
+        areg::MessageResult result{ static_cast<areg::MessageResult>(msgReceived.getResult()) };
+        LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, areg::getString(result));
 
         switch ( msgId )
         {
-        case NEService::FuncIdRange::SystemServiceNotifyConnection:
+        case areg::FuncIdRange::SystemServiceNotifyConnection:
             serviceConnectionEvent(msgReceived);
             break;
 
-        case NEService::FuncIdRange::SystemServiceNotifyRegister:
+        case areg::FuncIdRange::SystemServiceNotifyRegister:
             {
                 ASSERT( mClientConnection.getCookie() == msgReceived.getTarget() );
-                NEService::RegistrationAction reqType;
+                areg::RegistrationAction reqType;
                 msgReceived >> reqType;
-                LOG_DBG("Remote routing service registration notification of type [ %s ]", NEService::getString(reqType));
+                LOG_DBG("Remote routing service registration notification of type [ %s ]", areg::getString(reqType));
 
                 switch ( reqType )
                 {
-                case NEService::RegistrationAction::RegisterClient:
+                case areg::RegistrationAction::RegisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
-                        NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
+                        areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
-                        if ( result == NEMemory::MessageResult::Succeed )
+                        if ( result == areg::MessageResult::Succeed )
                         {
                             mRegisterConsumer.registeredRemoteServiceConsumer(proxy);
                         }
                         else
                         {
-                            mRegisterConsumer.unregisteredRemoteServiceConsumer(proxy, reason, NEService::COOKIE_ANY);
+                            mRegisterConsumer.unregisteredRemoteServiceConsumer(proxy, reason, areg::COOKIE_ANY);
                         }
                     }
                     break;
 
-                case NEService::RegistrationAction::RegisterStub:
+                case areg::RegistrationAction::RegisterStub:
                     {
                         StubAddress stub(msgReceived);
                         stub.setSource( mChannel.getSource() );
-                        if ( result == NEMemory::MessageResult::Succeed )
+                        if ( result == areg::MessageResult::Succeed )
                         {
                             mRegisterConsumer.registeredRemoteServiceProvider( stub );
                         }
                         else
                         {
-                            mRegisterConsumer.unregisteredRemoteServiceProvider( stub, NEService::DisconnectReason::UndefinedReason, NEService::COOKIE_ANY );
+                            mRegisterConsumer.unregisteredRemoteServiceProvider( stub, areg::DisconnectReason::UndefinedReason, areg::COOKIE_ANY );
                         }
                     }
                     break;
 
-                case NEService::RegistrationAction::UnregisterClient:
+                case areg::RegistrationAction::UnregisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
-                        NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
+                        areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
-                        mRegisterConsumer.unregisteredRemoteServiceConsumer(proxy, reason, NEService::COOKIE_ANY);
+                        mRegisterConsumer.unregisteredRemoteServiceConsumer(proxy, reason, areg::COOKIE_ANY);
                     }
                     break;
 
-                case NEService::RegistrationAction::UnregisterStub:
+                case areg::RegistrationAction::UnregisterStub:
                     {
                         StubAddress stub(msgReceived);
-                        NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
+                        areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
                         msgReceived >> reason;
                         stub.setSource( mChannel.getSource() );
-                        mRegisterConsumer.unregisteredRemoteServiceProvider(stub, reason, NEService::COOKIE_ANY);
+                        mRegisterConsumer.unregisteredRemoteServiceProvider(stub, reason, areg::COOKIE_ANY);
                     }
                     break;
 
@@ -361,37 +361,37 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
             }
             break;
 
-        case NEService::FuncIdRange::ServiceLastId:                    // fall through
-        case NEService::FuncIdRange::SystemServiceQueryInstances:      // fall through
-        case NEService::FuncIdRange::SystemServiceRequestRegister:     // fall through
-        case NEService::FuncIdRange::SystemServiceDisconnect:          // fall through
-        case NEService::FuncIdRange::SystemServiceConnect:             // fall through
-        case NEService::FuncIdRange::ResponseServiceProviderConnection:// fall through
-        case NEService::FuncIdRange::RequestServiceProviderConnection: // fall through
-        case NEService::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-        case NEService::FuncIdRange::RequestServiceProviderVersion:    // fall through
-        case NEService::FuncIdRange::RequestRegisterService:           // fall through
-        case NEService::FuncIdRange::ComponentCleanup:                 // fall through
-        case NEService::FuncIdRange::SystemServiceNotifyInstances:     // fall through
-        case NEService::FuncIdRange::ServiceLogRegisterScopes:         // fall through
-        case NEService::FuncIdRange::ServiceLogUpdateScopes:           // fall through
-        case NEService::FuncIdRange::ServiceLogQueryScopes:            // fall through
-        case NEService::FuncIdRange::ServiceLogScopesUpdated:          // fall through
-        case NEService::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
-        case NEService::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-        case NEService::FuncIdRange::ServiceLogMessage:                // fall through
+        case areg::FuncIdRange::ServiceLastId:                    // fall through
+        case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
+        case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
+        case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
+        case areg::FuncIdRange::SystemServiceConnect:             // fall through
+        case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
+        case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
+        case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
+        case areg::FuncIdRange::RequestRegisterService:           // fall through
+        case areg::FuncIdRange::ComponentCleanup:                 // fall through
+        case areg::FuncIdRange::SystemServiceNotifyInstances:     // fall through
+        case areg::FuncIdRange::ServiceLogRegisterScopes:         // fall through
+        case areg::FuncIdRange::ServiceLogUpdateScopes:           // fall through
+        case areg::FuncIdRange::ServiceLogQueryScopes:            // fall through
+        case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
+        case areg::FuncIdRange::ServiceSaveLogConfiguration:      // fall through
+        case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case areg::FuncIdRange::ServiceLogMessage:                // fall through
             break;
 
-        case NEService::FuncIdRange::AttributeLastId:          // fall through
-        case NEService::FuncIdRange::AttributeFirstId:         // fall through
-        case NEService::FuncIdRange::ResponseLastId:           // fall through
-        case NEService::FuncIdRange::ResponseFirstId:          // fall through
-        case NEService::FuncIdRange::RequestLastId:            // fall through
-        case NEService::FuncIdRange::RequestFirstId:           // fall through
-        case NEService::FuncIdRange::EmptyFunctionId:          // fall through
+        case areg::FuncIdRange::AttributeLastId:          // fall through
+        case areg::FuncIdRange::AttributeFirstId:         // fall through
+        case areg::FuncIdRange::ResponseLastId:           // fall through
+        case areg::FuncIdRange::ResponseFirstId:          // fall through
+        case areg::FuncIdRange::RequestLastId:            // fall through
+        case areg::FuncIdRange::RequestFirstId:           // fall through
+        case areg::FuncIdRange::EmptyFunctionId:          // fall through
         default:
             {
-                if ( NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
+                if ( areg::isExecutableId(static_cast<uint32_t>(msgId)) )
                 {
                     StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
                     if ( eventRemote != nullptr )

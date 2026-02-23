@@ -42,7 +42,7 @@ public:
      * \param   stubTarget      The target Stub address
      * \param   connectStatus   The connection status of Stub
      **/
-    StubConnectEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus );
+    StubConnectEvent( const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Constructor. Creates event to trigger request to set Proxy connection.
@@ -50,7 +50,7 @@ public:
      * \param   stubTarget      The target Stub address, which receives request
      * \param   connectStatus   The connection status to notify.
      **/
-    StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus );
+    StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Constructor. Reads data from streaming object.
@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Returns current connection status of client Proxy.
      **/
-    inline NEService::ServiceConnectionState getConnectionStatus() const;
+    inline areg::ServiceConnectionState getConnectionStatus() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -99,7 +99,7 @@ private:
     /**
      * \brief   The connection status set in event.
      **/
-    NEService::ServiceConnectionState   mConnectionStatus;
+    areg::ServiceConnectionState   mConnectionStatus;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -113,7 +113,7 @@ private:
 // StubConnectEvent class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::ServiceConnectionState StubConnectEvent::getConnectionStatus() const
+inline areg::ServiceConnectionState StubConnectEvent::getConnectionStatus() const
 {
     return mConnectionStatus;
 }

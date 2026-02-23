@@ -32,11 +32,11 @@ inline SharedBuffer& SharedBuffer::self()
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
-SharedBuffer::SharedBuffer( uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/ )
+SharedBuffer::SharedBuffer( uint32_t blockSize /*= areg::BLOCK_SIZE*/ )
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
-    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
 }
@@ -45,17 +45,17 @@ SharedBuffer::SharedBuffer( uint32_t reserveSize, uint32_t blockSize)
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
-    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     reserve(reserveSize, false);
 }
 
-SharedBuffer::SharedBuffer( const uint8_t* buffer, uint32_t size, uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/ )
+SharedBuffer::SharedBuffer( const uint8_t* buffer, uint32_t size, uint32_t blockSize /*= areg::BLOCK_SIZE*/ )
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
-    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     reserve(size, false);
@@ -66,7 +66,7 @@ SharedBuffer::SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t
     : BufferStreamBase  (static_cast<Cursor&>(self()), static_cast<Cursor&>(self()))
     , Cursor  ( )
 
-    , mBlockSize        (NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE))
+    , mBlockSize        (areg::alignSize(blockSize, areg::BLOCK_SIZE))
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
     reserveSize = std::max(reserveSize, size);
@@ -74,28 +74,28 @@ SharedBuffer::SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t
     writeData(buffer, size);
 }
 
-SharedBuffer::SharedBuffer(const char * textString, uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/)
+SharedBuffer::SharedBuffer(const char * textString, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
-    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
-    uint32_t size   = (static_cast<uint32_t>(NEString::getStringLength<char>(textString)) + 1u) * sizeof(char);
+    uint32_t size   = (static_cast<uint32_t>(areg::getStringLength<char>(textString)) + 1u) * sizeof(char);
     size = reserve(size, false);
-    writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : NEString::EmptyStringA.data( )), size);
+    writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : areg::EmptyStringA.data( )), size);
 }
 
-SharedBuffer::SharedBuffer(const wchar_t * textString, uint32_t blockSize /*= NEMemory::BLOCK_SIZE*/)
+SharedBuffer::SharedBuffer(const wchar_t * textString, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
     : BufferStreamBase  ( static_cast<Cursor &>(self()), static_cast<Cursor &>(self()) )
     , Cursor  ( )
 
-    , mBlockSize        ( NEMath::alignSize(blockSize, NEMemory::BLOCK_SIZE) )
+    , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
     , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
 {
-    uint32_t size   = (static_cast<uint32_t>(NEString::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
+    uint32_t size   = (static_cast<uint32_t>(areg::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
     size = reserve(size, false);
-    writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : NEString::EmptyStringW.data( )), size);
+    writeData( reinterpret_cast<const uint8_t *>(textString != nullptr ? textString : areg::EmptyStringW.data( )), size);
 }
 
 SharedBuffer::SharedBuffer( const SharedBuffer & src )
@@ -204,7 +204,7 @@ SharedBuffer SharedBuffer::clone() const
     {
         uint8_t * dst = result.getBuffer();
         const uint8_t * src = getBuffer();
-        NEMemory::memCopy(dst, reserved, src, reserved);
+        areg::memCopy(dst, reserved, src, reserved);
         result.setSizeUsed(reserved);
     }
 
@@ -223,12 +223,12 @@ bool SharedBuffer::canShare() const
 
 uint32_t SharedBuffer::getDataOffset() const
 {
-    return sizeof(NEMemory::BufferHeader);
+    return sizeof(areg::BufferHeader);
 }
 
 uint32_t SharedBuffer::getHeaderSize() const
 {
-    return sizeof(NEMemory::RawBuffer);
+    return sizeof(areg::RawBuffer);
 }
 
 uint32_t SharedBuffer::getAlignedSize() const
@@ -244,7 +244,7 @@ uint32_t SharedBuffer::getDefaultBlockSize()
     {
         result = Application::getConfigManager().getDefaultBufferBlockSize();
         _result.store(result);
-        result = result == 0 ? NEMemory::BLOCK_SIZE : result;
+        result = result == 0 ? areg::BLOCK_SIZE : result;
     }
 
     return result;

@@ -28,7 +28,7 @@
 #include <time.h>
 #include <Windows.h>
 
-namespace NEUtilities
+namespace areg
 {
     uint64_t _osGetTickCount()
     {
@@ -40,23 +40,23 @@ namespace NEUtilities
         struct timespec ts { };
 #ifndef _MINGW
         return (timespec_get(&ts, TIME_UTC) != 0
-                ? (static_cast<TIME64>(ts.tv_sec) * NEUtilities::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / NEUtilities::MICROSEC_TO_NS)
+                ? (static_cast<TIME64>(ts.tv_sec) * areg::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / areg::MICROSEC_TO_NS)
                 : 0uLL);
 #else   // _MINGW
-        return (NECommon::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
-                    ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
+        return (areg::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+                    ? static_cast<TIME64>((ts.tv_sec * areg::SEC_TO_MICROSECS) + (ts.tv_nsec / areg::MICROSEC_TO_NS))
                     : 0LL);
 #endif  // _MINGW
     }
 
-    void _osSystemTimeNow( NEUtilities::CalendarTime & sysTime, bool localTime )
+    void _osSystemTimeNow( areg::CalendarTime & sysTime, bool localTime )
     {
         struct timespec ts { };
         struct tm now { };
 #ifndef _MINGW
         if (timespec_get(&ts, TIME_UTC) != 0)
 #else   // _MINGW
-        if (NECommon::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
+        if (areg::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
 #endif  // _MINGW
         {
             if (localTime)
@@ -74,7 +74,7 @@ namespace NEUtilities
             ASSERT(milli < 1000);
             ASSERT(micro < 1000);
 
-            NEUtilities::convToSystemTime(now, sysTime);
+            areg::convToSystemTime(now, sysTime);
             sysTime.stMillisecs = milli;
             sysTime.stMicrosecs = micro;
         }
@@ -82,7 +82,7 @@ namespace NEUtilities
 
     void _osMakeTmLocal(struct tm& utcTime)
     {
-        NEMemory::memSet(&utcTime, sizeof(struct tm), 0);
+        areg::memSet(&utcTime, sizeof(struct tm), 0);
         time_t _timer = mktime(&utcTime);
         localtime_s(&utcTime, &_timer);
     }
@@ -93,12 +93,12 @@ namespace NEUtilities
 
         time_t secs;
         uint16_t milli, micro;
-        NEUtilities::convMicrosecs(utcTime, secs, milli, micro);
+        areg::convMicrosecs(utcTime, secs, milli, micro);
 
         struct tm tmLocal { };
-        if (NECommon::RETURNED_OK == localtime_s(&tmLocal, &secs))
+        if (areg::RETURNED_OK == localtime_s(&tmLocal, &secs))
         {
-            NEUtilities::convToSystemTime(tmLocal, localTime);
+            areg::convToSystemTime(tmLocal, localTime);
             localTime.stMillisecs = milli;
             localTime.stMicrosecs = micro;
 
@@ -110,18 +110,18 @@ namespace NEUtilities
 
     bool _osConvToLocalTm(const TIME64& utcTime, struct tm & localTm)
     {
-        time_t secs = static_cast<time_t>(utcTime / NEUtilities::SEC_TO_MICROSECS);
-        return (NECommon::RETURNED_OK == localtime_s(&localTm, &secs));
+        time_t secs = static_cast<time_t>(utcTime / areg::SEC_TO_MICROSECS);
+        return (areg::RETURNED_OK == localtime_s(&localTm, &secs));
     }
 
-    void _osConvToSystemTime(const TIME64& timeValue, NEUtilities::CalendarTime& sysTime)
+    void _osConvToSystemTime(const TIME64& timeValue, areg::CalendarTime& sysTime)
     {
         time_t secs;
         uint16_t milli, micro;
-        NEUtilities::convMicrosecs(timeValue, secs, milli, micro);
+        areg::convMicrosecs(timeValue, secs, milli, micro);
 
         struct tm gmt {};
-        if (NECommon::RETURNED_OK == ::gmtime_s(&gmt, &secs))
+        if (areg::RETURNED_OK == ::gmtime_s(&gmt, &secs))
         {
             convToSystemTime(gmt, sysTime);
             sysTime.stMillisecs = milli;
@@ -131,7 +131,7 @@ namespace NEUtilities
     
     void _osConvToTm(const TIME64& timeValue, tm& time)
     {
-        time_t secs{ static_cast<time_t>(timeValue / NEUtilities::SEC_TO_MICROSECS) };
+        time_t secs{ static_cast<time_t>(timeValue / areg::SEC_TO_MICROSECS) };
         ::gmtime_s(&time, &secs);
     }
 

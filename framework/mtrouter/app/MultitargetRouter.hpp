@@ -51,15 +51,15 @@ private:
      **/
     enum class RouterOption : int32_t
     {
-          CMD_RouterUndefined   = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Undefined)  //!< Undefined command.
-        , CMD_RouterPrintHelp   = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Help)       //!< Print help.
-        , CMD_RouterLoad        = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
-        , CMD_RouterVerbose     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features
-        , CMD_RouterUninstall   = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS
-        , CMD_RouterInstall     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS
-        , CMD_RouterService     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Service)    //!< Start router as a service. Valid only as a command line option in Windows OS
-        , CMD_RouterConsole     = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option
-        , CMD_RouterPause       = static_cast<int32_t>(NESystemService::ServiceOption::CMD_Custom)     //!< Pause router.
+          CMD_RouterUndefined   = static_cast<int32_t>(aregext::ServiceOption::CMD_Undefined)  //!< Undefined command.
+        , CMD_RouterPrintHelp   = static_cast<int32_t>(aregext::ServiceOption::CMD_Help)       //!< Print help.
+        , CMD_RouterLoad        = static_cast<int32_t>(aregext::ServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_RouterVerbose     = static_cast<int32_t>(aregext::ServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features
+        , CMD_RouterUninstall   = static_cast<int32_t>(aregext::ServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS
+        , CMD_RouterInstall     = static_cast<int32_t>(aregext::ServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS
+        , CMD_RouterService     = static_cast<int32_t>(aregext::ServiceOption::CMD_Service)    //!< Start router as a service. Valid only as a command line option in Windows OS
+        , CMD_RouterConsole     = static_cast<int32_t>(aregext::ServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option
+        , CMD_RouterPause       = static_cast<int32_t>(aregext::ServiceOption::CMD_Custom)     //!< Pause router.
         , CMD_RouterRestart                                                                             //!< Start / Restart router.
         , CMD_RouterInstances                                                                           //!< Display list of connected instances.
         , CMD_RouterSilent                                                                              //!< Silent mode, no data rate is displayed.
@@ -196,13 +196,13 @@ protected:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::RemoteServiceKind getServiceType() const override;
+    areg::RemoteServiceKind getServiceType() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::ConnectionType getConnectionType() const override;
+    areg::ConnectionType getConnectionType() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -212,7 +212,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & getConnetedInstances() const;
+    inline const areg::MapInstances & getConnetedInstances() const;
 
     /**
      * \brief   Returns instance of message router service.
@@ -239,7 +239,7 @@ private:
     /**
      * \brief   Outputs on console the information about connected instances.
      **/
-    static void _outputInstances( const NEService::MapInstances & instances );
+    static void _outputInstances( const areg::MapInstances & instances );
 
     /**
      * \brief   Sets verbose or silent mode to output data rate.
@@ -274,7 +274,7 @@ private:
 // MultitargetRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::MapInstances & MultitargetRouter::getConnetedInstances() const
+inline const areg::MapInstances & MultitargetRouter::getConnetedInstances() const
 {
     return mServiceServer.getInstances( );
 }

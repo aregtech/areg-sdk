@@ -96,7 +96,7 @@ public:
      **/
     StubAddress( const String & serviceName
                , const Version & serviceVersion
-               , NEService::ServiceType serviceType
+               , areg::ServiceType serviceType
                , const String & roleName
                , const String & threadName = String::getEmptyString() );
 
@@ -114,7 +114,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const NEService::InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
+    StubAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.
@@ -489,32 +489,32 @@ inline StubAddress::operator uint32_t () const
 
 inline bool StubAddress::isLocalAddress() const
 {
-    return mChannel.getCookie() == NEService::COOKIE_LOCAL;
+    return mChannel.getCookie() == areg::COOKIE_LOCAL;
 }
 
 inline bool StubAddress::isRemoteAddress() const
 {
-    return (mChannel.getCookie() >= NEService::COOKIE_ANY);
+    return (mChannel.getCookie() >= areg::COOKIE_ANY);
 }
 
 inline bool StubAddress::isSourceLocal() const
 {
-    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getSource( ) != 0);
+    return (mChannel.getCookie( ) == areg::COOKIE_LOCAL) && (mChannel.getSource( ) != 0);
 }
 
 inline bool StubAddress::isSourcePublic() const
 {
-    return (mChannel.getCookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
+    return (mChannel.getCookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
 }
 
 inline bool StubAddress::isTargetLocal() const
 {
-    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+    return (mChannel.getCookie( ) == areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
 inline bool StubAddress::isTargetPublic() const
 {
-    return (mChannel.getCookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+    return (mChannel.getCookie( ) >= areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
 inline const String & StubAddress::getThread() const

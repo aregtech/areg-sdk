@@ -48,10 +48,10 @@ public:
      * \brief   FileBuffer::BLOCK_SIZE
      *          Default block size in bytes. Used to increase buffer size
      *          during writing operation. The buffer allocation is aligned
-     *          to the size of NEMemory::BLOCK_SIZE. In case of read-only mode
+     *          to the size of areg::BLOCK_SIZE. In case of read-only mode
      *          no buffer will be allocated and passed shared buffer will be used.
      **/
-    static constexpr uint32_t   BLOCK_SIZE  { 4 * NEMemory::BLOCK_SIZE };
+    static constexpr uint32_t   BLOCK_SIZE  { 4 * areg::BLOCK_SIZE };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -61,7 +61,7 @@ public:
     /**
      * \brief	Default constructor with default parameters
      * \param	mode	    The file open mode. By default file object is opened with write permission and in binary mode
-     * \param	blockSize	The block size to increase. By default the block size is 4 x NEMemory::BLOCK_SIZE (default 64 bytes)
+     * \param	blockSize	The block size to increase. By default the block size is 4 x areg::BLOCK_SIZE (default 64 bytes)
      **/
     explicit FileBuffer( uint32_t mode      = (static_cast<uint32_t>(FileBase::OpenMode::Write) | static_cast<uint32_t>(FileBase::OpenMode::Binary))
                        , const char*  name      = nullptr

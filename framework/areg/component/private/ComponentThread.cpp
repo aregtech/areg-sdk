@@ -61,9 +61,9 @@ inline ComponentThread* ComponentThread::_getCurrentComponentThread()
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ComponentThread::ComponentThread( const String & threadName
-                                , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
-                                , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */
-                                , uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */ )
+                                , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
+                                , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */
+                                , uint32_t maxQueue         /* = areg::IGNORE_VALUE         */ )
     : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 
     , mCurrentComponent ( nullptr )
@@ -96,12 +96,12 @@ bool ComponentThread::runDispatcher()
 int32_t ComponentThread::createComponents()
 {
     int32_t result = 0;
-    const NERegistry::ComponentList& comList = ComponentLoader::findComponentList(getName());
+    const areg::ComponentList& comList = ComponentLoader::findComponentList(getName());
     if (comList.isValid())
     {
         for (uint32_t i = 0; i < comList.mListComponents.getSize(); ++ i)
         {
-            const NERegistry::ComponentEntry& entry = comList.mListComponents[i];
+            const areg::ComponentEntry& entry = comList.mListComponents[i];
             if (entry.isValid() && entry.mFuncCreate != nullptr)
             {
                 Component *comObj = Component::loadComponent(entry, self());
@@ -125,7 +125,7 @@ void ComponentThread::destroyComponents()
         if (mListComponent.removeLast(comObj))
         {
             ASSERT(comObj != nullptr);
-            const NERegistry::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
+            const areg::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
             if (entry.isValid() && entry.mFuncDelete != nullptr)
             {
                 Component::unloadComponent(*comObj, entry);
@@ -197,7 +197,7 @@ void ComponentThread::terminateSelf()
         proxy->terminateSelf();
     }
 
-    DispatcherThread::shutdownThread(NECommon::TIMEOUT_10_MS);
+    DispatcherThread::shutdownThread(areg::TIMEOUT_10_MS);
 
     delete this;
 }
@@ -225,7 +225,7 @@ inline void ComponentThread::_shutdownComponents()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition( );
     while ( mListComponent.isValidPosition( pos ) )
@@ -238,7 +238,7 @@ Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs
     return DispatcherThread::shutdownThread( waitForStopMs );
 }
 
-bool ComponentThread::completionWait( uint32_t waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
+bool ComponentThread::completionWait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition();
     while ( mListComponent.isValidPosition(pos) )

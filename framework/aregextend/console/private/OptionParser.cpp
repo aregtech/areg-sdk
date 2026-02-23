@@ -27,7 +27,7 @@ namespace
             for ( int i = 1; i < argc; ++i )
             {
                 const CharType * opt = argv[i];
-                if (NEString::isEmpty<CharType>(opt))
+                if (areg::isEmpty<CharType>(opt))
                     break;
 
                 optList.push_back(String(opt));
@@ -43,7 +43,7 @@ namespace
             for (int i = 1; i < argc; ++i)
             {
                 const CharType* opt = argv[i];
-                if (NEString::isEmpty<CharType>(opt))
+                if (areg::isEmpty<CharType>(opt))
                     break;
 
                 optList.push_back(String(opt));
@@ -90,9 +90,9 @@ namespace
     template<typename CharType>
     inline void _splitOptions( const CharType * optLine, OptionParser::StrList & optList )
     {
-        constexpr CharType eos{ static_cast<CharType>(NEString::EndOfString) };
+        constexpr CharType eos{ static_cast<CharType>(areg::EndOfString) };
 
-        if ( NEString::isEmpty<CharType>( optLine ) )
+        if ( areg::isEmpty<CharType>( optLine ) )
             return;
 
         const CharType * begin = optLine;
@@ -329,7 +329,7 @@ bool OptionParser::parseOptions( StrList & optList )
         mCmdLine += input;
         mCmdLine += DELIMITER_SPACE;
         InputOption opt;
-        ASSERT( opt.inRefSetup == NECommon::INVALID_INDEX );
+        ASSERT( opt.inRefSetup == areg::INVALID_INDEX );
 
         for (uint32_t j = 0; j < initSize; ++ j )
         {
@@ -346,12 +346,12 @@ bool OptionParser::parseOptions( StrList & optList )
             }
         }
 
-        if ( opt.inRefSetup == NECommon::INVALID_INDEX )
+        if ( opt.inRefSetup == areg::INVALID_INDEX )
         {
             if ( mInputOptions.isEmpty() == false )
             {
                 InputOption & last = mInputOptions.lastEntry();
-                ASSERT( last.inRefSetup != NECommon::INVALID_INDEX );
+                ASSERT( last.inRefSetup != areg::INVALID_INDEX );
                 _setInputValue( input, last, static_cast<uint32_t>(last.inRefSetup) );
                 result = OptionParser::hasInputError( static_cast<uint32_t>(last.inField) ) == false;
             }
@@ -391,7 +391,7 @@ bool OptionParser::parseOptions( StrList & optList )
 
 uint32_t OptionParser::findOption(int32_t optId) const
 {
-    uint32_t result{ NECommon::INVALID_POSITION };
+    uint32_t result{ areg::INVALID_POSITION };
     for (uint32_t i = 0; i < mInputOptions.getSize(); ++i)
     {
         if (mInputOptions.getAt(i).inCommand == optId)
@@ -423,7 +423,7 @@ OptionParser::InputOption OptionParser::_setupInput( bool isShort, String cmdLin
     opt.inCommand   = setup.optCmmand;
     opt.inRefSetup  = static_cast<int32_t>(refSetup);
 
-    cmdLine.substring( static_cast<NEString::CharPos>(isShort ? setup.optShort.length() : setup.optLong.length()) );
+    cmdLine.substring( static_cast<areg::CharPos>(isShort ? setup.optShort.length() : setup.optLong.length()) );
     cmdLine.trimAll( );
     if ( cmdLine.isEmpty( ) == false )
     {
@@ -464,9 +464,9 @@ void OptionParser::_setInputValue( String & newValue, InputOption & opt, uint32_
         else if ( OptionParser::isInteger( setup.optField ) )
         {
             const char * end = nullptr;
-            int32_t val = String::makeInt32( newValue.getString( ), NEString::Radix::Decimal, &end );
+            int32_t val = String::makeInt32( newValue.getString( ), areg::Radix::Decimal, &end );
             _setValue( val, opt, setup );
-            if ( NEString::isEmpty<char>( end ) == false )
+            if ( areg::isEmpty<char>( end ) == false )
             {
                 opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
             }
@@ -476,7 +476,7 @@ void OptionParser::_setInputValue( String & newValue, InputOption & opt, uint32_
             const char * end = nullptr;
             float val = String::makeFloat( newValue.getString( ), &end );
             _setValue( val, opt, setup );
-            if ( NEString::isEmpty<char>( end ) == false )
+            if ( areg::isEmpty<char>( end ) == false )
             {
                 opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
             }
@@ -531,7 +531,7 @@ inline void OptionParser::_setValue( const String & newValue, InputOption & opt,
         opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
         for ( const std::string_view & entry : range )
         {
-            if ( newValue.compare( entry, false) == NEMath::Ordering::Equal)
+            if ( newValue.compare( entry, false) == areg::Ordering::Equal)
             {
                 opt.inField &= ~static_cast<uint32_t>(OptionFlag::Error);
                 break;

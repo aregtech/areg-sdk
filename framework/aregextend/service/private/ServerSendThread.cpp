@@ -24,7 +24,7 @@
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
-    : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD, NECommon::DEFAULT_BLOCK_SIZE, NECommon::QUEUE_SIZE_MAXIMUM )
+    : DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
@@ -61,7 +61,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         SocketAccepted client{ mConnection.getClientByCookie(target) };
 
         LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
-                    , NEService::getString(static_cast<NEService::FuncIdRange>(msgSend.getMessageId()))
+                    , areg::getString(static_cast<areg::FuncIdRange>(msgSend.getMessageId()))
                     , static_cast<uint32_t>(msgSend.getMessageId())
                     , client.getAddress().getHostAddress().getString()
                     , client.getAddress().getHostPort()

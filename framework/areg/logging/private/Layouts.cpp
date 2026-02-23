@@ -28,7 +28,7 @@
 // LogLayout interface implementation
 //////////////////////////////////////////////////////////////////////////
 
-LogLayout::LogLayout(const NELogOptions::LayoutToken layout)
+LogLayout::LogLayout(const areg::LayoutToken layout)
     : mLayout   ( layout )
 {
 }
@@ -38,21 +38,21 @@ LogLayout::LogLayout(const NELogOptions::LayoutToken layout)
 //////////////////////////////////////////////////////////////////////////
 
 TickCountLayout::TickCountLayout()
-    : LogLayout     ( NELogOptions::LayoutToken::TickCount )
+    : LogLayout     ( areg::LayoutToken::TickCount )
 {
 }
 
 TickCountLayout::TickCountLayout( const TickCountLayout & /*src*/ )
-    : LogLayout     ( NELogOptions::LayoutToken::TickCount )
+    : LogLayout     ( areg::LayoutToken::TickCount )
 {
 }
 
 TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
-    : LogLayout     ( NELogOptions::LayoutToken::TickCount )
+    : LogLayout     ( areg::LayoutToken::TickCount )
 {
 }
 
-void TickCountLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
+void TickCountLayout::logMessage( const areg::LogEntry & /*msgLog*/, OutStream & stream ) const
 {
 #ifdef _BIT64
     constexpr char fmt[]{ "%llu" };
@@ -71,26 +71,26 @@ void TickCountLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStr
 
 
 DayTimeLayout::DayTimeLayout()
-    : LogLayout ( NELogOptions::LayoutToken::DayTime )
+    : LogLayout ( areg::LayoutToken::DayTime )
 {
 }
 
 DayTimeLayout::DayTimeLayout( const DayTimeLayout & /*src*/ )
-    : LogLayout ( NELogOptions::LayoutToken::DayTime )
+    : LogLayout ( areg::LayoutToken::DayTime )
 {
 }
 
 DayTimeLayout::DayTimeLayout( DayTimeLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::DayTime )
+    : LogLayout ( areg::LayoutToken::DayTime )
 {
 }
 
-void DayTimeLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void DayTimeLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
     if ( msgLog.logTimestamp != 0 )
     {
         String timestamp;
-        DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, NEUtilities::TIME_FORMAT_ISO8601_OUTPUT);
+        DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, areg::TIME_FORMAT_ISO8601_OUTPUT);
         stream.write( reinterpret_cast<const uint8_t *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
     }
 }
@@ -100,27 +100,27 @@ void DayTimeLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & 
 //////////////////////////////////////////////////////////////////////////
 
 ModuleIdLayout::ModuleIdLayout()
-    : LogLayout      ( NELogOptions::LayoutToken::ExecutableId )
+    : LogLayout      ( areg::LayoutToken::ExecutableId )
 {
 }
 
 ModuleIdLayout::ModuleIdLayout(const ModuleIdLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::ExecutableId )
+    : LogLayout ( areg::LayoutToken::ExecutableId )
 {
 }
 
 ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::ExecutableId )
+    : LogLayout ( areg::LayoutToken::ExecutableId )
 {
 }
 
-void ModuleIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ModuleIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
     static const ITEM_ID _moduleId{ Process::getInstance().getId() };
 #ifdef _BIT64
-    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), NEString::Radix::Hexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), areg::Radix::Hexadecimal) };
 #else   // _BIT32
-    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), NEString::Radix::Hexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), areg::Radix::Hexadecimal) };
 #endif  // _BIT64
 
     if (msgLog.logModuleId != 0)
@@ -148,23 +148,23 @@ void ModuleIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream &
 //////////////////////////////////////////////////////////////////////////
 
 MessageLayout::MessageLayout()
-    : LogLayout ( NELogOptions::LayoutToken::Message )
+    : LogLayout ( areg::LayoutToken::Message )
 {
 }
 
 MessageLayout::MessageLayout(const MessageLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::Message )
+    : LogLayout ( areg::LayoutToken::Message )
 {
 }
 
 MessageLayout::MessageLayout( MessageLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::Message )
+    : LogLayout ( areg::LayoutToken::Message )
 {
 }
 
-void MessageLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void MessageLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    uint32_t count{ static_cast<uint32_t>(NEString::getStringLength<char>(msgLog.logMessage)) };
+    uint32_t count{ static_cast<uint32_t>(areg::getStringLength<char>(msgLog.logMessage)) };
     stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), count);
 }
 
@@ -173,23 +173,23 @@ void MessageLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & 
 //////////////////////////////////////////////////////////////////////////
 
 EndOfLineLayout::EndOfLineLayout()
-    : LogLayout ( NELogOptions::LayoutToken::EndOfLine )
+    : LogLayout ( areg::LayoutToken::EndOfLine )
 {
 }
 
 EndOfLineLayout::EndOfLineLayout(const EndOfLineLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::EndOfLine )
+    : LogLayout ( areg::LayoutToken::EndOfLine )
 {
 }
 
 EndOfLineLayout::EndOfLineLayout( EndOfLineLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::EndOfLine )
+    : LogLayout ( areg::LayoutToken::EndOfLine )
 {
 }
 
-void EndOfLineLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
+void EndOfLineLayout::logMessage( const areg::LogEntry & /*msgLog*/, OutStream & stream ) const
 {
-    stream.write(reinterpret_cast<const uint8_t*>(&NEString::EndOfLine), 1);
+    stream.write(reinterpret_cast<const uint8_t*>(&areg::EndOfLine), 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -197,23 +197,23 @@ void EndOfLineLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStr
 //////////////////////////////////////////////////////////////////////////
 
 PriorityLayout::PriorityLayout()
-    : LogLayout ( NELogOptions::LayoutToken::Priority )
+    : LogLayout ( areg::LayoutToken::Priority )
 {
 }
 
 PriorityLayout::PriorityLayout(const PriorityLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::Priority )
+    : LogLayout ( areg::LayoutToken::Priority )
 {
 }
 
 PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::Priority )
+    : LogLayout ( areg::LayoutToken::Priority )
 {
 }
 
-void PriorityLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void PriorityLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    const String& prio{ NELogging::logPrioToString(msgLog.logMessagePrio) };
+    const String& prio{ areg::logPrioToString(msgLog.logMessagePrio) };
     stream.write(reinterpret_cast<const uint8_t *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
 }
 
@@ -222,21 +222,21 @@ void PriorityLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream &
 //////////////////////////////////////////////////////////////////////////
 
 ScopeIdLayout::ScopeIdLayout()
-    : LogLayout ( NELogOptions::LayoutToken::ScopeId )
+    : LogLayout ( areg::LayoutToken::ScopeId )
 {
 }
 
 ScopeIdLayout::ScopeIdLayout(const ScopeIdLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::ScopeId )
+    : LogLayout ( areg::LayoutToken::ScopeId )
 {
 }
 
 ScopeIdLayout::ScopeIdLayout( ScopeIdLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::ScopeId )
+    : LogLayout ( areg::LayoutToken::ScopeId )
 {
 }
 
-void ScopeIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ScopeIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
     if ( msgLog.logScopeId != 0 )
     {
@@ -251,21 +251,21 @@ void ScopeIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & 
 //////////////////////////////////////////////////////////////////////////
 
 ThreadIdLayout::ThreadIdLayout()
-    : LogLayout ( NELogOptions::LayoutToken::ThreadId )
+    : LogLayout ( areg::LayoutToken::ThreadId )
 {
 }
 
 ThreadIdLayout::ThreadIdLayout(const ThreadIdLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::ThreadId )
+    : LogLayout ( areg::LayoutToken::ThreadId )
 {
 }
 
 ThreadIdLayout::ThreadIdLayout( ThreadIdLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::ThreadId )
+    : LogLayout ( areg::LayoutToken::ThreadId )
 {
 }
 
-void ThreadIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ThreadIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
     if ( msgLog.logThreadId != 0 )
     {
@@ -286,35 +286,35 @@ void ThreadIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream &
 //////////////////////////////////////////////////////////////////////////
 
 ModuleNameLayout::ModuleNameLayout()
-    : LogLayout ( NELogOptions::LayoutToken::ExecutableName )
+    : LogLayout ( areg::LayoutToken::ExecutableName )
 {
 }
 
 ModuleNameLayout::ModuleNameLayout(const ModuleNameLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::ExecutableName )
+    : LogLayout ( areg::LayoutToken::ExecutableName )
 {
 }
 
 ModuleNameLayout::ModuleNameLayout( ModuleNameLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::ExecutableName )
+    : LogLayout ( areg::LayoutToken::ExecutableName )
 {
 }
 
-void ModuleNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ModuleNameLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    if (msgLog.logDataType == NELogging::LogDataType::Local)
+    if (msgLog.logDataType == areg::LogDataType::Local)
     {
         static const String& _module{ Process::getInstance().getAppName() };
         stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
     }
     else
     {
-        if (msgLog.logCookie == NEService::COOKIE_LOCAL)
+        if (msgLog.logCookie == areg::COOKIE_LOCAL)
         {
             static const String& _module{ Process::getInstance().getAppName() };
             stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
         }
-        else if ((msgLog.logCookie != NEService::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
+        else if ((msgLog.logCookie != areg::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
         {
             stream.write(reinterpret_cast<const uint8_t*>(msgLog.logModule), msgLog.logModuleLen);
         }
@@ -331,26 +331,26 @@ void ModuleNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream
 //////////////////////////////////////////////////////////////////////////
 
 ThreadNameLayout::ThreadNameLayout()
-    : LogLayout ( NELogOptions::LayoutToken::ThreadName )
+    : LogLayout ( areg::LayoutToken::ThreadName )
 {
 }
 
 ThreadNameLayout::ThreadNameLayout(const ThreadNameLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::ThreadName )
+    : LogLayout ( areg::LayoutToken::ThreadName )
 {
 }
 
 ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::ThreadName )
+    : LogLayout ( areg::LayoutToken::ThreadName )
 {
 }
 
-void ThreadNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ThreadNameLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
     const char* name{ nullptr };
     uint32_t len{ 0 };
 
-    if (msgLog.logDataType == NELogging::LogDataType::Local)
+    if (msgLog.logDataType == areg::LogDataType::Local)
     {
         const String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
         name = thread.getString();
@@ -378,21 +378,21 @@ void ThreadNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream
 //////////////////////////////////////////////////////////////////////////
 
 ScopeNameLayout::ScopeNameLayout()
-    : LogLayout ( NELogOptions::LayoutToken::ScopeName )
+    : LogLayout ( areg::LayoutToken::ScopeName )
 {
 }
 
 ScopeNameLayout::ScopeNameLayout(const ScopeNameLayout & /*src*/)
-    : LogLayout ( NELogOptions::LayoutToken::ScopeName )
+    : LogLayout ( areg::LayoutToken::ScopeName )
 {
 }
 
 ScopeNameLayout::ScopeNameLayout( ScopeNameLayout && /*src*/ ) noexcept
-    : LogLayout ( NELogOptions::LayoutToken::ScopeName )
+    : LogLayout ( areg::LayoutToken::ScopeName )
 {
 }
 
-void ScopeNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ScopeNameLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
     stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), msgLog.logMessageLen);
 }
@@ -402,36 +402,36 @@ void ScopeNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream 
 //////////////////////////////////////////////////////////////////////////
 
 AnyTextLayout::AnyTextLayout()
-    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
+    : LogLayout      ( areg::LayoutToken::AnyText )
     , mTextMessage  ( )
 {
 }
 
 AnyTextLayout::AnyTextLayout(const AnyTextLayout & src)
-    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
+    : LogLayout      ( areg::LayoutToken::AnyText )
     , mTextMessage  ( src.mTextMessage )
 {
 }
 
 AnyTextLayout::AnyTextLayout( AnyTextLayout && src ) noexcept
-    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
+    : LogLayout      ( areg::LayoutToken::AnyText )
     , mTextMessage  ( std::move(src.mTextMessage) )
 {
 }
 
 AnyTextLayout::AnyTextLayout(const String & anyMessage)
-    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
+    : LogLayout      ( areg::LayoutToken::AnyText )
     , mTextMessage  ( anyMessage )
 {
 }
 
 AnyTextLayout::AnyTextLayout(const char * anyMessage)
-    : LogLayout      ( NELogOptions::LayoutToken::AnyText )
-    , mTextMessage  ( anyMessage != nullptr ? anyMessage : NEString::EmptyStringA )
+    : LogLayout      ( areg::LayoutToken::AnyText )
+    , mTextMessage  ( anyMessage != nullptr ? anyMessage : areg::EmptyStringA )
 {
 }
 
-void AnyTextLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
+void AnyTextLayout::logMessage( const areg::LogEntry & /*msgLog*/, OutStream & stream ) const
 {
     stream.write( reinterpret_cast<const uint8_t *>(mTextMessage.getString()), static_cast<uint32_t>(mTextMessage.getLength()) );
 }
@@ -441,21 +441,21 @@ void AnyTextLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStrea
 //////////////////////////////////////////////////////////////////////////
 
 CookieIdLayout::CookieIdLayout()
-    : LogLayout(NELogOptions::LayoutToken::CookieId)
+    : LogLayout(areg::LayoutToken::CookieId)
 {
 }
 
 CookieIdLayout::CookieIdLayout(const CookieIdLayout& /* src */)
-    : LogLayout(NELogOptions::LayoutToken::CookieId)
+    : LogLayout(areg::LayoutToken::CookieId)
 {
 }
 
 CookieIdLayout::CookieIdLayout(CookieIdLayout&& /* src */) noexcept
-    : LogLayout(NELogOptions::LayoutToken::CookieId)
+    : LogLayout(areg::LayoutToken::CookieId)
 {
 }
 
-void CookieIdLayout::logMessage(const NELogging::LogEntry& msgLog, OutStream& stream) const
+void CookieIdLayout::logMessage(const areg::LogEntry& msgLog, OutStream& stream) const
 {
 #ifdef _BIT64
     constexpr char fmt[]{ "%03llu" };

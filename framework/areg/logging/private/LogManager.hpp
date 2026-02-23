@@ -43,7 +43,7 @@
 class LogDatabaseEngine;
 class LogScope;
 class LogMessage;
-namespace NELogging
+namespace areg
 {
     struct LogEntry;
 }
@@ -72,10 +72,10 @@ private:
     static constexpr std::string_view   LOGGING_THREAD_NAME          { "_AREG_LOGGING_THREAD_" };
 
     //!< Logging activation waiting maximum timeout
-    static constexpr uint32_t       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
+    static constexpr uint32_t       LOG_START_WAITING_TIME      { areg::WAIT_10_SECONDS };
 
     //!< Reconnect timeout in milliseconds
-    static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { NECommon::TIMEOUT_1_SEC * 5 };
+    static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { areg::TIMEOUT_1_SEC * 5 };
 
 public:
 
@@ -83,7 +83,7 @@ public:
      * \brief   Triggers an event to log message created locally in the same process.
      * \param   logData The logging message object, which will be sent to all loggers.
      **/
-    static void logMessage( const NELogging::LogEntry & logData );
+    static void logMessage( const areg::LogEntry & logData );
 
     /**
      * \brief   Triggers an event to log message contained in the shared buffer.
@@ -247,7 +247,7 @@ public:
      * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
      * \param   scopeName   The name of the existing scope.
      * \return  Is found the scope, returns the actual priority of the scope.
-     *          Otherwise, returns invalid priority (NELogging::LogPriority::PrioInvalid).
+     *          Otherwise, returns invalid priority (areg::LogPriority::PrioInvalid).
      **/
     static uint32_t getScopePriority( const char * scopeName );
 
@@ -412,7 +412,7 @@ private:
      * \brief   Writes a log message to the existing loggers.
      * \param   logMessage  The message to log.
      **/
-    void writeLogMessage( const NELogging::LogEntry & logMessage );
+    void writeLogMessage( const areg::LogEntry & logMessage );
 
     /**
      * \brief   Sends log event with the preferred priority.

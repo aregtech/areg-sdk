@@ -55,7 +55,7 @@ ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProx
     ServiceProxy & proxyService = valueAtPosition(pos);
     if ( addrStub == addrProxy)
     {
-        if ( stubService.getServiceStatus() == NEService::ServiceConnectionState::Connected )
+        if ( stubService.getServiceStatus() == areg::ServiceConnectionState::Connected )
         {
             proxyService.stubAvailable( addrStub );
         }

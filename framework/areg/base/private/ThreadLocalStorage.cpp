@@ -38,9 +38,9 @@ ThreadLocalStorage::~ThreadLocalStorage()
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-NEMemory::Primitive ThreadLocalStorage::getStorageItem( const String & Key ) const
+areg::Primitive ThreadLocalStorage::getStorageItem( const String & Key ) const
 {
-    NEMemory::Primitive result{ NEMemory::InvalidElement };
+    areg::Primitive result{ areg::InvalidElement };
 
     StorageList::LISTPOS pos = mStorageList.firstPosition();
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
@@ -56,42 +56,42 @@ NEMemory::Primitive ThreadLocalStorage::getStorageItem( const String & Key ) con
     return result;
 }
 
-void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::Primitive Value)
+void ThreadLocalStorage::setStorageItem(const String & Key, areg::Primitive Value)
 {
     mStorageList.pushFirst(ThreadLocalStorage::StorageItem(Key, Value));
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valPtr.mElement = const_cast<void *>(Value);
     setStorageItem(Key, aln);
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, uint32_t Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valUInt.mElement = Value;
     setStorageItem(Key, aln);
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, uint64_t Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valUInt64.mElement = Value;
     setStorageItem(Key, aln);
 }
 
 void ThreadLocalStorage::setStorageItem( const String & Key, double Value )
 {
-    NEMemory::Primitive aln;
+    areg::Primitive aln;
     aln.valDouble.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-NEMemory::Primitive ThreadLocalStorage::removeStoragteItem( const String & Key )
+areg::Primitive ThreadLocalStorage::removeStoragteItem( const String & Key )
 {
-    NEMemory::Primitive result{ {0} };
+    areg::Primitive result{ {0} };
     StorageList::LISTPOS pos = mStorageList.firstPosition();
     for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
