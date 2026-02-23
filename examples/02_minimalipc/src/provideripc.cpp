@@ -27,7 +27,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const NERegistry::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     {   }
@@ -73,7 +73,7 @@ int main()
     // load model to initialize components
     Application::loadModel("ProviderModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
     Application::releaseApplication();
     return 0;

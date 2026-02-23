@@ -32,15 +32,15 @@ bool ConnectionHandler::IsValid() const
 bool ConnectionHandler::AddConnection(const chat::ConnectionRecord & newConnection)
 {
     Lock lock(mLock);
-    int32_t pos = NECommon::INVALID_INDEX;
+    int32_t pos = areg::INVALID_INDEX;
     
     if (newConnection.nickName != mNickName)
     {
         findConnection(newConnection);
-        if ( pos == NECommon::INVALID_INDEX )
+        if ( pos == areg::INVALID_INDEX )
             mListConnections.add(newConnection);
     }
-    return (pos == NECommon::INVALID_INDEX);
+    return (pos == areg::INVALID_INDEX);
 }
 
 int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConnections)
@@ -52,7 +52,7 @@ int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConn
         const chat::ConnectionRecord & entry = listConnections.getAt(i);
         if (entry.nickName != mNickName)
         {
-            if (findConnection(entry) == NECommon::INVALID_INDEX)
+            if (findConnection(entry) == areg::INVALID_INDEX)
             {
                 mListConnections.add(entry);
                 ++ result;
@@ -67,23 +67,23 @@ bool ConnectionHandler::RemoveConnection(const chat::ConnectionRecord & connecti
 {
     Lock lock(mLock);
     int32_t pos = findConnection(connection);
-    if ( pos != NECommon::INVALID_INDEX )
+    if ( pos != areg::INVALID_INDEX )
     {
         mListConnections.removeAt( static_cast<uint32_t>(pos) );
     }
 
-    return (pos != NECommon::INVALID_INDEX);
+    return (pos != areg::INVALID_INDEX);
 }
 
 bool ConnectionHandler::ConnectionExist(const chat::ConnectionRecord & connection)
 {
     Lock lock(mLock);
-    return ( findConnection(connection) != NECommon::INVALID_INDEX);
+    return ( findConnection(connection) != areg::INVALID_INDEX);
 }
 
 int32_t ConnectionHandler::findConnection(const chat::ConnectionRecord & connection) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for (uint32_t i = 0; i < mListConnections.getSize(); ++i)
     {
         const chat::ConnectionRecord & entry = mListConnections.getAt(i);

@@ -25,7 +25,7 @@
 
 
 PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
-    : WorkerThreadConsumer( NEUtilities::createComponentItemName( worker::ServiceNamePatientInfo, consumerName) )
+    : WorkerThreadConsumer( areg::createComponentItemName( worker::ServiceNamePatientInfo, consumerName) )
 
     , mStubPatienInfo       ( infoPatient )
 {

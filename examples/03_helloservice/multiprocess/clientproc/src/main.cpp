@@ -21,7 +21,7 @@
 //!< The name of model
 constexpr char const _modelName[]{ "ServiceModel" };
 //!< Client component name. Let's generate the name for client service, we'll use it later.
-const String _client(NEUtilities::generateName("ServiceClient"));
+const String _client(areg::generateName("ServiceClient"));
 
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
@@ -49,7 +49,7 @@ int main()
     Application::loadModel(_modelName);
 
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::WAIT_INFINITE);
 
     // stop and unload components
     Application::unloadModel(_modelName);

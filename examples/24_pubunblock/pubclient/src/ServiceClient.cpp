@@ -23,7 +23,7 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
 
-ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+ServiceClient::ServiceClient( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component             ( entry, owner )
     , HelloUnblockClientBase( entry.mDependencyServices[0], static_cast<Component &>(self()) )
     , TimerConsumer       ( )
@@ -39,7 +39,7 @@ ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, Componen
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
     bool result = HelloUnblockClientBase::serviceConnected( status, proxy );
@@ -47,7 +47,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
     notifyOnHelloServiceStateUpdate( isConnected( ) );
     if ( isConnected( ) == false )
     {
-        ASSERT((status == NEService::ServiceConnectionState::ConnectionLost) || (mReqCount == 2)); // Only in debug build
+        ASSERT((status == areg::ServiceConnectionState::ConnectionLost) || (mReqCount == 2)); // Only in debug build
         mTimer.stopTimer( );
         Application::signalAppQuit( );
     }
@@ -120,20 +120,20 @@ void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
         << std::endl;
 }
 
-void ServiceClient::requestHelloUblockFailed( NEService::ResultType FailureReason )
+void ServiceClient::requestHelloUblockFailed( areg::ResultType FailureReason )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
-    LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    LOG_WARN( "The request HelloUnblock failed with reason [ %s ]", areg::getString( FailureReason ) );
     // Make sure it does not fail with reason 'request is busy'
-    ASSERT( FailureReason != NEService::ResultType::RequestBusy );
+    ASSERT( FailureReason != areg::ResultType::RequestBusy );
 }
 
-void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, NEService::DataState state )
+void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, areg::DataState state )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
-    LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::getString( HelloServiceState ), NEService::getString( state ) );
+    LOG_DBG( "Service state [ %s ], data state [ %s ]", HelloUnblock::getString( HelloServiceState ), areg::getString( state ) );
 
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         if ( HelloServiceState == HelloUnblock::RunState::ServiceActive )
         {

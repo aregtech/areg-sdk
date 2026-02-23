@@ -33,7 +33,7 @@ public:
      * \param   entry   The dependency entry.
      * \param   owner   The owning component.
      **/
-    SubscriberSecond(const NERegistry::DependencyEntry & entry, Component & owner);
+    SubscriberSecond(const areg::DependencyEntry & entry, Component & owner);
 
     virtual ~SubscriberSecond() = default;
 
@@ -55,7 +55,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // PubSubClientBase Overrides
@@ -69,7 +69,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    void onServiceProviderStateUpdate( PubSub::RunState ServiceProviderState, NEService::DataState state ) override;
+    void onServiceProviderStateUpdate( PubSub::RunState ServiceProviderState, areg::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

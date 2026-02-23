@@ -12,7 +12,7 @@
 
 #include "areg/component/Model.hpp"
 
-PubSubMixed::PubSubMixed(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+PubSubMixed::PubSubMixed(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component (entry, owner)
 
     , mPubSubMixedPublisher (static_cast<Component &>(self()))

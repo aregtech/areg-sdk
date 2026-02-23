@@ -29,8 +29,8 @@ namespace
 {
     constexpr char const _modelName[]   { "PubSub" };                  //!< The name of model
     constexpr std::string_view  _title  { "PubSub mix features, secondary application..."};
-    const String SecondRole(NEUtilities::generateName(pubsub::PublisherSecond));
-    const String ThirddRole(NEUtilities::generateName(pubsub::PublisherThird));
+    const String SecondRole(areg::generateName(pubsub::PublisherSecond));
+    const String ThirddRole(areg::generateName(pubsub::PublisherThird));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ int main()
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::WAIT_INFINITE);
 
         // release and cleanup resources of application.
         Application::releaseApplication();

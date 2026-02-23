@@ -44,7 +44,7 @@ namespace NELargeData
     struct ImageData
     {
         //!< Specifies the (x, y) starting position coordinate of an image data
-        NEMath::Coord   imgStartPos { 0, 0 };
+        areg::Coord   imgStartPos { 0, 0 };
         //!< Specifies  the width of an image data.
         uint32_t        imgWidth    { 0 };
         //!< Specifies the height of an image data.

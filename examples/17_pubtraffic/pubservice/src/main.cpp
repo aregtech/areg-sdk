@@ -96,20 +96,20 @@ int main()
         console.refreshScreen( );
         console.waitForInput( [&]( const String & cmd ) -> bool
             {
-                if ( cmd.compare( commands[0], false ) == NEMath::Ordering::Equal )
+                if ( cmd.compare( commands[0], false ) == areg::Ordering::Equal )
                 {
                     // It is 'quit' --> quit application(s).
                     DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
                     TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
                     doLoop = false; // quit the loop
                 }
-                else if ( cmd.compare( commands[1], false ) == NEMath::Ordering::Equal )
+                else if ( cmd.compare( commands[1], false ) == areg::Ordering::Equal )
                 {
                     // It is 'stop' --> stop the traffic light.
                     DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
                     TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
                 }
-                else if ( cmd.compare( commands[2], false ) == NEMath::Ordering::Equal )
+                else if ( cmd.compare( commands[2], false ) == areg::Ordering::Equal )
                 {
                     // It is 'start' --> start the traffic light.
                     DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);

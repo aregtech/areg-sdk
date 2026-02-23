@@ -66,7 +66,7 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Publisher( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    Publisher( const areg::ComponentEntry & entry, ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
+    bool clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

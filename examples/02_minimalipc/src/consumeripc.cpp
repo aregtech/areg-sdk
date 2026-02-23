@@ -27,7 +27,7 @@ class ServiceConsumer   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+    ServiceConsumer(const areg::ComponentEntry & entry, ComponentThread & owner)
 		: Component             ( entry, owner )
 		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
@@ -35,11 +35,11 @@ public:
 protected:
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool serviceConnected(areg::ServiceConnectionState status, ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+        if (HelloServiceClientBase::serviceConnected(status, proxy) && areg::isServiceConnected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
-        else if (NEService::isServiceConnected(status) == false)
+        else if (areg::isServiceConnected(status) == false)
             Application::signalAppQuit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
@@ -78,7 +78,7 @@ int main()
     // load model to initialize components
     Application::loadModel("ConsumerModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
     Application::releaseApplication();
     return 0;

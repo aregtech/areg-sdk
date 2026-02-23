@@ -38,7 +38,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout     The timeout in milliseconds to trigger the request to output message
      **/
-    PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout );
+    PublicHelloWorldClient( const areg::DependencyEntry & dependency, Component & owner, uint32_t timeout );
 
     /**
      * \brief   Destructor
@@ -76,7 +76,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void onServiceStateUpdate( SystemShutdown::RunState ServiceState, NEService::DataState state ) override;
+    void onServiceStateUpdate( SystemShutdown::RunState ServiceState, areg::DataState state ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -92,7 +92,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.

@@ -35,7 +35,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout The timeout in milliseconds to trigger the request to output message
      **/
-    LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout );
+    LocalHelloWorldClient( const areg::DependencyEntry & dependency, Component & owner, uint32_t timeout );
 
     virtual ~LocalHelloWorldClient() = default;
 
@@ -64,7 +64,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.

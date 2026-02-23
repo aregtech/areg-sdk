@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorl
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
 
-LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout)
+LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & dependency, Component & owner, uint32_t timeout)
     : LocalHelloWorldClientBase ( dependency, owner )
     , TimerConsumer           ( )
 
@@ -30,7 +30,7 @@ LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry 
 {
 }
 
-bool LocalHelloWorldClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool LocalHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 
@@ -76,7 +76,7 @@ inline String LocalHelloWorldClient::timerName( Component & owner ) const
     String result;
     result.append("Local_")
           .append(owner.getRoleName())
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::DEFAULT_SPECIAL_CHAR)
           .append(LocalHelloWorldClientBase::getServiceName());
 
     return result;

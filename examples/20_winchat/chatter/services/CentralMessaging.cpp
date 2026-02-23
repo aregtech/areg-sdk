@@ -28,7 +28,7 @@ CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ow
 {
 }
 
-bool CentralMessaging::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool CentralMessaging::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
     bool result = CentralMessagerClientBase::serviceConnected( status, proxy );
@@ -58,8 +58,8 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t c
         chat:: MessageData * data = chat::newData();
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString() );
-            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
+            areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString() );
+            areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
             data->dataSave      = cookie;
             data->timeReceived  = DateTime::getNow();
             data->timeSend      = dateTime;
@@ -79,8 +79,8 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t coo
         chat:: MessageData * data = chat::newData( );
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
-            NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
+            areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString( ) );
+            areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
             data->dataSave      = cookie;
             data->timeReceived  = 0;
             data->timeSend      = 0;
@@ -97,8 +97,8 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
     chat:: MessageData * data = chat::newData( );
     if ( data != nullptr )
     {
-        NEString::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
-        NEString::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.getString( ) );
+        areg::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
+        areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.getString( ) );
         data->dataSave      = static_cast<uint64_t>(-1);
         data->timeReceived  = DateTime::getNow();
         data->timeSend      = dateTime;

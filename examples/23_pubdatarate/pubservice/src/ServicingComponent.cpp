@@ -50,7 +50,7 @@ void ServicingComponent::ServicingTimerConsumer::processTimer( Timer & timer )
 // ServicingComponent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , LargeDataStub     ( static_cast<Component &>(self()) )
     , ThreadConsumer  ( )
@@ -73,12 +73,12 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
     , mTimerConsumer    ( self() )
     , mLock             ( )
 {
-    mOptions.mWidth     = NEUtilities::IMAGE_WIDTH;
-    mOptions.mHeight    = NEUtilities::IMAGE_HEIGHT;
-    mOptions.mLines     = NEUtilities::LINES_PER_BLOCK;
-    mOptions.mPixelTime = NEUtilities::DWELL_TIME;
-    mOptions.mChannels  = NEUtilities::CHANNELS_SOURCE;
-    mOptions.mFlags     = static_cast<uint32_t>(NEUtilities::OptionFlag::CmdStop);
+    mOptions.mWidth     = areg::IMAGE_WIDTH;
+    mOptions.mHeight    = areg::IMAGE_HEIGHT;
+    mOptions.mLines     = areg::LINES_PER_BLOCK;
+    mOptions.mPixelTime = areg::DWELL_TIME;
+    mOptions.mChannels  = areg::CHANNELS_SOURCE;
+    mOptions.mFlags     = static_cast<uint32_t>(areg::OptionFlag::CmdStop);
 }
 
 void ServicingComponent::startupServiceInterface( Component & holder )
@@ -93,10 +93,10 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     Application::queryCommunicationData( sizeSend, sizeReceive );
     uint64_t sizeItem = mItemRate != 0 ? mDataRate / mItemRate : 0;
 
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataRate);
-    NEUtilities::DataLiteral sendRate = NEUtilities::convDataSize( sizeSend );
-    NEUtilities::DataLiteral rcvRate  = NEUtilities::convDataSize( sizeReceive );
-    NEUtilities::DataLiteral itemRate = NEUtilities::convDataSize( sizeItem );
+    areg::DataLiteral dataRate = areg::convDataSize(mDataRate);
+    areg::DataLiteral sendRate = areg::convDataSize( sizeSend );
+    areg::DataLiteral rcvRate  = areg::convDataSize( sizeReceive );
+    areg::DataLiteral itemRate = areg::convDataSize( sizeItem );
 
 
     Console& console = Console::getInstance();
@@ -107,8 +107,8 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     _printInfo();
 
     _initBlockList();
-    mInputThread.createThread(NECommon::WAIT_INFINITE);
-    mImageThread.createThread(NECommon::WAIT_INFINITE);
+    mInputThread.createThread(areg::WAIT_INFINITE);
+    mImageThread.createThread(areg::WAIT_INFINITE);
 
     console.enableConsoleInput(true);
 
@@ -125,16 +125,16 @@ void ServicingComponent::shutdownServiceInterface(Component& holder)
     mPauseEvent.setEvent();
 
     mBitmap.release();
-    mInputThread.shutdownThread(NECommon::WAIT_INFINITE);
-    mImageThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mInputThread.shutdownThread(areg::WAIT_INFINITE);
+    mImageThread.shutdownThread(areg::WAIT_INFINITE);
 
     LargeDataStub::shutdownServiceInterface(holder);
 }
 
-bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::ServiceConnectionState connectionStatus )
+bool ServicingComponent::clientConnected(const ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
 {
     bool result = LargeDataStub::clientConnected(client, connectionStatus );
-    mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);
+    mClients += (areg::isServiceConnected( connectionStatus ) ? 1 : -1);
     _printInfo();
 
     return result;
@@ -142,7 +142,7 @@ bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::
 
 void ServicingComponent::onTimerExpired()
 {
-    mLock.lock(NECommon::WAIT_INFINITE);
+    mLock.lock(areg::WAIT_INFINITE);
 
     uint32_t rateItem   = mItemRate;
     uint32_t didSleep   = mDidSleep;
@@ -152,10 +152,10 @@ void ServicingComponent::onTimerExpired()
     Application::queryCommunicationData( sizeSend, sizeReceive );
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataRate );
-    NEUtilities::DataLiteral sendRate = NEUtilities::convDataSize( sizeSend );
-    NEUtilities::DataLiteral rcvRate  = NEUtilities::convDataSize( sizeReceive );
-    NEUtilities::DataLiteral itemRate = NEUtilities::convDataSize( sizeItem );
+    areg::DataLiteral dataRate = areg::convDataSize( mDataRate );
+    areg::DataLiteral sendRate = areg::convDataSize( sizeSend );
+    areg::DataLiteral rcvRate  = areg::convDataSize( sizeReceive );
+    areg::DataLiteral itemRate = areg::convDataSize( sizeItem );
 
     mItemRate = 0;
     mDataRate = 0;
@@ -249,7 +249,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         mOptionChanged = true;
 
-        mLock.lock(NECommon::WAIT_INFINITE);
+        mLock.lock(areg::WAIT_INFINITE);
         _initBlockList();
         mLock.unlock();
         
@@ -377,10 +377,10 @@ void ServicingComponent::_printInfo() const
     uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
-    double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
-    NEUtilities::DataLiteral blockSize= NEUtilities::convDataSize(bytesPerBlock);
-    NEUtilities::DataLiteral timeRate = NEUtilities::convDuration(timePerBlock);
+    double blockRate = (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
+    areg::DataLiteral dataRate = areg::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
+    areg::DataLiteral blockSize= areg::convDataSize(bytesPerBlock);
+    areg::DataLiteral timeRate = areg::convDuration(timePerBlock);
 
     console.printTxt("---------------------------------------\n");
     console.printTxt("Printing image current options:\n");

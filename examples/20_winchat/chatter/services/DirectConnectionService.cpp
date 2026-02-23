@@ -32,28 +32,28 @@ String DirectConnectionService::GetGeneratedService( const String & nickName, ui
     return NEDistributedApp::getConnectionServiceRole(nickName, cookie);
 }
 
-NERegistry::Model DirectConnectionService::GetModel( const String & nickName, uint32_t cookie, std::any data )
+areg::Model DirectConnectionService::GetModel( const String & nickName, uint32_t cookie, std::any data )
 {
     String    roleName    = DirectConnectionService::GetGeneratedService(nickName, cookie);
     String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
     String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
 
-    NERegistry::ServiceEntry          serviceEntry( DirectConnection::ServiceName, DirectConnection::InterfaceVersion );
-    NERegistry::ServiceList           serviceList( serviceEntry );
-    NERegistry::ComponentEntry        componentEntry(threadName, roleName
+    areg::ServiceEntry          serviceEntry( DirectConnection::ServiceName, DirectConnection::InterfaceVersion );
+    areg::ServiceList           serviceList( serviceEntry );
+    areg::ComponentEntry        componentEntry(threadName, roleName
                                                     , FUNC_CREATE_COMP(DirectConnectionService)
                                                     , FUNC_DELETE_COMP
-                                                    , serviceList, NERegistry::DependencyList(), NERegistry::WorkerThreadList());
+                                                    , serviceList, areg::DependencyList(), areg::WorkerThreadList());
     componentEntry.setData(data);
-    NERegistry::ComponentList         componentList(componentEntry);
-    NERegistry::ComponentThreadEntry  threadEntry(threadName, componentList);
-    NERegistry::ComponentThreadList   threadList( threadEntry );
-    NERegistry::Model                 model(modelName, threadList);
+    areg::ComponentList         componentList(componentEntry);
+    areg::ComponentThreadEntry  threadEntry(threadName, componentList);
+    areg::ComponentThreadList   threadList( threadEntry );
+    areg::Model                 model(modelName, threadList);
     
     return model;
 }
 
-DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
+DirectConnectionService::DirectConnectionService( const areg::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component             ( entry, ownerThread )
     , DirectConnectionStub  ( static_cast<Component &>(self()) )
 

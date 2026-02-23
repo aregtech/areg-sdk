@@ -15,7 +15,7 @@
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
 
-bool NEUtilities::OptionValues::parseCommand(const String& cmd)
+bool areg::OptionValues::parseCommand(const String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
 
@@ -36,12 +36,12 @@ bool NEUtilities::OptionValues::parseCommand(const String& cmd)
         {
             if (entry.startsWith(opt.cmdShort))
             {
-                entry.substring(static_cast<NEString::CharPos>(opt.cmdShort.length()));
+                entry.substring(static_cast<areg::CharPos>(opt.cmdShort.length()));
                 found = true;
             }
             else if (entry.startsWith(opt.cmdLong))
             {
-                entry.substring(static_cast<NEString::CharPos>(opt.cmdLong.length()));
+                entry.substring(static_cast<areg::CharPos>(opt.cmdLong.length()));
                 found = true;
             }
 
@@ -63,11 +63,11 @@ bool NEUtilities::OptionValues::parseCommand(const String& cmd)
     return (hasError() == false);
 }
 
-bool NEUtilities::OptionValues::setValue(const OptionSpec& whichOpt, uint32_t whichValue)
+bool areg::OptionValues::setValue(const OptionSpec& whichOpt, uint32_t whichValue)
 {
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
     LOG_DBG("Validating the option command [ %s ] with values [ %u ], the allowed min = [ %u ] and max = [ %u ]"
-                    , NEUtilities::getString(whichOpt.cmdValue)
+                    , areg::getString(whichOpt.cmdValue)
                     , whichValue
                     , whichOpt.minValue
                     , whichOpt.maxValue);
@@ -127,7 +127,7 @@ bool NEUtilities::OptionValues::setValue(const OptionSpec& whichOpt, uint32_t wh
     return result;
 }
 
-const NEUtilities::OptionValues& NEUtilities::OptionValues::normalizeOptions(const OptionValues& oldOptions)
+const areg::OptionValues& areg::OptionValues::normalizeOptions(const OptionValues& oldOptions)
 {
     if ((mFlags & static_cast<uint32_t>(OptionFlag::CmdWidth)) == 0)
     {

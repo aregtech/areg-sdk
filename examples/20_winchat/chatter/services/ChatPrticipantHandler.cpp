@@ -42,7 +42,7 @@ int32_t ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiato
         for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
         {
             const chat::Participant & connection = listParticipants[i];
-            if ( findPosition(connection) == NECommon::INVALID_INDEX )
+            if ( findPosition(connection) == areg::INVALID_INDEX )
             {
                 mListParticipants.add(connection);
                 ++ result;
@@ -56,7 +56,7 @@ bool ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, 
 {
     Lock lock( mLock );
     int32_t result = 0;
-    if ( (mInitiator == initiator) && (findPosition( participant ) == NECommon::INVALID_INDEX) )
+    if ( (mInitiator == initiator) && (findPosition( participant ) == areg::INVALID_INDEX) )
     {
         mListParticipants.add( participant );
         ++ result;
@@ -74,7 +74,7 @@ int32_t ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initi
         {
             const chat::Participant & connection = listParticipants[i];
             int32_t pos = findPosition(connection);
-            if ( pos != NECommon::INVALID_INDEX )
+            if ( pos != areg::INVALID_INDEX )
             {
                 mListParticipants.removeAt(static_cast<uint32_t>(pos));
                 ++ result;
@@ -91,7 +91,7 @@ bool ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiato
     if ( mInitiator == initiator )
     {
         int32_t pos = findPosition( participant );
-        if ( pos != NECommon::INVALID_INDEX )
+        if ( pos != areg::INVALID_INDEX )
         {
             mListParticipants.removeAt( static_cast<uint32_t>(pos) );
             ++ result;
@@ -103,7 +103,7 @@ bool ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiato
 bool ChatPrticipantHandler::ParticipantExist( const chat::Participant & participant ) const
 {
     Lock lock( mLock );
-    return (findPosition(participant) != NECommon::INVALID_INDEX);
+    return (findPosition(participant) != areg::INVALID_INDEX);
 }
 
 bool ChatPrticipantHandler::IsEmpty() const
@@ -135,7 +135,7 @@ void ChatPrticipantHandler::Invalidate()
 
 int32_t ChatPrticipantHandler::findPosition( const chat::Participant & participant ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for (uint32_t i = 0; i < mListParticipants.getSize( ); ++ i )
     {
         if ( participant == mListParticipants[i] )

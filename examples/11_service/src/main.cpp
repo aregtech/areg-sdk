@@ -38,7 +38,7 @@ BEGIN_MODEL(_modelName)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServicingComponent", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
         END_REGISTER_COMPONENT( "TestServicingComponent" )
     // end of thread description
@@ -59,7 +59,7 @@ int main()
 
     do 
     {
-        uint32_t timeout{ NECommon::WAIT_10_SECONDS };
+        uint32_t timeout{ areg::WAIT_10_SECONDS };
 
         LOG_SCOPE(examples_11_service_main);
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
@@ -70,7 +70,7 @@ int main()
         Application::waitAppQuit( timeout );    // wait for quit signal to complete application.
         Application::unloadModel(_modelName);   // stop and unload components
         
-        uint32_t duration = static_cast<uint32_t>(Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI);
+        uint32_t duration = static_cast<uint32_t>(Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI);
         timeout = std::min( timeout, duration );
         std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
         Application::releaseApplication();      // release and cleanup resources of application.

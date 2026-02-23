@@ -12,7 +12,7 @@
 #include "pubservice/src/PatientService.hpp"
 #include "areg/component/ComponentThread.hpp"
 
-PatientService::PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+PatientService::PatientService( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component             ( entry, owner )
     , PatientInformationStub( static_cast<Component &>(self()) )
 

@@ -45,7 +45,7 @@ public:
      *                      This parameter helps to compute the position for each
      *                      subscriber, so that it can output information.
      **/
-    Subscriber( const NERegistry::DependencyEntry & entry, Component & owner, int32_t position );
+    Subscriber( const areg::DependencyEntry & entry, Component & owner, int32_t position );
 
     virtual ~Subscriber() = default;
 
@@ -67,7 +67,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy ) override;
 
     /**
      * \brief   Triggered, when StringOnChange attribute is updated. The function contains
@@ -78,7 +78,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    void onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::DataState state) override;
+    void onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, areg::DataState state) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -89,7 +89,7 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    void onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::DataState state) override;
+    void onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, areg::DataState state) override;
 
     /**
      * \brief   Triggered, when ServiceProviderState attribute is updated. The function contains
@@ -100,7 +100,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    void onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, NEService::DataState state) override;
+    void onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, areg::DataState state) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -116,9 +116,9 @@ private:
     PubSubMix::sInteger   mOldInteger;    //!< Old integer value to compare when output on console.
     bool                    mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
     PubSubMix::sString    mOldString;     //!< Old string value to compare when output on console.
-    NEMath::Coord          mCoordInt;      //!< The coordinate to output the information about integer update.
-    NEMath::Coord          mCoordStr;      //!< The coordinate to output the information about string update
-    NEMath::Coord          mCoordSep;      //!< The coordinate to output a separation line.
+    areg::Coord          mCoordInt;      //!< The coordinate to output the information about integer update.
+    areg::Coord          mCoordStr;      //!< The coordinate to output the information about string update
+    areg::Coord          mCoordSep;      //!< The coordinate to output a separation line.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

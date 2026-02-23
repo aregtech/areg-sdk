@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( entry, owner )
     , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
     , TimerConsumer       ( )
@@ -37,7 +37,7 @@ void ServiceClient::startupComponent(ComponentThread& /* comThread */)
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
     LOG_DBG("The component [ %s ] has been started", getRoleName().getString());
 
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataSize);
+    areg::DataLiteral dataRate = areg::convDataSize(mDataSize);
     Console& console = Console::getInstance();
     console.clearCurrentLine();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
@@ -74,7 +74,7 @@ void ServiceClient::broadcastServiceStopping()
     Application::signalAppQuit();
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
     bool result = LargeDataClientBase::serviceConnected(status, proxy);
@@ -100,7 +100,7 @@ void ServiceClient::processTimer(Timer& /* timer */)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
     Console& console = Console::getInstance();
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataSize );
+    areg::DataLiteral dataRate = areg::convDataSize( mDataSize );
     LOG_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refreshScreen();

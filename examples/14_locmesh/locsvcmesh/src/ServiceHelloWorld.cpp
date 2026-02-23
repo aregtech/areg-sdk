@@ -32,7 +32,7 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
     uint32_t clientId = 0;
     if ( mClientList.find( roleName, clientId ) == false )
     {
-        clientId = NEUtilities::generateUniqueId( );
+        clientId = areg::generateUniqueId( );
         mClientList.setAt( roleName, clientId );
     }
 

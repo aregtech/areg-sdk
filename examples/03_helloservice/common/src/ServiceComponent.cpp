@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
+ServiceComponent::ServiceComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , HelloServiceStub  ( static_cast<Component &>(self()) )
 {

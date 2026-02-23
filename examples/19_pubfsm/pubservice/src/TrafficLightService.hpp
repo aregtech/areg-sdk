@@ -40,7 +40,7 @@ public:
     /**
      * \brief   Constructor, initializes servicing objects from registry entry.
      **/
-    TrafficLightService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    TrafficLightService( const areg::ComponentEntry & entry, ComponentThread & owner );
     /**
      * \brief   Destructor
      **/

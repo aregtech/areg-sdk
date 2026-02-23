@@ -45,7 +45,7 @@ void NetworkSetup::responseConnect( const String & nickName, uint32_t cookie, co
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool NetworkSetup::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool NetworkSetup::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 

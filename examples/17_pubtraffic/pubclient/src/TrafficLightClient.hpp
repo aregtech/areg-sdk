@@ -25,7 +25,7 @@ class TrafficLightClient    : public    Component
 // Statics and constants.
 //////////////////////////////////////////////////////////////////////////
 public:
-    TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    TrafficLightClient(const areg::ComponentEntry & entry, ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members.
@@ -46,7 +46,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy ) override;
 
     /**
      * \brief   Triggered, when SouthNorth attribute is updated. The function contains
@@ -57,7 +57,7 @@ protected:
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
      **/
-    void onSouthNorthUpdate( SimpleTrafficLight::TrafficLight SouthNorth, NEService::DataState state ) override;
+    void onSouthNorthUpdate( SimpleTrafficLight::TrafficLight SouthNorth, areg::DataState state ) override;
 
     /**
      * \brief   Triggered, when EastWest attribute is updated. The function contains
@@ -68,7 +68,7 @@ protected:
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
-    void onEastWestUpdate( SimpleTrafficLight::TrafficLight EastWest, NEService::DataState state ) override;
+    void onEastWestUpdate( SimpleTrafficLight::TrafficLight EastWest, areg::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

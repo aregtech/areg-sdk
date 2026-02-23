@@ -20,7 +20,7 @@ DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
 DEF_LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
 DEF_LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
 
-NERegistry::Model DirectChatService::GetModel( const DirectMessager::Participant & initiator
+areg::Model DirectChatService::GetModel( const DirectMessager::Participant & initiator
                                              , const DirectMessager::ListParticipants & listParticipants
                                              , std::any data)
 {
@@ -29,32 +29,32 @@ NERegistry::Model DirectChatService::GetModel( const DirectMessager::Participant
     String    modelName   = NEDistributedApp::PREFIX_MODEL  + roleName;
 
     uint32_t count = listParticipants.getSize();
-    NERegistry::DependencyEntry depedency(roleName);
-    NERegistry::DependencyList listDependencies( depedency );
+    areg::DependencyEntry depedency(roleName);
+    areg::DependencyList listDependencies( depedency );
     
     for ( uint32_t i = 0; i < count; ++i )
     {
         const DirectConnection::Participant & participant = listParticipants[i];
-        NERegistry::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
+        areg::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
         listDependencies.mListDependencies.add( entry );
     }
 
-    NERegistry::ServiceEntry          serviceEntry( DirectMessager::ServiceName, DirectMessager::InterfaceVersion );
-    NERegistry::ServiceList           listServices( serviceEntry );
-    NERegistry::ComponentEntry        componentEntry( threadName, roleName
+    areg::ServiceEntry          serviceEntry( DirectMessager::ServiceName, DirectMessager::InterfaceVersion );
+    areg::ServiceList           listServices( serviceEntry );
+    areg::ComponentEntry        componentEntry( threadName, roleName
                                                     , FUNC_CREATE_COMP(DirectChatService)
                                                     , FUNC_DELETE_COMP
-                                                    , listServices, listDependencies, NERegistry::WorkerThreadList( ) );
+                                                    , listServices, listDependencies, areg::WorkerThreadList( ) );
     componentEntry.setData(data);
-    NERegistry::ComponentList         componentList( componentEntry );
-    NERegistry::ComponentThreadEntry  threadEntry( threadName, componentList );
-    NERegistry::ComponentThreadList   threadList( threadEntry );
-    NERegistry::Model                 model( modelName, threadList );
+    areg::ComponentList         componentList( componentEntry );
+    areg::ComponentThreadEntry  threadEntry( threadName, componentList );
+    areg::ComponentThreadList   threadList( threadEntry );
+    areg::Model                 model( modelName, threadList );
 
     return model;
 }
 
-DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread)
+DirectChatService::DirectChatService( const areg::ComponentEntry & entry, ComponentThread & ownerThread)
     : Component           ( entry, ownerThread )
     , DirectMessagerStub  ( static_cast<Component &>(self()) )
 

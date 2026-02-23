@@ -33,7 +33,7 @@ namespace
     constexpr char const _modelName[]       { "ServiceModel" };
 
     //!< Generates the name of second Publisher that is using same interface.
-    String SecondRole(NEUtilities::generateName(pubsub::PublisherSecond));
+    String SecondRole(areg::generateName(pubsub::PublisherSecond));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ int main( )
         LOG_DBG( "Servicing model is loaded" );
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit( NECommon::WAIT_INFINITE );
+        Application::waitAppQuit( areg::WAIT_INFINITE );
 
         // release and cleanup resources of application.
         Application::releaseApplication( );

@@ -73,11 +73,11 @@ int main()
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
 
-        aThread.createThread(NECommon::WAIT_INFINITE);
+        aThread.createThread(areg::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.getName().getString());
-        Thread::ThreadCompletion status = aThread.shutdownThread(NECommon::WAIT_INFINITE);
+        Thread::ThreadCompletion status = aThread.shutdownThread(areg::WAIT_INFINITE);
 
         LOG_WARN_IF(Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
         LOG_INFO_IF(Thread::ThreadCompletion::Completed == status, "The thread exit normal");

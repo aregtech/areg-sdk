@@ -51,15 +51,15 @@ protected:
     {
         LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
-        LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS);
+        LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), areg::WAIT_500_MILLISECONDS);
         do
         {
             Lock lock(gSync);
-            std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << NECommon::WAIT_500_MILLISECONDS << " ms" << std::endl;
+            std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << areg::WAIT_500_MILLISECONDS << " ms" << std::endl;
 
         } while (false);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        Thread::sleep(areg::WAIT_500_MILLISECONDS);
     }
 };
 
@@ -77,7 +77,7 @@ class HelloDispatcher   : public DispatcherThread
 {
 public:
     HelloDispatcher() 
-        : DispatcherThread("HelloDispatcher", NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
+        : DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
         , TimerConsumer()
         , mTimer(*this, "aTimer")
     {
@@ -153,18 +153,18 @@ int main()
         Application::startTimerManager();
 
         HelloThread helloThread;
-        helloThread.createThread(NECommon::WAIT_INFINITE);
+        helloThread.createThread(areg::WAIT_INFINITE);
 
         HelloDispatcher helloDispatcher;
-        helloDispatcher.createThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.createThread(areg::WAIT_INFINITE);
 
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        Thread::sleep(areg::WAIT_1_SECOND);
 
         LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.getName().getString());
-        helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.shutdownThread(areg::WAIT_INFINITE);
 
         LOG_INFO("Stopping thread [%s]", helloThread.getName().getString());
-        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdownThread(areg::WAIT_INFINITE);
     } while (false);
 
     LOGGING_STOP();

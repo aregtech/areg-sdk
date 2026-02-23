@@ -470,10 +470,10 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     block->frameWidth = width;
     block->imageData.imgHeight = lines;
     block->imageData.imgRBGLen = sizePixels;
-    block->imageData.imgStartPos = NEMath::Coord{ 0, static_cast<int32_t>(rowIndex) };
+    block->imageData.imgStartPos = areg::Coord{ 0, static_cast<int32_t>(rowIndex) };
     block->imageData.imgWidth = width;
 
-    NEMemory::copyElems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
+    areg::copyElems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
     return result;
 }
 

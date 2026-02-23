@@ -61,7 +61,7 @@ int main()
     // load model to initialize components
     Application::loadModel(_modelName);
 
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::waitAppQuit(areg::WAIT_INFINITE);
 
     // stop and unload components
     Application::unloadModel(_modelName);

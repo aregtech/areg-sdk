@@ -134,7 +134,7 @@ private:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    TrafficLightService(const areg::ComponentEntry & entry, ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitch Interface Requests

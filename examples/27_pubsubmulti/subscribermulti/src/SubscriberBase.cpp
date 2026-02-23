@@ -19,7 +19,7 @@ DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlw
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onServiceProviderStateUpdate);
 
 
-SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::Coord coordInt, NEMath::Coord coordStr)
+SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, Component & owner, areg::Coord coordInt, areg::Coord coordStr)
     : PubSubClientBase  ( entry, owner )
     , mCoordInteger     ( coordInt )
     , mCoordString      ( coordStr )
@@ -31,13 +31,13 @@ SubscriberBase::SubscriberBase(const NERegistry::DependencyEntry & entry, Compon
 {
 }
 
-void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NEService::DataState state)
+void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
     ++ mStrEventCount;
 
     Console & console = Console::getInstance();
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
         console.outputMsg(mCoordString, "%s%s => %s { changed }, event count: %u"
@@ -67,14 +67,14 @@ void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, NESer
     console.refreshScreen();
 }
 
-void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, NEService::DataState state)
+void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
     ++ mIntEventCount;
 
     Console & console = Console::getInstance();
     String oldInt = mOldState ? String::makeString(mOldInteger) : pubsub::StrInvalid;
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);
         console.outputMsg( mCoordInteger, "%s%s => %u { %s }, event count: %u"

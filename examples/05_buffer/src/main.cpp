@@ -79,10 +79,10 @@ int main()
     HelloThread aThread(buffer);
 
     // Start thread and wait until it starts
-    aThread.createThread(NECommon::WAIT_INFINITE);
+    aThread.createThread(areg::WAIT_INFINITE);
 
     // Stop thread and clean resources
-    aThread.shutdownThread(NECommon::WAIT_INFINITE);
+    aThread.shutdownThread(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

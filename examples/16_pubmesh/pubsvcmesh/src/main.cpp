@@ -38,7 +38,7 @@ class LocalServiceComponent : public Component
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< Initializes the local component
-    LocalServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+    LocalServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
         : Component                 ( entry, owner )
         , mLocalService             ( static_cast<Component &>(self()) )
         , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
@@ -69,7 +69,7 @@ class PublicServiceComponent : public Component
 
 public:
 
-    PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+    PublicServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
         : Component                 ( entry, owner )
         , mPublicService            ( static_cast<Component &>(self()) )
         , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
@@ -189,10 +189,10 @@ int main()
         LOG_DBG("Servicing model is loaded");
         
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        Application::waitAppQuit(areg::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 

@@ -76,7 +76,7 @@ const OptionParser::OptionSetup Publisher::ValidOptions[]
 // Publisher class methods
 //////////////////////////////////////////////////////////////////////////
 
-Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
+Publisher::Publisher( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , PubSubStub        ( static_cast<Component &>(self()) )
     , TimerConsumer   ( )
@@ -100,22 +100,22 @@ Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread 
 void Publisher::startupComponent(ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.createThread(areg::WAIT_INFINITE);
 }
 
 void Publisher::shutdownComponent(ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
     Component::shutdownComponent(comThread);
 }
 
-bool Publisher::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status)
+bool Publisher::clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_25_publisher_Publisher_clientConnected);
     bool result = PubSubStub::clientConnected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::getString(status), ProxyAddress::convAddressToPath(client).getString());
-    mClientCount += (NEService::isServiceConnected(status) ? 1 : -1);
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::getString(status), ProxyAddress::convAddressToPath(client).getString());
+    mClientCount += (areg::isServiceConnected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
     if (isServiceProviderStateValid() == false)

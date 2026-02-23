@@ -133,7 +133,7 @@ BOOL PageChat::OnInitDialog( )
     std::any data = std::make_any< ChatPrticipantHandler *>(this);
     ASSERT(mModelName.isEmpty());
 
-    NERegistry::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
+    areg::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
     if ( ComponentLoader::isModelLoaded(model.getModelName()) == false )
     {
         mModelName = model.getModelName();
@@ -294,7 +294,7 @@ void PageChat::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>( lv );
+        areg::zeroElement<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -319,7 +319,7 @@ void PageChat::outputMessage( CString nickName
         removeTyping(nickName, cookie);
 
     LVITEM lv;
-    NEMemory::zeroElement<LVITEM>( lv );
+    areg::zeroElement<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -357,7 +357,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            NEMemory::zeroElement<LVITEM>( lv );
+            areg::zeroElement<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -541,7 +541,7 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
 {
     
     char ch = rand() % 126;
-    while (NEString::isAlphanumeric<char>(ch) == false)
+    while (areg::isAlphanumeric<char>(ch) == false)
     {
         if (++ch > 126)
             ch = 'a';

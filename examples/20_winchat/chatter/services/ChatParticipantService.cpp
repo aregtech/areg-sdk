@@ -8,29 +8,29 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "chatter/ui/PageChat.hpp"
 
-NERegistry::Model ChatParticipantService::GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & /* listParticipants */, std::any data )
+areg::Model ChatParticipantService::GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & /* listParticipants */, std::any data )
 {
     String    serviceName = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
     String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );
     String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
     String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
 
-    NERegistry::DependencyEntry       dependency(serviceName);
-    NERegistry::DependencyList        listDependencies( dependency);
-    NERegistry::ComponentEntry        componentEntry( threadName, roleName
+    areg::DependencyEntry       dependency(serviceName);
+    areg::DependencyList        listDependencies( dependency);
+    areg::ComponentEntry        componentEntry( threadName, roleName
                                                     , FUNC_CREATE_COMP(ChatParticipantService)
                                                     , FUNC_DELETE_COMP
-                                                    , NERegistry::ServiceList( ), listDependencies, NERegistry::WorkerThreadList( ) );
+                                                    , areg::ServiceList( ), listDependencies, areg::WorkerThreadList( ) );
     componentEntry.setData( data );
-    NERegistry::ComponentList         componentList( componentEntry );
-    NERegistry::ComponentThreadEntry  threadEntry( threadName, componentList );
-    NERegistry::ComponentThreadList   threadList( threadEntry );
-    NERegistry::Model                 model( modelName, threadList );
+    areg::ComponentList         componentList( componentEntry );
+    areg::ComponentThreadEntry  threadEntry( threadName, componentList );
+    areg::ComponentThreadList   threadList( threadEntry );
+    areg::Model                 model( modelName, threadList );
 
     return model;
 }
 
-ChatParticipantService::ChatParticipantService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
+ChatParticipantService::ChatParticipantService( const areg::ComponentEntry & entry, ComponentThread & ownerThread )
     : Component         ( entry, ownerThread )
 
     , mChatParticipant  ( static_cast<Component &>(self()), entry.mDependencyServices[0].mRoleName, std::any_cast<ChatPrticipantHandler*>(entry.getData()) )
