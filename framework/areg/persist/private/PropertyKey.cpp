@@ -33,7 +33,7 @@ PropertyKey::PropertyKey(const String& section, const String& module, const Stri
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( PropertyKey::_findKey(mSection, mModule, mProperty, mPosition))
+    , mKeyType  ( PropertyKey::_find_key(mSection, mModule, mProperty, mPosition))
 {
 }
 
@@ -42,7 +42,7 @@ PropertyKey::PropertyKey(const std::string_view& section, const std::string_view
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( PropertyKey::_findKey(mSection, mModule, mProperty, mPosition))
+    , mKeyType  ( PropertyKey::_find_key(mSection, mModule, mProperty, mPosition))
 {
 }
 
@@ -51,7 +51,7 @@ PropertyKey::PropertyKey(const String& section, const String& module, const Stri
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( keyType == NEPersistence::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    , mKeyType  ( keyType == NEPersistence::ConfigEntry::AnyKey ? _find_key(mSection, mModule, mProperty, mPosition) : keyType )
 {
 }
 
@@ -60,7 +60,7 @@ PropertyKey::PropertyKey(const std::string_view& section, const std::string_view
     , mModule   ( module    )
     , mProperty ( property  )
     , mPosition ( position  )
-    , mKeyType  ( keyType == NEPersistence::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    , mKeyType  ( keyType == NEPersistence::ConfigEntry::AnyKey ? _find_key(mSection, mModule, mProperty, mPosition) : keyType )
 {
 }
 
@@ -89,7 +89,7 @@ PropertyKey::PropertyKey( const String & key )
     , mPosition ( )
     , mKeyType  ( NEPersistence::ConfigEntry::Invalid )
 {
-    parseKey( key );
+    parse_key( key );
 }
 
 PropertyKey::PropertyKey( String && key )
@@ -99,7 +99,7 @@ PropertyKey::PropertyKey( String && key )
     , mPosition ( )
     , mKeyType  (NEPersistence::ConfigEntry::Invalid)
 {
-    parseKey( std::move(key) );
+    parse_key( std::move(key) );
 }
 
 PropertyKey & PropertyKey::operator = ( const PropertyKey & source )
@@ -129,13 +129,13 @@ PropertyKey & PropertyKey::operator = ( PropertyKey && source ) noexcept
 
 PropertyKey & PropertyKey::operator = ( const String & source )
 {
-    parseKey(source);
+    parse_key(source);
     return (*this);
 }
 
 PropertyKey & PropertyKey::operator = ( String && source )
 {
-    parseKey(std::move(source));
+    parse_key(std::move(source));
     return (*this);
 }
 
@@ -148,7 +148,7 @@ bool PropertyKey::operator == ( const PropertyKey & other ) const
         {
             if ((mModule == other.mModule) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (other.mModule == NEPersistence::SYNTAX_ALL_MODULES))
             {
-                result = mProperty == other.mProperty ? mPosition == other.mPosition : other.mSection.isEmpty() && PropertyKey::_isCompatible(mProperty, other.mProperty);
+                result = mProperty == other.mProperty ? mPosition == other.mPosition : other.mSection.isEmpty() && PropertyKey::_is_compatible(mProperty, other.mProperty);
             }
         }
     }
@@ -171,44 +171,44 @@ PropertyKey::operator uint32_t () const
     if (mSection.isEmpty() == false)
     {
         result = NEMath::crc32Init();
-        result = NEMath::crc32Start(result, mSection.getString());
-        result = NEMath::crc32Start(result, mModule.getString());
-        result = NEMath::crc32Start(result, mProperty.getString());
-        result = NEMath::crc32Start(result, mPosition.getString());
+        result = NEMath::crc32Start(result, mSection.as_string());
+        result = NEMath::crc32Start(result, mModule.as_string());
+        result = NEMath::crc32Start(result, mProperty.as_string());
+        result = NEMath::crc32Start(result, mPosition.as_string());
         result = NEMath::crc32Finish(result);
     }
 
     return result;
 }
 
-bool PropertyKey::parseKey( const String & key )
+bool PropertyKey::parse_key( const String & key )
 {
     String temp(key);
     temp.trimAll();
     if ( temp.isEmpty() == false )
     {
-        _parseKey(temp);
+        _parse_key(temp);
     }
 
-    return isValid();
+    return is_valid();
 }
 
-bool PropertyKey::parseKey( String && key )
+bool PropertyKey::parse_key( String && key )
 {
     String temp(std::move(key));
     temp.trimAll();
     if ( temp.isEmpty() == false )
     {
-        _parseKey(temp);
+        _parse_key(temp);
     }
 
-    return isValid();
+    return is_valid();
 }
 
-String PropertyKey::convToString() const
+String PropertyKey::to_string() const
 {
     String result(static_cast<uint32_t>(0xFF));
-    if ( isValid() )
+    if ( is_valid() )
     {
         result.append(mSection)
               .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
@@ -225,36 +225,36 @@ String PropertyKey::convToString() const
     return result;
 }
 
-bool PropertyKey::isExactModule(const String& section, const String& module) const
+bool PropertyKey::is_exact_module(const String& section, const String& module) const
 {
-    return (isValid() && (mSection == section) && (mModule == module));
+    return (is_valid() && (mSection == section) && (mModule == module));
 }
 
-bool PropertyKey::isExactProperty(const String& section, const String& module, const String& property, const String& position) const
+bool PropertyKey::is_exact_property(const String& section, const String& module, const String& property, const String& position) const
 {
-    return  (isValid() && (mSection == section) && (mModule == module) && (mProperty == property) && (mPosition == position));
+    return  (is_valid() && (mSection == section) && (mModule == module) && (mProperty == property) && (mPosition == position));
 }
 
-bool PropertyKey::isModuleProperty(const String& section, const String& module, const String& property, const String& position) const
+bool PropertyKey::is_module_property(const String& section, const String& module, const String& property, const String& position) const
 {
     bool result{ false };
 
-    if (isValid() && (mSection == section) && (mProperty == property) && (module.isEmpty() == false))
+    if (is_valid() && (mSection == section) && (mProperty == property) && (module.isEmpty() == false))
     {
         if ((mModule == module) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (module == NEPersistence::SYNTAX_ALL_MODULES))
         {
-            result = PropertyKey::_isCompatible(mPosition, position);
+            result = PropertyKey::_is_compatible(mPosition, position);
         }
     }
 
     return result;
 }
 
-bool PropertyKey::isModuleSection(const String& section, const String& module) const
+bool PropertyKey::is_module_section(const String& section, const String& module) const
 {
     bool result{ false };
 
-    if (isValid() && (mSection == section) && (module.isEmpty() == false))
+    if (is_valid() && (mSection == section) && (module.isEmpty() == false))
     {
         result = ((mModule == module) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (module == NEPersistence::SYNTAX_ALL_MODULES));
     }
@@ -262,25 +262,25 @@ bool PropertyKey::isModuleSection(const String& section, const String& module) c
     return result;
 }
 
-void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
+void PropertyKey::set_values(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
 {
     mSection    = section != nullptr ? section  : String::EmptyString;
     mModule     = module  != nullptr ? module   : NEPersistence::SYNTAX_ALL_MODULES;
     mProperty   = property!= nullptr ? property : String::EmptyString;
     mPosition   = position!= nullptr ? position : String::EmptyString;
-    mKeyType    = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
+    mKeyType    = PropertyKey::_find_key(mSection, mModule, mProperty, mPosition);
 }
 
-void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position)
+void PropertyKey::set_values(const String& section, const String& property, const String& module, const String& position)
 {
     mSection    = section;
     mModule     = module;
     mProperty   = property;
     mPosition   = position;
-    mKeyType    = PropertyKey::_findKey(section, module, property, position);
+    mKeyType    = PropertyKey::_find_key(section, module, property, position);
 }
 
-void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position, NEPersistence::ConfigEntry keyType)
+void PropertyKey::set_values(const String& section, const String& property, const String& module, const String& position, NEPersistence::ConfigEntry keyType)
 {
     mSection    = section;
     mModule     = module;
@@ -289,67 +289,67 @@ void PropertyKey::setValues(const String& section, const String& property, const
     mKeyType    = keyType;
 }
 
-const String & PropertyKey::getSection() const
+const String & PropertyKey::section() const
 {
     return mSection;
 }
 
-const String & PropertyKey::getProperty() const
+const String & PropertyKey::property() const
 {
     return mProperty;
 }
 
-const String & PropertyKey::getModule() const
+const String & PropertyKey::module() const
 {
     return mModule;
 }
 
-const String & PropertyKey::getPosition() const
+const String & PropertyKey::position() const
 {
     return mPosition;
 }
 
-NEPersistence::ConfigEntry PropertyKey::getKeyType() const
+NEPersistence::ConfigEntry PropertyKey::key_type() const
 {
     return mKeyType;
 }
 
-bool PropertyKey::isValid() const
+bool PropertyKey::is_valid() const
 {
     return ( mSection.isEmpty() == false && mModule.isEmpty() == false && mProperty.isEmpty() == false );
 }
 
-bool PropertyKey::hasModule() const
+bool PropertyKey::has_module() const
 {
     return mModule.isEmpty() == false;
 }
 
-bool PropertyKey::hasProperty() const
+bool PropertyKey::has_property() const
 {
     return (mProperty.isEmpty() == false);
 }
 
-bool PropertyKey::isAllModules() const
+bool PropertyKey::is_all_modules() const
 {
     return (mModule == NEPersistence::SYNTAX_ALL_MODULES);
 }
 
-bool PropertyKey::isGroupProperty() const
+bool PropertyKey::is_group_property() const
 {
     return mPosition.endsWith(NEPersistence::SYNTAX_GROUP) || mProperty.endsWith(NEPersistence::SYNTAX_GROUP);
 }
 
-bool PropertyKey::hasSection() const
+bool PropertyKey::has_section() const
 {
     return (mSection.isEmpty() == false);
 }
 
-bool PropertyKey::hasPosition() const
+bool PropertyKey::has_position() const
 {
     return mPosition.isEmpty() == false;
 }
 
-void PropertyKey::resetKey()
+void PropertyKey::reset()
 {
     mSection.clear();
     mProperty.clear();
@@ -358,10 +358,10 @@ void PropertyKey::resetKey()
     mKeyType = NEPersistence::ConfigEntry::Invalid;
 }
 
-inline void PropertyKey::_parseKey(const String& key)
+inline void PropertyKey::_parse_key(const String& key)
 {
     std::vector<StringBase<char>> list = key.split(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
-    resetKey();
+    reset();
 
     if (list.size() != 0)
     {
@@ -391,11 +391,11 @@ inline void PropertyKey::_parseKey(const String& key)
             mModule = NEPersistence::SYNTAX_ALL_MODULES;
         }
 
-        mKeyType = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
+        mKeyType = PropertyKey::_find_key(mSection, mModule, mProperty, mPosition);
     }
 }
 
-inline bool PropertyKey::_isCompatible(const String& left, const String& right) 
+inline bool PropertyKey::_is_compatible(const String& left, const String& right) 
 {
     bool result{ true };
     if (left != right)
@@ -415,7 +415,7 @@ inline bool PropertyKey::_isCompatible(const String& left, const String& right)
     return result;
 }
 
-inline NEPersistence::ConfigEntry PropertyKey::_findKey(const String& section, const String& module, const String& property, const String& position)
+inline NEPersistence::ConfigEntry PropertyKey::_find_key(const String& section, const String& module, const String& property, const String& position)
 {
     NEPersistence::ConfigEntry result{ NEPersistence::ConfigEntry::Invalid };
 

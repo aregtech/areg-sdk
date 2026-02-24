@@ -26,16 +26,8 @@
 // PropertyKey class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Property Key object.
- *          The Property Key object consists of following parts:
- *              - Section
- *              - Module
- *              - Property
- *              - Position
- *          The Property Key is valid if at least section and property exist.
- *          The other parts are optional and can be omitted if not used.
- *          The Property Key format:
- *              section::(module|*)::property[::position]
+ * \brief   Structured key for configuration entries, composed of section, module, property, and
+ *          position parts. Valid if at least section and property exist; other parts are optional.
  **/
 class AREG_API PropertyKey
 {
@@ -44,7 +36,7 @@ class AREG_API PropertyKey
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief
      **/
     PropertyKey();
     
@@ -54,31 +46,50 @@ public:
     ~PropertyKey() = default;
 
     /**
-     * \brief   Parses and initializes Key.
-     * \param   key     The Key as a string to parse.
+     * \brief   Parses and initializes key.
+     *
+     * \param   key     The key as a string to parse.
      **/
     explicit PropertyKey( const String & key );
+    /**
+     * \brief   Parses and initializes key.
+     *
+     * \param   key     The key as a string to parse.
+     * \note    Move overload. Takes ownership of the string.
+     **/
     explicit PropertyKey( String && key );
 
     /**
-     * \brief   Copies data from given source
-     * \param   source  The source to copy data
+     * \brief
+     *
+     * \param   source      The source to copy data from.
      **/
     PropertyKey( const PropertyKey & source );
 
     /**
-     * \brief   Initializes the property key by setting parts.
-     *          The key type is automatically guessed by comparing the structure.
+     * \brief   Initializes the property key from individual parts; the key type is automatically
+     *          determined.
+     *
      * \param   section     The section part of the property key.
      * \param   module      The module part of the property key.
      * \param   property    The property part of the property key.
      * \param   position    The position part of the property key.
      **/
     PropertyKey( const String & section, const String & module, const String & property, const String & position);
+    /**
+     * \brief   Initializes the property key from individual parts; the key type is automatically
+     *          determined.
+     *
+     * \param   section     The section part of the property key.
+     * \param   module      The module part of the property key.
+     * \param   property    The property part of the property key.
+     * \param   position    The position part of the property key.
+     **/
     PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position);
 
     /**
-     * \brief   Initializes the property key by setting parts.
+     * \brief   Initializes the property key from individual parts with explicit key type.
+     *
      * \param   section     The section part of the property key.
      * \param   module      The module part of the property key.
      * \param   property    The property part of the property key.
@@ -86,11 +97,21 @@ public:
      * \param   keyType     The type of the property key.
      **/
     PropertyKey(const String& section, const String& module, const String& property, const String& position, NEPersistence::ConfigEntry keyType);
+    /**
+     * \brief   Initializes the property key from individual parts with explicit key type.
+     *
+     * \param   section     The section part of the property key.
+     * \param   module      The module part of the property key.
+     * \param   property    The property part of the property key.
+     * \param   position    The position part of the property key.
+     * \param   keyType     The type of the property key.
+     **/
     PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, NEPersistence::ConfigEntry keyType);
 
     /**
-     * \brief   Moves data from given source
-     * \param   source  The source to move data
+     * \brief
+     *
+     * \param   source      The source to move data from.
      **/
     PropertyKey( PropertyKey && source ) noexcept;
     
@@ -99,40 +120,49 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies property Key from given source
-     * \param   source  The source to copy data.
+     * \brief
+     *
+     * \param   source      The source to copy data from.
      **/
     PropertyKey & operator = ( const PropertyKey & source );
 
     /**
-     * \brief   Moves property Key from given source
-     * \param   source  The source to move data.
+     * \brief
+     *
+     * \param   source      The source to move data from.
      **/
     PropertyKey & operator = ( PropertyKey && source ) noexcept;
 
     /**
-     * \brief   Copies property Key from given source as a string
-     * \param   source  The source as string to parse and copy data.
+     * \brief   Assigns the key from a string, parsing its components.
+     *
+     * \param   source      The source string to parse and copy.
      **/
     PropertyKey & operator = ( const String & source );
+    /**
+     * \brief   Assigns the key from a string, parsing its components.
+     *
+     * \param   source      The source string to parse and copy.
+     * \note    Move overload. Takes ownership of the string.
+     **/
     PropertyKey & operator = ( String && source );
 
     /**
-     * \brief   Checks equality of two Key objects.
-     * \param   other   The Key object to check.
-     * \return  Returns true if Key objects are equal.
+     * \brief   Returns true if two keys are equal; false otherwise.
+     *
+     * \param   other       The key object to compare.
      **/
     bool operator == ( const PropertyKey & other ) const;
 
     /**
-     * \brief   Checks inequality of two Key objects.
-     * \param   other   The Key object to check.
-     * \return  Returns true if Key objects are not equal.
+     * \brief   Returns true if two keys are not equal; false otherwise.
+     *
+     * \param   other       The key object to compare.
      **/
     bool operator != ( const PropertyKey & other ) const;
 
     /**
-     * \brief   Converts and returns 32-bit integer value of Key object.
+     * \brief   Converts the key to a 32-bit unsigned integer hash.
      **/
     explicit operator uint32_t () const;
 
@@ -142,152 +172,160 @@ public:
 public:
 
     /**
-     * \brief   Sets Key data, which consists of section, property, module and position sections.
-     *          Key 'module' and 'position' are optional and can be empty.
+     * \brief   Sets key data from individual components. Module and position are optional.
+     *
      * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
      * \param   property    The property part of the property key.
+     * \param   module      The module part of the property key. Optional; defaults to empty.
+     * \param   position    The position part of the property key. Optional; defaults to empty.
+     **/
+    void set_values( const char * section, const char * property, const char * module = nullptr, const char * position = nullptr);
+    /**
+     * \brief   Sets key data from individual components.
+     *
+     * \param   section     The section part of the property key.
+     * \param   property    The property part of the property key.
+     * \param   module      The module part of the property key.
      * \param   position    The position part of the property key.
      **/
-    void setValues( const char * section, const char * property, const char * module = nullptr, const char * position = nullptr);
-    void setValues( const String & section, const String & property, const String & module, const String & position);
+    void set_values( const String & section, const String & property, const String & module, const String & position);
 
     /**
-     * \brief   Sets Key data, which consists of section, property, module and position sections.
-     *          Key 'module' and 'position' are optional and can be empty.
+     * \brief   Sets key data from individual components with explicit key type.
+     *
      * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
      * \param   property    The property part of the property key.
+     * \param   module      The module part of the property key.
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    void setValues(const String& section, const String& property, const String& module, const String& position, NEPersistence::ConfigEntry keyType);
+    void set_values(const String& section, const String& property, const String& module, const String& position, NEPersistence::ConfigEntry keyType);
 
     /**
-     * \brief   Returns section part of the Key
+     * \brief   Returns the section part of the key.
      **/
-    const String & getSection() const;
+    const String & section() const;
 
     /**
-     * \brief   Returns property part of the Key
+     * \brief   Returns the property part of the key.
      **/
-    const String & getProperty() const;
+    const String & property() const;
 
     /**
-     * \brief   Returns module part of the Key
+     * \brief   Returns the module part of the key.
      **/
-    const String & getModule() const;
+    const String & module() const;
 
     /**
-     * \brief   Returns position part of the Key
+     * \brief   Returns the position part of the key.
      **/
-    const String & getPosition() const;
+    const String & position() const;
 
     /**
-     * \brief   Returns the type of the property key.
+     * \brief   Returns the key type.
      **/
-    NEPersistence::ConfigEntry getKeyType() const;
+    NEPersistence::ConfigEntry key_type() const;
 
     /**
-     * \brief   Returns true if the Key is valid.
-     *          The Key is valid if at least section and property parts are not empty.
+     * \brief   Returns true if the key is valid (has both section and property parts).
      **/
-    bool isValid() const;
+    bool is_valid() const;
 
     /**
-     * \brief   Returns true if Key is global and applicable to all modules.
+     * \brief   Returns true if the key is applicable to all modules.
      **/
-    bool isAllModules() const;
+    bool is_all_modules() const;
 
     /**
-     * \brief   Returns true if Key belongs to a group of properties.
-     *          The key is belongs to a group if either it is global and belongs to all modules,
-     *          or the 'position' part of the key ends with '*'.
+     * \brief   Returns true if the key belongs to a group of properties (global with all modules or
+     *          position ending with '*').
      **/
-    bool isGroupProperty() const;
+    bool is_group_property() const;
 
     /**
-     * \brief   Returns true if Key has section part.
+     * \brief   Returns true if the key has a section part.
      **/
-    bool hasSection() const;
+    bool has_section() const;
 
     /**
-     * \brief   Returns true if Key has module part.
+     * \brief   Returns true if the key has a module part.
      **/
-    bool hasModule() const;
+    bool has_module() const;
 
     /**
-     * \brief   Returns true if Key has position part.
+     * \brief   Returns true if the key has a property part.
      **/
-    bool hasProperty() const;
+    bool has_property() const;
 
     /**
-     * \brief   Returns true if Key has position part.
+     * \brief   Returns true if the key has a position part.
      **/
-    bool hasPosition() const;
+    bool has_position() const;
 
     /**
-     * \brief   Parses given string, extracts and initializes Key data.
-     * \param   key     The string, which contains data for Key.
-     * \return  Returns true if parsing succeeded and could extract property data.
+     * \brief   Parses a key string and initializes the key components.
+     *
+     * \param   key     The string to parse as a key.
+     * \return  Returns true if parsing succeeded; false otherwise.
      **/
-    bool parseKey( const String & key );
-    bool parseKey( String && key );
+    bool parse_key( const String & key );
+    /**
+     * \brief   Parses a key string and initializes the key components.
+     *
+     * \param   key     The string to parse as a key.
+     * \return  Returns true if parsing succeeded; false otherwise.
+     * \note    Move overload. Takes ownership of the string.
+     **/
+    bool parse_key( String && key );
 
     /**
-     * \brief   Resets and invalidates Key
+     * \brief   Clears all key components.
      **/
-    void resetKey();
+    void reset();
 
     /**
-     * \brief   Converts Key data to the string.
-     *          If Key consists of several parts, each part is concatenated by key-separator symbol.
+     * \brief   Converts the key to its string representation, with parts separated by the key
+     *          separator.
      **/
-    String convToString() const;
+    String to_string() const;
 
     /**
-     * \brief   Checks the exact match of the key by section and module names.
-     * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
-     * \return  Returns true if the section and the module name of the key have exact match.
-     *          Otherwise, returns false.
+     * \brief   Returns true if the key's section and module exactly match the specified values.
+     *
+     * \param   section     The section part to compare.
+     * \param   module      The module part to compare.
      **/
-    bool isExactModule(const String& section, const String& module) const;
+    bool is_exact_module(const String& section, const String& module) const;
 
     /**
-     * \brief   Checks the exact match of the key by all parameters.
-     * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
-     * \param   property    The property part of the property key.
-     * \param   position    The position part of the property key.
+     * \brief   Returns true if all key components exactly match the specified values.
+     *
+     * \param   section     The section part to compare.
+     * \param   module      The module part to compare.
+     * \param   property    The property part to compare.
+     * \param   position    The position part to compare.
      **/
-    bool isExactProperty(const String& section, const String& module, const String& property, const String& position) const;
+    bool is_exact_property(const String& section, const String& module, const String& property, const String& position) const;
 
     /**
-     * \brief   Checks if the section of the key is applicable to the specified module.
-     * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
-     * \return  Returns true if the section has exact match, and the module is either global or has exact match.
-     *          Otherwise, returns false.
+     * \brief   Returns true if the key applies to the specified section and module (module can be
+     *          global or exact match).
+     *
+     * \param   section     The section part to compare.
+     * \param   module      The module part to compare.
      **/
-    bool isModuleSection(const String& section, const String& module) const;
+    bool is_module_section(const String& section, const String& module) const;
 
     /**
-     * \brief   Checks if the section of the key is applicable to the specified module.
-     * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
-     * \param   property    The property part of the property key.
-     * \param   position    The position part of the property key.
-     * \return  Returns true if the section and the property have exact match, the module is either global or has exact match,
-     *          and the position is compatible. The position is compatible if either it has exact match or the position
-     *          start with the name of the specified position, which ends with '*'. Otherwise, returns false.
-     *          For example, if the position name is "areg_blah_scope" it is compatible with 4 positions:
-     *              1. "areg_blah_scope"
-     *              2. "areg_blah_*"
-     *              3. "areg_*"
-     *              4. "*"
+     * \brief   Returns true if the key applies to the specified components (module and position
+     *          support wildcards).
+     *
+     * \param   section     The section part to compare.
+     * \param   module      The module part to compare.
+     * \param   property    The property part to compare.
+     * \param   position    The position part to compare.
      **/
-    bool isModuleProperty(const String& section, const String& module, const String& property, const String& position) const;
+    bool is_module_property(const String& section, const String& module, const String& property, const String& position) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -295,32 +333,32 @@ public:
 private:
 
     //! Parses the passed key value and sets property key data.
-    inline void _parseKey(const String & key);
+    /**
+     * \brief   Internal helper that parses a key string and sets the section, module, property, and
+     *          position fields.
+     *
+     * \param   key     The key string to parse.
+     **/
+    inline void _parse_key(const String & key);
 
     /**
-     * \return  Returns true if the 'right' position is compatible with the 'left'. 
-     *          The position is compatible if either it has exact match or the position
-     *          start with the name of the specified position, which ends with '*'. Otherwise, returns false.
-     *          For example, if the position name is "areg_blah_scope" it is compatible with 4 positions:
-     *              1. "areg_blah_scope"
-     *              2. "areg_blah_*"
-     *              3. "areg_*"
-     *              4. "*"
-     * \param   left    The string value of the left position.
-     * \param   right   The string value of the right position to compare.
-     * \return  Returns true if specified positions are compatible.
+     * \brief   Returns true if the right position is compatible with the left (supports wildcard
+     *          matching).
+     *
+     * \param   left        The position string to match against.
+     * \param   right       The position string to test.
      **/
-    inline static bool _isCompatible(const String& left, const String& right);
+    inline static bool _is_compatible(const String& left, const String& right);
 
     /**
-     * \brief   Finds the key type that could match the property values.
-     * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
-     * \param   property    The property part of the property key.
-     * \param   position    The position part of the property key.
-     * \return  Returns the key type, wich syntax matches the specified data.
+     * \brief   Returns the key type that matches the given components.
+     *
+     * \param   section     The section part of the key.
+     * \param   module      The module part of the key.
+     * \param   property    The property part of the key.
+     * \param   position    The position part of the key.
      **/
-    inline static NEPersistence::ConfigEntry _findKey(const String& section, const String& module, const String& property, const String& position);
+    inline static NEPersistence::ConfigEntry _find_key(const String& section, const String& module, const String& property, const String& position);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -30,11 +30,11 @@ Property::Property(const String strProperty)
     , mComment      (String::EmptyString)
     , mProperty     ()
 {
-    parseProperty(strProperty);
+    parse(strProperty);
 }
 
-Property::Property(const PropertyKey& key, const PropertyValue& value, const String& comment /*= String::EmptyString*/, bool isTemporary /* = false*/)
-    : mIsTemporary  (isTemporary)
+Property::Property(const PropertyKey& key, const PropertyValue& value, const String& comment /*= String::EmptyString*/, bool is_temporary /* = false*/)
+    : mIsTemporary  (is_temporary)
     , mComment      (comment)
     , mProperty     (key, value)
 {
@@ -54,22 +54,22 @@ Property::Property(PropertyKey&& key, PropertyValue&& value)
 {
 }
 
-Property::Property(const String & keySet, const String & valueSet, const String & comment /*= String::EmptyString*/, bool isTemporary /*= false*/)
-    : mIsTemporary  ( isTemporary )
+Property::Property(const String & keySet, const String & valueSet, const String & comment /*= String::EmptyString*/, bool is_temporary /*= false*/)
+    : mIsTemporary  ( is_temporary )
     , mComment      ( comment )
     , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
 }
 
-Property::Property(const char* keySet, const char* valueSet, const char* comment /*= nullptr*/, bool isTemporary /* = false*/)
-    : mIsTemporary  ( isTemporary )
+Property::Property(const char* keySet, const char* valueSet, const char* comment /*= nullptr*/, bool is_temporary /* = false*/)
+    : mIsTemporary  ( is_temporary )
     , mComment      ( comment )
     , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
 }
 
-Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= String::EmptyString*/, bool isTemporary /* = false*/)
-    : mIsTemporary  ( isTemporary )
+Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= String::EmptyString*/, bool is_temporary /* = false*/)
+    : mIsTemporary  ( is_temporary )
     , mComment      ( comment )
     , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
@@ -81,15 +81,15 @@ Property::Property( const std::string_view& section
                   , const std::string_view& position
                   , const std::string_view& value
                   , const std::string_view& comment /*= String::EmptyString*/
-                  , bool isTemporary /* = false*/)
-    : mIsTemporary  ( isTemporary )
+                  , bool is_temporary /* = false*/)
+    : mIsTemporary  ( is_temporary )
     , mComment      ( comment )
     , mProperty     ( PropertyKey(section, module, property, position), PropertyValue(value) )
 {
 }
 
-Property::Property(const Property::Entry & newProperty, const String & comment /*= String::getEmptyString*/, bool isTemporary /* = false*/)
-    : mIsTemporary  ( isTemporary )
+Property::Property(const Property::Entry & newProperty, const String & comment /*= String::getEmptyString*/, bool is_temporary /* = false*/)
+    : mIsTemporary  ( is_temporary )
     , mComment      ( comment )
     , mProperty     ( newProperty )
 {
@@ -142,72 +142,72 @@ Property::operator uint32_t () const
     return static_cast<uint32_t>(mProperty.mValue.first);
 }
 
-void Property::parseKey(const String & keySet)
+void Property::parse_key(const String & keySet)
 {
-    mProperty.mValue.first.parseKey(keySet);
+    mProperty.mValue.first.parse_key(keySet);
 }
 
-void Property::setKey(const PropertyKey & Key)
+void Property::set_key(const PropertyKey & Key)
 {
     mProperty.mValue.first = Key;
 }
 
-void Property::setKey( PropertyKey && Key )
+void Property::set_key( PropertyKey && Key )
 {
     mProperty.mValue.first = std::move(Key);
 }
 
-const PropertyKey & Property::getKey() const
+const PropertyKey & Property::key() const
 {
     return mProperty.mValue.first;
 }
 
-NEPersistence::ConfigEntry Property::getPropertyType() const
+NEPersistence::ConfigEntry Property::type() const
 {
-    return mProperty.mValue.first.getKeyType();
+    return mProperty.mValue.first.key_type();
 }
 
-String Property::getKeyString() const
+String Property::key_string() const
 {
-    return mProperty.mValue.first.convToString();
+    return mProperty.mValue.first.to_string();
 }
 
-void Property::parseValue(const String & valueSet)
+void Property::parse_value(const String & valueSet)
 {
-    mProperty.mValue.second.parseValue(valueSet);
+    mProperty.mValue.second.parse_value(valueSet);
 }
 
-void Property::setValue(const PropertyValue & Value)
+void Property::set_value(const PropertyValue & Value)
 {
     mProperty.mValue.second = Value;
 }
 
-void Property::setValue( PropertyValue && Value )
+void Property::set_value( PropertyValue && Value )
 {
     mProperty.mValue.second = std::move(Value);
 }
 
-const PropertyValue & Property::getValue() const
+const PropertyValue & Property::value() const
 {
     return mProperty.mValue.second;
 }
 
-PropertyValue& Property::getValue()
+PropertyValue& Property::value()
 {
     return mProperty.mValue.second;
 }
 
-String Property::getValueString() const
+String Property::value_string() const
 {
-    return mProperty.mValue.second.getString();
+    return mProperty.mValue.second.as_string();
 }
 
-void Property::setComment(const String & comment)
+void Property::set_comment(const String & comment)
 {
     mComment = comment;
 }
 
-void Property::addComment(const String & comment)
+void Property::add_comment(const String & comment)
 {
     if (comment.startsWith(NEPersistence::SYNTAX_COMMENT))
     {
@@ -221,32 +221,32 @@ void Property::addComment(const String & comment)
     }
 }
 
-const String & Property::getComment() const
+const String & Property::comment() const
 {
     return mComment;
 }
 
-void Property::setPropertyPair(const Property::Entry & newPair)
+void Property::set_pair(const Property::Entry & newPair)
 {
     mProperty = newPair;
 }
 
-void Property::setPropertyPair( Property::Entry && newPair )
+void Property::set_pair( Property::Entry && newPair )
 {
     mProperty = static_cast<Property::Entry &&>(newPair);
 }
 
-const Property::Entry & Property::getPropertyPair() const
+const Property::Entry & Property::pair() const
 {
     return mProperty;
 }
 
-bool Property::isValid() const
+bool Property::is_valid() const
 {
-    return mProperty.mValue.first.isValid();
+    return mProperty.mValue.first.is_valid();
 }
 
-bool Property::parseProperty(const String & strProperties)
+bool Property::parse(const String & strProperties)
 {
     bool result{ false };
     String data;
@@ -258,7 +258,7 @@ bool Property::parseProperty(const String & strProperties)
         {
             if (pos != NEString::START_POS)
             {
-                addComment(strProperties.getBuffer(pos));
+                add_comment(strProperties.getBuffer(pos));
                 strProperties.substring(data, 0, pos);
             }
         }
@@ -270,20 +270,20 @@ bool Property::parseProperty(const String & strProperties)
         if (data.isEmpty() == false )
         {
             const char* value{ nullptr };
-            const String key{ String::getSubstring(data.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value) };
+            const String key{ String::getSubstring(data.as_string(), NEPersistence::SYNTAX_EQUAL.data(), &value) };
 
-            mProperty.mValue.first.parseKey(key);
-            mProperty.mValue.second.parseValue(value);
+            mProperty.mValue.first.parse_key(key);
+            mProperty.mValue.second.parse_value(value);
 
-            if (isValid())
+            if (is_valid())
             {
                 mIsTemporary = false;
                 result = true;
             }
             else
             {
-                mProperty.mValue.first.resetKey();
-                mProperty.mValue.second.resetValue();
+                mProperty.mValue.first.reset();
+                mProperty.mValue.second.reset();
             }
         }
     }
@@ -291,11 +291,11 @@ bool Property::parseProperty(const String & strProperties)
     return result;
 }
 
-String Property::convToString() const
+String Property::to_string() const
 {
     String result;
-    String key  (mProperty.mValue.first.convToString());
-    String value(mProperty.mValue.second.convToString());
+    String key  (mProperty.mValue.first.to_string());
+    String value(mProperty.mValue.second.to_string());
 
     if ( !key.isEmpty() && !value.isEmpty() )
     {
@@ -324,26 +324,26 @@ String Property::convToString() const
     return result;
 }
 
-void Property::resetData()
+void Property::reset()
 {
-    mProperty.mValue.first.resetKey();
-    mProperty.mValue.second.resetValue();
+    mProperty.mValue.first.reset();
+    mProperty.mValue.second.reset();
     mComment.clear();
     mIsTemporary = false;
 }
 
-bool Property::isModuleProperty(const String& module) const
+bool Property::is_module_property(const String& module) const
 {
     const PropertyKey& key = mProperty.mValue.first;
-    return ((module == key.getModule()) || key.isAllModules());
+    return ((module == key.module()) || key.is_all_modules());
 }
 
-void Property::setTemporary(bool isTemporary)
+void Property::set_temporary(bool is_temporary)
 {
-    mIsTemporary = isTemporary;
+    mIsTemporary = is_temporary;
 }
 
-bool Property::isTemporary() const
+bool Property::is_temporary() const
 {
     return mIsTemporary;
 }

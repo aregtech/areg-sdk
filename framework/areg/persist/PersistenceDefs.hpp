@@ -232,287 +232,286 @@ namespace NEPersistence
         };
 
     /**
-     * \brief   Returns the configuration version property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getConfigVersion();
+    inline const NEPersistence::ConfigKey& config_version();
 
     /**
-     * \brief   Returns the logging version property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogVersion();
+    inline const NEPersistence::ConfigKey& log_version();
 
     /**
-     * \brief   Returns the logging types (targets) property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogTarget();
+    inline const NEPersistence::ConfigKey& log_target();
 
     /**
-     * \brief   Returns the logging enabled / disabled status property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogStatus();
+    inline const NEPersistence::ConfigKey& log_status();
 
     /**
-     * \brief   Returns the logging type (in target) enabled / disabled flag property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogEnable();
+    inline const NEPersistence::ConfigKey& log_enable();
 
     /**
-     * \brief   Returns the log file location and file name mask property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogFileLocation();
+    inline const NEPersistence::ConfigKey& log_file_location();
 
     /**
-     * \brief   Returns the flag to append logs into the file property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogFileAppend();
+    inline const NEPersistence::ConfigKey& log_file_append();
 
     /**
-     * \brief   Returns the queue size of remote logging property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogRemoteQueueSize();
+    inline const NEPersistence::ConfigKey& log_remote_queue_size();
 
     /**
-     * \brief   Returns the layout of enter scope message property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogLayoutEnter();
+    inline const NEPersistence::ConfigKey& log_layout_enter();
 
     /**
-     * \brief   Returns the layout of log message property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogLayoutMessage();
+    inline const NEPersistence::ConfigKey& log_layout_message();
 
     /**
-     * \brief   Returns the layout of exit scope message property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogLayoutExit();
+    inline const NEPersistence::ConfigKey& log_layout_exit();
 
     /**
-     * \brief   Returns the log scope enable / disable flag property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogScope();
+    inline const NEPersistence::ConfigKey& log_scope();
 
     /**
-     * \brief   Returns the list of supported remote services property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getServiceList();
+    inline const NEPersistence::ConfigKey& service_list();
 
     /**
-     * \brief   Returns the process name of the remote service property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getServiceName();
+    inline const NEPersistence::ConfigKey& service_name();
 
     /**
-     * \brief   Returns the list of connection type of the remote service property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getServiceConnection();
+    inline const NEPersistence::ConfigKey& service_connection();
 
     /**
-     * \brief   Returns the connection enable / disable flag of the remote service property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getServiceEnable();
+    inline const NEPersistence::ConfigKey& service_enable();
 
     /**
-     * \brief   Returns the connection address of the remote service property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getServiceAddress();
+    inline const NEPersistence::ConfigKey& service_address();
 
     /**
-     * \brief   Returns the connection port number of the remote service property structure.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getServicePort();
+    inline const NEPersistence::ConfigKey& service_port();
 
     /**
-     * \brief   Returns the name of log database engine.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseEngine();
+    inline const NEPersistence::ConfigKey& log_database_engine();
 
     /**
-     * \brief   Returns the log database name.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseName();
+    inline const NEPersistence::ConfigKey& log_database_name();
 
     /**
-     * \brief   Returns the location of the log database. This can be either
-     *          a file path or URI.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseLocation();
+    inline const NEPersistence::ConfigKey& log_database_location();
 
     /**
-     * \brief   Returns the driver of the log database.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseDriver();
+    inline const NEPersistence::ConfigKey& log_database_driver();
 
     /**
-     * \brief   Returns the IP-address of the log database engine to connect.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseAddress();
+    inline const NEPersistence::ConfigKey& log_database_address();
 
     /**
-     * \brief   Returns the port number of the log database engine to connect.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabasePort();
+    inline const NEPersistence::ConfigKey& log_database_port();
 
     /**
-     * \brief   The user name to use when connect to the database engine.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseUser();
+    inline const NEPersistence::ConfigKey& log_database_user();
 
     /**
-     * \brief   The password to use when connect to the database engine.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabasePassword();
+    inline const NEPersistence::ConfigKey& log_database_password();
 
     /**
-     * \brief   The default block size in bytes to allocate in shared buffer to minimize de-fragmentation.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getDefaultBufferBlockSize();
+    inline const NEPersistence::ConfigKey& default_buffer_block_size();
 
     /**
-     * \brief   The default message queue size in the dispatcher thread.
+     * \brief
      **/
-    inline const NEPersistence::ConfigKey& getDefaultMessageQueueSize();
+    inline const NEPersistence::ConfigKey& default_message_queue_size();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NEPersistence namespace inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEPersistence::ConfigKey& NEPersistence::getConfigVersion()
+inline const NEPersistence::ConfigKey& NEPersistence::config_version()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ConfigVersion)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceList()
+inline const NEPersistence::ConfigKey& NEPersistence::service_list()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceList)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogVersion()
+inline const NEPersistence::ConfigKey& NEPersistence::log_version()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogVersion)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogTarget()
+inline const NEPersistence::ConfigKey& NEPersistence::log_target()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogTarget)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogStatus()
+inline const NEPersistence::ConfigKey& NEPersistence::log_status()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogStatus)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogEnable()
+inline const NEPersistence::ConfigKey& NEPersistence::log_enable()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogEnable)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogFileLocation()
+inline const NEPersistence::ConfigKey& NEPersistence::log_file_location()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogFileLocation)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogFileAppend()
+inline const NEPersistence::ConfigKey& NEPersistence::log_file_append()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogFileAppend)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogRemoteQueueSize()
+inline const NEPersistence::ConfigKey& NEPersistence::log_remote_queue_size()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogRemoteQueueSize)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogLayoutEnter()
+inline const NEPersistence::ConfigKey& NEPersistence::log_layout_enter()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutEnter)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogLayoutMessage()
+inline const NEPersistence::ConfigKey& NEPersistence::log_layout_message()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutMessage)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogLayoutExit()
+inline const NEPersistence::ConfigKey& NEPersistence::log_layout_exit()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutExit)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogScope()
+inline const NEPersistence::ConfigKey& NEPersistence::log_scope()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogScope)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceConnection()
+inline const NEPersistence::ConfigKey& NEPersistence::service_connection()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceConnection)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceEnable()
+inline const NEPersistence::ConfigKey& NEPersistence::service_enable()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceEnable)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceName()
+inline const NEPersistence::ConfigKey& NEPersistence::service_name()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceName)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceAddress()
+inline const NEPersistence::ConfigKey& NEPersistence::service_address()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceAddress)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServicePort()
+inline const NEPersistence::ConfigKey& NEPersistence::service_port()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServicePort)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseEngine()
+const NEPersistence::ConfigKey& NEPersistence::log_database_engine()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseEngine)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseName()
+const NEPersistence::ConfigKey& NEPersistence::log_database_name()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseName)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseLocation()
+const NEPersistence::ConfigKey& NEPersistence::log_database_location()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseLocation)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseDriver()
+const NEPersistence::ConfigKey& NEPersistence::log_database_driver()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseDriver)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseAddress()
+const NEPersistence::ConfigKey& NEPersistence::log_database_address()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseAddress)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabasePort()
+const NEPersistence::ConfigKey& NEPersistence::log_database_port()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabasePort)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseUser()
+const NEPersistence::ConfigKey& NEPersistence::log_database_user()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseUsername)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabasePassword()
+const NEPersistence::ConfigKey& NEPersistence::log_database_password()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabasePassword)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getDefaultBufferBlockSize()
+const NEPersistence::ConfigKey& NEPersistence::default_buffer_block_size()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultBufferBlock)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getDefaultMessageQueueSize()
+const NEPersistence::ConfigKey& NEPersistence::default_message_queue_size()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultMessageQueue)];
 }

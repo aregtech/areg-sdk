@@ -32,6 +32,9 @@ class AREG_API DatabaseEngine
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
+    /**
+     * \brief
+     **/
     DatabaseEngine();
 
     virtual ~DatabaseEngine();
@@ -45,51 +48,54 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns true if database engine is opened and operable.
-     *          Otherwise, returns false.
+     * \brief   Returns true if the database engine is operable.
      **/
-    virtual bool isOperable() const = 0;
+    virtual bool is_operable() const = 0;
 
     /**
-     * \brief   Connects to the specified database.
-     * \param   dbPath      The path to the database. If needed, the path may contain
-     *                      file path or URL, user name and password. It is up to
-     *                      Database engine to parse the path and initialize the connection.
-     *                      If the parameter is empty, it should take the data from the
-     *                      'areg.init' configuration file.
-     * \param   readOnly    If true, the database engine should connect in read-only mode.
-     * \return  Returns true if succeeded to connect. Otherwise, returns false.
+     * \brief   Connects to the database at the specified path.
+     *
+     * \param   dbPath      The path to the database. The path may contain a file path, URL, user
+     *                      name, and password. If empty, the engine reads the connection details
+     *                      from the 'areg.init' configuration file.
+     * \param   readOnly    If true, the database engine connects in read-only mode; otherwise, in
+     *                      read-write mode.
+     * \return  Returns true if the connection succeeds; false otherwise.
      **/
     virtual bool connect(const String & dbPath, bool readOnly) = 0;
 
     /**
-     * \brief   Disconnects connected database.
+     * \brief   Disconnects from the database.
      **/
     virtual void disconnect() = 0;
 
     /**
-     * \brief   Execute the SQL script.
+     * \brief   Executes the specified SQL script.
+     *
      * \param   sql     The SQL script to execute.
-     * \return  Returns true if succeeds to execute the SQL script.
+     * \return  Returns true if the SQL script executes successfully; false otherwise.
      **/
     virtual bool execute(const String & sql) = 0;
 
     /**
-     * \brief   Call if need to make multiple operation. This call starts the transaction,
-     *          that is required either commit or rollback call to complete the transaction.
+     * \brief   Starts a database transaction.
+     *
+     * \return  Returns true if the transaction starts successfully; false otherwise.
      **/
     virtual bool begin() = 0;
 
     /**
-     * \brief   Commits or rolls back the database changes and returns true if succeeded.
-     * \param   doCommit    If true, the database engine should commit the changes.
-     *                      Otherwise, the database engine should rollback the changes.
-     * \return  Returns true if operation succeeded. Otherwise, returns false.
+     * \brief   Commits or rolls back pending database changes.
+     *
+     * \param   doCommit    If true, commits the changes; if false, rolls them back.
+     * \return  Returns true if the operation succeeds; false otherwise.
      **/
     virtual bool commit(bool doCommit) = 0;
 
     /**
-     * \brief   Rolls back the database changes and returns true if succeeded.
+     * \brief   Rolls back all pending database changes.
+     *
+     * \return  Returns true if the rollback succeeds; false otherwise.
      **/
     virtual bool rollback() = 0;
 
