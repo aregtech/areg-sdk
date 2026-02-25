@@ -53,7 +53,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

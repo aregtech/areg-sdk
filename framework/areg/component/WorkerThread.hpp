@@ -29,7 +29,7 @@
  ************************************************************************/
 class Component;
 class ComponentThread;
-class WorkerThreadConsumer;
+namespace areg { class WorkerThreadConsumer; }
 
 //////////////////////////////////////////////////////////////////////////
 // WorkerThread class declaration
@@ -98,7 +98,7 @@ public:
      **/
     WorkerThread( const areg::String & threadName
                 , Component & bindingComponent
-                , WorkerThreadConsumer & threadConsumer
+                , areg::WorkerThreadConsumer & threadConsumer
                 , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
                 , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                 , uint32_t maxQueue         = areg::IGNORE_VALUE);
@@ -201,7 +201,7 @@ private:
     /**
      * \brief   Worker Thread Consumer object
      **/
-    WorkerThreadConsumer &   mWorkerThreadConsumer;
+    areg::WorkerThreadConsumer &   mWorkerThreadConsumer;
 
     /**
      * \brief   The watchdog object to track the event processing.

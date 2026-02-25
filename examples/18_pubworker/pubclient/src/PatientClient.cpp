@@ -25,7 +25,7 @@ PatientClient & PatientClient::self()
     return (*this);
 }
 
-WorkerThreadConsumer * PatientClient::workerThreadConsumer(const areg::String & consumerName, const areg::String & workerThreadName)
+areg::WorkerThreadConsumer * PatientClient::workerThreadConsumer(const areg::String & consumerName, const areg::String & workerThreadName)
 {
     if ( mHwWorker.getConsumerName() == consumerName)
     {

@@ -31,7 +31,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class WorkerThreadConsumer;
+namespace areg { class WorkerThreadConsumer; }
 class ComponentThread;
 class WorkerThread;
 class StubBase;
@@ -222,7 +222,7 @@ public:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName );
+    virtual areg::WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName );
 
     /**
      * \brief   This function is called when worker thread is started.
@@ -231,7 +231,7 @@ public:
      * \param   consumer        The worker thread consumer object
      * \param   workerThread    The worker thread, which is started.
      **/
-    virtual void notifyWorkerThreadStarted(WorkerThreadConsumer& consumer, WorkerThread & workerThread);
+    virtual void notifyWorkerThreadStarted(areg::WorkerThreadConsumer& consumer, WorkerThread & workerThread);
 
 /************************************************************************/
 // Component operations
@@ -248,7 +248,7 @@ public:
      * \return	Pointer to created worker thread object.
      **/
     WorkerThread * createWorkerThread( const areg::String & threadName
-                                     , WorkerThreadConsumer & consumer
+                                     , areg::WorkerThreadConsumer & consumer
                                      , ComponentThread & ownerThread
                                      , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
                                      , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT

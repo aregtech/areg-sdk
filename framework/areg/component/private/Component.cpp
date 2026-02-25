@@ -51,7 +51,7 @@ Component* Component::loadComponent(const areg::ComponentEntry &entry, Component
         for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++ i)
         {
             const areg::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
-            WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
+            areg::WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
             if (consumer != nullptr)
             {
                 WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
@@ -161,7 +161,7 @@ Component::~Component()
 // Methods
 //////////////////////////////////////////////////////////////////////////
 WorkerThread* Component::createWorkerThread(  const areg::String & threadName
-                                            , WorkerThreadConsumer& consumer
+                                            , areg::WorkerThreadConsumer& consumer
                                             , ComponentThread & /* ownerThread */
                                             , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE */
                                             , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT */
@@ -283,12 +283,12 @@ void Component::waitComponentCompletion( uint32_t waitTimeout )
     }
 }
 
-WorkerThreadConsumer* Component::workerThreadConsumer( const areg::String & /* consumerName */, const areg::String & /* workerThreadName */)
+areg::WorkerThreadConsumer* Component::workerThreadConsumer( const areg::String & /* consumerName */, const areg::String & /* workerThreadName */)
 {
     return nullptr;
 }
 
-void Component::notifyWorkerThreadStarted(WorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
+void Component::notifyWorkerThreadStarted(areg::WorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
 {
 }
 

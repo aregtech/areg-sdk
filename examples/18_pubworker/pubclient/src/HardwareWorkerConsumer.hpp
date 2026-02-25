@@ -21,7 +21,7 @@
  *          worker thread and the binding component (master), or between worker threads
  *          of the same binding component (master).
  **/
-class HardwareWorkerConsumer    : public    WorkerThreadConsumer
+class HardwareWorkerConsumer    : public    areg::WorkerThreadConsumer
                                 , private   IEPatientInfoEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////

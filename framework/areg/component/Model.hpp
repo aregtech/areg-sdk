@@ -73,7 +73,7 @@ namespace areg
 class Component;
 class WorkerThread;
 class ComponentThread;
-class WorkerThreadConsumer;
+namespace areg { class WorkerThreadConsumer; }
 
 /************************************************************************
  * Global types

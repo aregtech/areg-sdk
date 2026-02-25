@@ -35,7 +35,7 @@ AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 WorkerThread::WorkerThread( const areg::String & threadName
                           , Component & bindingComponent
-                          , WorkerThreadConsumer & threadConsumer
+                          , areg::WorkerThreadConsumer & threadConsumer
                           , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
                           , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
                           , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )

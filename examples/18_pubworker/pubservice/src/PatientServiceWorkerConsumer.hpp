@@ -21,7 +21,7 @@ class PatientInformationStub;
  *          it gets inputs from console and sets data directly to Stub object to
  *          send data update notification to all subscribers.
  **/
-class PatientServiceWorkerConsumer  : public    WorkerThreadConsumer
+class PatientServiceWorkerConsumer  : public    areg::WorkerThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.
