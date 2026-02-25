@@ -109,7 +109,7 @@ class SyncLockAndWaitPosix
      *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
      *          objects in the entire map are not unique, but should be unique in the list.
      **/
-    using SyncResourceMapIX = ConcurrentResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
+    using SyncResourceMapIX = areg::ConcurrentResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // The resource map for timer.

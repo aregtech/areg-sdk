@@ -303,7 +303,7 @@ private:
      * \brief   ProxyBase::MapThreadProxyList
      *          The Map of the list, where the key is a string and values are list of proxies.
      **/
-    using MapThreadProxyList= ConcurrentResourceListMap<areg::String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
+    using MapThreadProxyList= areg::ConcurrentResourceListMap<areg::String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
