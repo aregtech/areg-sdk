@@ -117,7 +117,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
@@ -133,7 +133,7 @@ private:
     uint32_t        mBlockCount;
 
     //!< Timer to output message.
-    Timer           mTimer;
+    areg::Timer           mTimer;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

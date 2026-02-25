@@ -95,7 +95,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -170,7 +170,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     DataRateHelper* mDataRateHelper;//!< The pointer to utility object to retrieve data rate info.
-    Timer           mTimer;         //!< The timer to run in component thread.
+    areg::Timer           mTimer;         //!< The timer to run in component thread.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

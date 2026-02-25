@@ -177,7 +177,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -197,7 +197,7 @@ private:
     //!< List of log observers (log viewers)
     areg::MapInstances         mObservers;
     //!< The timer used when trigger multiple requests to save configuration.
-    Timer                           mSaveTimer;
+    areg::Timer                           mSaveTimer;
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

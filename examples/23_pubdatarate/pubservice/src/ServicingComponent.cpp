@@ -38,7 +38,7 @@ void ServicingComponent::OptionConsumer::processEvent(const OptionData& data)
 // ServicingComponent::ServicingTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void ServicingComponent::ServicingTimerConsumer::processTimer( Timer & timer )
+void ServicingComponent::ServicingTimerConsumer::processTimer( areg::Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -208,7 +208,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, getComponentThread(), Timer::CONTINUOUSLY);
+        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, getComponentThread(), areg::Timer::CONTINUOUSLY);
         mPauseEvent.setEvent();
         _printInfo();
     }

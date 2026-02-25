@@ -82,7 +82,7 @@ protected:
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -102,7 +102,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     SessionList     mSessionList;   //!< The list of sessions to track.
-    Timer           mTimer;         //!< Timer to unlock request.
+    areg::Timer           mTimer;         //!< Timer to unlock request.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

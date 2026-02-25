@@ -111,7 +111,7 @@ protected:
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -130,7 +130,7 @@ private:
     uint32_t        mSequenceId;    //!< Current sequence ID.
     uint32_t        mRespReceived;  //!< The total number of requests sent
     SequenceList    mSequenceList;  //!< The list of generated sequences.
-    Timer           mTimer;         //!< The timer to send requests.
+    areg::Timer           mTimer;         //!< The timer to send requests.
 #ifdef DEBUG
     uint32_t        mReqCount;      //!< The number of requests. Test only in Debug build.
 #endif // DEBUG

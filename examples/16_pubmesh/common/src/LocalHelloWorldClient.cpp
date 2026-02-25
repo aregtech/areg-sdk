@@ -62,7 +62,7 @@ void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnected
     mID = clientInfo.ccID;
 }
 
-void LocalHelloWorldClient::processTimer(Timer & timer)
+void LocalHelloWorldClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
     ASSERT( &timer == &mTimer );

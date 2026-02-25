@@ -82,7 +82,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 /************************************************************************/
 // StubBase overrides.
@@ -107,8 +107,8 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
-    Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
+    areg::Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
+    areg::Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
     int32_t     mClientCount;       //!< The number of connected clients.
     uint32_t    mSeqString;         //!< The sequence number of the string.
     uint16_t    mCountString;       //!< The count number of the string to change.

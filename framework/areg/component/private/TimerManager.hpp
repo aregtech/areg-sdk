@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
+namespace areg { class Timer; }
 class TimerPosix;
 
 //////////////////////////////////////////////////////////////////////////
@@ -65,8 +65,8 @@ private:
      **/
     static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
 
-    using MapTimerResource  = areg::HashMap<TIMERHANDLE, Timer *>;
-    using TimerResource     = areg::ConcurrentResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
+    using MapTimerResource  = areg::HashMap<TIMERHANDLE, areg::Timer *>;
+    using TimerResource     = areg::ConcurrentResourceMap<TIMERHANDLE, areg::Timer *, MapTimerResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -124,7 +124,7 @@ public:
      * \param   timer   The timer object that should be started
      * \return  Returns true if timer was successfully created.
      **/
-    static bool startTimer(Timer &timer);
+    static bool startTimer(areg::Timer &timer);
 
     /**
      * \brief   Starts the timer. If succeeds, returns true.
@@ -135,13 +135,13 @@ public:
      *                      event should be dispatched.
      * \return  Returns true if timer was successfully created.
      **/
-    static bool startTimer(Timer &timer, const DispatcherThread & whichThread);
+    static bool startTimer(areg::Timer &timer, const DispatcherThread & whichThread);
 
     /**
      * \brief   Stops the timer.
      * \param   timer   The timer object that should be stopped
      **/
-    static void stopTimer(Timer &timer);
+    static void stopTimer(areg::Timer &timer);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -188,7 +188,7 @@ private:
     /**
      * \brief   Called when expired timers should be processed.
      **/
-    void _processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes);
+    void _processExpiredTimer(areg::Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes);
 
     /**
      * \brief   Stops and removes all timers, i.e. unregisters all timers.
@@ -204,7 +204,7 @@ private:
      * \param   whichThread The dispatcher thread, where the timer event should be dispatched.
      * \return  Returns true if succeeded to register timer in the map.
      **/
-    bool _registerTimer( Timer & timer, const DispatcherThread & whichThread );
+    bool _registerTimer( areg::Timer & timer, const DispatcherThread & whichThread );
 
     /**
      * \brief   Registers timer in the timer resource map.
@@ -215,14 +215,14 @@ private:
      * \param   whichThreadId   The dispatcher thread, where the timer event should be dispatched.
      * \return  Returns true if succeeded to register timer in the map.
      **/
-    bool _registerTimer( Timer & timer, id_type whichThreadId );
+    bool _registerTimer( areg::Timer & timer, id_type whichThreadId );
 
     /**
      * \brief   Unregisters timer manager in the timer resource map.
      *          Before unregistering timer, it stops and closes system timer.
      * \param   timer   The pointer to timer object that should be unregistered.
      **/
-    void _unregisterTimer( Timer & timer );
+    void _unregisterTimer( areg::Timer & timer );
 
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods
@@ -266,7 +266,7 @@ private:
      * \param   timer   The timer object.
      * \return  Returns true if system timer started with success.
      **/
-    static bool _osSystemTimerStart( Timer& timer );
+    static bool _osSystemTimerStart( areg::Timer& timer );
 
     /**
      * \brief   Stops previously started waitable timer.

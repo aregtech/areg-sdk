@@ -78,7 +78,7 @@ void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 }
 #endif  // AREG_LOGS
 
-void ServiceClient::processTimer(Timer & timer)
+void ServiceClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);

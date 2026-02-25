@@ -101,7 +101,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
@@ -119,7 +119,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
     const uint32_t  mMsTimeout; //!< The timeout for timer to trigger message output of remote service
-    Timer               mTimer;     //!< The timer to trigger to send request to output message
+    areg::Timer               mTimer;     //!< The timer to trigger to send request to output message
     PublicHelloWorld::sClientRegister   mClient;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

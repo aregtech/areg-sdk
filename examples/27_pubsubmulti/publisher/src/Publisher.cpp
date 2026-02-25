@@ -150,8 +150,8 @@ void Publisher::start()
         setStringOnChange(generateString(mSeqString));
     }
 
-    mTimerAlways.startTimer(PubSub::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(PubSub::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerAlways.startTimer(PubSub::TimeoutAlways, getComponentThread(), areg::Timer::CONTINUOUSLY);
+    mTimerOnChange.startTimer(PubSub::TimeoutOnChange, getComponentThread(), areg::Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
@@ -199,7 +199,7 @@ void Publisher::quit()
     Application::signalAppQuit();
 }
 
-void Publisher::processTimer(Timer & timer)
+void Publisher::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_processTimer);
 

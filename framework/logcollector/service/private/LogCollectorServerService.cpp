@@ -256,7 +256,7 @@ void LogCollectorServerService::onServiceMessageReceived(const areg::RemoteMessa
     }
 }
 
-void LogCollectorServerService::processTimer(Timer& /* timer */ )
+void LogCollectorServerService::processTimer(areg::Timer& /* timer */ )
 {
 }
 

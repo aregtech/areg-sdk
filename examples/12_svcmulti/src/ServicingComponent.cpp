@@ -50,7 +50,7 @@ void ServicingComponent::shutdownServiceInterface(Component & holder)
     std::cout << "Local servicing stopped..." << std::endl;
 }
 
-void ServicingComponent::processTimer(Timer & timer)
+void ServicingComponent::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_12_svcmulti_ServicingComponent_processTimer);
     LOG_DBG("The timer [ %s ] has expired", timer.getName().getString());

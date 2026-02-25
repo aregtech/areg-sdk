@@ -116,7 +116,7 @@ private:
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   timer   The Timer Event Data object containing Timer object.
          **/
-        void processTimer( Timer & timer ) override;
+        void processTimer( areg::Timer & timer ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -185,7 +185,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    Timer                               mTimer;         //!< The timer to switch lights
+    areg::Timer                               mTimer;         //!< The timer to switch lights
 
     SimpleTrafficLight::TrafficLight mPrevState;     //!< Previous state for yellow light switch
 

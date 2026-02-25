@@ -487,7 +487,7 @@ protected:
     const areg::RemoteServiceKind  mService;           //!< The remote service type.
     const uint32_t                      mConnectTypes;      //!< The bitwise flags of remote service connections.
     ServerConnection                        mServerConnection;  //!< The instance of server connection object.
-    Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
+    areg::Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
     ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
     ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
     DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.

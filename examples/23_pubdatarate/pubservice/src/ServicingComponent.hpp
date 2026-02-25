@@ -116,7 +116,7 @@ class ServicingComponent    : public    Component
          * \brief   Triggered when Timer is expired. 
          * \param   timer   The timer object that is expired.
          **/
-        void processTimer( Timer & timer ) override;
+        void processTimer( areg::Timer & timer ) override;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -264,7 +264,7 @@ private:
     //!< List of generated image blocks.
     std::vector<ImageBlock>     mBlockList;
     //! The timer to trigger to output data
-    Timer                       mTimer;
+    areg::Timer                       mTimer;
     //! The thread to input from console.
     areg::Thread                      mInputThread;
     //! The thread to generate image data.

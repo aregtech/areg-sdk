@@ -60,12 +60,12 @@ bool TimerManager::isTimerManagerStarted()
     return getInstance().isReady();
 }
 
-bool TimerManager::startTimer( Timer &timer )
+bool TimerManager::startTimer( areg::Timer &timer )
 {
     return TimerManager::startTimer(timer, DispatcherThread::getCurrentDispatcherThread());
 }
 
-bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread)
+bool TimerManager::startTimer(areg::Timer &timer, const DispatcherThread & whichThread)
 {
     LOG_SCOPE(areg_component_private_TimerManager_startTimer);
 
@@ -94,7 +94,7 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
     return result;
 }
 
-void TimerManager::stopTimer( Timer &timer )
+void TimerManager::stopTimer( areg::Timer &timer )
 {
     getInstance()._unregisterTimer( timer );
 }
@@ -119,7 +119,7 @@ TimerManager::~TimerManager()
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichThread)
+bool TimerManager::_registerTimer(areg::Timer &timer, const DispatcherThread & whichThread)
 {
     LOG_SCOPE(areg_component_private_TimerManager__registerTimer);
 
@@ -144,14 +144,14 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
     return result;
 }
 
-bool TimerManager::_registerTimer(Timer &timer, id_type whichThreadId)
+bool TimerManager::_registerTimer(areg::Timer &timer, id_type whichThreadId)
 {
     areg::Thread * thread = areg::Thread::findThreadById(whichThreadId);
     DispatcherThread * disp = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     return (disp != nullptr ? _registerTimer(timer, *disp) : false);
 }
 
-void TimerManager::_unregisterTimer( Timer & timer )
+void TimerManager::_unregisterTimer( areg::Timer & timer )
 {
     TIMERHANDLE handle = timer.getHandle();
     if (handle != nullptr)
@@ -165,7 +165,7 @@ void TimerManager::_removeAllTimers()
 {
     mTimerResource.lock();
 
-    std::pair<TIMERHANDLE, Timer*> elem{ nullptr, nullptr };
+    std::pair<TIMERHANDLE, areg::Timer*> elem{ nullptr, nullptr };
     while (mTimerResource.isEmpty() == false)
     {
         mTimerResource.removeResourceFirstElement(elem);
@@ -179,7 +179,7 @@ void TimerManager::_removeAllTimers()
 void TimerManager::processEvent( const TimerManagerEventData & data )
 {
     LOG_SCOPE(areg_component_private_TimerManager_processEvent);
-    Timer* timer = static_cast<Timer*>(data.getTimer());
+    areg::Timer* timer = static_cast<areg::Timer*>(data.getTimer());
     ASSERT(timer != nullptr);
     if ( mTimerResource.existResource(timer->getHandle( )) )
     {
@@ -194,7 +194,7 @@ void TimerManager::processEvent( const TimerManagerEventData & data )
 #endif // DEBUG
 }
 
-void TimerManager::_processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)
+void TimerManager::_processExpiredTimer(areg::Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)
 {
     LOG_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
 

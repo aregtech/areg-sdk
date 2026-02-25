@@ -127,13 +127,13 @@ protected:
 /************************************************************************/
 // TimerConsumer interface overrides.
 /************************************************************************/
-    void processTimer(Timer &) override
+    void processTimer(areg::Timer &) override
     {
         ASSERT(false);  // this never happens, because we interrupt in dispatchEvent()
     }
 
 private:
-    Timer mTimer;
+    areg::Timer mTimer;
 };
 
 //////////////////////////////////////////////////////////////////////////

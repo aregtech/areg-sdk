@@ -102,8 +102,8 @@ void Publisher::start()
         setStringOnChange( { generateString(mSeqString), roleName } );
     }
 
-    mTimerAlways.startTimer(PubSubMix::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(PubSubMix::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerAlways.startTimer(PubSubMix::TimeoutAlways, getComponentThread(), areg::Timer::CONTINUOUSLY);
+    mTimerOnChange.startTimer(PubSubMix::TimeoutOnChange, getComponentThread(), areg::Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
@@ -151,7 +151,7 @@ void Publisher::quit()
     Application::signalAppQuit();
 }
 
-void Publisher::processTimer(Timer & timer)
+void Publisher::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
 

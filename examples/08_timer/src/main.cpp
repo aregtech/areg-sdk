@@ -61,7 +61,7 @@ public:
     void startTimers()
     {
         LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
-        auto start = [&](Timer & t, uint32_t timeout, int32_t count)
+        auto start = [&](areg::Timer & t, uint32_t timeout, int32_t count)
         {
             if (t.startTimer(timeout, static_cast<DispatcherThread&>(*this), count))
             {
@@ -76,7 +76,7 @@ public:
 
         start(mOneTime, TIMEOUT_ONE_TIME, 1);
         start(mPeriodic, TIMEOUT_PERIODIC_TIME, (areg::TIMEOUT_1_SEC*5 / 2)/TIMEOUT_PERIODIC_TIME);
-        start(mContinuous, TIMEOUT_CONTINUOUS_TIME, Timer::CONTINUOUSLY);
+        start(mContinuous, TIMEOUT_CONTINUOUS_TIME, areg::Timer::CONTINUOUSLY);
     }
 
     void stopTimers()
@@ -89,7 +89,7 @@ public:
     }
 
 protected:
-    void processTimer(Timer & timer) override
+    void processTimer(areg::Timer & timer) override
     {
         LOG_SCOPE(timer_main_TimerDispatcher_processTimer);
         LOG_DBG("Timer [ %s ] expired, timeout [%u], events [%d], thread [%s]"
@@ -108,9 +108,9 @@ protected:
         return EventDispatcher::postEvent(eventElem);
     }
 private:
-    Timer mOneTime;
-    Timer mPeriodic;
-    Timer mContinuous;
+    areg::Timer mOneTime;
+    areg::Timer mPeriodic;
+    areg::Timer mContinuous;
 };
 
 //////////////////////////////////////////////////////////////////////////

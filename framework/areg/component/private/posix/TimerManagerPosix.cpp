@@ -39,7 +39,7 @@ void TimerManager::_posixTimerExpiredRoutine( TimerPosix* posixTimer )
 {
     TimerManager & timerManager = TimerManager::getInstance( );
     ASSERT( posixTimer != nullptr );
-    Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+    areg::Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
     if ( (timer != nullptr) && (posixTimer->isValid( )) )
     {
@@ -55,7 +55,7 @@ void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
     TimerManager & timerManager = TimerManager::getInstance( );
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
     ASSERT( posixTimer != nullptr );
-    Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+    areg::Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
     if ( (timer != nullptr) && (posixTimer->isValid( )) )
     {
@@ -76,7 +76,7 @@ void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
     }
 }
 
-bool TimerManager::_osSystemTimerStart( Timer & timer )
+bool TimerManager::_osSystemTimerStart( areg::Timer & timer )
 {
     bool result{ false };
     TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());

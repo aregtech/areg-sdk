@@ -85,7 +85,7 @@ bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, Proxy
 
     if (isConnected())
     {
-        mTimer.startTimer( NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY );
+        mTimer.startTimer( NELargeData::TIMER_TIMEOUT, areg::Timer::CONTINUOUSLY );
     }
     else
     {
@@ -96,7 +96,7 @@ bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, Proxy
     return result;
 }
 
-void ServiceClient::processTimer(Timer& /* timer */)
+void ServiceClient::processTimer(areg::Timer& /* timer */)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
     Console& console = Console::getInstance();

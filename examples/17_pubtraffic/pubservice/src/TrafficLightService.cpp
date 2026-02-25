@@ -32,7 +32,7 @@ void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitc
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightService::TrafficLightTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
-void TrafficLightService::TrafficLightTimerConsumer::processTimer( Timer & timer )
+void TrafficLightService::TrafficLightTimerConsumer::processTimer( areg::Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {

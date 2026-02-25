@@ -49,7 +49,7 @@ class TimerManagerEventData;
  /************************************************************************
   * Dependencies
   ************************************************************************/
-class Timer;
+namespace areg { class Timer; }
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManagerEventData class declaration

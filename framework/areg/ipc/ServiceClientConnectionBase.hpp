@@ -443,7 +443,7 @@ private:
     /**
      * \brief   Connection retry timer object.
      **/
-    Timer                                   mTimerConnect;
+    areg::Timer                                   mTimerConnect;
     /**
      * \brief   Message receiver thread
      **/

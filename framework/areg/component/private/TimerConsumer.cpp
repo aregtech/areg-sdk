@@ -30,7 +30,7 @@ namespace areg
     void TimerConsumer::startEventProcessing( Event& eventElem )
     {
         TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
-        Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
+        areg::Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
         if (timer != nullptr )
         {
             processTimer(*timer);

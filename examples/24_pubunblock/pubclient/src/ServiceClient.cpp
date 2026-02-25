@@ -83,7 +83,7 @@ void ServiceClient::responseIdentifier( uint32_t clientId )
               << std::endl;
 
     ASSERT(mSequenceId == 0);
-    mTimer.startTimer(HelloUnblock::ClientTimeot, Timer::CONTINUOUSLY);
+    mTimer.startTimer(HelloUnblock::ClientTimeot, areg::Timer::CONTINUOUSLY);
 }
 
 void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
@@ -155,7 +155,7 @@ void ServiceClient::onHelloServiceStateUpdate( HelloUnblock::RunState HelloServi
     }
 }
 
-void ServiceClient::processTimer( Timer & /* timer */ )
+void ServiceClient::processTimer( areg::Timer & /* timer */ )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
     ASSERT( mSequenceId < HelloUnblock::MaxMessages );

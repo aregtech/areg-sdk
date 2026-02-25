@@ -70,7 +70,7 @@ void ServiceClient::broadcastReachedMaximum( int32_t /* maxNumber */ )
     requestShutdownService(mID, mTimer.getName());
 }
 
-void ServiceClient::processTimer(Timer & timer)
+void ServiceClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);

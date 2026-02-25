@@ -169,7 +169,7 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
     }
 }
 
-void PublicHelloWorldClient::processTimer(Timer & timer)
+void PublicHelloWorldClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
     ASSERT(&timer == &mTimer);

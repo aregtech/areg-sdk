@@ -38,13 +38,13 @@ TimerEvent::TimerEvent( const TimerEventData & data )
     }
 }
 
-TimerEvent::TimerEvent( Timer &timer )
+TimerEvent::TimerEvent( areg::Timer &timer )
     : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
 {
     timer._queueTimer();
 }
 
-TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
+TimerEvent::TimerEvent(areg::Timer & timer, DispatcherThread & target)
     : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
 {
     ASSERT(target.isRunning());
@@ -66,12 +66,12 @@ TimerEvent::~TimerEvent()
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-bool TimerEvent::sendEvent( Timer & timer, id_type dispatchThreadId )
+bool TimerEvent::sendEvent( areg::Timer & timer, id_type dispatchThreadId )
 {
     return TimerEvent::sendEvent(timer, DispatcherThread::getDispatcherThread(dispatchThreadId));
 }
 
-bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
+bool TimerEvent::sendEvent(areg::Timer & timer, DispatcherThread & dispatchThread)
 {
     bool result{ false };
     if ( dispatchThread.isRunning() )

@@ -30,7 +30,7 @@ class TimerConsumer;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
+namespace areg { class Timer; }
 class TimerEventData;
 class DispatcherThread;
 
@@ -81,7 +81,7 @@ namespace areg
          *          Overwrite method to receive messages.
          * \param   timer   The timer object that is expired.
          **/
-        virtual void processTimer( Timer & timer ) = 0;
+        virtual void processTimer( areg::Timer & timer ) = 0;
 
         /**
          * \brief   Automatically triggered when event is dispatched by thread.

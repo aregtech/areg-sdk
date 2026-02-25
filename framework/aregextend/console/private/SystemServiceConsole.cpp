@@ -50,7 +50,7 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
         console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
     }
 
-    mTimer.startTimer( areg::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
+    mTimer.startTimer( areg::TIMEOUT_1_SEC, areg::Timer::CONTINUOUSLY );
 
     console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
     console.enableConsoleInput( true );
@@ -65,9 +65,9 @@ void SystemServiceConsole::shutdownServiceInterface( Component & holder )
 }
 
 #ifdef DEBUG
-void SystemServiceConsole::processTimer( Timer & timer )
+void SystemServiceConsole::processTimer( areg::Timer & timer )
 #else   // DEBUG
-void SystemServiceConsole::processTimer(Timer & /*timer*/)
+void SystemServiceConsole::processTimer(areg::Timer & /*timer*/)
 #endif  // DEBUG
 {
     ASSERT( &timer == &mTimer );

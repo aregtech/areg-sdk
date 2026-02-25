@@ -30,7 +30,7 @@ class TimerEvent;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
+namespace areg { class Timer; }
 
 //////////////////////////////////////////////////////////////////////////
 // TimerEventData class declaration
@@ -58,7 +58,7 @@ public:
      * \brief   Constructor. Initializes Timer object
      * \param   timer   The fired Timer object.
      **/
-    inline explicit TimerEventData( Timer & timer );
+    inline explicit TimerEventData( areg::Timer & timer );
     /**
      * \brief   Copy constructor.
      * \param   src     The source of data to copy.
@@ -96,7 +96,7 @@ public:
     /**
      * \brief   Returns the pointer to Timer object.
      **/
-    inline Timer * getTimer() const;
+    inline areg::Timer * getTimer() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -105,7 +105,7 @@ private:
     /**
      * \brief   Pointer to Timer object. Should not be nullptr.
      **/
-    Timer *   mTimer;
+    areg::Timer *   mTimer;
 };
 
 AREG_DECLARE_EVENT(TimerEventData, TimerEventBase, TimerEventConsumerBase)
@@ -136,7 +136,7 @@ public:
      * \param   dispatchThreadId    The ID of dispatcher object to send event
      * \return  Returns true if successfully sent event. Otherwise returns false.
      **/
-    static bool sendEvent( Timer & timer, id_type dispatchThreadId );
+    static bool sendEvent( areg::Timer & timer, id_type dispatchThreadId );
     /**
      * \brief   Creates and sends Timer event containing information
      *          about expired timer. The event is send to the
@@ -145,7 +145,7 @@ public:
      * \param   dispatchThread  The dispatcher object to send event
      * \return  Returns true if successfully sent event. Otherwise returns false.
      **/
-    static bool sendEvent( Timer & timer, DispatcherThread & dispatchThread );
+    static bool sendEvent( areg::Timer & timer, DispatcherThread & dispatchThread );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -161,7 +161,7 @@ private:
       *          The Event Data is initialized by passed Timer object.
       * \param   timer    The Timer object to include in event data.
       **/
-   explicit TimerEvent( Timer & timer );
+   explicit TimerEvent( areg::Timer & timer );
    /**
     * \brief    Initializes Timer Event object and data, sets timer consumer
     *           and registers for specified target thread. The target thread
@@ -171,7 +171,7 @@ private:
     * \param    timer   The Timer object to set in event data.
     * \param    target  The target dispatching thread to process event.
     **/
-   TimerEvent( Timer & timer, DispatcherThread & target );
+   TimerEvent( areg::Timer & timer, DispatcherThread & target );
    /**
     * \brief   Destructor
     **/
@@ -194,7 +194,7 @@ inline TimerEventData::TimerEventData()
 {
 }
 
-inline TimerEventData::TimerEventData(Timer &timer)
+inline TimerEventData::TimerEventData(areg::Timer &timer)
     : mTimer(&timer)
 {
 }
@@ -210,7 +210,7 @@ inline TimerEventData::TimerEventData( TimerEventData && src ) noexcept
     src.mTimer  = nullptr;
 }
 
-inline Timer* TimerEventData::getTimer() const
+inline areg::Timer* TimerEventData::getTimer() const
 {
     return mTimer;
 }

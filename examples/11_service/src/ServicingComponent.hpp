@@ -60,7 +60,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -103,7 +103,7 @@ protected:
     }
 
 private:
-    Timer   mTimer; //!< The timer to run in component thread.
+    areg::Timer   mTimer; //!< The timer to run in component thread.
     int32_t     mCount; //!< The timer event count.
 
 private:

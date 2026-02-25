@@ -126,7 +126,7 @@ private:
         /**
          * \brief   Process State Machine timers.
          **/
-        void processTimer( Timer & timer ) override;
+        void processTimer( areg::Timer & timer ) override;
     
     private:
     /************************************************************************/
@@ -283,7 +283,7 @@ private:
     /**
      * \brief   Timer Red object
      **/
-    Timer     mTimerRed;
+    areg::Timer     mTimerRed;
     /**
      * \brief   Timer Red trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -293,7 +293,7 @@ private:
     /**
      * \brief   Timer YellowRed object
      **/
-    Timer     mTimerYellowRed;
+    areg::Timer     mTimerYellowRed;
     /**
      * \brief   Timer YellowRed trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -303,7 +303,7 @@ private:
     /**
      * \brief   Timer Green object
      **/
-    Timer     mTimerGreen;
+    areg::Timer     mTimerGreen;
     /**
      * \brief   Timer Green trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -313,7 +313,7 @@ private:
     /**
      * \brief   Timer YellowGreen object
      **/
-    Timer     mTimerYellowGreen;
+    areg::Timer     mTimerYellowGreen;
     /**
      * \brief   Timer YellowGreen trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -323,7 +323,7 @@ private:
     /**
      * \brief   Timer PedestrianWalk object
      **/
-    Timer     mTimerPedestrianWalk;
+    areg::Timer     mTimerPedestrianWalk;
     /**
      * \brief   Timer PedestrianWalk trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -333,7 +333,7 @@ private:
     /**
      * \brief   Timer VehicleWait object
      **/
-    Timer     mTimerVehicleWait;
+    areg::Timer     mTimerVehicleWait;
     /**
      * \brief   Timer VehicleWait trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.

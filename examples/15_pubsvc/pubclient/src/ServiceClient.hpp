@@ -80,7 +80,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods
@@ -94,7 +94,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // member variables
 //////////////////////////////////////////////////////////////////////////
-    Timer           mTimer; //!< The timer to trigger to send request to output message
+    areg::Timer           mTimer; //!< The timer to trigger to send request to output message
     uint32_t    mID;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////

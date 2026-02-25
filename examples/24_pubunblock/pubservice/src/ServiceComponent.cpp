@@ -65,7 +65,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
     {
         ASSERT( mTimer.isActive( ) == false );
         LOG_DBG( "First request with valid ID, trigger timer to send response every [ %u ] ms", HelloUnblock::ServiceTimeout );
-        mTimer.startTimer( HelloUnblock::ServiceTimeout, Timer::CONTINUOUSLY );
+        mTimer.startTimer( HelloUnblock::ServiceTimeout, areg::Timer::CONTINUOUSLY );
     }
 
     mSessionList.pushLast( SessionEtnry{ clientId, seqNr, sessionId } );
@@ -75,7 +75,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
               << " Session = " << sessionId << std::endl;
 }
 
-void ServiceComponent::processTimer( Timer & /* timer */ )
+void ServiceComponent::processTimer( areg::Timer & /* timer */ )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
     SessionEtnry entry = mSessionList.popFirst( );

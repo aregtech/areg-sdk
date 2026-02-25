@@ -25,7 +25,7 @@ ReconnectTimerConsumer::ReconnectTimerConsumer(ServiceEventConsumer& eventConsum
 {
 }
 
-void ReconnectTimerConsumer::processTimer(Timer& /* timer */)
+void ReconnectTimerConsumer::processTimer(areg::Timer& /* timer */)
 {
     mServiceEventConsumer.onServiceReconnectTimerExpired();
 }

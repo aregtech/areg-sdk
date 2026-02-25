@@ -44,7 +44,7 @@ void TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long low
     TimerManager & timerManager = TimerManager::getInstance( );
     ASSERT( argPtr != nullptr );
     TIMERHANDLE handle = reinterpret_cast<void *>(argPtr);
-    Timer * timer = timerManager.mTimerResource.findResourceObject( handle );
+    areg::Timer * timer = timerManager.mTimerResource.findResourceObject( handle );
     if ( timer != nullptr )
     {
         timerManager._processExpiredTimer( timer, handle, highValue, lowValue );
@@ -58,7 +58,7 @@ void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
     ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
 }
 
-bool TimerManager::_osSystemTimerStart( Timer & timer )
+bool TimerManager::_osSystemTimerStart( areg::Timer & timer )
 {
     ASSERT(timer.getHandle() != nullptr);
 

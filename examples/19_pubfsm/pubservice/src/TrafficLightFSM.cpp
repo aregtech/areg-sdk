@@ -147,7 +147,7 @@ TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLi
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
 /* --------------------------------------------------------------------- */
-void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
+void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( areg::Timer & timer )
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
     LOG_DBG("Processing Timer < %s >.", timer.getName().getString());
