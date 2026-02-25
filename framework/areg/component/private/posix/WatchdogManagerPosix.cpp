@@ -34,7 +34,7 @@
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 {
     TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
     if (posixTimer != nullptr)
@@ -43,14 +43,14 @@ void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool areg::WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 {
     bool result = false;
     TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
     if (posixTimer != nullptr)
     {
         Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
-        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_posixWatchdogExpiredRoutine))
+        if (posixTimer->startTimer(watchdog, watchdogId, &areg::WatchdogManager::_posixWatchdogExpiredRoutine))
         {
             result = true;
         }
@@ -60,9 +60,9 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 }
 
 #ifdef __APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
+void areg::WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
 {
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
     ASSERT(posixTimer != nullptr);
     Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
     Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
@@ -77,9 +77,9 @@ void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
     }
 }
 #else   // !__APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
+void areg::WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
 {
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
     ASSERT(posixTimer != nullptr);
     Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());

@@ -100,13 +100,13 @@ void Application::releaseApplication()
 {
     Application::_setAppState(areg::AppState::Releasing);
 
-    WatchdogManager::stopWatchdogManager(false);
+    areg::WatchdogManager::stopWatchdogManager(false);
     TimerManager::stopTimerManager(false);
     ComponentLoader::unloadComponentModel(false, areg::String::EmptyString);
     ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
     areg::stopLogging(false);
 
-    WatchdogManager::waitWatchdogManager();
+    areg::WatchdogManager::waitWatchdogManager();
     TimerManager::waitTimerManager();
     ComponentLoader::waitModelUnload(areg::String::EmptyString);
     ServiceManager::_waitServiceManager();
@@ -207,12 +207,12 @@ void Application::stopTimerManager()
 
 bool Application::startWatchdogManager()
 {
-    return (WatchdogManager::isWatchdogManagerStarted() == false ? WatchdogManager::startWatchdogManager() : true);
+    return (areg::WatchdogManager::isWatchdogManagerStarted() == false ? areg::WatchdogManager::startWatchdogManager() : true);
 }
 
 void Application::stopWatchdogManager()
 {
-    WatchdogManager::stopWatchdogManager(true);
+    areg::WatchdogManager::stopWatchdogManager(true);
 }
 
 bool Application::startMessageRouting(uint32_t connectTypes)

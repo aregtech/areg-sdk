@@ -32,7 +32,7 @@
  //  Windows OS specific methods
  //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 {
 
     if (handle != nullptr)
@@ -41,7 +41,7 @@ void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool areg::WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 {
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = 0;
@@ -54,7 +54,7 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
     return (::SetWaitableTimer(   watchdog.getHandle()
                                 , &timeTrigger
                                 , period
-                                , (PTIMERAPCROUTINE)(&WatchdogManager::_windowsWatchdogExpiredRoutine)
+                                , (PTIMERAPCROUTINE)(&areg::WatchdogManager::_windowsWatchdogExpiredRoutine)
                                 , reinterpret_cast<void*>(watchdog.makeWatchdogId(watchdog.getId(), watchdog.getSequence())), FALSE) == TRUE);
 }
 
@@ -64,10 +64,10 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
+void areg::WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
 {
     ASSERT(argPtr != nullptr);
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
     Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<Watchdog::WATCHDOG_ID>(argPtr);
     Watchdog::GUARD_ID guardId = Watchdog::makeGuardId(watchdogId);
     Watchdog* watchdog = watchdogManager.mWatchdogResource.findResourceObject(guardId);

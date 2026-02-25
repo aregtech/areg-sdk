@@ -45,7 +45,7 @@ Watchdog::Watchdog(areg::WorkerThread& thread, uint32_t msTimeout /*= areg::WATC
 
 Watchdog::~Watchdog()
 {
-    WatchdogManager::stopTimer(*this);
+    areg::WatchdogManager::stopTimer(*this);
 }
 
 void Watchdog::startGuard()
@@ -55,7 +55,7 @@ void Watchdog::startGuard()
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
         ++mSequence;
-        mActive = WatchdogManager::startTimer(*this);
+        mActive = areg::WatchdogManager::startTimer(*this);
     }
 }
 
@@ -66,6 +66,6 @@ void Watchdog::stopGuard()
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
         mActive = false;
-        WatchdogManager::stopTimer(*this);
+        areg::WatchdogManager::stopTimer(*this);
     }
 }
