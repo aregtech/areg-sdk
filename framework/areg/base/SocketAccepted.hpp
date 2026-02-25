@@ -32,7 +32,7 @@ namespace areg
      *          request is received by server socket and closed when socket is not used
      *          by any other object.
      **/
-    class AREG_API SocketAccepted : public    Socket
+    class AREG_API SocketAccepted : public    areg::Socket
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor

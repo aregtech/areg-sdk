@@ -124,7 +124,7 @@ public:
     /**
      * \brief   Returns the socket object.
      **/
-    Socket & getSocket();
+    areg::Socket & getSocket();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -270,7 +270,7 @@ inline bool ClientConnection::disableReceive()
     return mClientSocket.disableReceive();
 }
 
-inline Socket & ClientConnection::getSocket()
+inline areg::Socket & ClientConnection::getSocket()
 {
     return mClientSocket;
 }

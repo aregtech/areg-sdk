@@ -34,7 +34,7 @@ namespace areg
      *          Client socket is using only TCP/IP connection. All other types
      *          and protocols are out of scope of this class and are not considered.
      **/
-    class AREG_API SocketClient   : public    Socket
+    class AREG_API SocketClient   : public    areg::Socket
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor

@@ -375,9 +375,9 @@ bool ServiceCommunicationBase::startReceiveThread()
 }
 
 #ifdef DEBUG
-void ServiceCommunicationBase::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
+void ServiceCommunicationBase::failedSendMessage(const RemoteMessage & msgFailed, areg::Socket & whichTarget )
 #else  // DEBUG
-void ServiceCommunicationBase::failedSendMessage(const RemoteMessage& /*msgFailed*/, Socket& whichTarget)
+void ServiceCommunicationBase::failedSendMessage(const RemoteMessage& /*msgFailed*/, areg::Socket& whichTarget)
 #endif // DEBUG
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
@@ -400,7 +400,7 @@ void ServiceCommunicationBase::failedSendMessage(const RemoteMessage& /*msgFaile
     }
 }
 
-void ServiceCommunicationBase::failedReceiveMessage(Socket & whichSource)
+void ServiceCommunicationBase::failedReceiveMessage(areg::Socket & whichSource)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
 
@@ -416,7 +416,7 @@ void ServiceCommunicationBase::failedReceiveMessage(Socket & whichSource)
     }
 }
 
-void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
+void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgReceived, areg::Socket & whichSource)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_processReceivedMessage);
     if ( msgReceived.isValid() )

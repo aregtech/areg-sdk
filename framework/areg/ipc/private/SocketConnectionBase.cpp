@@ -20,7 +20,7 @@
 
 #include "areg/logging/GELog.h"
 
-int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
+int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const areg::Socket & clientSocket) const
 {
     int32_t result{ -1 };
     if ( in_message.isValid() && clientSocket.isValid() )
@@ -39,7 +39,7 @@ int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, cons
     return result;
 }
 
-int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
+int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const areg::Socket & clientSocket) const
 {
     int32_t result{ -1 };
     if ( clientSocket.isValid() && clientSocket.isAlive() )

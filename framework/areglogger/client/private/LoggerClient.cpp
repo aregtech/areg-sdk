@@ -597,7 +597,7 @@ void LoggerClient::lostRemoteServiceChannel(const Channel& /* channel */)
     }
 }
 
-void LoggerClient::failedSendMessage(const RemoteMessage& /* msgFailed */, Socket& /* whichTarget */)
+void LoggerClient::failedSendMessage(const RemoteMessage& /* msgFailed */, areg::Socket& /* whichTarget */)
 {
     FuncMessagingFailed callback{ nullptr };
     do
@@ -616,7 +616,7 @@ void LoggerClient::failedSendMessage(const RemoteMessage& /* msgFailed */, Socke
     }
 }
 
-void LoggerClient::failedReceiveMessage(Socket& /* whichSource */)
+void LoggerClient::failedReceiveMessage(areg::Socket& /* whichSource */)
 {
     FuncMessagingFailed callback{ nullptr };
     do
@@ -639,7 +639,7 @@ void LoggerClient::failedProcessMessage(const RemoteMessage& /* msgUnprocessed *
 {
 }
 
-void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, Socket& whichSource)
+void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, areg::Socket& whichSource)
 {
     if (msgReceived.isValid() && whichSource.isValid())
     {

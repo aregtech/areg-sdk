@@ -18,7 +18,7 @@
 namespace areg
 {
     SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const areg::SocketAddress & sockAddress )
-        : Socket  ( hSocket, sockAddress)
+        : areg::Socket  ( hSocket, sockAddress)
     {
     }
 

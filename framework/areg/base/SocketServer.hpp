@@ -46,7 +46,7 @@ namespace areg
      *          Server socket is using only TCP/IP connection. All other types
      *          and protocols are out of scope of this class and are not considered.
      **/
-    class AREG_API SocketServer   : public    Socket
+    class AREG_API SocketServer   : public    areg::Socket
     {
     public:
         /**

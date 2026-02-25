@@ -210,20 +210,20 @@ public:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failedSendMessage( const RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    void failedReceiveMessage( Socket & whichSource ) override;
+    void failedReceiveMessage( areg::Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer

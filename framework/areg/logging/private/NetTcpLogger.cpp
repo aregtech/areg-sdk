@@ -138,7 +138,7 @@ void NetTcpLogger::lostRemoteServiceChannel(const Channel & /* channel */)
     mClientConnection.setCookie(areg::COOKIE_UNKNOWN);
 }
 
-void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /* whichTarget */)
+void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, areg::Socket & /* whichTarget */)
 {
     ASSERT(mIsEnabled);
     if (mLogConfiguration.getStackSize() > 0)
@@ -149,7 +149,7 @@ void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /
     sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
-void NetTcpLogger::failedReceiveMessage(Socket & /* whichSource */)
+void NetTcpLogger::failedReceiveMessage(areg::Socket & /* whichSource */)
 {
     sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
@@ -158,7 +158,7 @@ void NetTcpLogger::failedProcessMessage(const RemoteMessage & /* msgUnprocessed 
 {
 }
 
-void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
+void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, areg::Socket & whichSource)
 {
     if (msgReceived.isValid() && whichSource.isValid())
     {

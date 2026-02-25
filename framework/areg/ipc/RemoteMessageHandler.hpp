@@ -24,7 +24,7 @@
  * Dependencies
  ************************************************************************/
 class RemoteMessage;
-class Socket;
+namespace areg { class Socket; }
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteMessageHandler interface declaration
@@ -60,13 +60,13 @@ public:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) = 0;
+    virtual void failedSendMessage( const RemoteMessage & msgFailed, areg::Socket & whichTarget ) = 0;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    virtual void failedReceiveMessage( Socket & whichSource ) = 0;
+    virtual void failedReceiveMessage( areg::Socket & whichSource ) = 0;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
@@ -80,7 +80,7 @@ public:
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) = 0;
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

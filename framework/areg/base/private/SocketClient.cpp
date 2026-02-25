@@ -17,13 +17,13 @@
 namespace areg
 {
     SocketClient::SocketClient( const char * hostName, uint16_t portNr )
-        : Socket  ( )
+        : areg::Socket  ( )
     {
         mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
     }
 
     SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
-        : Socket  ( )
+        : areg::Socket  ( )
     {
         mAddress = remoteAddress;
     }

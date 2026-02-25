@@ -173,7 +173,7 @@ void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, 
     }
 }
 
-void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
+void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, areg::Socket & whichTarget )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedSendMessage);
 
@@ -216,7 +216,7 @@ void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & w
     }
 }
 
-void RouterClient::failedReceiveMessage( Socket & whichSource )
+void RouterClient::failedReceiveMessage( areg::Socket & whichSource )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedReceiveMessage);
 
@@ -278,7 +278,7 @@ void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
     }
 }
 
-void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource )
+void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
     if ( msgReceived.isValid() && whichSource.isValid() )

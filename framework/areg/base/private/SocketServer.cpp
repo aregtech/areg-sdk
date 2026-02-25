@@ -18,13 +18,13 @@
 namespace areg
 {
     SocketServer::SocketServer( const char * hostName, uint16_t portNr )
-        : Socket  ( )
+        : areg::Socket  ( )
     {
         mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, true);
     }
 
     SocketServer::SocketServer( const areg::SocketAddress & serverAddress )
-        : Socket  ( )
+        : areg::Socket  ( )
     {
         mAddress = serverAddress;
     }
