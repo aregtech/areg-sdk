@@ -62,7 +62,7 @@ class NetTcpLogger  : public    LoggerBase
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
-    using RingStack = RingStack<RemoteMessage>;
+    using RingStack = areg::RingStack<RemoteMessage>;
 
     //!< A prefix to add in front of thread and timer names.
     static constexpr std::string_view   PREFIX_THREAD{ "logger_" };

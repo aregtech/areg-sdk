@@ -26,8 +26,8 @@
  **/
 TEST(RingStackTest, TestConstructorsStop)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lock(count, areg::OverlapPolicy::Stop);
@@ -145,8 +145,8 @@ TEST(RingStackTest, TestConstructorsStop)
  **/
 TEST(RingStackTest, TestConstructorsShift)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lock(count, areg::OverlapPolicy::Shift);
@@ -266,8 +266,8 @@ TEST(RingStackTest, TestConstructorsShift)
  **/
 TEST(RingStackTest, TestConstructorsResize)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lock(count, areg::OverlapPolicy::Resize);
@@ -370,8 +370,8 @@ TEST(RingStackTest, TestConstructorsResize)
  **/
 TEST(RingStackTest, TestOperatorsIndex)
 {
-    using LockRing = ConcurrentRingStack<uint32_t>;
-    using NolockRing = RingStack<uint32_t>;
+    using LockRing = areg::ConcurrentRingStack<uint32_t>;
+    using NolockRing = areg::RingStack<uint32_t>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockStop(count, areg::OverlapPolicy::Stop), lockShift(count, areg::OverlapPolicy::Shift), lockResize(count, areg::OverlapPolicy::Resize);
@@ -450,8 +450,8 @@ TEST(RingStackTest, TestOperatorsIndex)
  **/
 TEST(RingStackTest, TestOperatorsCopyMove)
 {
-    using LockRing = ConcurrentRingStack<uint32_t>;
-    using NolockRing = RingStack<uint32_t>;
+    using LockRing = areg::ConcurrentRingStack<uint32_t>;
+    using NolockRing = areg::RingStack<uint32_t>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockStop(count, areg::OverlapPolicy::Stop), lockShift(count, areg::OverlapPolicy::Shift), lockResize(count, areg::OverlapPolicy::Resize);
@@ -511,8 +511,8 @@ TEST(RingStackTest, TestOperatorsCopyMove)
  **/
 TEST(RingStackTest, TestPushPopStop)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockRing(count, areg::OverlapPolicy::Stop);
@@ -604,8 +604,8 @@ TEST(RingStackTest, TestPushPopStop)
  **/
 TEST(RingStackTest, TestPushPopShift)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockRing(count, areg::OverlapPolicy::Shift);
@@ -687,8 +687,8 @@ TEST(RingStackTest, TestPushPopShift)
  **/
 TEST(RingStackTest, TestPushPopResize)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockRing(count, areg::OverlapPolicy::Resize);
@@ -771,7 +771,7 @@ TEST(RingStackTest, TestPushPopResize)
  **/
 TEST(RingStackTest, TestClearFreeExtra)
 {
-    using LockRing = ConcurrentRingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockStop(count, areg::OverlapPolicy::Stop), lockShift(count, areg::OverlapPolicy::Shift), lockResize(count, areg::OverlapPolicy::Resize);
@@ -821,8 +821,8 @@ TEST(RingStackTest, TestClearFreeExtra)
  **/
 TEST(RingStackTest, TestAdd)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     NolockRing nolock(count, areg::OverlapPolicy::Resize);
@@ -873,8 +873,8 @@ TEST(RingStackTest, TestAdd)
  **/
 TEST(RingStackTest, TestCopy)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     NolockRing nolock(count, areg::OverlapPolicy::Resize);
@@ -923,8 +923,8 @@ TEST(RingStackTest, TestCopy)
  **/
 TEST(RingStackTest, TestMove)
 {
-    using LockRing = ConcurrentRingStack<int>;
-    using NolockRing = RingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
+    using NolockRing = areg::RingStack<int>;
     constexpr uint32_t count{ 10 };
 
     NolockRing nolock(count, areg::OverlapPolicy::Resize);
@@ -992,7 +992,7 @@ TEST(RingStackTest, TestMove)
  **/
 TEST(RingStackTest, TestSearching)
 {
-    using LockRing = ConcurrentRingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockStop(count, areg::OverlapPolicy::Stop), lockShift(count, areg::OverlapPolicy::Shift), lockResize(count, areg::OverlapPolicy::Resize);
@@ -1045,7 +1045,7 @@ TEST(RingStackTest, TestSearching)
  **/
 TEST(RingStackTest, TestStreaming)
 {
-    using LockRing = ConcurrentRingStack<int>;
+    using LockRing = areg::ConcurrentRingStack<int>;
     constexpr uint32_t count{ 10 };
 
     LockRing lockStop(count, areg::OverlapPolicy::Stop), lockShift(0, areg::OverlapPolicy::Shift);
