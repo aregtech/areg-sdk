@@ -61,7 +61,7 @@ public:
      * \param   cmdLog  The log command to process.
      * \param   stream  The serialized data of the event.
      **/
-    void processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream );
+    void processLogEvent( LoggingEventData::LogAction cmdLog, const areg::SharedBuffer & stream );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -94,7 +94,7 @@ private:
     /**
      * \brief   Logs the message.
      **/
-    void _loggingLogMessage( const SharedBuffer & data );
+    void _loggingLogMessage( const areg::SharedBuffer & data );
 
     /**
      * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
@@ -103,7 +103,7 @@ private:
      * \param   stream      The buffer with scope name, scope ID and scope priority.
      * \param   scopeCount  The number of scopes in the binary buffer.
      **/
-    void _changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount );
+    void _changeScopePriority( const areg::SharedBuffer & stream, uint32_t scopeCount );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

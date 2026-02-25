@@ -139,7 +139,7 @@ uint32_t EventDataStream::read( ByteBuffer & buffer ) const
     uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.isEmpty() == false)
     {
-        static_cast<SharedBuffer &>(buffer) = mSharedList.popFirst();
+        static_cast<areg::SharedBuffer &>(buffer) = mSharedList.popFirst();
         result = buffer.getSizeUsed();
     }
     else
@@ -175,7 +175,7 @@ uint32_t EventDataStream::write( const ByteBuffer & buffer )
     uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal)
     {
-        mSharedList.pushLast( static_cast<const SharedBuffer &>(buffer) );
+        mSharedList.pushLast( static_cast<const areg::SharedBuffer &>(buffer) );
         result = buffer.getSizeUsed();
     }
     else

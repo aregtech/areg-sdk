@@ -33,7 +33,7 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class SharedBuffer;
+namespace areg { class SharedBuffer; }
 
 /**
  * \brief   The log observer base class.
@@ -300,7 +300,7 @@ public:
      * \brief   Call to get all log messages from log database.
      * \param   messages   On output, contains the list of all log messages.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& messages);
+    void getLogMessages(std::vector<areg::SharedBuffer>& messages);
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
@@ -310,7 +310,7 @@ public:
      * \param   instId  The ID of the instance to get log messages.
      *                  If `areg::COOKIE_ANY` it receives log messages of all instances.
      **/
-    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
+    void getLogInstMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
@@ -320,7 +320,7 @@ public:
      * \param   scopeId     The ID of the scope to get log messages.
      *                      If `0` it receives log messages of all scopes.
      **/
-    void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
+    void getLogScopeMessages(std::vector<areg::SharedBuffer>& messages, uint32_t scopeId = 0);
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
@@ -332,7 +332,7 @@ public:
      * \param   scopeId     The ID of the scope to get log messages.
      *                      If `0` it receives log messages of all scopes.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
+    void getLogMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
 
 //////////////////////////////////////////////////////////////////////////
 // Actions
@@ -476,7 +476,7 @@ protected:
      * \brief   The callback of the event triggered when receive message to log.
      * \param   logMessage  The structure of the message to log.
      **/
-    virtual void onLogMessage(const SharedBuffer & logMessage) = 0;
+    virtual void onLogMessage(const areg::SharedBuffer & logMessage) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

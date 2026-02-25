@@ -547,7 +547,7 @@ TEST(HashMapTest, TestStreaming)
         src[i] = i;
     }
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << src;
 
     stream.moveToBegin();

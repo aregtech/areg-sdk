@@ -38,7 +38,7 @@ void HardwareWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
 
 void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
 {
-    const SharedBuffer & buf = data.getData();
+    const areg::SharedBuffer & buf = data.getData();
     PatientInfoEventData::UpdateCommands cmd = PatientInfoEventData::UpdateCommands::CMD_Undefined;
     buf >> cmd;
 
@@ -54,7 +54,7 @@ void HardwareWorkerConsumer::processEvent(const PatientInfoEventData & data)
     }
 }
 
-void HardwareWorkerConsumer::updateInfoPatient(const SharedBuffer & data)
+void HardwareWorkerConsumer::updateInfoPatient(const areg::SharedBuffer & data)
 {
     PatientInformation::PatientInfo infoPatient;
     data >> infoPatient;

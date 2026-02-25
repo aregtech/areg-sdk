@@ -91,7 +91,7 @@ public:
      * \param   action      The action ID to set in event data
      * \param   dataBuffer  The buffer of data set.
      **/
-    LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer );
+    LoggingEventData( LoggingEventData::LogAction action, const areg::SharedBuffer & dataBuffer );
 
     /**
      * \brief   Creates the logging even data with specified action and logging message data
@@ -145,19 +145,19 @@ public:
     /**
      * \brief   Returns the streaming buffer for writing.
      **/
-    inline SharedBuffer & getWritableStream();
+    inline areg::SharedBuffer & getWritableStream();
 
     /**
      * \brief   Returns the streaming buffer for reading.
      **/
-    inline const SharedBuffer & getReadableStream() const;
+    inline const areg::SharedBuffer & getReadableStream() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
     LoggingEventData::LogAction   mAction;
-    SharedBuffer                  mDataBuffer;
+    areg::SharedBuffer                  mDataBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,12 +179,12 @@ inline LoggingEventData::LogAction LoggingEventData::getLoggingAction() const
     return mAction;
 }
 
-inline SharedBuffer & LoggingEventData::getWritableStream()
+inline areg::SharedBuffer & LoggingEventData::getWritableStream()
 {
     return mDataBuffer;
 }
 
-inline const SharedBuffer & LoggingEventData::getReadableStream() const
+inline const areg::SharedBuffer & LoggingEventData::getReadableStream() const
 {
     return mDataBuffer;
 }

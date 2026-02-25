@@ -31,7 +31,7 @@ LogEventProcessor::LogEventProcessor( LogManager & logManager )
 {
 }
 
-void LogEventProcessor::processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
+void LogEventProcessor::processLogEvent( LoggingEventData::LogAction cmdLog, const areg::SharedBuffer & stream )
 {
     stream.moveToBegin( );
 
@@ -89,14 +89,14 @@ inline void LogEventProcessor::_loggingSaveScopes()
     mLogManager.mLogConfig.saveConfiguration( );
 }
 
-inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
+inline void LogEventProcessor::_loggingLogMessage( const areg::SharedBuffer & data )
 {
     const areg::LogEntry * logMessage = reinterpret_cast<const areg::LogEntry *>(data.getBuffer( ));
     ASSERT( logMessage != nullptr );
     mLogManager.writeLogMessage( *logMessage );
 }
 
-inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount )
+inline void LogEventProcessor::_changeScopePriority( const areg::SharedBuffer & stream, uint32_t scopeCount )
 {
     areg::String scopeName{ };
     uint32_t scopeId{ };

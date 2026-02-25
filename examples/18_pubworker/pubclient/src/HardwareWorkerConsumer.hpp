@@ -72,7 +72,7 @@ private:
     /**
      * \brief   Updates the patient information (assumes here updates the HW data).
      **/
-    void updateInfoPatient( const SharedBuffer & data );
+    void updateInfoPatient( const areg::SharedBuffer & data );
 
     /**
      * \brief   Wrapper of this pointer.

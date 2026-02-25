@@ -89,7 +89,7 @@ public:
      * \brief   Triggers an event to log message contained in the shared buffer.
      * \param   logData     The instance of message in shared buffer to log.
      **/
-    static void logMessage(const SharedBuffer& logData);
+    static void logMessage(const areg::SharedBuffer& logData);
 
     /**
      * \brief   Triggers an event to log remote message.
@@ -103,7 +103,7 @@ public:
      * \param   cmd     The command to execute.
      * \param   data    The binary data to pass in the command.
      **/
-    static void sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data);
+    static void sendCommandMessage(LoggingEventData::LogAction cmd, const areg::SharedBuffer& data);
 
     /**
      * \brief   Call to configure logging. The passed configuration file name should be either

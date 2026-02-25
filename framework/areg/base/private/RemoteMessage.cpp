@@ -38,18 +38,18 @@ inline uint32_t RemoteMessage::_checksumCalculate( const areg::RawMessage & remo
 }
 
 RemoteMessage::RemoteMessage(uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-    : SharedBuffer  ( blockSize )
+    : areg::SharedBuffer  ( blockSize )
 {
 }
 
 RemoteMessage::RemoteMessage(uint32_t reserveSize, uint32_t blockSize)
-    : SharedBuffer  ( blockSize )
+    : areg::SharedBuffer  ( blockSize )
 {
     reserve(reserveSize, false);
 }
 
 RemoteMessage::RemoteMessage(const uint8_t * buffer, uint32_t size, uint32_t blockSize /*= areg::BLOCK_SIZE*/)
-    : SharedBuffer  ( blockSize )
+    : areg::SharedBuffer  ( blockSize )
 {
     reserve(size, false);
     writeData(buffer, size);

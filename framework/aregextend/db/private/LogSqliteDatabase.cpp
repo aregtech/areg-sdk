@@ -518,7 +518,7 @@ inline void LogSqliteDatabase::_initialize()
     VERIFY(mDatabase.execute(sql));
 }
 
-inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuffer& buf)
+inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, areg::SharedBuffer& buf)
 {
     constexpr uint32_t _logSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
     buf.reserve(_logSize, false);
@@ -946,14 +946,14 @@ void LogSqliteDatabase::getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, 
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(scopes.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages()
+std::vector<areg::SharedBuffer> LogSqliteDatabase::getLogMessages()
 {
-    std::vector<SharedBuffer> result;
+    std::vector<areg::SharedBuffer> result;
     getLogMessages(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages)
+void LogSqliteDatabase::getLogMessages(std::vector<areg::SharedBuffer>& messages)
 {
     Lock lock(mLock);
     messages.clear();
@@ -962,7 +962,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages)
     {
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            SharedBuffer buf;
+            areg::SharedBuffer buf;
             _copyLogMessage(stmt, buf);
             messages.push_back(buf);
         }
@@ -971,14 +971,14 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages)
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogInstMessages(ITEM_ID instId)
+std::vector<areg::SharedBuffer> LogSqliteDatabase::getLogInstMessages(ITEM_ID instId)
 {
-    std::vector<SharedBuffer> result;
+    std::vector<areg::SharedBuffer> result;
     getLogInstMessages(result, instId);
     return result;
 }
 
-void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId)
+void LogSqliteDatabase::getLogInstMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId)
 {
     if (instId == areg::COOKIE_ANY)
     {
@@ -994,7 +994,7 @@ void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& messages, 
         stmt.bindUint64(0, static_cast<uint64_t>(instId));
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            SharedBuffer buf;
+            areg::SharedBuffer buf;
             _copyLogMessage(stmt, buf);
             messages.push_back(buf);
         }
@@ -1003,14 +1003,14 @@ void LogSqliteDatabase::getLogInstMessages(std::vector<SharedBuffer>& messages, 
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogScopeMessages(uint32_t scopeId)
+std::vector<areg::SharedBuffer> LogSqliteDatabase::getLogScopeMessages(uint32_t scopeId)
 {
-    std::vector<SharedBuffer> result;
+    std::vector<areg::SharedBuffer> result;
     getLogScopeMessages(result, scopeId);
     return result;
 }
 
-void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId)
+void LogSqliteDatabase::getLogScopeMessages(std::vector<areg::SharedBuffer>& messages, uint32_t scopeId)
 {
     if (scopeId == 0)
     {
@@ -1026,7 +1026,7 @@ void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& messages,
         stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            SharedBuffer buf;
+            areg::SharedBuffer buf;
             _copyLogMessage(stmt, buf);
             messages.push_back(buf);
         }
@@ -1035,7 +1035,7 @@ void LogSqliteDatabase::getLogScopeMessages(std::vector<SharedBuffer>& messages,
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
 }
 
-std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint32_t scopeId)
+std::vector<areg::SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint32_t scopeId)
 {
     if (instId == areg::COOKIE_ANY)
     {
@@ -1047,7 +1047,7 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint
     }
 
     Lock lock(mLock);
-    std::vector<SharedBuffer> result;
+    std::vector<areg::SharedBuffer> result;
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
     if (stmt.isValid())
     {
@@ -1055,7 +1055,7 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint
         stmt.bindUint64(1, static_cast<uint64_t>(instId));
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            SharedBuffer buf;
+            areg::SharedBuffer buf;
             _copyLogMessage(stmt, buf);
             result.push_back(buf);
         }
@@ -1065,7 +1065,7 @@ std::vector<SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId, uint
     return result;
 }
 
-void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
+void LogSqliteDatabase::getLogMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
 {
     if (instId == areg::COOKIE_ANY)
     {
@@ -1090,7 +1090,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM
         stmt.bindUint64(1, static_cast<uint64_t>(instId));
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            SharedBuffer buf;
+            areg::SharedBuffer buf;
             _copyLogMessage(stmt, buf);
             messages.push_back(buf);
         }
@@ -1118,14 +1118,14 @@ int32_t LogSqliteDatabase::getLogInstScopes(std::vector<areg::ScopeEntry>& scope
     return result;
 }
 
-int32_t LogSqliteDatabase::getLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
+int32_t LogSqliteDatabase::getLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
 {
     int32_t result{ 0 };
     if (stmt.isValid())
     {
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            SharedBuffer log;
+            areg::SharedBuffer log;
             _copyLogMessage(stmt, log);
             logs.push_back(log);
             ++ result;
@@ -1173,7 +1173,7 @@ int32_t LogSqliteDatabase::fillInstScopes(std::vector<areg::ScopeEntry>& scopes,
     return result;
 }
 
-int32_t LogSqliteDatabase::fillLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
+int32_t LogSqliteDatabase::fillLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
 {
     int32_t result{ 0 };
     if ((static_cast<uint32_t>(logs.size()) > startAt) && stmt.isValid())
@@ -1181,7 +1181,7 @@ int32_t LogSqliteDatabase::fillLogMessages(std::vector<SharedBuffer>& logs, Sqli
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
             ASSERT(static_cast<uint32_t>(logs.size()) > (startAt + static_cast<uint32_t>(result)));
-            SharedBuffer& log{ logs[startAt + static_cast<uint32_t>(result)] };
+            areg::SharedBuffer& log{ logs[startAt + static_cast<uint32_t>(result)] };
             _copyLogMessage(stmt, log);
             ++result;
             if ((maxEntries > 0) && (result >= maxEntries))

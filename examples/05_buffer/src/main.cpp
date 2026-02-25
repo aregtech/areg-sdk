@@ -30,7 +30,7 @@
 class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
-    explicit HelloThread(SharedBuffer& buffer)
+    explicit HelloThread(areg::SharedBuffer& buffer)
         : areg::Thread(*this, "HelloThread") // set consumer and name
         , mBuffer(buffer)
     {
@@ -63,7 +63,7 @@ protected:
     }
 
 private:
-    SharedBuffer& mBuffer;
+    areg::SharedBuffer& mBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ int main()
 {
     std::cout << "Demo: write and read data from binary buffer..." << std::endl;
 
-    SharedBuffer buffer;
+    areg::SharedBuffer buffer;
     buffer << 1234 << static_cast<float>(M_PI) << areg::String("!!!Hello World!!!");
 
     HelloThread aThread(buffer);

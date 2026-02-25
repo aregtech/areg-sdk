@@ -334,7 +334,7 @@ public:
      * \brief   Call to get all log messages from log database.
      * \param   messages   On output, contains the list of all log messages.
      **/
-    inline void getLogMessages(std::vector<SharedBuffer>& messages);
+    inline void getLogMessages(std::vector<areg::SharedBuffer>& messages);
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
@@ -344,7 +344,7 @@ public:
      * \param   instId  The ID of the instance to get log messages.
      *                  If `areg::COOKIE_ANY` it receives log messages of all instances.
      **/
-    inline void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
+    inline void getLogInstMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
@@ -354,7 +354,7 @@ public:
      * \param   scopeId     The ID of the scope to get log messages.
      *                      If `0` it receives log messages of all scopes.
      **/
-    inline void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
+    inline void getLogScopeMessages(std::vector<areg::SharedBuffer>& messages, uint32_t scopeId = 0);
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
@@ -366,7 +366,7 @@ public:
      * \param   scopeId     The ID of the scope to get log messages.
      *                      If `0` it receives log messages of all scopes.
      **/
-    inline void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
+    inline void getLogMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -589,22 +589,22 @@ inline void LoggerClient::getLogInstScopes(std::vector<areg::ScopeEntry>& scopes
     mLogDatabase.getLogInstScopes(scopes, instId);
 }
 
-inline void LoggerClient::getLogMessages(std::vector<SharedBuffer>& messages)
+inline void LoggerClient::getLogMessages(std::vector<areg::SharedBuffer>& messages)
 {
     mLogDatabase.getLogMessages(messages);
 }
 
-inline void LoggerClient::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= areg::COOKIE_ANY*/)
+inline void LoggerClient::getLogInstMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId /*= areg::COOKIE_ANY*/)
 {
     mLogDatabase.getLogInstMessages(messages, instId);
 }
 
-inline void LoggerClient::getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
+inline void LoggerClient::getLogScopeMessages(std::vector<areg::SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
 {
     mLogDatabase.getLogScopeMessages(messages, scopeId);
 }
 
-inline void LoggerClient::getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
+inline void LoggerClient::getLogMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
 {
     mLogDatabase.getLogMessages(messages, instId, scopeId);
 }

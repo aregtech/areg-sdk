@@ -144,7 +144,7 @@ TEST(KeyValuePairTest, TestStreaming)
     const areg::String propName{ "Areg Property" };
     const areg::String propValue{ "Areg Value" };
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     Property src(propName, propValue), dst("key", "value");
     EXPECT_NE(src, dst);
 

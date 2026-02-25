@@ -529,7 +529,7 @@ TEST(SortedLinkedListTest, TestStreaming)
         src.add(i);
     }
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << src;
 
     EXPECT_FALSE(stream.isEmpty());

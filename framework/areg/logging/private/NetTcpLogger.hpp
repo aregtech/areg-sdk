@@ -42,7 +42,7 @@
 class DispatcherThread;
 class LogConfiguration;
 class ScopeController;
-class SharedBuffer;
+namespace areg { class SharedBuffer; }
 
 //////////////////////////////////////////////////////////////////////////
 // NetTcpLogger class declaration

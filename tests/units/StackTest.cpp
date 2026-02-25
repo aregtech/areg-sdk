@@ -437,7 +437,7 @@ TEST(StackTest, TestLockAndNolockStackStreaming)
 
     NolockStack nolock;
     LockStack lock;
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {

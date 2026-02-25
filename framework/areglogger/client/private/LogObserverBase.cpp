@@ -244,22 +244,22 @@ void LogObserverBase::getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, IT
     LoggerClient::getInstance().getLogInstScopes(scopes, instId);
 }
 
-void LogObserverBase::getLogMessages(std::vector<SharedBuffer>& messages)
+void LogObserverBase::getLogMessages(std::vector<areg::SharedBuffer>& messages)
 {
     LoggerClient::getInstance().getLogMessages(messages);
 }
 
-void LogObserverBase::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= areg::COOKIE_ANY*/)
+void LogObserverBase::getLogInstMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId /*= areg::COOKIE_ANY*/)
 {
     LoggerClient::getInstance().getLogInstMessages(messages, instId);
 }
 
-void LogObserverBase::getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
+void LogObserverBase::getLogScopeMessages(std::vector<areg::SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
 {
     LoggerClient::getInstance().getLogScopeMessages(messages, scopeId);
 }
 
-void LogObserverBase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
+void LogObserverBase::getLogMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
 {
     LoggerClient::getInstance().getLogMessages(messages, instId, scopeId);
 }

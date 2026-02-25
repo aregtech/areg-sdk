@@ -35,7 +35,7 @@ FileBuffer::FileBuffer( uint32_t mode       /*= (static_cast<uint32_t>(FileBase:
     mFileName = name;
 }
 
-FileBuffer::FileBuffer(SharedBuffer & sharedBuffer, const char* name /*= nullptr*/)
+FileBuffer::FileBuffer(areg::SharedBuffer & sharedBuffer, const char* name /*= nullptr*/)
     : FileBase      ( )
 
     , mSharedBuffer (sharedBuffer)
@@ -45,7 +45,7 @@ FileBuffer::FileBuffer(SharedBuffer & sharedBuffer, const char* name /*= nullptr
     mFileName = name;
 }
 
-FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= nullptr*/)
+FileBuffer::FileBuffer(const areg::SharedBuffer & sharedBuffer, const char* name /*= nullptr*/)
     : FileBase      ( )
 
     , mSharedBuffer (sharedBuffer)

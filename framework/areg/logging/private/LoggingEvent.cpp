@@ -42,7 +42,7 @@ LoggingEventData::LoggingEventData( LoggingEventData::LogAction action )
 {
 }
 
-LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer )
+LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const areg::SharedBuffer & dataBuffer )
     : mAction       ( action )
     , mDataBuffer   ( dataBuffer )
 {

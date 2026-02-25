@@ -1055,7 +1055,7 @@ TEST(RingStackTest, TestStreaming)
         EXPECT_EQ(lockShift.push(i), 0u);
     }
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << lockStop;
     EXPECT_FALSE(stream.isEmpty());
     stream.moveToBegin();

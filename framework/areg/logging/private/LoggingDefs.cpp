@@ -387,7 +387,7 @@ AREG_API_IMPL RemoteMessage areg::messageUpdateScopes(const ITEM_ID& source, con
 
 AREG_API_IMPL void areg::logAnyMessage(const areg::LogEntry& logMessage)
 {
-    LogManager::logMessage(SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(areg::LogEntry)));
+    LogManager::logMessage(areg::SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(areg::LogEntry)));
 }
 
 AREG_API_IMPL RemoteMessage areg::messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const areg::String& scopeName, uint32_t scopeId, uint32_t scopePrio)

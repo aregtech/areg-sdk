@@ -639,7 +639,7 @@ TEST(ArrayListTest, TestStream)
     ASSERT_TRUE(dst.isEmpty());
     ASSERT_FALSE(src.isEmpty());
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << src;
     stream.moveToBegin();
     stream >> dst;

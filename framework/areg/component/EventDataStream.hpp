@@ -40,7 +40,7 @@
 class AREG_API EventDataStream : public IOStream
 {
     //! The list of shared buffer list (stack).
-    using SharedList    = areg::Stack<SharedBuffer>;
+    using SharedList    = areg::Stack<areg::SharedBuffer>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and types public
@@ -301,7 +301,7 @@ protected:
     /**
      * \brief   The Shared Buffer where the data is written / streamed.
      **/
-    mutable SharedBuffer        mDataBuffer;
+    mutable areg::SharedBuffer        mDataBuffer;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)

@@ -72,14 +72,14 @@ public:
      * \param	sharedBuffer    The referenced object to shared buffer to attach. 
      * \param	name	        The name of file object. Can be nullptr.
      **/
-    FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
+    FileBuffer(areg::SharedBuffer & sharedBuffer, const char * name = nullptr);
 
     /**
      * \brief	Constructor to set by default attached mode
      * \param	sharedBuffer    The referenced object to shared buffer to attach.
      * \param	name	        The name of file object. Can be nullptr.
      **/
-    FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
+    FileBuffer(const areg::SharedBuffer & sharedBuffer, const char* name = nullptr);
 
     /**
      * \brief   Destructor
@@ -134,7 +134,7 @@ public:
     /**
      * \brief   Returns reference to shared buffer object (for read only purpose)
      **/
-    inline const SharedBuffer & getSharedBuffer() const;
+    inline const areg::SharedBuffer & getSharedBuffer() const;
 
     /**
      * \brief	Inserts data to file buffer and returns the size of written data.
@@ -384,7 +384,7 @@ private:
     /**
      * \brief   Shared Buffer object
      **/
-    SharedBuffer    mSharedBuffer;
+    areg::SharedBuffer    mSharedBuffer;
     /**
      * \brief   If true, file object was opened.
      **/
@@ -406,7 +406,7 @@ inline const uint8_t * FileBuffer::getDataBuffer() const
     return (isOpened() ? mSharedBuffer.getBuffer() : nullptr);
 }
 
-inline const SharedBuffer & FileBuffer::getSharedBuffer() const
+inline const areg::SharedBuffer & FileBuffer::getSharedBuffer() const
 {
     return mSharedBuffer;
 }
@@ -423,12 +423,12 @@ inline bool FileBuffer::isEmpty() const
 
 inline const InStream & operator >> ( const InStream & stream, FileBuffer & input )
 {
-    return (stream >> static_cast<SharedBuffer &>(input.mSharedBuffer));
+    return (stream >> static_cast<areg::SharedBuffer &>(input.mSharedBuffer));
 }
 
 inline OutStream & operator << ( OutStream & stream, const FileBuffer & output )
 {
-    return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
+    return (stream << static_cast<const areg::SharedBuffer &>(output.mSharedBuffer));
 }
 
 #endif  // AREG_BASE_FILEBUFFER_HPP

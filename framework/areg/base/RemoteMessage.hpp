@@ -37,7 +37,7 @@ namespace areg { class Socket; }
  *          the remote message contains additional information to deliver
  *          messages to target application for further processing.
  **/
-class AREG_API RemoteMessage  : public    SharedBuffer
+class AREG_API RemoteMessage  : public    areg::SharedBuffer
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend objects

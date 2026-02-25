@@ -326,8 +326,8 @@ public:
      * \brief   Call to get all log messages from log database.
      * \param[out]  messages    On output, the vector contains all log messages.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& messages);
-    std::vector<SharedBuffer> getLogMessages();
+    void getLogMessages(std::vector<areg::SharedBuffer>& messages);
+    std::vector<areg::SharedBuffer> getLogMessages();
 
     /**
      * \brief   Call to get log messages of the specified instance from log database.
@@ -337,8 +337,8 @@ public:
      * \param[in]   instId      The ID of the instance to get log messages.
      *                          If `areg::COOKIE_ANY` it receives log messages of all instances.
      **/
-    void getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
-    std::vector<SharedBuffer> getLogInstMessages(ITEM_ID instId = areg::COOKIE_ANY);
+    void getLogInstMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId = areg::COOKIE_ANY);
+    std::vector<areg::SharedBuffer> getLogInstMessages(ITEM_ID instId = areg::COOKIE_ANY);
 
     /**
      * \brief   Call to get log messages of the specified scope from log database.
@@ -348,8 +348,8 @@ public:
      * \param[in]   scopeId     The ID of the scope to get log messages.
      *                          If `0` it receives log messages of all scopes.
      **/
-    void getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId = 0);
-    std::vector<SharedBuffer> getLogScopeMessages(uint32_t scopeId = 0);
+    void getLogScopeMessages(std::vector<areg::SharedBuffer>& messages, uint32_t scopeId = 0);
+    std::vector<areg::SharedBuffer> getLogScopeMessages(uint32_t scopeId = 0);
 
     /**
      * \brief   Call to get log messages of the specified instance and log scope ID from log database.
@@ -361,8 +361,8 @@ public:
      * \param[in]   scopeId     The ID of the scope to get log messages.
      *                          If `0` it receives log messages of all scopes.
      **/
-    void getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
-    std::vector<SharedBuffer> getLogMessages(ITEM_ID instId, uint32_t scopeId);
+    void getLogMessages(std::vector<areg::SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId);
+    std::vector<areg::SharedBuffer> getLogMessages(ITEM_ID instId, uint32_t scopeId);
 
     /**
      * \brief   Call to get log scopes using SQLite Statement object. The SQLite Statement should be already initialized
@@ -386,7 +386,7 @@ public:
      * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries added to the vector.
      **/
-    static int32_t getLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries = -1);
+    static int32_t getLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries = -1);
 
     /**
      * \brief   Fills log instances in the specified array. The array should be initialized and it should have enough space to set data.
@@ -432,7 +432,7 @@ public:
      * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
      * \return  Returns number of entries set in the array.
      **/
-    static int32_t fillLogMessages(std::vector<SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
+    static int32_t fillLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
 
     /**
      * \brief   Call to setup statement to read the list of logging scopes from log database.
@@ -542,7 +542,7 @@ private:
      * \param   stmt    The SqliteStatement to extract the log message.
      * \param   buf     The SharedBuffer to copy the log message.
      **/
-    inline static void _copyLogMessage(SqliteStatement& stmt, SharedBuffer & buf);
+    inline static void _copyLogMessage(SqliteStatement& stmt, areg::SharedBuffer & buf);
 
     /**
      * \brief   Extracts the log instance from the SqliteStatement and copies it to the areg::ConnectedInstance.
