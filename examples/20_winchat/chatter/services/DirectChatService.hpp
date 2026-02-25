@@ -21,7 +21,7 @@ class DirectChatService : public Component
                         , public DirectMessagerStub
                           
 {
-    using HashMapDirectConnections      = OrderedMap<areg::String, DirectChatService *>;
+    using HashMapDirectConnections      = areg::OrderedMap<areg::String, DirectChatService *>;
     using MapDirectConnections          = areg::ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
     using ListDirectConnectionClients   = ArrayList<DirectConnectionClient *>;
 

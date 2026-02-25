@@ -60,7 +60,7 @@ class SyncLockAndWaitPosix
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
-    using MapLockAndWait        = OrderedMap<WaitablePosix *, ListLockAndWait>;
+    using MapLockAndWait        = areg::OrderedMap<WaitablePosix *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
 // ImplResourceListMap class declaration

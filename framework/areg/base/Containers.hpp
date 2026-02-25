@@ -253,7 +253,7 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class IntegerMap : public OrderedMap<uint32_t, VALUE>
+class IntegerMap : public areg::OrderedMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -293,7 +293,7 @@ public:
   * \tparam  VALUE       The type of value to store in map
 **/
 template <typename VALUE>
-class IdMap : public OrderedMap<id_type, VALUE>
+class IdMap : public areg::OrderedMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -330,7 +330,7 @@ public:
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
-class StringMap : public OrderedMap<areg::String, VALUE>
+class StringMap : public areg::OrderedMap<areg::String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -364,7 +364,7 @@ public:
  * \tparam  VALUE       The type of value to store in map.
  **/
 template <typename VALUE>
-class PtrMap: public OrderedMap<void *, VALUE>
+class PtrMap: public areg::OrderedMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

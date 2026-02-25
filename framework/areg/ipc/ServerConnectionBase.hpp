@@ -52,17 +52,17 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using MapSocketToObject 	= OrderedMap<SOCKETHANDLE, areg::SocketAccepted>;
+    using MapSocketToObject 	= areg::OrderedMap<SOCKETHANDLE, areg::SocketAccepted>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
      **/
-    using MapCookieToSocket		= OrderedMap<ITEM_ID, SOCKETHANDLE>;
+    using MapCookieToSocket		= areg::OrderedMap<ITEM_ID, SOCKETHANDLE>;
 
     /**
      * \brief   The container of cookie values where the keys are socket handles.
      **/
-    using MapSocketToCookie		= OrderedMap<SOCKETHANDLE, ITEM_ID>;
+    using MapSocketToCookie		= areg::OrderedMap<SOCKETHANDLE, ITEM_ID>;
 
     /**
      * \brief   The list of accepted sockets.

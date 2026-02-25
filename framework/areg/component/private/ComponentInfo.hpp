@@ -57,7 +57,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = OrderedMap<areg::ThreadAddress, WorkerThread *>;
+    using _WorkerThreadMap  = areg::OrderedMap<areg::ThreadAddress, WorkerThread *>;
 
     /**
      * \brief   Resource mapping object type. 

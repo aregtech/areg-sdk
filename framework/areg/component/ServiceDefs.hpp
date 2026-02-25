@@ -1093,7 +1093,7 @@ namespace areg
     /**
      * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.
      **/
-    using MapInstances = OrderedMap<ITEM_ID, areg::ConnectedInstance>;
+    using MapInstances = areg::OrderedMap<ITEM_ID, areg::ConnectedInstance>;
 }
 
 //////////////////////////////////////////////////////////////////////////

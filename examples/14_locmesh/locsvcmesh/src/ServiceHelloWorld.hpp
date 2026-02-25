@@ -19,7 +19,7 @@
 class ServiceHelloWorld : protected HelloWorldStub
 {
     //!< The type of list of connected clients.
-    using ClientList = OrderedMap<areg::String, uint32_t>;
+    using ClientList = areg::OrderedMap<areg::String, uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
