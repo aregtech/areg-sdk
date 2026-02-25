@@ -102,7 +102,7 @@ int main()
     }
 
     // In-memory file with timestamp mask
-    FileBuffer buffer;
+    areg::FileBuffer buffer;
     if (buffer.open("Buffer_%time%", mode))
     {
         writeText(buffer);

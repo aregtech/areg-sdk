@@ -26,7 +26,7 @@
 #include "areg/base/BufferStreamBase.hpp"
 #include "areg/base/private/BufferPosition.hpp"
 
-class FileBuffer;
+namespace areg { class FileBuffer; }
 
 namespace areg
 {
@@ -61,7 +61,7 @@ namespace areg
     class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streaming object
                                 , public  Cursor  // To control read and write operations
     {
-        friend class ::FileBuffer;
+        friend class areg::FileBuffer;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / destructor
