@@ -99,7 +99,7 @@ public:
      *          no more data will be accepted from connection.
      * \param   clientConnection    Connection to reject.
      **/
-    void rejectConnection( SocketAccepted & clientConnection );
+    void rejectConnection( areg::SocketAccepted & clientConnection );
 
     /**
      * \brief   Call to close all existing accepted connections
@@ -125,7 +125,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
      **/
-    inline int32_t sendMessage( const RemoteMessage & in_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t sendMessage( const RemoteMessage & in_message, const areg::SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
@@ -143,7 +143,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
      **/
-    inline int32_t receiveMessage( RemoteMessage & out_message, const SocketAccepted & clientSocket ) const;
+    inline int32_t receiveMessage( RemoteMessage & out_message, const areg::SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   If socket is valid, sends data using existing socket connection and returns length in bytes
@@ -210,7 +210,7 @@ inline const ITEM_ID & ServerConnection::getChannelId() const
     return mChannelId;
 }
 
-inline int32_t ServerConnection::sendMessage(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::sendMessage(const RemoteMessage & in_message, const areg::SocketAccepted & clientSocket) const
 {
     return SocketConnectionBase::sendMessage(in_message, clientSocket);
 }
@@ -220,7 +220,7 @@ inline int32_t ServerConnection::sendMessage(const RemoteMessage & in_message, c
     return SocketConnectionBase::sendMessage(in_message, getClientByCookie(clientCookie) );
 }
 
-inline int32_t ServerConnection::receiveMessage(RemoteMessage & out_message, const SocketAccepted & clientSocket) const
+inline int32_t ServerConnection::receiveMessage(RemoteMessage & out_message, const areg::SocketAccepted & clientSocket) const
 {
     return SocketConnectionBase::receiveMessage(out_message, clientSocket);
 }

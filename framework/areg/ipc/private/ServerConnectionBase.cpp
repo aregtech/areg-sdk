@@ -83,7 +83,7 @@ SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(areg::SocketAddress & 
     return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), static_cast<int32_t>(mMasterList.getSize()));
 }
 
-bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
+bool ServerConnectionBase::acceptConnection(areg::SocketAccepted & clientConnection)
 {
     Lock lock(mLock);
     bool result = false;
@@ -118,7 +118,7 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
     return result;
 }
 
-void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
+void ServerConnectionBase::closeConnection(areg::SocketAccepted & clientConnection)
 {
     Lock lock( mLock );
 
@@ -149,7 +149,7 @@ void ServerConnectionBase::closeConnection( const ITEM_ID & cookie )
         mMasterList.removeElem( hSocket, 0 );
         if (mAcceptedConnections.isValidPosition(posClient))
         {
-            SocketAccepted client(mAcceptedConnections.valueAtPosition(posClient));
+            areg::SocketAccepted client(mAcceptedConnections.valueAtPosition(posClient));
             mAcceptedConnections.removePosition(posClient);
             client.closeSocket( );
         }

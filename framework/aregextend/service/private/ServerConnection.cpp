@@ -38,7 +38,7 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::Socket
 {
 }
 
-void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
+void ServerConnection::rejectConnection(areg::SocketAccepted & clientConnection)
 {
     const ITEM_ID & cookie = getCookie(clientConnection.getHandle());
     RemoteMessage msgReject = areg::createRejectNotify(mChannelId, cookie);
@@ -57,7 +57,7 @@ void ServerConnection::closeAllConnections()
 
         for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos))
         {
-            SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
+            areg::SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
             const ITEM_ID& target{ getCookie(clientConnection) };
             if (target >= areg::COOKIE_REMOTE_SERVICE)
             {

@@ -23,7 +23,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class SocketAccepted;
+namespace areg { class SocketAccepted; }
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionHandler class declaration
@@ -65,14 +65,14 @@ public:
      * \return  Returns true if client connection can be accepted. To reject and close
      *          connection with client, the method should return false.
      **/
-    virtual bool canAcceptConnection( const SocketAccepted & clientSocket ) = 0;
+    virtual bool canAcceptConnection( const areg::SocketAccepted & clientSocket ) = 0;
 
     /**
      * \brief   Triggered, when lost connection with client.
      *          Passed clientSocket parameter specifies client socket, which lost connection.
      * \param   clientSocket    Client socket object, which lost connection.
      **/
-    virtual void connectionLost( SocketAccepted & clientSocket ) = 0;
+    virtual void connectionLost( areg::SocketAccepted & clientSocket ) = 0;
 
     /**
      * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.

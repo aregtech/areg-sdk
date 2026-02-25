@@ -24,7 +24,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class SocketAccepted;
+namespace areg { class SocketAccepted; }
 
 namespace areg
 {

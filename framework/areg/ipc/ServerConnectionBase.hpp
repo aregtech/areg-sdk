@@ -52,7 +52,7 @@ protected:
     /**
      * \brief   The container of accepted socket objects where the keys are socket handle.
      **/
-    using MapSocketToObject 	= OrderedMap<SOCKETHANDLE, SocketAccepted>;
+    using MapSocketToObject 	= OrderedMap<SOCKETHANDLE, areg::SocketAccepted>;
 
     /**
      * \brief   The container of socket handles where the keys are cookie values.
@@ -165,7 +165,7 @@ public:
      *          source or target in Remote Buffer.
      * \param   clientSocket    Accepted client socket connection
      **/
-    inline ITEM_ID getCookie( const SocketAccepted & clientSocket ) const;
+    inline ITEM_ID getCookie( const areg::SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   Returns cookie of client connection set by server.
@@ -183,7 +183,7 @@ public:
      * \return  If there is registered accepted client socket object, which matches client cookie,
      *          the returned object is valid accepted client object. Otherwise, the object is invalid.
      **/
-    inline SocketAccepted getClientByCookie(const ITEM_ID & clientCookie ) const;
+    inline areg::SocketAccepted getClientByCookie(const ITEM_ID & clientCookie ) const;
 
     /**
      * \brief   Returns accepted socket object, with same unique socket handle.
@@ -193,7 +193,7 @@ public:
      * \return  If there is registered accepted client socket object, which matches socket handle,
      *          the returned object is valid accepted client object. Otherwise, the object is invalid.
      **/
-    inline SocketAccepted getClientByHandle( SOCKETHANDLE clientSocket ) const;
+    inline areg::SocketAccepted getClientByHandle( SOCKETHANDLE clientSocket ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -258,13 +258,13 @@ public:
      * \param[out]  clientConnection    Connection to accept. If object is valid, on output this will
      *                                  be in accepted state.
      **/
-    bool acceptConnection( SocketAccepted & clientConnection );
+    bool acceptConnection( areg::SocketAccepted & clientConnection );
 
     /**
      * \brief   Call to close client connection.
      * \param   clientConnection    The client to close connection.
      **/
-    void closeConnection( SocketAccepted & clientConnection );
+    void closeConnection( areg::SocketAccepted & clientConnection );
 
     /**
      * \brief   Call to close connection by cookie.
@@ -277,14 +277,14 @@ public:
      * \param   clientConnection    The connected client socket to set in read-only mode.
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableSend( const SocketAccepted & clientConnection );
+    inline bool disableSend( const areg::SocketAccepted & clientConnection );
 
     /**
      * \brief   Sets socket in the write-only mode, i.e. no receive message is possible anymore.
      * \param   clientConnection    The connected client socket to set in write-only mode.
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableReceive( const SocketAccepted & clientConnection );
+    inline bool disableReceive( const areg::SocketAccepted & clientConnection );
 
     /**
      * \brief   Sets all sockets in the read-only mode, i.e. no send message is possible anymore.
@@ -383,7 +383,7 @@ inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection 
     return mAcceptedConnections.contains(connection);
 }
 
-inline ITEM_ID ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
+inline ITEM_ID ServerConnectionBase::getCookie(const areg::SocketAccepted & clientSocket) const
 {
     return getCookie(clientSocket.getHandle());
 }
@@ -396,26 +396,26 @@ inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
     return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : areg::COOKIE_UNKNOWN );
 }
 
-inline SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
+inline areg::SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
 {
     Lock lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.isValidPosition(pos) ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : SocketAccepted());
+    return (mCookieToSocket.isValidPosition(pos) ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : areg::SocketAccepted());
 }
 
-inline SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
+inline areg::SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
-    return (mAcceptedConnections.isValidPosition(pos) ? mAcceptedConnections.getAt(clientSocket) : SocketAccepted());
+    return (mAcceptedConnections.isValidPosition(pos) ? mAcceptedConnections.getAt(clientSocket) : areg::SocketAccepted());
 }
 
-inline bool ServerConnectionBase::disableSend( const SocketAccepted & clientConnection )
+inline bool ServerConnectionBase::disableSend( const areg::SocketAccepted & clientConnection )
 {
     return clientConnection.disableSend();
 }
 
-inline bool ServerConnectionBase::disableReceive( const SocketAccepted & clientConnection )
+inline bool ServerConnectionBase::disableReceive( const areg::SocketAccepted & clientConnection )
 {
     return clientConnection.disableReceive();
 }

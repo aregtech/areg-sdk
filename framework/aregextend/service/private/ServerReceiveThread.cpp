@@ -82,7 +82,7 @@ bool ServerReceiveThread::runDispatcher()
                 {
                     retryCount = 0;
 
-                    SocketAccepted clientSocket;
+                    areg::SocketAccepted clientSocket;
                     if (mConnection.isConnectionAccepted(hSocket) )
                     {
                         clientSocket = mConnection.getClientByHandle( hSocket );
@@ -93,7 +93,7 @@ bool ServerReceiveThread::runDispatcher()
                     }
                     else
                     {
-                        clientSocket = SocketAccepted(hSocket, addrAccepted);
+                        clientSocket = areg::SocketAccepted(hSocket, addrAccepted);
                         if ( mConnectHandler.canAcceptConnection(clientSocket)  )
                         {
                             LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"

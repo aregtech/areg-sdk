@@ -195,7 +195,7 @@ bool ServiceCommunicationBase::isServiceHostSetup() const
     return mServerConnection.getAddress().isValid();
 }
 
-bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & clientSocket)
+bool ServiceCommunicationBase::canAcceptConnection(const areg::SocketAccepted & clientSocket)
 {
     bool result{ false };
     if ( clientSocket.isValid( ) && clientSocket.isAlive() )
@@ -210,7 +210,7 @@ bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & client
     return result;
 }
 
-void ServiceCommunicationBase::connectionLost( SocketAccepted & clientSocket )
+void ServiceCommunicationBase::connectionLost( areg::SocketAccepted & clientSocket )
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectionLost);
     const ITEM_ID & cookie { mServerConnection.getCookie(clientSocket) };
@@ -385,7 +385,7 @@ void ServiceCommunicationBase::failedSendMessage(const RemoteMessage& /*msgFaile
 #ifdef DEBUG
 
     const ITEM_ID & cookie = msgFailed.getTarget( );
-    SocketAccepted client = mServerConnection.getClientByCookie( cookie );
+    areg::SocketAccepted client = mServerConnection.getClientByCookie( cookie );
     ASSERT( (client.isValid() == false) || (whichTarget.getHandle( ) == client.getHandle( )) );
 
 #endif // DEBUG
@@ -396,7 +396,7 @@ void ServiceCommunicationBase::failedSendMessage(const RemoteMessage& /*msgFaile
 
     if ( whichTarget.isValid())
     {
-        connectionLost( static_cast<SocketAccepted &>(whichTarget) );
+        connectionLost( static_cast<areg::SocketAccepted &>(whichTarget) );
     }
 }
 
@@ -404,7 +404,7 @@ void ServiceCommunicationBase::failedReceiveMessage(Socket & whichSource)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
 
-    SocketAccepted client = mServerConnection.getClientByHandle(whichSource.getHandle());
+    areg::SocketAccepted client = mServerConnection.getClientByHandle(whichSource.getHandle());
     LOG_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
                         , client.isValid() ? "VALID" : "INVALID"
                         , static_cast<int32_t>(client.getHandle())

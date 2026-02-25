@@ -372,14 +372,14 @@ public:
      * \return  Returns true if client connection can be accepted. To reject and close
      *          connection with client, the method should return false.
      **/
-    bool canAcceptConnection( const SocketAccepted & clientSocket ) override;
+    bool canAcceptConnection( const areg::SocketAccepted & clientSocket ) override;
 
     /**
      * \brief   Triggered, when lost connection with client.
      *          Passed clientSocket parameter specifies client socket, which lost connection.
      * \param   clientSocket    Client socket object, which lost connection.
      **/
-    void connectionLost( SocketAccepted & clientSocket ) override;
+    void connectionLost( areg::SocketAccepted & clientSocket ) override;
 
     /**
      * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.

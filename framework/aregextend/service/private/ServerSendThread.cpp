@@ -58,7 +58,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         ASSERT( msgSend.isValid( ) );
 
         const ITEM_ID & target{ msgSend.getTarget() };
-        SocketAccepted client{ mConnection.getClientByCookie(target) };
+        areg::SocketAccepted client{ mConnection.getClientByCookie(target) };
 
         LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , areg::getString(static_cast<areg::FuncIdRange>(msgSend.getMessageId()))
