@@ -34,19 +34,19 @@ bool FileLogger::openLogger()
         if ( fileName.isEmpty() == false )
         {
             bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
-            uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write) | 
-                                static_cast<uint32_t>(File::OpenMode::Read) |
-                                static_cast<uint32_t>(File::OpenMode::ShareRead) |
-                                static_cast<uint32_t>(File::OpenMode::ShareWrite) |
-                                static_cast<uint32_t>(File::OpenMode::Text);
+            uint32_t mode = static_cast<uint32_t>(areg::File::OpenMode::Write) | 
+                                static_cast<uint32_t>(areg::File::OpenMode::Read) |
+                                static_cast<uint32_t>(areg::File::OpenMode::ShareRead) |
+                                static_cast<uint32_t>(areg::File::OpenMode::ShareWrite) |
+                                static_cast<uint32_t>(areg::File::OpenMode::Text);
 
-            if (File::existFile(fileName))
+            if (areg::File::existFile(fileName))
             {
-                mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
+                mode |= newFile ? static_cast<uint32_t>(areg::File::OpenMode::Truncate) : static_cast<uint32_t>(areg::File::OpenMode::Exist);
             }
             else
             {
-                mode |= static_cast<uint32_t>(File::OpenMode::Create);
+                mode |= static_cast<uint32_t>(areg::File::OpenMode::Create);
             }
 
             if ( mLogFile.open( fileName, mode) && createLayouts() )

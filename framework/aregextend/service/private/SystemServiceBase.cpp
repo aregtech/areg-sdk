@@ -130,7 +130,7 @@ bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
     case aregext::ServiceOption::CMD_Load:
     {
         areg::String filePath(opt.inString[0]);
-        result = File::existFile(filePath);
+        result = areg::File::existFile(filePath);
         if (result)
         {
             mFileConfig = filePath;

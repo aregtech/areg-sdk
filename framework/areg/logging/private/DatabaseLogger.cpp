@@ -55,7 +55,7 @@ bool DatabaseLogger::openLogger()
         if (mLogConfiguration.isDatabaseLoggingEnabled())
         {
             areg::String fileName(mLogConfiguration.getDatabaseFullPath());
-            dbFile = File::normalizePath(fileName.getString());
+            dbFile = areg::File::normalizePath(fileName.getString());
 
             if (mDatabase->connect(dbFile, false))
             {

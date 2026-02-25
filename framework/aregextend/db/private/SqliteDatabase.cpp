@@ -58,7 +58,7 @@ SqliteDatabase::SqliteDatabase(const areg::String& dbPath, bool open)
     }
     else
     {
-        mDbPath = dbPath.isEmpty() ? areg::String::getEmptyString() : File::normalizePath(dbPath);
+        mDbPath = dbPath.isEmpty() ? areg::String::getEmptyString() : areg::File::normalizePath(dbPath);
     }
 }
 
@@ -71,17 +71,17 @@ inline bool SqliteDatabase::_open(const areg::String& dbPath)
 {
     bool result{ true };
     _close();
-    mDbPath = dbPath.isEmpty() == false ? File::normalizePath(dbPath) : mDbPath;
+    mDbPath = dbPath.isEmpty() == false ? areg::File::normalizePath(dbPath) : mDbPath;
     if (mDbPath.isEmpty())
     {
         ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
         return false;
     }
 
-    areg::String folder = File::getFileDirectory(mDbPath);
-    if ((folder.isEmpty() == false) && (File::existDir(folder) == false))
+    areg::String folder = areg::File::getFileDirectory(mDbPath);
+    if ((folder.isEmpty() == false) && (areg::File::existDir(folder) == false))
     {
-        File::createDirCascaded(folder);
+        areg::File::createDirCascaded(folder);
     }
 
     if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)))

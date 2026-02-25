@@ -405,11 +405,11 @@ bool ConfigManager::readConfig(const areg::String& filePath /*= areg::String::Em
             path = filePath;
         }
 
-        path = File::getFileFullPath(File::normalizePath(path));
-        File fileConfig(path, static_cast<uint32_t>(File::OpenMode::Exist) 
-                            | static_cast<uint32_t>(File::OpenMode::Read)
-                            | static_cast<uint32_t>(File::OpenMode::Text)
-                            | static_cast<uint32_t>(File::OpenMode::ShareRead));
+        path = areg::File::getFileFullPath(areg::File::normalizePath(path));
+        areg::File fileConfig(path, static_cast<uint32_t>(areg::File::OpenMode::Exist) 
+                            | static_cast<uint32_t>(areg::File::OpenMode::Read)
+                            | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                            | static_cast<uint32_t>(areg::File::OpenMode::ShareRead));
         if (fileConfig.open() && readConfig(fileConfig, listener))
         {
             mFilePath = fileConfig.getName();
@@ -447,18 +447,18 @@ bool ConfigManager::saveConfig(const areg::String& filePath, ConfigListener * li
     Lock lock(mLock);
     bool result{ false };
 
-    constexpr uint32_t modeRead { static_cast<uint32_t>(File::OpenMode::Read)
-                                | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Create)
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead)};
-    constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read)
-                                | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Create)
-                                | static_cast<uint32_t>(File::OpenMode::Write) };
+    constexpr uint32_t modeRead { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead)};
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Write) };
     bool saveAll{ false };
 
     areg::String srcPath, dstPath;
-    areg::String tempFile = File::genTempFileName();
+    areg::String tempFile = areg::File::genTempFileName();
     
     if (filePath.isEmpty() == false)
     {
@@ -474,17 +474,17 @@ bool ConfigManager::saveConfig(const areg::String& filePath, ConfigListener * li
         saveAll = true;
     }
 
-    dstPath = File::getFileFullPath( File::normalizePath(dstPath) );
+    dstPath = areg::File::getFileFullPath( areg::File::normalizePath(dstPath) );
     srcPath = mFilePath.isEmpty() ? dstPath : mFilePath;
 
-    areg::String dstDir = File::getFileDirectory(dstPath);
-    if ((dstDir.isEmpty() == false) && File::existDir(dstDir) == false)
+    areg::String dstDir = areg::File::getFileDirectory(dstPath);
+    if ((dstDir.isEmpty() == false) && areg::File::existDir(dstDir) == false)
     {
-        File::createDirCascaded(dstDir);
+        areg::File::createDirCascaded(dstDir);
     }
 
-    File srcFile(srcPath, modeRead );
-    File dstFile(tempFile, modeWrite);
+    areg::File srcFile(srcPath, modeRead );
+    areg::File dstFile(tempFile, modeWrite);
 
     if (srcFile.open() && dstFile.open())
     {
@@ -492,8 +492,8 @@ bool ConfigManager::saveConfig(const areg::String& filePath, ConfigListener * li
         {
             srcFile.close();
             dstFile.close();
-            result = File::copyFile(tempFile, dstPath, true);
-            File::deleteFile(tempFile);
+            result = areg::File::copyFile(tempFile, dstPath, true);
+            areg::File::deleteFile(tempFile);
         }
     }
 

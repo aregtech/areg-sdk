@@ -581,7 +581,7 @@ bool LogSqliteDatabase::connect(const areg::String& dbPath, bool readOnly)
     Lock lock(mLock);
     if (mDbLogEnabled && mDatabase.isOperable() == false)
     {
-        bool exists = File::existFile(dbPath);
+        bool exists = areg::File::existFile(dbPath);
         ASSERT(mIsInitialized == false);
         if (_open(dbPath, readOnly))
         {

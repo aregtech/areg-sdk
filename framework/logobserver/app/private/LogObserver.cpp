@@ -333,7 +333,7 @@ void LogObserver::logMain( int32_t argc, char ** argv )
         if (pos != areg::INVALID_POSITION)
         {
             areg::String filePath{ parser.getOptions().getAt(pos).inString[0] };
-            if (File::existFile(filePath))
+            if (areg::File::existFile(filePath))
             {
                 fileConfig = filePath;
             }

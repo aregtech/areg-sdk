@@ -40,8 +40,8 @@ void areg::Process::_osInitilize()
     mProcessId      = ::GetCurrentProcessId();
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
-    TCHAR fullPath[File::MAXIMUM_PATH];
-    areg::memZero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
+    TCHAR fullPath[areg::File::MAXIMUM_PATH];
+    areg::memZero(fullPath, (areg::File::MAXIMUM_PATH) * sizeof(TCHAR));
 
     if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {

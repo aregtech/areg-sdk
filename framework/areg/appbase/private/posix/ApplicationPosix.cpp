@@ -79,7 +79,7 @@ namespace
         int pid {-1};
 
         DIR* dir = opendir(dirProc);
-        char* buffer = dir != nullptr ? DEBUG_NEW char[File::MAXIMUM_PATH + 1] : nullptr;
+        char* buffer = dir != nullptr ? DEBUG_NEW char[areg::File::MAXIMUM_PATH + 1] : nullptr;
         if (buffer == nullptr)
             return pid;
 
@@ -92,9 +92,9 @@ namespace
                 FILE* file = fopen(name.getBuffer(), "r");
                 if (file != nullptr)
                 {
-                    if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
+                    if (fgets(buffer, areg::File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        areg::CharPos pos = areg::findLast<char>(File::PATH_SEPARATOR, buffer);
+                        areg::CharPos pos = areg::findLast<char>(areg::File::PATH_SEPARATOR, buffer);
                         if (areg::isPositionValid(pos))
                         {
                             char* procPath = buffer + pos + 1;

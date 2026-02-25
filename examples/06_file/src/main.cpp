@@ -94,7 +94,7 @@ int main()
                             | static_cast<uint32_t>(FileBase::OpenMode::ShareRead)
                             | static_cast<uint32_t>(FileBase::OpenMode::ShareWrite);
     // Create a text file on file system
-    File txtFile("./Debug/hello.txt", mode);
+    areg::File txtFile("./Debug/hello.txt", mode);
     if (txtFile.open())
     {
         writeText(txtFile);
@@ -110,7 +110,7 @@ int main()
     }
 
     // File with appname mask, write line-by-line
-    File lineFile;
+    areg::File lineFile;
     if (lineFile.open("../../../../temp/%appname%.txt", mode))
     {
         writeLines(lineFile);
@@ -118,7 +118,7 @@ int main()
     }
 
     // Binary file (text mode removed)
-    File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
+    areg::File binary("./Debug/binary.dat", mode & ~static_cast<uint32_t>(FileBase::OpenMode::Text));
     if (binary.open())
     {
         binary.write(buffer.getDataBuffer(), buffer.getLength());
@@ -133,12 +133,12 @@ int main()
     binary.close();
 
     // Copy and normalize paths
-    areg::String src = File::normalizePath("./Debug/hello.txt");
-    areg::String dst = File::normalizePath("./Debug/copy_%time%.txt");
+    areg::String src = areg::File::normalizePath("./Debug/hello.txt");
+    areg::String dst = areg::File::normalizePath("./Debug/copy_%time%.txt");
 
     printSeparator('.', 20);
     std::cout << "Copying file [" << src << "] to [" << dst << "]" << std::endl;
-    File::copyFile(src, dst, true);
+    areg::File::copyFile(src, dst, true);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

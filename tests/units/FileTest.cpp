@@ -157,8 +157,8 @@ TEST( FileTest, CheckFileExistence )
 
     const areg::String fileName{ "./config/areg.init" };
     const areg::String fileWrong{ "./config/blah-blah.init" };
-    ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
-    ASSERT_FALSE( File::existFile( fileWrong ) );
+    ASSERT_TRUE( areg::File::existFile( fileName.getString( ) ) );
+    ASSERT_FALSE( areg::File::existFile( fileWrong ) );
 }
 
 /**
@@ -169,7 +169,7 @@ TEST( FileTest, NormalizeFilePathBasic )
     Application::setWorkingDirectory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
-    areg::String normalized = File::normalizePath( fileName );
+    areg::String normalized = areg::File::normalizePath( fileName );
     ASSERT_TRUE( normalized.getLength( ) > fileName.getLength( ) );
     ASSERT_TRUE( normalized.endsWith( "areg.init" ) );
 }
@@ -182,13 +182,13 @@ TEST( FileTest, FileOpenBasic )
     Application::setWorkingDirectory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
-    constexpr unsigned int mode{  static_cast<uint32_t>(File::OpenMode::Read) 
-                                | static_cast<uint32_t>(File::OpenMode::Text) 
-                                | static_cast<uint32_t>(File::OpenMode::Exist)
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead) };
-    File file( fileName, mode );
+    constexpr unsigned int mode{  static_cast<uint32_t>(areg::File::OpenMode::Read) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    areg::File file( fileName, mode );
 
-    ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
+    ASSERT_TRUE( areg::File::existFile( fileName.getString( ) ) );
     ASSERT_TRUE( file.open( ) );
     ASSERT_EQ( file.getPosition( ), static_cast<uint32_t>(0) );
 
@@ -202,16 +202,16 @@ TEST( FileTest, CreateEmptyFile )
 {
     Application::setWorkingDirectory( nullptr );
     const areg::String fileNameWrite{ "./empty_file_areg.txt" };
-    constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read) 
-                                | static_cast<uint32_t>(File::OpenMode::Text) 
-                                | static_cast<uint32_t>(File::OpenMode::Create) 
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead) 
-                                | static_cast<uint32_t>(File::OpenMode::Write) };
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) 
+                                | static_cast<uint32_t>(areg::File::OpenMode::Write) };
 
-    File fileWrite( fileNameWrite, modeWrite );
+    areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open( ) );
     fileWrite.close( );
-    ASSERT_TRUE( File::existFile( fileNameWrite ) );
+    ASSERT_TRUE( areg::File::existFile( fileNameWrite ) );
 }
 
 /**
@@ -222,13 +222,13 @@ TEST( FileTest, FileReadBasic )
     Application::setWorkingDirectory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
-    constexpr uint32_t mode { static_cast<uint32_t>(File::OpenMode::Read)
-                            | static_cast<uint32_t>(File::OpenMode::Text) 
-                            | static_cast<uint32_t>(File::OpenMode::Exist) 
-                            | static_cast<uint32_t>(File::OpenMode::ShareRead) };
-    File file( fileName, mode );
+    constexpr uint32_t mode { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                            | static_cast<uint32_t>(areg::File::OpenMode::Text) 
+                            | static_cast<uint32_t>(areg::File::OpenMode::Exist) 
+                            | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    areg::File file( fileName, mode );
 
-    ASSERT_TRUE(File::existFile( fileName.getString( ) ));
+    ASSERT_TRUE(areg::File::existFile( fileName.getString( ) ));
     ASSERT_TRUE( file.open( ) );
 
     char buffer[ 1025 ]{ 0 };
@@ -249,17 +249,17 @@ TEST( FileTest, FileReadWriteBasic )
     const areg::String fileNameRead{ "./config/areg.init" };
     const areg::String fileNameWrite{ "./write_with_areg.txt" };
 
-    constexpr uint32_t modeRead { static_cast<uint32_t>(File::OpenMode::Read)
-                                | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Exist)
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead) };
-    constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read)
-                                | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Create)
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead)
-                                | static_cast<uint32_t>(File::OpenMode::Write) };
+    constexpr uint32_t modeRead { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Write) };
 
-    File fileRead( fileNameRead.getString( ), modeRead );
+    areg::File fileRead( fileNameRead.getString( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };
@@ -269,13 +269,13 @@ TEST( FileTest, FileReadWriteBasic )
     buffer[ 1024 ] = '\0';
     fileRead.close( );
 
-    File fileWrite( fileNameWrite, modeWrite );
+    areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open( ) );
     ASSERT_TRUE( fileWrite.writeString( buffer ) );
 
     fileWrite.close( );
 
-    ASSERT_TRUE( File::existFile( fileNameWrite ) );
+    ASSERT_TRUE( areg::File::existFile( fileNameWrite ) );
 }
 
 /**
@@ -287,11 +287,11 @@ TEST( FileTest, CreateFolderCascaded )
     Application::setWorkingDirectory( nullptr );
 
     const areg::String dirPath( "./dir1/dir2/dir3/" );
-    ASSERT_FALSE( File::existDir( dirPath ) );
-    ASSERT_TRUE( File::createDirCascaded( dirPath ) );
-    ASSERT_TRUE( File::existDir( dirPath ) );
-    ASSERT_TRUE( File::deleteDir( "./dir1/" ) );
-    ASSERT_FALSE( File::existDir( "./dir1/" ) );
+    ASSERT_FALSE( areg::File::existDir( dirPath ) );
+    ASSERT_TRUE( areg::File::createDirCascaded( dirPath ) );
+    ASSERT_TRUE( areg::File::existDir( dirPath ) );
+    ASSERT_TRUE( areg::File::deleteDir( "./dir1/" ) );
+    ASSERT_FALSE( areg::File::existDir( "./dir1/" ) );
 }
 
 /**
@@ -306,18 +306,18 @@ TEST( FileTest, FileReadAndWriteInSubfolder )
     const areg::String fileNameRead { "./config/areg.init" };
     const areg::String fileNameWrite{ "./logs/write_with_areg.txt" };
 
-    constexpr uint32_t modeRead { static_cast<uint32_t>(File::OpenMode::Read)
-                                | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Exist)
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead) };
+    constexpr uint32_t modeRead { static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Exist)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead) };
 
-    constexpr uint32_t modeWrite{ static_cast<uint32_t>(File::OpenMode::Read)
-                                | static_cast<uint32_t>(File::OpenMode::Text)
-                                | static_cast<uint32_t>(File::OpenMode::Create)
-                                | static_cast<uint32_t>(File::OpenMode::ShareRead)
-                                | static_cast<uint32_t>(File::OpenMode::Write) };
+    constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Text)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Create)
+                                | static_cast<uint32_t>(areg::File::OpenMode::ShareRead)
+                                | static_cast<uint32_t>(areg::File::OpenMode::Write) };
 
-    File fileRead( fileNameRead.getString( ), modeRead );
+    areg::File fileRead( fileNameRead.getString( ), modeRead );
     ASSERT_TRUE( fileRead.open( ) );
 
     char buffer[ 1025 ]{ 0 };
@@ -327,11 +327,11 @@ TEST( FileTest, FileReadAndWriteInSubfolder )
     buffer[ 1024 ] = '\0';
     fileRead.close( );
 
-    File fileWrite( fileNameWrite, modeWrite );
+    areg::File fileWrite( fileNameWrite, modeWrite );
     ASSERT_TRUE( fileWrite.open() );
     ASSERT_TRUE(fileWrite.writeString(buffer));
 
     fileWrite.close( );
 
-    ASSERT_TRUE( File::existFile(fileNameWrite) );
+    ASSERT_TRUE( areg::File::existFile(fileNameWrite) );
 }

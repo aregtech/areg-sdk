@@ -100,7 +100,7 @@ private:
     /**
      * \brief   The log file object
      **/
-    File              mLogFile;
+    areg::File              mLogFile;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden calls.

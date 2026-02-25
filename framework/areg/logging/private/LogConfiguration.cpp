@@ -213,13 +213,13 @@ areg::String LogConfiguration::getDatabaseFullPath() const
 {
     areg::String dbLocation = Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseLocation().position);
     areg::String dbName = Application::getConfigManager().getLogDatabaseProperty(areg::getLogDatabaseName().position);
-    return File::makeFileFullPath(dbLocation, dbName);
+    return areg::File::makeFileFullPath(dbLocation, dbName);
 }
 
 void LogConfiguration::setDatabaseFullPath(const areg::String& dbFullPath, bool isTemporary)
 {
-    areg::String dbLocation = File::getFileDirectory(dbFullPath.getString());
-    areg::String dbName = File::getFileNameWithExtension(dbFullPath.getString());
+    areg::String dbLocation = areg::File::getFileDirectory(dbFullPath.getString());
+    areg::String dbName = areg::File::getFileNameWithExtension(dbFullPath.getString());
 
     Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseLocation().position, dbLocation, isTemporary);
     Application::getConfigManager().setLogDatabaseProperty(areg::getLogDatabaseName().position, dbName, isTemporary);

@@ -139,7 +139,7 @@ const areg::Model & Application::findModel( const char * modelName )
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
     areg::String path( areg::isEmpty<char>(dirPath) ? areg::Process::getInstance().getPath().getString() : dirPath);
-    File::setCurrentDir(path);
+    areg::File::setCurrentDir(path);
 }
 
 bool Application::startLogging(bool force /*= false*/ )
