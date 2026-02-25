@@ -96,7 +96,7 @@ public:
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
     ProxyAddress( const areg::String & serviceName
-                , const Version & serviceVersion
+                , const areg::Version & serviceVersion
                 , areg::ServiceType serviceType
                 , const areg::String & roleName
                 , const areg::String & threadName = areg::String::getEmptyString() );

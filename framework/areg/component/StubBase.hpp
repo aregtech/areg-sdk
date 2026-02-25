@@ -432,7 +432,7 @@ protected:
     /**
      * \brief   Returns implemented version of service interface.
      **/
-    const Version & getImplVersion() const;
+    const areg::Version & getImplVersion() const;
 
     /**
      * \brief   Returns number of requests of Service Interface

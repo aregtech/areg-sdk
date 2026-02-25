@@ -52,7 +52,7 @@ class EventDataStream;
 class ProxyListener;
 class ProxyEvent;
 class ProxyBase;
-class Version;
+namespace areg { class Version; }
 
 /************************************************************************
  * Global types

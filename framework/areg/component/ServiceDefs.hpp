@@ -695,7 +695,7 @@ namespace areg
         /**
          * \brief   Service interface implementation version
          **/
-        Version             idVersion{ 0, 0, 0 };
+        areg::Version       idVersion{ 0, 0, 0 };
 
         /**
          * \brief   The service type. Should be either local or public / remote.
@@ -761,7 +761,7 @@ namespace areg
     /**
      * \brief   Empty service version
      **/
-    extern AREG_API const Version EmptyServiceVersion /*(1, 0, 0)*/;
+    extern AREG_API const areg::Version EmptyServiceVersion /*(1, 0, 0)*/;
     /**
      * \brief   Returns the instance of empty local service interface.
      **/

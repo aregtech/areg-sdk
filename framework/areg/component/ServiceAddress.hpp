@@ -76,7 +76,7 @@ public:
      * \param   roleName        The role name of owner component.
      **/
     ServiceAddress( const areg::String & serviceName
-                  , const Version & serviceVersion
+                  , const areg::Version & serviceVersion
                   , areg::ServiceType serviceType
                   , const areg::String & roleName );
 

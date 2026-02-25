@@ -405,7 +405,7 @@ public:
     /**
      * \brief   Returns the configuration version.
      **/
-    Version getConfigVersion() const;
+    areg::Version getConfigVersion() const;
 
 /************************************************************************
  * Log properties.
@@ -414,7 +414,7 @@ public:
     /**
      * \brief   Returns logging version.
      **/
-    Version getLogVersion() const;
+    areg::Version getLogVersion() const;
 
     /**
      * \brief   Returns list of logging targets specified in the areg::LogTarget.

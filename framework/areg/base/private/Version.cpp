@@ -19,150 +19,154 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/CommonDefs.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// Version class implementation
-//////////////////////////////////////////////////////////////////////////
 
-const Version & Version::getInvalidVersion()
+namespace areg
 {
-    static const Version _invalidVersion( 0, 0, 0 );
-    return _invalidVersion;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Version class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-Version::Version()
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-}
-
-Version::Version( uint32_t major, uint32_t minor, uint32_t patch /*= 0*/ )
-    : mMajor    (major)
-    , mMinor    (minor)
-    , mPatch    (patch)
-{
-}
-
-Version::Version( const Version &src )
-    : mMajor    (src.mMajor)
-    , mMinor    (src.mMinor)
-    , mPatch    (src.mPatch)
-{
-}
-
-Version::Version( Version && src ) noexcept
-    : mMajor    ( src.mMajor )
-    , mMinor    ( src.mMinor )
-    , mPatch    ( src.mPatch )
-{
-}
-
-Version::Version(const InStream & stream)
-    : mMajor    ( 0 )
-    , mMinor    ( 0 )
-    , mPatch    ( 0 )
-{
-    stream >> mMajor;
-    stream >> mMinor;
-    stream >> mPatch;
-}
-
-Version::Version(const char * version)
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-    convFromString( version );
-}
-
-Version::Version(const areg::String & version)
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-    convFromString(version);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
-Version & Version::convFromString( const areg::String & version )
-{
-    mMajor  = 0;
-    mMinor  = 0;
-    mPatch  = 0;
-
-    areg::String major, minor, patch;
-    areg::CharPos pos = areg::START_POS;
-    pos = version.substring( major, areg::OBJECT_SEPARATOR, pos);
-    pos = version.substring( minor, areg::OBJECT_SEPARATOR, pos);
-    version.substring( patch, areg::OBJECT_SEPARATOR, pos);
-
-    mMajor  = major.toUInt32();
-    mMinor  = minor.toUInt32();
-    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
-
-    return (*this);
-}
-
-Version & Version::convFromString( const char * version )
-{
-	return convFromString( areg::String(version != nullptr ? version : areg::EmptyStringA) );
-}
-
-Version & Version::operator = ( const Version &src )
-{
-    if (this != &src)
+    const Version & Version::getInvalidVersion()
     {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
-    }
-    return (*this);
-}
-
-Version & Version::operator = ( Version && src ) noexcept
-{
-    if ( this != &src )
-    {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
+        static const Version _invalidVersion( 0, 0, 0 );
+        return _invalidVersion;
     }
 
-    return (*this);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    Version::Version()
+        : mMajor    (0)
+        , mMinor    (0)
+        , mPatch    (0)
+    {
+    }
 
-bool Version::operator < ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor < version.mMajor) || 
-                (mMajor == version.mMajor && mMinor < version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
-             );
-}
+    Version::Version( uint32_t major, uint32_t minor, uint32_t patch /*= 0*/ )
+        : mMajor    (major)
+        , mMinor    (minor)
+        , mPatch    (patch)
+    {
+    }
 
-bool Version::operator > ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor > version.mMajor) ||
-                (mMajor == version.mMajor && mMinor > version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
-            );
-}
+    Version::Version( const Version &src )
+        : mMajor    (src.mMajor)
+        , mMinor    (src.mMinor)
+        , mPatch    (src.mPatch)
+    {
+    }
 
-areg::String Version::convToString() const
-{
-    constexpr const char * format{ "%d%c%d%c%d" };
+    Version::Version( Version && src ) noexcept
+        : mMajor    ( src.mMajor )
+        , mMinor    ( src.mMinor )
+        , mPatch    ( src.mPatch )
+    {
+    }
 
-    char buffer[ 128 ]{ 0 };
-    int32_t len = areg::String::formatString( buffer, 128, format, mMajor, areg::OBJECT_SEPARATOR, mMinor, areg::OBJECT_SEPARATOR, mPatch );
-    return (len > 0 ? areg::String( buffer, static_cast<uint32_t>(len) ) : areg::String::getEmptyString());
-}
+    Version::Version(const InStream & stream)
+        : mMajor    ( 0 )
+        , mMinor    ( 0 )
+        , mPatch    ( 0 )
+    {
+        stream >> mMajor;
+        stream >> mMinor;
+        stream >> mPatch;
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// Version friend global operators to make Version object streamable
-//////////////////////////////////////////////////////////////////////////
+    Version::Version(const char * version)
+        : mMajor    (0)
+        , mMinor    (0)
+        , mPatch    (0)
+    {
+        convFromString( version );
+    }
+
+    Version::Version(const areg::String & version)
+        : mMajor    (0)
+        , mMinor    (0)
+        , mPatch    (0)
+    {
+        convFromString(version);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Methods
+    //////////////////////////////////////////////////////////////////////////
+    Version & Version::convFromString( const areg::String & version )
+    {
+        mMajor  = 0;
+        mMinor  = 0;
+        mPatch  = 0;
+
+        areg::String major, minor, patch;
+        areg::CharPos pos = areg::START_POS;
+        pos = version.substring( major, areg::OBJECT_SEPARATOR, pos);
+        pos = version.substring( minor, areg::OBJECT_SEPARATOR, pos);
+        version.substring( patch, areg::OBJECT_SEPARATOR, pos);
+
+        mMajor  = major.toUInt32();
+        mMinor  = minor.toUInt32();
+        mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
+
+        return (*this);
+    }
+
+    Version & Version::convFromString( const char * version )
+    {
+        return convFromString( areg::String(version != nullptr ? version : areg::EmptyStringA) );
+    }
+
+    Version & Version::operator = ( const Version &src )
+    {
+        if (this != &src)
+        {
+            this->mMajor    = src.mMajor;
+            this->mMinor    = src.mMinor;
+            this->mPatch    = src.mPatch;
+        }
+        return (*this);
+    }
+
+    Version & Version::operator = ( Version && src ) noexcept
+    {
+        if ( this != &src )
+        {
+            this->mMajor    = src.mMajor;
+            this->mMinor    = src.mMinor;
+            this->mPatch    = src.mPatch;
+        }
+
+        return (*this);
+    }
+
+    bool Version::operator < ( const Version & version ) const
+    {
+        return  (this == &version ? false :
+                    (mMajor < version.mMajor) || 
+                    (mMajor == version.mMajor && mMinor < version.mMinor) ||
+                    (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
+                );
+    }
+
+    bool Version::operator > ( const Version & version ) const
+    {
+        return  (this == &version ? false :
+                    (mMajor > version.mMajor) ||
+                    (mMajor == version.mMajor && mMinor > version.mMinor) ||
+                    (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
+                );
+    }
+
+    areg::String Version::convToString() const
+    {
+        constexpr const char * format{ "%d%c%d%c%d" };
+
+        char buffer[ 128 ]{ 0 };
+        int32_t len = areg::String::formatString( buffer, 128, format, mMajor, areg::OBJECT_SEPARATOR, mMinor, areg::OBJECT_SEPARATOR, mPatch );
+        return (len > 0 ? areg::String( buffer, static_cast<uint32_t>(len) ) : areg::String::getEmptyString());
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Version friend global operators to make Version object streamable
+    //////////////////////////////////////////////////////////////////////////
+} // namespace areg

@@ -524,7 +524,7 @@ void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, areg::
     mConnectionStatus = status;
 }
 
-const Version & StubBase::getImplVersion() const
+const areg::Version & StubBase::getImplVersion() const
 {
     return mInterface.idVersion;
 }

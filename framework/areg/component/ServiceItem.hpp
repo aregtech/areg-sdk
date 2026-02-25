@@ -98,7 +98,7 @@ public:
      * \param   serviceVersion  The service version to set.
      * \param   serviceType     The type of service
      **/
-    ServiceItem( const areg::String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType );
+    ServiceItem( const areg::String & serviceName, const areg::Version & serviceVersion, areg::ServiceType serviceType );
 
     /**
      * \brief   Creates service item and initializes data from given stream.
@@ -197,12 +197,12 @@ public:
     /**
      * \brief   Returns service version
      **/
-    inline const Version & getServiceVersion() const;
+    inline const areg::Version & getServiceVersion() const;
 
     /**
      * \brief   Sets service version
      **/
-    inline void setServiceVersion( const Version & serviceVersion );
+    inline void setServiceVersion( const areg::Version & serviceVersion );
 
     /**
      * \brief   Returns service type
@@ -261,7 +261,7 @@ protected:
     /**
      * \brief   Service Version
      **/
-    Version                 mServiceVersion;
+    areg::Version           mServiceVersion;
     /**
      * \brief   Service type
      **/
@@ -312,12 +312,12 @@ inline void ServiceItem::setServiceName( const areg::String & serviceName )
     mMagicNum    = ServiceItem::_magicNumber(*this);
 }
 
-inline const Version & ServiceItem::getServiceVersion() const
+inline const areg::Version & ServiceItem::getServiceVersion() const
 {
     return mServiceVersion;
 }
 
-inline void ServiceItem::setServiceVersion( const Version & serviceVersion )
+inline void ServiceItem::setServiceVersion( const areg::Version & serviceVersion )
 {
     mServiceVersion = serviceVersion;
 }
@@ -347,7 +347,7 @@ inline bool ServiceItem::isValidated() const
 {
     return (mServiceName.isEmpty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
-           (mServiceVersion         != Version::getInvalidVersion()             ) && 
+           (mServiceVersion         != areg::Version::getInvalidVersion()       ) &&
            (mServiceType            != areg::ServiceType::Invalid  );
 }
 

@@ -161,7 +161,7 @@ namespace areg
          * \param   version     The version object of implemented service interface,
          *                      containing major, minor and patch version numbers
          **/
-        ServiceEntry( const areg::String & serviceName, const Version & version );
+        ServiceEntry( const areg::String & serviceName, const areg::Version & version );
 
         /**
          * \brief   Copies data from given source.
@@ -226,7 +226,7 @@ namespace areg
         /**
          * \brief   The Version of implemented Service.
          **/
-        Version   mVersion;
+        areg::Version   mVersion;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -951,7 +951,7 @@ namespace areg
          * \return  Returns either new added instance or the existing instance of supported service interface.
          *          The uniqueness is checked within component entry context and ignores the version number.
          **/
-        areg::ServiceEntry & addSupportedService( const areg::String & serviceName, const Version & version );
+        areg::ServiceEntry & addSupportedService( const areg::String & serviceName, const areg::Version & version );
 
         /**
          * \brief   Searches given supported service. If found, removes from list.

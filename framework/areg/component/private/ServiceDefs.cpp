@@ -237,7 +237,7 @@ uint32_t areg::ProxyData::getResponseId( uint32_t requestId ) const
             );
 }
 
-AREG_API_IMPL const Version areg::EmptyServiceVersion (1, 0, 0);
+AREG_API_IMPL const areg::Version areg::EmptyServiceVersion (1, 0, 0);
 
 AREG_API_IMPL areg::InterfaceData & areg::getEmptyInterface()
 {

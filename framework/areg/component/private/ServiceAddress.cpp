@@ -44,7 +44,7 @@ ServiceAddress::ServiceAddress()
 }
 
 ServiceAddress::ServiceAddress( const areg::String & serviceName
-                              , const Version & serviceVersion
+                              , const areg::Version & serviceVersion
                               , areg::ServiceType serviceType
                               , const areg::String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )

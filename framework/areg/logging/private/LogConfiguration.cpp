@@ -71,7 +71,7 @@ void LogConfiguration::setLogEnabled(areg::LogTarget logType, bool isEnabled)
     }
 }
 
-Version LogConfiguration::getVersion() const
+areg::Version LogConfiguration::getVersion() const
 {
     return Application::getConfigManager().getLogVersion();
 }

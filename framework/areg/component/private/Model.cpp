@@ -138,7 +138,7 @@ areg::ServiceEntry::ServiceEntry( const areg::String & serviceName, uint32_t maj
     ASSERT( mVersion.isValid( ) );
 }
 
-areg::ServiceEntry::ServiceEntry( const areg::String & serviceName, const Version & version )
+areg::ServiceEntry::ServiceEntry( const areg::String & serviceName, const areg::Version & version )
     : mName     (serviceName)
     , mVersion  (version)
 {
@@ -523,7 +523,7 @@ void areg::ComponentEntry::addSupportedService( const areg::ServiceList & servic
     }
 }
 
-areg::ServiceEntry & areg::ComponentEntry::addSupportedService(const areg::String & serviceName, const Version & version)
+areg::ServiceEntry & areg::ComponentEntry::addSupportedService(const areg::String & serviceName, const areg::Version & version)
 {
     int32_t index = findSupportedService(serviceName);
     if ( index == areg::INVALID_INDEX )

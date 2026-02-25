@@ -96,7 +96,7 @@ public:
     /**
      * \brief   Gets and sets the property value of logging version.
      **/
-    Version getVersion() const;
+    areg::Version getVersion() const;
 
     /**
      * \brief   Gets and sets property value of layout format of scope enter.

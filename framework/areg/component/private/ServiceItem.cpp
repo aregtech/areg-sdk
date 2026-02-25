@@ -33,7 +33,7 @@ ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char*
 
 ServiceItem::ServiceItem()
     : mServiceName      ( ServiceItem::INVALID_SERVICE )
-    , mServiceVersion   ( Version::getInvalidVersion() )
+    , mServiceVersion   ( areg::Version::getInvalidVersion() )
     , mServiceType      ( areg::ServiceType::Local )
     , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
@@ -41,7 +41,7 @@ ServiceItem::ServiceItem()
 
 ServiceItem::ServiceItem(const areg::String & serviceName)
     : mServiceName      ( serviceName )
-    , mServiceVersion   ( Version::getInvalidVersion() )
+    , mServiceVersion   ( areg::Version::getInvalidVersion() )
     , mServiceType      ( areg::ServiceType::Local )
     , mMagicNum         ( areg::CHECKSUM_IGNORE )
 {
@@ -49,7 +49,7 @@ ServiceItem::ServiceItem(const areg::String & serviceName)
     mMagicNum = ServiceItem::_magicNumber(*this);
 }
 
-ServiceItem::ServiceItem( const areg::String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType )
+ServiceItem::ServiceItem( const areg::String & serviceName, const areg::Version & serviceVersion, areg::ServiceType serviceType )
     : mServiceName      ( serviceName )
     , mServiceVersion   ( serviceVersion )
     , mServiceType      ( serviceType )

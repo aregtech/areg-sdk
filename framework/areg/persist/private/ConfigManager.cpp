@@ -533,7 +533,7 @@ void ConfigManager::setConfiguration(const areg::ListProperties& listReadonly, c
 }
 
 
-Version ConfigManager::getConfigVersion() const
+areg::Version ConfigManager::getConfigVersion() const
 {
     Lock lock(mLock);
 
@@ -542,7 +542,7 @@ Version ConfigManager::getConfigVersion() const
 
     const Property* prop = _getProperty(mReadonlyProperties, key.section, areg::SYNTAX_ALL_MODULES, key.property, key.position, confKey, true);
 
-    Version result;
+    areg::Version result;
     if (prop != nullptr)
     {
         result = prop->getValueString();
@@ -601,7 +601,7 @@ bool ConfigManager::getLoggingStatus() const
     return (value != nullptr ? value->getBoolean() : areg::DEFAULT_LOG_ENABLED);
 }
 
-Version ConfigManager::getLogVersion() const
+areg::Version ConfigManager::getLogVersion() const
 {
     Lock lock(mLock);
 
@@ -609,7 +609,7 @@ Version ConfigManager::getLogVersion() const
     const areg::ConfigKey& key = areg::getLogVersion();
 
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    Version result;
+    areg::Version result;
     if (value != nullptr)
     {
         result = value->getString();
