@@ -60,8 +60,8 @@ namespace
         uint16_t    lcPort{ areg::InvalidPort };
     };
 
-    using ListInstances = ArrayList<LogInstance>;
-    using ListScopes    = ArrayList<ScopeInfo>;
+    using ListInstances = areg::ArrayList<LogInstance>;
+    using ListScopes    = areg::ArrayList<ScopeInfo>;
     using MapScopes     = areg::HashMap<ITEM_ID, ListScopes>;
 
     LoggerConnect   _logConnect;
@@ -510,7 +510,7 @@ void LogObserver::_cleanHelp()
 
 bool LogObserver::_processSaveConfig(const OptionParser::InputOption& optSave)
 {
-    ArrayList<ITEM_ID> listTargets;
+    areg::ArrayList<ITEM_ID> listTargets;
     if (optSave.inString.empty() || (optSave.inString[0] == areg::SYNTAX_ALL_MODULES))
     {
         listTargets.add(areg::TARGET_ALL);
@@ -664,7 +664,7 @@ bool LogObserver::_processStartLogging(bool doStart)
 bool LogObserver::_processQueryScopes(const OptionParser::InputOption& optScope)
 {
     bool result{ true };
-    ArrayList<ITEM_ID> listTargets;
+    areg::ArrayList<ITEM_ID> listTargets;
     if (optScope.inString.empty() || (optScope.inString[0] == areg::SYNTAX_ALL_MODULES))
     {
         listTargets.add(areg::TARGET_ALL);

@@ -260,8 +260,8 @@ public:
         StrList     inString    {    }; //!< The list of the strings, the `inField` should indicate string value
     };
 
-    using OptionSetupList   = ArrayList<OptionSetup>;   //!< The list of option validity setup.
-    using InputOptionList   = ArrayList<InputOption>;   //!< The list of input options.
+    using OptionSetupList   = areg::ArrayList<OptionSetup>;   //!< The list of option validity setup.
+    using InputOptionList   = areg::ArrayList<InputOption>;   //!< The list of input options.
 
 private:
     //!< Delimiter for "equal"

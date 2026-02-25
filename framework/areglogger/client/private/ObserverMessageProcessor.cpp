@@ -275,7 +275,7 @@ void ObserverMessageProcessor::notifyLogMessage(const areg::RemoteMessage& msgRe
 
 void ObserverMessageProcessor::_clientsConnected(const areg::RemoteMessage& msgReceived)
 {
-    ArrayList< areg::ConnectedInstance > listConnected;
+    areg::ArrayList< areg::ConnectedInstance > listConnected;
     msgReceived >> listConnected;
 
     FuncInstancesConnect callback{ nullptr };
@@ -372,8 +372,8 @@ void ObserverMessageProcessor::_clientsConnected(const areg::RemoteMessage& msgR
 
 void ObserverMessageProcessor::_clientsDisconnected(const areg::RemoteMessage& msgReceived)
 {
-    ArrayList<ITEM_ID> listClients;
-    ArrayList< areg::ConnectedInstance > listDisconnected;
+    areg::ArrayList<ITEM_ID> listClients;
+    areg::ArrayList< areg::ConnectedInstance > listDisconnected;
 
     msgReceived >> listClients;
     FuncInstancesDisconnect callback{ nullptr };

@@ -174,7 +174,7 @@ namespace chat
 	 * \brief	chat::ListConnections
 	 *			Internal custom type definition of ArrayList<ConnectionRecord>
 	 **/
-    using ListConnections   = ArrayList<ConnectionRecord>;
+    using ListConnections   = areg::ArrayList<ConnectionRecord>;
 
 	/**
 	 * \brief	chat::MapConnections
@@ -266,7 +266,7 @@ namespace chat
 	 * \brief	chat::ListConnections
 	 *			Internal custom type definition of ArrayList<ConnectionRecord>
 	 **/
-	using ListParticipants  = ArrayList<Participant>;
+	using ListParticipants  = areg::ArrayList<Participant>;
 
 	/**
 	 * \brief	chat::MapDirectConnections

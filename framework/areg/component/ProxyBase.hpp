@@ -203,7 +203,7 @@ private:
      * \brief   Proxy Listener List class to save list of listener objects.
      *          Every Proxy class has list of listeners.
      ************************************************************************/
-    using ProxyListenerList = ArrayList<ProxyBase::Listener>;
+    using ProxyListenerList = areg::ArrayList<ProxyBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyConnectList definition
@@ -212,7 +212,7 @@ private:
      * \brief   Proxy Connected client List class to handle connect and 
      *          disconnect service.
      ************************************************************************/
-    using ProxyConnectList  = ArrayList<ProxyListener *>;
+    using ProxyConnectList  = areg::ArrayList<ProxyListener *>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ProxyMap class declaration.
@@ -247,7 +247,7 @@ private:
     /************************************************************************
      * \brief   The list of proxies. Used to save in Map List.
      ************************************************************************/
-    using ThreadProxyList   = ArrayList<std::shared_ptr<ProxyBase>>;
+    using ThreadProxyList   = areg::ArrayList<std::shared_ptr<ProxyBase>>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ImplThreadProxyMap internal class declaration
@@ -479,7 +479,7 @@ public:
      * \param[out]  threadProxyList On output, which contains list of proxies created in specified thread.
      * \return  Returns number of proxies added to the list.
      **/
-    static int32_t findThreadProxies( DispatcherThread & ownerThread, ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
+    static int32_t findThreadProxies( DispatcherThread & ownerThread, areg::ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
 
     /**
      * \brief   Creates the request failure event to send to remote proxy. This may happen when either the request of client

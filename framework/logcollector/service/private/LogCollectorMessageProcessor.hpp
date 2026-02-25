@@ -84,7 +84,7 @@ public:
      * \param   target      The ID of the target to send the message. If target is areg::TARGET_ALL,
      *                      the notification message is sent to all observers. Otherwise, it is sent to the exact target.
      **/
-    void notifyDisconnectedInstances(const ArrayList<ITEM_ID> & listIds, const ITEM_ID& target = areg::TARGET_ALL) const;
+    void notifyDisconnectedInstances(const areg::ArrayList<ITEM_ID> & listIds, const ITEM_ID& target = areg::TARGET_ALL) const;
 
     /**
      * \brief   Called when a connected instance of application requests to register scopes.
@@ -198,7 +198,7 @@ private:
     LogCollectorServerService & mLoggerService;
 
     //!< The queue of application IDs to save configuration.
-    ArrayList<ITEM_ID>        mListSaveConfig;
+    areg::ArrayList<ITEM_ID>        mListSaveConfig;
 
     //!< The ID of an application pending to save the configuration.
     ITEM_ID                     mPendingSave;

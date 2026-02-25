@@ -255,7 +255,7 @@ public:
      * \param   lookupList  The lookup list to convert literal identifiers into integer values.
      * \return  Combined with logical OR ('|') operation digital value of the identifiers.
      **/
-    ArrayList<areg::Identifier> getIdentifierList(const std::vector<areg::Identifier>& lookupList) const;
+    areg::ArrayList<areg::Identifier> getIdentifierList(const std::vector<areg::Identifier>& lookupList) const;
 
     /**
      * \brief   Sets as a string the list of values of the property.
@@ -272,7 +272,7 @@ public:
      *                      If the flag is 'false', the entries in the result list are not checked.
      * \return  Returns the list of strings.
      **/
-    ArrayList<areg::String> getValueList(bool makeUnique = false) const;
+    areg::ArrayList<areg::String> getValueList(bool makeUnique = false) const;
 
     /**
      * \brief   Sets a list of string as a value.

@@ -402,17 +402,17 @@ namespace areg
     /**
      * \brief   Array of integer elements
      **/
-    using IntegerArray  = ArrayList<uint32_t>;
+    using IntegerArray  = areg::ArrayList<uint32_t>;
 
     /**
      * \brief   Array of string elements
      **/
-    using StringArray   = ArrayList<String>;
+    using StringArray   = areg::ArrayList<String>;
 
     /**
      * \brief   Array of pointer elements
      **/
-    using PointerArray  = ArrayList<void *>;
+    using PointerArray  = areg::ArrayList<void *>;
 
     /**
      * \brief   Hash Map where keys are values are integers.

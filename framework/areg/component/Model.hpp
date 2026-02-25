@@ -243,7 +243,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The list of service entries.
-        using ServiceListBase = ArrayList<areg::ServiceEntry>;
+        using ServiceListBase = areg::ArrayList<areg::ServiceEntry>;
 
         /**
          * \brief   Default constructor.
@@ -475,7 +475,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The list of worker threads.
-        using WorkerThreadListBase = ArrayList<areg::WorkerThreadEntry>;
+        using WorkerThreadListBase = areg::ArrayList<areg::WorkerThreadEntry>;
 
         /**
          * \brief   Default constructor.
@@ -690,7 +690,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of dependency list
-        using DependencyListBase = ArrayList<areg::DependencyEntry>;
+        using DependencyListBase = areg::ArrayList<areg::DependencyEntry>;
 
         /**
          * \brief   Creates empty list of dependent services.
@@ -1208,7 +1208,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of component list.
-        using ComponentListBase = ArrayList<areg::ComponentEntry>;
+        using ComponentListBase = areg::ArrayList<areg::ComponentEntry>;
 
         /**
          * \brief   Creates empty list.
@@ -1583,7 +1583,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     public:
         //!< The base class of component thread list.
-        using ComponentThreadListBase = ArrayList< areg::ComponentThreadEntry>;
+        using ComponentThreadListBase = areg::ArrayList< areg::ComponentThreadEntry>;
 
         /**
          * \brief   Default constructor.

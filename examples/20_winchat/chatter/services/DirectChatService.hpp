@@ -23,7 +23,7 @@ class DirectChatService : public Component
 {
     using HashMapDirectConnections      = areg::OrderedMap<areg::String, DirectChatService *>;
     using MapDirectConnections          = areg::ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
-    using ListDirectConnectionClients   = ArrayList<DirectConnectionClient *>;
+    using ListDirectConnectionClients   = areg::ArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component

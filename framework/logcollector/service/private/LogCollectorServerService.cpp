@@ -67,7 +67,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
 {
     Lock lock(mLock);
 
-    ArrayList<ITEM_ID> listIds;
+    areg::ArrayList<ITEM_ID> listIds;
     areg::ConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
     ServiceCommunicationBase::removeInstance(cookie);
@@ -102,7 +102,7 @@ void LogCollectorServerService::removeAllInstances()
 
     if (mInstanceMap.getSize() != 0)
     {
-        ArrayList<ITEM_ID> listIds;
+        areg::ArrayList<ITEM_ID> listIds;
         for (const auto& entry : getInstances().getData())
         {
             if (LogCollectorMessageProcessor::isLogSource(entry.second.ciSource))

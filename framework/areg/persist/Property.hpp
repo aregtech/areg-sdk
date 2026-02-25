@@ -370,7 +370,7 @@ namespace std
 namespace areg
 {
     //!< The type to initialize list of properties.
-    using ListProperties = ArrayList<Property>;
+    using ListProperties = areg::ArrayList<Property>;
 }
 
 #endif  // AREG_PERSIST_PROPERTY_HPP

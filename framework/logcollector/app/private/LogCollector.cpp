@@ -610,7 +610,7 @@ void LogCollector::_cleanHelp()
 void LogCollector::_processUpdateScopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
-    ArrayList<areg::RemoteMessage> msgList;
+    areg::ArrayList<areg::RemoteMessage> msgList;
     _createScopeMessage(optScope, msgList);
     for (uint32_t i = 0; i < msgList.getSize(); ++ i)
     {
@@ -621,7 +621,7 @@ void LogCollector::_processUpdateScopes(const OptionParser::InputOption& optScop
 void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
-    ArrayList<ITEM_ID> listTargets;
+    areg::ArrayList<ITEM_ID> listTargets;
     if (optScope.inString.empty() || (optScope.inString[0] == areg::SYNTAX_ALL_MODULES))
     {
         listTargets.add(areg::COOKIE_ANY);
@@ -649,7 +649,7 @@ void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<areg::RemoteMessage>& msgList)
+void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope, areg::ArrayList<areg::RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);

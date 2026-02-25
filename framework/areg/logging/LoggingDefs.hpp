@@ -86,7 +86,7 @@ namespace areg
     };
 
     //!< The list of scope update structure.
-    using ScopeNames    = ArrayList<ScopeEntry>;
+    using ScopeNames    = areg::ArrayList<ScopeEntry>;
 
     /**
      * \brief   LogTarget

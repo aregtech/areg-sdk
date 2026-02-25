@@ -94,7 +94,7 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const areg::MapInsta
     }
 }
 
-void LogCollectorMessageProcessor::notifyDisconnectedInstances(const ArrayList<ITEM_ID>& listIds, const ITEM_ID& target) const
+void LogCollectorMessageProcessor::notifyDisconnectedInstances(const areg::ArrayList<ITEM_ID>& listIds, const ITEM_ID& target) const
 {
     const auto& observers{ mLoggerService.getObservers() };
     if (observers.isEmpty())

@@ -235,9 +235,9 @@ void PropertyValue::setDouble(double dValue)
     mValue = areg::String::makeString( dValue );
 }
 
-ArrayList<areg::Identifier> PropertyValue::getIdentifierList(const std::vector<areg::Identifier>& lookupList) const
+areg::ArrayList<areg::Identifier> PropertyValue::getIdentifierList(const std::vector<areg::Identifier>& lookupList) const
 {
-    ArrayList<areg::Identifier> result;
+    areg::ArrayList<areg::Identifier> result;
     if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
     {
         std::vector<areg::StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
@@ -294,9 +294,9 @@ void PropertyValue::setIndentifier(const std::vector<areg::Identifier> & idList)
     }
 }
 
-ArrayList<areg::String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
+areg::ArrayList<areg::String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
 {
-    ArrayList<areg::String> result;
+    areg::ArrayList<areg::String> result;
     if (mValue.isEmpty() == false)
     {
         std::vector<areg::StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };

@@ -25,7 +25,7 @@
 
 namespace
 {
-    inline uint32_t _findPosition( const ArrayList<Property>& propList
+    inline uint32_t _findPosition( const areg::ArrayList<Property>& propList
                                  , uint32_t startAt
                                  , const areg::String& section
                                  , const areg::String& module
@@ -56,8 +56,8 @@ namespace
     }
 
     template <typename Type>
-    inline void _setPositionValue( ArrayList<Property>& writeList
-                                 , const ArrayList<Property>& readList
+    inline void _setPositionValue( areg::ArrayList<Property>& writeList
+                                 , const areg::ArrayList<Property>& readList
                                  , const areg::String& section
                                  , const areg::String& module
                                  , const areg::String& property

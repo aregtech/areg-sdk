@@ -375,13 +375,13 @@ private:
      * \brief   ComponentLoader::ModelList
      *          Linked List of Model objects
      **/
-    using ModelList     = ArrayList<areg::Model>;
+    using ModelList     = areg::ArrayList<areg::Model>;
 
     /**
      * \brief   ComponentLoader::ThreadList
      *          Array of component threads.
      **/
-    using ThreadList    = ArrayList<areg::Thread *>;
+    using ThreadList    = areg::ArrayList<areg::Thread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

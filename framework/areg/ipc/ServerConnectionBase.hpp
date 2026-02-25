@@ -67,7 +67,7 @@ protected:
     /**
      * \brief   The list of accepted sockets.
      **/
-    using ListSockets			= ArrayList<SOCKETHANDLE>;
+    using ListSockets			= areg::ArrayList<SOCKETHANDLE>;
 
     /**
      * \brief   The size of master list to listen sockets for incoming messages.

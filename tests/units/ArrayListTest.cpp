@@ -27,7 +27,7 @@
  **/
 TEST(ArrayListTest, TestConstructors)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
     constexpr int _len{ std::size(_arr) };
@@ -75,7 +75,7 @@ TEST(ArrayListTest, TestConstructors)
  **/
 TEST(ArrayListTest, TestIndexValidity)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
     constexpr int _len{ std::size(_arr) };
@@ -108,7 +108,7 @@ TEST(ArrayListTest, TestIndexValidity)
  **/
 TEST(ArrayListTest, TestArrayContent)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
     constexpr uint32_t _len{ std::size(_arr) };
@@ -156,7 +156,7 @@ TEST(ArrayListTest, TestArrayContent)
  **/
 TEST(ArrayListTest, TestGetSetAndContent)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3, 4, 5 };
     constexpr uint32_t _len{ std::size(_arr) };
@@ -187,7 +187,7 @@ TEST(ArrayListTest, TestGetSetAndContent)
  **/
 TEST(ArrayListTest, TestAdd)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _unique[]{ 1, 2, 3, 4, 5 };
     constexpr int _mixed[] { 1, 2, 3, 4, 5, 5, 4, 3, 2, 1 };
@@ -248,7 +248,7 @@ TEST(ArrayListTest, TestAdd)
  **/
 TEST(ArrayListTest, TestAppend)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 1, 2, 3, 4, 5 };
     constexpr int _arr2[]{ 6, 7, 8, 9, 0 };
@@ -299,7 +299,7 @@ TEST(ArrayListTest, TestAppend)
 
 TEST(ArrayListTest, TestCopyMove)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 1, 2, 3, 4, 5 };
     constexpr int _arr2[]{ 6, 7, 8, 9, 0, 1, 2, 3, 4, 5 };
@@ -334,7 +334,7 @@ TEST(ArrayListTest, TestCopyMove)
  **/
 TEST(ArrayListTest, TestInsert)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -376,7 +376,7 @@ TEST(ArrayListTest, TestInsert)
  **/
 TEST(ArrayListTest, TestRemoveAt)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -396,7 +396,7 @@ TEST(ArrayListTest, TestRemoveAt)
  **/
 TEST(ArrayListTest, TestRemovePosition)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr uint32_t _len2{ std::size(_arr2) };
@@ -419,7 +419,7 @@ TEST(ArrayListTest, TestRemovePosition)
  **/
 TEST(ArrayListTest, TestRemoveElement)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -438,7 +438,7 @@ TEST(ArrayListTest, TestRemoveElement)
  **/
 TEST(ArrayListTest, TestFind)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -476,7 +476,7 @@ TEST(ArrayListTest, TestFind)
  **/
 TEST(ArrayListTest, TestResize)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -511,7 +511,7 @@ TEST(ArrayListTest, TestResize)
  **/
 TEST(ArrayListTest, TestReserve)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -541,7 +541,7 @@ TEST(ArrayListTest, TestReserve)
  **/
 TEST(ArrayListTest, TestShift)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -593,7 +593,7 @@ TEST(ArrayListTest, TestShift)
  **/
 TEST(ArrayListTest, TestEntries)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -630,7 +630,7 @@ TEST(ArrayListTest, TestEntries)
  **/
 TEST(ArrayListTest, TestStream)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
     constexpr uint32_t _len1{ std::size(_arr1) };
@@ -653,7 +653,7 @@ TEST(ArrayListTest, TestStream)
  **/
 TEST(ArrayListTest, TestAscending)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -672,7 +672,7 @@ TEST(ArrayListTest, TestAscending)
  **/
 TEST(ArrayListTest, TestDescending)
 {
-    using Array = ArrayList<int>;
+    using Array = areg::ArrayList<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
