@@ -33,7 +33,7 @@ class ServiceClient : public    Component
                     , private   TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
-    using SequenceList = Stack<uint32_t>;
+    using SequenceList = areg::Stack<uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

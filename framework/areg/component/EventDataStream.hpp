@@ -40,7 +40,7 @@
 class AREG_API EventDataStream : public IOStream
 {
     //! The list of shared buffer list (stack).
-    using SharedList    = Stack<SharedBuffer>;
+    using SharedList    = areg::Stack<SharedBuffer>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and types public

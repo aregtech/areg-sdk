@@ -44,7 +44,7 @@ class ServiceComponent  : public  Component
     };
 
     //!< The stack of session entries
-    using SessionList = Stack<SessionEtnry>;
+    using SessionList = areg::Stack<SessionEtnry>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

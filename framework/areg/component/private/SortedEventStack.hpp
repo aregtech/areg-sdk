@@ -48,7 +48,7 @@ class RuntimeClassID;
  *          by other developers. The "Exit" events should be immediately processed and they are not removed from the 
  *          stack until they are not processed by thread dispatcher.
  **/
-class SortedEventStack  : protected ConcurrentStack<Event *>
+class SortedEventStack  : protected areg::ConcurrentStack<Event *>
 {
     //!< The maximum size of the event queue stack
     static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };
