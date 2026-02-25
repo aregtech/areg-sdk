@@ -510,12 +510,12 @@ using PointerList   = LinkedList<void *>;
 /**
 * \brief   Sorted List class where values are integers.
  **/
-using SortedIntegerList = SortedLinkedList<uint32_t>;
+using SortedIntegerList = areg::SortedLinkedList<uint32_t>;
 
 /**
  * \brief   Sorted List class where values are strings.
  **/
-using SortedStringList  = SortedLinkedList<areg::String>;
+using SortedStringList  = areg::SortedLinkedList<areg::String>;
 
 //////////////////////////////////////////////////////////////////////////
 // Tokenizer class declaration

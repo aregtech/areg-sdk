@@ -25,7 +25,7 @@
   **/
 TEST(SortedLinkedListTest, TestConstructors)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     constexpr uint32_t count{ 10 };
 
     SortedList empty, init;
@@ -57,7 +57,7 @@ TEST(SortedLinkedListTest, TestConstructors)
  **/
 TEST(SortedLinkedListTest, TestOperators)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -98,7 +98,7 @@ TEST(SortedLinkedListTest, TestOperators)
  **/
 TEST(SortedLinkedListTest, TestPositionAttributes)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -164,7 +164,7 @@ TEST(SortedLinkedListTest, TestPositionAttributes)
  **/
 TEST(SortedLinkedListTest, TestPositionManipulation)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -219,7 +219,7 @@ TEST(SortedLinkedListTest, TestPositionManipulation)
  **/
 TEST(SortedLinkedListTest, TestSearching)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -249,7 +249,7 @@ TEST(SortedLinkedListTest, TestSearching)
  **/
 TEST(SortedLinkedListTest, TestMerging)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -386,7 +386,7 @@ TEST(SortedLinkedListTest, TestMerging)
  **/
 TEST(SortedLinkedListTest, TestAddIfUnique)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     constexpr uint32_t count{ 10 };
 
     constexpr int unique[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -426,7 +426,7 @@ TEST(SortedLinkedListTest, TestAddIfUnique)
  **/
 TEST(SortedLinkedListTest, TestRemoveEntries)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     constexpr int32_t count{ 10 };
 
     SortedList asc(true);
@@ -466,7 +466,7 @@ TEST(SortedLinkedListTest, TestRemoveEntries)
  **/
 TEST(SortedLinkedListTest, TestSortingEntries)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     using POS = SortedList::LISTPOS;
 
     constexpr int _list[]{ 5, 1, 0, 8, 3, 5, 6, 1, 5, 8, 2, 8, 9, 4, 7, 0 };
@@ -520,7 +520,7 @@ TEST(SortedLinkedListTest, TestSortingEntries)
  **/
 TEST(SortedLinkedListTest, TestStreaming)
 {
-    using SortedList = SortedLinkedList<int>;
+    using SortedList = areg::SortedLinkedList<int>;
     constexpr int32_t count{ 10 };
 
     SortedList src(false);

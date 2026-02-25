@@ -111,8 +111,8 @@ class ScopeNode : public ScopeNodeBase
 // Internal types
 //////////////////////////////////////////////////////////////////////////
 public:
-    using NodeList = SortedLinkedList< ScopeNode>;
-    using LeafList = SortedLinkedList< ScopeLeaf>;
+    using NodeList = areg::SortedLinkedList< ScopeNode>;
+    using LeafList = areg::SortedLinkedList< ScopeLeaf>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
