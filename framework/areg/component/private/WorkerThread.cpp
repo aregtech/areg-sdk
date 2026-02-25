@@ -70,7 +70,7 @@ void WorkerThread::readyForEvents( bool isReady )
     DispatcherThread::readyForEvents(isReady);
 }
 
-DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& whichClass )
+DispatcherThread* WorkerThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
 {
     return (hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
 }

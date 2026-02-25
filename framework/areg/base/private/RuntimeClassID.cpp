@@ -31,83 +31,87 @@ namespace
     constexpr std::string_view BAD_CLASS_ID { "_BAD_RUNTIME_CLASS_ID_" };
 }
 
-//////////////////////////////////////////////////////////////////////////
-// RuntimeClassID class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-RuntimeClassID::RuntimeClassID()
-    : mClassName(BAD_CLASS_ID)
-    , mMagicNum (areg::CHECKSUM_IGNORE)
+namespace areg
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // RuntimeClassID class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-RuntimeClassID::RuntimeClassID( const char * className )
-    : mClassName(BAD_CLASS_ID)
-    , mMagicNum (areg::CHECKSUM_IGNORE)
-{
-    if (areg::isEmpty<char>(className) == false)
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    RuntimeClassID::RuntimeClassID()
+        : mClassName(BAD_CLASS_ID)
+        , mMagicNum (areg::CHECKSUM_IGNORE)
     {
-        mClassName  = className;
-        mMagicNum   = areg::crc32Calculate(className);
     }
-}
 
-RuntimeClassID::RuntimeClassID( const areg::String& className )
-    : mClassName(BAD_CLASS_ID)
-    , mMagicNum (areg::CHECKSUM_IGNORE)
-{
-    if (className.isEmpty() == false)
+    RuntimeClassID::RuntimeClassID( const char * className )
+        : mClassName(BAD_CLASS_ID)
+        , mMagicNum (areg::CHECKSUM_IGNORE)
     {
-        mClassName  = className;
-        mMagicNum   = areg::crc32Calculate(className);
+        if (areg::isEmpty<char>(className) == false)
+        {
+            mClassName  = className;
+            mMagicNum   = areg::crc32Calculate(className);
+        }
     }
-}
 
-RuntimeClassID::RuntimeClassID( const RuntimeClassID & src )
-    : mClassName(src.mClassName)
-    , mMagicNum (src.mMagicNum)
-{
-    ASSERT(src.mClassName.isEmpty() == false);
-}
-
-RuntimeClassID::RuntimeClassID( RuntimeClassID && src ) noexcept
-    : mClassName( std::move(src.mClassName) )
-    , mMagicNum ( src.mMagicNum )
-{
-    ASSERT( src.mClassName.isEmpty( ) == false );
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
-
-void RuntimeClassID::setName( const areg::String& className )
-{
-    if ( className.isEmpty() || (className == BAD_CLASS_ID))
+    RuntimeClassID::RuntimeClassID( const areg::String& className )
+        : mClassName(BAD_CLASS_ID)
+        , mMagicNum (areg::CHECKSUM_IGNORE)
     {
-        mClassName  = BAD_CLASS_ID;
-        mMagicNum   = areg::CHECKSUM_IGNORE;
+        if (className.isEmpty() == false)
+        {
+            mClassName  = className;
+            mMagicNum   = areg::crc32Calculate(className);
+        }
     }
-    else
-    {
-        mClassName  = className;
-        mMagicNum   = areg::crc32Calculate(className.getString());
-    }
-}
 
-void RuntimeClassID::setName( const char* className )
-{
-    if ( areg::isEmpty<char>(className) || (BAD_CLASS_ID == className) )
+    RuntimeClassID::RuntimeClassID( const RuntimeClassID & src )
+        : mClassName(src.mClassName)
+        , mMagicNum (src.mMagicNum)
     {
-        mClassName  = BAD_CLASS_ID;
-        mMagicNum   = areg::CHECKSUM_IGNORE;
+        ASSERT(src.mClassName.isEmpty() == false);
     }
-    else
+
+    RuntimeClassID::RuntimeClassID( RuntimeClassID && src ) noexcept
+        : mClassName( std::move(src.mClassName) )
+        , mMagicNum ( src.mMagicNum )
     {
-        mClassName  = className;
-        mMagicNum   = areg::crc32Calculate(className);
+        ASSERT( src.mClassName.isEmpty( ) == false );
     }
-}
+
+    //////////////////////////////////////////////////////////////////////////
+    // Methods
+    //////////////////////////////////////////////////////////////////////////
+
+    void RuntimeClassID::setName( const areg::String& className )
+    {
+        if ( className.isEmpty() || (className == BAD_CLASS_ID))
+        {
+            mClassName  = BAD_CLASS_ID;
+            mMagicNum   = areg::CHECKSUM_IGNORE;
+        }
+        else
+        {
+            mClassName  = className;
+            mMagicNum   = areg::crc32Calculate(className.getString());
+        }
+    }
+
+    void RuntimeClassID::setName( const char* className )
+    {
+        if ( areg::isEmpty<char>(className) || (BAD_CLASS_ID == className) )
+        {
+            mClassName  = BAD_CLASS_ID;
+            mMagicNum   = areg::CHECKSUM_IGNORE;
+        }
+        else
+        {
+            mClassName  = className;
+            mMagicNum   = areg::crc32Calculate(className);
+        }
+    }
+
+} // namespace areg

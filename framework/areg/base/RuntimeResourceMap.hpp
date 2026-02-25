@@ -54,7 +54,7 @@ namespace areg
      * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
      **/
     template <typename RUNTIME_DELEGATE>
-    class RuntimeHashMap : public HashMap<RuntimeClassID, RUNTIME_DELEGATE>
+    class RuntimeHashMap : public HashMap<areg::RuntimeClassID, RUNTIME_DELEGATE>
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -94,7 +94,7 @@ namespace areg
      * \tparam  Deleter             The implementation of resource clean call.
      **/
     template <class RUNTIME_DELEGATE, class Deleter>
-    class RuntimeResourceMapBase : public ResourceMapBase<RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
+    class RuntimeResourceMapBase : public ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -226,7 +226,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     template <class RUNTIME_DELEGATE, class Deleter>
     RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>::RuntimeResourceMapBase( Lockable& syncObject )
-        : ResourceMapBase<RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
+        : ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
     {
     }
 

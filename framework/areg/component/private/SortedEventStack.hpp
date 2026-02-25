@@ -23,7 +23,7 @@
 #include "areg/base/Stack.hpp"
 #include "areg/component/Event.hpp"
 
-class RuntimeClassID;
+namespace areg { class RuntimeClassID; }
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
@@ -84,7 +84,7 @@ public:
      * \param   eventClassId    The class ID of the event to ignore to delete.
      * \return  Returns number of elements in the stack. Returns zero if empty.
      **/
-    uint32_t deleteAllExceptClass(const RuntimeClassID& eventClassId);
+    uint32_t deleteAllExceptClass(const areg::RuntimeClassID& eventClassId);
 
     /**
      * \brief   Deletes all events with the specified priority, except "Exit" event, which should be processed.
@@ -98,7 +98,7 @@ public:
      * \param   eventClassId    The class ID of the event to delete.
      * \return  Returns number of elements in the stack. Returns zero if empty.
      **/
-    uint32_t deleteAllMatchClass(const RuntimeClassID& eventClassId);
+    uint32_t deleteAllMatchClass(const areg::RuntimeClassID& eventClassId);
 
     /**
      * \brief   Pushes the event in the stack considering the priority, so that the events

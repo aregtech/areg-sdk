@@ -136,7 +136,7 @@ public:
      *          If specified consumer is already registered for specified
      *          event class type, it returns false.
      **/
-    virtual bool registerEventConsumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+    virtual bool registerEventConsumer(const areg::RuntimeClassID& whichClass, EventConsumer& whichConsumer);
 
     /**
      * \brief	Call to unregister specified event consumer previously registered
@@ -145,7 +145,7 @@ public:
      * \param	whichConsumer	Reference to consumer that should be unregistered.
      * \return	Returns true if successfully unregistered event consumer.
      **/
-    virtual bool unregisterEventConsumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+    virtual bool unregisterEventConsumer(const areg::RuntimeClassID& whichClass, EventConsumer& whichConsumer);
 
     /**
      * \brief	Call to remove specified consumer for all registered event class types,
@@ -161,7 +161,7 @@ public:
      * \return	Returns true if dispatcher has at least one registered consumer for
      *          specified runtime class ID.
      **/
-    virtual bool hasRegisteredConsumer(const RuntimeClassID& whichClass) const;
+    virtual bool hasRegisteredConsumer(const areg::RuntimeClassID& whichClass) const;
 
 /************************************************************************/
 // EventDispatcherBase operations
@@ -198,7 +198,7 @@ public:
      *                          All events having specified class ID
      *                          will be removed.
      **/
-    inline void removeExternalEventType(const RuntimeClassID & eventClassId);
+    inline void removeExternalEventType(const areg::RuntimeClassID & eventClassId);
 
     /**
      * \brief   Returns true if the specified event object is a special reserved event indicating to exit the thread.
@@ -393,7 +393,7 @@ inline void EventDispatcherBase::removeAllEvents()
     mExternalEvents.unlockQueue();
 }
 
-inline void EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
+inline void EventDispatcherBase::removeExternalEventType( const areg::RuntimeClassID & eventClassId )
 {
     mExternalEvents.removeEvents(eventClassId);
 }

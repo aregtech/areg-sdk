@@ -136,7 +136,7 @@ public:
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class ImplEventConsumerMap	: public areg::ResourceMapImpl<RuntimeClassID, EventConsumerList *>
+class ImplEventConsumerMap	: public areg::ResourceMapImpl<areg::RuntimeClassID, EventConsumerList *>
 {
 public:
     /**
@@ -144,7 +144,7 @@ public:
      * \param	Key	        The Key value of resource
      * \param	Resource	Pointer to resource object
      **/
-    void implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource );
+    void implCleanResource( areg::RuntimeClassID & Key, EventConsumerList * Resource );
 };
 /**
  * \brief   Event Consumer Map is a helper class containing 

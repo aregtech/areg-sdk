@@ -27,7 +27,7 @@
  * Dependencies
  ************************************************************************/
 class Event;
-class RuntimeClassID;
+namespace areg { class RuntimeClassID; }
 
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class declaration
@@ -126,7 +126,7 @@ public:
      *          empty or not.
      * \param   eventClassId    Runtime class ID of Event object to remove from the Queue.
      **/
-    void removeEvents( const RuntimeClassID & eventClassId );
+    void removeEvents( const areg::RuntimeClassID & eventClassId );
 
     /**
      * \brief   Removes all events. Makes event queue empty and resets the signal.

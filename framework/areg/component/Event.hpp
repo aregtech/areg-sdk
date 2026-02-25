@@ -232,7 +232,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread);
+    static bool addListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread);
 
     /**
      * \brief	Static method to add the listener to specified thread,
@@ -244,7 +244,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
+    static bool addListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
 
     /**
      * \brief	Static method to add the listener to specified thread,
@@ -256,7 +256,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool addListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -267,7 +267,7 @@ public:
      *                          it will use current thread to unregister consumer.
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread);
+    static bool removeListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread);
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -277,7 +277,7 @@ public:
      * \param	whichThread	    The valid registered thread ID to remove listener.
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
+    static bool removeListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -287,7 +287,7 @@ public:
      * \param	dispThread	    The dispatcher thread, which dispatches messages
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool removeListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected

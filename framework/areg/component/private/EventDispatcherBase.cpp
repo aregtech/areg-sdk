@@ -119,7 +119,7 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
     return result;
 }
 
-bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClass, EventConsumer& whichConsumer )
+bool EventDispatcherBase::registerEventConsumer( const areg::RuntimeClassID& whichClass, EventConsumer& whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -141,7 +141,7 @@ bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClas
     return result;
 }
 
-bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer )
+bool EventDispatcherBase::unregisterEventConsumer( const areg::RuntimeClassID & whichClass, EventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -175,8 +175,8 @@ int32_t EventDispatcherBase::removeConsumer( EventConsumer & whichConsumer )
     mConsumerMap.lock();
 
     int32_t result = 0;
-    LinkedList<RuntimeClassID> removedList;
-    RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
+    LinkedList<areg::RuntimeClassID> removedList;
+    areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
     EventConsumerList* Value = nullptr;
 
     Value = mConsumerMap.resourceFirstKey(Key);
@@ -322,7 +322,7 @@ bool EventDispatcherBase::dispatchEvent( Event& eventElem )
     return (processingList.isEmpty() == false);
 }
 
-bool EventDispatcherBase::hasRegisteredConsumer( const RuntimeClassID& whichClass ) const
+bool EventDispatcherBase::hasRegisteredConsumer( const areg::RuntimeClassID& whichClass ) const
 {
     return mConsumerMap.existResource(whichClass);
 }
@@ -331,7 +331,7 @@ inline void EventDispatcherBase::_clean()
 {
     mConsumerMap.lock();
 
-    RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
+    areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
     while (mConsumerMap.isEmpty() == false)
     {
         mConsumerMap.resourceFirstKey(Key);

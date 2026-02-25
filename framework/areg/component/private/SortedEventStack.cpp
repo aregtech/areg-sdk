@@ -76,7 +76,7 @@ uint32_t SortedEventStack::deleteAllLowerPriority(Event::EventPriority eventPrio
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::deleteAllExceptClass(const RuntimeClassID& eventClassId)
+uint32_t SortedEventStack::deleteAllExceptClass(const areg::RuntimeClassID& eventClassId)
 {
     Lock lock(mSyncObject);
 
@@ -126,7 +126,7 @@ uint32_t SortedEventStack::deleteAllMatchPriority(Event::EventPriority eventPrio
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassId)
+uint32_t SortedEventStack::deleteAllMatchClass(const areg::RuntimeClassID& eventClassId)
 {
     Lock lock(mSyncObject);
 

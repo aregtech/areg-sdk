@@ -46,7 +46,7 @@ ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const areg::String &
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& whichClass ) const
+DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
 {
     DispatcherThread * result = nullptr;
 

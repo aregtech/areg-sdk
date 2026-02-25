@@ -67,7 +67,7 @@ void EventQueue::removeEvents( bool keepSpecials /*= false*/ )
     mEventListener.signalEvent(remain);
 }
 
-void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
+void EventQueue::removeEvents( const areg::RuntimeClassID & eventClassId )
 {
     uint32_t remain = mEventQueue.deleteAllMatchClass(eventClassId);
     mEventListener.signalEvent(remain);

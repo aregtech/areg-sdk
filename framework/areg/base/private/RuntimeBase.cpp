@@ -23,9 +23,9 @@
 //////////////////////////////////////////////////////////////////////////
 // Hidden static calls.
 //////////////////////////////////////////////////////////////////////////
-inline const RuntimeClassID & RuntimeBase::_getClassId()
+inline const areg::RuntimeClassID & RuntimeBase::_getClassId()
 {
-    static const RuntimeClassID _classId("RuntimeBase");
+    static const areg::RuntimeClassID _classId("RuntimeBase");
     return _classId;
 }
 
@@ -36,7 +36,7 @@ inline const RuntimeClassID & RuntimeBase::_getClassId()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-const RuntimeClassID & RuntimeBase::getRuntimeClassId() const
+const areg::RuntimeClassID & RuntimeBase::getRuntimeClassId() const
 {
     return _getClassId();
 }
@@ -56,7 +56,7 @@ bool RuntimeBase::isInstanceOfRuntimeClass( const areg::String & className ) con
     return (RuntimeBase::_getClassId() == className);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const
+bool RuntimeBase::isInstanceOfRuntimeClass( const areg::RuntimeClassID & classId ) const
 {
     return (RuntimeBase::_getClassId() == classId);
 }

@@ -24,7 +24,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RuntimeClassID;
+namespace areg { class RuntimeClassID; }
 namespace areg { class String; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ private:
     /**
      * \brief   Returns the ClassID object of RuntimeBase class.
      **/
-    static const RuntimeClassID & _getClassId();
+    static const areg::RuntimeClassID & _getClassId();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -70,7 +70,7 @@ public:
     /**
      * \brief   Returns the Class Identifier object
      **/
-    virtual const RuntimeClassID & getRuntimeClassId() const;
+    virtual const areg::RuntimeClassID & getRuntimeClassId() const;
 
     /**
      * \brief   Returns the class name, i.e. the name of Class Identifier
@@ -99,7 +99,7 @@ public:
      * \brief   Checks class instance by Class Identifier.
      * \param   classId     The Class Identifier to check.
      **/
-    virtual bool isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const;
+    virtual bool isInstanceOfRuntimeClass( const areg::RuntimeClassID & classId ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods

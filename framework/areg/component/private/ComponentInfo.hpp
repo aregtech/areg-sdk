@@ -194,7 +194,7 @@ public:
      *          If there is no such Event Consumer registered in Component Thread and in Worker Threads,
      *          it returns nullptr.
      **/
-    DispatcherThread * findEventConsumer( const RuntimeClassID & whichClass ) const;
+    DispatcherThread * findEventConsumer( const areg::RuntimeClassID & whichClass ) const;
 
     /**
      * \brief   Returns pointer of first Worker Thread. On output, threadAddress

@@ -847,13 +847,13 @@ protected:
      * \brief   Register Proxy object for certain event type.
      * \param   eventClass  Runtime Class ID of Event
      **/
-    inline void registerForEvent( const RuntimeClassID & eventClass );
+    inline void registerForEvent( const areg::RuntimeClassID & eventClass );
 
     /**
      * \brief   Unregister Proxy object out of certain event type.
      * \param   eventClass  Runtime Class ID of Event
      **/
-    inline void unregisterForEvent( const RuntimeClassID & eventClass );
+    inline void unregisterForEvent( const areg::RuntimeClassID & eventClass );
 
     /**
      * \brief   Remove Proxy Listener entry from listener list.
@@ -1187,12 +1187,12 @@ inline void ProxyBase::removeListener( uint32_t msgId, const SequenceNumber & se
 }
 
 
-inline void ProxyBase::registerForEvent( const RuntimeClassID & eventClass )
+inline void ProxyBase::registerForEvent( const areg::RuntimeClassID & eventClass )
 {
     Event::addListener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
-inline void ProxyBase::unregisterForEvent( const RuntimeClassID & eventClass )
+inline void ProxyBase::unregisterForEvent( const areg::RuntimeClassID & eventClass )
 {
     Event::removeListener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }

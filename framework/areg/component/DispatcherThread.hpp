@@ -128,7 +128,7 @@ public:
      *
      * \see     getEventConsumerThread()
      **/
-    static DispatcherThread * findEventConsumerThread(const RuntimeClassID & whichClass);
+    static DispatcherThread * findEventConsumerThread(const areg::RuntimeClassID & whichClass);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -242,7 +242,7 @@ protected:
      * \return  If found, returns valid pointer of dispatching thread. 
      *          Otherwise returns nullptr
      **/
-    virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass );
+    virtual DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

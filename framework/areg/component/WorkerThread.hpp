@@ -173,7 +173,7 @@ protected:
      * \return  If found, returns valid pointer of dispatching thread. 
      *          Otherwise returns nullptr
      **/
-    DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
+    DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass ) override;
 
 /************************************************************************/
 // EventDispatcherBase overrides

@@ -70,16 +70,16 @@
 #define AREG_DECLARE_RUNTIME(ClassName)                                                                 \
 public:                                                                                                 \
     /** \brief   Returns RuntimeClassID object                      **/                                 \
-    static const RuntimeClassID & _getClassId();                                                        \
+    static const areg::RuntimeClassID & _getClassId();                                                        \
     /** \brief   Returns the Runtime Class Identifier object        **/                                 \
-    virtual const RuntimeClassID & getRuntimeClassId() const override;                                  \
+    virtual const areg::RuntimeClassID & getRuntimeClassId() const override;                                  \
     /** \brief   Returns the class name (Identifier name)           **/                                 \
     virtual const areg::String& getRuntimeClassName() const override;                                         \
     /** \brief   Returns the calculated number of runtime class.    **/                                 \
     virtual uint32_t getRuntimeClassNumber() const override;                                        \
     /** \brief   Checks class instance by Class Identifier.         **/                                 \
     /**          Checking is done hierarchically.                   **/                                 \
-    virtual bool isInstanceOfRuntimeClass(const RuntimeClassID & classId) const override;               \
+    virtual bool isInstanceOfRuntimeClass(const areg::RuntimeClassID & classId) const override;               \
     /** \brief   Checks class instance by given name.               **/                                 \
     virtual bool isInstanceOfRuntimeClass(const char * className) const override;                       \
     virtual bool isInstanceOfRuntimeClass(const areg::String & className) const override;                     \
@@ -97,16 +97,16 @@ public:                                                                         
 // AREG_IMPLEMENT_RUNTIME macro definition
 //////////////////////////////////////////////////////////////////////////
 #define AREG_IMPLEMENT_RUNTIME(ClassName, BaseClassName)                                                        \
-const RuntimeClassID & ClassName::_getClassId()                                                                 \
-{   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
-const RuntimeClassID & ClassName::getRuntimeClassId() const                                                     \
+const areg::RuntimeClassID & ClassName::_getClassId()                                                                 \
+{   static const areg::RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
+const areg::RuntimeClassID & ClassName::getRuntimeClassId() const                                                     \
 {   return ClassName::_getClassId();                                                                        }   \
 const areg::String& ClassName::getRuntimeClassName() const                                                            \
 {   return ClassName::_getClassId().getName();                                                              }   \
 uint32_t ClassName::getRuntimeClassNumber() const                                                           \
 {   return ClassName::_getClassId().getMagic();                                                             }   \
 /* All 4 isInstanceOfRuntimeClass overloads: check own ID, then delegate to base. */                            \
-bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                                \
+bool ClassName::isInstanceOfRuntimeClass( const areg::RuntimeClassID & classId ) const                                \
 {   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
 bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                                        \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
@@ -129,10 +129,10 @@ bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const           
 //////////////////////////////////////////////////////////////////////////
 #define AREG_IMPLEMENT_RUNTIME_TEMPLATE(Template, ClassName, BaseClassName, ClassIdType)                        \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID & ClassName::_getClassId()                                                        \
-{   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
+Template const areg::RuntimeClassID & ClassName::_getClassId()                                                        \
+{   static const areg::RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID& ClassName::getRuntimeClassId() const                                             \
+Template const areg::RuntimeClassID& ClassName::getRuntimeClassId() const                                             \
 {   return ClassName::_getClassId();                                                                        }   \
 /** Return class name **/                                                                                       \
 Template const areg::String & ClassName::getRuntimeClassName() const                                                  \
@@ -141,7 +141,7 @@ Template const areg::String & ClassName::getRuntimeClassName() const            
 Template uint32_t ClassName::getRuntimeClassNumber() const                                                  \
 {   return ClassName::_getClassId().getMagic();                                                             }   \
 /** Check class instance by Class Identifier **/                                                                \
-Template bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                       \
+Template bool ClassName::isInstanceOfRuntimeClass( const areg::RuntimeClassID & classId ) const                       \
 {   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
 /** Check class instance by name**/                                                                             \
 Template bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                               \
@@ -338,7 +338,7 @@ namespace areg
          * \return	Returns valid pointer, if class is an instance of passed
          *          class identifier. Otherwise return nullptr.
          **/
-        inline const RuntimeObject* runtimeCast(const RuntimeClassID & classId) const;
+        inline const RuntimeObject* runtimeCast(const areg::RuntimeClassID & classId) const;
 
         /**
          * \brief	Makes casting of pointer of object during runtime 
@@ -377,7 +377,7 @@ namespace areg
          * \return	Returns valid pointer, if class is an instance of passed
          *          class identifier. Otherwise return nullptr.
          **/
-        friend inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const RuntimeClassID & classId);
+        friend inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const areg::RuntimeClassID & classId);
 
         /**
          * \brief	Makes casting of constant pointer of object during runtime 
@@ -415,7 +415,7 @@ namespace areg
     // RuntimeObject class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const RuntimeObject* RuntimeObject::runtimeCast( const RuntimeClassID & classId ) const
+    inline const RuntimeObject* RuntimeObject::runtimeCast( const areg::RuntimeClassID & classId ) const
     {
         return (isInstanceOfRuntimeClass( classId ) ? this : nullptr);
     }
@@ -435,7 +435,7 @@ namespace areg
         return (isInstanceOfRuntimeClass( classNumber ) ? this : nullptr);
     }
 
-    inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const RuntimeClassID & classId)
+    inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const areg::RuntimeClassID & classId)
     {
         return (ptr != nullptr ? ptr->runtimeCast(classId) : nullptr);
     }
