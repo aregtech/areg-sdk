@@ -900,7 +900,7 @@ private:
      *          such as bool, char, int16_t, double, int32_t, etc.
      *          For more details see description of WriteConverter class
      **/
-    WriteConverter    mWriteConvert;
+    areg::WriteConverter    mWriteConvert;
 
 //////////////////////////////////////////////////////////////////////////
 // Private function class.
