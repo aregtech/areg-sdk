@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Event class, Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME_EVENT(Event, areg::RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Event class, static members
@@ -71,7 +71,7 @@ bool Event::removeListener( const RuntimeClassID & classId, EventConsumer & even
 //////////////////////////////////////////////////////////////////////////
 
 Event::Event()
-    : RuntimeObject ( )
+    : areg::RuntimeObject ( )
     , mEventType    ( Event::EventType::EventUnknown )
     , mEventPrio    ( DefaultPriority )
     , mConsumer     ( nullptr )
@@ -80,7 +80,7 @@ Event::Event()
 }
 
 Event::Event( Event::EventType eventType )
-    : RuntimeObject ( )
+    : areg::RuntimeObject ( )
     , mEventType    ( eventType )
     , mEventPrio    ( DefaultPriority )
     , mConsumer     ( nullptr )

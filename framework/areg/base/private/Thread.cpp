@@ -50,7 +50,7 @@ namespace areg
 /************************************************************************/
 // Implement runtime
 /************************************************************************/
-AREG_IMPLEMENT_RUNTIME(Thread, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME(Thread, areg::RuntimeObject)
 
 /************************************************************************/
 // Define internal static mapping objects
@@ -143,7 +143,7 @@ areg::ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 //////////////////////////////////////////////////////////////////////////
 
 Thread::Thread(areg::ThreadConsumer &threadConsumer, const areg::String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
-    : RuntimeObject   ( )
+    : areg::RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)

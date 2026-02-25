@@ -54,7 +54,7 @@ class StubBase;
  *          name should be unique within network, and in case of provided local
  *          service, the role name should be unique within local process.
  **/
-class AREG_API Component   : public    RuntimeObject
+class AREG_API Component   : public    areg::RuntimeObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined types. Fol local use

@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(Component, RuntimeObject)
+AREG_IMPLEMENT_RUNTIME(Component, areg::RuntimeObject)
 
 //////////////////////////////////////////////////////////////////////////
 // Static Methods
@@ -122,7 +122,7 @@ ComponentThread& Component::_getCurrentComponentThread()
 // Constructor / Destructor 
 //////////////////////////////////////////////////////////////////////////
 Component::Component( const areg::String & roleName, ComponentThread & ownerThread )
-    : RuntimeObject ( )
+    : areg::RuntimeObject ( )
 
     , mComponentInfo( ownerThread, roleName )
     , mMagicNum     ( Component::_magicNumber(self()) )
@@ -132,7 +132,7 @@ Component::Component( const areg::String & roleName, ComponentThread & ownerThre
 }
 
 Component::Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread )
-    : RuntimeObject ( )
+    : areg::RuntimeObject ( )
 
     , mComponentInfo( ownerThread, regEntry.mRoleName)
     , mMagicNum     ( Component::_magicNumber(self()) )
@@ -142,7 +142,7 @@ Component::Component( const areg::ComponentEntry & regEntry, ComponentThread & o
 }
 
 Component::Component( const areg::String & roleName )
-    : RuntimeObject           ( )
+    : areg::RuntimeObject           ( )
 
     , mComponentInfo    (_getCurrentComponentThread(), roleName)
     , mMagicNum         ( Component::_magicNumber(self()) )

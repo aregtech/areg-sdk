@@ -62,7 +62,7 @@ namespace areg
  *
  * \see     ThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
  **/
-class AREG_API Thread  : public RuntimeObject
+class AREG_API Thread  : public areg::RuntimeObject
 {
 /************************************************************************/
 // Internal class declaration

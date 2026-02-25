@@ -127,7 +127,7 @@ namespace areg { class Thread; }
  *          which are used by the system.
  *
  **/
-class AREG_API Event   : public RuntimeObject
+class AREG_API Event   : public areg::RuntimeObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Defines and constants.
