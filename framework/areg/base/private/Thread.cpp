@@ -102,9 +102,9 @@ unsigned long Thread::_defaultThreadFunction(void* data)
 /************************************************************************/
 // Local static utility methods
 /************************************************************************/
-ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
+areg::ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 {
-    static __THREAD_LOCAL ThreadLocalStorage* _localStorage {nullptr};
+    static __THREAD_LOCAL areg::ThreadLocalStorage* _localStorage {nullptr};
     if ( ownThread == reinterpret_cast<Thread *>(Thread::CURRENT_THREAD) )
     {
         // do nothing, the static local storage item is already instantiated
@@ -117,7 +117,7 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
         // is not initialized and instantiated yet,
         // and it should be instantiated
         ASSERT(_localStorage == nullptr );
-        _localStorage = DEBUG_NEW ThreadLocalStorage( *ownThread );
+        _localStorage = DEBUG_NEW areg::ThreadLocalStorage( *ownThread );
     }
     else
     {
@@ -165,9 +165,9 @@ Thread::~Thread()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-ThreadLocalStorage & Thread::getCurrentThreadStorage()
+areg::ThreadLocalStorage & Thread::getCurrentThreadStorage()
 {
-    ThreadLocalStorage* localStorage = Thread::_getThreadLocalStorage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
+    areg::ThreadLocalStorage* localStorage = Thread::_getThreadLocalStorage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
     return (*localStorage);
 }
 
@@ -355,7 +355,7 @@ void Thread::_unregisterThread()
 ThreadConsumer& Thread::getCurrentThreadConsumer()
 {
     ASSERT(getCurrentThread() != nullptr );
-    ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
+    areg::ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
     ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).valPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);

@@ -37,7 +37,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ThreadLocalStorage;
+namespace areg { class ThreadLocalStorage; }
 class ThreadConsumer;
 class InStream;
 
@@ -380,7 +380,7 @@ public:
     /**
      * \brief   Returns the Local Storage Object of the Thread.
      **/
-    static ThreadLocalStorage & getCurrentThreadStorage();
+    static areg::ThreadLocalStorage & getCurrentThreadStorage();
 
     /**
      * \brief   Returns the name of thread by specified ID. 
@@ -558,7 +558,7 @@ private:
      *                      Use only with Thread::CURRENT_THREAD
      * \return  The pointer of current Local Storage object.
      **/
-    static ThreadLocalStorage * _getThreadLocalStorage( Thread* ownThread );
+    static areg::ThreadLocalStorage * _getThreadLocalStorage( Thread* ownThread );
 
     /**
      * \brief	Search by thread handle and return pointer the thread object.
