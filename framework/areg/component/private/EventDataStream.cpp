@@ -134,7 +134,7 @@ uint32_t EventDataStream::read( uint8_t* buffer, uint32_t size ) const
     return mDataBuffer.read(buffer, size);
 }
 
-uint32_t EventDataStream::read( ByteBuffer & buffer ) const
+uint32_t EventDataStream::read( areg::ByteBuffer & buffer ) const
 {
     uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.isEmpty() == false)
@@ -170,7 +170,7 @@ uint32_t EventDataStream::write( const uint8_t* buffer, uint32_t size )
     return mDataBuffer.write(buffer, size);
 }
 
-uint32_t EventDataStream::write( const ByteBuffer & buffer )
+uint32_t EventDataStream::write( const areg::ByteBuffer & buffer )
 {
     uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal)

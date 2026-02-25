@@ -265,7 +265,7 @@ namespace areg
          * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
          * \return	Returns the size in bytes of copied data
          **/
-        uint32_t read( ByteBuffer & buffer ) const override;
+        uint32_t read( areg::ByteBuffer & buffer ) const override;
 
         /**
          * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -302,7 +302,7 @@ namespace areg
          * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
          * \return	Returns the size in bytes of written data
          **/
-        uint32_t write( const ByteBuffer & buffer ) override;
+        uint32_t write( const areg::ByteBuffer & buffer ) override;
 
         /**
          * \brief   Writes string data from given ASCII String object to output stream object.

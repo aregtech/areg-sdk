@@ -33,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 BufferStreamBase::BufferStreamBase( areg::Cursor & readPosition, areg::Cursor & writePosition )
-    : ByteBuffer  ( )
+    : areg::ByteBuffer  ( )
     , areg::IOStream    ( )
 
     , mReadPosition ( readPosition )
@@ -56,10 +56,10 @@ uint32_t BufferStreamBase::read( uint8_t* buffer, uint32_t size ) const
 /**
  * \brief   Read data from input stream object, copies into give Byte Buffer object and returns the size of copied data.
  **/
-uint32_t BufferStreamBase::read( ByteBuffer & buffer ) const
+uint32_t BufferStreamBase::read( areg::ByteBuffer & buffer ) const
 {
     uint32_t result = 0;
-    if (static_cast<const ByteBuffer *>(this) != static_cast<const ByteBuffer *>(&buffer))
+    if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
     {
         buffer.invalidate();
         uint32_t length = 0;
@@ -145,10 +145,10 @@ uint32_t BufferStreamBase::write( const uint8_t* buffer, uint32_t size )
 /**
  * \brief   Writes Binary data from Byte Buffer object to output stream object and returns the size of written data.
  **/
-uint32_t BufferStreamBase::write( const ByteBuffer & buffer )
+uint32_t BufferStreamBase::write( const areg::ByteBuffer & buffer )
 {
     uint32_t result = 0;
-    if (static_cast<const ByteBuffer *>(this) != static_cast<const ByteBuffer *>(&buffer))
+    if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
     {
         const uint8_t* data = buffer.getBuffer();
         const uint32_t length = buffer.getSizeUsed();
@@ -336,7 +336,7 @@ uint32_t BufferStreamBase::reserve(uint32_t size, bool copy)
     if ((size == 0u) || (result < size))
     {
         uint32_t curPos = mWritePosition.getPosition();
-        result = ByteBuffer::reserve(size, copy);
+        result = areg::ByteBuffer::reserve(size, copy);
         if (curPos != areg::Cursor::INVALID_CURSOR_POSITION)
         {
             mWritePosition.setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);

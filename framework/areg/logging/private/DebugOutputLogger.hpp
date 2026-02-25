@@ -116,7 +116,7 @@ protected:
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
      **/
-    uint32_t write( const ByteBuffer & buffer ) override;
+    uint32_t write( const areg::ByteBuffer & buffer ) override;
 
     /**
      * \brief   Writes string data from given ASCII String object to output stream object.

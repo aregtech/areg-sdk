@@ -411,7 +411,7 @@ namespace areg
         return (!err ? fp.string() : filePath.string());
     }
 
-    uint32_t File::read(ByteBuffer & buffer) const
+    uint32_t File::read(areg::ByteBuffer & buffer) const
     {
         return FileBase::read(buffer);
     }
@@ -440,7 +440,7 @@ namespace areg
         return result;
     }
 
-    uint32_t File::write(const ByteBuffer & buffer)
+    uint32_t File::write(const areg::ByteBuffer & buffer)
     {
         return FileBase::write(buffer);
     }

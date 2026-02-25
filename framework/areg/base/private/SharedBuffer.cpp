@@ -40,7 +40,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
     }
 
@@ -49,7 +49,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
         reserve(reserveSize, false);
     }
@@ -59,7 +59,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
         reserve(size, false);
         writeData(buffer, size);
@@ -70,7 +70,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        (areg::alignSize(blockSize, areg::BLOCK_SIZE))
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
         reserveSize = std::max(reserveSize, size);
         reserve(reserveSize, false);
@@ -82,7 +82,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
         uint32_t size   = (static_cast<uint32_t>(areg::getStringLength<char>(textString)) + 1u) * sizeof(char);
         size = reserve(size, false);
@@ -94,7 +94,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        ( areg::alignSize(blockSize, areg::BLOCK_SIZE) )
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
         uint32_t size   = (static_cast<uint32_t>(areg::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
         size = reserve(size, false);
@@ -106,7 +106,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        (src.mBlockSize)
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
         mByteBuffer = src.mByteBuffer;
         mBufferPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
@@ -117,7 +117,7 @@ namespace areg
         , areg::Cursor  ( )
 
         , mBlockSize        ( src.mBlockSize )
-        , mBufferPosition   ( static_cast<ByteBuffer&>(self()) )
+        , mBufferPosition   ( static_cast<areg::ByteBuffer&>(self()) )
     {
         mByteBuffer = src.mByteBuffer;
         mBufferPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);

@@ -142,7 +142,7 @@ uint32_t DebugOutputLogger::write(const uint8_t * /* buffer */, uint32_t size)
 }
 #endif  // defined(OUTPUT_DEBUG)
 
-uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
+uint32_t DebugOutputLogger::write(const areg::ByteBuffer & buffer)
 {
     return write(buffer.getBuffer(), buffer.getSizeUsed());
 }

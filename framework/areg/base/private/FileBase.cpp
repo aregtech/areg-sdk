@@ -547,7 +547,7 @@ void FileBase::resetCursor() const
     setPosition(0, areg::Cursor::SeekOrigin::Begin);
 }
 
-uint32_t FileBase::read(ByteBuffer & buffer) const
+uint32_t FileBase::read(areg::ByteBuffer & buffer) const
 {
     uint32_t result = 0;
     buffer.invalidate();
@@ -581,7 +581,7 @@ uint32_t FileBase::read(areg::WideString & wide) const
     return static_cast<uint32_t>(readString(wide));
 }
 
-uint32_t FileBase::write(const ByteBuffer & buffer)
+uint32_t FileBase::write(const areg::ByteBuffer & buffer)
 {
     uint32_t result = 0;
 
@@ -677,7 +677,7 @@ uint32_t FileBase::searchData( uint32_t startPos, const uint8_t * buffer, uint32
     return result;
 }
 
-uint32_t FileBase::searchData( uint32_t startPos, const ByteBuffer & buffer ) const
+uint32_t FileBase::searchData( uint32_t startPos, const areg::ByteBuffer & buffer ) const
 {
     return searchData(startPos, buffer.getBuffer(), buffer.getSizeUsed());
 }

@@ -220,7 +220,7 @@ namespace areg
         return (isOpened() && canWrite() ? mSharedBuffer.insertAt(buffer, size, atPos) : 0);
     }
 
-    uint32_t FileBuffer::read(ByteBuffer & buffer) const
+    uint32_t FileBuffer::read(areg::ByteBuffer & buffer) const
     {
         return FileBase::read(buffer);
     }
@@ -235,7 +235,7 @@ namespace areg
         return FileBase::read(wide);
     }
 
-    uint32_t FileBuffer::write(const ByteBuffer & buffer)
+    uint32_t FileBuffer::write(const areg::ByteBuffer & buffer)
     {
         return FileBase::write(buffer);
     }

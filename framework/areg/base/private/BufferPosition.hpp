@@ -25,7 +25,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ByteBuffer;
+namespace areg { class ByteBuffer; }
 
 //////////////////////////////////////////////////////////////////////////
 // BufferPosition class declaration
@@ -45,7 +45,7 @@ public:
      * \brief	Sets the instance of byte buffer object
      * \param	buffer	Instance of Byte Buffer object
      **/
-    BufferPosition( ByteBuffer & buffer );
+    BufferPosition( areg::ByteBuffer & buffer );
 
     /**
      * \brief   Destructor
@@ -99,7 +99,7 @@ private:
     /**
      * \brief   Reference to the Byte Buffer object
      **/
-    ByteBuffer &         mBuffer;
+    areg::ByteBuffer &         mBuffer;
 
     /**
      * \brief   Current position of Byte Buffer cursor.

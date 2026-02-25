@@ -51,7 +51,7 @@ namespace areg { class IOStream; }
  ************************************************************************/
 namespace areg { class String; }
 namespace areg { class WideString; }
-class ByteBuffer;
+namespace areg { class ByteBuffer; }
 /************************************************************************
  * \brief   Predefined MACRO to support data read / write streaming
  ************************************************************************/
@@ -182,7 +182,7 @@ namespace areg
          * \param   buffer  The instance of Byte Buffer object to copy data.
          * \return	Returns the size in bytes of copied data.
          **/
-        virtual uint32_t read( ByteBuffer & buffer ) const = 0;
+        virtual uint32_t read( areg::ByteBuffer & buffer ) const = 0;
 
         /**
          * \brief   Reads string data from input stream object, copies into given string object
@@ -302,7 +302,7 @@ namespace areg
          * \param	buffer	The instance of byte-buffer object as a data source.
          * \return	Returns the size in bytes of written data.
          **/
-        virtual uint32_t write( const ByteBuffer & buffer ) = 0;
+        virtual uint32_t write( const areg::ByteBuffer & buffer ) = 0;
 
         /**
          * \brief	Writes data to output stream object from given ASCII-string object and

@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-BufferPosition::BufferPosition( ByteBuffer & buffer )
+BufferPosition::BufferPosition( areg::ByteBuffer & buffer )
     : mBuffer           ( buffer )
     , mPosition         ( areg::Cursor::INVALID_CURSOR_POSITION )
 {
