@@ -24,324 +24,328 @@
 #include <algorithm>
 #include <string.h>
 
-//////////////////////////////////////////////////////////////////////////
-// BufferStreamBase class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-
-BufferStreamBase::BufferStreamBase( areg::Cursor & readPosition, areg::Cursor & writePosition )
-    : areg::ByteBuffer  ( )
-    , areg::IOStream    ( )
-
-    , mReadPosition ( readPosition )
-    , mWritePosition( writePosition )
+namespace areg
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // BufferStreamBase class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Read data from input stream object, copies into given buffer and returns the size of copied data.
- **/
-uint32_t BufferStreamBase::read( uint8_t* buffer, uint32_t size ) const
-{
-    return readData(buffer, size);
-}
+    BufferStreamBase::BufferStreamBase( areg::Cursor & readPosition, areg::Cursor & writePosition )
+        : areg::ByteBuffer  ( )
+        , areg::IOStream    ( )
 
-/**
- * \brief   Read data from input stream object, copies into give Byte Buffer object and returns the size of copied data.
- **/
-uint32_t BufferStreamBase::read( areg::ByteBuffer & buffer ) const
-{
-    uint32_t result = 0;
-    if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
+        , mReadPosition ( readPosition )
+        , mWritePosition( writePosition )
     {
-        buffer.invalidate();
-        uint32_t length = 0;
+    }
 
-        if (read(reinterpret_cast<uint8_t *>(&length), sizeof(uint32_t)) == sizeof(uint32_t))
+    //////////////////////////////////////////////////////////////////////////
+    // Methods
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Read data from input stream object, copies into given buffer and returns the size of copied data.
+     **/
+    uint32_t BufferStreamBase::read( uint8_t* buffer, uint32_t size ) const
+    {
+        return readData(buffer, size);
+    }
+
+    /**
+     * \brief   Read data from input stream object, copies into give Byte Buffer object and returns the size of copied data.
+     **/
+    uint32_t BufferStreamBase::read( areg::ByteBuffer & buffer ) const
+    {
+        uint32_t result = 0;
+        if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
         {
-            length = buffer.reserve(length, false);
-            if (length != 0)
+            buffer.invalidate();
+            uint32_t length = 0;
+
+            if (read(reinterpret_cast<uint8_t *>(&length), sizeof(uint32_t)) == sizeof(uint32_t))
             {
-                uint8_t* data = buffer.getBuffer();
-                result = read(data, data != nullptr ? length : 0);
-                buffer.getByteBuffer()->bufHeader.biUsed = result > 0 ? result : 0;
+                length = buffer.reserve(length, false);
+                if (length != 0)
+                {
+                    uint8_t* data = buffer.getBuffer();
+                    result = read(data, data != nullptr ? length : 0);
+                    buffer.getByteBuffer()->bufHeader.biUsed = result > 0 ? result : 0;
+                }
             }
-        }
-    }
-    else
-    {
-        result = getSizeUsed();
-    }
-
-    return result;
-}
-
-/**
- * \brief   Reads string data from Input Stream object, copies into given ASCII String and returns the size of copied data.
- **/
-uint32_t BufferStreamBase::read( areg::String & ascii ) const
-{
-    uint32_t result = 0;
-    ascii.clear();
-
-    const uint32_t curPos = mReadPosition.getPosition();
-    const uint8_t* data = getBufferToRead();
-    if ( data != nullptr )
-    {
-        ascii.assign(reinterpret_cast<const char*>(data));
-        result = ascii.getSpace();
-        mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
-    }
-
-    return result;
-}
-
-/**
- * \brief   Reads string data from Input Stream object, copies into given Wide String and returns the size of copied data.
- **/
-uint32_t BufferStreamBase::read( areg::WideString & wide ) const
-{
-    uint32_t result = 0;
-    wide.clear();
-
-    const uint32_t curPos = mReadPosition.getPosition();
-    const int16_t * data = reinterpret_cast<const int16_t *>( getBufferToRead() );
-    if ( data != nullptr )
-    {
-        wide.assign(reinterpret_cast<const wchar_t *>(data));
-        result = wide.getSpace();
-        mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
-    }
-
-    return result;
-}
-
-/**
- * \brief   Returns size in bytes of available data that can be read, i.e. remaining readable size.
- **/
-uint32_t BufferStreamBase::getSizeReadable() const
-{
-    uint32_t lenUsed = getSizeUsed();
-    uint32_t lenRead = mReadPosition.getPosition();
-    ASSERT(lenRead <= lenUsed);
-    return (lenUsed - lenRead);
-}
-
-/**
- * \brief   Write data to output stream object from given buffer and returns the size of written data.
- **/
-uint32_t BufferStreamBase::write( const uint8_t* buffer, uint32_t size )
-{
-    return writeData(buffer, size);
-}
-
-/**
- * \brief   Writes Binary data from Byte Buffer object to output stream object and returns the size of written data.
- **/
-uint32_t BufferStreamBase::write( const areg::ByteBuffer & buffer )
-{
-    uint32_t result = 0;
-    if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
-    {
-        const uint8_t* data = buffer.getBuffer();
-        const uint32_t length = buffer.getSizeUsed();
-
-        if (write(reinterpret_cast<const uint8_t *>(&length), sizeof(uint32_t)) == sizeof(uint32_t))
-        {
-            result = write( data, length );
-        }
-    }
-    else
-    {
-        result = getSizeUsed(); // if same object, just imitate that the complete data was written.
-    }
-    return result;
-}
-
-/**
- * \brief   Writes string data from given ASCII String object to output stream object.
- **/
-uint32_t BufferStreamBase::write( const areg::String & ascii )
-{
-    return write( reinterpret_cast<const uint8_t *>(ascii.getString()), ascii.getSpace() );
-}
-
-/**
- * \brief   Writes string data from given wide-char String object to output stream object.
- **/
-uint32_t BufferStreamBase::write( const areg::WideString & wide )
-{
-    return write(reinterpret_cast<const uint8_t*>(wide.getString()), wide.getSpace());
-}
-
-/**
- * \brief   Returns size in bytes of available space that can be written, i.e. remaining writable size.
- **/
-uint32_t BufferStreamBase::getSizeWritable() const
-{
-    uint32_t result{ 0u };
-    if (isValid())
-    {
-        uint32_t lenWritten{ mWritePosition.getPosition() };
-        uint32_t lenAvailable{ getSizeAvailable() };
-        ASSERT(lenWritten <= lenAvailable);
-        result = lenAvailable - lenWritten;
-    }
-
-    return result;
-}
-
-/**
- * \brief   Flushes cached data to output stream object.
- **/
-void BufferStreamBase::flush()
-{
-}
-
-void BufferStreamBase::resetCursor() const
-{
-    mReadPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
-}
-
-/**
- * \brief   Returns true if binary data of 2 buffers are equal.
- **/
-bool BufferStreamBase::isEqual( const BufferStreamBase &other ) const
-{
-    bool result = static_cast<const BufferStreamBase *>(this) == &other;
-    if ( (result == false) && (isValid() && other.isValid()))
-    {
-        uint32_t used = getSizeUsed();
-        result = (used == other.getSizeUsed()) && areg::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
-    }
-
-    return result;
-}
-
-/**
- * \brief   Inserts buffer of data at the given position.
- **/
-uint32_t BufferStreamBase::insertAt( const uint8_t* buffer, uint32_t size, uint32_t atPos )
-{
-    uint32_t result     = 0;
-    if ((size != 0) && (buffer != nullptr))
-    {
-        uint32_t writePos   = mWritePosition.getPosition();
-        if ((isValid() == false) || (atPos >= writePos))
-        {
-            result = write(buffer, size);
         }
         else
         {
-            uint32_t remain = reserve(writePos + size, true);
-            if (remain >= size)
+            result = getSizeUsed();
+        }
+
+        return result;
+    }
+
+    /**
+     * \brief   Reads string data from Input Stream object, copies into given ASCII String and returns the size of copied data.
+     **/
+    uint32_t BufferStreamBase::read( areg::String & ascii ) const
+    {
+        uint32_t result = 0;
+        ascii.clear();
+
+        const uint32_t curPos = mReadPosition.getPosition();
+        const uint8_t* data = getBufferToRead();
+        if ( data != nullptr )
+        {
+            ascii.assign(reinterpret_cast<const char*>(data));
+            result = ascii.getSpace();
+            mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
+        }
+
+        return result;
+    }
+
+    /**
+     * \brief   Reads string data from Input Stream object, copies into given Wide String and returns the size of copied data.
+     **/
+    uint32_t BufferStreamBase::read( areg::WideString & wide ) const
+    {
+        uint32_t result = 0;
+        wide.clear();
+
+        const uint32_t curPos = mReadPosition.getPosition();
+        const int16_t * data = reinterpret_cast<const int16_t *>( getBufferToRead() );
+        if ( data != nullptr )
+        {
+            wide.assign(reinterpret_cast<const wchar_t *>(data));
+            result = wide.getSpace();
+            mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
+        }
+
+        return result;
+    }
+
+    /**
+     * \brief   Returns size in bytes of available data that can be read, i.e. remaining readable size.
+     **/
+    uint32_t BufferStreamBase::getSizeReadable() const
+    {
+        uint32_t lenUsed = getSizeUsed();
+        uint32_t lenRead = mReadPosition.getPosition();
+        ASSERT(lenRead <= lenUsed);
+        return (lenUsed - lenRead);
+    }
+
+    /**
+     * \brief   Write data to output stream object from given buffer and returns the size of written data.
+     **/
+    uint32_t BufferStreamBase::write( const uint8_t* buffer, uint32_t size )
+    {
+        return writeData(buffer, size);
+    }
+
+    /**
+     * \brief   Writes Binary data from Byte Buffer object to output stream object and returns the size of written data.
+     **/
+    uint32_t BufferStreamBase::write( const areg::ByteBuffer & buffer )
+    {
+        uint32_t result = 0;
+        if (static_cast<const areg::ByteBuffer *>(this) != static_cast<const areg::ByteBuffer *>(&buffer))
+        {
+            const uint8_t* data = buffer.getBuffer();
+            const uint32_t length = buffer.getSizeUsed();
+
+            if (write(reinterpret_cast<const uint8_t *>(&length), sizeof(uint32_t)) == sizeof(uint32_t))
             {
-                ASSERT(isValid());
-                uint8_t *dst      = getBuffer() + atPos;
-                uint32_t moveSize   = writePos - atPos;
-
-                areg::memMove( dst + size, dst, moveSize );
-                areg::memCopy( dst, size, buffer, size );
-
-                result = size;
-
-                uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
-                uint32_t newPos     = writePos + result;
-                setSizeUsed( std::max(usedSize, newPos) );
-                mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
+                result = write( data, length );
             }
         }
-    }
-
-    return result;
-}
-
-/**
- * \brief   Writes data to buffer
- **/
-uint32_t BufferStreamBase::writeData(const uint8_t* buffer, uint32_t size)
-{
-    ASSERT( (buffer != nullptr) || (size == 0) );
-    uint32_t result     = 0;
-    uint32_t writePos   = isValid() ? mWritePosition.getPosition() : 0;
-    uint32_t remain     = reserve(writePos + size, true);
-
-    if ((remain != 0) && (size != 0))
-    {
-        result = areg::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
-        uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
-        uint32_t newPos     = writePos + result;
-        setSizeUsed( std::max(usedSize, newPos) );
-        mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
-    }
-
-    return result;
-}
-
-/**
- * \brief   Reads data from buffer
- **/
-uint32_t BufferStreamBase::readData(uint8_t* buffer, uint32_t size) const
-{
-    uint32_t result = 0;
-    if (isValid() && size != 0)
-    {
-        ASSERT(buffer != nullptr);
-        uint32_t remain = getSizeReadable();
-        result = std::min(remain, size);
-
-        if (result != 0)
+        else
         {
-            const uint8_t* src = getBufferToRead();
-            areg::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
-            mReadPosition.setPosition(static_cast<int32_t>(result), areg::Cursor::SeekOrigin::Current);
+            result = getSizeUsed(); // if same object, just imitate that the complete data was written.
         }
+        return result;
     }
 
-    return result;
-}
-
-const uint8_t * BufferStreamBase::getBufferToRead() const
-{
-    const uint8_t * result = getBuffer();
-    if ( result != nullptr )
+    /**
+     * \brief   Writes string data from given ASCII String object to output stream object.
+     **/
+    uint32_t BufferStreamBase::write( const areg::String & ascii )
     {
-        uint32_t posRead = mReadPosition.getPosition();
-        result = posRead <= mByteBuffer->bufHeader.biUsed ? result + posRead : nullptr;
+        return write( reinterpret_cast<const uint8_t *>(ascii.getString()), ascii.getSpace() );
     }
-    return result;
-}
 
-uint8_t * BufferStreamBase::getBufferToWrite()
-{
-    uint8_t * result = getBuffer();
-    if ( result != nullptr )
+    /**
+     * \brief   Writes string data from given wide-char String object to output stream object.
+     **/
+    uint32_t BufferStreamBase::write( const areg::WideString & wide )
     {
-        uint32_t posWrite = mWritePosition.getPosition();
-        result = posWrite <= mByteBuffer->bufHeader.biUsed ? result + posWrite : nullptr;
+        return write(reinterpret_cast<const uint8_t*>(wide.getString()), wide.getSpace());
     }
-    return result;
-}
 
-uint32_t BufferStreamBase::reserve(uint32_t size, bool copy)
-{
-    uint32_t result = getSizeWritable();
-    if ((size == 0u) || (result < size))
+    /**
+     * \brief   Returns size in bytes of available space that can be written, i.e. remaining writable size.
+     **/
+    uint32_t BufferStreamBase::getSizeWritable() const
     {
-        uint32_t curPos = mWritePosition.getPosition();
-        result = areg::ByteBuffer::reserve(size, copy);
-        if (curPos != areg::Cursor::INVALID_CURSOR_POSITION)
+        uint32_t result{ 0u };
+        if (isValid())
         {
-            mWritePosition.setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
+            uint32_t lenWritten{ mWritePosition.getPosition() };
+            uint32_t lenAvailable{ getSizeAvailable() };
+            ASSERT(lenWritten <= lenAvailable);
+            result = lenAvailable - lenWritten;
         }
+
+        return result;
     }
 
-    return result;
-}
+    /**
+     * \brief   Flushes cached data to output stream object.
+     **/
+    void BufferStreamBase::flush()
+    {
+    }
+
+    void BufferStreamBase::resetCursor() const
+    {
+        mReadPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
+    }
+
+    /**
+     * \brief   Returns true if binary data of 2 buffers are equal.
+     **/
+    bool BufferStreamBase::isEqual( const BufferStreamBase &other ) const
+    {
+        bool result = static_cast<const BufferStreamBase *>(this) == &other;
+        if ( (result == false) && (isValid() && other.isValid()))
+        {
+            uint32_t used = getSizeUsed();
+            result = (used == other.getSizeUsed()) && areg::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
+        }
+
+        return result;
+    }
+
+    /**
+     * \brief   Inserts buffer of data at the given position.
+     **/
+    uint32_t BufferStreamBase::insertAt( const uint8_t* buffer, uint32_t size, uint32_t atPos )
+    {
+        uint32_t result     = 0;
+        if ((size != 0) && (buffer != nullptr))
+        {
+            uint32_t writePos   = mWritePosition.getPosition();
+            if ((isValid() == false) || (atPos >= writePos))
+            {
+                result = write(buffer, size);
+            }
+            else
+            {
+                uint32_t remain = reserve(writePos + size, true);
+                if (remain >= size)
+                {
+                    ASSERT(isValid());
+                    uint8_t *dst      = getBuffer() + atPos;
+                    uint32_t moveSize   = writePos - atPos;
+
+                    areg::memMove( dst + size, dst, moveSize );
+                    areg::memCopy( dst, size, buffer, size );
+
+                    result = size;
+
+                    uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
+                    uint32_t newPos     = writePos + result;
+                    setSizeUsed( std::max(usedSize, newPos) );
+                    mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * \brief   Writes data to buffer
+     **/
+    uint32_t BufferStreamBase::writeData(const uint8_t* buffer, uint32_t size)
+    {
+        ASSERT( (buffer != nullptr) || (size == 0) );
+        uint32_t result     = 0;
+        uint32_t writePos   = isValid() ? mWritePosition.getPosition() : 0;
+        uint32_t remain     = reserve(writePos + size, true);
+
+        if ((remain != 0) && (size != 0))
+        {
+            result = areg::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
+            uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
+            uint32_t newPos     = writePos + result;
+            setSizeUsed( std::max(usedSize, newPos) );
+            mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
+        }
+
+        return result;
+    }
+
+    /**
+     * \brief   Reads data from buffer
+     **/
+    uint32_t BufferStreamBase::readData(uint8_t* buffer, uint32_t size) const
+    {
+        uint32_t result = 0;
+        if (isValid() && size != 0)
+        {
+            ASSERT(buffer != nullptr);
+            uint32_t remain = getSizeReadable();
+            result = std::min(remain, size);
+
+            if (result != 0)
+            {
+                const uint8_t* src = getBufferToRead();
+                areg::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
+                mReadPosition.setPosition(static_cast<int32_t>(result), areg::Cursor::SeekOrigin::Current);
+            }
+        }
+
+        return result;
+    }
+
+    const uint8_t * BufferStreamBase::getBufferToRead() const
+    {
+        const uint8_t * result = getBuffer();
+        if ( result != nullptr )
+        {
+            uint32_t posRead = mReadPosition.getPosition();
+            result = posRead <= mByteBuffer->bufHeader.biUsed ? result + posRead : nullptr;
+        }
+        return result;
+    }
+
+    uint8_t * BufferStreamBase::getBufferToWrite()
+    {
+        uint8_t * result = getBuffer();
+        if ( result != nullptr )
+        {
+            uint32_t posWrite = mWritePosition.getPosition();
+            result = posWrite <= mByteBuffer->bufHeader.biUsed ? result + posWrite : nullptr;
+        }
+        return result;
+    }
+
+    uint32_t BufferStreamBase::reserve(uint32_t size, bool copy)
+    {
+        uint32_t result = getSizeWritable();
+        if ((size == 0u) || (result < size))
+        {
+            uint32_t curPos = mWritePosition.getPosition();
+            result = areg::ByteBuffer::reserve(size, copy);
+            if (curPos != areg::Cursor::INVALID_CURSOR_POSITION)
+            {
+                mWritePosition.setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
+            }
+        }
+
+        return result;
+    }
+
+} // namespace areg

@@ -58,7 +58,7 @@ namespace areg
      *          to share data between different instances of thread.
      *          The instance of Shared Buffer can be used for data streaming.
      **/
-    class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streaming object
+    class AREG_API SharedBuffer : public  areg::BufferStreamBase  // This is data streaming object
                                 , public  areg::Cursor  // To control read and write operations
     {
         friend class areg::FileBuffer;

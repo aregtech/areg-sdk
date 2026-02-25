@@ -27,8 +27,6 @@
 
 #include <memory>
 
-class BufferStreamBase;
-
 namespace areg
 {
     //////////////////////////////////////////////////////////////////////////
@@ -39,7 +37,7 @@ namespace areg
      **/
     class AREG_API ByteBuffer
     {
-        friend class ::BufferStreamBase;
+        friend class BufferStreamBase;
 
     //////////////////////////////////////////////////////////////////////////
     // Defined static constants and types
