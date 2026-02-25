@@ -212,7 +212,7 @@ private:
     /**
      * \brief   The client connection socket
      **/
-    SocketClient    mClientSocket;
+    areg::SocketClient    mClientSocket;
 
     /**
      * \brief   Client connection cookie

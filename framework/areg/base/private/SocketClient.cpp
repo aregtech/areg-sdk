@@ -14,37 +14,40 @@
  ************************************************************************/
 #include "areg/base/SocketClient.hpp"
 
-SocketClient::SocketClient( const char * hostName, uint16_t portNr )
-    : Socket  ( )
+namespace areg
 {
-    mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
-}
-
-SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
-    : Socket  ( )
-{
-    mAddress = remoteAddress;
-}
-
-bool SocketClient::createSocket(const char * hostName, uint16_t portNr)
-{
-    return ( mAddress.resolveAddress(hostName, portNr, false) && createSocket());
-}
-
-bool SocketClient::createSocket()
-{
-    decreaseLock();
-
-    if ( mAddress.isValid() )
+    SocketClient::SocketClient( const char * hostName, uint16_t portNr )
+        : Socket  ( )
     {
-    	SOCKETHANDLE hSocket = areg::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
-        if ( hSocket != areg::InvalidSocketHandle )
-        {
-        	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
-            mSendSize = areg::getMaxSendSize(hSocket);
-            mRecvSize = areg::getMaxReceiveSize(hSocket);
-        }
+        mAddress.resolveAddress(hostName != nullptr ? hostName : areg::LocalHost, portNr, false);
     }
 
-    return isValid();
-}
+    SocketClient::SocketClient(const areg::SocketAddress & remoteAddress)
+        : Socket  ( )
+    {
+        mAddress = remoteAddress;
+    }
+
+    bool SocketClient::createSocket(const char * hostName, uint16_t portNr)
+    {
+        return ( mAddress.resolveAddress(hostName, portNr, false) && createSocket());
+    }
+
+    bool SocketClient::createSocket()
+    {
+        decreaseLock();
+
+        if ( mAddress.isValid() )
+        {
+            SOCKETHANDLE hSocket = areg::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+            if ( hSocket != areg::InvalidSocketHandle )
+            {
+                mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
+                mSendSize = areg::getMaxSendSize(hSocket);
+                mRecvSize = areg::getMaxReceiveSize(hSocket);
+            }
+        }
+
+        return isValid();
+    }
+} // namespace areg
