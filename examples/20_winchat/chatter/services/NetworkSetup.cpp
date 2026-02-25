@@ -17,11 +17,11 @@ NetworkSetup::NetworkSetup( const char * roleName, Component & owner, Connection
 {
 }
 
-void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result )
+void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
     LOG_SCOPE(chatter_NetworkSetup_responseConnect);
     LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, ConnectionManager::getString(result));
-    DateTime timeConnected = DateTime::getNow();
+    areg::DateTime timeConnected = areg::DateTime::getNow();
 
     if (result == ConnectionManager::ConnectionResult::Accepted)
     {
@@ -35,8 +35,8 @@ void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cook
         mConnectionHandler.SetNickName(nickName);
         mConnectionHandler.SetCookie(ConnectionManager::InvalidCookie);
         mConnectionHandler.SetConnectCookie(ConnectionManager::InvalidCookie);
-        mConnectionHandler.SetTimeConnect(DateTime());
-        mConnectionHandler.SetTimeConnected(DateTime());
+        mConnectionHandler.SetTimeConnect(areg::DateTime());
+        mConnectionHandler.SetTimeConnected(areg::DateTime());
     }
 
     mConnectionHandler.SetRegistered( false );

@@ -213,7 +213,7 @@ void PageMessaging::OnClickedButtonSend( )
     UpdateData( TRUE );
     if ( mCentralMessage != nullptr)
     {
-        DateTime dateTime = DateTime::getNow();
+        areg::DateTime dateTime = areg::DateTime::getNow();
         outputMessage( CString( mConnectionHandler.GetNickName().getString() )
                      , mTextMsg
                      , CString( dateTime.formatTime().getString())
@@ -361,10 +361,10 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
 
 void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const uint64_t begin, const uint64_t end, uint32_t cookie )
 {
-    outputMessage(nickname, message, begin != 0 ? DateTime(begin) : DateTime(), end != 0 ? DateTime(end) : DateTime(), cookie );
+    outputMessage(nickname, message, begin != 0 ? areg::DateTime(begin) : areg::DateTime(), end != 0 ? areg::DateTime(end) : areg::DateTime(), cookie );
 }
 
-void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const DateTime & begin, const DateTime & end, uint32_t cookie )
+void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const areg::DateTime & begin, const areg::DateTime & end, uint32_t cookie )
 {
     outputMessage( CString(nickname.getString())
                  , CString(message.getString())

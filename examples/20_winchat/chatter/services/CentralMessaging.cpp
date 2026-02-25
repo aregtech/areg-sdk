@@ -48,7 +48,7 @@ bool CentralMessaging::serviceConnected( areg::ServiceConnectionState status, Pr
     return result;
 }
 
-void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const DateTime & dateTime )
+void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
     if ( cookie != mConnectionHandler.GetCookie() )
@@ -61,7 +61,7 @@ void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint
             areg::copyString<TCHAR, char>( data->nickName, chat::MAXLEN_NICKNAME, nickName.getString() );
             areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, newMessage.getString( ) );
             data->dataSave      = cookie;
-            data->timeReceived  = DateTime::getNow();
+            data->timeReceived  = areg::DateTime::getNow();
             data->timeSend      = dateTime;
 
             DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie(), reinterpret_cast<LPARAM>(data));
@@ -90,7 +90,7 @@ void CentralMessaging::broadcastKeyTyping( const areg::String & nickName, uint32
     }
 }
 
-void CentralMessaging::broadcastBroadcastMessage( const areg::String & serverMessage, const DateTime & dateTime )
+void CentralMessaging::broadcastBroadcastMessage( const areg::String & serverMessage, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
@@ -100,7 +100,7 @@ void CentralMessaging::broadcastBroadcastMessage( const areg::String & serverMes
         areg::copyString<TCHAR, TCHAR>( data->nickName, chat::MAXLEN_NICKNAME, chat::SERVER_NAME );
         areg::copyString<TCHAR, char>( data->message, chat::MAXLEN_MESSAGE, serverMessage.getString( ) );
         data->dataSave      = static_cast<uint64_t>(-1);
-        data->timeReceived  = DateTime::getNow();
+        data->timeReceived  = areg::DateTime::getNow();
         data->timeSend      = dateTime;
 
         DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdSendMessage, mConnectionHandler.GetCookie( ), reinterpret_cast<LPARAM>(data) );

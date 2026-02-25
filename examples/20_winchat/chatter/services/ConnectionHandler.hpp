@@ -38,13 +38,13 @@ public:
 
     inline bool GetRegistered() const;
 
-    inline void SetTimeConnect( const DateTime & dateTime );
+    inline void SetTimeConnect( const areg::DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnect() const;
+    inline const areg::DateTime & GetTimeConnect() const;
 
-    inline void SetTimeConnected( const DateTime & dateTime );
+    inline void SetTimeConnected( const areg::DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnected() const;
+    inline const areg::DateTime & GetTimeConnected() const;
 
     inline bool HasName() const;
 
@@ -77,8 +77,8 @@ private:
     areg::String        mNickName;
     uint32_t      mCookie;
     uint32_t      mConnectCookie;
-    DateTime      mTimeConnect;
-    DateTime      mTimeConnected;
+    areg::DateTime      mTimeConnect;
+    areg::DateTime      mTimeConnected;
     bool          mIsRegistered;
     bool          mIsConnected;
     mutable Mutex mLock;
@@ -127,25 +127,25 @@ inline bool ConnectionHandler::GetRegistered() const
     return mIsRegistered;
 }
 
-inline void ConnectionHandler::SetTimeConnect(const DateTime & dateTime)
+inline void ConnectionHandler::SetTimeConnect(const areg::DateTime & dateTime)
 {
     Lock lock(mLock);
     mTimeConnect    = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnect() const
+inline const areg::DateTime & ConnectionHandler::GetTimeConnect() const
 {
     Lock lock(mLock);
     return mTimeConnect;
 }
 
-inline void ConnectionHandler::SetTimeConnected(const DateTime & dateTime)
+inline void ConnectionHandler::SetTimeConnected(const areg::DateTime & dateTime)
 {
     Lock lock(mLock);
     mTimeConnected  = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnected() const
+inline const areg::DateTime & ConnectionHandler::GetTimeConnected() const
 {
     Lock lock(mLock);
     return mTimeConnected;

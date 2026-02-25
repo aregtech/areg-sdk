@@ -104,7 +104,7 @@ void DirectChatService::startupServiceInterface( Component & holder )
     setChatParticipants( DirectMessager::ListParticipants() );
 }
 
-void DirectChatService::requestChatJoin( const DirectMessager::Participant & participant, const DateTime & timeConnect )
+void DirectChatService::requestChatJoin( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestChatJoin );
     if ( mPaticipantsHandler->ParticipantExist(participant) )
@@ -117,7 +117,7 @@ void DirectChatService::requestChatJoin( const DirectMessager::Participant & par
             newParticipant = true;
         }
 
-        responseChatJoin(true, chatParticipants, timeConnect, DateTime::getNow() );
+        responseChatJoin(true, chatParticipants, timeConnect, areg::DateTime::getNow() );
         if ( newParticipant )
         {
             broadcastParticipantJoined( participant, timeConnect );
@@ -126,11 +126,11 @@ void DirectChatService::requestChatJoin( const DirectMessager::Participant & par
     }
     else
     {
-        responseChatJoin( false, DirectMessager::ListParticipants(), timeConnect, DateTime() );
+        responseChatJoin( false, DirectMessager::ListParticipants(), timeConnect, areg::DateTime() );
     }
 }
 
-void DirectChatService::requestMessageSend( const DirectMessager::Participant & participant, const areg::String & msgText, const DateTime & timeSent )
+void DirectChatService::requestMessageSend( const DirectMessager::Participant & participant, const areg::String & msgText, const areg::DateTime & timeSent )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
     const DirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
@@ -151,7 +151,7 @@ void DirectChatService::requestMessageType( const DirectMessager::Participant & 
     }
 }
 
-void DirectChatService::requestChatLeave( const DirectMessager::Participant & participant, const DateTime & timeLeave )
+void DirectChatService::requestChatLeave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestChatLeave );
     DirectMessager::ListParticipants & chatParticipants = getChatParticipants( );

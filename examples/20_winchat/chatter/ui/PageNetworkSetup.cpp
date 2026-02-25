@@ -91,7 +91,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * /*
         if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == chat::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
-            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), DateTime::getNow() );
+            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), areg::DateTime::getNow() );
         }
     }
     mConnectPending = isConnected ? false : mConnectPending;
@@ -118,7 +118,7 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
     }
     else if ( (isRegistered == false) && (mNetworkSetup != nullptr) )
     {
-        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::getNow());
+        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::DateTime::getNow());
         mConnectionHandler.ResetConnectionList( );
     }
 }
@@ -230,7 +230,7 @@ void PageNetworkSetup::OnClickedButtonRegister( )
             mRegisterPending = true;
             mConnectionHandler.SetRegistered(false);
             mConnectionHandler.SetNickName(nickName);
-            mNetworkSetup->requestConnect(nickName, DateTime::getNow() );
+            mNetworkSetup->requestConnect(nickName, areg::DateTime::getNow() );
         }
         else
         {

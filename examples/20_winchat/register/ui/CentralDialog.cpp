@@ -88,7 +88,7 @@ bool CentralDialog::StartConnection( const areg::String & ipAddress, uint16_t po
         if ( Application::startMessageRouting(ipAddress, portNr) )
         {
             CString nickName    = chat::SERVER_NAME;
-            CString dateStart( DateTime::getNow().formatTime().getString() );
+            CString dateStart( areg::DateTime::getNow().formatTime().getString() );
             CString message;
 
             std::any data = std::make_any<HWND>(dlg->mPageConnections.GetSafeHwnd());

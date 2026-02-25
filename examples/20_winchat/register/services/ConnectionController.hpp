@@ -39,7 +39,7 @@ public:
      * \param   dateTime    Client connection request date time in UTC
      * \see     ResponseConnect
      **/
-    void requestConnect( const areg::String & nickName, const DateTime & dateTime ) override;
+    void requestConnect( const areg::String & nickName, const areg::DateTime & dateTime ) override;
 
     /**
      * \brief   Request call.
@@ -50,7 +50,7 @@ public:
      * \param   dateRegister    The connection registration time-stamp
      * \see     responseRegisterConnection
      **/
-    void requestRegisterConnection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const DateTime & dateRegister ) override;
+    void requestRegisterConnection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister ) override;
 
     /**
      * \brief   Request call.
@@ -60,7 +60,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no response
      **/
-    void requestDisconnect( const areg::String & nickName, uint32_t cookie, const DateTime & dateTime ) override;
+    void requestDisconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessager Interface Requests
@@ -76,7 +76,7 @@ public:
      * \param   dateTime    The time-stamp create on local host of initiator
      * \note    Has no response
      **/
-    void requestSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const DateTime & dateTime ) override;
+    void requestSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime ) override;
 
     /**
      * \brief   Request call.

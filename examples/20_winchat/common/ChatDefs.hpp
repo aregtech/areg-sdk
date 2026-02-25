@@ -102,7 +102,7 @@ namespace chat
         /**
          * \brief   Initialize ConnectionRecord data by setting parameters.
          **/
-        inline ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime );
+        inline ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const areg::DateTime & _connectTime, const areg::DateTime & _connectedTime );
 	    /**
 	     * \brief   Copies data from given source. Every filed of structure should have copy constructor.
 	     * \param   src     The source of ConnectionRecord structure to copy data
@@ -161,12 +161,12 @@ namespace chat
 	    /**
 	     * \brief   Connection request date-time
 	     **/
-	    DateTime  connectTime;
+	    areg::DateTime  connectTime;
 
 	    /**
 	     * \brief   Connection registered / accepted date-time
 	     **/
-	    DateTime  connectedTime;
+	    areg::DateTime  connectedTime;
 
 	};
 
@@ -299,7 +299,7 @@ inline chat::ConnectionRecord::ConnectionRecord()
 /**
  * \brief   Initialize ConnectionRecord data by setting parameters.
  **/
-inline chat::ConnectionRecord::ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime )
+inline chat::ConnectionRecord::ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const areg::DateTime & _connectTime, const areg::DateTime & _connectedTime )
     : cookie          ( _cookie )
     , nickName        ( _nickName )
     , connectTime     ( _connectTime )

@@ -79,8 +79,8 @@ void ConnectionList::responseRegisterConnection( const ConnectionManager::Connec
     {
         mConnectionHandler.SetRegistered( false );
         mConnectionHandler.SetCookie( ConnectionManager::InvalidCookie );
-        mConnectionHandler.SetTimeConnect( DateTime( ) );
-        mConnectionHandler.SetTimeConnected( DateTime( ) );
+        mConnectionHandler.SetTimeConnect( areg::DateTime( ) );
+        mConnectionHandler.SetTimeConnected( areg::DateTime( ) );
         mConnectionHandler.RemoveConnections();
         DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 0, 0);
     }

@@ -457,7 +457,7 @@ void ServiceCommunicationBase::processReceivedMessage(const areg::RemoteMessage 
         {
             areg::ConnectedInstance instance{};
             msgReceived >> instance;
-            instance.ciTimestamp = static_cast<TIME64>(DateTime::getNow());
+            instance.ciTimestamp = static_cast<TIME64>(areg::DateTime::getNow());
             instance.ciCookie = cookie;
             addInstance(cookie, instance);
             areg::RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, areg::MessageSource::SourceService));

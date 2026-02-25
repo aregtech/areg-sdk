@@ -143,7 +143,7 @@ BOOL PageChat::OnInitDialog( )
     else
     {
         areg::String nickName = mIsChatInitiator ? "[ " + initiator.nickName + " ]" : initiator.nickName;
-        outputMessage( CString( nickName.getString( ) ), CString( "Is already registered..." ), CString( DateTime::getNow().formatTime( ).getString( ) ), CString( ), 0 );
+        outputMessage( CString( nickName.getString( ) ), CString( "Is already registered..." ), CString( areg::DateTime::getNow().formatTime( ).getString( ) ), CString( ), 0 );
     }
 
     return TRUE;
@@ -194,7 +194,7 @@ void PageChat::OnClickedButtonChatSend( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->requestMessageSend( GetConnectionOwner( ), areg::String( mChatMsg.GetString( ) ), DateTime::getNow() );
+        client->requestMessageSend( GetConnectionOwner( ), areg::String( mChatMsg.GetString( ) ), areg::DateTime::getNow() );
         mChatMsg= _T( "" );
         UpdateData( FALSE );
         GetDlgItem( IDC_EDIT_CHAT )->SetFocus( );
@@ -417,8 +417,8 @@ LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
     {
         outputMessage( CString( data->nickName )
                      , CString( data->message )
-                     , CString( data->timeSend      != 0 ? DateTime(data->timeSend).formatTime().getString()     : "" )
-                     , CString( data->timeReceived  != 0 ? DateTime(data->timeReceived).formatTime().getString() : "" )
+                     , CString( data->timeSend      != 0 ? areg::DateTime(data->timeSend).formatTime().getString()     : "" )
+                     , CString( data->timeReceived  != 0 ? areg::DateTime(data->timeReceived).formatTime().getString() : "" )
                      , static_cast<uint32_t>(data->dataSave));
         delete data;
 

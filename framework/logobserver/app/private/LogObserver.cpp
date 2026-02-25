@@ -172,7 +172,7 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
 
         if (contains == false)
         {
-            TIME64 now{ DateTime::getNow() };
+            TIME64 now{ areg::DateTime::getNow() };
             areg::LogEntry log{ };
             log.logDataType     = areg::LogDataType::Local;
             log.logMsgType      = areg::LogMessageType::MessageText;
@@ -212,7 +212,7 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
             const LogInstance& inst{ _listInstances[j] };
             if (inst.liCookie == cookie)
             {
-                TIME64 now{ DateTime::getNow() };
+                TIME64 now{ areg::DateTime::getNow() };
                 areg::LogEntry log{ };
                 log.logDataType     = areg::LogDataType::Local;
                 log.logMsgType      = areg::LogMessageType::MessageText;
@@ -259,7 +259,7 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uin
             log.logCookie       = inst.liCookie;
             log.logModuleId     = 0u;
             log.logThreadId     = 0u;
-            log.logTimestamp    = static_cast<TIME64>(DateTime::getNow());
+            log.logTimestamp    = static_cast<TIME64>(areg::DateTime::getNow());
             log.logReceived     = log.logTimestamp;
             log.logDuration     = 0u;
             log.logScopeId      = 0u;

@@ -19,7 +19,7 @@
 
 uint32_t TimerBase::getTickCount()
 {
-    return static_cast<uint32_t>(DateTime::getSystemTickCount());
+    return static_cast<uint32_t>(areg::DateTime::getSystemTickCount());
 }
 
 TimerBase::TimerBase( const TimerType timerType

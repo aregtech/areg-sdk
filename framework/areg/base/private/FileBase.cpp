@@ -711,7 +711,7 @@ void FileBase::normalizeName(areg::String & name)
     // replace all "%time%"
     char fmt[128] { 0 };
     areg::CalendarTime st;
-    DateTime::getNow(st, true);
+    areg::DateTime::getNow(st, true);
     areg::String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
     name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, areg::START_POS, true);
 

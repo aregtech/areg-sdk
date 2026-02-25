@@ -484,7 +484,7 @@ inline void LogSqliteDatabase::_createIndexes()
 inline void LogSqliteDatabase::_initialize()
 {
     areg::Process& proc{ areg::Process::getInstance() };
-    DateTime now{ DateTime::getNow() };
+    areg::DateTime now{ areg::DateTime::getNow() };
     areg::String module{ proc.getAppName() };
     id_type threadId{ areg::Thread::getCurrentThreadId() };
     areg::String thread{ areg::Thread::getThreadName(threadId) };
@@ -670,7 +670,7 @@ bool LogSqliteDatabase::logMessage(const areg::LogEntry& message)
     return result;
 }
 
-bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& instance, const DateTime& timestamp)
+bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& instance, const areg::DateTime& timestamp)
 {
     Lock lock(mLock);
     areg::Process& proc    { areg::Process::getInstance() };
@@ -691,7 +691,7 @@ bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& inst
     return mDatabase.execute(sqlInst);
 }
 
-bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const areg::DateTime& timestamp)
 {
     Lock lock(mLock);
     logScopesDeactivate(cookie, timestamp);
@@ -704,18 +704,18 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
     char sqlInst[SQL_LEN];
     areg::String::formatString( sqlInst, SQL_LEN, _fmtUpdInstance.data()
                         , static_cast<uint64_t>(timestamp.getTime())
-                        , static_cast<uint64_t>(DateTime::getNow().getTime())
+                        , static_cast<uint64_t>(areg::DateTime::getNow().getTime())
                         , static_cast<uint64_t>(cookie)
                         );
     return mDatabase.execute(sqlInst);
 }
 
-bool LogSqliteDatabase::logScopeActivate(const areg::ScopeEntry & scope, const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::logScopeActivate(const areg::ScopeEntry & scope, const ITEM_ID& cookie, const areg::DateTime& timestamp)
 {
     return logScopeActivate(scope.scopeName, scope.scopeId, scope.scopePrio, cookie, timestamp);
 }
 
-uint32_t LogSqliteDatabase::logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp)
+uint32_t LogSqliteDatabase::logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const areg::DateTime& timestamp)
 {
     Lock lock(mLock);
     uint32_t result{ 0 };
@@ -735,7 +735,7 @@ uint32_t LogSqliteDatabase::logScopesActivate(const areg::ScopeNames& scopes, co
     return result;
 }
 
-bool LogSqliteDatabase::logScopeActivate(const areg::String& scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::logScopeActivate(const areg::String& scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID& cookie, const areg::DateTime& timestamp)
 {
     char sql[SQL_LEN];
     areg::String::formatString( sql, SQL_LEN, _fmtScopes.data()
@@ -748,7 +748,7 @@ bool LogSqliteDatabase::logScopeActivate(const areg::String& scopeName, uint32_t
     return execute(sql);
 }
 
-bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const areg::DateTime& timestamp)
 {
     char sql[SQL_LEN];
     areg::String::formatString( sql, SQL_LEN, _fmtUpdScopes.data()
@@ -758,7 +758,7 @@ bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTim
     return execute(sql);
 }
 
-bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, uint32_t scopeId, const DateTime& timestamp)
+bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, uint32_t scopeId, const areg::DateTime& timestamp)
 {
     char sql[SQL_LEN];
     areg::String::formatString( sql, SQL_LEN, _fmtUpdScope.data()

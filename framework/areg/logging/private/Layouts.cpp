@@ -61,7 +61,7 @@ void TickCountLayout::logMessage( const areg::LogEntry & /*msgLog*/, areg::OutSt
 #endif  // _BIT64
 
     char buffer[128];
-    uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>( DateTime::getProcessTickCount() )));
+    uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>( areg::DateTime::getProcessTickCount() )));
     stream.write(reinterpret_cast<const uint8_t *>(buffer), len);
 }
 
@@ -90,7 +90,7 @@ void DayTimeLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream &
     if ( msgLog.logTimestamp != 0 )
     {
         areg::String timestamp;
-        DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, areg::TIME_FORMAT_ISO8601_OUTPUT);
+        areg::DateTime::formatTime(areg::DateTime(msgLog.logTimestamp), timestamp, areg::TIME_FORMAT_ISO8601_OUTPUT);
         stream.write( reinterpret_cast<const uint8_t *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
     }
 }

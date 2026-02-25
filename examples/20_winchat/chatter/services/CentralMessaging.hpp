@@ -41,7 +41,7 @@ protected:
      * \param   newMessage  The message sent by initiator
      * \param   dateTime    The local time-stamp of initiator
      **/
-    void broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const DateTime & dateTime ) override;
+    void broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime ) override;
     /**
      * \brief   Server broadcast.
      *          Sent each time when a client is typing a key
@@ -60,7 +60,7 @@ protected:
      * \param   serverMessage   The message sent by servicing server
      * \param   dateTime        The time-stamp of servicing component
      **/
-    void broadcastBroadcastMessage( const areg::String & serverMessage, const DateTime & dateTime ) override;
+    void broadcastBroadcastMessage( const areg::String & serverMessage, const areg::DateTime & dateTime ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

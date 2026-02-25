@@ -68,7 +68,7 @@ void ConnectionController::startupServiceInterface( Component & holder )
     setConnectionList(ConnectionManager::MapConnections( ) );
 }
 
-void ConnectionController::requestConnect( const areg::String & nickName, const DateTime & dateTime )
+void ConnectionController::requestConnect( const areg::String & nickName, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestConnect );
     LOG_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime()));
@@ -111,7 +111,7 @@ void ConnectionController::requestConnect( const areg::String & nickName, const 
     }
 }
 
-void ConnectionController::requestRegisterConnection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const DateTime & dateRegister )
+void ConnectionController::requestRegisterConnection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestRegisterConnection );
     LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.formatTime( )) );
@@ -140,7 +140,7 @@ void ConnectionController::requestRegisterConnection( const areg::String & nickN
 
                 uint32_t whichCookie = connection.cookie != ConnectionManager::InvalidCookie ? connection.cookie : connectCookie;
                 connection.cookie       = whichCookie != ConnectionManager::InvalidCookie ? whichCookie : getNextCookie();
-                connection.connectedTime= DateTime::getNow( );
+                connection.connectedTime= areg::DateTime::getNow( );
                 mapConnections.setAt( connection.cookie, connection );
 
                 LOG_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
@@ -189,7 +189,7 @@ void ConnectionController::requestRegisterConnection( const areg::String & nickN
     }
 }
 
-void ConnectionController::requestDisconnect( const areg::String & nickName, uint32_t cookie, const DateTime & dateTime )
+void ConnectionController::requestDisconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestDisconnect );
     ConnectionManager::ConnectionRecord connection;
@@ -234,7 +234,7 @@ void ConnectionController::requestDisconnect( const areg::String & nickName, uin
     }
 }
 
-void ConnectionController::requestSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const DateTime & dateTime )
+void ConnectionController::requestSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestSendMessage );
 
@@ -257,7 +257,7 @@ void ConnectionController::requestSendMessage( const areg::String & nickName, ui
             areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = dateTime;
-            data->timeReceived  = DateTime::getNow();
+            data->timeReceived  = areg::DateTime::getNow();
             data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
             areg::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
 

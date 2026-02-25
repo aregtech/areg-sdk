@@ -116,8 +116,8 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     , logCookie     { areg::COOKIE_LOCAL }
     , logModuleId   { areg::Process::CURRENT_PROCESS }
     , logThreadId   { areg::Thread::INVALID_THREAD_ID }
-    , logTimestamp  { DateTime::INVALID_TIME }
-    , logReceived   { DateTime::INVALID_TIME }
+    , logTimestamp  { areg::DateTime::INVALID_TIME }
+    , logReceived   { areg::DateTime::INVALID_TIME }
     , logDuration   ( 0u )
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }
@@ -140,8 +140,8 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logCookie     { LogManager::getConnectionCookie() }
     , logModuleId   { areg::Process::getInstance().getId() }
     , logThreadId   { areg::Thread::getCurrentThreadId() }
-    , logTimestamp  { DateTime::getNow() }
-    , logReceived   { DateTime::INVALID_TIME }
+    , logTimestamp  { areg::DateTime::getNow() }
+    , logReceived   { areg::DateTime::INVALID_TIME }
     , logDuration   { scopeStamp != 0u ? static_cast<uint32_t>(logTimestamp - scopeStamp) : 0u }
     , logScopeId    { scopeId }
     , logSessionId  { sessionId }
@@ -165,8 +165,8 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logCookie     { areg::COOKIE_LOCAL }
     , logModuleId   { areg::Process::CURRENT_PROCESS }
     , logThreadId   { areg::Thread::INVALID_THREAD_ID }
-    , logTimestamp  { DateTime::INVALID_TIME }
-    , logReceived   { DateTime::INVALID_TIME }
+    , logTimestamp  { areg::DateTime::INVALID_TIME }
+    , logReceived   { areg::DateTime::INVALID_TIME }
     , logDuration   ( 0u )
     , logScopeId    { areg::LOG_SCOPE_ID_NONE }
     , logSessionId  { 0u }

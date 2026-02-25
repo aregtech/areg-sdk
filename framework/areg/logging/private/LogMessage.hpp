@@ -143,12 +143,12 @@ public:
     /**
      * \brief   Returns the time-stamp of created message log.
      **/
-    inline const DateTime getTimestamp() const;
+    inline const areg::DateTime getTimestamp() const;
 
     /**
      * \brief   Returns the time-stamp when the message log was received.
      **/
-    inline const DateTime getTimeReceived() const;
+    inline const areg::DateTime getTimeReceived() const;
 
     /**
      * \brief   Returns the duration in microseconds since scope message object was instantiated.
@@ -259,14 +259,14 @@ inline uint32_t LogMessage::getScopeId() const
     return this->logScopeId;
 }
 
-inline const DateTime LogMessage::getTimestamp() const
+inline const areg::DateTime LogMessage::getTimestamp() const
 {
-    return static_cast<DateTime>(this->logTimestamp);
+    return static_cast<areg::DateTime>(this->logTimestamp);
 }
 
-inline const DateTime LogMessage::getTimeReceived() const
+inline const areg::DateTime LogMessage::getTimeReceived() const
 {
-    return static_cast<DateTime>(this->logReceived);
+    return static_cast<areg::DateTime>(this->logReceived);
 }
 
 inline uint32_t LogMessage::getDuration() const

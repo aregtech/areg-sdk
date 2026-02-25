@@ -47,7 +47,7 @@ protected:
      * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
-    void requestChatJoin( const DirectMessager::Participant & participant, const DateTime & timeConnect ) override;
+    void requestChatJoin( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect ) override;
 
     /**
      * \brief   Request call.
@@ -57,7 +57,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    void requestMessageSend( const DirectMessager::Participant & sender, const areg::String & msgText, const DateTime & timeSent ) override;
+    void requestMessageSend( const DirectMessager::Participant & sender, const areg::String & msgText, const areg::DateTime & timeSent ) override;
 
     /**
      * \brief   Request call.
@@ -75,7 +75,7 @@ protected:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    void requestChatLeave( const DirectMessager::Participant & participant, const DateTime & timeLeave ) override;
+    void requestChatLeave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave ) override;
 
 protected:
 

@@ -204,7 +204,7 @@ public:
      * \param   timestamp   The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    bool logInstanceConnected(const areg::ConnectedInstance & instance, const DateTime & timestamp) override;
+    bool logInstanceConnected(const areg::ConnectedInstance & instance, const areg::DateTime & timestamp) override;
 
     /**
      * \brief   Called when an instance of log source is disconnected.
@@ -213,7 +213,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    bool logInstanceDisconnected(const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logInstanceDisconnected(const ITEM_ID & cookie, const areg::DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -222,7 +222,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    bool logScopeActivate(const areg::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopeActivate(const areg::ScopeEntry & scope, const ITEM_ID & cookie, const areg::DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -233,7 +233,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    bool logScopeActivate(const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopeActivate(const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const areg::DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the list of scopes in the database.
@@ -242,7 +242,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    uint32_t logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
+    uint32_t logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const areg::DateTime& timestamp) override;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.
@@ -250,7 +250,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    bool logScopesDeactivate(const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopesDeactivate(const ITEM_ID & cookie, const areg::DateTime & timestamp) override;
 
     /**
      * \brief   Call to deactivate a single scope related with the specified cookie ID.
@@ -259,7 +259,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) override;
+    bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const areg::DateTime & timestamp) override;
 
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.

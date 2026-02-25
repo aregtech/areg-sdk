@@ -186,8 +186,8 @@ namespace areg
         areg::String name;
         if (unique)
         {
-            uint32_t ticks = unique ? static_cast<uint32_t>(DateTime::getSystemTickCount()) : 0u;
-            DateTime timestamp{ DateTime::getNow() };
+            uint32_t ticks = unique ? static_cast<uint32_t>(areg::DateTime::getSystemTickCount()) : 0u;
+            areg::DateTime timestamp{ areg::DateTime::getNow() };
             int32_t len = areg::String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
                                         , pref.getString()
                                         , static_cast<uint32_t>(areg::Process::getInstance().getId())

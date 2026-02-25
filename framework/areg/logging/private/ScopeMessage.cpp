@@ -28,7 +28,7 @@ ScopeMessage::ScopeMessage( const LogScope & logScope )
     : mScopeName( logScope.getScopeName() )
     , mScopeId  ( logScope.mScopeId       )
     , mSessionId( logScope.nextSession()  )
-    , mTimestamp( DateTime::getNow()      )
+    , mTimestamp( areg::DateTime::getNow()      )
     , mScopePrio( logScope.mScopePrio     )
 {
     if ( isScopeEnabled() )

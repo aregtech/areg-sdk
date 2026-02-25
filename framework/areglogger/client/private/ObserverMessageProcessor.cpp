@@ -105,7 +105,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const areg::RemoteMessage
     ITEM_ID cookie{ msgReceived.getSource() };
     ScopeInfo* scopes{ nullptr };
     uint32_t count{ 0 };
-    DateTime now(DateTime::getNow());
+    areg::DateTime now(areg::DateTime::getNow());
 
     do
     {
@@ -161,7 +161,7 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const areg::RemoteMessage& 
     ITEM_ID cookie{ msgReceived.getSource() };
     ScopeInfo* scopes{ nullptr };
     uint32_t count{ 0 };
-    DateTime now(DateTime::getNow());
+    areg::DateTime now(areg::DateTime::getNow());
 
     do
     {
@@ -212,7 +212,7 @@ void ObserverMessageProcessor::notifyLogMessage(const areg::RemoteMessage& msgRe
     LogRecord msgLog{ };
     const uint8_t* logBuffer{ nullptr };
     uint32_t size{ 0 };
-    DateTime now{ DateTime::getNow() };
+    areg::DateTime now{ areg::DateTime::getNow() };
 
     do
     {
@@ -287,7 +287,7 @@ void ObserverMessageProcessor::_clientsConnected(const areg::RemoteMessage& msgR
     do
     {
         Lock lock(mLoggerClient.mLock);
-        DateTime now(DateTime::getNow());
+        areg::DateTime now(areg::DateTime::getNow());
 
         if (LogObserverBase::_theLogObserver != nullptr)
         {
@@ -393,7 +393,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const areg::RemoteMessage& m
 
         if (size > 0)
         {
-            DateTime now(DateTime::getNow());
+            areg::DateTime now(areg::DateTime::getNow());
             listInstances = new ITEM_ID[size];
 
             for (int i = 0; i < size; ++i)
@@ -440,7 +440,7 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(areg::LogEntry& log, 
 {
     areg::Process& process = areg::Process::getInstance();
     areg::String instance  = process.getName();
-    DateTime now     = DateTime::getNow();
+    areg::DateTime now     = areg::DateTime::getNow();
 
     log.logDataType     = areg::LogDataType::Local;
     log.logMsgType      = areg::LogMessageType::MessageText;

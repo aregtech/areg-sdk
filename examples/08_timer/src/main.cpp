@@ -98,7 +98,7 @@ protected:
                 , timer.getEventCount()
                 , getName().getString());
 
-        printf("%s : Timer [ %s ] expired.\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
+        printf("%s : Timer [ %s ] expired.\n", areg::DateTime::getNow().formatTime().getString(), timer.getName().getString());
     }
 
     //! Override the default implementation to escape assertion

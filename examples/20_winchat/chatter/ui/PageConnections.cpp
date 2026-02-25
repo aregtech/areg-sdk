@@ -101,10 +101,10 @@ void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * 
     {
         LOG_DBG("Sends request to register the connection");
         ASSERT( mConnectionHandler.IsValid( ) && (mConnectionHandler.GetRegistered( ) == false) );
-        const DateTime & dateTime = mConnectionHandler.GetTimeConnect();
+        const areg::DateTime & dateTime = mConnectionHandler.GetTimeConnect();
         mClientConnections->notifyOnBroadcastClientConnected( true );
         mClientConnections->notifyOnBroadcastClientDisconnected( true );
-        mClientConnections->requestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.isValid() ? dateTime : DateTime::getNow() );
+        mClientConnections->requestRegisterConnection( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookieDirect( ), mConnectionHandler.GetConnectCookie(), dateTime.isValid() ? dateTime : areg::DateTime::getNow() );
     }
     else
     {
@@ -254,7 +254,7 @@ inline void PageConnections::addConnection( const ConnectionManager::ConnectionR
         LOG_DBG( "Adding new connection of nickName [ %s ] and cookie [ %u ]", connection.nickName.getString( ), connection.cookie );
         int32_t pos = mCtrlConnections.GetItemCount( );
         CString nickName( connection.nickName.getString() );
-        CString timeConnect( DateTime( connection.connectTime ).formatTime( ).getBuffer( ) );
+        CString timeConnect( areg::DateTime( connection.connectTime ).formatTime( ).getBuffer( ) );
         uint32_t cookie = connection.cookie;
 
         LVITEM lv;
@@ -289,7 +289,7 @@ inline int32_t PageConnections::getSelectedConnections( DirectConnection::sIniti
     if (selected != 0)
     {
         outListParticipants.resize(selected + 1);
-        DateTime now = DateTime::getNow();
+        areg::DateTime now = areg::DateTime::getNow();
 
         outParticipant.nickName  = mConnectionHandler.GetNickName();
         outParticipant.cookie    = mConnectionHandler.GetCookie();

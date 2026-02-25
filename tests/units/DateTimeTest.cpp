@@ -163,7 +163,7 @@ namespace
 TEST( DateTimeTest, TestNow )
 {
     areg::CalendarTime sysTime;
-    DateTime date( DateTime::getNow( ) );
+    areg::DateTime date( areg::DateTime::getNow( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     date.getDateTime( sysTime );
@@ -174,11 +174,11 @@ TEST( DateTimeTest, TestOperators)
 {
     using namespace std::chrono_literals;
 
-    DateTime dateOld( DateTime::getNow( ) );
+    areg::DateTime dateOld( areg::DateTime::getNow( ) );
 
     areg::Thread::sleep( areg::WAIT_100_MILLISECONDS );
 
-    DateTime dateNew( DateTime::getNow( ) );
+    areg::DateTime dateNew( areg::DateTime::getNow( ) );
 
     ASSERT_TRUE( dateOld < dateNew);
     ASSERT_TRUE( dateOld <= dateNew);
@@ -196,7 +196,7 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
 {
 #ifdef WINDOWS
 
-    DateTime date( DateTime::getNow( ) );
+    areg::DateTime date( areg::DateTime::getNow( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     areg::CalendarTime utcTime;
@@ -227,7 +227,7 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
  **/
 TEST( DateTimeTest, TestLocalTime )
 {
-    DateTime date( DateTime::getNow( ) );
+    areg::DateTime date( areg::DateTime::getNow( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     areg::CalendarTime utcTime;
@@ -266,7 +266,7 @@ TEST( DateTimeTest, TestLocalTime )
  **/
 TEST( DateTimeTest, TestFormatISO8601 )
 {
-    DateTime date( DateTime::getNow( ) );
+    areg::DateTime date( areg::DateTime::getNow( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     areg::CalendarTime utcTime;

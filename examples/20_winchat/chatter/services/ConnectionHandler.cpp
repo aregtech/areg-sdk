@@ -106,8 +106,8 @@ void ConnectionHandler::ResetConnectionList()
     
     mCookie         = ConnectionManager::InvalidCookie;
     mConnectCookie  = ConnectionManager::InvalidCookie;
-    mTimeConnect    = DateTime( );
-    mTimeConnected  = DateTime( );
+    mTimeConnect    = areg::DateTime( );
+    mTimeConnected  = areg::DateTime( );
     mIsRegistered   = false;
     mIsConnected    = false;
 }

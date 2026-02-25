@@ -199,10 +199,10 @@ int main()
         constexpr uint32_t eventTimeout{ 1000 };
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);
 
-        DateTime start{ DateTime::getNow() };
+        areg::DateTime start{ areg::DateTime::getNow() };
         SyncEvent localEvent(false, false);
         localEvent.lock(eventTimeout);
-        DateTime end{ DateTime::getNow() };
+        areg::DateTime end{ areg::DateTime::getNow() };
         uint64_t duration = end.getTime() - start.getTime();
         LOG_INFO("The event was locked for [%lld] ns", duration);
         std::cout << "The event was locked for " << duration << " ns" << std::endl;
