@@ -360,7 +360,7 @@ void PropertyKey::resetKey()
 
 inline void PropertyKey::_parseKey(const areg::String& key)
 {
-    std::vector<StringBase<char>> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
+    std::vector<areg::StringBase<char>> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
     resetKey();
 
     if (list.size() != 0)

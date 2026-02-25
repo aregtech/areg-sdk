@@ -154,10 +154,10 @@ namespace
      **/
     inline bool _isEqual(const wchar_t* str, const char* wstr)
     {
-        while ((*str != StringBase<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
+        while ((*str != areg::StringBase<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
 
-        return (*str == StringBase<wchar_t>::EmptyChar);
+        return (*str == areg::StringBase<wchar_t>::EmptyChar);
     }
 
 } // namespace
@@ -176,13 +176,13 @@ namespace areg
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     WideString::WideString(const areg::String & source)
-        : StringBase<wchar_t>( )
+        : areg::StringBase<wchar_t>( )
     {
         assign(source.getString(), source.getLength());
     }
 
     WideString::WideString( const InStream & stream )
-        : StringBase<wchar_t>( )
+        : areg::StringBase<wchar_t>( )
     {
         readStream(stream);
     }

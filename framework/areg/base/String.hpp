@@ -51,11 +51,11 @@ namespace areg { class WideString; }
 namespace areg
 {
 
-    class AREG_API String : public StringBase<char>
+    class AREG_API String : public areg::StringBase<char>
     {
         friend class BufferStreamBase;
 
-        using Base = StringBase<char>;
+        using Base = areg::StringBase<char>;
 
     //////////////////////////////////////////////////////////////////////////
     // defined constants
@@ -693,55 +693,55 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     inline String::String(const char* source)
-        : StringBase<char>(source)
+        : areg::StringBase<char>(source)
     {
     }
 
     inline String::String(const std::string& source)
-        : StringBase<char>(source)
+        : areg::StringBase<char>(source)
     {
     }
 
     inline String::String(const std::string_view& source)
-        : StringBase<char>(source)
+        : areg::StringBase<char>(source)
     {
     }
 
     inline String::String(std::string&& source) noexcept
-        : StringBase<char>(std::move(source))
+        : areg::StringBase<char>(std::move(source))
     {
     }
 
     inline String::String(const std::wstring& source)
-        : StringBase<char>()
+        : areg::StringBase<char>()
     {
         assign(source.c_str(), static_cast<areg::CharCount>(source.length()));
     }
 
     inline String::String(const wchar_t* source)
-        : StringBase<char>()
+        : areg::StringBase<char>()
     {
         assign(source, areg::COUNT_ALL);
     }
 
     inline String::String(const char* source, uint32_t charCount)
-        : StringBase<char>(source, static_cast<areg::CharCount>(charCount))
+        : areg::StringBase<char>(source, static_cast<areg::CharCount>(charCount))
     {
     }
 
     inline String::String(const wchar_t* source, uint32_t charCount)
-        : StringBase<char>()
+        : areg::StringBase<char>()
     {
         assign(source, static_cast<areg::CharCount>(charCount));
     }
 
     inline String::String( char ch )
-        : StringBase<char>( ch )
+        : areg::StringBase<char>( ch )
     {
     }
 
     inline String::String(uint32_t count)
-        : StringBase<char>( static_cast<uint32_t>(count) )
+        : areg::StringBase<char>( static_cast<uint32_t>(count) )
     {
     }
 

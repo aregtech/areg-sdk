@@ -50,11 +50,11 @@ namespace areg { class String; }
 
 namespace areg
 {
-    class AREG_API WideString : public StringBase<wchar_t>
+    class AREG_API WideString : public areg::StringBase<wchar_t>
     {
         friend class BufferStreamBase;
 
-        using Base = StringBase<wchar_t>;
+        using Base = areg::StringBase<wchar_t>;
 
     //////////////////////////////////////////////////////////////////////////
     // defined constants
@@ -692,55 +692,55 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     inline WideString::WideString(const wchar_t* source)
-        : StringBase<wchar_t>(source)
+        : areg::StringBase<wchar_t>(source)
     {
     }
 
     inline WideString::WideString(const std::wstring& source)
-        : StringBase<wchar_t>(source)
+        : areg::StringBase<wchar_t>(source)
     {
     }
 
     inline WideString::WideString(const std::wstring_view& source)
-        : StringBase<wchar_t>(source)
+        : areg::StringBase<wchar_t>(source)
     {
     }
 
     inline WideString::WideString(std::wstring&& source) noexcept
-        : StringBase<wchar_t>( std::move( source ) )
+        : areg::StringBase<wchar_t>( std::move( source ) )
     {
     }
 
     inline WideString::WideString(const std::string& source)
-        : StringBase<wchar_t>()
+        : areg::StringBase<wchar_t>()
     {
         assign(source.c_str(), static_cast<areg::CharCount>(source.length()));
     }
 
     inline WideString::WideString(const char* source)
-        : StringBase<wchar_t>()
+        : areg::StringBase<wchar_t>()
     {
         assign(source, areg::COUNT_ALL);
     }
 
     inline WideString::WideString(const wchar_t* source, uint32_t charCount)
-        : StringBase<wchar_t>(source, static_cast<areg::CharCount>(charCount))
+        : areg::StringBase<wchar_t>(source, static_cast<areg::CharCount>(charCount))
     {
     }
 
     inline WideString::WideString(const char* source, uint32_t charCount)
-        : StringBase<wchar_t>()
+        : areg::StringBase<wchar_t>()
     {
         assign(source, static_cast<areg::CharCount>(charCount));
     }
 
     inline WideString::WideString( wchar_t ch )
-        : StringBase<wchar_t>( ch )
+        : areg::StringBase<wchar_t>( ch )
     {
     }
 
     inline WideString::WideString(uint32_t count)
-        : StringBase<wchar_t>( static_cast<uint32_t>(count) )
+        : areg::StringBase<wchar_t>( static_cast<uint32_t>(count) )
     {
     }
 

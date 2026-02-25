@@ -185,7 +185,7 @@ uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) 
     uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
     if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
     {
-        std::vector<StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<areg::StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             areg::String value{ entry.trimAll() };
@@ -240,7 +240,7 @@ ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identif
     ArrayList<Identifier> result;
     if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
     {
-        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<areg::StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             areg::String value{ entry.trimAll() };
@@ -299,7 +299,7 @@ ArrayList<areg::String> PropertyValue::getValueList(bool makeUnique /*= false*/)
     ArrayList<areg::String> result;
     if (mValue.isEmpty() == false)
     {
-        std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
+        std::vector<areg::StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             areg::String value{ entry.trimAll() };

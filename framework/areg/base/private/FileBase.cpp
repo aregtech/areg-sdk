@@ -203,7 +203,7 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
             uint32_t len = static_cast<uint32_t>(areg::getStringLineLength<CharType>(buffer));
             len *= sizeof(CharType);
             if ( file.write(reinterpret_cast<const uint8_t *>(buffer), len) == len )
-                result = file.writeChar( StringBase<CharType>::NewLine );
+                result = file.writeChar( areg::StringBase<CharType>::NewLine );
         }
     }
 
