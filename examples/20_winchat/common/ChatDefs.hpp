@@ -180,7 +180,7 @@ namespace chat
 	 * \brief	chat::MapConnections
      *			Internal custom type definition of HashMap<uint32_t, ConnectionRecord>
      **/
-    using MapConnections    = HashMap<uint32_t, ConnectionRecord >;
+    using MapConnections    = areg::HashMap<uint32_t, ConnectionRecord >;
 
 	/************************************************************************
 	 * \brief   chat::Participant
@@ -272,7 +272,7 @@ namespace chat
 	 * \brief	chat::MapDirectConnections
 	 *			Internal custom type definition of HashMap<String, PairConnection>
 	 **/
-	using MapParticipants   = HashMap<sInitiator, ListParticipants>;
+	using MapParticipants   = areg::HashMap<sInitiator, ListParticipants>;
 
 }
 

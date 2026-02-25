@@ -53,7 +53,7 @@ namespace areg
      * \brief   The list of the scopes. It is a pair, where the key is the ID of the scope
      *          and the value is the pointer to the scope.
      **/
-    using ScopeList     = HashMap<uint32_t, LogScope*>;
+    using ScopeList     = areg::HashMap<uint32_t, LogScope*>;
 
     /**
      * \brief   Alias of the map position.

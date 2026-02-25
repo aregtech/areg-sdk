@@ -431,7 +431,7 @@ private:
     /**
      * \brief   Returns read-only list of registered scopes.
      **/
-    inline const HashMap<uint32_t, LogScope *> & getScopeList() const;
+    inline const areg::HashMap<uint32_t, LogScope *> & getScopeList() const;
 
     /**
      * \brief   Returns instance of log manager.
@@ -524,7 +524,7 @@ inline const ITEM_ID & LogManager::getConnectionCookie()
     return LogManager::getInstance().mLoggerTcp.getConnectionCookie();
 }
 
-inline const HashMap<uint32_t, LogScope *> & LogManager::getScopeList() const
+inline const areg::HashMap<uint32_t, LogScope *> & LogManager::getScopeList() const
 {
     return mScopeController.getScopeList( );
 }

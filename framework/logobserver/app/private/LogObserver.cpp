@@ -62,7 +62,7 @@ namespace
 
     using ListInstances = ArrayList<LogInstance>;
     using ListScopes    = ArrayList<ScopeInfo>;
-    using MapScopes     = HashMap<ITEM_ID, ListScopes>;
+    using MapScopes     = areg::HashMap<ITEM_ID, ListScopes>;
 
     LoggerConnect   _logConnect;
     ListInstances   _listInstances;

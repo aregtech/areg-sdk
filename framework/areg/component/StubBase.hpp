@@ -189,7 +189,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
     //////////////////////////////////////////////////////////////////////////
-    using MapStub           = HashMap<StubAddress, StubBase *>;
+    using MapStub           = areg::HashMap<StubAddress, StubBase *>;
     /**
      * \brief   Stub resource helper definition.
      **/

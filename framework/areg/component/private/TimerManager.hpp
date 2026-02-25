@@ -65,7 +65,7 @@ private:
      **/
     static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
 
-    using MapTimerResource  = HashMap<TIMERHANDLE, Timer *>;
+    using MapTimerResource  = areg::HashMap<TIMERHANDLE, Timer *>;
     using TimerResource     = areg::ConcurrentResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
 
 //////////////////////////////////////////////////////////////////////////

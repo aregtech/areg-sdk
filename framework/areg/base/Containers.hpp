@@ -69,7 +69,7 @@
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class IntegerHashMap  : public HashMap<uint32_t, VALUE>
+class IntegerHashMap  : public areg::HashMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -117,7 +117,7 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class IdHashMap: public HashMap<id_type, VALUE>
+class IdHashMap: public areg::HashMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -162,7 +162,7 @@ public:
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
-class StringHashMap: public HashMap<areg::String, VALUE>
+class StringHashMap: public areg::HashMap<areg::String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -208,7 +208,7 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
-class PtrHashMap: public HashMap<void *, VALUE>
+class PtrHashMap: public areg::HashMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -601,7 +601,7 @@ private:
 
 template <typename VALUE>
 IntegerHashMap<VALUE>::IntegerHashMap(uint32_t hashSize)
-    : HashMap<uint32_t, VALUE> (hashSize)
+    : areg::HashMap<uint32_t, VALUE> (hashSize)
 {
 }
 
@@ -611,7 +611,7 @@ IntegerHashMap<VALUE>::IntegerHashMap(uint32_t hashSize)
 
 template <typename VALUE>
 IdHashMap<VALUE>::IdHashMap(uint32_t hashSize)
-    : HashMap<id_type, VALUE> (hashSize)
+    : areg::HashMap<id_type, VALUE> (hashSize)
 {
 }
 
@@ -621,7 +621,7 @@ IdHashMap<VALUE>::IdHashMap(uint32_t hashSize)
 
 template <typename VALUE>
 StringHashMap<VALUE>::StringHashMap( uint32_t hashSize )
-    : HashMap<areg::String, VALUE>   (hashSize)
+    : areg::HashMap<areg::String, VALUE>   (hashSize)
 {
 }
 
@@ -631,7 +631,7 @@ StringHashMap<VALUE>::StringHashMap( uint32_t hashSize )
 
 template <typename VALUE>
 PtrHashMap<VALUE>::PtrHashMap( uint32_t hashSize )
-    : HashMap<void *, VALUE>(hashSize)
+    : areg::HashMap<void *, VALUE>(hashSize)
 {
 }
 

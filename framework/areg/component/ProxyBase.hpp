@@ -226,7 +226,7 @@ private:
     /**
      * \brief   Proxy hash map
      **/
-    using MapProxy          = HashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using MapProxy          = areg::HashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
     /**
      * \brief   Proxy resource map helper.
      **/

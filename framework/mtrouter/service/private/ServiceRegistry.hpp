@@ -27,7 +27,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry class declaration
 //////////////////////////////////////////////////////////////////////////
-using ServiceRegistryBase = HashMap<ServiceStub, ListServiceProxies>;
+using ServiceRegistryBase = areg::HashMap<ServiceStub, ListServiceProxies>;
 
 /**
  * \brief   The remote services registration map, which is a map of stub and list of connected proxies.

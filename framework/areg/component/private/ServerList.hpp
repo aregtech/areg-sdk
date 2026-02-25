@@ -36,7 +36,7 @@ class ProxyAddress;
 /**
  * \brief   Server List helper class.
  **/
-using ServerListBase    = HashMap<ServerInfo, ClientList>;
+using ServerListBase    = areg::HashMap<ServerInfo, ClientList>;
 
 /**
  * \brief   Server List is a Hash Map class containing information

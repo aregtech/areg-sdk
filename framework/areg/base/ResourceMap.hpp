@@ -75,7 +75,7 @@ namespace areg
      **/
     template < typename RESOURCE_KEY
             , typename RESOURCE_OBJECT
-            , class MapContainer   = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
+            , class MapContainer   = areg::HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
             , class Deleter        = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
     class ResourceMapBase   : protected MapContainer
                             , protected Deleter

@@ -54,7 +54,7 @@ namespace areg
      * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
      **/
     template <typename RUNTIME_DELEGATE>
-    class RuntimeHashMap : public HashMap<areg::RuntimeClassID, RUNTIME_DELEGATE>
+    class RuntimeHashMap : public areg::HashMap<areg::RuntimeClassID, RUNTIME_DELEGATE>
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
