@@ -97,11 +97,11 @@ private:
     // TrafficLightService::TrafficLightTimerConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
     //!< Traffic Light timer consumer object
-    class TrafficLightTimerConsumer : public    TimerConsumer
+    class TrafficLightTimerConsumer : public    areg::TimerConsumer
     {
     public:
         TrafficLightTimerConsumer( TrafficLightService & service )
-            : TimerConsumer   ( )
+            : areg::TimerConsumer   ( )
             , mService          ( service )
             {
             }

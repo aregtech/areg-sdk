@@ -108,7 +108,7 @@ private:
     /**
      * \brief   TrafficLight state-machine timer consumer to dispatch the timer events. 
      **/
-    class TrafficLightTimerConsumer : public TimerConsumer
+    class TrafficLightTimerConsumer : public areg::TimerConsumer
     {
     public:
         /**

@@ -26,13 +26,13 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
 ServiceClient::ServiceClient( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component             ( entry, owner )
     , HelloUnblockClientBase( entry.mDependencyServices[0], static_cast<Component &>(self()) )
-    , TimerConsumer       ( )
+    , areg::TimerConsumer       ( )
 
     , mClientId             ( HelloUnblock::InvalidId )
     , mSequenceId           ( 0 )
     , mRespReceived         ( 0 )
     , mSequenceList         ( )
-    , mTimer                ( static_cast<TimerConsumer &>(self()), getRoleName() )
+    , mTimer                ( static_cast<areg::TimerConsumer &>(self()), getRoleName() )
 #ifdef DEBUG
     , mReqCount             ( 0 )
 #endif // DEBUG

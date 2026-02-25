@@ -40,7 +40,7 @@ DEF_LOG_SCOPE(timer_main_main);
 //!         they all are processed in the context of binding thread.
 //!         The timer should have unique names.
 class TimerDispatcher   : public DispatcherThread
-                        , private TimerConsumer
+                        , private areg::TimerConsumer
 {
     static constexpr uint32_t TIMEOUT_ONE_TIME{ areg::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
     static constexpr uint32_t TIMEOUT_PERIODIC_TIME{ areg::TIMEOUT_1_MS * 80 }; //!< The timeout in milliseconds of periodic timer
@@ -49,7 +49,7 @@ class TimerDispatcher   : public DispatcherThread
 public:
     explicit TimerDispatcher(const areg::String & name)
         : DispatcherThread( name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
-        , TimerConsumer()
+        , areg::TimerConsumer()
         , mOneTime(*this, name + "_one_time")
         , mPeriodic(*this, name + "_periodic")
         , mContinuous(*this, name + "_continuous")

@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 class PublicHelloWorldClient    : private   PublicHelloWorldClientBase
                                 , private   SystemShutdownClientBase
-                                , private   TimerConsumer
+                                , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

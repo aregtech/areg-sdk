@@ -123,7 +123,7 @@ private:
 // ReconnectTimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class AREG_API ReconnectTimerConsumer final : public TimerConsumer
+class AREG_API ReconnectTimerConsumer final : public areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // ReconnectTimerConsumer class declaration

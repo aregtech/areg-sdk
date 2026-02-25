@@ -30,7 +30,7 @@
  **/
 class ServiceComponent  : public  Component
                         , private HelloUnblockStub
-                        , private TimerConsumer
+                        , private areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal structure

@@ -79,11 +79,11 @@ const OptionParser::OptionSetup Publisher::ValidOptions[]
 Publisher::Publisher( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , PubSubStub        ( static_cast<Component &>(self()) )
-    , TimerConsumer   ( )
+    , areg::TimerConsumer   ( )
     , areg::ThreadConsumer  ( )
 
-    , mTimerOnChange    (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
-    , mTimerAlways      (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
+    , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
+    , mTimerAlways      (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
     , mClientCount      (0)
 
     , mSeqString        (0)

@@ -40,7 +40,7 @@ class DataRateHelper;
  **/
 class SystemServiceConsole  : public    Component
                             , protected StubBase
-                            , protected TimerConsumer
+                            , protected areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

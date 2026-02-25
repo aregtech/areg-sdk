@@ -22,7 +22,7 @@
 
 //! \brief   A Local service client.
 class LocalHelloWorldClient : private   LocalHelloWorldClientBase
-                            , private   TimerConsumer
+                            , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

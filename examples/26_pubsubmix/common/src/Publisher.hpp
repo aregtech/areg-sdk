@@ -37,7 +37,7 @@
  *                           the value is set even if the value is not updated.
  **/
 class Publisher : protected PubSubMixStub
-                , private   TimerConsumer
+                , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

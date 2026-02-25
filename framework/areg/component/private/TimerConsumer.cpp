@@ -16,21 +16,24 @@
 #include "areg/component/TimerConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// TimerConsumer class declaration
-//////////////////////////////////////////////////////////////////////////
-
-void TimerConsumer::processEvent( const TimerEventData & /* data */ )
+namespace areg
 {
-    ASSERT(false);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // TimerConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
 
-void TimerConsumer::startEventProcessing( Event& eventElem )
-{
-    TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
-    Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
-    if (timer != nullptr )
+    void TimerConsumer::processEvent( const TimerEventData & /* data */ )
     {
-        processTimer(*timer);
+        ASSERT(false);
     }
-}
+
+    void TimerConsumer::startEventProcessing( Event& eventElem )
+    {
+        TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
+        Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
+        if (timer != nullptr )
+        {
+            processTimer(*timer);
+        }
+    }
+} // namespace areg

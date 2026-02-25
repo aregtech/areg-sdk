@@ -33,7 +33,7 @@
  **/
 class ServiceClient : public    Component
                     , protected LargeDataClientBase
-                    , protected TimerConsumer
+                    , protected areg::TimerConsumer
 {
 private:
 

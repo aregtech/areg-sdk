@@ -61,7 +61,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
     , mLock                 ( )
 
-    , mTimerConnect         ( static_cast<TimerConsumer &>(mTimerConsumer), prefixName + areg::CLIENT_CONNECT_TIMER_NAME )
+    , mTimerConnect         ( static_cast<areg::TimerConsumer &>(mTimerConsumer), prefixName + areg::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive        (messageHandler, mClientConnection, prefixName)
     , mThreadSend           (messageHandler, mClientConnection, prefixName)
     , mTimerConsumer        ( static_cast<ServiceEventConsumer &>(self()) )

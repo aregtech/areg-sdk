@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class TimerConsumer;
+namespace areg { class TimerConsumer; }
 class DispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ public:
      *                          fired once or less than maxQueued timer, this parameter will be ignored
      *                          and play no role.
      **/
-    explicit Timer( TimerConsumer & timerConsumer
+    explicit Timer( areg::TimerConsumer & timerConsumer
                   , const areg::String & timerName = areg::String::getEmptyString()
                   , uint32_t timeoutMs       = areg::INVALID_TIMEOUT
                   , int32_t maxQueued            = Timer::IGNORE_TIMER_QUEUE );
@@ -159,7 +159,7 @@ public:
     /**
      * \brief   Returns Timer Consumer object.
      **/
-    inline TimerConsumer & getConsumer() const;
+    inline areg::TimerConsumer & getConsumer() const;
 
     /**
      * \brief   Returns true if timer is stopped. The timer is stopped if timeout value is zero.
@@ -204,7 +204,7 @@ protected:
     /**
      * \brief   Timer consumer object
      **/
-    TimerConsumer &   mConsumer;
+    areg::TimerConsumer &   mConsumer;
 private:
     /**
      * \brief   Number of timer events, currently queued dispatcher.
@@ -289,7 +289,7 @@ inline Timer & Timer::self()
     return (*this);
 }
 
-inline TimerConsumer& Timer::getConsumer() const
+inline areg::TimerConsumer& Timer::getConsumer() const
 {
     return mConsumer;
 }

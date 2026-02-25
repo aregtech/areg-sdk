@@ -30,11 +30,11 @@ LogCollectorServerService::LogCollectorServerService()
                                 , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                 , areg::SERVER_DISPATCH_MESSAGE_THREAD
                                 , ServiceCommunicationBase::ConnectionPolicy::Accept )
-    , TimerConsumer           ( )
+    , areg::TimerConsumer           ( )
 
     , mLoggerProcessor          ( self() )
     , mObservers                ( )
-    , mSaveTimer                ( static_cast<TimerConsumer &>(self()), "ConfigSaveTimer", LogCollectorServerService::TIMEOUT_SAVE_CONFIG)
+    , mSaveTimer                ( static_cast<areg::TimerConsumer &>(self()), "ConfigSaveTimer", LogCollectorServerService::TIMEOUT_SAVE_CONFIG)
 {
 }
 

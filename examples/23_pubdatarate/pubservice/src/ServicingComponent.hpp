@@ -96,11 +96,11 @@ class ServicingComponent    : public    Component
 // ServicingComponent::ServicingTimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
     //!< The timer consumer object
-    class ServicingTimerConsumer : public    TimerConsumer
+    class ServicingTimerConsumer : public    areg::TimerConsumer
     {
     public:
         ServicingTimerConsumer( ServicingComponent & service )
-            : TimerConsumer ( )
+            : areg::TimerConsumer ( )
             , mService      ( service )
             {
             }

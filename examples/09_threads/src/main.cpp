@@ -73,12 +73,12 @@ DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
 
 class HelloDispatcher   : public DispatcherThread
-                        , private TimerConsumer
+                        , private areg::TimerConsumer
 {
 public:
     HelloDispatcher() 
         : DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
-        , TimerConsumer()
+        , areg::TimerConsumer()
         , mTimer(*this, "aTimer")
     {
         LOG_SCOPE(threads_main_HelloDispatcher_Ctor);

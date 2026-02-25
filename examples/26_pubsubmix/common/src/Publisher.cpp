@@ -44,10 +44,10 @@ namespace
 
 Publisher::Publisher( Component & owner )
     : PubSubMixStub     ( owner )
-    , TimerConsumer   ( )
+    , areg::TimerConsumer   ( )
 
-    , mTimerOnChange    (static_cast<TimerConsumer &>(self()), owner.getRoleName() + "_OnUpdateTimer")
-    , mTimerAlways      (static_cast<TimerConsumer &>(self()), owner.getRoleName() + "_AlwaysTimer")
+    , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), owner.getRoleName() + "_OnUpdateTimer")
+    , mTimerAlways      (static_cast<areg::TimerConsumer &>(self()), owner.getRoleName() + "_AlwaysTimer")
     , mClientCount      (0)
 
     , mSeqString        (0)

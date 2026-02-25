@@ -30,7 +30,7 @@
  **/
 class ServiceClient : public    Component
                     , private   HelloUnblockClientBase
-                    , private   TimerConsumer
+                    , private   areg::TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
     using SequenceList = areg::Stack<uint32_t>;

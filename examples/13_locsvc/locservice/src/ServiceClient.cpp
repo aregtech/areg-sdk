@@ -20,9 +20,9 @@ DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_processTimer);
 ServiceClient::ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component             ( entry, owner )
     , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , TimerConsumer       ( )
+    , areg::TimerConsumer       ( )
 
-    , mTimer                (static_cast<TimerConsumer &>(self()), entry.mRoleName)
+    , mTimer                (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName)
 {
 }
 

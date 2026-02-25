@@ -34,7 +34,7 @@
  *          accept service connections.
  **/
 class LogCollectorServerService : public    ServiceCommunicationBase
-                                , private   TimerConsumer
+                                , private   areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes to access internals

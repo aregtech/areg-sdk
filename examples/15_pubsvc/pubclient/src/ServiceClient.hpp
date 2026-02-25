@@ -23,7 +23,7 @@
 //!         The requests are triggered on each timer timeout.
 class ServiceClient : public    Component
                     , protected HelloWorldClientBase
-                    , private   TimerConsumer
+                    , private   areg::TimerConsumer
 {
 private:
     static constexpr uint32_t   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request

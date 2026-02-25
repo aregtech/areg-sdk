@@ -60,7 +60,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mService          ( service )
     , mConnectTypes     ( connectTypes )
     , mServerConnection ( serviceId )
-    , mTimerConnect     ( static_cast<TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
+    , mTimerConnect     ( static_cast<areg::TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
     , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
     , mDataRateHelper   ( mThreadSend, mThreadReceive, aregext::DEFAULT_VERBOSE )

@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 ReconnectTimerConsumer::ReconnectTimerConsumer(ServiceEventConsumer& eventConsumer )
-    : TimerConsumer       ( )
+    : areg::TimerConsumer       ( )
     , mServiceEventConsumer ( eventConsumer )
 {
 }

@@ -29,7 +29,7 @@
 SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , StubBase          ( self( ), areg::getEmptyInterface( ) )
-    , TimerConsumer   ( )
+    , areg::TimerConsumer   ( )
 
     , mDataRateHelper   ( dataRate )
     , mTimer            ( self( ), "ConsoleServiceTimer" )

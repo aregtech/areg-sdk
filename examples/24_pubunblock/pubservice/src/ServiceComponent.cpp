@@ -26,10 +26,10 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , HelloUnblockStub  ( static_cast<Component &>(self()) )
-    , TimerConsumer   ( )
+    , areg::TimerConsumer   ( )
 
     , mSessionList      ( )
-    , mTimer            ( static_cast<TimerConsumer &>(self()), entry.mRoleName )
+    , mTimer            ( static_cast<areg::TimerConsumer &>(self()), entry.mRoleName )
 {
     setHelloServiceState( HelloUnblock::RunState::ServiceUndefined );
 }

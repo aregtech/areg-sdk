@@ -40,7 +40,7 @@
  **/
 class Publisher : public    Component
                 , protected PubSubStub
-                , private   TimerConsumer
+                , private   areg::TimerConsumer
                 , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////

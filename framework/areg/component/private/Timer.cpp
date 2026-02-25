@@ -33,7 +33,7 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Timer::Timer( TimerConsumer& timerConsumer
+Timer::Timer( areg::TimerConsumer& timerConsumer
             , const areg::String & timerName  /*= areg::String::getEmptyString()*/
             , uint32_t timeoutMs        /*= areg::INVALID_TIMEOUT*/
             , int32_t maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)

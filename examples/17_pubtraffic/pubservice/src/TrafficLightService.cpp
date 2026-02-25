@@ -48,7 +48,7 @@ TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, Com
     : Component                 ( entry, owner )
     , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )
 
-    , mTimer                    ( static_cast<TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
+    , mTimer                    ( static_cast<areg::TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
     , mPrevState                ( SimpleTrafficLight::TrafficLight::LightOff )
     , mEventConsumer            ( self() )
     , mTimerConsumer            ( self() )

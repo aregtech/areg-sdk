@@ -57,7 +57,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, Compo
 
     , mBitmap           ( )
     , mBlockList        ( )
-    , mTimer            ( static_cast<TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
+    , mTimer            ( static_cast<areg::TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
     , mInputThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_WAITINPUT )
     , mImageThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_GENERATE )
     , mOptions          ( )
