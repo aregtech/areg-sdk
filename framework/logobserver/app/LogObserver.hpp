@@ -289,7 +289,7 @@ private:
      * \param   cmd     The command typed on the console.
      * \return  Returns true if command is recognized. Otherwise, returns false.
      **/
-    static bool _checkCommand(const String& cmd);
+    static bool _checkCommand(const areg::String& cmd);
 
     /**
      * \brief   Output on console the title.
@@ -299,7 +299,7 @@ private:
     /**
      * \brief   Prints info on console.
      **/
-    static void _outputInfo( const String & info );
+    static void _outputInfo( const areg::String & info );
 
     /**
      * \brief   Call to clean all message outputs like help, prompt, etc.
@@ -364,14 +364,14 @@ private:
      * \param   scope   The scope to normalize.
      * \return  Returns normalized scope priority string to parse and generate property object with key and value.
      **/
-    static String _normalizeScopeProperty(const String & scope);
+    static areg::String _normalizeScopeProperty(const areg::String & scope);
 
     /**
      * \brief   Creates a scope update message to send to the target client.
      * \param   scope   The scope priority string to parse and create message.
      * \return  Returns message to send to the remote target client.
      **/
-    static bool _sendScopeUpdateMessage(const String& scope);
+    static bool _sendScopeUpdateMessage(const areg::String& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

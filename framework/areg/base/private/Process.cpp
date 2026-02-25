@@ -53,10 +53,10 @@ void Process::_initPaths( const char * fullPath )
 
     if (procPath.empty() == false)
     {
-        mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
-        mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
-        mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
-        mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
+        mProcessPath = procPath.parent_path().empty() ? areg::String::getEmptyString() : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? areg::String::getEmptyString() : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? areg::String::getEmptyString() : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? areg::String::getEmptyString() : procPath.extension().string();
     }
 }
 
@@ -76,7 +76,7 @@ uint32_t Process::getBitness() const
     }
 }
 
-String Process::getSafeEnvVariable( const char * var ) const
+areg::String Process::getSafeEnvVariable( const char * var ) const
 {
     return _osGetEnvVariable( var );
 }

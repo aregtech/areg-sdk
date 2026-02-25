@@ -183,7 +183,7 @@ namespace areg
      * \brief   End of String value
      *          areg::EndofString
      **/
-    constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of String, signed char
+    constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of areg::String, signed char
 
     /**
      * \brief   End of String value

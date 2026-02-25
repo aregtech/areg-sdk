@@ -241,7 +241,7 @@ public:
      * \param   scopeId     The ID of the scope, ignored in case of scope group.
      * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
      **/
-    static void updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio);
+    static void updateScopes(const areg::String & scopeName, uint32_t scopeId, uint32_t newPrio);
 
     /**
      * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
@@ -426,7 +426,7 @@ private:
      * \param   scopeId     The ID of the scope. If it is a scope group, the value is ignored.
      * \param   scopePrio   The new priority to set to the scope or scope group.
      **/
-    void changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio );
+    void changeScopePriority( const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio );
 
     /**
      * \brief   Returns read-only list of registered scopes.

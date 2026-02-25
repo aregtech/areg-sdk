@@ -414,7 +414,7 @@ private:
     /**
      * \brief   The name of State Machine.
      **/
-    const String                mFsmName;
+    const areg::String                mFsmName;
     /**
      * \brief   The master thread where event and timers should be processed. If nullptr, the current dispatcher value will be used.
      **/

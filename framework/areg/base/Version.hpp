@@ -69,7 +69,7 @@ public:
      *          Major, Minor and Patch versions are taken from readable string.
      **/
     Version( const char * version );
-    Version( const String & version );
+    Version( const areg::String & version );
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
@@ -109,7 +109,7 @@ public:
      * \brief   Assigning operator. Sets version from string
      **/
     Version & operator = ( const char * version );
-    Version & operator = ( const String & version );
+    Version & operator = ( const areg::String & version );
 
     /**
      * \brief   Determines equality of two versions.
@@ -211,7 +211,7 @@ public:
      * \brief   Converts version object to string in format
      *          "major.minor.patch", and returns string.
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief   Retrieves version information from given string
@@ -219,7 +219,7 @@ public:
      *          format: "major.minor.patch"
      **/
     Version & convFromString( const char * version );
-    Version & convFromString( const String & version );
+    Version & convFromString( const areg::String & version );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -273,7 +273,7 @@ inline Version & Version::operator = ( const char * version )
     return convFromString(version);
 }
 
-inline Version & Version::operator = ( const String & version )
+inline Version & Version::operator = ( const areg::String & version )
 {
     return convFromString(version);
 }

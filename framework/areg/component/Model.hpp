@@ -150,7 +150,7 @@ namespace areg
          * \param   minor           The minor version number of implemented interface
          * \param   patch           The patch version number of implemented interface
          **/
-        ServiceEntry( const String & serviceName, uint32_t major, uint32_t minor, uint32_t patch );
+        ServiceEntry( const areg::String & serviceName, uint32_t major, uint32_t minor, uint32_t patch );
 
         /**
          * \brief   Initialize service interface entry by given name and version object.
@@ -161,7 +161,7 @@ namespace areg
          * \param   version     The version object of implemented service interface,
          *                      containing major, minor and patch version numbers
          **/
-        ServiceEntry( const String & serviceName, const Version & version );
+        ServiceEntry( const areg::String & serviceName, const Version & version );
 
         /**
          * \brief   Copies data from given source.
@@ -221,7 +221,7 @@ namespace areg
         /**
          * \brief   The name of implemented Service Interface
          **/
-        String     mName;
+        areg::String     mName;
 
         /**
          * \brief   The Version of implemented Service.
@@ -318,7 +318,7 @@ namespace areg
          * \return  Returns valid Service Entry if found. Otherwise returns
          *          invalid service entry.
          **/
-        const areg::ServiceEntry & getService( const String & serviceName ) const;
+        const areg::ServiceEntry & getService( const areg::String & serviceName ) const;
 
         /**
          * \brief   Searches Service Entry by given Service Name and returns
@@ -327,7 +327,7 @@ namespace areg
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int32_t findService( const String & serviceName ) const;
+        int32_t findService( const areg::String & serviceName ) const;
 
         /**
          * \brief   Searches specified Service Entry and returns
@@ -387,10 +387,10 @@ namespace areg
          * \param   maxQueue            The maximum size of message queue for the thread.
          *                              Pass areg::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
          **/
-        WorkerThreadEntry( const String & masterThreadName
-                         , const String & workerThreadName
-                         , const String & compRoleName
-                         , const String & compConsumerName
+        WorkerThreadEntry( const areg::String & masterThreadName
+                         , const areg::String & workerThreadName
+                         , const areg::String & compRoleName
+                         , const areg::String & compConsumerName
                          , const uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
                          , const uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
                          , const uint32_t maxQueue        = areg::IGNORE_VALUE );
@@ -441,11 +441,11 @@ namespace areg
         /**
          * \brief   The name of Worker Thread
          **/
-        String      mThreadName;
+        areg::String      mThreadName;
         /**
          * \brief   The name of Worker Thread Consumer.
          **/
-        String      mConsumerName;
+        areg::String      mConsumerName;
         /**
          * \brief   The watchdog timeout in milliseconds.
          **/
@@ -546,7 +546,7 @@ namespace areg
          * \return  Returns valid Worker Thread Entry if found. Otherwise returns
          *          invalid worker thread entry.
          **/
-        const areg::WorkerThreadEntry & getWorkerThread( const String & threadName ) const;
+        const areg::WorkerThreadEntry & getWorkerThread( const areg::String & threadName ) const;
 
         /**
          * \brief   Searches Worker Thread Entry by given thread name and returns
@@ -555,7 +555,7 @@ namespace areg
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int32_t findThread( const String & threadName ) const;
+        int32_t findThread( const areg::String & threadName ) const;
 
         /**
          * \brief   Searches specified Worker Thread Entry and returns
@@ -609,7 +609,7 @@ namespace areg
          * \brief   Sets the role name of dependent Component
          * \param   roleName    The Role Name of dependent Component to set.
          **/
-        explicit DependencyEntry( const String & roleName );
+        explicit DependencyEntry( const areg::String & roleName );
 
         /**
          * \brief   Copies / moves data from given source.
@@ -654,12 +654,12 @@ namespace areg
          * \brief   Sets the role name of dependent service.
          * \param   roleName    The role name of dependent service. If empty, invalidates dependency.
          **/
-        void setDependentService( const String & roleName );
+        void setDependentService( const areg::String & roleName );
 
         /**
          * \brief   Returns the role name of dependent service.
          **/
-        const String & getDepdendentService() const;
+        const areg::String & getDepdendentService() const;
 
     //////////////////////////////////////////////////////////////////////////
     // areg::DependencyEntry class, Member variables
@@ -668,7 +668,7 @@ namespace areg
         /**
          * \brief   The Role Name of dependent Component
          **/
-        String     mRoleName;
+        areg::String     mRoleName;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -757,7 +757,7 @@ namespace areg
          * \return  Returns valid Dependency Entry if found. Otherwise returns
          *          empty entry.
          **/
-        const areg::DependencyEntry & getDependency( const String & roleName ) const;
+        const areg::DependencyEntry & getDependency( const areg::String & roleName ) const;
 
         /**
          * \brief   Searches Dependency Entry by given role name and returns
@@ -766,7 +766,7 @@ namespace areg
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int32_t findDependency( const String & roleName ) const;
+        int32_t findDependency( const areg::String & roleName ) const;
 
         /**
          * \brief   Searches specified Dependency Entry and returns
@@ -830,7 +830,7 @@ namespace areg
          * \param   funcCreate          Pointer of component create function
          * \param   funcDelete          Pointer of component delete function
          **/
-        ComponentEntry( const String & masterThreadName, const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+        ComponentEntry( const areg::String & masterThreadName, const areg::String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
 
         /**
          * \brief   Initialize Component Entry by given Role Name, component thread, component create and delete methods,
@@ -844,8 +844,8 @@ namespace areg
          * \param   dependencyList      The list of dependent service interfaces
          * \param   workerList          The list of worker threads
          **/
-        ComponentEntry(   const String & masterThreadName
-                        , const String & roleName
+        ComponentEntry(   const areg::String & masterThreadName
+                        , const areg::String & roleName
                         , FuncCreateComponent funcCreate
                         , FuncDeleteComponent funcDelete
                         , const areg::ServiceList & serviceList
@@ -864,8 +864,8 @@ namespace areg
          * \param   dependency          The entry of dependent service interface, if there is any
          * \param   worker              The entry of worker thread, if there is any
          **/
-        ComponentEntry(   const String & masterThreadName
-                        , const String & roleName
+        ComponentEntry(   const areg::String & masterThreadName
+                        , const areg::String & roleName
                         , FuncCreateComponent funcCreate
                         , FuncDeleteComponent funcDelete
                         , const areg::ServiceEntry & service
@@ -951,14 +951,14 @@ namespace areg
          * \return  Returns either new added instance or the existing instance of supported service interface.
          *          The uniqueness is checked within component entry context and ignores the version number.
          **/
-        areg::ServiceEntry & addSupportedService( const String & serviceName, const Version & version );
+        areg::ServiceEntry & addSupportedService( const areg::String & serviceName, const Version & version );
 
         /**
          * \brief   Searches given supported service. If found, removes from list.
          * \param   serviceName The name of supported service
          * \return  Returns true if found and remove supported service entry in the list.
          **/
-        bool removeSupportedService( const String & serviceName );
+        bool removeSupportedService( const areg::String & serviceName );
 
         /**
          * \brief   Searches Service Entry in the existing list of Component Entry
@@ -978,7 +978,7 @@ namespace areg
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int32_t findSupportedService( const String & serviceName ) const;
+        int32_t findSupportedService( const areg::String & serviceName ) const;
 
         /**
          * \brief   Adds Worker Thread Entry in Component Entry object.
@@ -1018,7 +1018,7 @@ namespace areg
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int32_t findWorkerThread( const String & workerName ) const;
+        int32_t findWorkerThread( const areg::String & workerName ) const;
 
         /**
          * \brief   Searches the worker thread entry in the list.
@@ -1026,7 +1026,7 @@ namespace areg
          * \param   workerName  The name of worker thread to remove
          * \return  Returns true if worker thread entry found and could remove.
          **/
-        bool removeWorkerThread( const String & workerName );
+        bool removeWorkerThread( const areg::String & workerName );
 
         /**
          * \brief   Adds Dependency Entry in Component Entry object.
@@ -1064,7 +1064,7 @@ namespace areg
          * \param   roleName    The name dependent service.
          * \return  Returns the instance of new added or existing dependency of specified service.
          **/
-        areg::DependencyEntry & addDependencyService( const String & roleName );
+        areg::DependencyEntry & addDependencyService( const areg::String & roleName );
 
         /**
          * \brief   Searches Dependency Entry in the existing list of Component Entry
@@ -1082,7 +1082,7 @@ namespace areg
          * \param   roleName    The name of dependency service role name to search.
          * \return  Returns true if found entry and could remove it.
          **/
-        bool removeDependencyService( const String & roleName );
+        bool removeDependencyService( const areg::String & roleName );
 
         /**
          * \brief   By given name, searches Dependency Entry in the existing list of
@@ -1092,7 +1092,7 @@ namespace areg
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int32_t findDependencyService(const String & roleName) const;
+        int32_t findDependencyService(const areg::String & roleName) const;
 
         /**
          * \brief   Returns list of supported Services of Component Entry object
@@ -1146,11 +1146,11 @@ namespace areg
         /**
          * \brief   The Role Name of Component
          **/
-        String              mRoleName;
+        areg::String              mRoleName;
         /**
          * \brief   The Master Thread Entry of Component.
          **/
-        String              mThreadName;
+        areg::String              mThreadName;
         /**
          * \brief   List of supported services
          **/
@@ -1279,7 +1279,7 @@ namespace areg
          * \return  Returns valid Component Entry if found. Otherwise returns
          *          invalid component entry.
          **/
-        const areg::ComponentEntry & getComponent( const String & roleName ) const;
+        const areg::ComponentEntry & getComponent( const areg::String & roleName ) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1288,14 +1288,14 @@ namespace areg
          * \param   compData    The data to set in component which is passed to create method.
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        bool setComponentData( const String & roleName, std::any compData );
+        bool setComponentData( const areg::String & roleName, std::any compData );
 
         /**
          * \brief   Searches in the list the component by given name. If found, resets component data.
          *          Returns true if found component and the data was successfully reset.
          * \param   roleName    The name of component to search in the list.
          **/
-        bool resetComponentData( const String& roleName );
+        bool resetComponentData( const areg::String& roleName );
 
         /**
          * \brief   Searches Component Entry by given Role Name and returns
@@ -1304,7 +1304,7 @@ namespace areg
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int32_t findComponent( const String & roleName ) const;
+        int32_t findComponent( const areg::String & roleName ) const;
 
         /**
          * \brief   Searches specified Component Entry and returns
@@ -1366,7 +1366,7 @@ namespace areg
          * \param   maxQueue            The maximum size of message queue for the thread.
          *                              Pass areg::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
          **/
-        explicit ComponentThreadEntry( const String & threadName
+        explicit ComponentThreadEntry( const areg::String & threadName
                                      , const uint32_t watchdogTimeout   = areg::WATCHDOG_IGNORE
                                      , const uint32_t stackSizeKb       = areg::STACK_SIZE_DEFAULT
                                      , const uint32_t maxQueue          = areg::IGNORE_VALUE);
@@ -1381,7 +1381,7 @@ namespace areg
          *                              Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          * \param   maxQueue            The maximum size of message queue for the thread.
          **/
-        ComponentThreadEntry( const String & threadName
+        ComponentThreadEntry( const areg::String & threadName
                             , const areg::ComponentList & componentList
                             , const uint32_t watchdogTimeout= areg::WATCHDOG_IGNORE
                             , const uint32_t stackSizeKb    = areg::STACK_SIZE_DEFAULT
@@ -1482,10 +1482,10 @@ namespace areg
          * \note    NOTE:   The method does not check the uniqueness of role name within the entire system or entire
          *                  model. It checks only within the current component thread entry context.
          **/
-        areg::ComponentEntry & addComponent( const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+        areg::ComponentEntry & addComponent( const areg::String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
 
         template<typename ComponentType>
-        inline areg::ComponentEntry& addComponent(const String& roleName);
+        inline areg::ComponentEntry& addComponent(const areg::String& roleName);
 
         /**
          * \brief   Searches the component entry by given role name.
@@ -1493,7 +1493,7 @@ namespace areg
          * \param   roleName    The roleName of service component to search and remove.
          * \return  Returns true if found and could remove the component entry.
          **/
-        bool removeComponent( const String & roleName );
+        bool removeComponent( const areg::String & roleName );
 
         /**
          * \brief   Searches Component Entry in the existing list of Thread Entry
@@ -1513,7 +1513,7 @@ namespace areg
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int32_t findComponentEntry( const String & roleName ) const;
+        int32_t findComponentEntry( const areg::String & roleName ) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1522,14 +1522,14 @@ namespace areg
          * \param   compData    The data to set in component which is passed to create method.
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        bool setComponentData( const String & roleName, std::any compData );
+        bool setComponentData( const areg::String & roleName, std::any compData );
 
         /**
          * \brief   Searches in the list the component by given name. If found, resets component data.
          *          Returns true if found component and the data was successfully reset.
          * \param   roleName    The name of component to search in the list.
          **/
-        bool resetComponentData( const String & roleName );
+        bool resetComponentData( const areg::String & roleName );
 
     //////////////////////////////////////////////////////////////////////////
     // areg::ComponentThreadEntry class, Member variables
@@ -1539,7 +1539,7 @@ namespace areg
         /**
          * \brief   The name of thread component (thread name)
          **/
-        String          mThreadName;
+        areg::String          mThreadName;
 
         /**
          * \brief   List of component entries
@@ -1654,7 +1654,7 @@ namespace areg
          * \return  Returns valid Thread Entry if found. Otherwise returns
          *          invalid thread entry.
          **/
-        const areg::ComponentThreadEntry & getThread( const String & threadName ) const;
+        const areg::ComponentThreadEntry & getThread( const areg::String & threadName ) const;
 
         /**
          * \brief   Searches Thread Entry by given Thread Name and returns
@@ -1663,7 +1663,7 @@ namespace areg
          * \return  Returns zero-based valid index if found entry.
          *          Otherwise, returns -1.
          **/
-        int32_t findThread( const String & threadName ) const;
+        int32_t findThread( const areg::String & threadName ) const;
 
         /**
          * \brief   Searches specified Thread Entry and returns
@@ -1725,12 +1725,12 @@ namespace areg
         /**
          * \brief   Initialize empty Model and sets given Name.
          **/
-        explicit Model( const String & modelName );
+        explicit Model( const areg::String & modelName );
 
         /**
          * \brief   Initialize empty Model and sets given Name.
          **/
-        Model( const String & modelName, const ComponentThreadList & threadList );
+        Model( const areg::String & modelName, const ComponentThreadList & threadList );
 
         /**
          * \brief   Copies / moves model entries from given source.
@@ -1773,7 +1773,7 @@ namespace areg
         /**
          * \brief   Returns the name of model.
          **/
-        const String & getModelName() const;
+        const areg::String & getModelName() const;
 
         /**
          * \brief   Searches specified Component Entry  and returns true if
@@ -1791,7 +1791,7 @@ namespace areg
          * \return  Returns true if found specified Component Entry.
          *          Otherwise returns false.
          **/
-        bool hasRegisteredComponent( const String & roleName ) const;
+        bool hasRegisteredComponent( const areg::String & roleName ) const;
 
         /**
          * \brief   Returns true if Model is loaded. Otherwise, returns false.
@@ -1845,7 +1845,7 @@ namespace areg
          *                  model context escaping worker thread names. The caller must take care of uniqueness
          *                  by its self.
          **/
-        areg::ComponentThreadEntry & addThread(const String & threadName );
+        areg::ComponentThreadEntry & addThread(const areg::String & threadName );
 
         /**
          * \brief   Searches component thread entry in the list.
@@ -1853,7 +1853,7 @@ namespace areg
          * \param   threadName  The name of component thread to search.
          * \return  Returns true if found and could remove the thread entry from the list.
          **/
-        bool removeThread( const String & threadName );
+        bool removeThread( const areg::String & threadName );
 
         /**
          * \brief   Searches Thread Entry in the existing list of Model
@@ -1873,7 +1873,7 @@ namespace areg
          * \return  If Entry found, returns valid zero-based index of element.
          *          Otherwise, returns -1.
          **/
-        int32_t findThread(const String & threadName) const;
+        int32_t findThread(const areg::String & threadName) const;
 
         /**
          * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -1882,14 +1882,14 @@ namespace areg
          * \param   compData    The data to set in component which is passed to create method.
          * \note    You should manually free memory if the data was manually allocated in the memory
          **/
-        bool setComponentData( const String & roleName, std::any compData );
+        bool setComponentData( const areg::String & roleName, std::any compData );
 
         /**
          * \brief   Searches in the list the component by given name. If found, resets component data.
          *          Returns true if found component and the data was successfully reset.
          * \param   roleName    The name of component to search in the list.
          **/
-        bool resetComponentData(const String& roleName);
+        bool resetComponentData(const areg::String& roleName);
 
         /**
          * \brief   Returns duration in nanoseconds when the model was loaded and alive.
@@ -1906,7 +1906,7 @@ namespace areg
         /**
          * \brief   The Name of Model
          **/
-        String                  mModelName;
+        areg::String                  mModelName;
 
         /**
          * \brief   The List of Thread Entries in Model
@@ -2019,7 +2019,7 @@ inline TIME64 areg::Model::getAliveDuration() const
 }
 
 template<typename ComponentType>
-inline areg::ComponentEntry& areg::ComponentThreadEntry::addComponent(const String& roleName)
+inline areg::ComponentEntry& areg::ComponentThreadEntry::addComponent(const areg::String& roleName)
 {
     return addComponent(roleName
         , [](const areg::ComponentEntry& entry, ComponentThread& owner) -> Component* {

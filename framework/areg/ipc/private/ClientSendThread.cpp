@@ -23,7 +23,7 @@
 
 DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
-ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
+ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String& namePrefix )
     : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
 

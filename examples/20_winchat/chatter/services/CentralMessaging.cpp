@@ -48,7 +48,7 @@ bool CentralMessaging::serviceConnected( areg::ServiceConnectionState status, Pr
     return result;
 }
 
-void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t cookie, const String & newMessage, const DateTime & dateTime )
+void CentralMessaging::broadcastSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const DateTime & dateTime )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
     if ( cookie != mConnectionHandler.GetCookie() )
@@ -69,7 +69,7 @@ void CentralMessaging::broadcastSendMessage( const String & nickName, uint32_t c
     }
 }
 
-void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t cookie, const String & newMessage )
+void CentralMessaging::broadcastKeyTyping( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
     if ( cookie != mConnectionHandler.GetCookie( ) )
@@ -90,7 +90,7 @@ void CentralMessaging::broadcastKeyTyping( const String & nickName, uint32_t coo
     }
 }
 
-void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
+void CentralMessaging::broadcastBroadcastMessage( const areg::String & serverMessage, const DateTime & dateTime )
 {
     LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 

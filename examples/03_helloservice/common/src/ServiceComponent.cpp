@@ -12,7 +12,7 @@ ServiceComponent::ServiceComponent(const areg::ComponentEntry & entry, Component
 {
 }
 
-void ServiceComponent::requestHelloService(const String & client)
+void ServiceComponent::requestHelloService(const areg::String & client)
 {
     // output message
     std::cout << "\'Hello Service!\' from " << client << std::endl;

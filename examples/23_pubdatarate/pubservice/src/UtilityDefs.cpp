@@ -15,7 +15,7 @@
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
 DEF_LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_setValue);
 
-bool areg::OptionValues::parseCommand(const String& cmd)
+bool areg::OptionValues::parseCommand(const areg::String& cmd)
 {
     static constexpr std::string_view   _delimiter{ " " };
 
@@ -28,7 +28,7 @@ bool areg::OptionValues::parseCommand(const String& cmd)
 
     for (uint32_t i = 0; i < list.getSize(); ++i)
     {
-        String entry(list[i]);
+        areg::String entry(list[i]);
         entry.trimAll();
 
         bool found{ false };

@@ -338,7 +338,7 @@ DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientRegistration);
 LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam )
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientRegistration);
-    String nickName = GetNickName();
+    areg::String nickName = GetNickName();
 
     bool isRegistered = wParam != 0;
     DispatcherThread * dispThread = reinterpret_cast<DispatcherThread *>(lParam);
@@ -531,7 +531,7 @@ PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & 
         owner.sessionId = initiator.sessionId;
     }
 
-    String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
+    areg::String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
     PageChat * chatPage   = new PageChat( serviceName, initiator, listParties, owner, isInitiator );
     if ( chatPage != nullptr )
     {
@@ -564,7 +564,7 @@ void DistributedDialog::ChangeCaption( LPCTSTR newCaption )
         dlg->SetTitle( newCaption );
 }
 
-bool DistributedDialog::RemoveChatPage( const String & connectName )
+bool DistributedDialog::RemoveChatPage( const areg::String & connectName )
 {
     bool result = false;
     MapChatPages::MAPPOS pos = mMapChatPages.find(connectName);

@@ -112,7 +112,7 @@ void PageConnections::OnClickedButtonBroadcast()
     if ( service != nullptr )
     {
         DateTime timestamp = DateTime::getNow();
-        String msg( mTextBroadcast.GetString() );
+        areg::String msg( mTextBroadcast.GetString() );
         service->broadcastBroadcastMessage(msg, timestamp);
 
         OutputMessage(   CString(chat::SERVER_NAME)

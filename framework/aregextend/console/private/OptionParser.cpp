@@ -30,7 +30,7 @@ namespace
                 if (areg::isEmpty<CharType>(opt))
                     break;
 
-                optList.push_back(String(opt));
+                optList.push_back(areg::String(opt));
             }
         }
     }
@@ -46,7 +46,7 @@ namespace
                 if (areg::isEmpty<CharType>(opt))
                     break;
 
-                optList.push_back(String(opt));
+                optList.push_back(areg::String(opt));
             }
         }
     }
@@ -103,13 +103,13 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
                 else if (isSpace<CharType>(*src) == false)
                 {
                     ++ src;
-                    String str(begin, static_cast<uint32_t>(src - begin));
+                    areg::String str(begin, static_cast<uint32_t>(src - begin));
                     optList.push_back(str);
                 }
                 else
@@ -128,7 +128,7 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -143,13 +143,13 @@ namespace
                 {
                     if ( begin != src ++ )
                     {
-                        String str( begin, static_cast<uint32_t>( src - begin ) );
+                        areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                         optList.push_back( str );
                     }
                 }
                 else if (begin != src)
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -163,7 +163,7 @@ namespace
 
         if ( begin != src )
         {
-            String str( begin, static_cast<uint32_t>( src - begin ) );
+            areg::String str( begin, static_cast<uint32_t>( src - begin ) );
             optList.push_back( str );
         }
     }
@@ -322,7 +322,7 @@ bool OptionParser::parseOptions( StrList & optList )
     mInputOptions.clear( );
     mCmdLine.clear( );
     uint32_t initSize = mSetupOptions.getSize( );
-    for ( String & input : optList )
+    for ( areg::String & input : optList )
     {
         input.trimAll( );
 
@@ -413,7 +413,7 @@ void OptionParser::sort()
                          });
 }
 
-OptionParser::InputOption OptionParser::_setupInput( bool isShort, String cmdLine, uint32_t refSetup )
+OptionParser::InputOption OptionParser::_setupInput( bool isShort, areg::String cmdLine, uint32_t refSetup )
 {
     ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize()) );
 
@@ -433,7 +433,7 @@ OptionParser::InputOption OptionParser::_setupInput( bool isShort, String cmdLin
     return opt;
 }
 
-void OptionParser::_setInputValue( String & newValue, InputOption & opt, uint32_t refSetup )
+void OptionParser::_setInputValue( areg::String & newValue, InputOption & opt, uint32_t refSetup )
 {
     const OptionSetup& setup{ mSetupOptions[refSetup] };
 
@@ -464,7 +464,7 @@ void OptionParser::_setInputValue( String & newValue, InputOption & opt, uint32_
         else if ( OptionParser::isInteger( setup.optField ) )
         {
             const char * end = nullptr;
-            int32_t val = String::makeInt32( newValue.getString( ), areg::Radix::Decimal, &end );
+            int32_t val = areg::String::makeInt32( newValue.getString( ), areg::Radix::Decimal, &end );
             _setValue( val, opt, setup );
             if ( areg::isEmpty<char>( end ) == false )
             {
@@ -474,7 +474,7 @@ void OptionParser::_setInputValue( String & newValue, InputOption & opt, uint32_
         else if ( OptionParser::isFloat( setup.optField ) )
         {
             const char * end = nullptr;
-            float val = String::makeFloat( newValue.getString( ), &end );
+            float val = areg::String::makeFloat( newValue.getString( ), &end );
             _setValue( val, opt, setup );
             if ( areg::isEmpty<char>( end ) == false )
             {
@@ -522,7 +522,7 @@ inline void OptionParser::_setValue( float newValue, InputOption & opt, const Op
     }
 }
 
-inline void OptionParser::_setValue( const String & newValue, InputOption & opt, const OptionSetup & setup )
+inline void OptionParser::_setValue( const areg::String & newValue, InputOption & opt, const OptionSetup & setup )
 {
     opt.inString.push_back( newValue );
     if ( OptionParser::isFreestyle(setup.optField) == false )
@@ -540,7 +540,7 @@ inline void OptionParser::_setValue( const String & newValue, InputOption & opt,
     }
 }
 
-inline bool OptionParser::_matchOption( const String & input, const String & optCmd ) const
+inline bool OptionParser::_matchOption( const areg::String & input, const areg::String & optCmd ) const
 {
     bool result{ false };
     if ( input.startsWith( optCmd, true ) )
@@ -556,7 +556,7 @@ inline bool OptionParser::_matchOption( const String & input, const String & opt
     return result;
 }
 
-inline bool OptionParser::_cleanQuote( String & data ) const
+inline bool OptionParser::_cleanQuote( areg::String & data ) const
 {
     bool result{ true };
     data.trimAll( );

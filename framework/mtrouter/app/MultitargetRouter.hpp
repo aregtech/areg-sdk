@@ -87,7 +87,7 @@ public:
      *          Otherwise, the method ignores request to output message.
      * \param   status  The status message to print on console.
      **/
-    static void printStatus(const String& status);
+    static void printStatus(const areg::String& status);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -224,7 +224,7 @@ private:
      * \param   cmd     The command typed on the console.
      * \return  Returns true if command is recognized. Otherwise, returns false.
      **/
-    static bool _checkCommand(const String& cmd);
+    static bool _checkCommand(const areg::String& cmd);
 
     /**
      * \brief   Output on console the title.
@@ -234,7 +234,7 @@ private:
     /**
      * \brief   Prints info on console.
      **/
-    static void _outputInfo( const String & info );
+    static void _outputInfo( const areg::String & info );
 
     /**
      * \brief   Outputs on console the information about connected instances.

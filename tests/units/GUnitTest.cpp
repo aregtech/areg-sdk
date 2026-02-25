@@ -41,7 +41,7 @@ TEST(GUnitTestDummy, BasicString )
 {
     constexpr std::string_view _hello{ "hello areg-sdk" };
 
-    String hello( _hello );
+    areg::String hello( _hello );
     hello = hello.makeUpper( );
     EXPECT_EQ( hello.compare( _hello, false ), areg::Ordering::Equal );
 }

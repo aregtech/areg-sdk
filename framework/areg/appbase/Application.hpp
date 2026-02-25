@@ -282,7 +282,7 @@ public:
      * \brief   Returns true if an element exists in the application storage
      * \param   elemName    The name of element stored in application storage.
      **/
-    static bool isElementStored( const String & elemName );
+    static bool isElementStored( const areg::String & elemName );
 
     /**
      * \brief   Saves element in application storage. If storage already has element save with specified
@@ -292,13 +292,13 @@ public:
      * \return  If storage already has an element saved with same name, it returns previously save element.
      *          Otherwise, it returns areg::InvalidElement.
      **/
-    static areg::Primitive storeElement( const String & elemName, areg::Primitive elem );
+    static areg::Primitive storeElement( const areg::String & elemName, areg::Primitive elem );
 
     /**
      * \brief   Returns stored element, which has given name. If element does not exist, returns areg::InvalidElement.
      * \param   elemName    The name of element to search in storage.
      **/
-    static areg::Primitive getStoredElement( const String & elemName );
+    static areg::Primitive getStoredElement( const areg::String & elemName );
 
     /**
      * \brief   Locks the calling thread until either application quit signal is set, or waiting timeout is expired.
@@ -337,12 +337,12 @@ public:
     /**
      * \brief   Returns the name of the executable process.
      **/
-    static const String & getApplicationName();
+    static const areg::String & getApplicationName();
 
     /**
      * \brief   Returns the name of system host.
      **/
-    static const String & getMachineName();
+    static const areg::String & getMachineName();
 
     /**
      * \brief   Returns the instance of application configuration initializer object

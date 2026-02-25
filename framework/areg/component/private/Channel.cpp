@@ -67,22 +67,22 @@ Channel & Channel::operator = ( Channel && source ) noexcept
     return (*this);
 }
 
-String Channel::convToString() const
+areg::String Channel::convToString() const
 {
     constexpr const char * format{ "%llu.%llu.%llu" };
 
     char buffer[ 128 ]{ 0 };
-    int32_t len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
+    int32_t len = areg::String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
+    return (len > 0 ? areg::String( buffer, static_cast<uint32_t>(len) ) : areg::String::getEmptyString());
 }
 
-const Channel & Channel::convFromString(const String & channel)
+const Channel & Channel::convFromString(const areg::String & channel)
 {
     mSource = areg::SOURCE_UNKNOWN;
     mTarget = areg::TARGET_UNKNOWN;
     mCookie = areg::COOKIE_UNKNOWN;
 
-    String source, target, cookie;
+    areg::String source, target, cookie;
     areg::CharPos pos = areg::START_POS;
     pos = channel.substring( source, areg::OBJECT_SEPARATOR, pos );
     pos = channel.substring( target, areg::OBJECT_SEPARATOR, pos );

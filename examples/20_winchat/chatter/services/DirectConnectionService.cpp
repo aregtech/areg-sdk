@@ -27,16 +27,16 @@ DirectConnectionService * DirectConnectionService::GetService()
     return DirectConnectionService::mService;
 }
 
-String DirectConnectionService::GetGeneratedService( const String & nickName, uint32_t cookie )
+areg::String DirectConnectionService::GetGeneratedService( const areg::String & nickName, uint32_t cookie )
 {
     return NEDistributedApp::getConnectionServiceRole(nickName, cookie);
 }
 
-areg::Model DirectConnectionService::GetModel( const String & nickName, uint32_t cookie, std::any data )
+areg::Model DirectConnectionService::GetModel( const areg::String & nickName, uint32_t cookie, std::any data )
 {
-    String    roleName    = DirectConnectionService::GetGeneratedService(nickName, cookie);
-    String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
-    String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
+    areg::String    roleName    = DirectConnectionService::GetGeneratedService(nickName, cookie);
+    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
+    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
 
     areg::ServiceEntry          serviceEntry( DirectConnection::ServiceName, DirectConnection::InterfaceVersion );
     areg::ServiceList           serviceList( serviceEntry );

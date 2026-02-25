@@ -21,11 +21,11 @@ public:
 
     static DirectConnectionService * GetService();
 
-    static areg::Model GetModel( const String & nickName, uint32_t cookie, std::any data );
+    static areg::Model GetModel( const areg::String & nickName, uint32_t cookie, std::any data );
 
-    static String GetGeneratedService( const String & nickName, uint32_t cookie );
+    static areg::String GetGeneratedService( const areg::String & nickName, uint32_t cookie );
 
-    inline void SetOwnerData(const String & nickName, uint32_t cookie );
+    inline void SetOwnerData(const areg::String & nickName, uint32_t cookie );
 
 public:
     DirectConnectionService( const areg::ComponentEntry & entry, ComponentThread & ownerThread );
@@ -83,12 +83,12 @@ private:
 private:
     static DirectConnectionService *  mService;
 
-    String      mNickName;
+    areg::String      mNickName;
     uint32_t    mCookie;
 };
 
 inline DirectConnectionService & DirectConnectionService::self()
 {   return (*this);                             }
 
-inline void DirectConnectionService::SetOwnerData( const String & nickName, uint32_t cookie )
+inline void DirectConnectionService::SetOwnerData( const areg::String & nickName, uint32_t cookie )
 {   mNickName   = nickName; mCookie = cookie;   }

@@ -60,7 +60,7 @@ ThreadAddress::ThreadAddress( const char * threadName )
     mMagicNum    = ThreadAddress::_magicNumber(*this);
 }
 
-ThreadAddress::ThreadAddress( const String & threadName )
+ThreadAddress::ThreadAddress( const areg::String & threadName )
     : mThreadName   ( threadName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -95,7 +95,7 @@ bool ThreadAddress::isValid() const
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
+areg::String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
 {
     return threadAddress.convToString();
 }
@@ -119,7 +119,7 @@ void ThreadAddress::convFromString(const char * threadPath, const char** out_nex
         *out_nextPart = threadPath;
     }
 
-    mThreadName  = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mThreadName  = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum    = ThreadAddress::_magicNumber(*this);
 
     if (out_nextPart != nullptr)

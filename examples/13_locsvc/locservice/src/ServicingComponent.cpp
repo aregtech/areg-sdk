@@ -27,7 +27,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, Compo
 {
 }
 
-void ServicingComponent::requestHelloWorld(const String & roleName)
+void ServicingComponent::requestHelloWorld(const areg::String & roleName)
 {
     LOG_SCOPE(examples_13_locservice_ServicingComponent_requestHelloWorld);
     

@@ -264,7 +264,7 @@ void ServicingComponent::onThreadRuns()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 
-    const String& threadName = Thread::getCurrentThreadName();
+    const areg::String& threadName = Thread::getCurrentThreadName();
     if (threadName == THREAD_WAITINPUT )
     {
         LOG_DBG("Started console input thread.");
@@ -289,7 +289,7 @@ void ServicingComponent::_runInputThread()
 
         console.outputTxt(COORD_OPTIONS, MSG_INPUT_OPTION);
         console.refreshScreen();
-        String cmd = console.readString();
+        areg::String cmd = console.readString();
         cmd.makeLower();
         OptionData newData;
         newData.parseCommand(cmd);

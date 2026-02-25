@@ -34,7 +34,7 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static String _modelName("mtrouterModel");
+static areg::String _modelName("mtrouterModel");
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -115,7 +115,7 @@ MultitargetRouter & MultitargetRouter::getInstance()
 }
 
 #if AREG_EXTENDED
-void MultitargetRouter::printStatus(const String& status)
+void MultitargetRouter::printStatus(const areg::String& status)
 {
 
     if (MultitargetRouter::getInstance().getCurrentOption() == aregext::ServiceOption::CMD_Console)
@@ -127,7 +127,7 @@ void MultitargetRouter::printStatus(const String& status)
     }
 }
 #else   // AREG_EXTENDED
-void MultitargetRouter::printStatus(const String& /* status */)
+void MultitargetRouter::printStatus(const areg::String& /* status */)
 {
 }
 #endif  // AREG_EXTENDED
@@ -277,7 +277,7 @@ void MultitargetRouter::stopConsoleService()
     Application::unloadModel( _modelName );
 }
 
-bool MultitargetRouter::_checkCommand(const String& cmd)
+bool MultitargetRouter::_checkCommand(const areg::String& cmd)
 {
     OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
     bool quit{ false };
@@ -407,7 +407,7 @@ void MultitargetRouter::_outputTitle()
 #endif  // AREG_EXTENDED
 }
 
-void MultitargetRouter::_outputInfo( const String & info )
+void MultitargetRouter::_outputInfo( const areg::String & info )
 {
 #if AREG_EXTENDED
 

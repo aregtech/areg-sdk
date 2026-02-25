@@ -67,7 +67,7 @@ public:
      * \param   service     The service item to convert.
      * /return  Returns service item as a string.
      **/
-    static String convAddressToPath( const ServiceItem & service );
+    static areg::String convAddressToPath( const ServiceItem & service );
    
     /**
      * \brief   Converts given service item path as a string to service item object.
@@ -90,7 +90,7 @@ public:
      * \brief   Creates service item, sets service name.
      * \param   serviceName     The service name to set.
      **/
-    explicit ServiceItem( const String & serviceName );
+    explicit ServiceItem( const areg::String & serviceName );
 
     /**
      * \brief   Creates service item, sets service name, version and type.
@@ -98,7 +98,7 @@ public:
      * \param   serviceVersion  The service version to set.
      * \param   serviceType     The type of service
      **/
-    ServiceItem( const String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType );
+    ServiceItem( const areg::String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType );
 
     /**
      * \brief   Creates service item and initializes data from given stream.
@@ -187,12 +187,12 @@ public:
     /**
      * \brief   Returns service name.
      **/
-    inline const String & getServiceName() const;
+    inline const areg::String & getServiceName() const;
 
     /**
      * \brief   Sets the service name
      **/
-    inline void setServiceName( const String & serviceName );
+    inline void setServiceName( const areg::String & serviceName );
 
     /**
      * \brief   Returns service version
@@ -228,7 +228,7 @@ public:
      * \brief   Creates Service Item path as a string.
      * /return  Returns service item as a string.
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief   Converts given service item path as a string to service item object.
@@ -257,7 +257,7 @@ protected:
     /**
      * \brief   Service name
      **/
-    String                  mServiceName;
+    areg::String                  mServiceName;
     /**
      * \brief   Service Version
      **/
@@ -300,12 +300,12 @@ namespace std
 // ServiceItem class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & ServiceItem::getServiceName() const
+inline const areg::String & ServiceItem::getServiceName() const
 {
     return mServiceName;
 }
 
-inline void ServiceItem::setServiceName( const String & serviceName )
+inline void ServiceItem::setServiceName( const areg::String & serviceName )
 {
     mServiceName = serviceName;
     mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);

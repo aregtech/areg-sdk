@@ -44,7 +44,7 @@ ServerInfo::ServerInfo( StubAddress && server )
 }
 
 ServerInfo::ServerInfo( const ProxyAddress & proxy )
-    : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), String::getEmptyString() )
+    : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), areg::String::getEmptyString() )
     , mServerState  ( areg::ServiceConnectionState::Pending )
 {
     mServerAddress.invalidateChannel();

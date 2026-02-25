@@ -90,7 +90,7 @@ ServiceManagerEventData ServiceManagerEventData::startConnection(areg::RemoteSer
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startNetConnection( const String & ipAddress, uint16_t portNr )
+ServiceManagerEventData ServiceManagerEventData::startNetConnection( const areg::String & ipAddress, uint16_t portNr )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection );
     OutStream & stream = data.getWriteStream( );
@@ -128,7 +128,7 @@ ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & 
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const String& threadName)
+ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const areg::String& threadName)
 {
     ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread);
     OutStream& stream = data.getWriteStream();
@@ -136,7 +136,7 @@ ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const 
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::createComponentThread(const String& threadName)
+ServiceManagerEventData ServiceManagerEventData::createComponentThread(const areg::String& threadName)
 {
     ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread);
     OutStream& stream = data.getWriteStream();

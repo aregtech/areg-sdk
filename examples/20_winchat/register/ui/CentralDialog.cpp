@@ -78,7 +78,7 @@ CentralDialog::CentralDialog( )
     AddPage( &mPageConnections );
 }
 
-bool CentralDialog::StartConnection( const String & ipAddress, uint16_t portNr )
+bool CentralDialog::StartConnection( const areg::String & ipAddress, uint16_t portNr )
 {
     bool result = false;
     CentralDialog * dlg = static_cast<CentralDialog *>(theApp.GetMainWnd());

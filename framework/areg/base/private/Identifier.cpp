@@ -47,7 +47,7 @@ Identifier::Identifier( uint32_t idValue, const std::string_view& idName )
 {
 }
 
-Identifier::Identifier( uint32_t idValue, const String& idName )
+Identifier::Identifier( uint32_t idValue, const areg::String& idName )
     : mValue    (idValue)
     , mName     (idName)
 {

@@ -31,9 +31,9 @@ DEF_LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
 
 namespace
 {
-    String generateString(uint32_t seqNr)
+    areg::String generateString(uint32_t seqNr)
     {
-        String result;
+        areg::String result;
         return result.format("string_%u", seqNr);
     }
 }
@@ -88,7 +88,7 @@ void Publisher::start()
     mTimerOnChange.stopTimer();
 
     setServiceProviderState(PubSubMix::RunState::Running);
-    const String & roleName = PubSubMixStub::getServiceRole();
+    const areg::String & roleName = PubSubMixStub::getServiceRole();
 
     if (isIntegerAlwaysValid() == false)
     {
@@ -155,7 +155,7 @@ void Publisher::processTimer(Timer & timer)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_processTimer);
 
-    const String roleName = getServiceRole();
+    const areg::String roleName = getServiceRole();
 
     if (&timer == &mTimerAlways)
     {
@@ -178,7 +178,7 @@ void Publisher::processTimer(Timer & timer)
             mCountString = 0;
         }
 
-        String data(generateString(mSeqString));
+        areg::String data(generateString(mSeqString));
         LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
         setStringOnChange({ data, roleName });
     }

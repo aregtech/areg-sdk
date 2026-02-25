@@ -21,7 +21,7 @@
 //!< The name of model
 constexpr char const _modelName[]{ "ServiceModel" };
 //!< Client component name. Let's generate the name for client service, we'll use it later.
-const String _client(areg::generateName("ServiceClient"));
+const areg::String _client(areg::generateName("ServiceClient"));
 
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)

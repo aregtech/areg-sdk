@@ -62,7 +62,7 @@ uint64_t DateTime::getProcessTickCount()
     return areg::getTickCount();
 }
 
-void DateTime::formatTime(const DateTime& dateTime, String& result, const std::string_view& formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT*/)
+void DateTime::formatTime(const DateTime& dateTime, areg::String& result, const std::string_view& formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT*/)
 {
     char buffer[128] = { 0 };
 
@@ -74,12 +74,12 @@ void DateTime::formatTime(const DateTime& dateTime, String& result, const std::s
         areg::convMicrosecs(dateTime.mDateTime, secs, milli, micro);
         areg::convToLocalTm(dateTime.mDateTime, conv);
 
-        String str(formatName.empty() == false ? formatName : areg::DEFAULT_TIME_FORMAT_OUTPUT);
+        areg::String str(formatName.empty() == false ? formatName : areg::DEFAULT_TIME_FORMAT_OUTPUT);
         areg::CharPos ms = str.findFirst(FORMAT_MILLISECOND.data());
         if (str.isValidPosition(ms))
         {
             char buf[128];
-            String::formatString(buf, 128, "%03u", static_cast<uint32_t>(milli));
+            areg::String::formatString(buf, 128, "%03u", static_cast<uint32_t>(milli));
             str.replace(ms, static_cast<areg::CharCount>(FORMAT_MILLISECOND.length()), buf);
         }
 
@@ -89,7 +89,7 @@ void DateTime::formatTime(const DateTime& dateTime, String& result, const std::s
     }
     else
     {
-        result = String::EmptyChar;
+        result = areg::String::EmptyChar;
     }
 }
 
@@ -138,9 +138,9 @@ void DateTime::getNow( areg::CalendarTime & timeData, bool localTime )
     areg::systemTimeNow(timeData, localTime);
 }
 
-String DateTime::formatTime( const std::string_view & formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
+areg::String DateTime::formatTime( const std::string_view & formatName /*= areg::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
 {
-    String result;
+    areg::String result;
     DateTime::formatTime(*this, result, formatName);
     return result;
 }

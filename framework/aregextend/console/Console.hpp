@@ -53,7 +53,7 @@ public:
      *          Used when waits the user input on console.
      *          If returns true, stops waiting. If returns false, continues waiting.
      **/
-    using CallBack  = std::function<bool(const String &)>;
+    using CallBack  = std::function<bool(const areg::String &)>;
 
     /**
      * \brief   Console::Coord
@@ -98,7 +98,7 @@ public:
      * \return  Returns input string maximum 255 characters after validation by callback,
      *          or if the callback is empty.
      **/
-    String waitForInput( Console::CallBack callback ) const;
+    areg::String waitForInput( Console::CallBack callback ) const;
 
     /**
      * \brief   Before calling the method the console input must be enabled.
@@ -139,7 +139,7 @@ public:
      *
      * \return  Returns the string input on console.
      **/
-    String readString() const;
+    areg::String readString() const;
 
     /**
      * \brief   Call if there is no need anymore to make any message output.
@@ -164,7 +164,7 @@ public:
      * \param   pos     The X- and Y-coordinate to start to output the message text.
      * \param   text    The message text to output.
      **/
-    inline void outputStr(Console::Coord pos, const String& text) const;
+    inline void outputStr(Console::Coord pos, const areg::String& text) const;
     inline void outputTxt(Console::Coord pos, const std::string_view& text) const;
 
     /**
@@ -178,7 +178,7 @@ public:
      * \brief   Outputs the text message at the current cursor position.
      * \param   text  The text to output.
      **/
-    inline void printStr(const String& text) const;
+    inline void printStr(const areg::String& text) const;
     inline void printTxt(const std::string_view& text) const;
 
     /**
@@ -248,7 +248,7 @@ public:
     /**
      * \brief   Return the user input command.
      **/
-    inline const String& getUserInput() const;
+    inline const areg::String& getUserInput() const;
 
     /**
      * \brief   Call to refresh the console screen and show updates.
@@ -296,9 +296,9 @@ private:
      * \param   pos     The position on console to output message.
      * \param   text    The text message to output.
      **/
-    void _osOutputText(Console::Coord pos, const String& text) const;
+    void _osOutputText(Console::Coord pos, const areg::String& text) const;
     void _osOutputText(Console::Coord pos, const std::string_view& text) const;
-    void _osOutputText(const String& text) const;
+    void _osOutputText(const areg::String& text) const;
     void _osOutputText(const std::string_view& text) const;
 
     /**
@@ -379,7 +379,7 @@ private:
     /**
      * \brief   The last input command as a string on the console.
      **/
-    String          mUsrInput;
+    areg::String          mUsrInput;
     /**
      * \brief   The context. It is OS specific.
      **/
@@ -418,7 +418,7 @@ inline bool Console::enableConsoleInput( bool enable )
     return enable ? (mIsReady && mEnable.setEvent( )) : (mIsReady == false) || (mEnable.resetEvent( ));
 }
 
-inline void Console::outputStr( Console::Coord pos, const String & text ) const
+inline void Console::outputStr( Console::Coord pos, const areg::String & text ) const
 {
     _osOutputText( pos, text );
 }
@@ -428,7 +428,7 @@ inline void Console::outputTxt( Console::Coord pos, const std::string_view & tex
     _osOutputText( pos, text );
 }
 
-inline void Console::printStr(const String& text) const
+inline void Console::printStr(const areg::String& text) const
 {
     _osOutputText(text);
 }
@@ -473,7 +473,7 @@ inline void Console::moveCursorOneLineDown() const
     _osMoveCursorOneLineDown();
 }
 
-inline const String & Console::getUserInput() const
+inline const areg::String & Console::getUserInput() const
 {
     return mUsrInput;
 }

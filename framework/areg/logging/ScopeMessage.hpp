@@ -183,7 +183,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
-    const String &      mScopeName; //!< Name of the logging scope.
+    const areg::String &      mScopeName; //!< Name of the logging scope.
     const uint32_t  mScopeId;   //!< ID of the logging scope.
     const uint32_t  mSessionId; //!< Priority of the logging scope.
     const TIME64        mTimestamp; //!< The timestamp when the scope message object was instantiated.

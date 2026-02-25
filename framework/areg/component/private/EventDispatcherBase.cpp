@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcherBase::EventDispatcherBase(const String & name, uint32_t maxQeueue)
+EventDispatcherBase::EventDispatcherBase(const areg::String & name, uint32_t maxQeueue)
     : QueueListener  ( )
 
     , mDispatcherName   ( name )

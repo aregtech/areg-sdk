@@ -60,7 +60,7 @@ bool NetTcpLogger::openLogger()
             registerForServiceClientCommands();
             mRingStack.reserve(mLogConfiguration.getStackSize());
 
-            String host{ mLogConfiguration.getRemoteTcpAddress()};
+            areg::String host{ mLogConfiguration.getRemoteTcpAddress()};
             uint16_t port{ mLogConfiguration.getRemoteTcpPort() };
             mIsEnabled = true;
             applyServiceConnectionData(host, port);

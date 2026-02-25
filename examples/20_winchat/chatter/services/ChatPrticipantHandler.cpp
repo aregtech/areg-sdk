@@ -13,7 +13,7 @@
 // ChatPrticipantHandler class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ChatPrticipantHandler::ChatPrticipantHandler( const String & serviceName
+ChatPrticipantHandler::ChatPrticipantHandler( const areg::String & serviceName
                                             , const chat::sInitiator & initiator
                                             , const chat::ListParticipants & listParticipants
                                             , const chat::Participant & ownerConnection )

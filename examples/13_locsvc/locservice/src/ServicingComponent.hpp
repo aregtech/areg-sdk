@@ -40,7 +40,7 @@ protected:
      * \param   roleName    The role name of client component that requested to print hello world
      * \see     responseHelloWorld
      **/
-    void requestHelloWorld( const String & roleName ) override;
+    void requestHelloWorld( const areg::String & roleName ) override;
 
     /**
      * \brief   Request call.

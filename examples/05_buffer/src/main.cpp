@@ -46,7 +46,7 @@ protected:
 
         int32_t numDigit{};
         float numPI{};
-        String strMsg{};
+        areg::String strMsg{};
 
         mBuffer.moveToBegin();
         mBuffer >> numDigit >> numPI >> strMsg;
@@ -74,7 +74,7 @@ int main()
     std::cout << "Demo: write and read data from binary buffer..." << std::endl;
 
     SharedBuffer buffer;
-    buffer << 1234 << static_cast<float>(M_PI) << String("!!!Hello World!!!");
+    buffer << 1234 << static_cast<float>(M_PI) << areg::String("!!!Hello World!!!");
 
     HelloThread aThread(buffer);
 

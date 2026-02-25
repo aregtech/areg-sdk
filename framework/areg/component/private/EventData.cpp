@@ -26,13 +26,13 @@
 //////////////////////////////////////////////////////////////////////////
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name /*= String::getEmptyString()*/ )
+EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType, const areg::String & name /*= areg::String::getEmptyString()*/ )
     : mDataType (areg::getMessageDataType(msgId))
     , mData     (dataType, name)
 {
 }
 
-EventData::EventData( uint32_t msgId, const EventDataStream & args, const String & name /*= String::getEmptyString()*/ )
+EventData::EventData( uint32_t msgId, const EventDataStream & args, const areg::String & name /*= areg::String::getEmptyString()*/ )
     : mDataType (areg::getMessageDataType(msgId))
     , mData     (args, name)
 {

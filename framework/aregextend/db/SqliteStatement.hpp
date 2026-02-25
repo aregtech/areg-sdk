@@ -71,7 +71,7 @@ public:
      * \param   db      Reference to the SqliteDatabase object.
      * \param   sql     The SQL statement to prepare.
      */
-    SqliteStatement(SqliteDatabase& db, const String& sql);
+    SqliteStatement(SqliteDatabase& db, const areg::String& sql);
 
     /**
      * \brief   Constructs a SqliteStatement associated with the given database.
@@ -94,7 +94,7 @@ public:
      * \param   sql     The SQL statement to prepare.
      * \return  True if the statement was prepared successfully, false otherwise.
      */
-    bool prepare(const String& sql);
+    bool prepare(const areg::String& sql);
 
     /**
      * \brief   Executes the prepared statement (for non-SELECT statements).
@@ -166,7 +166,7 @@ public:
      * \param   value   The string value to bind.
      * \return  True if binding was successful, false otherwise.
      */
-    bool bindText(int32_t index, const String& value);
+    bool bindText(int32_t index, const areg::String& value);
 
     /**
      * \brief   Binds a NULL value to the specified parameter index.
@@ -209,7 +209,7 @@ public:
      * \param   index  The 0-based column index.
      * \return  The string value of the column.
      */
-    String getText(int32_t index) const;
+    areg::String getText(int32_t index) const;
 
     /**
      * \brief   Checks if the specified column in the current row is NULL.
@@ -264,14 +264,14 @@ public:
      * \param   index  The 0-based column index.
      * \return  The name of the column.
      */
-    String getColumnName(int32_t index) const;
+    areg::String getColumnName(int32_t index) const;
 
     /**
      * \brief   Returns the index of the column with the specified name.
      * \param   columnName The name of the column.
      * \return  The 0-based index of the column, or -1 if not found.
      */
-    int32_t getColumnIndex(const String& columnName) const;
+    int32_t getColumnIndex(const areg::String& columnName) const;
 
     /**
      * \brief   Returns the type of the specified column.

@@ -85,7 +85,7 @@ private:
     }
 
     //!< Generated unique timer name.
-    inline String timerName( Component & owner ) const;
+    inline areg::String timerName( Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

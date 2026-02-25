@@ -24,9 +24,9 @@ areg::Model DirectChatService::GetModel( const DirectMessager::Participant & ini
                                              , const DirectMessager::ListParticipants & listParticipants
                                              , std::any data)
 {
-    String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
-    String    threadName  = NEDistributedApp::PREFIX_TRHEAD + roleName;
-    String    modelName   = NEDistributedApp::PREFIX_MODEL  + roleName;
+    areg::String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
+    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD + roleName;
+    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL  + roleName;
 
     uint32_t count = listParticipants.getSize();
     areg::DependencyEntry depedency(roleName);
@@ -130,18 +130,18 @@ void DirectChatService::requestChatJoin( const DirectMessager::Participant & par
     }
 }
 
-void DirectChatService::requestMessageSend( const DirectMessager::Participant & participant, const String & msgText, const DateTime & timeSent )
+void DirectChatService::requestMessageSend( const DirectMessager::Participant & participant, const areg::String & msgText, const DateTime & timeSent )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestMessageSend );
     const DirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
     if ( chatParticipants.contains(participant, 0) )
     {
         broadcastMessageSent(participant, msgText, timeSent );
-        broadcastMessageTyped( participant, String::getEmptyString() );
+        broadcastMessageTyped( participant, areg::String::getEmptyString() );
     }
 }
 
-void DirectChatService::requestMessageType( const DirectMessager::Participant & participant, const String & msgText )
+void DirectChatService::requestMessageType( const DirectMessager::Participant & participant, const areg::String & msgText )
 {
     LOG_SCOPE( chatter_DirectChatService_RequestMessageType );
     const DirectMessager::ListParticipants & chatParticipants = getChatParticipants( );

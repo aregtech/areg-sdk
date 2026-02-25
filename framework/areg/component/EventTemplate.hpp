@@ -312,7 +312,7 @@ public:                                                                         
     /** \return Returns true if consumer registration succeeded.                                                            **/             \
     /**         Returns false if thread already has consumer registered or registration failed.                             **/             \
     /**                                                                                                                     **/             \
-    static inline bool addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const String & whichThread);                                   \
+    static inline bool addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const areg::String & whichThread);                                   \
     /**                                                                                                                     **/             \
     /** \brief  Registers Consumer in the worker / component thread                                                         **/             \
     /**         Returns true if successfully registered consumer                                                            **/             \
@@ -345,7 +345,7 @@ public:                                                                         
     /** \param  whichThread The name of thread to unregister consumer. If null, it will unregister in current thread.       **/             \
     /** \return Returns true if consumer is unregistered with success.                                                      **/             \
     /**                                                                                                                     **/             \
-    static inline bool removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const String & whichThread);                                \
+    static inline bool removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const areg::String & whichThread);                                \
     /**                                                                                                                     **/             \
     /** \brief  Unregisters Consumer from worker / component thread.                                                        **/             \
     /**         Returns true if successfully removed registered consumer                                                    **/             \
@@ -520,7 +520,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
 /** Returns false if failed to register consumer or consumer was already registered for specified event                     **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
-inline bool AregImpl_##EventClass<DATA_CLASS>::addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const String & whichThread)         \
+inline bool AregImpl_##EventClass<DATA_CLASS>::addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const areg::String & whichThread)         \
 {   return Event::addListener(AregImpl_##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                    }    \
 /**                                                                                                                         **/             \
 /** Adds listener (registers consumer) for specified thread ID. The thread should be already running.                       **/             \
@@ -542,7 +542,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::addListener(AregImpl_##ConsumerCl
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
-inline bool AregImpl_##EventClass<DATA_CLASS>::removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const String & whichThread)      \
+inline bool AregImpl_##EventClass<DATA_CLASS>::removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, const areg::String & whichThread)      \
 {   return Event::removeListener(AregImpl_##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                 }    \
 /**                                                                                                                         **/             \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/             \

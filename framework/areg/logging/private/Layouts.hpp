@@ -866,7 +866,7 @@ public:
      * \brief   Sets layout type value and the text to output in the stream.
      * \param   anyMessage  A text to write in stream.
      **/
-    explicit AnyTextLayout( const String & anyMessage );
+    explicit AnyTextLayout( const areg::String & anyMessage );
 
     /**
      * \brief   Sets layout type value and the text to output in the stream.
@@ -929,7 +929,7 @@ private:
     /**
      * \brief   The text message to log
      **/
-    String    mTextMessage;
+    areg::String    mTextMessage;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1199,7 +1199,7 @@ inline AnyTextLayout & AnyTextLayout::operator = ( const AnyTextLayout & src )
 
 inline AnyTextLayout & AnyTextLayout::operator = ( AnyTextLayout && src ) noexcept
 {
-    mTextMessage = static_cast<String &&>(src.mTextMessage);
+    mTextMessage = static_cast<areg::String &&>(src.mTextMessage);
     return (*this);
 }
 

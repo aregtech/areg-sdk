@@ -36,7 +36,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const String & roleName )
+ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const areg::String & roleName )
     : mComponentAddress ( ownerThread.getAddress(), roleName)
     , mMasterThread     ( ownerThread )
     , mWorkerThreadMap  ( )

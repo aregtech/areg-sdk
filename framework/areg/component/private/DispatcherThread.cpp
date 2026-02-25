@@ -203,7 +203,7 @@ DispatcherThread & DispatcherThread::_getNullDispatherThread()
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
+DispatcherThread::DispatcherThread (const areg::String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
     : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
     , EventDispatcher ( threadName, maxQeueue )
 

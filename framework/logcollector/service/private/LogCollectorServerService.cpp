@@ -46,7 +46,7 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const areg::C
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
         areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
-        String::formatString( logMsgHello.logMessage
+        areg::String::formatString( logMsgHello.logMessage
                             , areg::LOG_MESSAGE_IZE
                             , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
@@ -76,7 +76,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
     if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
         areg::LogEntry logMsgBye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
-        String::formatString(logMsgBye.logMessage
+        areg::String::formatString(logMsgBye.logMessage
                             , areg::LOG_MESSAGE_IZE
                             , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
@@ -112,7 +112,7 @@ void LogCollectorServerService::removeAllInstances()
         }
 
         areg::LogEntry logMsgClose(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
-        String::formatString(logMsgClose.logMessage, areg::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
+        areg::String::formatString(logMsgClose.logMessage, areg::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
         areg::logAnyMessageLocal(logMsgClose);
         ServiceCommunicationBase::removeAllInstances();
 

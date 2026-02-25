@@ -162,7 +162,7 @@ public:
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
-class StringHashMap: public HashMap<String, VALUE>
+class StringHashMap: public HashMap<areg::String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -330,7 +330,7 @@ public:
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
-class StringMap : public OrderedMap<String, VALUE>
+class StringMap : public OrderedMap<areg::String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -405,7 +405,7 @@ using IntegerArray  = ArrayList<uint32_t>;
 /**
  * \brief   Array of string elements
  **/
-using StringArray   = ArrayList<String>;
+using StringArray   = ArrayList<areg::String>;
 
 /**
  * \brief   Array of pointer elements
@@ -420,7 +420,7 @@ using IntegerToIntegerHashMap   = IntegerHashMap<uint32_t>;
 /**
  * \brief   Hash Map where keys are integers and values are strings
  **/
-using IntegerToStringHashMap    = IntegerHashMap<String>;
+using IntegerToStringHashMap    = IntegerHashMap<areg::String>;
 
 /**
  * \brief   Hash Map where keys are integers and values are pointers.
@@ -435,7 +435,7 @@ using StringToIntegerHashMap    = StringHashMap<uint32_t>;
 /**
  * \brief   Hash Map where keys are strings and values are strings.
  **/
-using StringToStringHashMap     = StringHashMap<String>;
+using StringToStringHashMap     = StringHashMap<areg::String>;
 
 /**
  * \brief   Hash Map where keys are strings and values are pointers.
@@ -450,7 +450,7 @@ using PointerToIntegerHashMap   = PtrHashMap<uint32_t>;
 /**
  * \brief   Hash Map where keys are pointers and values are strings.
  **/
-using PointerToStringHashMap    = PtrHashMap<String>;
+using PointerToStringHashMap    = PtrHashMap<areg::String>;
 
 /**
  * \brief   Sorted Map where keys are values are integers.
@@ -460,7 +460,7 @@ using IntegerToIntegerMap = IntegerMap<uint32_t>;
 /**
  * \brief   Sorted Map where keys are integers and values are strings
  **/
-using IntegerToStringMap = IntegerMap<String>;
+using IntegerToStringMap = IntegerMap<areg::String>;
 
 /**
  * \brief   Sorted Map where keys are integers and values are pointers.
@@ -475,7 +475,7 @@ using StringToIntegerMap = StringMap<uint32_t>;
 /**
  * \brief   Sorted Map where keys are strings and values are strings.
  **/
-using StringToStringMap = StringMap<String>;
+using StringToStringMap = StringMap<areg::String>;
 
 /**
  * \brief   Sorted Map where keys are strings and values are pointers.
@@ -490,7 +490,7 @@ using PointerToIntegerMap = PtrMap<uint32_t>;
 /**
  * \brief   Sorted Map where keys are pointers and values are strings.
  **/
-using PointerToStringMap = PtrMap<String>;
+using PointerToStringMap = PtrMap<areg::String>;
 
 /**
  * \brief   Linked List where values are integers.
@@ -500,7 +500,7 @@ using IntegerList   = LinkedList<uint32_t>;
 /**
  * \brief   Linked List where values are strings.
  **/
-using StringList    = LinkedList<String>;
+using StringList    = LinkedList<areg::String>;
 
 /**
  * \brief   Linked List where values are pointers
@@ -515,7 +515,7 @@ using SortedIntegerList = SortedLinkedList<uint32_t>;
 /**
  * \brief   Sorted List class where values are strings.
  **/
-using SortedStringList  = SortedLinkedList<String>;
+using SortedStringList  = SortedLinkedList<areg::String>;
 
 //////////////////////////////////////////////////////////////////////////
 // Tokenizer class declaration
@@ -541,7 +541,7 @@ public:
      * \param   keepEmpty   if true, two delimiters next to each other specify an empty token
      *                      if false, the result will only contain nonempty tokens
      **/
-    Tokenizer( const String & str, const String & delimiters, bool keepEmpty = true);
+    Tokenizer( const areg::String & str, const areg::String & delimiters, bool keepEmpty = true);
 
     /**
      * \brief   Copies entries from given source.
@@ -570,7 +570,7 @@ public:
      *                      If false, the result will only contain nonempty tokens.
      * \return  Returns list of string split by matching delimiter
      **/
-    const StringArray & tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
+    const StringArray & tokenize( const areg::String & str, const areg::String & delimiters, bool keepEmpty = true);
 
     /**
      * \brief   Returns list of string split by matching delimiter.
@@ -621,7 +621,7 @@ IdHashMap<VALUE>::IdHashMap(uint32_t hashSize)
 
 template <typename VALUE>
 StringHashMap<VALUE>::StringHashMap( uint32_t hashSize )
-    : HashMap<String, VALUE>   (hashSize)
+    : HashMap<areg::String, VALUE>   (hashSize)
 {
 }
 

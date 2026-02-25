@@ -49,7 +49,7 @@ public:
      * \param   addService  The service address object to convert.
      * /return  Returns service address as a string.
      **/
-    static String convAddressToPath( const ServiceAddress & addService );
+    static areg::String convAddressToPath( const ServiceAddress & addService );
 
     /**
      * \brief   Converts given service address path as a string to service address object.
@@ -75,17 +75,17 @@ public:
      * \param   serviceType     The type of service.
      * \param   roleName        The role name of owner component.
      **/
-    ServiceAddress( const String & serviceName
+    ServiceAddress( const areg::String & serviceName
                   , const Version & serviceVersion
                   , areg::ServiceType serviceType
-                  , const String & roleName );
+                  , const areg::String & roleName );
 
     /**
      * \brief   Creates service address. Sets given service item information and role name of owner component.
      * \param   serviceItem     The service item object, which contains name, version and type information.
      * \param   roleName        The role name of owner component.
      **/
-    ServiceAddress( const ServiceItem  & serviceItem, const String & roleName );
+    ServiceAddress( const ServiceItem  & serviceItem, const areg::String & roleName );
 
     /**
      * \brief   Creates service address, which is contained in stub address object.
@@ -182,13 +182,13 @@ public:
     /**
      * \brief   Returns role name of service address.
      **/
-    inline const String & getRoleName() const;
+    inline const areg::String & getRoleName() const;
 
     /**
      * \brief   Sets the role name of service address
      * \param   roleName        New role name to set.
      **/
-    inline void setRoleName( const String & roleName );
+    inline void setRoleName( const areg::String & roleName );
 
     /**
      * \brief   Returns service item information, which contains service name, version and type.
@@ -199,7 +199,7 @@ public:
      * \brief   Creates Service address path as a string.
      * /return  Returns service address as a string.
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief   Converts given service address path as a string to service address object.
@@ -230,7 +230,7 @@ protected:
     /**
      * \brief   The role name of service address.
      **/
-    String          mRoleName;
+    areg::String          mRoleName;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -304,12 +304,12 @@ inline ServiceAddress::operator uint32_t () const
     return mMagicNum;
 }
 
-inline const String & ServiceAddress::getRoleName() const
+inline const areg::String & ServiceAddress::getRoleName() const
 {
     return mRoleName;
 }
 
-inline void ServiceAddress::setRoleName(const String & roleName)
+inline void ServiceAddress::setRoleName(const areg::String & roleName)
 {
     mRoleName = roleName;
     mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);

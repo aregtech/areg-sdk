@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class String;
+namespace areg { class String; }
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionProvider interface
@@ -81,7 +81,7 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void applyServiceConnectionData( const String & hostName, uint16_t portNr ) = 0;
+    virtual void applyServiceConnectionData( const areg::String & hostName, uint16_t portNr ) = 0;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.

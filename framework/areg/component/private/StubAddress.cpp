@@ -43,7 +43,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 // Static functions
 //////////////////////////////////////////////////////////////////////////
-String StubAddress::convAddressToPath( const StubAddress & stubAddress )
+areg::String StubAddress::convAddressToPath( const StubAddress & stubAddress )
 {
     return stubAddress.convToString();
 }
@@ -72,11 +72,11 @@ StubAddress::StubAddress()
 {
 }
 
-StubAddress::StubAddress( const String & serviceName
+StubAddress::StubAddress( const areg::String & serviceName
                         , const Version & serviceVersion
                         , areg::ServiceType serviceType
-                        , const String & roleName
-                        , const String & threadName   /*= String::getEmptyString()*/ )
+                        , const areg::String & roleName
+                        , const areg::String & threadName   /*= areg::String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -91,7 +91,7 @@ StubAddress::StubAddress( const String & serviceName
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const ServiceItem & service, const String & roleName, const String & threadName /*= String::getEmptyString() */)
+StubAddress::StubAddress(const ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString() */)
     : ServiceAddress( service, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -106,7 +106,7 @@ StubAddress::StubAddress(const ServiceItem & service, const String & roleName, c
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const areg::InterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString() */)
+StubAddress::StubAddress(const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString() */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -181,7 +181,7 @@ bool StubAddress::isProxyCompatible(const ProxyAddress & proxyAddress) const
     }
 }
 
-void StubAddress::setThread(const String & threadName)
+void StubAddress::setThread(const areg::String & threadName)
 {
     Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
@@ -228,9 +228,9 @@ bool StubAddress::isValid() const
     return mChannel.isValid();
 }
 
-String StubAddress::convToString() const
+areg::String StubAddress::convToString() const
 {
-    String result(static_cast<uint32_t>(0xFF));
+    areg::String result(static_cast<uint32_t>(0xFF));
 
     result.append(EXTENTION_STUB)
           .append(areg::COMPONENT_PATH_SEPARATOR)
@@ -246,11 +246,11 @@ String StubAddress::convToString() const
 void StubAddress::convFromString(const char* pathStub, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathStub;
-    if ( String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_STUB.data() )
+    if ( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_STUB.data() )
     {
         ServiceAddress::convFromString(strSource, &strSource);
-        mThreadName  = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource).getString() );
+        mThreadName  = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+        mChannel.convFromString( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource).getString() );
 
         mMagicNum   = StubAddress::_magicNumber(*this);
     }

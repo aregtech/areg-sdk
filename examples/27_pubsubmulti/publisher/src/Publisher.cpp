@@ -30,9 +30,9 @@ DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_processTimer);
 
 namespace
 {
-    String generateString(uint32_t seqNr)
+    areg::String generateString(uint32_t seqNr)
     {
-        String result;
+        areg::String result;
         return result.format("string_%u", seqNr);
     }
 
@@ -224,7 +224,7 @@ void Publisher::processTimer(Timer & timer)
             mCountString = 0;
         }
 
-        String data(generateString(mSeqString));
+        areg::String data(generateString(mSeqString));
         LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
         setStringOnChange(data);
     }
@@ -240,14 +240,14 @@ void Publisher::onThreadRuns()
     OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
-    printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
+    printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
-        String message;
-        String usrInput = console.readString();
+        areg::String message;
+        areg::String usrInput = console.readString();
 
         if (parser.parseOptionLine(usrInput.getString()))
         {
@@ -298,7 +298,7 @@ void Publisher::onThreadRuns()
 }
 
 
-inline void Publisher::printMessage(const String & message, OptionFlag cmd)
+inline void Publisher::printMessage(const areg::String & message, OptionFlag cmd)
 {
     Console & console = Console::getInstance();
     console.clearScreen();

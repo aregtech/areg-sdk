@@ -94,8 +94,8 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
 TEST( LogScopeTest, LoadSavedLogConfiguration )
 {
     Application::setWorkingDirectory( nullptr );
-    String defaultConfig{ DEFAULT_CONFIG_FILE };
-    String testConfig{ TEST_CONFIG_FILE };
+    areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
+    areg::String testConfig{ TEST_CONFIG_FILE };
     bool isLogEnabled{ false };
 
     do
@@ -156,8 +156,8 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog )
 TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 {
     Application::setWorkingDirectory( nullptr );
-    String defaultConfig{ DEFAULT_CONFIG_FILE };
-    String testConfig{ TEST_CONFIG_FILE };
+    areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
+    areg::String testConfig{ TEST_CONFIG_FILE };
 
     LOGGING_START( defaultConfig );
     do
@@ -272,8 +272,8 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information )
 TEST( LogScopeTest, ScopePriorityGroupping )
 {
     Application::setWorkingDirectory( nullptr );
-    String defaultConfig{ DEFAULT_CONFIG_FILE };
-    String testConfig{ TEST_CONFIG_FILE };
+    areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
+    areg::String testConfig{ TEST_CONFIG_FILE };
 
     uint32_t information{ 0 };
     uint32_t errLeaf1{ 0 };

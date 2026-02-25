@@ -38,7 +38,7 @@ namespace
     }
 }
 
-SqliteStatement::SqliteStatement(SqliteDatabase& db, const String& sql)
+SqliteStatement::SqliteStatement(SqliteDatabase& db, const areg::String& sql)
     : mDatabase (db)
     , mStatement(nullptr)
     , mRowPos   (0)
@@ -61,7 +61,7 @@ SqliteStatement::~SqliteStatement()
     finalize();
 }
 
-bool SqliteStatement::prepare(const String& sql)
+bool SqliteStatement::prepare(const areg::String& sql)
 {
     mRowPos = 0; // Reset row position
     if ((mDatabase.isOperable() == false) || sql.isEmpty())
@@ -139,7 +139,7 @@ bool SqliteStatement::bindFloat(int32_t index, float value)
     return ((index >= 0) && isValid() && (sqlite3_bind_double(_sqlite_stmt(mStatement), index + 1, value) == SQLITE_OK));
 }
 
-bool SqliteStatement::bindText(int32_t index, const String& value)
+bool SqliteStatement::bindText(int32_t index, const areg::String& value)
 {
     const char* txt = value.getString();
     return (txt != nullptr ? (index >= 0) && isValid() && (sqlite3_bind_text(_sqlite_stmt(mStatement), index + 1, txt, value.getLength(), SQLITE_TRANSIENT) == SQLITE_OK) : bindNull(index));
@@ -198,12 +198,12 @@ float SqliteStatement::getFloat(int32_t index) const
     return static_cast<float>(sqlite3_column_double(_sqlite_stmt(mStatement), index));
 }
 
-String SqliteStatement::getText(int32_t index) const
+areg::String SqliteStatement::getText(int32_t index) const
 {
     ASSERT(isValid());
     ASSERT(index >= 0);
     const char* txt = reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), index));
-    return String(txt != nullptr ? txt : String::EmptyString);
+    return areg::String(txt != nullptr ? txt : areg::String::EmptyString);
 }
 
 bool SqliteStatement::isNull(int32_t index) const
@@ -254,15 +254,15 @@ int32_t SqliteStatement::getColumnCount() const
     return sqlite3_column_count(_sqlite_stmt(mStatement));
 }
 
-String SqliteStatement::getColumnName(int32_t index) const
+areg::String SqliteStatement::getColumnName(int32_t index) const
 {
     ASSERT(isValid());
     ASSERT(index >= 0);
     const char* columnName = sqlite3_column_name(_sqlite_stmt(mStatement), index);
-    return String((columnName != nullptr) ? columnName : String::EmptyString);
+    return areg::String((columnName != nullptr) ? columnName : areg::String::EmptyString);
 }
 
-int32_t SqliteStatement::getColumnIndex(const String& columnName) const
+int32_t SqliteStatement::getColumnIndex(const areg::String& columnName) const
 {
     ASSERT(isValid());
     ASSERT(!columnName.isEmpty());

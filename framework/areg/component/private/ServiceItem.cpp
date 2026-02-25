@@ -19,7 +19,7 @@
 
 #include <utility>
 
-String ServiceItem::convAddressToPath( const ServiceItem & service )
+areg::String ServiceItem::convAddressToPath( const ServiceItem & service )
 {
     return service.convToString();
 }
@@ -39,7 +39,7 @@ ServiceItem::ServiceItem()
 {
 }
 
-ServiceItem::ServiceItem(const String & serviceName)
+ServiceItem::ServiceItem(const areg::String & serviceName)
     : mServiceName      ( serviceName )
     , mServiceVersion   ( Version::getInvalidVersion() )
     , mServiceType      ( areg::ServiceType::Local )
@@ -49,7 +49,7 @@ ServiceItem::ServiceItem(const String & serviceName)
     mMagicNum = ServiceItem::_magicNumber(*this);
 }
 
-ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType )
+ServiceItem::ServiceItem( const areg::String & serviceName, const Version & serviceVersion, areg::ServiceType serviceType )
     : mServiceName      ( serviceName )
     , mServiceVersion   ( serviceVersion )
     , mServiceType      ( serviceType )
@@ -85,15 +85,15 @@ ServiceItem::ServiceItem( ServiceItem && source ) noexcept
 {
 }
 
-String ServiceItem::convToString() const
+areg::String ServiceItem::convToString() const
 {
-    String result(static_cast<uint32_t>(0xFF));
+    areg::String result(static_cast<uint32_t>(0xFF));
 
     result.append(mServiceName)
           .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(mServiceVersion.convToString())
           .append(areg::COMPONENT_PATH_SEPARATOR)
-          .append(String::makeString(static_cast<int32_t>(mServiceType), areg::Radix::Decimal));
+          .append(areg::String::makeString(static_cast<int32_t>(mServiceType), areg::Radix::Decimal));
 
     return result;
 }
@@ -101,9 +101,9 @@ String ServiceItem::convToString() const
 void ServiceItem::convFromString(  const char* pathService, const char** out_nextPart /*= nullptr*/ )
 {
     const char* strSource   = pathService;
-    mServiceName        = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    mServiceVersion     = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    String serviceType  = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceName        = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    mServiceVersion     = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+    areg::String serviceType  = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceType        = static_cast<areg::ServiceType>(serviceType.toInt32());
     mMagicNum           = ServiceItem::_magicNumber(*this);
 

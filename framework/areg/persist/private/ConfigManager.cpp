@@ -27,10 +27,10 @@ namespace
 {
     inline uint32_t _findPosition( const ArrayList<Property>& propList
                                  , uint32_t startAt
-                                 , const String& section
-                                 , const String& module
-                                 , const String& property
-                                 , const String& position
+                                 , const areg::String& section
+                                 , const areg::String& module
+                                 , const areg::String& property
+                                 , const areg::String& position
                                  , bool exact
                                  , areg::ConfigEntry configKey)
     {
@@ -58,10 +58,10 @@ namespace
     template <typename Type>
     inline void _setPositionValue( ArrayList<Property>& writeList
                                  , const ArrayList<Property>& readList
-                                 , const String& section
-                                 , const String& module
-                                 , const String& property
-                                 , const String& position
+                                 , const areg::String& section
+                                 , const areg::String& module
+                                 , const areg::String& property
+                                 , const areg::String& position
                                  , areg::ConfigEntry confKey
                                  , const Type& newValue
                                  , bool isTemporary)
@@ -82,7 +82,7 @@ namespace
             }
             else
             {
-                writeList.add(Property(PropertyKey(section, module, property, position, confKey), PropertyValue(newValue), String::EmptyString, isTemporary));
+                writeList.add(Property(PropertyKey(section, module, property, position, confKey), PropertyValue(newValue), areg::String::EmptyString, isTemporary));
             }
         }
         else
@@ -96,7 +96,7 @@ namespace
                 }
                 else
                 {
-                    writeList.add(Property(PropertyKey(section, module, property, position, confKey), PropertyValue(newValue), String::EmptyString, isTemporary));
+                    writeList.add(Property(PropertyKey(section, module, property, position, confKey), PropertyValue(newValue), areg::String::EmptyString, isTemporary));
                 }
             }
             else if (writePos != areg::INVALID_POSITION)
@@ -107,10 +107,10 @@ namespace
     }
 
     inline const Property* _getProperty( const areg::ListProperties& list
-                                       , const String& section
-                                       , const String& module
-                                       , const String& property
-                                       , const String& position
+                                       , const areg::String& section
+                                       , const areg::String& module
+                                       , const areg::String& property
+                                       , const areg::String& position
                                        , areg::ConfigEntry keyType
                                        , bool exactMatch)
     {
@@ -120,7 +120,7 @@ namespace
         return (elemPos != areg::INVALID_POSITION ? &list[elemPos] : nullptr);
     }
 
-    uint32_t _readConfig(const FileBase& file, areg::ListProperties& listWritable, areg::ListProperties& listReadonly, const String& module)
+    uint32_t _readConfig(const FileBase& file, areg::ListProperties& listWritable, areg::ListProperties& listReadonly, const areg::String& module)
     {
         uint32_t result{ 0 };
 
@@ -128,7 +128,7 @@ namespace
         {
             file.moveToBegin();
 
-            String line;
+            areg::String line;
             Property newProperty;
 
             while (file.readLine(line) > 0)
@@ -158,7 +158,7 @@ namespace
 
     inline bool _saveConfig( const areg::ListProperties& listWritable
                            , const areg::ListProperties& listReadonly
-                           , const String& module
+                           , const areg::String& module
                            , const FileBase& srcFile
                            , FileBase& dstFile
                            , bool saveAll)
@@ -194,7 +194,7 @@ namespace
             }
             else
             {
-                String line;
+                areg::String line;
                 Property newProperty;
 
                 while (srcFile.readLine(line) > 0)
@@ -269,7 +269,7 @@ bool ConfigManager::existProperty(const PropertyKey& key) const
     return result;
 }
 
-areg::ListProperties ConfigManager::getSectionProperties(const String& section) const
+areg::ListProperties ConfigManager::getSectionProperties(const areg::String& section) const
 {
     Lock lock(mLock);
     areg::ListProperties result;
@@ -288,7 +288,7 @@ areg::ListProperties ConfigManager::getSectionProperties(const String& section) 
 
     for (const auto& prop : mReadonlyProperties.getData())
     {
-        const String& propSec = prop.getKey().getSection();
+        const areg::String& propSec = prop.getKey().getSection();
         if ((section == propSec) && (section == areg::SYNTAX_ANY_VALUE) && (propSec == areg::SYNTAX_ANY_VALUE))
         {
             result.addIfUnique(prop, false);
@@ -298,9 +298,9 @@ areg::ListProperties ConfigManager::getSectionProperties(const String& section) 
     return result;
 }
 
-const Property* ConfigManager::getProperty( const String& section
-                                          , const String& property
-                                          , const String& position
+const Property* ConfigManager::getProperty( const areg::String& section
+                                          , const areg::String& property
+                                          , const areg::String& position
                                           , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
@@ -310,9 +310,9 @@ const Property* ConfigManager::getProperty( const String& section
     return (result != nullptr ? result : _getProperty(mReadonlyProperties, section, areg::SYNTAX_ALL_MODULES, property, position, keyType, false));
 }
 
-const Property * ConfigManager::getModuleProperty( const String& section
-                                                 , const String& property
-                                                 , const String& position
+const Property * ConfigManager::getModuleProperty( const areg::String& section
+                                                 , const areg::String& property
+                                                 , const areg::String& position
                                                  , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
@@ -321,20 +321,20 @@ const Property * ConfigManager::getModuleProperty( const String& section
     return _getProperty(mWritableProperties, section, mModule, property, position, keyType, true);
 }
 
-void ConfigManager::setModuleProperty( const String& section
-                                     , const String& property
-                                     , const String& position
-                                     , const String& value
+void ConfigManager::setModuleProperty( const areg::String& section
+                                     , const areg::String& property
+                                     , const areg::String& position
+                                     , const areg::String& value
                                      , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/
                                      , bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
     keyType = keyType == areg::ConfigEntry::Invalid ? areg::ConfigEntry::AnyKey : keyType;
-    _setPositionValue<String>(mWritableProperties, mReadonlyProperties, section, mModule, property, position, keyType, value, isTemporary);
+    _setPositionValue<areg::String>(mWritableProperties, mReadonlyProperties, section, mModule, property, position, keyType, value, isTemporary);
 }
 
-void ConfigManager::removeModuleProperty(const String& section, const String& property, const String& position, areg::ConfigEntry keyType)
+void ConfigManager::removeModuleProperty(const areg::String& section, const areg::String& property, const areg::String& position, areg::ConfigEntry keyType)
 {
     Lock lock(mLock);
     uint32_t elemPos = _findPosition(mWritableProperties, 0, section, mModule, property, position, true, keyType);
@@ -344,7 +344,7 @@ void ConfigManager::removeModuleProperty(const String& section, const String& pr
     }
 }
 
-int32_t ConfigManager::removeModuleProperties(const String& section, const String& property, areg::ConfigEntry keyType)
+int32_t ConfigManager::removeModuleProperties(const areg::String& section, const areg::String& property, areg::ConfigEntry keyType)
 {
     Lock lock(mLock);
     int32_t result{ 0 };
@@ -373,7 +373,7 @@ int32_t ConfigManager::removeModuleProperties(const String& section, const Strin
     return result;
 }
 
-void ConfigManager::removeSectionProperties(const String& section)
+void ConfigManager::removeSectionProperties(const areg::String& section)
 {
     Lock lock(mLock);
     for (uint32_t i = 0; i < mWritableProperties.getSize(); ++i)
@@ -389,13 +389,13 @@ void ConfigManager::removeSectionProperties(const String& section)
     }
 }
 
-bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/, ConfigListener * listener /*= nullptr*/)
+bool ConfigManager::readConfig(const areg::String& filePath /*= areg::String::EmptyString*/, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (mIsConfigured == false)
     {
         ASSERT(mFilePath.isEmpty());
-        String path;
+        areg::String path;
         if (filePath.isEmpty())
         {
             path = areg::DEFAULT_CONFIG_FILE;
@@ -442,7 +442,7 @@ bool ConfigManager::readConfig(const FileBase& file, ConfigListener * listener /
     return mIsConfigured;
 }
 
-bool ConfigManager::saveConfig(const String& filePath, ConfigListener * listener /*= nullptr*/)
+bool ConfigManager::saveConfig(const areg::String& filePath, ConfigListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     bool result{ false };
@@ -457,8 +457,8 @@ bool ConfigManager::saveConfig(const String& filePath, ConfigListener * listener
                                 | static_cast<uint32_t>(File::OpenMode::Write) };
     bool saveAll{ false };
 
-    String srcPath, dstPath;
-    String tempFile = File::genTempFileName();
+    areg::String srcPath, dstPath;
+    areg::String tempFile = File::genTempFileName();
     
     if (filePath.isEmpty() == false)
     {
@@ -477,7 +477,7 @@ bool ConfigManager::saveConfig(const String& filePath, ConfigListener * listener
     dstPath = File::getFileFullPath( File::normalizePath(dstPath) );
     srcPath = mFilePath.isEmpty() ? dstPath : mFilePath;
 
-    String dstDir = File::getFileDirectory(dstPath);
+    areg::String dstDir = File::getFileDirectory(dstPath);
     if ((dstDir.isEmpty() == false) && File::existDir(dstDir) == false)
     {
         File::createDirCascaded(dstDir);
@@ -621,7 +621,7 @@ Version ConfigManager::getLogVersion() const
     return result;
 }
 
-bool ConfigManager::getLogEnabled(const String& logType) const
+bool ConfigManager::getLogEnabled(const areg::String& logType) const
 {
     Lock lock(mLock);
 
@@ -640,7 +640,7 @@ bool ConfigManager::getLogEnabled(const String& logType) const
 
 bool ConfigManager::getLogEnabled(areg::LogTarget logType) const
 {
-    String id = Identifier::convToString( static_cast<uint32_t>(logType)
+    areg::String id = Identifier::convToString( static_cast<uint32_t>(logType)
                                         , areg::LogTypeIdentifiers
                                         , static_cast<uint32_t>(areg::LogTarget::Undefined));
     return getLogEnabled(id);
@@ -648,13 +648,13 @@ bool ConfigManager::getLogEnabled(areg::LogTarget logType) const
 
 void ConfigManager::setLogEnabled(areg::LogTarget logType, bool newValue, bool isTemporary /*= false*/)
 {
-    String id = Identifier::convToString( static_cast<uint32_t>(logType)
+    areg::String id = Identifier::convToString( static_cast<uint32_t>(logType)
                                         , areg::LogTypeIdentifiers
                                         , static_cast<uint32_t>(areg::LogTarget::Undefined));
     setLogEnabled(id, newValue, isTemporary);
 }
 
-String ConfigManager::getLogFileLocation() const
+areg::String ConfigManager::getLogFileLocation() const
 {
     Lock lock(mLock);
 
@@ -662,7 +662,7 @@ String ConfigManager::getLogFileLocation() const
     const areg::ConfigKey& key = areg::getLogFileLocation();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
-    String result;
+    areg::String result;
     if (value != nullptr)
     {
         result = value->getString();
@@ -689,7 +689,7 @@ void ConfigManager::setLogFileAppend(bool newValue, bool isTemporary /*= false*/
     Lock lock(mLock);
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogFileAppend;
     const areg::ConfigKey& key = areg::getLogFileAppend();
-    setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
+    setModuleProperty(key.section, key.property, key.position, areg::String::makeString(newValue), confKey, isTemporary);
 }
 
 uint32_t ConfigManager::getLogRemoteQueueSize() const
@@ -708,10 +708,10 @@ void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogRemoteQueueSize;
     const areg::ConfigKey& key = areg::getLogRemoteQueueSize();
-    setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
+    setModuleProperty(key.section, key.property, key.position, areg::String::makeString(newValue), confKey, isTemporary);
 }
 
-String ConfigManager::getLogLayoutEnter() const
+areg::String ConfigManager::getLogLayoutEnter() const
 {
     Lock lock(mLock);
 
@@ -719,7 +719,7 @@ String ConfigManager::getLogLayoutEnter() const
     const areg::ConfigKey& key = areg::getLogLayoutEnter();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
-    String result;
+    areg::String result;
     if (value != nullptr)
     {
         result = value->getString();
@@ -732,7 +732,7 @@ String ConfigManager::getLogLayoutEnter() const
     return result;
 }
 
-void ConfigManager::setLogLayoutEnter(const String& newValue, bool isTemporary /*= false*/)
+void ConfigManager::setLogLayoutEnter(const areg::String& newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
@@ -741,7 +741,7 @@ void ConfigManager::setLogLayoutEnter(const String& newValue, bool isTemporary /
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-String ConfigManager::getLogLayoutMessage() const
+areg::String ConfigManager::getLogLayoutMessage() const
 {
     Lock lock(mLock);
 
@@ -749,7 +749,7 @@ String ConfigManager::getLogLayoutMessage() const
     const areg::ConfigKey& key = areg::getLogLayoutMessage();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
-    String result;
+    areg::String result;
     if (value != nullptr)
     {
         result = value->getString();
@@ -762,7 +762,7 @@ String ConfigManager::getLogLayoutMessage() const
     return result;
 }
 
-void ConfigManager::setLogLayoutMessage(const String& newValue, bool isTemporary /*= false*/)
+void ConfigManager::setLogLayoutMessage(const areg::String& newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
@@ -771,7 +771,7 @@ void ConfigManager::setLogLayoutMessage(const String& newValue, bool isTemporary
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-String ConfigManager::getLogLayoutExit() const
+areg::String ConfigManager::getLogLayoutExit() const
 {
     Lock lock(mLock);
 
@@ -779,7 +779,7 @@ String ConfigManager::getLogLayoutExit() const
     const areg::ConfigKey& key = areg::getLogLayoutExit();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
 
-    String result;
+    areg::String result;
     if (value != nullptr)
     {
         result = value->getString();
@@ -792,7 +792,7 @@ String ConfigManager::getLogLayoutExit() const
     return result;
 }
 
-void ConfigManager::setLogLayoutExit(const String& newValue, bool isTemporary /*= false*/)
+void ConfigManager::setLogLayoutExit(const areg::String& newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
@@ -846,7 +846,7 @@ void ConfigManager::addModuletLogScopes(const std::vector<Property>& scopeList, 
     }
 }
 
-void ConfigManager::addModuleLogScope(const String& scopeName, const String& prio)
+void ConfigManager::addModuleLogScope(const areg::String& scopeName, const areg::String& prio)
 {
     Lock lock(mLock);
 
@@ -855,14 +855,14 @@ void ConfigManager::addModuleLogScope(const String& scopeName, const String& pri
     setModuleProperty(key.section, key.property, scopeName, prio, confKey, false);
 }
 
-void ConfigManager::addModuleLogScope(const String& scopeName, uint32_t prio)
+void ConfigManager::addModuleLogScope(const areg::String& scopeName, uint32_t prio)
 {
     PropertyValue value;
     value.setIdentifierList(prio, areg::LogScopePriorityIndentifiers);
     addModuleLogScope(scopeName, value.getString());
 }
 
-bool ConfigManager::removeScope(const String& scopeName)
+bool ConfigManager::removeScope(const areg::String& scopeName)
 {
     Lock lock(mLock);
 
@@ -884,7 +884,7 @@ int32_t ConfigManager::removeModuleScopes()
     return removeModuleProperties(key.section, key.property, confKey);
 }
 
-std::vector<Identifier> ConfigManager::getRemoteServiceConnections(const String& service) const
+std::vector<Identifier> ConfigManager::getRemoteServiceConnections(const areg::String& service) const
 {
     Lock lock(mLock);
 
@@ -901,28 +901,28 @@ std::vector<Identifier> ConfigManager::getRemoteServiceConnections(const String&
     return result;
 }
 
-String ConfigManager::getRemoteServiceName(const String& service, const String& connectType) const
+areg::String ConfigManager::getRemoteServiceName(const areg::String& service, const areg::String& connectType) const
 {
     Lock lock(mLock);
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::ServiceName;
     const areg::ConfigKey& key = areg::getServiceName();
     const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
-    return (value != nullptr ? value->getString() : String(String::EmptyString));
+    return (value != nullptr ? value->getString() : areg::String(areg::String::EmptyString));
 }
 
-String ConfigManager::getRemoteServiceName(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
+areg::String ConfigManager::getRemoteServiceName(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServiceName(service, connect);
 }
 
-bool ConfigManager::getRemoteServiceEnable(const String& service, const String& connectType) const
+bool ConfigManager::getRemoteServiceEnable(const areg::String& service, const areg::String& connectType) const
 {
     Lock lock(mLock);
 
@@ -934,36 +934,36 @@ bool ConfigManager::getRemoteServiceEnable(const String& service, const String& 
 
 bool ConfigManager::getRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServiceEnable(service, connect);
 }
 
-void ConfigManager::setRemoteServiceEnable(const String& service, const String& connectType, bool newValue, bool isTemporary /*= false*/)
+void ConfigManager::setRemoteServiceEnable(const areg::String& service, const areg::String& connectType, bool newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::ServiceEnable;
     const areg::ConfigKey& key = areg::getServiceEnable();
-    setModuleProperty(service, key.property, connectType, String::makeString(newValue), confKey, isTemporary);
+    setModuleProperty(service, key.property, connectType, areg::String::makeString(newValue), confKey, isTemporary);
 }
 
 void ConfigManager::setRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, bool newValue, bool isTemporary /*= false*/)
 {
-    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     setRemoteServiceEnable(service, connect, newValue, isTemporary);
 }
 
-String ConfigManager::getRemoteServiceAddress(const String& service, const String& connectType) const
+areg::String ConfigManager::getRemoteServiceAddress(const areg::String& service, const areg::String& connectType) const
 {
     Lock lock(mLock);
 
@@ -971,7 +971,7 @@ String ConfigManager::getRemoteServiceAddress(const String& service, const Strin
     const areg::ConfigKey& key = areg::getServiceAddress();
     const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
 
-    String result;
+    areg::String result;
     if (value != nullptr)
     {
         result = value->getString();
@@ -984,18 +984,18 @@ String ConfigManager::getRemoteServiceAddress(const String& service, const Strin
     return result;
 }
 
-String ConfigManager::getRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
+areg::String ConfigManager::getRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServiceAddress(service, connect);
 }
 
-void ConfigManager::setRemoteServiceAddress(const String& service, const String& connectType, const String& newValue, bool isTemporary /*= false*/)
+void ConfigManager::setRemoteServiceAddress(const areg::String& service, const areg::String& connectType, const areg::String& newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
@@ -1004,18 +1004,18 @@ void ConfigManager::setRemoteServiceAddress(const String& service, const String&
     setModuleProperty(service, key.property, connectType, newValue, confKey, isTemporary);
 }
 
-void ConfigManager::setRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const String& newValue, bool isTemporary /*= false*/)
+void ConfigManager::setRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const areg::String& newValue, bool isTemporary /*= false*/)
 {
-    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     setRemoteServiceAddress(service, connect, newValue, isTemporary);
 }
 
-uint16_t ConfigManager::getRemoteServicePort(const String& service, const String& connectType) const
+uint16_t ConfigManager::getRemoteServicePort(const areg::String& service, const areg::String& connectType) const
 {
     Lock lock(mLock);
 
@@ -1027,49 +1027,49 @@ uint16_t ConfigManager::getRemoteServicePort(const String& service, const String
 
 uint16_t ConfigManager::getRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServicePort(service, connect);
 }
 
-void ConfigManager::setRemoteServicePort(const String& service, const String& connectType, uint16_t newValue, bool isTemporary /*= false*/)
+void ConfigManager::setRemoteServicePort(const areg::String& service, const areg::String& connectType, uint16_t newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::ServicePort;
     const areg::ConfigKey& key = areg::getServicePort();
-    setModuleProperty(service, key.property, connectType, String::makeString(static_cast<uint32_t>(newValue)), confKey, isTemporary);
+    setModuleProperty(service, key.property, connectType, areg::String::makeString(static_cast<uint32_t>(newValue)), confKey, isTemporary);
 }
 
 void ConfigManager::setRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool isTemporary /*= false*/)
 {
-    const String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     setRemoteServicePort(service, connect, newValue, isTemporary);
 }
 
-String ConfigManager::getLogDatabaseProperty(const String& whichPosition)
+areg::String ConfigManager::getLogDatabaseProperty(const areg::String& whichPosition)
 {
     const areg::ConfigKey& key = areg::getLogDatabaseName();
     const PropertyValue* value = getPropertyValue(key.section, key.property, whichPosition);
-    return (value != nullptr ? value->getValue() : String::getEmptyString());
+    return (value != nullptr ? value->getValue() : areg::String::getEmptyString());
 }
 
-void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const String& newValue, bool isTemporary /*= false*/)
+void ConfigManager::setLogDatabaseProperty(const areg::String& whichPosition, const areg::String& newValue, bool isTemporary /*= false*/)
 {
     const areg::ConfigKey& key = areg::getLogDatabaseName();
     setModuleProperty(key.section, key.property, whichPosition, newValue, areg::ConfigEntry::AnyKey, isTemporary);
 }
 
-uint32_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= areg::EmptyStringA*/)
+uint32_t ConfigManager::getDefaultBufferBlockSize(const areg::String& whichModule /*= areg::EmptyStringA*/)
 {
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::DefaultBufferBlock;
     const areg::ConfigKey& key = areg::getDefaultBufferBlockSize();
@@ -1077,7 +1077,7 @@ uint32_t ConfigManager::getDefaultBufferBlockSize(const String& whichModule /*= 
     return (prop != nullptr ? prop->getValue().getInteger() : 0u);
 }
 
-uint32_t ConfigManager::getDefaultMessageQueueSize(const String& whichModule /*= areg::EmptyStringA*/)
+uint32_t ConfigManager::getDefaultMessageQueueSize(const areg::String& whichModule /*= areg::EmptyStringA*/)
 {
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::DefaultMessageQueue;
     const areg::ConfigKey& key = areg::getDefaultMessageQueueSize();

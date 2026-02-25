@@ -71,7 +71,7 @@ public:
      * \return  Returns true if after parsing the layout manager contains at least one layout object.
      **/
     bool createLayouts( const char * layoutFormat );
-    bool createLayouts( const String & layoutFormat );
+    bool createLayouts( const areg::String & layoutFormat );
 
     /**
      * \brief   Release and delete list of layout objects.

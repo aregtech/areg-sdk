@@ -23,7 +23,7 @@ uint32_t TimerBase::getTickCount()
 }
 
 TimerBase::TimerBase( const TimerType timerType
-                    , const String& timerName
+                    , const areg::String& timerName
                     , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
                     , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
     : mTimerType    ( timerType )

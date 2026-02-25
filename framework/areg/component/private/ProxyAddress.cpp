@@ -63,7 +63,7 @@ const ProxyAddress & ProxyAddress::getInvalidProxyAddress()
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
-String ProxyAddress::convAddressToPath( const ProxyAddress & proxyAddress )
+areg::String ProxyAddress::convAddressToPath( const ProxyAddress & proxyAddress )
 {
     return proxyAddress.convToString();
 }
@@ -87,11 +87,11 @@ ProxyAddress::ProxyAddress()
 {
 }
 
-ProxyAddress::ProxyAddress( const String & serviceName
+ProxyAddress::ProxyAddress( const areg::String & serviceName
                           , const Version & serviceVersion
                           , areg::ServiceType serviceType
-                          , const String & roleName
-                          , const String & threadName /*= String::getEmptyString()*/ )
+                          , const areg::String & roleName
+                          , const areg::String & threadName /*= areg::String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -102,7 +102,7 @@ ProxyAddress::ProxyAddress( const String & serviceName
         mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName /*= String::getEmptyString()*/ )
+ProxyAddress::ProxyAddress( const ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString()*/ )
     : ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -113,7 +113,7 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName
         mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress(const areg::InterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString()*/)
+ProxyAddress::ProxyAddress(const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString()*/)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -175,7 +175,7 @@ bool ProxyAddress::isStubCompatible(const StubAddress & addrStub ) const
     return addrStub.isProxyCompatible(*this);
 }
 
-void ProxyAddress::setThread( const String & threadName )
+void ProxyAddress::setThread( const areg::String & threadName )
 {
     Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
@@ -247,9 +247,9 @@ uint32_t ProxyAddress::_magicNumber(const ProxyAddress & proxy)
     return result;
 }
 
-String ProxyAddress::convToString() const
+areg::String ProxyAddress::convToString() const
 {
-    String result(static_cast<uint32_t>(0xFF));
+    areg::String result(static_cast<uint32_t>(0xFF));
 
     result.append(EXTENTION_PROXY)
           .append(areg::COMPONENT_PATH_SEPARATOR)
@@ -265,11 +265,11 @@ String ProxyAddress::convToString() const
 void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathProxy;
-    if ( String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
+    if ( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
     {
         ServiceAddress::convFromString(strSource, &strSource);
-        mThreadName  = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
+        mThreadName  = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
+        mChannel.convFromString( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
 
         mMagicNum = ProxyAddress::_magicNumber(*this);
     }

@@ -122,7 +122,7 @@ public:
      * \param   column  The 0-based column index.
      * \return  The string value of the column.
      */
-    String getText(int32_t column) const;
+    areg::String getText(int32_t column) const;
 
     /**
      * \brief   Checks if the specified column is NULL.
@@ -177,14 +177,14 @@ public:
      * \param   column  The 0-based column index.
      * \return  The name of the column.
      */
-    String getColumnName(int32_t column) const;
+    areg::String getColumnName(int32_t column) const;
 
     /**
      * \brief   Returns the index of the column with the specified name.
      * \param   columnName The name of the column.
      * \return  The 0-based index of the column, or -1 if not found.
      */
-    int32_t getColumnIndex(const String& columnName) const;
+    int32_t getColumnIndex(const areg::String& columnName) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

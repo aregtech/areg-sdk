@@ -28,7 +28,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, Compo
 {
 }
 
-void ServicingComponent::requestHelloWorld(const String & roleName)
+void ServicingComponent::requestHelloWorld(const areg::String & roleName)
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 
@@ -72,14 +72,14 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 }
 
 #if AREG_LOGS
-void ServicingComponent::requestShutdownService(uint32_t clientID, const String & roleName)
+void ServicingComponent::requestShutdownService(uint32_t clientID, const areg::String & roleName)
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
     LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
     Application::signalAppQuit( );
 }
 #else   // AREG_LOGS
-void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const String & /*roleName*/)
+void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const areg::String & /*roleName*/)
 {
     Application::signalAppQuit( );
 }

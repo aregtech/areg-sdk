@@ -49,7 +49,7 @@ protected:
      * \param   name        The name of Event Dispatcher
      * \param   maxQeueue   The maximum number of queued external events.
      **/
-    explicit EventDispatcher( const String & name, uint32_t maxQeueue);
+    explicit EventDispatcher( const areg::String & name, uint32_t maxQeueue);
     /**
      * \brief   Destructor.
      **/

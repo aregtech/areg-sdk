@@ -82,7 +82,7 @@ namespace areg
 
         uint32_t    scopeId;    //!< The scope ID, can be 0 (areg::LOG_SCOPE_ID_NONE). For scope group should be 0.
         uint32_t    scopePrio;  //!< The scope priority.
-        String      scopeName;  //!< The name of the scope or scope group.
+        areg::String      scopeName;  //!< The name of the scope or scope group.
     };
 
     //!< The list of scope update structure.
@@ -181,35 +181,35 @@ namespace areg
     /**
      * \brief   The string value of no priority
      **/
-    const String  PRIO_NOTSET_STR     { "NOTSET" };
+    const areg::String  PRIO_NOTSET_STR     { "NOTSET" };
     /**
      * \brief   The string value of scope priority
      **/
-    const String  PRIO_SCOPE_STR      { "SCOPE" };
+    const areg::String  PRIO_SCOPE_STR      { "SCOPE" };
     /**
      * \brief   The string value of fatal error priority
      **/
-    const String  PRIO_FATAL_STR      { "FATAL" };
+    const areg::String  PRIO_FATAL_STR      { "FATAL" };
     /**
      * \brief   The string value of error priority
      **/
-    const String  PRIO_ERROR_STR      { "ERROR" };
+    const areg::String  PRIO_ERROR_STR      { "ERROR" };
     /**
      * \brief   The string value of warning priority
      **/
-    const String  PRIO_WARNING_STR    { "WARN" };
+    const areg::String  PRIO_WARNING_STR    { "WARN" };
     /**
      * \brief   The string value of information priority
      **/
-    const String  PRIO_INFO_STR       { "INFO" };
+    const areg::String  PRIO_INFO_STR       { "INFO" };
     /**
      * \brief   The string value of debug priority
      **/
-    const String  PRIO_DEBUG_STR      { "DEBUG" };
+    const areg::String  PRIO_DEBUG_STR      { "DEBUG" };
     /**
      * \brief   No priority string
      **/
-    const String  PRIO_NO_PRIO        { "" };
+    const areg::String  PRIO_NO_PRIO        { "" };
 
     /**
      * \brief   The name of the supported database logging engines.
@@ -223,7 +223,7 @@ namespace areg
      * \param   prio    The priority to get string value.
      * \return  Returns string priority value
      **/
-    inline const String& logPrioToString(areg::LogPriority prio);
+    inline const areg::String& logPrioToString(areg::LogPriority prio);
 
     /**
      * \brief   From given string value returns log priority value.
@@ -233,14 +233,14 @@ namespace areg
      *                  The given string is not case sensitive.
      * \return  Returns appropriate logging priority value.
      **/
-    inline areg::LogPriority stringToLogPrio(const String& prio);
+    inline areg::LogPriority stringToLogPrio(const areg::String& prio);
 
     /**
      * \brief   Converts the bitwise set of priority into the human readable string.
      * \param   priorities      The bitwise set of priorities integer value to convert to string.
      * \return  Returns converted string that may contain logical OR ('|') if more than one priority is set.
      **/
-    AREG_API String makePrioString(uint32_t priorities);
+    AREG_API areg::String makePrioString(uint32_t priorities);
 
     /**
      * \brief   Converts the human readable string with priorities separate by logical OR ('|')
@@ -249,7 +249,7 @@ namespace areg
      *                  to convert into integer.
      * \return  Returns converted integer value where the priorities are set bitwise.
      **/
-    AREG_API uint32_t makePriorities(const String& prio);
+    AREG_API uint32_t makePriorities(const areg::String& prio);
 
     /**
      * \brief   areg::LOG_MESSAGE_IZE
@@ -524,7 +524,7 @@ namespace areg
      * \param   scopePrio   The logging priority of the scope.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, uint32_t scopeId, uint32_t scopePrio);
+    AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio);
 
     /**
      * \brief   Creates a message to query instances connected to the service.
@@ -702,7 +702,7 @@ inline const char* areg::getString(areg::LogPriority prio)
 inline areg::ScopeEntry::ScopeEntry()
     : scopeId   ( 0u )
     , scopePrio ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
-    , scopeName (String::EmptyString)
+    , scopeName (areg::String::EmptyString)
 {
 }
 
@@ -738,7 +738,7 @@ inline bool areg::isDisablingLog( areg::LogPriority prio )
     return (prio == areg::LogPriority::PrioNotset) || (prio == areg::LogPriority::PrioInvalid);
 }
 
-inline const String& areg::logPrioToString(areg::LogPriority prio)
+inline const areg::String& areg::logPrioToString(areg::LogPriority prio)
 {
     switch (prio)
     {
@@ -769,7 +769,7 @@ inline const String& areg::logPrioToString(areg::LogPriority prio)
     }
 }
 
-inline areg::LogPriority areg::stringToLogPrio(const String& prio)
+inline areg::LogPriority areg::stringToLogPrio(const areg::String& prio)
 {
     if (areg::PRIO_DEBUG_STR == prio)
         return areg::LogPriority::PrioDebug;

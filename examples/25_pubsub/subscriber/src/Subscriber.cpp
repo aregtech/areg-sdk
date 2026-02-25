@@ -83,7 +83,7 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, ProxyBas
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, areg::DataState state)
+void Subscriber::onStringOnChangeUpdate(const areg::String & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
@@ -114,7 +114,7 @@ void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState s
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
+    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger) : _invalid;
     if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);

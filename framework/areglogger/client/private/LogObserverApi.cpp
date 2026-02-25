@@ -310,7 +310,7 @@ LOGGER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t s
     if (_isInitialized(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::getInstance();
-        String addr{ client.getConfigLoggerAddress() };
+        areg::String addr{ client.getConfigLoggerAddress() };
         if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<areg::CharCount>(space)))
         {
             result = areg::copyString<char, char>(addrBuffer, static_cast<areg::CharCount>(space), addr.getString(), addr.getLength()) > 0;
@@ -394,7 +394,7 @@ LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED
 
 LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t space)
 {
-    String path{ LoggerClient::getInstance().getActiveDatabasePath() };
+    areg::String path{ LoggerClient::getInstance().getActiveDatabasePath() };
     if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
     {
         return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
@@ -407,7 +407,7 @@ LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t s
 
 LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t space)
 {
-    String path{ LoggerClient::getInstance().getInitialDatabasePath() };
+    areg::String path{ LoggerClient::getInstance().getInitialDatabasePath() };
     if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
     {
         return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
@@ -420,7 +420,7 @@ LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t 
 
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t space)
 {
-    String path{ LoggerClient::getInstance().getConfigDatabasePath() };
+    areg::String path{ LoggerClient::getInstance().getConfigDatabasePath() };
     if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
     {
         return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
@@ -433,7 +433,7 @@ LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t s
 
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseLocation(char* dbLocation, int32_t space)
 {
-    String location{ LoggerClient::getInstance().getConfigDatabaseLocation() };
+    areg::String location{ LoggerClient::getInstance().getConfigDatabaseLocation() };
     if ((dbLocation != nullptr) && (location.getLength() > static_cast<areg::CharCount>(space)))
     {
         return static_cast<int32_t>(areg::copyString<char, char>(dbLocation, static_cast<areg::CharCount>(space), location.getString(), location.getLength()));
@@ -451,7 +451,7 @@ LOGGER_API_IMPL bool logObserverSetConfigDatabaseLocation(const char* dbLocation
 
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseName(char* dbName, int32_t space)
 {
-    String name{ LoggerClient::getInstance().getConfigDatabaseName() };
+    areg::String name{ LoggerClient::getInstance().getConfigDatabaseName() };
     if ((dbName != nullptr) && (name.getLength() > static_cast<areg::CharCount>(space)))
     {
         return static_cast<int32_t>(areg::copyString<char, char>(dbName, static_cast<areg::CharCount>(space), name.getString(), name.getLength()));

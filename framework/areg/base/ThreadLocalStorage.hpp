@@ -58,7 +58,7 @@ private:
     //////////////////////////////////////////////////////////////////////////
 
     //!< Definition of storage item to store.
-    using StorageItem       = std::pair<String, areg::Primitive>;
+    using StorageItem       = std::pair<areg::String, areg::Primitive>;
     //!< Definition of storage list object to store items.
     using StorageList       = LinkedList<ThreadLocalStorage::StorageItem>;
 
@@ -88,7 +88,7 @@ public:
      * \brief   Returns the name of thread local storage.
      *          The name of local storage is same as thread name.
      **/
-    const String & getName() const;
+    const areg::String & getName() const;
 
     /**
      * \brief   Returns true, if there is an local storage item 
@@ -96,7 +96,7 @@ public:
      * \param   Key     The name of a local storage item.
      * \return  Returns true if local storage has an item with specified name.
      **/
-    bool existKey(const String & Key) const;
+    bool existKey(const areg::String & Key) const;
 
     /**
      * \brief   Returns the owning thread object.
@@ -123,7 +123,7 @@ public:
      *          Otherwise it returns areg::InvalidElement, if there is no element
      *          with specified name.
      **/
-    areg::Primitive getStorageItem( const String & Key ) const;
+    areg::Primitive getStorageItem( const areg::String & Key ) const;
 
     /**
      * \brief   Saves specified item in thread local storage object.
@@ -134,7 +134,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, areg::Primitive Value);
+    void setStorageItem(const areg::String & Key, areg::Primitive Value);
 
     /**
      * \brief   Saves pointer value in thread local storage object.
@@ -145,7 +145,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, const void * Value);
+    void setStorageItem(const areg::String & Key, const void * Value);
 
     /**
      * \brief   Saves integer value in thread local storage object.
@@ -156,7 +156,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, uint32_t Value);
+    void setStorageItem(const areg::String & Key, uint32_t Value);
 
     /**
      * \brief   Saves 64-bit integer value in thread local storage object.
@@ -167,7 +167,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, uint64_t Value);
+    void setStorageItem(const areg::String & Key, uint64_t Value);
 
     /**
      * \brief   Saves number with floating point value in thread local storage object.
@@ -178,7 +178,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const String & Key, double Value);
+    void setStorageItem(const areg::String & Key, double Value);
 
     /**
      * \brief   If thread local storage has an item with specified name
@@ -189,7 +189,7 @@ public:
      * \return  Returns the value of returned element. If element does not
      *          exist, it will return dummy zero value.
      **/
-    areg::Primitive removeStoragteItem(const String & Key);
+    areg::Primitive removeStoragteItem(const areg::String & Key);
 
     /**
      * \brief   Removes all items in thread local storage

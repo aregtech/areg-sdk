@@ -139,7 +139,7 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(ThreadConsumer &threadConsumer, const String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
+Thread::Thread(ThreadConsumer &threadConsumer, const areg::String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
@@ -247,10 +247,10 @@ void Thread::onPostExitThread()
 {
 }
 
-const String & Thread::getThreadName( id_type threadId )
+const areg::String & Thread::getThreadName( id_type threadId )
 {
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != nullptr ? threadObj->getName() : String::getEmptyString());
+    return (threadObj != nullptr ? threadObj->getName() : areg::String::getEmptyString());
 }
 
 const ThreadAddress & Thread::getThreadAddress( id_type threadId )
@@ -382,7 +382,7 @@ void Thread::dumpThreads()
 
     if (mapNames.isEmpty() == false)
     {
-        String threadName("");
+        areg::String threadName("");
         Thread* threadObj{ nullptr };
         mapNames.resourceFirstKey(threadName);
         do

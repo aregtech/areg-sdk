@@ -28,7 +28,7 @@
 #endif // _MSC_VER
 
 constexpr char const _modelName[]= { "DataRate" };  //!< The name of model
-const String     _serviceClient  = areg::generateName("ServiceClient"); //!< Generated name of service client component
+const areg::String     _serviceClient  = areg::generateName("ServiceClient"); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //

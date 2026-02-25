@@ -61,7 +61,7 @@ void TickCountLayout::logMessage( const areg::LogEntry & /*msgLog*/, OutStream &
 #endif  // _BIT64
 
     char buffer[128];
-    uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>( DateTime::getProcessTickCount() )));
+    uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>( DateTime::getProcessTickCount() )));
     stream.write(reinterpret_cast<const uint8_t *>(buffer), len);
 }
 
@@ -89,7 +89,7 @@ void DayTimeLayout::logMessage( const areg::LogEntry & msgLog, OutStream & strea
 {
     if ( msgLog.logTimestamp != 0 )
     {
-        String timestamp;
+        areg::String timestamp;
         DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, areg::TIME_FORMAT_ISO8601_OUTPUT);
         stream.write( reinterpret_cast<const uint8_t *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
     }
@@ -118,9 +118,9 @@ void ModuleIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stre
 {
     static const ITEM_ID _moduleId{ Process::getInstance().getId() };
 #ifdef _BIT64
-    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), areg::Radix::Hexadecimal) };
+    static const areg::String  _moduleName{ areg::String::makeString(static_cast<uint64_t>(_moduleId), areg::Radix::Hexadecimal) };
 #else   // _BIT32
-    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), areg::Radix::Hexadecimal) };
+    static const areg::String  _moduleName{ areg::String::makeString(static_cast<uint32_t>(_moduleId), areg::Radix::Hexadecimal) };
 #endif  // _BIT64
 
     if (msgLog.logModuleId != 0)
@@ -137,7 +137,7 @@ void ModuleIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stre
             constexpr char fmt[]{ "0x%X" };
 #endif  // _BIT64
             char buffer[128];
-            uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
+            uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
             stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
         }
     }
@@ -213,7 +213,7 @@ PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
 
 void PriorityLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    const String& prio{ areg::logPrioToString(msgLog.logMessagePrio) };
+    const areg::String& prio{ areg::logPrioToString(msgLog.logMessagePrio) };
     stream.write(reinterpret_cast<const uint8_t *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
 }
 
@@ -241,7 +241,7 @@ void ScopeIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & strea
     if ( msgLog.logScopeId != 0 )
     {
         char buffer[128];
-        uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, "%u", msgLog.logScopeId));
+        uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, "%u", msgLog.logScopeId));
         stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
 }
@@ -276,7 +276,7 @@ void ThreadIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stre
 #endif  // _BIT64
 
         char buffer[128];
-        uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
+        uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
         stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
 }
@@ -304,14 +304,14 @@ void ModuleNameLayout::logMessage( const areg::LogEntry & msgLog, OutStream & st
 {
     if (msgLog.logDataType == areg::LogDataType::Local)
     {
-        static const String& _module{ Process::getInstance().getAppName() };
+        static const areg::String& _module{ Process::getInstance().getAppName() };
         stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
     }
     else
     {
         if (msgLog.logCookie == areg::COOKIE_LOCAL)
         {
-            static const String& _module{ Process::getInstance().getAppName() };
+            static const areg::String& _module{ Process::getInstance().getAppName() };
             stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
         }
         else if ((msgLog.logCookie != areg::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
@@ -352,7 +352,7 @@ void ThreadNameLayout::logMessage( const areg::LogEntry & msgLog, OutStream & st
 
     if (msgLog.logDataType == areg::LogDataType::Local)
     {
-        const String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
+        const areg::String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
         name = thread.getString();
         len  = static_cast<uint32_t>(thread.getLength());
     }
@@ -419,7 +419,7 @@ AnyTextLayout::AnyTextLayout( AnyTextLayout && src ) noexcept
 {
 }
 
-AnyTextLayout::AnyTextLayout(const String & anyMessage)
+AnyTextLayout::AnyTextLayout(const areg::String & anyMessage)
     : LogLayout      ( areg::LayoutToken::AnyText )
     , mTextMessage  ( anyMessage )
 {
@@ -464,7 +464,7 @@ void CookieIdLayout::logMessage(const areg::LogEntry& msgLog, OutStream& stream)
 #endif  // _BIT64
 
     char buffer[128];
-    uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
+    uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
     stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
 }
 

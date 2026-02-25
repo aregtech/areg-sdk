@@ -24,7 +24,7 @@ class ChatPrticipantHandler
 // constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ChatPrticipantHandler( const String & serviceName
+    ChatPrticipantHandler( const areg::String & serviceName
                          , const chat::sInitiator & initiator
                          , const chat::ListParticipants & listPaticipants
                          , const chat::Participant & ownerConnection);
@@ -37,11 +37,11 @@ public:
 
     inline bool IsValid() const;
 
-    inline void SetConnectionData( const String & serviceName, const chat::sInitiator & initiator, const chat::ListParticipants & connectionList);
+    inline void SetConnectionData( const areg::String & serviceName, const chat::sInitiator & initiator, const chat::ListParticipants & connectionList);
 
     inline void SetParticipantsList( const chat::ListParticipants & listParaticipants );
 
-    inline const String & GetServiceName() const;
+    inline const areg::String & GetServiceName() const;
 
     inline const chat::sInitiator & GetInitiator() const;
 
@@ -90,7 +90,7 @@ private:
 // member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    String                      mServiceName;
+    areg::String                      mServiceName;
     chat::Participant      mOwnerConnection;
     chat::sInitiator        mInitiator;
     chat::ListParticipants  mListParticipants;
@@ -119,7 +119,7 @@ inline bool ChatPrticipantHandler::IsValid() const
     return (mWndChat != 0) && (mConnectionService != nullptr);
 }
 
-inline void ChatPrticipantHandler::SetConnectionData( const String & serviceName, const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
+inline void ChatPrticipantHandler::SetConnectionData( const areg::String & serviceName, const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
     Lock lock( mLock );
     mServiceName        = serviceName;
@@ -127,7 +127,7 @@ inline void ChatPrticipantHandler::SetConnectionData( const String & serviceName
     mListParticipants   = listParticipants;
 }
 
-inline const String & ChatPrticipantHandler::GetServiceName() const
+inline const areg::String & ChatPrticipantHandler::GetServiceName() const
 {
     Lock lock(mLock);
     return mServiceName;

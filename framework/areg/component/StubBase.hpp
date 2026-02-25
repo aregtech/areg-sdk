@@ -235,12 +235,12 @@ public:
     /**
      * \brief   Returns the role name of the implemented service interface.
      **/
-    inline const String & getServiceRole() const;
+    inline const areg::String & getServiceRole() const;
 
     /**
      * \brief   Returns the name of the implemented service.
      **/
-    inline const String & getServiceName() const;
+    inline const areg::String & getServiceName() const;
 
     /**
      * \brief   Sends error event to all pending responses and notification updates
@@ -814,12 +814,12 @@ inline const StubAddress& StubBase::getAddress() const
     return mAddress;
 }
 
-inline const String & StubBase::getServiceRole() const
+inline const areg::String & StubBase::getServiceRole() const
 {
     return mAddress.getRoleName( );
 }
 
-inline const String& StubBase::getServiceName() const
+inline const areg::String& StubBase::getServiceName() const
 {
     return mAddress.getServiceName();
 }

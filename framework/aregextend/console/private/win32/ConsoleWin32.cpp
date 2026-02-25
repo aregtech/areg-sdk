@@ -106,7 +106,7 @@ void Console::_osRelease()
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const String& text) const
+void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
 {
     Lock lock(mLock);
 
@@ -128,7 +128,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-void Console::_osOutputText(const String& text) const
+void Console::_osOutputText(const areg::String& text) const
 {
     Lock lock(mLock);
 

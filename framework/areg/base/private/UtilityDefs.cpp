@@ -207,9 +207,9 @@ AREG_API_IMPL areg::Ordering areg::compareTimes( const areg::CalendarTime & lhs,
     }
 }
 
-AREG_API_IMPL String areg::createComponentItemName( const String & componentName, const String & itemName )
+AREG_API_IMPL areg::String areg::createComponentItemName( const areg::String & componentName, const areg::String & itemName )
 {
-    String result( componentName );
+    areg::String result( componentName );
     if ((componentName.isEmpty() == false) && (itemName.isEmpty() == false))
     {
         result += areg::COMPONENT_ITEM_SEPARATOR;
@@ -222,17 +222,17 @@ AREG_API_IMPL String areg::createComponentItemName( const String & componentName
     }
     else
     {
-        result    = String::getEmptyString();
+        result    = areg::String::getEmptyString();
     }
 
     return result;
 }
 
-AREG_API_IMPL String areg::generateName( const char* prefix )
+AREG_API_IMPL areg::String areg::generateName( const char* prefix )
 {
     char buffer[areg::MAX_GENERATED_NAME_BUFFER_SIZE];
     areg::generateName(prefix, buffer, areg::MAX_GENERATED_NAME_BUFFER_SIZE);
-    return String(buffer);
+    return areg::String(buffer);
 }
 
 AREG_API_IMPL const char * areg::generateName(const char * prefix, char * out_buffer, int32_t length)
@@ -252,7 +252,7 @@ AREG_API_IMPL const char * areg::generateName(const char * prefix, char * out_bu
         auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
         time.quadPart = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
 
-        String::formatString( out_buffer, length, strFormat
+        areg::String::formatString( out_buffer, length, strFormat
                             , prefix != nullptr ? prefix : areg::DEFAULT_GENERATED_NAME.data()
                             , spec
                             , time.u.highPart

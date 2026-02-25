@@ -17,7 +17,7 @@ NetworkSetup::NetworkSetup( const char * roleName, Component & owner, Connection
 {
 }
 
-void NetworkSetup::responseConnect( const String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result )
+void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
     LOG_SCOPE(chatter_NetworkSetup_responseConnect);
     LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, ConnectionManager::getString(result));

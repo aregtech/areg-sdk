@@ -48,7 +48,7 @@ protected:
      * \param   msgText     The message, which was sent.
      * \param   timeSent    The time-stamp when the message was sent.
      **/
-    void broadcastMessageSent( const DirectMessager::Participant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void broadcastMessageSent( const DirectMessager::Participant & sender, const areg::String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Server broadcast.
@@ -58,7 +58,7 @@ protected:
      * \param   participant The structure of participant, who initiated message during typing.
      * \param   msgText     The text message while typing.
      **/
-    void broadcastMessageTyped( const DirectMessager::Participant & participant, const String & msgText ) override;
+    void broadcastMessageTyped( const DirectMessager::Participant & participant, const areg::String & msgText ) override;
 
     /**
      * \brief   Server broadcast.
@@ -110,7 +110,7 @@ protected:
 private:
     inline DirectMessagingClient & self();
 
-    inline void updateChatOutput( NEDistributedApp::WindowCommand cmdSend, const DirectMessager::Participant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
+    inline void updateChatOutput( NEDistributedApp::WindowCommand cmdSend, const DirectMessager::Participant & participant, const areg::String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
 
     inline void postMessage(NEDistributedApp::WindowCommand cmdSend, ptr_type wParam, ptr_type lParam);
 

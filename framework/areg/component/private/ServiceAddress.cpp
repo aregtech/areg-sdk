@@ -24,7 +24,7 @@
 
 #include <utility>
 
-String ServiceAddress::convAddressToPath( const ServiceAddress & addService )
+areg::String ServiceAddress::convAddressToPath( const ServiceAddress & addService )
 {
     return addService.convToString();
 }
@@ -38,15 +38,15 @@ ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, cons
 
 ServiceAddress::ServiceAddress()
     : ServiceItem   ( )
-    , mRoleName     ( String::getEmptyString(), 0 )
+    , mRoleName     ( areg::String::getEmptyString(), 0 )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
-ServiceAddress::ServiceAddress( const String & serviceName
+ServiceAddress::ServiceAddress( const areg::String & serviceName
                               , const Version & serviceVersion
                               , areg::ServiceType serviceType
-                              , const String & roleName )
+                              , const areg::String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
@@ -55,7 +55,7 @@ ServiceAddress::ServiceAddress( const String & serviceName
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & roleName )
+ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const areg::String & roleName )
     : ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
@@ -102,9 +102,9 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 {
 }
 
-String ServiceAddress::convToString() const
+areg::String ServiceAddress::convToString() const
 {
-    String result( ServiceItem::convToString() );
+    areg::String result( ServiceItem::convToString() );
     result.append(areg::COMPONENT_PATH_SEPARATOR).append(mRoleName);
 
     return result;
@@ -114,7 +114,7 @@ void ServiceAddress::convFromString(const char * pathService, const char** out_n
 {
     const char* strSource   = pathService;
     ServiceItem::convFromString(pathService, &strSource);
-    mRoleName   = String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mRoleName   = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magicNumber(*this);
 
     if (out_nextPart != nullptr)

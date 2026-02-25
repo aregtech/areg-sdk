@@ -80,7 +80,7 @@ protected:
      * \param   name        The name of Dispatcher.
      * \param   maxQeueue   The maximum number of event elements in the queue.
      **/
-    EventDispatcherBase( const String & name, uint32_t maxQeueue );
+    EventDispatcherBase( const areg::String & name, uint32_t maxQeueue );
     /**
      * \brief   Destructor
      **/
@@ -301,7 +301,7 @@ protected:
     /**
      * \brief   The name of dispatcher
      **/
-    String              mDispatcherName;
+    areg::String              mDispatcherName;
 
     /**
      * \brief   External Event Queue element. One External queue per one dispatcher.

@@ -52,7 +52,7 @@ public:
 
     PageChat * AddChatPage( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParties, bool isInitiator );
 
-    bool RemoveChatPage( const String & connectName );
+    bool RemoveChatPage( const areg::String & connectName );
 
     void RemoveAllChatPages();
 

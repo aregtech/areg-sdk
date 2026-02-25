@@ -286,28 +286,28 @@ TEST( DateTimeTest, TestFormatISO8601 )
     areg::CalendarTime sysTime;
     areg::convToLocalTime( date.getTime( ), sysTime );
 
-    String timestamp = date.formatTime( areg::TIME_FORMAT_ISO8601_OUTPUT );
+    areg::String timestamp = date.formatTime( areg::TIME_FORMAT_ISO8601_OUTPUT );
     ASSERT_FALSE( timestamp.isEmpty( ) );
 
     char buf[ 128 ];
-    String::formatString( buf, 128, "%04u-", sysTime.stYear );
+    areg::String::formatString( buf, 128, "%04u-", sysTime.stYear );
     ASSERT_EQ( timestamp.findFirst( buf ), areg::START_POS );
 
-    String::formatString( buf, 128, "-%02u-", sysTime.stMonth );
+    areg::String::formatString( buf, 128, "-%02u-", sysTime.stMonth );
     ASSERT_TRUE( timestamp.isValidPosition(timestamp.findFirst( buf )) );
 
-    String::formatString( buf, 128, "-%02u", sysTime.stDay );
+    areg::String::formatString( buf, 128, "-%02u", sysTime.stDay );
     ASSERT_TRUE( timestamp.isValidPosition(timestamp.findFirst( buf )) );
 
-    String::formatString( buf, 128, " %02u:", sysTime.stHour );
+    areg::String::formatString( buf, 128, " %02u:", sysTime.stHour );
     ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
 
-    String::formatString( buf, 128, ":%02u:", sysTime.stMinute );
+    areg::String::formatString( buf, 128, ":%02u:", sysTime.stMinute );
     ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
 
-    String::formatString( buf, 128, ":%02u,", sysTime.stSecond );
+    areg::String::formatString( buf, 128, ":%02u,", sysTime.stSecond );
     ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
 
-    String::formatString( buf, 128, ",%03u", sysTime.stMillisecs );
+    areg::String::formatString( buf, 128, ",%03u", sysTime.stMillisecs );
     ASSERT_TRUE( timestamp.isValidPosition( timestamp.findFirst( buf ) ) );
 }

@@ -409,19 +409,19 @@ namespace
 // LogSqliteDatabase class implementation.
 //////////////////////////////////////////////////////////////////////////
 
-String LogSqliteDatabase::getReadScopesQuery()
+areg::String LogSqliteDatabase::getReadScopesQuery()
 {
-    return String(_sqlGetScopeLogMessages);
+    return areg::String(_sqlGetScopeLogMessages);
 }
 
-String LogSqliteDatabase::getReadInstancesQuery()
+areg::String LogSqliteDatabase::getReadInstancesQuery()
 {
-    return String(_sqlGetInstScopeLogMessages);
+    return areg::String(_sqlGetInstScopeLogMessages);
 }
 
-String LogSqliteDatabase::getReadAllLogMessagesQuery()
+areg::String LogSqliteDatabase::getReadAllLogMessagesQuery()
 {
-    return String(_sqlGetAllLogMessages);
+    return areg::String(_sqlGetAllLogMessages);
 }
 
 LogSqliteDatabase::LogSqliteDatabase()
@@ -443,7 +443,7 @@ LogSqliteDatabase::~LogSqliteDatabase()
     mIsInitialized = false;
 }
 
-inline bool LogSqliteDatabase::_open(const String& dbPath, bool readOnly)
+inline bool LogSqliteDatabase::_open(const areg::String& dbPath, bool readOnly)
 {
     if (mDbLogEnabled == false)
         return false;
@@ -485,12 +485,12 @@ inline void LogSqliteDatabase::_initialize()
 {
     Process& proc{ Process::getInstance() };
     DateTime now{ DateTime::getNow() };
-    String module{ proc.getAppName() };
+    areg::String module{ proc.getAppName() };
     id_type threadId{ Thread::getCurrentThreadId() };
-    String thread{ Thread::getThreadName(threadId) };
+    areg::String thread{ Thread::getThreadName(threadId) };
 
     char sql[SQL_LEN]{};
-    String::formatString( sql, SQL_LEN, _fmtVersion.data()
+    areg::String::formatString( sql, SQL_LEN, _fmtVersion.data()
                         , Process::getInstance().getName().getString()
                         , areg::LOG_VERSION.data()
                         , "Areg SDK database logging module. Visit https://areg.tech for more information."
@@ -500,7 +500,7 @@ inline void LogSqliteDatabase::_initialize()
                         );
     VERIFY(mDatabase.execute(sql));
 
-    String::formatString(sql, SQL_LEN, _fmtLog.data()
+    areg::String::formatString(sql, SQL_LEN, _fmtLog.data()
                         , static_cast<uint64_t>(areg::COOKIE_LOCAL)
                         , static_cast<uint32_t>(areg::CHECKSUM_IGNORE)
                         , static_cast<uint32_t>(0u)
@@ -541,9 +541,9 @@ inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, SharedBuff
     log->logDuration    = static_cast<uint32_t>(stmt.getUint32(7));
     log->logScopeId     = static_cast<uint32_t>(stmt.getUint32(8));
     log->logSessionId   = static_cast<uint32_t>(stmt.getUint32(9));
-    String msg          = stmt.getText(10);
-    String thread       = stmt.getText(11);
-    String module       = stmt.getText(12);
+    areg::String msg          = stmt.getText(10);
+    areg::String thread       = stmt.getText(11);
+    areg::String module       = stmt.getText(12);
 
     log->logMessageLen  = msg.getLength();
     log->logThreadLen   = thread.getLength();
@@ -576,7 +576,7 @@ bool LogSqliteDatabase::isOperable() const
     return mDatabase.isOperable();
 }
 
-bool LogSqliteDatabase::connect(const String& dbPath, bool readOnly)
+bool LogSqliteDatabase::connect(const areg::String& dbPath, bool readOnly)
 {
     Lock lock(mLock);
     if (mDbLogEnabled && mDatabase.isOperable() == false)
@@ -619,7 +619,7 @@ void LogSqliteDatabase::disconnect()
     mIsInitialized = false;
 }
 
-bool LogSqliteDatabase::execute(const String& sql)
+bool LogSqliteDatabase::execute(const areg::String& sql)
 {
     Lock lock(mLock);
     return mDatabase.execute(sql);
@@ -674,12 +674,12 @@ bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& inst
 {
     Lock lock(mLock);
     Process& proc    { Process::getInstance() };
-    String   module  { proc.getAppName() };
+    areg::String   module  { proc.getAppName() };
     id_type  threadId{ Thread::getCurrentThreadId() };
-    String   thread  { Thread::getThreadName(threadId) };
+    areg::String   thread  { Thread::getThreadName(threadId) };
 
     char sqlInst[SQL_LEN];
-    String::formatString( sqlInst, SQL_LEN, _fmtInstance.data()
+    areg::String::formatString( sqlInst, SQL_LEN, _fmtInstance.data()
                         , static_cast<uint64_t>(instance.ciCookie)
                         , static_cast<uint32_t>(instance.ciSource)
                         , static_cast<uint32_t>(instance.ciBitness)
@@ -697,12 +697,12 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
     logScopesDeactivate(cookie, timestamp);
 
     Process& proc{ Process::getInstance() };
-    String module{ proc.getAppName() };
+    areg::String module{ proc.getAppName() };
     id_type threadId{ Thread::getCurrentThreadId() };
-    String thread{ Thread::getThreadName(threadId) };
+    areg::String thread{ Thread::getThreadName(threadId) };
 
     char sqlInst[SQL_LEN];
-    String::formatString( sqlInst, SQL_LEN, _fmtUpdInstance.data()
+    areg::String::formatString( sqlInst, SQL_LEN, _fmtUpdInstance.data()
                         , static_cast<uint64_t>(timestamp.getTime())
                         , static_cast<uint64_t>(DateTime::getNow().getTime())
                         , static_cast<uint64_t>(cookie)
@@ -735,10 +735,10 @@ uint32_t LogSqliteDatabase::logScopesActivate(const areg::ScopeNames& scopes, co
     return result;
 }
 
-bool LogSqliteDatabase::logScopeActivate(const String& scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID& cookie, const DateTime& timestamp)
+bool LogSqliteDatabase::logScopeActivate(const areg::String& scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID& cookie, const DateTime& timestamp)
 {
     char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtScopes.data()
+    areg::String::formatString( sql, SQL_LEN, _fmtScopes.data()
                         , static_cast<uint32_t>(scopeId)
                         , static_cast<uint64_t>(cookie)
                         , static_cast<uint32_t>(scopePrio)
@@ -751,7 +751,7 @@ bool LogSqliteDatabase::logScopeActivate(const String& scopeName, uint32_t scope
 bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTime& timestamp)
 {
     char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtUpdScopes.data()
+    areg::String::formatString( sql, SQL_LEN, _fmtUpdScopes.data()
                         , static_cast<uint64_t>(timestamp.getTime())
                         , static_cast<uint64_t>(cookie)
                         );
@@ -761,7 +761,7 @@ bool LogSqliteDatabase::logScopesDeactivate(const ITEM_ID& cookie, const DateTim
 bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, uint32_t scopeId, const DateTime& timestamp)
 {
     char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtUpdScope.data()
+    areg::String::formatString( sql, SQL_LEN, _fmtUpdScope.data()
                         , static_cast<uint64_t>(timestamp.getTime())
                         , static_cast<uint64_t>(cookie)
                         , static_cast<uint32_t>(scopeId)
@@ -775,14 +775,14 @@ bool LogSqliteDatabase::rollback()
     return mDatabase.rollback();
 }
 
-std::vector<String> LogSqliteDatabase::getLogInstanceNames()
+std::vector<areg::String> LogSqliteDatabase::getLogInstanceNames()
 {
-    std::vector<String> result;
+    std::vector<areg::String> result;
     getLogInstanceNames(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& names)
+void LogSqliteDatabase::getLogInstanceNames(std::vector<areg::String>& names)
 {
     Lock lock(mLock);
     names.clear();
@@ -791,7 +791,7 @@ void LogSqliteDatabase::getLogInstanceNames(std::vector<String>& names)
     {
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            String instName{ stmt.getText(0) };
+            areg::String instName{ stmt.getText(0) };
             if (instName.isEmpty() == false)
             {
                 names.push_back(instName);
@@ -826,14 +826,14 @@ void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& ids)
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
 }
 
-std::vector<String> LogSqliteDatabase::getLogThreadNames()
+std::vector<areg::String> LogSqliteDatabase::getLogThreadNames()
 {
-    std::vector<String> result;
+    std::vector<areg::String> result;
     getLogThreadNames(result);
     return result;
 }
 
-void LogSqliteDatabase::getLogThreadNames(std::vector<String>& names)
+void LogSqliteDatabase::getLogThreadNames(std::vector<areg::String>& names)
 {
     Lock lock(mLock);
     names.clear();
@@ -842,7 +842,7 @@ void LogSqliteDatabase::getLogThreadNames(std::vector<String>& names)
     {
         while (stmt.next() == SqliteStatement::QueryResult::HasMore)
         {
-            String instName{ stmt.getText(0) };
+            areg::String instName{ stmt.getText(0) };
             names.push_back(instName);
         }
     }
@@ -874,9 +874,9 @@ void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& ids)
     ASSERT(stmt.getRowPos() == static_cast<uint32_t>(ids.size()));
 }
 
-std::vector<String> LogSqliteDatabase::getPriorityNames()
+std::vector<areg::String> LogSqliteDatabase::getPriorityNames()
 {
-    std::vector<String> result{
+    std::vector<areg::String> result{
         { 
           areg::logPrioToString(areg::LogPriority::PrioAny)
         , areg::logPrioToString(areg::LogPriority::PrioScope)
@@ -890,7 +890,7 @@ std::vector<String> LogSqliteDatabase::getPriorityNames()
     return result;
 }
 
-void LogSqliteDatabase::getPriorityNames(std::vector<String>& names)
+void LogSqliteDatabase::getPriorityNames(std::vector<areg::String>& names)
 {
     names = getPriorityNames();
 }
@@ -1287,7 +1287,7 @@ uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID instId, const ArrayLis
 {
     if (filter.isEmpty() == false)
     {
-        String sql;
+        areg::String sql;
         if (instId == areg::TARGET_ALL)
             sql = _sqlUpdateFilterRuleAll;
         else
@@ -1430,7 +1430,7 @@ bool LogSqliteDatabase::tableExists(const char* table, const char* master /*= nu
     master = areg::isEmpty<char>(master) ? "sqlite_master" : master;
     if (isOperable() && (areg::isEmpty<char>(master) == false) && (areg::isEmpty<char>(table) == false))
     {
-        String sql;
+        areg::String sql;
         sql.format(_sqlCheckTable.data(), master, table);
         SqliteStatement stmt(mDatabase, sql);
         result = (SqliteStatement::QueryResult::HasMore == stmt.next());
@@ -1445,7 +1445,7 @@ bool LogSqliteDatabase::dropTable(const char* table)
     if (areg::isEmpty<char>(table))
         return false;
 
-    String sql;
+    areg::String sql;
     sql.format(_sqlDropTable.data(), table);
     SqliteStatement stmt(mDatabase, sql);
     bool result = stmt.execute();

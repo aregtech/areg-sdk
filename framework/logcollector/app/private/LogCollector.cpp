@@ -34,7 +34,7 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static String _modelName("LogCollectorModel");
+static areg::String _modelName("LogCollectorModel");
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
@@ -124,7 +124,7 @@ LogCollector & LogCollector::getInstance()
 }
 
 #if AREG_EXTENDED
-void LogCollector::printStatus(const String& status)
+void LogCollector::printStatus(const areg::String& status)
 {
 
     if (LogCollector::getInstance().getCurrentOption() == aregext::ServiceOption::CMD_Console)
@@ -137,7 +137,7 @@ void LogCollector::printStatus(const String& status)
 
 }
 #else   // AREG_EXTENDED
-void LogCollector::printStatus(const String& /* status */)
+void LogCollector::printStatus(const areg::String& /* status */)
 {
 }
 #endif  // AREG_EXTENDED
@@ -304,7 +304,7 @@ void LogCollector::stopConsoleService()
     Application::unloadModel( _modelName );
 }
 
-bool LogCollector::_checkCommand(const String& cmd)
+bool LogCollector::_checkCommand(const areg::String& cmd)
 {
     OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
     bool quit{ false };
@@ -448,7 +448,7 @@ void LogCollector::_outputTitle()
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::_outputInfo( const String & info )
+void LogCollector::_outputInfo( const areg::String & info )
 {
 #if AREG_EXTENDED
 
@@ -655,7 +655,7 @@ void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope
     ASSERT(optScope.inString.empty() == false);
 
     const OptionParser::StrList& optValues{ optScope.inString };
-    String scope;
+    areg::String scope;
     for (const auto& entry : optValues)
     {
         if (entry == areg::SYNTAX_END_COMMAND)
@@ -692,10 +692,10 @@ void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope
     }
 }
 
-String LogCollector::_normalizeScopeProperty(const String & scope)
+areg::String LogCollector::_normalizeScopeProperty(const areg::String & scope)
 {
     const areg::ConfigKey& propKey{ areg::DefaultPropertyKeys[static_cast<uint32_t>(areg::ConfigEntry::LogScope)] };
-    String result;
+    areg::String result;
     if (scope.startsWith(propKey.property))
     {
         result.append(propKey.section)
@@ -706,7 +706,7 @@ String LogCollector::_normalizeScopeProperty(const String & scope)
     }
     else
     {
-        String prop(propKey.property);
+        areg::String prop(propKey.property);
         prop += areg::SYNTAX_OBJECT_SEPARATOR;
         areg::CharPos pos = scope.findFirst(prop);
         if ( scope.isValidPosition(pos))
@@ -735,7 +735,7 @@ String LogCollector::_normalizeScopeProperty(const String & scope)
     return result;
 }
 
-RemoteMessage LogCollector::_createScopeUpdateMessage(const String& scope)
+RemoteMessage LogCollector::_createScopeUpdateMessage(const areg::String& scope)
 {
     RemoteMessage result;
 
@@ -748,7 +748,7 @@ RemoteMessage LogCollector::_createScopeUpdateMessage(const String& scope)
             ITEM_ID target{ key.isAllModules() ? areg::COOKIE_ANY : key.getModule().toUInt32() };
             if (target >= areg::COOKIE_ANY)
             {
-                String scopeName{ key.getPosition() };
+                areg::String scopeName{ key.getPosition() };
                 uint32_t scopePrio{ prop.getValue().getIndetifier(areg::LogScopePriorityIndentifiers) };
                 result = areg::messageUpdateScope(areg::COOKIE_LOGGER, target, scopeName, areg::LOG_SCOPE_ID_NONE, scopePrio);
                 result.setTarget(target);
@@ -766,8 +766,8 @@ inline void LogCollector::_enableLocalLogs(ConfigManager& config, bool enable)
     uint32_t prios = enable
                 ? static_cast<uint32_t>(areg::LogPriority::PrioNotset) | static_cast<uint32_t>(areg::LogPriority::PrioNotset)
                 : static_cast<uint32_t>(areg::LogPriority::PrioNotset);
-    const String prio{ areg::makePrioString(prios) };
+    const areg::String prio{ areg::makePrioString(prios) };
 
-    config.setModuleProperty(keyPrio.section, keyPrio.property, String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
+    config.setModuleProperty(keyPrio.section, keyPrio.property, areg::String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
     config.setLogEnabled(areg::LogTarget::Remote, false, true);
 }

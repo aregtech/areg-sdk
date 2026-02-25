@@ -49,7 +49,7 @@ class OutStream;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class String;
+namespace areg { class String; }
 class WideString;
 class ByteBuffer;
 /************************************************************************
@@ -188,7 +188,7 @@ public:
      * \param   ascii   The instance of ASCII string object to copy data.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual uint32_t read( String & ascii ) const = 0;
+    virtual uint32_t read( areg::String & ascii ) const = 0;
 
     /**
      * \brief   Reads string data from input stream object, copies into given wide-string object
@@ -308,7 +308,7 @@ public:
       * \param	ascii	The instance of ASCII-string object as a data source.
       * \return	Returns the size in bytes of written data.
       **/
-    virtual uint32_t write( const String & ascii )  = 0;
+    virtual uint32_t write( const areg::String & ascii )  = 0;
 
     /**
      * \brief	Writes data to output stream object from given wide-string object and

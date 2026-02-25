@@ -27,7 +27,7 @@ PublicHelloWorldService::PublicHelloWorldService( Component & masterComp )
 {
 }
 
-void PublicHelloWorldService::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
+void PublicHelloWorldService::requestRegister( const areg::String & name, const ServiceAddress & service, const areg::String & thread, const areg::String & process )
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestRegister );
     LOG_DBG( "Received request to register client [ %s ] with service address [ %s ] and owner thread [ %s ] of process [ %s ]"

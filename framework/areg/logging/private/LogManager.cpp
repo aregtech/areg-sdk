@@ -142,7 +142,7 @@ bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
     return result;
 }
 
-void LogManager::updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio)
+void LogManager::updateScopes(const areg::String & scopeName, uint32_t scopeId, uint32_t newPrio)
 {
     ScopeController & ctrScope = LogManager::getInstance().mScopeController;
     ctrScope.clearConfigScopes();
@@ -373,7 +373,7 @@ inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::Even
     LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
 }
 
-void LogManager::changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio )
+void LogManager::changeScopePriority( const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio )
 {
     mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
 }

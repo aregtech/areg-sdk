@@ -31,7 +31,7 @@
 class ProxyAddress;
 class StubAddress;
 class Channel;
-class String;
+namespace areg { class String; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventData class declaration
@@ -134,7 +134,7 @@ public:
      * \param   ipAddress   The IP-Address of remote Routing Service.
      * \param   portNr      The port number to connect.
      **/
-    static ServiceManagerEventData startNetConnection( const String & ipAddress, uint16_t portNr );
+    static ServiceManagerEventData startNetConnection( const areg::String & ipAddress, uint16_t portNr );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to stop connection
@@ -163,13 +163,13 @@ public:
      * \brief   Creates an event data to terminate component thread.
      * \param   threadName  The name of component thread to terminate.
      **/
-    static ServiceManagerEventData terminateComponentThread( const String & threadName );
+    static ServiceManagerEventData terminateComponentThread( const areg::String & threadName );
 
     /**
      * \brief   Creates an event data to create component thread.
      * \param   threadName  The name of component thread to create.
      **/
-    static ServiceManagerEventData createComponentThread( const String & threadName );
+    static ServiceManagerEventData createComponentThread( const areg::String & threadName );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

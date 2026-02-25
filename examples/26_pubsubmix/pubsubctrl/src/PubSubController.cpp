@@ -82,15 +82,15 @@ void PubSubController::onThreadRuns()
     OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.lockConsole();
     console.enableConsoleInput(true);
-    printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
+    printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
     console.unlockConsole();
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
-        String message;
-        String usrInput = console.readString();
+        areg::String message;
+        areg::String usrInput = console.readString();
         console.lockConsole();
 
         if (parser.parseOptionLine(usrInput.getString()))
@@ -143,7 +143,7 @@ void PubSubController::onThreadRuns()
 }
 
 
-inline void PubSubController::printMessage(const String & message, OptionFlag cmd)
+inline void PubSubController::printMessage(const areg::String & message, OptionFlag cmd)
 {
     Console & console = Console::getInstance();
     if (cmd == OptionFlag::CMD_Error)

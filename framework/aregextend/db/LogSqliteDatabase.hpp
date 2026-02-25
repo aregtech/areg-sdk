@@ -57,17 +57,17 @@ public:
      * \brief   Returns the SQL query to read instance dependent log scopes from the database.
      *          The ID of the instance can be specified (bound) to read scopes.
      **/
-    static String getReadScopesQuery();
+    static areg::String getReadScopesQuery();
 
     /**
      * \brief   Returns the SQL query to read all instances from the database.
      **/
-    static String getReadInstancesQuery();
+    static areg::String getReadInstancesQuery();
 
     /**
      * \brief   Returns the SQL query to read all log messages from the database.
      **/
-    static String getReadAllLogMessagesQuery();
+    static areg::String getReadAllLogMessagesQuery();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -97,14 +97,14 @@ public:
     /**
      * \brief   Returns database file path.
      **/
-    inline const String& getDatabasePath() const;
+    inline const areg::String& getDatabasePath() const;
 
     /**
      * \brief   Returns the initial database file path. The initial file path may contain mask like timestamp,
      *          so that each time database is disconnected and connected again with the empty file path,
      *          it creates new file.
      **/
-    inline const String& getInitialDatabasePath() const;
+    inline const areg::String& getInitialDatabasePath() const;
 
     /**
      * \brief   Return SQLite database object
@@ -153,7 +153,7 @@ public:
      * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    bool connect(const String& dbPath, bool readOnly) override;
+    bool connect(const areg::String& dbPath, bool readOnly) override;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
@@ -165,7 +165,7 @@ public:
      * \param   sql     The SQL script to execute.
      * \return  Returns true if succeeds to execute the SQL script.
      **/
-    bool execute(const String & sql) override;
+    bool execute(const areg::String & sql) override;
 
     /**
      * \brief   Call if need to make multiple operation. This call starts the transaction,
@@ -233,7 +233,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool logScopeActivate(const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the list of scopes in the database.
@@ -274,8 +274,8 @@ public:
      * \brief   Call to query and get list of names of connected instances from log database.
      * \param[out]  names   On output, the vector contains names of connected instances.
      **/
-    void getLogInstanceNames(std::vector<String>& names);
-    std::vector<String> getLogInstanceNames();
+    void getLogInstanceNames(std::vector<areg::String>& names);
+    std::vector<areg::String> getLogInstanceNames();
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database.
@@ -288,8 +288,8 @@ public:
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
      * \param[out]  names   On output, the vector contains names of threads of connected instances.
      **/
-    void getLogThreadNames(std::vector<String>& names);
-    std::vector<String> getLogThreadNames();
+    void getLogThreadNames(std::vector<areg::String>& names);
+    std::vector<areg::String> getLogThreadNames();
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
@@ -302,8 +302,8 @@ public:
      * \brief   Call to get the list of log priorities.
      * \param   names   On output, the vector contains names of log priorities.
      **/
-    void getPriorityNames(std::vector<String>& names);
-    std::vector<String> getPriorityNames();
+    void getPriorityNames(std::vector<areg::String>& names);
+    std::vector<areg::String> getPriorityNames();
 
     /**
      * \brief   Call to query and get information of connected instances from log database.
@@ -520,7 +520,7 @@ private:
      * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to open or create the database file.
      **/
-    inline bool _open(const String& dbPath, bool readOnly);
+    inline bool _open(const areg::String& dbPath, bool readOnly);
 
     /**
      * \brief   In the opened database file, creates the tables required to save logs.
@@ -577,7 +577,7 @@ protected:
     SqliteStatement mStmtLogs;
 
     //!< The initial path to the SQLIte database file. The path may contain mask like timestamp.
-    String          mDbInitPath;
+    areg::String          mDbInitPath;
 
     //!< Flag, indicating whether the database and data tables are initialized or not.
     bool            mIsInitialized;
@@ -609,12 +609,12 @@ inline void LogSqliteDatabase::setDatabaseLoggingEnabled(bool enable)
     mDbLogEnabled = enable;
 }
 
-inline const String& LogSqliteDatabase::getDatabasePath() const
+inline const areg::String& LogSqliteDatabase::getDatabasePath() const
 {
     return mDatabase.getPath();
 }
 
-inline const String& LogSqliteDatabase::getInitialDatabasePath() const
+inline const areg::String& LogSqliteDatabase::getInitialDatabasePath() const
 {
     return mDbInitPath;
 }

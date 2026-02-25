@@ -26,7 +26,7 @@ ClientConnection::ClientConnection()
 {
 }
 
-ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
+ClientConnection::ClientConnection(const areg::String & hostName, uint16_t portNr)
     : SocketConnectionBase    ( )
     , mClientSocket ( hostName, portNr )
     , mCookie       ( areg::COOKIE_UNKNOWN )
@@ -41,7 +41,7 @@ ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
 }
 
 
-bool ClientConnection::createSocket(const String & hostName, uint16_t portNr)
+bool ClientConnection::createSocket(const areg::String & hostName, uint16_t portNr)
 {
     setCookie( mClientSocket.createSocket(hostName, portNr) ? areg::COOKIE_LOCAL : areg::COOKIE_UNKNOWN );
     return mClientSocket.isValid();

@@ -106,7 +106,7 @@ public:
      * \param   newPrio     The name of the log priority level to add.
      **/
     inline void setPriority( const char * newPrio );
-    inline void setPriority( const String & newPrio );
+    inline void setPriority( const areg::String & newPrio );
 
     /**
      * \brief   Adds priority level to the existing priority level of the scope.
@@ -122,7 +122,7 @@ public:
      * \param   addPrio     The name of the log priority level to add.
      **/
     inline void addPriority( const char * addPrio );
-    inline void addPriority( const String & addPrio );
+    inline void addPriority( const areg::String & addPrio );
 
     /**
      * \brief   Removes priority level from the existing priority level of the scope.
@@ -138,7 +138,7 @@ public:
      * \param   remPrio     The name of the log priority level to remove.
      **/
     inline void removePriority( const char * remPrio );
-    inline void removePriority( const String & remPrio );
+    inline void removePriority( const areg::String & remPrio );
 
     /**
      * \brief   Returns the value of log message priority.
@@ -153,7 +153,7 @@ public:
     /**
      * \brief   Returns the name of the log scope.
      **/
-    inline const String & getScopeName() const;
+    inline const areg::String & getScopeName() const;
 
     /**
      * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
@@ -175,7 +175,7 @@ private:
     /**
      * \brief   The name of log scope. It cannot be changed
      **/
-    const String        mScopeName;
+    const areg::String        mScopeName;
     /**
      * \brief   The log scope is active or not.
      **/
@@ -278,7 +278,7 @@ void LogScope::addPriority( const char * addPrio )
     addPriority( areg::stringToLogPrio(addPrio) );
 }
 
-void LogScope::addPriority( const String & addPrio )
+void LogScope::addPriority( const areg::String & addPrio )
 {
     addPriority( areg::stringToLogPrio(addPrio) );
 }
@@ -293,7 +293,7 @@ void LogScope::removePriority( const char * remPrio )
     removePriority( areg::stringToLogPrio(remPrio) );
 }
 
-void LogScope::removePriority( const String & remPrio )
+void LogScope::removePriority( const areg::String & remPrio )
 {
     removePriority( areg::stringToLogPrio(remPrio) );
 }
@@ -308,7 +308,7 @@ inline uint32_t LogScope::getScopeId() const
     return mScopeId;
 }
 
-inline const String & LogScope::getScopeName() const
+inline const areg::String & LogScope::getScopeName() const
 {
     return mScopeName;
 }

@@ -285,7 +285,7 @@ FileBase::FileBase()
     : IOStream        ( )
     , Cursor  ( )
 
-    , mFileName         (String::getEmptyString())
+    , mFileName         (areg::String::getEmptyString())
     , mFileMode         (static_cast<uint32_t>(OpenMode::Invalid))
     , mReadConvert      (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
     , mWriteConvert     (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
@@ -448,9 +448,9 @@ int32_t FileBase::readString( wchar_t * buffer, int32_t charCount ) const
     return _readString<wchar_t>(self(), buffer, charCount);
 }
 
-int32_t FileBase::readString(String & outValue ) const
+int32_t FileBase::readString(areg::String & outValue ) const
 {
-    return _readString<char, String>(self(), outValue);
+    return _readString<char, areg::String>(self(), outValue);
 }
 
 int32_t FileBase::readString(WideString & outValue) const
@@ -468,9 +468,9 @@ int32_t FileBase::readLine( wchar_t * buffer, int32_t charCount ) const
     return _readLine<wchar_t>(self(), buffer, charCount);
 }
 
-int32_t FileBase::readLine( String & buffer) const
+int32_t FileBase::readLine( areg::String & buffer) const
 {
-    return _readLine<char, String>(self(), buffer);
+    return _readLine<char, areg::String>(self(), buffer);
 }
 
 int32_t FileBase::readLine(WideString & buffer) const
@@ -488,7 +488,7 @@ bool FileBase::writeString( const wchar_t* buffer)
     return _writeString<wchar_t>(self(), buffer, -1);
 }
 
-bool FileBase::writeString(const String& buffer)
+bool FileBase::writeString(const areg::String& buffer)
 {
     return _writeString<char>(self(), buffer.getString(), static_cast<int32_t>(buffer.getLength()));
 }
@@ -508,7 +508,7 @@ bool FileBase::writeLine( const wchar_t* buffer)
     return _writeLine<wchar_t>(self(), buffer);
 }
 
-bool FileBase::writeLine(const String& buffer)
+bool FileBase::writeLine(const areg::String& buffer)
 {
     return _writeLine<char>(self(), buffer);
 }
@@ -571,7 +571,7 @@ uint32_t FileBase::read(ByteBuffer & buffer) const
     return result;
 }
 
-uint32_t FileBase::read(String & ascii) const
+uint32_t FileBase::read(areg::String & ascii) const
 {
     return static_cast<uint32_t>(readString(ascii));
 }
@@ -599,7 +599,7 @@ uint32_t FileBase::write(const ByteBuffer & buffer)
     return result;
 }
 
-uint32_t FileBase::write(const String & ascii)
+uint32_t FileBase::write(const areg::String & ascii)
 {
     const char * buffer = ascii.getString();
     uint32_t space  = isTextMode() != 0 ? static_cast<uint32_t>(ascii.getLength()) * sizeof(char) : ascii.getSpace();
@@ -692,7 +692,7 @@ uint32_t FileBase::searchText( uint32_t startPos, const wchar_t * text, bool cas
     return _searchText<wchar_t>( *this, startPos, text, static_cast<uint32_t>(areg::getStringLength<wchar_t>( text )), caseSensitive );
 }
 
-uint32_t FileBase::searchText( uint32_t startPos, const String & text, bool caseSensitive ) const
+uint32_t FileBase::searchText( uint32_t startPos, const areg::String & text, bool caseSensitive ) const
 {
     return _searchText<char>( *this, startPos, text.getString(), static_cast<uint32_t>(text.getLength()), caseSensitive );
 }
@@ -706,16 +706,16 @@ void FileBase::flush()
 {
 }
 
-void FileBase::normalizeName(String & name)
+void FileBase::normalizeName(areg::String & name)
 {
     // replace all "%time%"
     char fmt[128] { 0 };
     areg::CalendarTime st;
     DateTime::getNow(st, true);
-    String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
+    areg::String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
     name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, areg::START_POS, true);
 
     // replace all "%appname%"
-    const String & appName = Process::getInstance().getAppName();
+    const areg::String & appName = Process::getInstance().getAppName();
     name.replace(FileBase::FILE_MASK_APPNAME, appName, areg::START_POS, true);
 }

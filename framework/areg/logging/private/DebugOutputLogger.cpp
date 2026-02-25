@@ -49,7 +49,7 @@ bool DebugOutputLogger::openLogger()
             {
                 Process& curProcess = Process::getInstance();
                 areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::formatString( logMsgHello.logMessage
+                areg::String::formatString( logMsgHello.logMessage
                                     , areg::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::getString(curProcess.getEnvironment())
@@ -72,7 +72,7 @@ void DebugOutputLogger::closeLogger()
     {
         Process & curProcess = Process::getInstance();
         areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::formatString( logMsgGoodbye.logMessage
+        areg::String::formatString( logMsgGoodbye.logMessage
                             , areg::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
@@ -147,7 +147,7 @@ uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
     return write(buffer.getBuffer(), buffer.getSizeUsed());
 }
 
-uint32_t DebugOutputLogger::write( const String & ascii )
+uint32_t DebugOutputLogger::write( const areg::String & ascii )
 {
 #if defined(OUTPUT_DEBUG)
     mOutputMessageA += ascii;

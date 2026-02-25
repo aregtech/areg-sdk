@@ -47,7 +47,7 @@ class TimerDispatcher   : public DispatcherThread
     static constexpr uint32_t TIMEOUT_CONTINUOUS_TIME{ areg::TIMEOUT_1_MS * 50 }; //!< The timeout in milliseconds of continues timer
 
 public:
-    explicit TimerDispatcher(const String & name)
+    explicit TimerDispatcher(const areg::String & name)
         : DispatcherThread( name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
         , TimerConsumer()
         , mOneTime(*this, name + "_one_time")

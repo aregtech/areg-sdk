@@ -79,7 +79,7 @@ public:
      * \param	threadName	The unique name of dispatching thread.
      * \return	If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object, which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & getDispatcherThread(const String & threadName);
+    static inline DispatcherThread & getDispatcherThread(const areg::String & threadName);
 
     /**
      * \brief	By given thread ID searches registered Event Dispatcher thread and returns object.
@@ -144,7 +144,7 @@ public:
      *                          Pass `areg::IGNORE_VALUE` to use default value set in configuration or ignore the parameter if not configured.
      *                          The configuration is set in `areg.init` file under key "config::*::default::messagequeue".
      **/
-    explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
+    explicit DispatcherThread( const areg::String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
     /**
      * \brief   Destructor.
      **/
@@ -286,7 +286,7 @@ private:
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline DispatcherThread & DispatcherThread::getDispatcherThread( const String & threadName )
+inline DispatcherThread & DispatcherThread::getDispatcherThread( const areg::String & threadName )
 {
     DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.isEmpty() == false ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );

@@ -49,12 +49,12 @@ bool DatabaseLogger::openLogger()
     Lock lock(mLock);
     bool result{ false };
 
-    String dbFile;
+    areg::String dbFile;
     if (isValid())
     {
         if (mLogConfiguration.isDatabaseLoggingEnabled())
         {
-            String fileName(mLogConfiguration.getDatabaseFullPath());
+            areg::String fileName(mLogConfiguration.getDatabaseFullPath());
             dbFile = File::normalizePath(fileName.getString());
 
             if (mDatabase->connect(dbFile, false))

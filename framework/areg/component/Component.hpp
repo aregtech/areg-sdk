@@ -124,7 +124,7 @@ public:
      * \return	If found, returns pointer to component object.
      *          Otherwise returns nullptr.
      **/
-    static Component * findComponentByName(const String & roleName);
+    static Component * findComponentByName(const areg::String & roleName);
 
     /**
      * \brief	Find and return component by specified component number
@@ -138,7 +138,7 @@ public:
      * \param	roleName	The role name of component to look up
      * \return	Returns true ff found entry in registries. Otherwise returns false.
      **/
-    static bool existComponent(const String & roleName);
+    static bool existComponent(const areg::String & roleName);
 
     /**
      * \brief	Find component in registries by given component address.
@@ -157,7 +157,7 @@ public:
      * \param	roleName	Unique role name of the component.
      * \param	ownerThread The instance of the thread, which owns the component.
      **/
-    Component( const String & roleName, ComponentThread & ownerThread );
+    Component( const areg::String & roleName, ComponentThread & ownerThread );
 
     /**
      * \brief	Instantiates the component object and dispatches the events in the specified thread.
@@ -170,7 +170,7 @@ public:
      * \brief	Instantiates the component object and dispatches the events in the current thread.
      * \param	roleName	Unique role name of the component.
      **/
-    explicit Component( const String & roleName );
+    explicit Component( const areg::String & roleName );
 
     virtual ~Component();
 
@@ -222,7 +222,7 @@ public:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName );
+    virtual WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName );
 
     /**
      * \brief   This function is called when worker thread is started.
@@ -247,7 +247,7 @@ public:
      *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      * \return	Pointer to created worker thread object.
      **/
-    WorkerThread * createWorkerThread( const String & threadName
+    WorkerThread * createWorkerThread( const areg::String & threadName
                                      , WorkerThreadConsumer & consumer
                                      , ComponentThread & ownerThread
                                      , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
@@ -258,7 +258,7 @@ public:
      * \brief	Stops and deletes worker thread by given name
      * \param	threadName	Worker thread name to stop and delete.
      **/
-    void deleteWorkerThread( const String & threadName );
+    void deleteWorkerThread( const areg::String & threadName );
 
     /**
      * \brief   Call to terminate the component execution and cleanup resources.
@@ -279,7 +279,7 @@ public:
      * \param	serviceName	The service name of Stub / Server object.
      * \return	If found, returns pointer to registered server object.
      **/
-    StubBase * findServerByName( const String & serviceName );
+    StubBase * findServerByName( const areg::String & serviceName );
 
     /**
      * \brief	Finds event dispatcher consumer of specific runtime class ID object.
@@ -297,7 +297,7 @@ public:
     /**
      * \brief   Returns the role name of component
      **/
-    inline const String & getRoleName() const;
+    inline const areg::String & getRoleName() const;
 
     /**
      * \brief   Returns address of component
@@ -395,7 +395,7 @@ inline DispatcherThread * Component::findEventConsumer( const RuntimeClassID& wh
     return mComponentInfo.findEventConsumer(whichClass);
 }
 
-inline const String & Component::getRoleName() const
+inline const areg::String & Component::getRoleName() const
 {
     return mComponentInfo.getRoleName();
 }

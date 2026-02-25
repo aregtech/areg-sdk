@@ -53,7 +53,7 @@ public:
      * \param	threadAddress	The thread address object to convert.
      * \return	Returns string of thread path
      **/
-    static String convAddressToPath( const ThreadAddress & threadAddress );
+    static areg::String convAddressToPath( const ThreadAddress & threadAddress );
 
     /**
      * \brief	Parses passed path and converts passed path to the Thread Address object.
@@ -90,7 +90,7 @@ public:
      * \param   threadName  Thread name to set.
      **/
     explicit ThreadAddress( const char * threadName );
-    explicit ThreadAddress( const String & threadName );
+    explicit ThreadAddress( const areg::String & threadName );
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
@@ -176,7 +176,7 @@ public:
     /**
      * \brief   Return thread name.
      **/
-    inline const String & getThreadName() const;
+    inline const areg::String & getThreadName() const;
 
     /**
      * \brief   Returns validity of thread address. 
@@ -191,7 +191,7 @@ public:
      *          <string name> is the name of string.
      * \return  Returns converted path of thread as string.
      **/
-    inline String convToString() const;
+    inline areg::String convToString() const;
 
     /**
      * \brief	Parse string and retrieves thread address data from path.
@@ -217,7 +217,7 @@ private:
     /**
      * \brief   The thread name.
      **/
-    String          mThreadName;
+    areg::String          mThreadName;
     /**
      * \brief   The calculated number of thread address.
      **/
@@ -265,7 +265,7 @@ inline ThreadAddress & ThreadAddress::operator = ( ThreadAddress && src ) noexce
     return (*this);
 }
 
-inline const String & ThreadAddress::getThreadName() const
+inline const areg::String & ThreadAddress::getThreadName() const
 {
     return mThreadName;
 }
@@ -295,7 +295,7 @@ inline ThreadAddress::operator uint32_t() const
     return mMagicNum;
 }
 
-inline String ThreadAddress::convToString() const
+inline areg::String ThreadAddress::convToString() const
 {
     return mThreadName;
 }

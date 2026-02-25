@@ -47,7 +47,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessa
 ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , areg::RemoteServiceKind service
                                                 , uint32_t connectTypes
-                                                , const String & dispatcher
+                                                , const areg::String & dispatcher
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
     : RemoteMessageHandler        ( )
     , ConnectionConsumer   ( )
@@ -102,7 +102,7 @@ bool ServiceCommunicationBase::setupServiceConnectionData(areg::RemoteServiceKin
             ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
-                String address{ config.getConnectionAddress() };
+                areg::String address{ config.getConnectionAddress() };
                 uint16_t port{ config.getConnectionPort() };
                 result = mServerConnection.setAddress(address, port);
             }
@@ -112,7 +112,7 @@ bool ServiceCommunicationBase::setupServiceConnectionData(areg::RemoteServiceKin
     return result;
 }
 
-void ServiceCommunicationBase::applyServiceConnectionData(const String & hostName, uint16_t portNr)
+void ServiceCommunicationBase::applyServiceConnectionData(const areg::String & hostName, uint16_t portNr)
 {
     mServerConnection.setAddress( hostName, portNr );
 }
@@ -201,7 +201,7 @@ bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & client
     if ( clientSocket.isValid( ) && clientSocket.isAlive() )
     {
         Lock lock(mLock);
-        const String & ipAddress = clientSocket.getAddress( ).getHostAddress( );
+        const areg::String & ipAddress = clientSocket.getAddress( ).getHostAddress( );
         result =  ((mConnectBehavior == ConnectionPolicy::Accept) && (mBlackList.contains( ipAddress ) == false)) ||
                   ((mConnectBehavior == ConnectionPolicy::Reject) && (mWhiteList.contains( ipAddress ) == true ));
 

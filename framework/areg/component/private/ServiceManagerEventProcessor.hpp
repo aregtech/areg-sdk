@@ -142,7 +142,7 @@ private:
      *          After processing this method the thread is not operable anymore.
      * \param   threadName  The name of component thread to terminate.
      **/
-    bool _terminateComponentThread( const String & threadName );
+    bool _terminateComponentThread( const areg::String & threadName );
 
     /**
      * \brief   Creates new instance of the component thread after it was terminated.
@@ -150,7 +150,7 @@ private:
      *          component thread are restarted again.
      * \param   threadName  The name of the thread to re-start.
      */
-    void _startComponentThread( const String & threadName );
+    void _startComponentThread( const areg::String & threadName );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

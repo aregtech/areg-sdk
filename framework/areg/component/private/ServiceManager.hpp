@@ -263,7 +263,7 @@ private:
      * \return  Returns true if router client successfully started.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const String & ipAddress, uint16_t portNr );
+    static bool _routingServiceStart( const areg::String & ipAddress, uint16_t portNr );
 
     /**
      * \brief   Call to stop router client.
@@ -292,7 +292,7 @@ private:
      * 
      * \param   componentThread The name of the thread to create and restart.
      **/
-    static void _requestCreateThread( const String & componentThread );
+    static void _requestCreateThread( const areg::String & componentThread );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

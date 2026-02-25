@@ -71,9 +71,9 @@ void LocalHelloWorldClient::processTimer(Timer & timer)
     requestHelloWorld( timer.getName( ) );
 }
 
-inline String LocalHelloWorldClient::timerName( Component & owner ) const
+inline areg::String LocalHelloWorldClient::timerName( Component & owner ) const
 {
-    String result;
+    areg::String result;
     result.append("Local_")
           .append(owner.getRoleName())
           .append(areg::DEFAULT_SPECIAL_CHAR)

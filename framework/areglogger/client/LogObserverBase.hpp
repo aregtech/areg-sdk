@@ -74,7 +74,7 @@ public:
      *                      If string is empty, uses `./config/areg.init` relative path.
      * \return  Returns true if successfully initialized.
      **/
-    bool initialize(const std::string& configFile = String::EmptyString);
+    bool initialize(const std::string& configFile = areg::String::EmptyString);
 
     /**
      * \brief   Releases the log observer and disconnects from log collector.
@@ -130,7 +130,7 @@ public:
      *                      The path with mask like `log_%time%.sqlog` are allowed.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    bool restart(const std::string& dbLocation = String::EmptyString);
+    bool restart(const std::string& dbLocation = areg::String::EmptyString);
 
     /**
      * \brief   Returns true if the log observer is initialized.
@@ -255,7 +255,7 @@ public:
      * \brief   Call to query and get list of names of connected instances from log database.
      * \param   names   On output, contains the list of names of connected instances.
      **/
-    void getLogInstanceNames(std::vector<String>& names);
+    void getLogInstanceNames(std::vector<areg::String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database
@@ -267,7 +267,7 @@ public:
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
      * \param   names   On output, contains the list of all thread names that sent messages.
      **/
-    void getLogThreadNames(std::vector<String>& names);
+    void getLogThreadNames(std::vector<areg::String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
@@ -279,7 +279,7 @@ public:
      * \brief   Call to get the list of log priorities.
      * \param   names   On output, contains the names of all priorities.
      **/
-    void getPriorityNames(std::vector<String>& names);
+    void getPriorityNames(std::vector<areg::String>& names);
 
     /**
      * \brief   Call to query and get information of connected instances from log database.

@@ -196,9 +196,9 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
     }
 }
 
-inline String PublicHelloWorldClient::timerName( Component & owner ) const
+inline areg::String PublicHelloWorldClient::timerName( Component & owner ) const
 {
-    String result;
+    areg::String result;
     result.append("Public_")
           .append( owner.getRoleName( ) )
           .append(areg::DEFAULT_SPECIAL_CHAR)

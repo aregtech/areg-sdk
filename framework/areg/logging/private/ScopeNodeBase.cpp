@@ -46,7 +46,7 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType )
 {
 }
 
-ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio /*= static_cast<uint32_t>(areg::LogPriority::PrioNotset)*/ )
+ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const areg::String & nodeName, uint32_t prio /*= static_cast<uint32_t>(areg::LogPriority::PrioNotset)*/ )
     : mNodeType     ( nodeType )
     , mPrioStates   ( prio )
     , mNodeName     ( nodeName )
@@ -70,9 +70,9 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
 {
 }
 
-String ScopeNodeBase::extractNodeName( String & scopeName )
+areg::String ScopeNodeBase::extractNodeName( areg::String & scopeName )
 {
-    String result(scopeName);
+    areg::String result(scopeName);
     areg::CharPos startPos = areg::START_POS;
     const char * str = scopeName.getString( );
 
@@ -91,7 +91,7 @@ String ScopeNodeBase::extractNodeName( String & scopeName )
     }
     else
     {
-        scopeName = String::EmptyString;
+        scopeName = areg::String::EmptyString;
     }
 
     return result;
@@ -143,10 +143,10 @@ bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
     return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
 }
 
-const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & scopePath, uint32_t /* prioStates */ ) const
+const ScopeNodeBase & ScopeNodeBase::makeChildNode( areg::String & scopePath, uint32_t /* prioStates */ ) const
 {
     static ScopeNodeBase _invalidNode;
-    scopePath = String::EmptyString;
+    scopePath = areg::String::EmptyString;
     return _invalidNode;
 }
 
@@ -155,12 +155,12 @@ std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( const ScopeNodeBas
     return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
 }
 
-std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & /* scopePath */, uint32_t /* prioStates */ )
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( areg::String & /* scopePath */, uint32_t /* prioStates */ )
 {
     return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
 }
 
-String ScopeNodeBase::makeScopePath( const String & prefix ) const
+areg::String ScopeNodeBase::makeScopePath( const areg::String & prefix ) const
 {
     return prefix;
 }
@@ -170,12 +170,12 @@ uint32_t ScopeNodeBase::groupChildNodes()
     return 0;
 }
 
-uint32_t ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const String& /*parentPath*/) const
+uint32_t ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const areg::String& /*parentPath*/) const
 {
     return 0;
 }
 
-uint32_t ScopeNodeBase::addChildRecursive( String & scopePath, uint32_t prioStates )
+uint32_t ScopeNodeBase::addChildRecursive( areg::String & scopePath, uint32_t prioStates )
 {
     std::pair<ScopeNodeBase &, bool> node = addChildNode( scopePath, prioStates );
     return (node.first.isValid() ? (1 + node.first.addChildRecursive(scopePath, prioStates)) : 0);
@@ -183,7 +183,7 @@ uint32_t ScopeNodeBase::addChildRecursive( String & scopePath, uint32_t prioStat
 
 uint32_t ScopeNodeBase::addChildRecursive( const LogScope & logScope )
 {
-    String scopeName( logScope.getScopeName( ) );
+    areg::String scopeName( logScope.getScopeName( ) );
     return addChildRecursive( scopeName, logScope.getPriority( ) );
 }
 
@@ -192,13 +192,13 @@ uint32_t ScopeNodeBase::groupRecursive()
     return 0;
 }
 
-String ScopeNodeBase::makeConfigString( const String & parent ) const
+areg::String ScopeNodeBase::makeConfigString( const areg::String & parent ) const
 {
     if (isValid())
     {
         char scope[areg::LOG_MESSAGE_IZE];
-        uint32_t len = static_cast<uint32_t>(String::formatString(scope, areg::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
-        return String(scope, len);
+        uint32_t len = static_cast<uint32_t>(areg::String::formatString(scope, areg::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
+        return areg::String(scope, len);
     }
     else
     {

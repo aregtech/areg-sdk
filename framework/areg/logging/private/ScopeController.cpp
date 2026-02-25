@@ -24,7 +24,7 @@
 #include "areg/logging/private/LogOptions.hpp"
 
 #if AREG_LOGS
-inline bool ScopeController::_isScopeGroup( const String & scopeName )
+inline bool ScopeController::_isScopeGroup( const areg::String & scopeName )
 {
     return (scopeName.findLast(areg::SYNTAX_SCOPE_GROUP ) >= areg::START_POS);
 }
@@ -79,14 +79,14 @@ void ScopeController::removeScopePriority( uint32_t scopeId, areg::LogPriority r
     mMapLogScope.unlock( );
 }
 
-int32_t ScopeController::setScopeGroupPriority( const String & scopeGroupName, uint32_t newPrio )
+int32_t ScopeController::setScopeGroupPriority( const areg::String & scopeGroupName, uint32_t newPrio )
 {
     int32_t result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
     {
         mMapLogScope.lock( );
 
-        String scopeGroup{ scopeGroupName };
+        areg::String scopeGroup{ scopeGroupName };
         if (scopeGroupName.endsWith(areg::SYNTAX_SCOPE_GROUP))
         {
             scopeGroup.resize(scopeGroup.getLength() - 1);
@@ -111,7 +111,7 @@ int32_t ScopeController::setScopeGroupPriority( const String & scopeGroupName, u
     return result;
 }
 
-int32_t ScopeController::addScopeGroupPriority( const String & scopeGroupName, areg::LogPriority addPrio )
+int32_t ScopeController::addScopeGroupPriority( const areg::String & scopeGroupName, areg::LogPriority addPrio )
 {
     int32_t result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
@@ -134,7 +134,7 @@ int32_t ScopeController::addScopeGroupPriority( const String & scopeGroupName, a
     return result;
 }
 
-int32_t ScopeController::removeScopeGroupPriority( const String & scopeGroupName, areg::LogPriority remPrio )
+int32_t ScopeController::removeScopeGroupPriority( const areg::String & scopeGroupName, areg::LogPriority remPrio )
 {
     int32_t result{ 0 };
     if ( scopeGroupName.isEmpty( ) == false )
@@ -193,7 +193,7 @@ void ScopeController::configureScopes( const Property & prop )
     configureScopes(Key.getPosition(), prio);
 }
 
-void ScopeController::configureScopes( const String & scopeName, uint32_t scopePrio )
+void ScopeController::configureScopes( const areg::String & scopeName, uint32_t scopePrio )
 {
     if ( _isScopeGroup( scopeName ) )
     {
@@ -224,7 +224,7 @@ void ScopeController::activateScope( LogScope & logScope )
 
 void ScopeController::activateScope( LogScope & logScope, uint32_t defaultPrio )
 {
-    const String & scopeName = logScope.getScopeName( );
+    const areg::String & scopeName = logScope.getScopeName( );
     uint32_t scopePrio{ defaultPrio };
 
     if ( mConfigScopeList.find( scopeName, scopePrio ) )
@@ -234,7 +234,7 @@ void ScopeController::activateScope( LogScope & logScope, uint32_t defaultPrio )
     else
     {
         logScope.setPriority( defaultPrio ); // set first default priority
-        String groupName( scopeName );
+        areg::String groupName( scopeName );
         areg::CharPos pos = areg::END_POS;
         do
         {
@@ -287,7 +287,7 @@ void ScopeController::changeScopeActivityStatus( bool makeActive )
     mMapLogScope.unlock( );
 }
 
-void ScopeController::changeScopeActivityStatus( const String & scopeName, uint32_t scopeId, uint32_t logPrio )
+void ScopeController::changeScopeActivityStatus( const areg::String & scopeName, uint32_t scopeId, uint32_t logPrio )
 {
     if ( _isScopeGroup( scopeName ) )
     {

@@ -97,7 +97,7 @@ public:
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
      **/
-    ServerConnectionBase( const String & hostName, uint16_t portNr );
+    ServerConnectionBase( const areg::String & hostName, uint16_t portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -133,7 +133,7 @@ public:
      * \param   portNr      Valid port number of socket connection.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    inline bool setAddress( const String & hostName, uint16_t portNr );
+    inline bool setAddress( const areg::String & hostName, uint16_t portNr );
 
     /**
      * \brief   Sets socket address. The address should be either invalid
@@ -207,7 +207,7 @@ public:
      * \param   portNr      The valid port number to bind.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const String & hostName, uint16_t portNr );
+    bool createSocket( const areg::String & hostName, uint16_t portNr );
 
     /**
      * \brief   Before listening and accepting connection from clients,
@@ -347,7 +347,7 @@ private:
 // ServerConnectionBase class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ServerConnectionBase::setAddress(const String & hostName, uint16_t portNr)
+inline bool ServerConnectionBase::setAddress(const areg::String & hostName, uint16_t portNr)
 {
     Lock lock(mLock);
     return mServerSocket.setAddress(hostName, portNr, true);

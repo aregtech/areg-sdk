@@ -41,7 +41,7 @@ const RuntimeClassID & RuntimeBase::getRuntimeClassId() const
     return _getClassId();
 }
 
-const String & RuntimeBase::getRuntimeClassName() const
+const areg::String & RuntimeBase::getRuntimeClassName() const
 {
     return RuntimeBase::_getClassId().getName();
 }
@@ -51,7 +51,7 @@ bool RuntimeBase::isInstanceOfRuntimeClass( const char * className ) const
     return (RuntimeBase::_getClassId() == className);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const String & className ) const
+bool RuntimeBase::isInstanceOfRuntimeClass( const areg::String & className ) const
 {
     return (RuntimeBase::_getClassId() == className);
 }

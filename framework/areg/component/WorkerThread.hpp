@@ -96,7 +96,7 @@ public:
      * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
      *                              Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
-    WorkerThread( const String & threadName
+    WorkerThread( const areg::String & threadName
                 , Component & bindingComponent
                 , WorkerThreadConsumer & threadConsumer
                 , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE

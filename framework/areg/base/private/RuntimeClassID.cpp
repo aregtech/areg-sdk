@@ -55,7 +55,7 @@ RuntimeClassID::RuntimeClassID( const char * className )
     }
 }
 
-RuntimeClassID::RuntimeClassID( const String& className )
+RuntimeClassID::RuntimeClassID( const areg::String& className )
     : mClassName(BAD_CLASS_ID)
     , mMagicNum (areg::CHECKSUM_IGNORE)
 {
@@ -84,7 +84,7 @@ RuntimeClassID::RuntimeClassID( RuntimeClassID && src ) noexcept
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void RuntimeClassID::setName( const String& className )
+void RuntimeClassID::setName( const areg::String& className )
 {
     if ( className.isEmpty() || (className == BAD_CLASS_ID))
     {

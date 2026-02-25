@@ -48,14 +48,14 @@ ScopeLeaf::ScopeLeaf( ScopeLeaf && src ) noexcept
 {
 }
 
-String ScopeLeaf::makeScopePath( const String & prefix ) const
+areg::String ScopeLeaf::makeScopePath( const areg::String & prefix ) const
 {
-    String result{ prefix };
+    areg::String result{ prefix };
     result += mNodeName;
     return result;
 }
 
-uint32_t ScopeLeaf::updateConfigNode(ConfigManager& config, const String & parentPath ) const
+uint32_t ScopeLeaf::updateConfigNode(ConfigManager& config, const areg::String & parentPath ) const
 {
     config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
     return 1;
@@ -93,7 +93,7 @@ ScopeNode::ScopeNode( ScopeNode && src ) noexcept
 {
 }
 
-ScopeNode::ScopeNode( ScopeNodeBase::NodeType nodeType, const String & name, uint32_t prio )
+ScopeNode::ScopeNode( ScopeNodeBase::NodeType nodeType, const areg::String & name, uint32_t prio )
     : ScopeNodeBase( nodeType, name, prio )
     , mChildNodes( true )
     , mChildLeafs( true )
@@ -124,7 +124,7 @@ ScopeNode & ScopeNode::operator=( ScopeNode && src ) noexcept
     return (*this);
 }
 
-const ScopeNodeBase & ScopeNode::makeChildNode( String & scopePath, uint32_t prioStates ) const
+const ScopeNodeBase & ScopeNode::makeChildNode( areg::String & scopePath, uint32_t prioStates ) const
 {
     if ( scopePath.isEmpty( ) )
     {
@@ -132,7 +132,7 @@ const ScopeNodeBase & ScopeNode::makeChildNode( String & scopePath, uint32_t pri
     }
     else
     {
-        String nodeName = ScopeNodeBase::extractNodeName( scopePath );
+        areg::String nodeName = ScopeNodeBase::extractNodeName( scopePath );
         if ( scopePath.isEmpty( ) )
         {
             static ScopeLeaf _leaf;
@@ -179,20 +179,20 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( const ScopeNodeBase &
     return std::pair<ScopeNodeBase &, bool>{*scope, newEntry};
 }
 
-std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( String & scopePath, uint32_t prioStates )
+std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( areg::String & scopePath, uint32_t prioStates )
 {
     const ScopeNodeBase & node = makeChildNode( scopePath, prioStates );
     return addChildNode( node );
 }
 
-String ScopeNode::makeScopePath( const String & prefix ) const
+areg::String ScopeNode::makeScopePath( const areg::String & prefix ) const
 {
     ASSERT(mNodeName.isEmpty() == false);
     ASSERT(isValid());
     char scope[areg::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::formatString(scope, areg::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), areg::SYNTAX_SCOPE_SEPARATOR));
+    uint32_t len = static_cast<uint32_t>(areg::String::formatString(scope, areg::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), areg::SYNTAX_SCOPE_SEPARATOR));
 
-    return String(scope, len);
+    return areg::String(scope, len);
 }
 
 uint32_t ScopeNode::groupChildNodes() 
@@ -255,10 +255,10 @@ uint32_t ScopeNode::groupChildNodes()
     return result;
 }
 
-uint32_t ScopeNode::updateConfigNode( ConfigManager & config, const String & parentPath ) const
+uint32_t ScopeNode::updateConfigNode( ConfigManager & config, const areg::String & parentPath ) const
 {
     uint32_t result{ 0 };
-    String thisScope = makeScopePath( parentPath );
+    areg::String thisScope = makeScopePath( parentPath );
     if ( (mGrouping & static_cast<uint32_t>(ScopeNodeBase::Grouping::All)) != 0 )
     {
         config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
@@ -293,16 +293,16 @@ uint32_t ScopeNode::groupRecursive()
     return result;
 }
 
-String ScopeNode::makeConfigString( const String & parent ) const
+areg::String ScopeNode::makeConfigString( const areg::String & parent ) const
 {
     char scope[areg::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::formatString(    scope, areg::LOG_MESSAGE_IZE
+    uint32_t len = static_cast<uint32_t>(areg::String::formatString(    scope, areg::LOG_MESSAGE_IZE
                                                                 , "%s%s%c%c"
                                                                 , parent.getString()
                                                                 , mNodeName.getString()
                                                                 , areg::SYNTAX_SCOPE_SEPARATOR
                                                                 , areg::SYNTAX_SCOPE_GROUP));
-    return String(scope, len);
+    return areg::String(scope, len);
 }
 
 uint32_t ScopeNode::removePriorityNodesRecursive( uint32_t prioRemove )
@@ -377,16 +377,16 @@ ScopeRoot::ScopeRoot()
 {
 }
 
-String ScopeRoot::makeScopePath( const String & /*prefix*/ ) const
+areg::String ScopeRoot::makeScopePath( const areg::String & /*prefix*/ ) const
 {
-    return String::EmptyString;
+    return areg::String::EmptyString;
 }
 
-uint32_t ScopeRoot::updateConfigNode( ConfigManager & config, const String & /*parentPath*/ ) const
+uint32_t ScopeRoot::updateConfigNode( ConfigManager & config, const areg::String & /*parentPath*/ ) const
 {
     uint32_t result{ 0 };
 
-    String thisScope( makeScopePath(String::EmptyString) );
+    areg::String thisScope( makeScopePath(areg::String::EmptyString) );
     for ( auto pos = mChildLeafs.firstPosition( ); mChildLeafs.isValidPosition( pos ); pos = mChildLeafs.nextPosition( pos ) )
     {
         const ScopeLeaf & leaf = mChildLeafs.valueAtPosition( pos );
@@ -408,7 +408,7 @@ uint32_t ScopeRoot::updateConfigNode( ConfigManager & config, const String & /*p
     return result;
 }
 
-String ScopeRoot::makeConfigString(const String& parent) const
+areg::String ScopeRoot::makeConfigString(const areg::String& parent) const
 {
     return (parent + areg::SYNTAX_SCOPE_GROUP);
 }

@@ -45,15 +45,15 @@ void Process::_osInitilize()
 
     if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {
-        String temp(fullPath);
+        areg::String temp(fullPath);
         _initPaths(temp.getString());
     }
 }
 
 
-String Process::_osGetEnvVariable( const char* var ) const
+areg::String Process::_osGetEnvVariable( const char* var ) const
 {
-    String result;
+    areg::String result;
     uint32_t length = var != nullptr ? static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0)) : 0;
     uint32_t size = length + 1u;
     if (size > 1)

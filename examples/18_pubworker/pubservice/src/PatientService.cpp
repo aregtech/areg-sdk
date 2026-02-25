@@ -25,7 +25,7 @@ inline PatientService & PatientService::self()
     return (*this);
 }
 
-WorkerThreadConsumer * PatientService::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
+WorkerThreadConsumer * PatientService::workerThreadConsumer(const areg::String & consumerName, const areg::String & workerThreadName)
 {
     if ( mWorkerConsumer.getConsumerName() == consumerName)
     {

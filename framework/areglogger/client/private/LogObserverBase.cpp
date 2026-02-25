@@ -74,7 +74,7 @@ bool LogObserverBase::stop()
     return logObserverStopLogging(true, nullptr);
 }
 
-bool LogObserverBase::restart(const std::string & dbLocation /*= String::EmptyString*/)
+bool LogObserverBase::restart(const std::string & dbLocation /*= areg::String::EmptyString*/)
 {
     return logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
 }
@@ -136,7 +136,7 @@ uint16_t LogObserverBase::getConfigLoggerPort() const
 
 void LogObserverBase::setConfigLoggerPort(uint16_t portNr)
 {
-    LoggerClient::getInstance().setConfigLoggerConnection(String::EmptyString, portNr);
+    LoggerClient::getInstance().setConfigLoggerConnection(areg::String::EmptyString, portNr);
 }
 
 void LogObserverBase::setConfigLoggerConnection(const std::string& address, uint16_t portNr)
@@ -209,7 +209,7 @@ void LogObserverBase::saveLoggerConfig()
     LoggerClient::getInstance().saveConfiguration();
 }
 
-void LogObserverBase::getLogInstanceNames(std::vector<String>& names)
+void LogObserverBase::getLogInstanceNames(std::vector<areg::String>& names)
 {
     LoggerClient::getInstance().getLogInstanceNames(names);
 }
@@ -219,7 +219,7 @@ void LogObserverBase::getLogInstances(std::vector<ITEM_ID>& ids)
     LoggerClient::getInstance().getLogInstances(ids);
 }
 
-void LogObserverBase::getLogThreadNames(std::vector<String>& names)
+void LogObserverBase::getLogThreadNames(std::vector<areg::String>& names)
 {
     LoggerClient::getInstance().getLogThreadNames(names);
 }
@@ -229,7 +229,7 @@ void LogObserverBase::getLogThreads(std::vector<ITEM_ID>& ids)
     LoggerClient::getInstance().getLogThreads(ids);
 }
 
-void LogObserverBase::getPriorityNames(std::vector<String>& names)
+void LogObserverBase::getPriorityNames(std::vector<areg::String>& names)
 {
     LoggerClient::getInstance().getPriorityNames(names);
 }

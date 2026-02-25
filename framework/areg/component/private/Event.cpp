@@ -36,7 +36,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
  **/
 const Event Event::BAD_EVENT(Event::EventType::EventUnknown);
 
-bool Event::addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
+bool Event::addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread )
 {
     return Event::addListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
 }
@@ -51,7 +51,7 @@ bool Event::addListener( const RuntimeClassID & classId, EventConsumer & eventCo
     return ( dispThread.isRunning() ? dispThread.registerEventConsumer(classId, eventConsumer) : false );
 }
 
-bool Event::removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread )
+bool Event::removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread )
 {
     return Event::removeListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
 }

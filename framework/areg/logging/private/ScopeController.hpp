@@ -155,21 +155,21 @@ public:
      * \param   scopeId     The ID of the log scope to search.
      * \param   newPrio     The name of priority to set.
      **/
-    inline void setScopePriority( uint32_t scopeId, const String & newPrio );
+    inline void setScopePriority( uint32_t scopeId, const areg::String & newPrio );
 
     /**
      * \brief   By given name searches log scope and sets the specified priority.
      * \param   scopeName   The name of the log scope to search.
      * \param   newPrio     The priority value to set.
      **/
-    inline void setScopePriority( const String & scopeName, uint32_t newPrio );
+    inline void setScopePriority( const areg::String & scopeName, uint32_t newPrio );
 
     /**
      * \brief   By given name searches log scope and sets the specified priority.
      * \param   scopeName   The name of log scope to search.
      * \param   newPrio     The name of priority value to set.
      **/
-    inline void setScopePriority( const String & scopeName, const String & newPrio );
+    inline void setScopePriority( const areg::String & scopeName, const areg::String & newPrio );
 
     /**
      * \brief   By given ID searches log scope map adds the specified priority.
@@ -183,21 +183,21 @@ public:
      * \param   scopeId     The ID of the log scope to search.
      * \param   addPrio     The name of priority value to add.
      **/
-    inline void addScopePriority( uint32_t scopeId, const String & addPrio );
+    inline void addScopePriority( uint32_t scopeId, const areg::String & addPrio );
 
     /**
      * \brief   By given name searches log scope and adds the specified scope priority.
      * \param   scopeName   The name of the log scope to search.
      * \param   addPrio     The priority value to add.
      **/
-    inline void addScopePriority( const String & scopeName, areg::LogPriority addPrio );
+    inline void addScopePriority( const areg::String & scopeName, areg::LogPriority addPrio );
 
     /**
      * \brief   By given name searches log scope and adds the specified scope priority.
      * \param   scopeName   The name of the log scope to search.
      * \param   addPrio     The name of priority to add.
      **/
-    inline void addScopePriority( const String & scopeName, const String & addPrio );
+    inline void addScopePriority( const areg::String & scopeName, const areg::String & addPrio );
 
     /**
      * \brief   By given ID searches log scope and removes the specified priority.
@@ -211,21 +211,21 @@ public:
      * \param   scopeId     The ID of the log scope to search.
      * \param   remPrio     The name of priority value to remove.
      **/
-    inline void removeScopePriority( uint32_t scopeId, const String & remPrio );
+    inline void removeScopePriority( uint32_t scopeId, const areg::String & remPrio );
 
     /**
      * \brief   By given name searches log scope and removes the specified priority.
      * \param   scopeName   The name of the log scope to search.
      * \param   remPrio     The priority value to remove.
      **/
-    inline void removeScopePriority( const String & scopeName, areg::LogPriority remPrio );
+    inline void removeScopePriority( const areg::String & scopeName, areg::LogPriority remPrio );
 
     /**
      * \brief   By given name searches log scope and removes the specified priority.
      * \param   scopeName   The name of the log scope to search.
      * \param   remPrio     The name of priority to remove.
      **/
-    inline void removeScopePriority( const String & scopeName, const String & remPrio );
+    inline void removeScopePriority( const areg::String & scopeName, const areg::String & remPrio );
 
     /**
      * \brief   By given name of scope group searches log scopes and sets 
@@ -235,7 +235,7 @@ public:
      * \return  Returns number of log scope, which priority has been set.
      *          Returns zero, if no log scope found.
      **/
-    int32_t setScopeGroupPriority( const String & scopeGroupName, uint32_t newPrio );
+    int32_t setScopeGroupPriority( const areg::String & scopeGroupName, uint32_t newPrio );
 
      /**
       * \brief   By given name of scope group searches log scopes and sets
@@ -245,7 +245,7 @@ public:
       * \return  Returns number of log scope, which priority has been set.
       *          Returns zero, if no log scope found.
       **/
-    inline int32_t setScopeGroupPriority( const String & scopeGroupName, const String & newPrio );
+    inline int32_t setScopeGroupPriority( const areg::String & scopeGroupName, const areg::String & newPrio );
 
     /**
      * \brief   By given name of scope group searches log scopes and adds
@@ -255,7 +255,7 @@ public:
      * \return  Returns number of log scope, which priority has been added.
      *          Returns zero, if no log scope found.
      **/
-    int32_t addScopeGroupPriority( const String & scopeGroupName, areg::LogPriority addPrio );
+    int32_t addScopeGroupPriority( const areg::String & scopeGroupName, areg::LogPriority addPrio );
 
     /**
      * \brief   By given name of scope group searches log scopes and adds
@@ -265,7 +265,7 @@ public:
      * \return  Returns number of log scope, which priority has been added.
      *          Returns zero, if no log scope found.
      **/
-    inline int32_t addScopeGroupPriority( const String & scopeGroupName, const String & addPrio );
+    inline int32_t addScopeGroupPriority( const areg::String & scopeGroupName, const areg::String & addPrio );
 
     /**
      * \brief   By given name of scope group searches log scopes and removes
@@ -275,7 +275,7 @@ public:
      * \return  Returns number of log scope, which priority has been removed.
      *          Returns zero, if no log scope found.
      **/
-    int32_t removeScopeGroupPriority( const String & scopeGroupName, areg::LogPriority remPrio );
+    int32_t removeScopeGroupPriority( const areg::String & scopeGroupName, areg::LogPriority remPrio );
 
     /**
      * \brief   By given name of scope group searches log scopes and removes
@@ -285,7 +285,7 @@ public:
      * \return  Returns number of log scope, which priority has been removed.
      *          Returns zero, if no log scope found.
      **/
-    inline int32_t removeScopeGroupPriority( const String & scopeGroupName, const String & remPrio );
+    inline int32_t removeScopeGroupPriority( const areg::String & scopeGroupName, const areg::String & remPrio );
 
     /**
      * \brief   Clears the list of configured scopes.
@@ -315,7 +315,7 @@ public:
      * \param   scopeName   The name of the scope or scope group to change.
      * \param   scopePrio   The priority to set to scope or scope group.
      **/
-    void configureScopes( const String & scopeName, uint32_t scopePrio );
+    void configureScopes( const areg::String & scopeName, uint32_t scopePrio );
 
     /**
      * \brief   Picks up the list of configured scopes and log priorities and sets the scope priorities,
@@ -352,7 +352,7 @@ public:
      * \param   scopeId     The ID of the scope. Can be zero if it is a scope group.
      * \param   logPrio     The priority of the log to set.
      **/
-    void changeScopeActivityStatus( const String & scopeName, uint32_t scopeId, uint32_t logPrio );
+    void changeScopeActivityStatus( const areg::String & scopeName, uint32_t scopeId, uint32_t logPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -363,7 +363,7 @@ private:
      * \brief   Checks whether the specified scope name indicates the group of scopes or a single scope name.
      *          The group of scopes ends with symbol '*'.
      **/
-    static inline bool _isScopeGroup( const String & scopeName );
+    static inline bool _isScopeGroup( const areg::String & scopeName );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -412,62 +412,62 @@ inline bool ScopeController::isScopeRegistered( const char * scopeName ) const
     return (getScope( scopeName ) != nullptr);
 }
 
-inline void ScopeController::setScopePriority( uint32_t scopeId, const String & newPrio )
+inline void ScopeController::setScopePriority( uint32_t scopeId, const areg::String & newPrio )
 {
     setScopePriority( scopeId, static_cast<uint32_t>(areg::stringToLogPrio( newPrio )) );
 }
 
-inline void ScopeController::setScopePriority( const String & scopeName, uint32_t newPrio )
+inline void ScopeController::setScopePriority( const areg::String & scopeName, uint32_t newPrio )
 {
     setScopePriority( areg::makeScopeId( scopeName ), newPrio );
 }
 
-inline void ScopeController::setScopePriority( const String & scopeName, const String & newPrio )
+inline void ScopeController::setScopePriority( const areg::String & scopeName, const areg::String & newPrio )
 {
     setScopePriority( areg::makeScopeId( scopeName ), static_cast<uint32_t>(areg::stringToLogPrio( newPrio )) );
 }
 
-inline void ScopeController::addScopePriority( uint32_t scopeId, const String & addPrio )
+inline void ScopeController::addScopePriority( uint32_t scopeId, const areg::String & addPrio )
 {
     addScopePriority( scopeId, areg::stringToLogPrio( addPrio ) );
 }
 
-inline void ScopeController::addScopePriority( const String & scopeName, areg::LogPriority addPrio )
+inline void ScopeController::addScopePriority( const areg::String & scopeName, areg::LogPriority addPrio )
 {
     addScopePriority( areg::makeScopeId( scopeName ), addPrio );
 }
 
-inline void ScopeController::addScopePriority( const String & scopeName, const String & addPrio )
+inline void ScopeController::addScopePriority( const areg::String & scopeName, const areg::String & addPrio )
 {
     addScopePriority( areg::makeScopeId( scopeName ), areg::stringToLogPrio( addPrio ) );
 }
 
-inline void ScopeController::removeScopePriority( uint32_t scopeId, const String & remPrio )
+inline void ScopeController::removeScopePriority( uint32_t scopeId, const areg::String & remPrio )
 {
     removeScopePriority( scopeId, areg::stringToLogPrio( remPrio ) );
 }
 
-inline void ScopeController::removeScopePriority( const String & scopeName, areg::LogPriority remPrio )
+inline void ScopeController::removeScopePriority( const areg::String & scopeName, areg::LogPriority remPrio )
 {
     removeScopePriority( areg::makeScopeId( scopeName ), remPrio );
 }
 
-inline void ScopeController::removeScopePriority( const String & scopeName, const String & remPrio )
+inline void ScopeController::removeScopePriority( const areg::String & scopeName, const areg::String & remPrio )
 {
     removeScopePriority( areg::makeScopeId( scopeName ), areg::stringToLogPrio( remPrio ) );
 }
 
-inline int32_t ScopeController::setScopeGroupPriority( const String & scopeGroupName, const String & newPrio )
+inline int32_t ScopeController::setScopeGroupPriority( const areg::String & scopeGroupName, const areg::String & newPrio )
 {
     return setScopeGroupPriority( scopeGroupName, static_cast<uint32_t>(areg::stringToLogPrio( newPrio )) );
 }
 
-inline int32_t ScopeController::addScopeGroupPriority( const String & scopeGroupName, const String & addPrio )
+inline int32_t ScopeController::addScopeGroupPriority( const areg::String & scopeGroupName, const areg::String & addPrio )
 {
     return addScopeGroupPriority( scopeGroupName, areg::stringToLogPrio( addPrio ) );
 }
 
-inline int32_t ScopeController::removeScopeGroupPriority( const String & scopeGroupName, const String & remPrio )
+inline int32_t ScopeController::removeScopeGroupPriority( const areg::String & scopeGroupName, const areg::String & remPrio )
 {
     return removeScopeGroupPriority( scopeGroupName, areg::stringToLogPrio( remPrio ) );
 }

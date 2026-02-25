@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
 
-ServiceClient::ServiceClient(const String & roleName, Component & owner)
+ServiceClient::ServiceClient(const areg::String & roleName, Component & owner)
     : HelloWorldClientBase  ( roleName, owner )
     , TimerConsumer       ( )
 
@@ -55,7 +55,7 @@ bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, Proxy
     return result;
 }
 
-void ServiceClient::responseHelloWorld( const String & clientName, uint32_t clientId )
+void ServiceClient::responseHelloWorld( const areg::String & clientName, uint32_t clientId )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientName.getString(), clientId);
@@ -79,10 +79,10 @@ void ServiceClient::processTimer(Timer & timer)
     requestHelloWorld(timer.getName());
 }
 
-inline String ServiceClient::timerName( Component & /* owner */ ) const
+inline areg::String ServiceClient::timerName( Component & /* owner */ ) const
 {
     ASSERT( getProxy( ) != nullptr );
-    String result = "";
+    areg::String result = "";
     result.append( getServiceRole( ) )
           .append(areg::DEFAULT_SPECIAL_CHAR)
           .append(getServiceName());

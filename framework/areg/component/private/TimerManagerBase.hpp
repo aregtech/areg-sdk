@@ -53,7 +53,7 @@ protected:
     /**
      * \brief   protected Constructor / destructor
      **/
-    TimerManagerBase( const String & threadName );
+    TimerManagerBase( const areg::String & threadName );
     virtual ~TimerManagerBase() = default;
 
 //////////////////////////////////////////////////////////////////////////

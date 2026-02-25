@@ -130,7 +130,7 @@ void LogCollectorMessageProcessor::registerScopesAtObserver(const RemoteMessage 
     msgReceived >> scopeCount;
     msgReceived.moveToBegin();
 
-    String msgStatus;
+    areg::String msgStatus;
     constexpr char fmt[]{ "Received scope registration from source %u, sent %u scopes to register ..." };
     msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()), scopeCount);
 

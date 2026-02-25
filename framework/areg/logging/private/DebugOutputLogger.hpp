@@ -124,7 +124,7 @@ protected:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const String & ascii ) override;
+    uint32_t write( const areg::String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -161,7 +161,7 @@ private:
     /**
      * \brief   The generated ASCII message to output.
      **/
-    String  mOutputMessageA;
+    areg::String  mOutputMessageA;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden calls.

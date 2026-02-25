@@ -29,7 +29,7 @@ namespace chat
 
     struct ChatParticipant
     {
-        String      nickName;
+        areg::String      nickName;
         uint32_t    cookie;
 
     };
@@ -82,7 +82,7 @@ namespace chat
      * \brief   Invalid Nick-name
      *          chat::InvalidNickname
      **/
-    const String  InvalidNickname     = "";
+    const areg::String  InvalidNickname     = "";
 
 	/************************************************************************
 	 * \brief   chat::ConnectionRecord
@@ -102,7 +102,7 @@ namespace chat
         /**
          * \brief   Initialize ConnectionRecord data by setting parameters.
          **/
-        inline ConnectionRecord( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime );
+        inline ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime );
 	    /**
 	     * \brief   Copies data from given source. Every filed of structure should have copy constructor.
 	     * \param   src     The source of ConnectionRecord structure to copy data
@@ -156,7 +156,7 @@ namespace chat
 	    /**
 	     * \brief   Connection client nick name, should be unique
 	     **/
-	    String    nickName;
+	    areg::String    nickName;
 
 	    /**
 	     * \brief   Connection request date-time
@@ -256,7 +256,7 @@ namespace chat
 	    /**
 	     * \brief   DESCRIPTION MISSED
 	     **/
-	    String    nickName;
+	    areg::String    nickName;
 
 	};
 
@@ -299,7 +299,7 @@ inline chat::ConnectionRecord::ConnectionRecord()
 /**
  * \brief   Initialize ConnectionRecord data by setting parameters.
  **/
-inline chat::ConnectionRecord::ConnectionRecord( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime )
+inline chat::ConnectionRecord::ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime )
     : cookie          ( _cookie )
     , nickName        ( _nickName )
     , connectTime     ( _connectTime )

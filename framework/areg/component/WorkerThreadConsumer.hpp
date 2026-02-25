@@ -56,7 +56,7 @@ protected:
      * \brief   Creates consumer object and sets name.
      * \param   consumerName    The name of consumer bind to worker thread.
      **/
-    explicit WorkerThreadConsumer( const String & consumerName );
+    explicit WorkerThreadConsumer( const areg::String & consumerName );
 
 public:
     /**
@@ -73,7 +73,7 @@ public:
      *          Is required if component contains few worker threads
      *          and needs few consumers for every single worker thread.
      **/
-    inline const String & getConsumerName() const;
+    inline const areg::String & getConsumerName() const;
 
     /**
      * \brief   Compares passed name with the name of consumer
@@ -81,7 +81,7 @@ public:
      * \param   consumerName    The name to check.
      * \return  Returns true if passed name is the name of consumer.
      **/
-    inline bool isEqualName( const String & consumerName ) const;
+    inline bool isEqualName( const areg::String & consumerName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -115,7 +115,7 @@ private:
     /**
      * \brief   The name of consumer. Is a fixed name and cannot be changed
      **/
-    const String    mConsumerName;
+    const areg::String    mConsumerName;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -128,12 +128,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // WorkerThreadConsumer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const String & WorkerThreadConsumer::getConsumerName() const
+inline const areg::String & WorkerThreadConsumer::getConsumerName() const
 {
     return mConsumerName;
 }
 
-inline bool WorkerThreadConsumer::isEqualName( const String & consumerName ) const
+inline bool WorkerThreadConsumer::isEqualName( const areg::String & consumerName ) const
 {
     return (mConsumerName == consumerName);
 }

@@ -112,7 +112,7 @@ public:
      * \return  Returns true if succeeded to initialize the threads and trigger the service connection.
      * \note    Either both, the 'address' and 'portNr' should be valid values or both should be invalid / empty.
      **/
-    bool startLoggerClient(const String & address = String::EmptyString, uint16_t portNr = areg::InvalidPort);
+    bool startLoggerClient(const areg::String & address = areg::String::EmptyString, uint16_t portNr = areg::InvalidPort);
 
     /**
      * \brief   Call to stop threads and disconnect log collector service.
@@ -156,7 +156,7 @@ public:
     /**
      * \brief   Returns the IP address of log collector service written in the configuration file.
      **/
-    String getConfigLoggerAddress() const;
+    areg::String getConfigLoggerAddress() const;
 
     /**
      * \brief   Returns the IP port number of log collector service written in the configuration file.
@@ -169,7 +169,7 @@ public:
      * \param   portNr      The port number of the log collector service to connect.
      * \return  Returns true if succeeded to set the connection data. Otherwise, returns false.
      **/
-    bool setConfigLoggerConnection(const String& address, uint16_t portNr);
+    bool setConfigLoggerConnection(const areg::String& address, uint16_t portNr);
 
     /**
      * \brief   Generates and sends the message to query list of connected clients.
@@ -229,17 +229,17 @@ public:
     /**
      * \brief   Returns the path to the active logging database.
      **/
-    String getActiveDatabasePath() const;
+    areg::String getActiveDatabasePath() const;
 
     /**
      * \brief   Returns the path to the initial logging database.
      **/
-    String getInitialDatabasePath() const;
+    areg::String getInitialDatabasePath() const;
 
     /**
      * \brief   Returns the path specified in configuration file.
      **/
-    String getConfigDatabasePath() const;
+    areg::String getConfigDatabasePath() const;
 
     /**
      * \brief   Sets the path to the database file. The path can contain mask.
@@ -249,31 +249,31 @@ public:
      * \param   enable      The flag to set whether to enable or disable database logging.
      * \return  Returns true if succeeded to set the database path. Otherwise, returns false.
      **/
-    bool setConfigDatabasePath(const String& dbPath, bool enable);
+    bool setConfigDatabasePath(const areg::String& dbPath, bool enable);
 
     /**
      * \brief   Returns the logging database location path set in configuration file.
      **/
-    String getConfigDatabaseLocation() const;
+    areg::String getConfigDatabaseLocation() const;
 
     /**
      * \brief   Sets the logging database location path.
      * \param   dbLocation  The location of logging database.
      * \return  Returns true if operation succeeded.
      **/
-    bool setConfigDatabaseLocation(const String& dbLocation);
+    bool setConfigDatabaseLocation(const areg::String& dbLocation);
 
     /**
      * \brief   Returns the logging database name set in configuration file.
      **/
-    String getConfigDatabaseName() const;
+    areg::String getConfigDatabaseName() const;
 
     /**
      * \brief   Sets the logging database name in the configuration file.
      * \param   dbName      The name of logging database.
      * \return  Returns true if operation succeeded.
      **/
-    bool setConfigDatabaseName(const String& dbName);
+    bool setConfigDatabaseName(const areg::String& dbName);
 
     /**
      * \brief   Sets logging connection flag in the configuration file.
@@ -289,7 +289,7 @@ public:
      * \brief   Call to query and get list of names of connected instances from log database.
      * \param   names   On output, contains the list of names of connected instances.
      **/
-    inline void getLogInstanceNames(std::vector<String>& names);
+    inline void getLogInstanceNames(std::vector<areg::String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of connected instances from log database
@@ -301,7 +301,7 @@ public:
      * \brief   Call to query and get list of names of threads of the connected instances from log database.
      * \param   names   On output, contains the list of all thread names that sent messages.
      **/
-    inline void getLogThreadNames(std::vector<String>& names);
+    inline void getLogThreadNames(std::vector<areg::String>& names);
 
     /**
      * \brief   Call to query and get list of IDs of threads of the connected instances from log database.
@@ -313,7 +313,7 @@ public:
      * \brief   Call to get the list of log priorities.
      * \param   names   On output, contains the names of all priorities.
      **/
-    inline void getPriorityNames(std::vector<String>& names);
+    inline void getPriorityNames(std::vector<areg::String>& names);
 
     /**
      * \brief   Call to query and get information of connected instances from log database.
@@ -554,7 +554,7 @@ private:
 // LoggerClient inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline void LoggerClient::getLogInstanceNames(std::vector<String>& names)
+inline void LoggerClient::getLogInstanceNames(std::vector<areg::String>& names)
 {
     mLogDatabase.getLogInstanceNames(names);
 }
@@ -564,7 +564,7 @@ inline void LoggerClient::getLogInstances(std::vector<ITEM_ID>& ids)
     mLogDatabase.getLogInstances(ids);
 }
 
-inline void LoggerClient::getLogThreadNames(std::vector<String>& names)
+inline void LoggerClient::getLogThreadNames(std::vector<areg::String>& names)
 {
     mLogDatabase.getLogThreadNames(names);
 }
@@ -574,7 +574,7 @@ inline void LoggerClient::getLogThreads(std::vector<ITEM_ID>& ids)
     mLogDatabase.getLogThreads(ids);
 }
 
-inline void LoggerClient::getPriorityNames(std::vector<String>& names)
+inline void LoggerClient::getPriorityNames(std::vector<areg::String>& names)
 {
     mLogDatabase.getPriorityNames(names);
 }

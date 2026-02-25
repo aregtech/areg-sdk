@@ -75,7 +75,7 @@ public:
      * \param   componentAddress    The address of Component to create path
      * \return  Returns converted path of Component as string, containing Component address information
      **/
-    static String convAddressToPath( const ComponentAddress & componentAddress );
+    static areg::String convAddressToPath( const ComponentAddress & componentAddress );
 
     /**
      * \brief   From given component path creates component address and returns pointer
@@ -108,7 +108,7 @@ public:
      * \param	threadAddress	The address of master component thread.
      * \param	roleName	    The role name of component.
      **/
-    ComponentAddress( const ThreadAddress & threadAddress, const String & roleName );
+    ComponentAddress( const ThreadAddress & threadAddress, const areg::String & roleName );
 
     /**
      * \brief	Initialization component.
@@ -118,7 +118,7 @@ public:
      *          component thread.
      * \param	roleName	The role name of component.
      **/
-    ComponentAddress( const String & roleName );
+    ComponentAddress( const areg::String & roleName );
 
     /**
      * \brief	Initialization component.
@@ -128,7 +128,7 @@ public:
      * \param	roleName	The role name of component.
      * \param	nameThread	The thread name of master component thread.
      **/
-    ComponentAddress( const String & roleName, const String & nameThread );
+    ComponentAddress( const areg::String & roleName, const areg::String & nameThread );
 
     /**
      * \brief   Copy constructor.
@@ -212,7 +212,7 @@ public:
     /**
      * \brief   Returns the name of component (role name)
      **/
-    inline const String & getRoleName() const;
+    inline const areg::String & getRoleName() const;
 
     /**
      * \brief   Return true if component address if valid.
@@ -224,7 +224,7 @@ public:
      *          Every part of component address has a special path separator.
      * \return  Returns converted path of Component as a string.
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief	Parses component path string and retrieves component address data from path.
@@ -258,7 +258,7 @@ private:
     /**
      * \brief   Component name. Or Role Name of component
      **/
-    String          mRoleName;
+    areg::String          mRoleName;
     /**
      * \brief   Thread address object.
      **/
@@ -334,7 +334,7 @@ inline const ThreadAddress& ComponentAddress::getThreadAddress() const
     return mThreadAddress;
 }
 
-inline const String& ComponentAddress::getRoleName() const
+inline const areg::String& ComponentAddress::getRoleName() const
 {
     return mRoleName;
 }

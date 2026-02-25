@@ -34,7 +34,7 @@ DEF_LOG_SCOPE(areg_component_Timer_startTimer);
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Timer::Timer( TimerConsumer& timerConsumer
-            , const String & timerName  /*= String::getEmptyString()*/
+            , const areg::String & timerName  /*= areg::String::getEmptyString()*/
             , uint32_t timeoutMs        /*= areg::INVALID_TIMEOUT*/
             , int32_t maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : TimerBase         (TimerBase::TimerType::PerThreadTimer, areg::generateName(timerName), timeoutMs)

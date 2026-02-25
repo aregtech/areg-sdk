@@ -136,7 +136,7 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
-    String oldInt = mOldState ? String::makeString(mOldInteger.value) : pubsub::Invalid;
+    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger.value) : pubsub::Invalid;
     console.saveCursorPosition();
     if (state == areg::DataState::DataIsOK)
     {
@@ -151,7 +151,7 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
                           , pubsub::FormatInteger.data()
                           , IntegerAlways.name.getString()
                           , oldInt.getString()
-                          , String::makeString(IntegerAlways.value).getString()
+                          , areg::String::makeString(IntegerAlways.value).getString()
                           , isChanged ? "CHANGED" : "UNCHANGED");
 
         mOldInteger = IntegerAlways;

@@ -24,7 +24,7 @@ LocalHelloWorldService::LocalHelloWorldService( Component & masterComp )
 {
 }
 
-void LocalHelloWorldService::requestHelloWorld( const String & roleName )
+void LocalHelloWorldService::requestHelloWorld( const areg::String & roleName )
 {
     LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 

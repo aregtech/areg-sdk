@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////////////
 AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
 
-TimerManagerBase::TimerManagerBase(const String& threadName)
+TimerManagerBase::TimerManagerBase(const areg::String& threadName)
     : DispatcherThread              (threadName, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , TimerManagerEventConsumer   ( )
 {

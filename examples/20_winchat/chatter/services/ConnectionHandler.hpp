@@ -16,9 +16,9 @@ public:
     virtual ~ConnectionHandler();
 
 public:
-    inline void SetNickName( const String & nickName );
+    inline void SetNickName( const areg::String & nickName );
 
-    inline const String & GetNickName() const;
+    inline const areg::String & GetNickName() const;
 
     void SetCookie( uint32_t cookie );
 
@@ -74,7 +74,7 @@ private:
 
 private:
     chat::ListConnections mListConnections;
-    String        mNickName;
+    areg::String        mNickName;
     uint32_t      mCookie;
     uint32_t      mConnectCookie;
     DateTime      mTimeConnect;
@@ -89,14 +89,14 @@ private:
 };
 
 
-inline void ConnectionHandler::SetNickName(const String & nickName)
+inline void ConnectionHandler::SetNickName(const areg::String & nickName)
 {
     Lock lock(mLock);
     mIsRegistered = mNickName != nickName ? false : mIsRegistered;
     mNickName   = nickName;
 }
 
-inline const String & ConnectionHandler::GetNickName() const
+inline const areg::String & ConnectionHandler::GetNickName() const
 {
     Lock lock(mLock);
     return mNickName;

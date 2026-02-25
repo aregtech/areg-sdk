@@ -68,7 +68,7 @@ namespace areg
          * \param   address     The IP-address of the socket.
          * \param   portNr      The port number of the socket.
          **/
-        SocketAddress(const String& address, uint16_t portNr);
+        SocketAddress(const areg::String& address, uint16_t portNr);
 
         /**
          * \brief   Copies the socket address data from given source.
@@ -165,17 +165,17 @@ namespace areg
          * \param   port    The 16-bit port number to compare.
          * \return  Returns true if both the host (IPv4 address or name) and port match the stored values.
          */
-        bool isEqualAddress(const String& host, uint16_t port) const;
+        bool isEqualAddress(const areg::String& host, uint16_t port) const;
 
         /**
          * \brief   Returns IP address of host as readable string.
          **/
-        inline const String & getHostAddress() const;
+        inline const areg::String & getHostAddress() const;
 
         /**
          * \brief   Returns the name of the host as a readable string.
          **/
-        inline const String & getHostName() const;
+        inline const areg::String & getHostName() const;
 
         /**
          * \brief   Returns port number of host.
@@ -199,11 +199,11 @@ namespace areg
         /**
          * \brief   The string containing human readable numeric IP-address.
          **/
-        String          mIpAddr;
+        areg::String          mIpAddr;
         /**
          * \brief   The string contains human readable host name.
          **/
-        String          mHostName;
+        areg::String          mHostName;
         /**
          * \brief   The port number of socket to connect.
          **/
@@ -230,7 +230,7 @@ namespace areg
         /**
          * \brief   Sets the user name and the password pair.
          **/
-        UserData(const String& user, const String& password);
+        UserData(const areg::String& user, const areg::String& password);
 
         /**
          * \brief   Copies user name and password from the given source.
@@ -263,22 +263,22 @@ namespace areg
         /**
          * \brief   Returns user name.
          **/
-        const String& getUser() const;
+        const areg::String& getUser() const;
 
         /**
          * \brief   Sets user name.
          **/
-        void setUser(const String& user);
+        void setUser(const areg::String& user);
 
         /**
          * \brief   Returns password.
          **/
-        const String& getPassword() const;
+        const areg::String& getPassword() const;
 
         /**
          * \brief   Sets the password.
          **/
-        void setPassword(const String& password);
+        void setPassword(const areg::String& password);
 
         /**
          * \brief   Returns true if the entry is valid.
@@ -291,9 +291,9 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     private:
         //!< The user name entry.
-        String mUser;
+        areg::String mUser;
         //!< The user password entry.
-        String mPassword;
+        areg::String mPassword;
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -597,42 +597,42 @@ namespace areg
      *          Returns the host name of the local machine.
      *          Or returns empty string if failed.
      **/
-    AREG_API const String & getHostname();
+    AREG_API const areg::String & getHostname();
 
     /**
      * \brief   areg::isLocalAddress
      *          Checks whether passed IP-address is local address.
      *          The local address is either "localhost" or "127.0.0.1".
      **/
-    inline bool isLocalAddress(const String& ipaddress);
+    inline bool isLocalAddress(const areg::String& ipaddress);
 
     /**
      * \brief   Checks whether the given string contains an IPv4 address.
      * \param   ipaddress   String to check.
      * \return  Returns true if given string is an IPv4 address like "127.0.0.1". Otherwise, returns false.
      **/
-    AREG_API bool isIpAddress(const String& ipaddress);
+    AREG_API bool isIpAddress(const areg::String& ipaddress);
 
     /**
      * \brief   Converts the host name to the IPv4 address or returns the `hostName` string if failed to convert.
      * \param   hostName    The human readable string to convert.
      * \return  Returns appropriate IPv4 address or the same `hostName` string if could not convert.
      **/
-    AREG_API String convertHostNameToIpAddress(const String& hostName);
+    AREG_API areg::String convertHostNameToIpAddress(const areg::String& hostName);
 
     /**
      * \brief   Converts the IPv4 address to the host name or returns the `ipAddress` string if failed to convert.
      * \param   ipAddress   The human readable IPv4 address to convert.
      * \return  Returns appropriate host name or the same `ipAddress` string if could not convert.
      **/
-    AREG_API String convertIpAddressToHostName(const String& ipAddress);
+    AREG_API areg::String convertIpAddressToHostName(const areg::String& ipAddress);
 
     /**
      * \brief   Extracts the IPv4 address from the given `sockaddr_in` structure.
      * \param   addrHost    The `sockaddr_in` structure which contains the information of the IP address.
      * \return  Returns human readable IP address.
      **/
-    AREG_API String extractIpAddress(const struct sockaddr_in& addrHost);
+    AREG_API areg::String extractIpAddress(const struct sockaddr_in& addrHost);
 
     /**
      * \brief   Extracts the port number from the given `sockaddr_in` structure.
@@ -652,12 +652,12 @@ inline bool areg::SocketAddress::isValid() const
     return ((mIpAddr.isEmpty() == false) && (mPortNr != areg::InvalidPort));
 }
 
-inline const String & areg::SocketAddress::getHostAddress() const
+inline const areg::String & areg::SocketAddress::getHostAddress() const
 {
     return mIpAddr;
 }
 
-inline const String& areg::SocketAddress::getHostName() const
+inline const areg::String& areg::SocketAddress::getHostName() const
 {
     return mHostName;
 }
@@ -679,7 +679,7 @@ inline bool areg::isSocketHandleValid(SOCKETHANDLE hSocket)
     return ((hSocket != areg::InvalidSocketHandle) && (hSocket != areg::FailedSocketHandle));
 }
 
-inline bool areg::isLocalAddress(const String& ipaddress)
+inline bool areg::isLocalAddress(const areg::String& ipaddress)
 {
     return (ipaddress == areg::LocalHost) || (ipaddress == areg::LocalAddress);
 }

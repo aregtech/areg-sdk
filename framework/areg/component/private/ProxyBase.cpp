@@ -167,16 +167,16 @@ ProxyBase::MapThreadProxyList& ProxyBase::thread_proxies()
 }
 
 
-std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
+std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & roleName
                                                        , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
-                                                       , const String & ownerThread /*= String::getEmptyString()*/)
+                                                       , const areg::String & ownerThread /*= areg::String::getEmptyString()*/)
 {
     return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, DispatcherThread::getDispatcherThread(ownerThread) );
 }
 
-std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
+std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & roleName
                                                        , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
@@ -263,11 +263,11 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyBase::ProxyBase(const String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase::ProxyBase(const areg::String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
 
     : ProxyEventConsumer  ( mProxyAddress )
 
-    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : String::getEmptyString() )
+    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : areg::String::getEmptyString() )
     , mStubAddress      ( StubAddress::getInvalidStubAddress() )
     , mSequenceCount    ( 0 )
     , mListenerList     ( serviceIfData.idAttributeCount + serviceIfData.idResponseCount )

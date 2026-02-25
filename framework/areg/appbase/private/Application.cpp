@@ -20,6 +20,7 @@
 #include "areg/base/SocketDefs.hpp"
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/base/String.hpp"
 
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/Model.hpp"
@@ -101,13 +102,13 @@ void Application::releaseApplication()
 
     WatchdogManager::stopWatchdogManager(false);
     TimerManager::stopTimerManager(false);
-    ComponentLoader::unloadComponentModel(false, String::EmptyString);
+    ComponentLoader::unloadComponentModel(false, areg::String::EmptyString);
     ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
     areg::stopLogging(false);
 
     WatchdogManager::waitWatchdogManager();
     TimerManager::waitTimerManager();
-    ComponentLoader::waitModelUnload(String::EmptyString);
+    ComponentLoader::waitModelUnload(areg::String::EmptyString);
     ServiceManager::_waitServiceManager();
     areg::waitLoggingEnd();
 
@@ -137,7 +138,7 @@ const areg::Model & Application::findModel( const char * modelName )
 
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
-    String path( areg::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
+    areg::String path( areg::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
     File::setCurrentDir(path);
 }
 
@@ -278,14 +279,14 @@ bool Application::startLoggingService()
     return Application::_osStartLocalService(areg::LOGGER_SERVICE_NAME_WIDE, areg::LOGGER_SERVICE_EXECUTABLE_WIDE);
 }
 
-bool Application::isElementStored( const String & elemName )
+bool Application::isElementStored( const areg::String & elemName )
 {
     Application & theApp = Application::getInstance();
     Lock lock(theApp.mLock);
     return theApp.mStorage.contains(elemName);
 }
 
-areg::Primitive Application::storeElement( const String & elemName, areg::Primitive elem )
+areg::Primitive Application::storeElement( const areg::String & elemName, areg::Primitive elem )
 {
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
@@ -302,7 +303,7 @@ areg::Primitive Application::storeElement( const String & elemName, areg::Primit
     return result;
 }
 
-areg::Primitive Application::getStoredElement( const String & elemName )
+areg::Primitive Application::getStoredElement( const areg::String & elemName )
 {
     Application & theApp = Application::getInstance( );
     Lock lock( theApp.mLock );
@@ -334,12 +335,12 @@ void Application::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeRe
     ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
 }
 
-const String & Application::getApplicationName()
+const areg::String & Application::getApplicationName()
 {
     return Process::getInstance().getAppName();
 }
 
-const String & Application::getMachineName()
+const areg::String & Application::getMachineName()
 {
     return areg::getHostname();
 }
@@ -371,13 +372,13 @@ bool Application::saveConfiguration(const char* fileName /*= nullptr*/, ConfigLi
 void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
-    const String& module = Process::getInstance().getAppName();
+    const areg::String& module = Process::getInstance().getAppName();
 
     const uint32_t countReadonly{ std::size(areg::DefaultReadonlyProperties) };
     areg::ListProperties defReadonly(countReadonly);
     for (const auto & entry : areg::DefaultReadonlyProperties)
     {
-        defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString));
+        defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, areg::String::EmptyString));
     }
 
     areg::ListProperties defWritable;
@@ -385,7 +386,7 @@ void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullpt
     {
         if (module == entry.configKey.module)
         {
-            defWritable.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString, false));
+            defWritable.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, areg::String::EmptyString, false));
         }
     }
 

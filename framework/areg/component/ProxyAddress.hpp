@@ -59,7 +59,7 @@ public:
      * \param	addrProxy   The proxy address to generate path
      * \return  Returns converted path of Proxy as string, containing Proxy address information
      **/
-    static String convAddressToPath( const ProxyAddress & addrProxy );
+    static areg::String convAddressToPath( const ProxyAddress & addrProxy );
 
     /**
      * \brief	Pars proxy path string and retrieves proxy address data from path.
@@ -95,11 +95,11 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const String & serviceName
+    ProxyAddress( const areg::String & serviceName
                 , const Version & serviceVersion
                 , areg::ServiceType serviceType
-                , const String & roleName
-                , const String & threadName = String::getEmptyString() );
+                , const areg::String & roleName
+                , const areg::String & threadName = areg::String::getEmptyString() );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -107,7 +107,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
+    ProxyAddress( const ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -115,7 +115,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
+    ProxyAddress( const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.
@@ -249,11 +249,11 @@ public:
     /**
      * \brief   Returns thread name of processed Proxy
      **/
-    inline const String & getThread() const;
+    inline const areg::String & getThread() const;
     /**
      * \brief   Sets the thread name of processed Proxy
      **/
-    void setThread( const String & threadName );
+    void setThread( const areg::String & threadName );
     /**
      * \brief   Returns Proxy communication channel object
      **/
@@ -332,7 +332,7 @@ public:
      *          and special extension identifying proxy.
      * \return  Returns converted path of Proxy as string, containing Proxy address information
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief	Parses proxy path string and retrieves proxy address data from path.
@@ -376,7 +376,7 @@ private:
     /**
      * \brief   Thread name of Proxy
      **/
-    String          mThreadName;
+    areg::String          mThreadName;
     /**
      * \brief   Communication channel of Proxy.
      **/
@@ -491,7 +491,7 @@ inline bool ProxyAddress::isTargetPublic() const
     return (mChannel.getCookie( ) >= areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
-inline const String & ProxyAddress::getThread() const
+inline const areg::String & ProxyAddress::getThread() const
 {
     return mThreadName;
 }

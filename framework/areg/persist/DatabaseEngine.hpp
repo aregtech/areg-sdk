@@ -60,7 +60,7 @@ public:
      * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    virtual bool connect(const String & dbPath, bool readOnly) = 0;
+    virtual bool connect(const areg::String & dbPath, bool readOnly) = 0;
 
     /**
      * \brief   Disconnects connected database.
@@ -72,7 +72,7 @@ public:
      * \param   sql     The SQL script to execute.
      * \return  Returns true if succeeds to execute the SQL script.
      **/
-    virtual bool execute(const String & sql) = 0;
+    virtual bool execute(const areg::String & sql) = 0;
 
     /**
      * \brief   Call if need to make multiple operation. This call starts the transaction,

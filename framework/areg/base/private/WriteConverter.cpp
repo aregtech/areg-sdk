@@ -43,7 +43,7 @@ bool WriteConverter::setString( const WideString & in_value )
     return setString( in_value.getString() );
 }
 
-bool WriteConverter::setString( const String & in_value )
+bool WriteConverter::setString( const areg::String & in_value )
 {
     return setString( in_value.getString() );
 }

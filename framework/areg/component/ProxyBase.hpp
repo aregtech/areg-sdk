@@ -63,7 +63,7 @@ class Version;
  *          ownerThread The instance of thread to dispatch messages.
  *                      If nullptr, uses current component thread.
  **/
-typedef ProxyBase* (*FuncCreateProxy)( const String & /*roleName*/, DispatcherThread * /*ownerThread*/ );
+typedef ProxyBase* (*FuncCreateProxy)( const areg::String & /*roleName*/, DispatcherThread * /*ownerThread*/ );
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class declaration
@@ -255,7 +255,7 @@ private:
     /**
      * \brief   The helper class used in the map of lists..
      **/
-    class ImplThreadProxyMap    : public ResourceListMapImpl<String, std::shared_ptr<ProxyBase>, ThreadProxyList>
+    class ImplThreadProxyMap    : public ResourceListMapImpl<areg::String, std::shared_ptr<ProxyBase>, ThreadProxyList>
     {
     public:
         /**
@@ -265,7 +265,7 @@ private:
          *          Key	    The String as a Key of resource.
          *          List    The list of proxy objects.
          **/
-        inline void implCleanResourceList( const String & /* Key */, ThreadProxyList & /* List */ )
+        inline void implCleanResourceList( const areg::String & /* Key */, ThreadProxyList & /* List */ )
         {
         }
 
@@ -303,7 +303,7 @@ private:
      * \brief   ProxyBase::MapThreadProxyList
      *          The Map of the list, where the key is a string and values are list of proxies.
      **/
-    using MapThreadProxyList= ConcurrentResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
+    using MapThreadProxyList= ConcurrentResourceListMap<areg::String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -434,11 +434,11 @@ public:
      *                      If nullptr, it searches Proxy instance in current thread.
      * \return  Returns pointer to Proxy object.
      **/
-    static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
+    static std::shared_ptr<ProxyBase> findOrCreateProxy( const areg::String & roleName
                                                        , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
-                                                       , const String & ownerThread = String::getEmptyString() );
+                                                       , const areg::String & ownerThread = areg::String::getEmptyString() );
 
     /**
      * \brief   Finds already existing proxy object or creates new one.
@@ -457,7 +457,7 @@ public:
      * \param   ownerThread The instance of owner thread where the messages are dispatched.
      * \return  Returns pointer to Proxy object.
      **/
-    static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
+    static std::shared_ptr<ProxyBase> findOrCreateProxy( const areg::String & roleName
                                                        , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
@@ -515,7 +515,7 @@ protected:
      * \param   ownerThread     The instance of Proxy owner thread to dispatch messages.
      *                          If nullptr, the messages are dispatched in current thread.
      **/
-    ProxyBase( const String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
+    ProxyBase( const areg::String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
 
 public:
     /**

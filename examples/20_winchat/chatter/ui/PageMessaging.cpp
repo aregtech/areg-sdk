@@ -79,11 +79,11 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
         outputMessage( mConnectionHandler.GetNickName(), "Is registered", mConnectionHandler.GetTimeConnect(), mConnectionHandler.GetTimeConnected(), mConnectionHandler.GetCookie());
 
         uint32_t cookie = mConnectionHandler.GetCookie();
-        const String & nickName = mConnectionHandler.GetNickName();
+        const areg::String & nickName = mConnectionHandler.GetNickName();
         const chat::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
         if ( listConnections.getSize() > 0 )
         {
-            outputMessage( "<Info>", String::makeString(listConnections.getSize()) + " participants...", 0, 0, 0 );
+            outputMessage( "<Info>", areg::String::makeString(listConnections.getSize()) + " participants...", 0, 0, 0 );
         }
 
         for (uint32_t i = 0; i < listConnections.getSize(); ++ i )
@@ -220,7 +220,7 @@ void PageMessaging::OnClickedButtonSend( )
                      , CString( "..." )
                      , mConnectionHandler.GetCookie());
 
-        mCentralMessage->requestSendMessage( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), String( mTextMsg.GetString( ) ), dateTime );
+        mCentralMessage->requestSendMessage( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), areg::String( mTextMsg.GetString( ) ), dateTime );
         mTextMsg = _T("");
         UpdateData(FALSE);
         GetDlgItem( IDC_EDIT_MESSAGE_ALL )->SetFocus( );
@@ -303,7 +303,7 @@ void PageMessaging::OnChangeEditMessageAll( )
         UpdateData( TRUE );
         if ( oldTxt != mTextMsg )
         {
-            mCentralMessage->requestKeyTyping( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie( ), String( mTextMsg.GetString( ) ) );
+            mCentralMessage->requestKeyTyping( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie( ), areg::String( mTextMsg.GetString( ) ) );
         }
     }
 }
@@ -359,17 +359,17 @@ void PageMessaging::outputMessage( CString nickName, CString message, CString da
     ++ mLastItem;
 }
 
-void PageMessaging::outputMessage( const String & nickname, const String & message, const uint64_t begin, const uint64_t end, uint32_t cookie )
+void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const uint64_t begin, const uint64_t end, uint32_t cookie )
 {
     outputMessage(nickname, message, begin != 0 ? DateTime(begin) : DateTime(), end != 0 ? DateTime(end) : DateTime(), cookie );
 }
 
-void PageMessaging::outputMessage( const String & nickname, const String & message, const DateTime & begin, const DateTime & end, uint32_t cookie )
+void PageMessaging::outputMessage( const areg::String & nickname, const areg::String & message, const DateTime & begin, const DateTime & end, uint32_t cookie )
 {
     outputMessage( CString(nickname.getString())
                  , CString(message.getString())
-                 , CString( begin.isValid() ? begin.formatTime().getString() : String::getEmptyString().getString() )
-                 , CString( end.isValid()   ? end.formatTime().getString()   : String::getEmptyString().getString() )
+                 , CString( begin.isValid() ? begin.formatTime().getString() : areg::String::getEmptyString().getString() )
+                 , CString( end.isValid()   ? end.formatTime().getString()   : areg::String::getEmptyString().getString() )
                  , cookie );
 }
 

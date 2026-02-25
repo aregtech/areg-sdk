@@ -91,7 +91,7 @@ public:
      *                          and play no role.
      **/
     explicit Timer( TimerConsumer & timerConsumer
-                  , const String & timerName = String::getEmptyString()
+                  , const areg::String & timerName = areg::String::getEmptyString()
                   , uint32_t timeoutMs       = areg::INVALID_TIMEOUT
                   , int32_t maxQueued            = Timer::IGNORE_TIMER_QUEUE );
     /**

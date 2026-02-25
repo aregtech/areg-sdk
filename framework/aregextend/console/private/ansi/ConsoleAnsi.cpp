@@ -99,7 +99,7 @@ void Console::_osRelease()
     ::fflush(stdout);
 }
 
-void Console::_osOutputText(Console::Coord pos, const String& text) const
+void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
 {
     Lock lock(mLock);
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
@@ -111,7 +111,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
 }
 
-void Console::_osOutputText(const String& text) const
+void Console::_osOutputText(const areg::String& text) const
 {
     Lock lock(mLock);
     printf("%s", text.getString());

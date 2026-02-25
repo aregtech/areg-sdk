@@ -20,27 +20,27 @@
 
 Property::Property()
     : mIsTemporary  (true)
-    , mComment      (String::EmptyString)
+    , mComment      (areg::String::EmptyString)
     , mProperty     ( )
 {
 }
 
-Property::Property(const String strProperty)
+Property::Property(const areg::String strProperty)
     : mIsTemporary  (false)
-    , mComment      (String::EmptyString)
+    , mComment      (areg::String::EmptyString)
     , mProperty     ()
 {
     parseProperty(strProperty);
 }
 
-Property::Property(const PropertyKey& key, const PropertyValue& value, const String& comment /*= String::EmptyString*/, bool isTemporary /* = false*/)
+Property::Property(const PropertyKey& key, const PropertyValue& value, const areg::String& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  (isTemporary)
     , mComment      (comment)
     , mProperty     (key, value)
 {
 }
 
-Property::Property(PropertyKey&& key, PropertyValue&& value, String&& comment)
+Property::Property(PropertyKey&& key, PropertyValue&& value, areg::String&& comment)
     : mIsTemporary  (false)
     , mComment      ( std::move(comment))
     , mProperty     ( std::move(key), std::move(value))
@@ -54,7 +54,7 @@ Property::Property(PropertyKey&& key, PropertyValue&& value)
 {
 }
 
-Property::Property(const String & keySet, const String & valueSet, const String & comment /*= String::EmptyString*/, bool isTemporary /*= false*/)
+Property::Property(const areg::String & keySet, const areg::String & valueSet, const areg::String & comment /*= areg::String::EmptyString*/, bool isTemporary /*= false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
     , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
@@ -68,7 +68,7 @@ Property::Property(const char* keySet, const char* valueSet, const char* comment
 {
 }
 
-Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= String::EmptyString*/, bool isTemporary /* = false*/)
+Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
     , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
@@ -80,7 +80,7 @@ Property::Property( const std::string_view& section
                   , const std::string_view& property
                   , const std::string_view& position
                   , const std::string_view& value
-                  , const std::string_view& comment /*= String::EmptyString*/
+                  , const std::string_view& comment /*= areg::String::EmptyString*/
                   , bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
@@ -88,7 +88,7 @@ Property::Property( const std::string_view& section
 {
 }
 
-Property::Property(const Property::Entry & newProperty, const String & comment /*= String::getEmptyString*/, bool isTemporary /* = false*/)
+Property::Property(const Property::Entry & newProperty, const areg::String & comment /*= areg::String::getEmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
     , mProperty     ( newProperty )
@@ -142,7 +142,7 @@ Property::operator uint32_t () const
     return static_cast<uint32_t>(mProperty.mValue.first);
 }
 
-void Property::parseKey(const String & keySet)
+void Property::parseKey(const areg::String & keySet)
 {
     mProperty.mValue.first.parseKey(keySet);
 }
@@ -167,12 +167,12 @@ areg::ConfigEntry Property::getPropertyType() const
     return mProperty.mValue.first.getKeyType();
 }
 
-String Property::getKeyString() const
+areg::String Property::getKeyString() const
 {
     return mProperty.mValue.first.convToString();
 }
 
-void Property::parseValue(const String & valueSet)
+void Property::parseValue(const areg::String & valueSet)
 {
     mProperty.mValue.second.parseValue(valueSet);
 }
@@ -197,17 +197,17 @@ PropertyValue& Property::getValue()
     return mProperty.mValue.second;
 }
 
-String Property::getValueString() const
+areg::String Property::getValueString() const
 {
     return mProperty.mValue.second.getString();
 }
 
-void Property::setComment(const String & comment)
+void Property::setComment(const areg::String & comment)
 {
     mComment = comment;
 }
 
-void Property::addComment(const String & comment)
+void Property::addComment(const areg::String & comment)
 {
     if (comment.startsWith(areg::SYNTAX_COMMENT))
     {
@@ -221,7 +221,7 @@ void Property::addComment(const String & comment)
     }
 }
 
-const String & Property::getComment() const
+const areg::String & Property::getComment() const
 {
     return mComment;
 }
@@ -246,10 +246,10 @@ bool Property::isValid() const
     return mProperty.mValue.first.isValid();
 }
 
-bool Property::parseProperty(const String & strProperties)
+bool Property::parseProperty(const areg::String & strProperties)
 {
     bool result{ false };
-    String data;
+    areg::String data;
     if ( strProperties.getLength() > 1)
     {
         areg::CharPos pos = strProperties.findFirst(areg::SYNTAX_COMMENT.data());
@@ -270,7 +270,7 @@ bool Property::parseProperty(const String & strProperties)
         if (data.isEmpty() == false )
         {
             const char* value{ nullptr };
-            const String key{ String::getSubstring(data.getString(), areg::SYNTAX_EQUAL.data(), &value) };
+            const areg::String key{ areg::String::getSubstring(data.getString(), areg::SYNTAX_EQUAL.data(), &value) };
 
             mProperty.mValue.first.parseKey(key);
             mProperty.mValue.second.parseValue(value);
@@ -291,11 +291,11 @@ bool Property::parseProperty(const String & strProperties)
     return result;
 }
 
-String Property::convToString() const
+areg::String Property::convToString() const
 {
-    String result;
-    String key  (mProperty.mValue.first.convToString());
-    String value(mProperty.mValue.second.convToString());
+    areg::String result;
+    areg::String key  (mProperty.mValue.first.convToString());
+    areg::String value(mProperty.mValue.second.convToString());
 
     if ( !key.isEmpty() && !value.isEmpty() )
     {
@@ -332,7 +332,7 @@ void Property::resetData()
     mIsTemporary = false;
 }
 
-bool Property::isModuleProperty(const String& module) const
+bool Property::isModuleProperty(const areg::String& module) const
 {
     const PropertyKey& key = mProperty.mValue.first;
     return ((module == key.getModule()) || key.isAllModules());

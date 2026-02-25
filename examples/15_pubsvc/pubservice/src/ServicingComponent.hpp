@@ -49,7 +49,7 @@ protected:
      * \param   roleName    The role name of client component that requested to print hello world
      * \see     responseHelloWorld
      **/
-    void requestHelloWorld( const String & roleName ) override;
+    void requestHelloWorld( const areg::String & roleName ) override;
 
     /**
      * \brief   Request call.
@@ -58,7 +58,7 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    void requestShutdownService( uint32_t clientID, const String & roleName ) override;
+    void requestShutdownService( uint32_t clientID, const areg::String & roleName ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

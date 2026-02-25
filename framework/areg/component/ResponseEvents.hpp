@@ -96,7 +96,7 @@ protected:
                  , uint32_t respId
                  , Event::EventType eventType
                  , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                 , const String & name = String::getEmptyString() );
+                 , const areg::String & name = areg::String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -236,7 +236,7 @@ protected:
                       , areg::ResultType result
                       , uint32_t respId
                       , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                      , const String & name = String::getEmptyString() );
+                      , const areg::String & name = areg::String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -315,7 +315,7 @@ protected:
                        , areg::ResultType result
                        , uint32_t respId
                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY
-                       , const String & name = String::getEmptyString() );
+                       , const areg::String & name = areg::String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.

@@ -42,9 +42,9 @@ Console::~Console()
     _osRelease();
 }
 
-String Console::waitForInput(Console::CallBack callback) const
+areg::String Console::waitForInput(Console::CallBack callback) const
 {
-    String result;
+    areg::String result;
 
     mEnable.lock(areg::WAIT_INFINITE);
 
@@ -84,10 +84,10 @@ bool Console::readInputList(const char* format, va_list varList) const
     return _osReadInputList(format, varList);
 }
 
-String Console::readString() const
+areg::String Console::readString() const
 {
     char buffer[512] { 0 };
-    return String(readInputs("%510s", buffer) ? buffer : String::getEmptyString());
+    return areg::String(readInputs("%510s", buffer) ? buffer : areg::String::getEmptyString());
 }
 
 void Console::outputMsg(Console::Coord pos, const char* format, ...) const
@@ -95,7 +95,7 @@ void Console::outputMsg(Console::Coord pos, const char* format, ...) const
     va_list argptr;
     va_start(argptr, format);
 
-    String text;
+    areg::String text;
     text.formatList(format, argptr);
     va_end(argptr);
 
@@ -107,7 +107,7 @@ void Console::printMsg(const char* format, ...) const
     va_list argptr;
     va_start(argptr, format);
 
-    String text;
+    areg::String text;
     text.formatList(format, argptr);
     va_end(argptr);
 

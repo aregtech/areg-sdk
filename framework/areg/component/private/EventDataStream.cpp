@@ -34,14 +34,14 @@ namespace
 
 const EventDataStream& EventDataStream::empty_data()
 {
-    static const EventDataStream _data(EventDataStream::EventDataKind::Empty, String("EmptyData"));
+    static const EventDataStream _data(EventDataStream::EventDataKind::Empty, areg::String("EmptyData"));
     return _data;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name /*= String::getEmptyString()*/ )
+EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const areg::String & name /*= areg::String::getEmptyString()*/ )
     : IOStream      ( )
 
     , mEventDataType(evetDataType)
@@ -51,7 +51,7 @@ EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, c
 {
 }
 
-EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
+EventDataStream::EventDataStream( const EventDataStream & buffer, const areg::String & name )
     : IOStream    ( )
 
     , mEventDataType(buffer.mEventDataType)
@@ -150,7 +150,7 @@ uint32_t EventDataStream::read( ByteBuffer & buffer ) const
     return result;
 }
 
-uint32_t EventDataStream::read( String & ascii ) const
+uint32_t EventDataStream::read( areg::String & ascii ) const
 {
     return mDataBuffer.read(ascii);
 }
@@ -186,7 +186,7 @@ uint32_t EventDataStream::write( const ByteBuffer & buffer )
     return result;
 }
 
-uint32_t EventDataStream::write( const String & ascii )
+uint32_t EventDataStream::write( const areg::String & ascii )
 {
     return mDataBuffer.write(ascii);
 }

@@ -88,7 +88,7 @@ bool ReadConverter::getDouble( double & Value ) const
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getString( String & Value ) const
+bool ReadConverter::getString( areg::String & Value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');
@@ -122,7 +122,7 @@ bool ReadConverter::getString( WideString & Value ) const
     return result;
 }
 
-bool ReadConverter::readLine( String & Value ) const
+bool ReadConverter::readLine( areg::String & Value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');

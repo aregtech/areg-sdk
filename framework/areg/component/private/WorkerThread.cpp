@@ -33,7 +33,7 @@ AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-WorkerThread::WorkerThread( const String & threadName
+WorkerThread::WorkerThread( const areg::String & threadName
                           , Component & bindingComponent
                           , WorkerThreadConsumer & threadConsumer
                           , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */

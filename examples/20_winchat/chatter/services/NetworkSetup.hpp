@@ -30,7 +30,7 @@ protected:
      * \param   result      The connection operation result
      * \see     requestConnect
      **/
-    void responseConnect( const String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result ) override;
+    void responseConnect( const areg::String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result ) override;
 
 /************************************************************************/
 // ProxyListener Overrides

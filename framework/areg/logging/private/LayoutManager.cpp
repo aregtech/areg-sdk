@@ -41,7 +41,7 @@ bool LayoutManager::createLayouts( const char * layoutFormat )
     return (mLayoutList.isEmpty() == false);
 }
 
-bool LayoutManager::createLayouts(const String& layoutFormat)
+bool LayoutManager::createLayouts(const areg::String& layoutFormat)
 {
     deleteLayouts();
     uint32_t len  = static_cast<uint32_t>(layoutFormat.getLength());
@@ -93,7 +93,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
     const char* pos1 = pos;
     LogLayout* anyText{ nullptr };
 
-    while (*pos != String::EmptyChar)
+    while (*pos != areg::String::EmptyChar)
     {
         if (*pos == areg::SYNTAX_SPECIAL_FORMAT)
         {
@@ -162,20 +162,20 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
             default:
                 if (ch == areg::SYNTAX_SPECIAL_FORMAT)
                 {
-                    *(pos + 1) = String::EmptyChar;
+                    *(pos + 1) = areg::String::EmptyChar;
                     newLayout = DEBUG_NEW AnyTextLayout(pos1);
                     pos1 = pos; // <== will automatically move 2 positions when newLayout is not nullptr;
                 }
                 else
                 {
-                    pos += ch != String::EmptyChar ? 2 : 1;
+                    pos += ch != areg::String::EmptyChar ? 2 : 1;
                 }
                 break;
             }
 
             if (newLayout != nullptr)
             {
-                *pos = String::EmptyChar;
+                *pos = areg::String::EmptyChar;
                 anyText = pos1 != pos ? DEBUG_NEW AnyTextLayout(pos1) : nullptr;
                 if (anyText != nullptr)
                 {
@@ -183,7 +183,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 }
 
                 mLayoutList.add(newLayout);
-                *(++pos) = String::EmptyChar;
+                *(++pos) = areg::String::EmptyChar;
                 pos1 = ++pos;
             }
         }

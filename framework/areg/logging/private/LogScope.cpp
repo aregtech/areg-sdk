@@ -61,7 +61,7 @@ void LogScope::setPriority(const char* newPrio)
     setPriority(static_cast<uint32_t>(areg::stringToLogPrio(newPrio)));
 }
 
-void LogScope::setPriority(const String& newPrio)
+void LogScope::setPriority(const areg::String& newPrio)
 {
     setPriority(static_cast<uint32_t>(areg::stringToLogPrio(newPrio)));
 }

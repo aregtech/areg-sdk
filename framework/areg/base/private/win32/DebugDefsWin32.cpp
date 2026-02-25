@@ -134,7 +134,7 @@ void AREG_API_IMPL areg::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep,
                 // Get module name
                 bool hasModule = hasFunction ? SymGetModuleInfo64( hProcess, symbolInfo->ModBase, &moduleInfo ) == TRUE : false;
 
-                String::formatString( message
+                areg::String::formatString( message
                                     , _symNameLength + MAX_PATH + 8
                                     , _stackFormat
                                     , hasFile     ? lineInfo.FileName    : _msgFileUnavailable

@@ -216,7 +216,7 @@ TrafficLightFSM::TrafficLightFSM( TrafficLightActionHandler & actionHandler, con
     , mTimerVehicleWait( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
     
 
-    , mFsmName      ( String("TrafficLightFSM:") + instanceName )
+    , mFsmName      ( areg::String("TrafficLightFSM:") + instanceName )
     , mMasterThread ( nullptr )
     , mProcessing   ( false )
     , mState        ( TrafficLightFSM::FsmState::UNDEFINED )

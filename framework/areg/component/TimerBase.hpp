@@ -89,7 +89,7 @@ protected:
      *                      Any other number defines the amount of timeout events to fire.
      **/
     TimerBase( const TimerType timerType
-             , const String & timerName
+             , const areg::String & timerName
              , uint32_t timeoutMs   = areg::INVALID_TIMEOUT
              , uint32_t eventCount  = TimerBase::CONTINUOUSLY );
 
@@ -135,7 +135,7 @@ public:
     /**
      * \brief   Returns the name of timer.
      **/
-    inline const String& getName() const;
+    inline const areg::String& getName() const;
 
     /**
      * \brief   Returns the handle of the system waitable timer.
@@ -208,7 +208,7 @@ protected:
     /**
      * \brief   Timer name. If not empty, it is unique name
      **/
-    const String        mName;
+    const areg::String        mName;
     /**
      * \brief   Timeout to fire timer.
      **/
@@ -245,7 +245,7 @@ inline void TimerBase::setEventCount(uint32_t eventCount)
     mEventsCount = eventCount;
 }
 
-inline const String & TimerBase::getName() const
+inline const areg::String & TimerBase::getName() const
 {
     return mName;
 }

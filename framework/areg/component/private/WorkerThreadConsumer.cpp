@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-WorkerThreadConsumer::WorkerThreadConsumer(const String & consumerName)
+WorkerThreadConsumer::WorkerThreadConsumer(const areg::String & consumerName)
     : mConsumerName (consumerName)
 {
 }

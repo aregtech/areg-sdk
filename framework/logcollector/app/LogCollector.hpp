@@ -91,7 +91,7 @@ public:
      *          Otherwise, the method ignores request to output message.
      * \param   status  The status message to print on console.
      **/
-    static void printStatus(const String& status);
+    static void printStatus(const areg::String& status);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -262,7 +262,7 @@ private:
      * \param   cmd     The command typed on the console.
      * \return  Returns true if command is recognized. Otherwise, returns false.
      **/
-    static bool _checkCommand(const String& cmd);
+    static bool _checkCommand(const areg::String& cmd);
 
     /**
      * \brief   Output on console the title.
@@ -272,7 +272,7 @@ private:
     /**
      * \brief   Prints info on console.
      **/
-    static void _outputInfo( const String & info );
+    static void _outputInfo( const areg::String & info );
 
     /**
      * \brief   Outputs on console the information about connected instances.
@@ -322,14 +322,14 @@ private:
      * \param   scope   The scope to normalize.
      * \return  Returns normalized scope priority string to parse and generate property object with key and value.
      **/
-    static String _normalizeScopeProperty(const String & scope);
+    static areg::String _normalizeScopeProperty(const areg::String & scope);
 
     /**
      * \brief   Creates a scope update message to send to the target client.
      * \param   scope   The scope priority string to parse and create message.
      * \return  Returns message to send to the remote target client.
      **/
-    static RemoteMessage _createScopeUpdateMessage(const String& scope);
+    static RemoteMessage _createScopeUpdateMessage(const areg::String& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

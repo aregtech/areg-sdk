@@ -98,7 +98,7 @@ inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
 
 inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount )
 {
-    String scopeName{ };
+    areg::String scopeName{ };
     uint32_t scopeId{ };
     uint32_t scopePrio{ };
 

@@ -45,7 +45,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , ConnectionConsumer& connectionConsumer
                                                         , RemoteMessageHandler & messageHandler
                                                         , DispatcherThread & messageDispatcher
-                                                        , const String & prefixName)
+                                                        , const areg::String & prefixName)
     : ConnectionProvider   ( )
     , ServiceEventConsumer    ( )
 
@@ -141,7 +141,7 @@ bool ServiceClientConnectionBase::setupServiceConnectionData(areg::RemoteService
             ConnectionConfiguration config(service, areg::ConnectionType::Tcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
-                String address{ config.getConnectionAddress() };
+                areg::String address{ config.getConnectionAddress() };
                 uint16_t port{ config.getConnectionPort() };
                 result = mClientConnection.setAddress(address, port);
             }
@@ -151,7 +151,7 @@ bool ServiceClientConnectionBase::setupServiceConnectionData(areg::RemoteService
     return result;
 }
 
-void ServiceClientConnectionBase::applyServiceConnectionData( const String & hostName, uint16_t portNr )
+void ServiceClientConnectionBase::applyServiceConnectionData( const areg::String & hostName, uint16_t portNr )
 {
     Lock lock( mLock );
     mClientConnection.setAddress( hostName, portNr );

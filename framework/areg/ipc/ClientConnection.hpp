@@ -56,7 +56,7 @@ public:
      *                      is setup for localhost.
      * \param   portNr      Port number of remote server to connect, should not be invalid port.
      **/
-    ClientConnection( const String & hostName, uint16_t portNr );
+    ClientConnection( const areg::String & hostName, uint16_t portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object. Before sending
@@ -106,7 +106,7 @@ public:
      * \param   portNr      Valid port number of socket connection.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool setAddress( const String & hostName, uint16_t portNr );
+    bool setAddress( const areg::String & hostName, uint16_t portNr );
 
     /**
      * \brief   Sets socket address. The address should be either invalid
@@ -138,7 +138,7 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const String & hostName, uint16_t portNr );
+    bool createSocket( const areg::String & hostName, uint16_t portNr );
 
     /**
      * \brief   Before sending or receiving any data from remote host,
@@ -245,7 +245,7 @@ inline const areg::SocketAddress & ClientConnection::getAddress() const
     return mClientSocket.getAddress();
 }
 
-inline bool ClientConnection::setAddress(const String& hostName, uint16_t portNr)
+inline bool ClientConnection::setAddress(const areg::String& hostName, uint16_t portNr)
 {
     return mClientSocket.setAddress(hostName, portNr, false);
 }

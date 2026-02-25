@@ -56,7 +56,7 @@ namespace
 
     struct LoggerConnect
     {
-        String      lcAddress;
+        areg::String      lcAddress;
         uint16_t    lcPort{ areg::InvalidPort };
     };
 
@@ -187,9 +187,9 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
             log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
-            log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+            log.logMessageLen   = static_cast<uint32_t>(areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
             log.logThreadLen    = 0;
-            log.logThread[0]    = String::EmptyChar;
+            log.logThread[0]    = areg::String::EmptyChar;
             log.logModuleId     = 0;
             log.logModuleLen    = static_cast<uint32_t>(areg::copyString(log.logModule, areg::LOG_NAMES_SIZE, inst.liName));
 
@@ -227,9 +227,9 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
                 log.logDuration     = 0u;
                 log.logScopeId      = 0u;
                 log.logSessionId    = 0u;
-                log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+                log.logMessageLen   = static_cast<uint32_t>(areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
                 log.logThreadLen    = 0;
-                log.logThread[0]    = String::EmptyChar;
+                log.logThread[0]    = areg::String::EmptyChar;
                 log.logModuleId     = 0;
                 log.logModuleLen    = static_cast<uint32_t>(areg::copyString(log.logModule, areg::LOG_NAMES_SIZE, inst.liName));
 
@@ -264,9 +264,9 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uin
             log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
-            log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
+            log.logMessageLen   = static_cast<uint32_t>(areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
             log.logThreadLen    = 0;
-            log.logThread[0]    = String::EmptyChar;
+            log.logThread[0]    = areg::String::EmptyChar;
             log.logModuleId     = 0;
             log.logModuleLen    = static_cast<uint32_t>(areg::copyString(log.logModule, areg::LOG_NAMES_SIZE, inst.liName));
 
@@ -325,14 +325,14 @@ void LogObserver::logMain( int32_t argc, char ** argv )
     };
 
     Application::setWorkingDirectory(nullptr);
-    String fileConfig(areg::DEFAULT_CONFIG_FILE);
+    areg::String fileConfig(areg::DEFAULT_CONFIG_FILE);
     OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
     {
         uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
         if (pos != areg::INVALID_POSITION)
         {
-            String filePath{ parser.getOptions().getAt(pos).inString[0] };
+            areg::String filePath{ parser.getOptions().getAt(pos).inString[0] };
             if (File::existFile(filePath))
             {
                 fileConfig = filePath;
@@ -349,7 +349,7 @@ void LogObserver::logMain( int32_t argc, char ** argv )
     ::logObserverRelease();
 }
 
-bool LogObserver::_checkCommand(const String& cmd)
+bool LogObserver::_checkCommand(const areg::String& cmd)
 {
     OptionParser parser( LogObserver::ValidOptions, std::size(LogObserver::ValidOptions) );
     bool quit{ false };
@@ -478,7 +478,7 @@ void LogObserver::_outputTitle()
     console.unlockConsole();
 }
 
-void LogObserver::_outputInfo( const String & info )
+void LogObserver::_outputInfo( const areg::String & info )
 {
     Console & console = Console::getInstance( );
     Console::Coord coord{aregext::COORD_INFO_MSG};
@@ -605,7 +605,7 @@ bool LogObserver::_processUpdateScopes(const OptionParser::InputOption& optScope
     ASSERT(optScope.inString.empty() == false);
 
     const OptionParser::StrList& optValues{ optScope.inString };
-    String scope;
+    areg::String scope;
     for (const auto& entry : optValues)
     {
         if (entry == areg::SYNTAX_END_COMMAND)
@@ -694,10 +694,10 @@ bool LogObserver::_processQueryScopes(const OptionParser::InputOption& optScope)
     return result;
 }
 
-String LogObserver::_normalizeScopeProperty(const String & scope)
+areg::String LogObserver::_normalizeScopeProperty(const areg::String & scope)
 {
     const areg::ConfigKey& propKey{ areg::DefaultPropertyKeys[static_cast<uint32_t>(areg::ConfigEntry::LogScope)] };
-    String result;
+    areg::String result;
     if (scope.startsWith(propKey.property))
     {
         result.append(propKey.section)
@@ -708,7 +708,7 @@ String LogObserver::_normalizeScopeProperty(const String & scope)
     }
     else
     {
-        String prop(propKey.property);
+        areg::String prop(propKey.property);
         prop += areg::SYNTAX_OBJECT_SEPARATOR;
         areg::CharPos pos = scope.findFirst(prop);
         if ( scope.isValidPosition(pos))
@@ -737,7 +737,7 @@ String LogObserver::_normalizeScopeProperty(const String & scope)
     return result;
 }
 
-bool LogObserver::_sendScopeUpdateMessage(const String& scope)
+bool LogObserver::_sendScopeUpdateMessage(const areg::String& scope)
 {
     bool result{ false };
 
@@ -750,7 +750,7 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
             ITEM_ID target{ key.isAllModules() ? areg::TARGET_ALL : key.getModule().toUInt32() };
             if (target >= areg::TARGET_ALL)
             {
-                String scopeName{ key.getPosition() };
+                areg::String scopeName{ key.getPosition() };
                 uint32_t scopePrio{ prop.getValue().getIndetifier(areg::LogScopePriorityIndentifiers) };
                 ScopeInfo logScope;
                 logScope.lsId   = areg::makeScopeIdEx(scopeName.getString());
@@ -769,8 +769,8 @@ inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable *
     constexpr areg::ConfigEntry prioConfKey{ areg::ConfigEntry::LogScope };
     const areg::ConfigKey& keyPrio{ areg::getLogScope() };
     uint32_t prios = static_cast<uint32_t>(areg::LogPriority::PrioNotset);
-    const String prio{ areg::makePrioString(prios) };
+    const areg::String prio{ areg::makePrioString(prios) };
 
-    config.setModuleProperty(keyPrio.section, keyPrio.property, String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
+    config.setModuleProperty(keyPrio.section, keyPrio.property, areg::String(areg::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
     config.setLogEnabled(areg::LogTarget::Remote, false, true);
 }

@@ -153,7 +153,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logModule     { '\0' }
 {
     uint32_t len = message != nullptr ? areg::memCopy(logMessage, areg::LOG_MESSAGE_IZE - 1, message, msgLen) : 0u;
-    logMessage[len] = String::EmptyChar;
+    logMessage[len] = areg::String::EmptyChar;
 }
 #else   // AREG_LOGS
 areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
@@ -226,9 +226,9 @@ areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
         if (logDataType == areg::LogDataType::Remote)
         {
             logThreadLen = 0;
-            logThread[0] = String::EmptyChar;
+            logThread[0] = areg::String::EmptyChar;
             logThreadLen = 0;
-            logModule[0] = String::EmptyChar;
+            logModule[0] = areg::String::EmptyChar;
         }
 
         areg::memCopy(logMessage, areg::LOG_MESSAGE_IZE, src.logMessage, src.logMessageLen + 1);
@@ -319,19 +319,19 @@ AREG_API_IMPL RemoteMessage areg::createLogMessage(const areg::LogEntry& logMess
         log->logCookie   = srcCookie;
         log->logDataType = dataType;
 
-        const String& module = Process::getInstance().getAppName();
+        const areg::String& module = Process::getInstance().getAppName();
         areg::memCopy(log->logModule, areg::LOG_NAMES_SIZE, module.getString(), static_cast<uint32_t>(module.getLength()) + 1);
         log->logModuleLen   = static_cast<uint32_t>(module.getLength());
 
         if (areg::LogDataType::Local != dataType)
         {
-            const String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
+            const areg::String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
             areg::memCopy(log->logThread, areg::LOG_NAMES_SIZE, threadName.getString(), static_cast<uint32_t>(threadName.getLength()) + 1);
             log->logThreadLen   = static_cast<uint32_t>(threadName.getLength());
         }
         else
         {
-            log->logThread[0]   = String::EmptyChar;
+            log->logThread[0]   = areg::String::EmptyChar;
             log->logThreadLen   = 0u;
         }
     }
@@ -390,7 +390,7 @@ AREG_API_IMPL void areg::logAnyMessage(const areg::LogEntry& logMessage)
     LogManager::logMessage(SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(areg::LogEntry)));
 }
 
-AREG_API_IMPL RemoteMessage areg::messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, uint32_t scopeId, uint32_t scopePrio)
+AREG_API_IMPL RemoteMessage areg::messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const areg::String& scopeName, uint32_t scopeId, uint32_t scopePrio)
 {
     RemoteMessage msgScope;
     if ((source != areg::COOKIE_UNKNOWN) &&
@@ -513,12 +513,12 @@ AREG_API_IMPL const ITEM_ID & areg::getCookie()
     return LogManager::getConnectionCookie();
 }
 
-AREG_API_IMPL String areg::makePrioString(uint32_t priorities)
+AREG_API_IMPL areg::String areg::makePrioString(uint32_t priorities)
 {
     return Identifier::convToString(priorities, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
-AREG_API_IMPL uint32_t areg::makePriorities(const String& prioString)
+AREG_API_IMPL uint32_t areg::makePriorities(const areg::String& prioString)
 {
     uint16_t id = static_cast<uint16_t>(Identifier::convFromString(prioString, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioInvalid)));
     return static_cast<uint32_t>(static_cast<areg::LogPriority>(id));
@@ -620,7 +620,7 @@ AREG_API_IMPL void areg::logAnyMessage(const areg::LogEntry & /*logMessage*/)
 {
 }
 
-AREG_API_IMPL RemoteMessage areg::messageUpdateScope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const String & /*scopeName*/, uint32_t /*scopeId*/, uint32_t /*scopePrio*/)
+AREG_API_IMPL RemoteMessage areg::messageUpdateScope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const areg::String & /*scopeName*/, uint32_t /*scopeId*/, uint32_t /*scopePrio*/)
 {
     RemoteMessage msgScope;
     return msgScope;
@@ -675,12 +675,12 @@ AREG_API_IMPL const ITEM_ID & areg::getCookie()
     return areg::COOKIE_UNKNOWN;
 }
 
-AREG_API_IMPL String areg::makePrioString(uint32_t /*priorities*/)
+AREG_API_IMPL areg::String areg::makePrioString(uint32_t /*priorities*/)
 {
     return areg::PRIO_NOTSET_STR;
 }
 
-AREG_API_IMPL uint32_t areg::makePriorities(const String& /*prioString*/)
+AREG_API_IMPL uint32_t areg::makePriorities(const areg::String& /*prioString*/)
 {
     return static_cast<uint32_t>(areg::LogPriority::PrioNotset);
 }

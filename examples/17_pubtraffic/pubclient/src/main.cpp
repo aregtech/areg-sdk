@@ -43,7 +43,7 @@ int main()
         , {"quit"}
     };
 
-    String roleName( traffic::SimpleLightClientNamePrefix);
+    areg::String roleName( traffic::SimpleLightClientNamePrefix);
     char name[128];
 
     Console & console = Console::getInstance( );
@@ -59,7 +59,7 @@ int main()
     console.outputTxt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
     console.outputTxt( { 0, 6 }, "................................................" );
     console.outputTxt( { 0, 7 }, "Type the choice: " );
-    console.waitForInput( [&]( const String cmd ) -> bool
+    console.waitForInput( [&]( const areg::String cmd ) -> bool
         {
             bool result{ false };
             if ( cmd.compare( directions[0], false ) == areg::Ordering::Equal )

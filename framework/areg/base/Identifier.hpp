@@ -88,7 +88,7 @@ public:
      **/
     Identifier(uint32_t idValue, const char* idName);
     Identifier(uint32_t idValue, const std::string_view& idName);
-    Identifier(uint32_t idValue, const String& idName);
+    Identifier(uint32_t idValue, const areg::String& idName);
 
     /**
      * \brief   Copy constructor.
@@ -124,7 +124,7 @@ public:
      *          Return the string value of the given default identifier entry index if identifier not found and default index is valid.
      *          Returns empty string if identifier not found and the index is invalid.
      **/
-    inline static const String& convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex);
+    inline static const areg::String& convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
     /**
      * \brief   Converts given string value of the identifier into the digital value.
@@ -138,7 +138,7 @@ public:
      *          Return the integer value of the given default identifier entry index if identifier not found and default index is valid.
      *          Returns 0xFFFF'FFFF if identifier not found and the index is invalid.
      **/
-    inline static uint32_t convFromString(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
+    inline static uint32_t convFromString(const areg::String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -222,7 +222,7 @@ public:
     /**
      * \brief   Returns Identifier string value
      **/
-    inline const String & getName() const;
+    inline const areg::String & getName() const;
 
     /**
      * \brief   Returns Identifier integer value
@@ -240,14 +240,14 @@ private:
     /**
      * \brief   String value of Identifier
      **/
-    String          mName;
+    areg::String          mName;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Identifier class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& Identifier::convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex)
+inline const areg::String& Identifier::convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex)
 {
     ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
@@ -258,10 +258,10 @@ inline const String& Identifier::convToString(uint32_t idValue, const std::vecto
         }
     }
 
-    return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::getEmptyString());
+    return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : areg::String::getEmptyString());
 }
 
-inline uint32_t Identifier::convFromString(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
+inline uint32_t Identifier::convFromString(const areg::String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
 {
     ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
@@ -316,7 +316,7 @@ inline void Identifier::invalidate()
     mName   = BAD_IDENTIFIER.mName;
 }
 
-inline const String & Identifier::getName() const
+inline const areg::String & Identifier::getName() const
 {
     return mName;
 }

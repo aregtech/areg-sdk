@@ -65,7 +65,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    void onStringOnChangeUpdate( const String & StringOnChange, areg::DataState state ) override;
+    void onStringOnChangeUpdate( const areg::String & StringOnChange, areg::DataState state ) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -102,7 +102,7 @@ private:
 
     uint32_t    mOldInteger;    //!< Old integer value to compare when output on console.
     bool        mOldState;      //!< Flag, indicating whether the old integer value is valid or not.
-    String      mOldString;     //!< Old string value to compare when output on console.
+    areg::String      mOldString;     //!< Old string value to compare when output on console.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

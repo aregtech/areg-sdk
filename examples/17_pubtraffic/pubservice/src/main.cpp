@@ -94,7 +94,7 @@ int main()
         console.outputTxt( { 0, 5 }, "- Type \"quit\"  to quit the traffic light." );
         console.outputTxt( { 0, 6 }, "Type command: " );
         console.refreshScreen( );
-        console.waitForInput( [&]( const String & cmd ) -> bool
+        console.waitForInput( [&]( const areg::String & cmd ) -> bool
             {
                 if ( cmd.compare( commands[0], false ) == areg::Ordering::Equal )
                 {

@@ -16,8 +16,6 @@
 
 #include <string_view>
 
-class String;
-
 namespace areg
 {
     /**
@@ -149,7 +147,7 @@ namespace areg
          * \param   cmd     The string to parse.
          * \return  Returns true if operation succeeds.
          */
-        bool parseCommand(const String& cmd);
+        bool parseCommand(const areg::String& cmd);
 
         /**
          * \brief   Sets option specific value and indicates which fields are valid.
@@ -252,7 +250,7 @@ namespace areg
         /**
          * \brief   The string state of the application.
          */
-        inline String getState() const;
+        inline areg::String getState() const;
 
         /**
          * \brief   Normalizes the options.
@@ -358,12 +356,12 @@ inline uint64_t areg::OptionValues::nsPerBlock(uint32_t startRowIndex, uint32_t 
     return nsPerLine() * rowCount;
 }
 
-inline String areg::OptionValues::getState() const
+inline areg::String areg::OptionValues::getState() const
 {
     if (hasStart())
-        return String("STARTED");
+        return areg::String("STARTED");
     else
-        return String("STOPPED");
+        return areg::String("STOPPED");
 }
 
 inline void areg::OptionValues::update(const OptionValues& newOption)

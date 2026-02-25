@@ -22,7 +22,7 @@
 #include "areg/base/Identifier.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
-ConnectionConfiguration::ConnectionConfiguration(const String& service, const String& connectType)
+ConnectionConfiguration::ConnectionConfiguration(const areg::String& service, const areg::String& connectType)
     : mServiceName  ( service )
     , mConnectType  ( connectType )
 {
@@ -34,17 +34,17 @@ ConnectionConfiguration::ConnectionConfiguration(areg::RemoteServiceKind service
 {
 }
 
-String ConnectionConfiguration::getConnectionAddress() const
+areg::String ConnectionConfiguration::getConnectionAddress() const
 {
     return Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionAddress(const String& address)
+void ConnectionConfiguration::setConnectionAddress(const areg::String& address)
 {
     Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
 }
 
-void ConnectionConfiguration::setConnectionData(const String& address, uint16_t portNr)
+void ConnectionConfiguration::setConnectionData(const areg::String& address, uint16_t portNr)
 {
     Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
     Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
@@ -83,25 +83,25 @@ bool ConnectionConfiguration::getConnectionIpAddress( uint8_t & field0
     bool result = false;
     field0 = field1 = field2 = field3 = 0u;
 
-    String addr{ getConnectionAddress() };
+    areg::String addr{ getConnectionAddress() };
     if ( addr.isEmpty() == false )
     {
         const char * buffer = addr.getString( );
         const char * next   = nullptr;
 
-        uint32_t f0 = String::makeUInt32(buffer, areg::Radix::Decimal, &next);
+        uint32_t f0 = areg::String::makeUInt32(buffer, areg::Radix::Decimal, &next);
         if ( (buffer != next) && (f0 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
         {
             buffer = next + 1;
-            uint32_t f1 = String::makeUInt32( buffer, areg::Radix::Decimal, &next );
+            uint32_t f1 = areg::String::makeUInt32( buffer, areg::Radix::Decimal, &next );
             if ( (buffer != next) && (f1 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
             {
                 buffer = next + 1;
-                uint32_t f2 = String::makeUInt32( buffer, areg::Radix::Decimal, &next );
+                uint32_t f2 = areg::String::makeUInt32( buffer, areg::Radix::Decimal, &next );
                 if ( (buffer != next) && (f2 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
                 {
                     buffer = next + 1;
-                    uint32_t f3 = String::makeUInt32( buffer, areg::Radix::Decimal, &next );
+                    uint32_t f3 = areg::String::makeUInt32( buffer, areg::Radix::Decimal, &next );
                     if ( (buffer != next) && (f3 <= 0xFFu) )
                     {
                         field0 = static_cast<uint8_t>(f0);

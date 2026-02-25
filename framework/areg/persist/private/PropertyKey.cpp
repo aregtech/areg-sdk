@@ -28,7 +28,7 @@ PropertyKey::PropertyKey( const PropertyKey & source )
 {
 }
 
-PropertyKey::PropertyKey(const String& section, const String& module, const String& property, const String& position)
+PropertyKey::PropertyKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )
@@ -46,7 +46,7 @@ PropertyKey::PropertyKey(const std::string_view& section, const std::string_view
 {
 }
 
-PropertyKey::PropertyKey(const String& section, const String& module, const String& property, const String& position, areg::ConfigEntry keyType)
+PropertyKey::PropertyKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position, areg::ConfigEntry keyType)
     : mSection  ( section   )
     , mModule   ( module    )
     , mProperty ( property  )
@@ -82,7 +82,7 @@ PropertyKey::PropertyKey()
 {
 }
 
-PropertyKey::PropertyKey( const String & key )
+PropertyKey::PropertyKey( const areg::String & key )
     : mSection  ( )
     , mModule   ( )
     , mProperty ( )
@@ -92,7 +92,7 @@ PropertyKey::PropertyKey( const String & key )
     parseKey( key );
 }
 
-PropertyKey::PropertyKey( String && key )
+PropertyKey::PropertyKey( areg::String && key )
     : mSection  ( )
     , mModule   ( )
     , mProperty ( )
@@ -127,13 +127,13 @@ PropertyKey & PropertyKey::operator = ( PropertyKey && source ) noexcept
     return (*this);
 }
 
-PropertyKey & PropertyKey::operator = ( const String & source )
+PropertyKey & PropertyKey::operator = ( const areg::String & source )
 {
     parseKey(source);
     return (*this);
 }
 
-PropertyKey & PropertyKey::operator = ( String && source )
+PropertyKey & PropertyKey::operator = ( areg::String && source )
 {
     parseKey(std::move(source));
     return (*this);
@@ -181,9 +181,9 @@ PropertyKey::operator uint32_t () const
     return result;
 }
 
-bool PropertyKey::parseKey( const String & key )
+bool PropertyKey::parseKey( const areg::String & key )
 {
-    String temp(key);
+    areg::String temp(key);
     temp.trimAll();
     if ( temp.isEmpty() == false )
     {
@@ -193,9 +193,9 @@ bool PropertyKey::parseKey( const String & key )
     return isValid();
 }
 
-bool PropertyKey::parseKey( String && key )
+bool PropertyKey::parseKey( areg::String && key )
 {
-    String temp(std::move(key));
+    areg::String temp(std::move(key));
     temp.trimAll();
     if ( temp.isEmpty() == false )
     {
@@ -205,9 +205,9 @@ bool PropertyKey::parseKey( String && key )
     return isValid();
 }
 
-String PropertyKey::convToString() const
+areg::String PropertyKey::convToString() const
 {
-    String result(static_cast<uint32_t>(0xFF));
+    areg::String result(static_cast<uint32_t>(0xFF));
     if ( isValid() )
     {
         result.append(mSection)
@@ -225,17 +225,17 @@ String PropertyKey::convToString() const
     return result;
 }
 
-bool PropertyKey::isExactModule(const String& section, const String& module) const
+bool PropertyKey::isExactModule(const areg::String& section, const areg::String& module) const
 {
     return (isValid() && (mSection == section) && (mModule == module));
 }
 
-bool PropertyKey::isExactProperty(const String& section, const String& module, const String& property, const String& position) const
+bool PropertyKey::isExactProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const
 {
     return  (isValid() && (mSection == section) && (mModule == module) && (mProperty == property) && (mPosition == position));
 }
 
-bool PropertyKey::isModuleProperty(const String& section, const String& module, const String& property, const String& position) const
+bool PropertyKey::isModuleProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const
 {
     bool result{ false };
 
@@ -250,7 +250,7 @@ bool PropertyKey::isModuleProperty(const String& section, const String& module, 
     return result;
 }
 
-bool PropertyKey::isModuleSection(const String& section, const String& module) const
+bool PropertyKey::isModuleSection(const areg::String& section, const areg::String& module) const
 {
     bool result{ false };
 
@@ -264,14 +264,14 @@ bool PropertyKey::isModuleSection(const String& section, const String& module) c
 
 void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
 {
-    mSection    = section != nullptr ? section  : String::EmptyString;
+    mSection    = section != nullptr ? section  : areg::String::EmptyString;
     mModule     = module  != nullptr ? module   : areg::SYNTAX_ALL_MODULES;
-    mProperty   = property!= nullptr ? property : String::EmptyString;
-    mPosition   = position!= nullptr ? position : String::EmptyString;
+    mProperty   = property!= nullptr ? property : areg::String::EmptyString;
+    mPosition   = position!= nullptr ? position : areg::String::EmptyString;
     mKeyType    = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
 }
 
-void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position)
+void PropertyKey::setValues(const areg::String& section, const areg::String& property, const areg::String& module, const areg::String& position)
 {
     mSection    = section;
     mModule     = module;
@@ -280,7 +280,7 @@ void PropertyKey::setValues(const String& section, const String& property, const
     mKeyType    = PropertyKey::_findKey(section, module, property, position);
 }
 
-void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position, areg::ConfigEntry keyType)
+void PropertyKey::setValues(const areg::String& section, const areg::String& property, const areg::String& module, const areg::String& position, areg::ConfigEntry keyType)
 {
     mSection    = section;
     mModule     = module;
@@ -289,22 +289,22 @@ void PropertyKey::setValues(const String& section, const String& property, const
     mKeyType    = keyType;
 }
 
-const String & PropertyKey::getSection() const
+const areg::String & PropertyKey::getSection() const
 {
     return mSection;
 }
 
-const String & PropertyKey::getProperty() const
+const areg::String & PropertyKey::getProperty() const
 {
     return mProperty;
 }
 
-const String & PropertyKey::getModule() const
+const areg::String & PropertyKey::getModule() const
 {
     return mModule;
 }
 
-const String & PropertyKey::getPosition() const
+const areg::String & PropertyKey::getPosition() const
 {
     return mPosition;
 }
@@ -358,7 +358,7 @@ void PropertyKey::resetKey()
     mKeyType = areg::ConfigEntry::Invalid;
 }
 
-inline void PropertyKey::_parseKey(const String& key)
+inline void PropertyKey::_parseKey(const areg::String& key)
 {
     std::vector<StringBase<char>> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
     resetKey();
@@ -378,7 +378,7 @@ inline void PropertyKey::_parseKey(const String& key)
                 }
                 else
                 {
-                    mPosition = String::EmptyString;
+                    mPosition = areg::String::EmptyString;
                 }
             }
             else
@@ -395,27 +395,27 @@ inline void PropertyKey::_parseKey(const String& key)
     }
 }
 
-inline bool PropertyKey::_isCompatible(const String& left, const String& right) 
+inline bool PropertyKey::_isCompatible(const areg::String& left, const areg::String& right) 
 {
     bool result{ true };
     if (left != right)
     {
         const char* lval = left;
         const char* rval = right;
-        while ((*lval != String::EmptyChar) && (*rval != String::EmptyChar) && (*lval == *rval))
+        while ((*lval != areg::String::EmptyChar) && (*rval != areg::String::EmptyChar) && (*lval == *rval))
         {
             ++lval;
             ++rval;
         }
 
-        result = ((*lval == String::EmptyChar) && (*rval == String::EmptyChar)) ||
+        result = ((*lval == areg::String::EmptyChar) && (*rval == areg::String::EmptyChar)) ||
                  ((*lval == areg::SYNTAX_ANY_VALUE) || (*rval == areg::SYNTAX_ANY_VALUE));
     }
 
     return result;
 }
 
-inline areg::ConfigEntry PropertyKey::_findKey(const String& section, const String& module, const String& property, const String& position)
+inline areg::ConfigEntry PropertyKey::_findKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position)
 {
     areg::ConfigEntry result{ areg::ConfigEntry::Invalid };
 

@@ -68,8 +68,8 @@ public:
      * \brief   Copies value from given source
      * \param   value   The source to copy value
      **/
-    explicit PropertyValue( const String & value );
-    explicit PropertyValue( String && value ) noexcept;
+    explicit PropertyValue( const areg::String & value );
+    explicit PropertyValue( areg::String && value ) noexcept;
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
@@ -105,8 +105,8 @@ public:
      * \brief   Copies property Value from given source as a string
      * \param   value   The source as string to parse and copy data.
      **/
-    PropertyValue & operator = ( const String & value );
-    PropertyValue & operator = ( String && value ) noexcept;
+    PropertyValue & operator = ( const areg::String & value );
+    PropertyValue & operator = ( areg::String && value ) noexcept;
 
     /**
      * \brief   Copies property Value from given source as a 32-bit unsigned integer
@@ -154,7 +154,7 @@ public:
     /**
      * \brief   Converts the property value into the string.
      **/
-    operator const String& () const;
+    operator const areg::String& () const;
 
     /**
      * \brief   Converts the property value into the floating point digit.
@@ -173,7 +173,7 @@ public:
     /**
      * \brief   Returns data of Value
      **/
-    const String & getValue() const;
+    const areg::String & getValue() const;
 
     /**
      * \brief   Sets data of Value
@@ -185,18 +185,18 @@ public:
      * \brief   Sets data of Value
      * \param   value    The value as string to set
      **/
-    void setValue( const String & value );
+    void setValue( const areg::String & value );
 
     /**
      * \brief   Sets data of Value
      * \param   value    The value as string to set
      **/
-    void setValue( String && value );
+    void setValue( areg::String && value );
 
     /**
      * \brief   Returns value as a string
      **/
-    const String & getString() const;
+    const areg::String & getString() const;
 
     /**
      * \brief   Sets value as a string
@@ -272,13 +272,13 @@ public:
      *                      If the flag is 'false', the entries in the result list are not checked.
      * \return  Returns the list of strings.
      **/
-    ArrayList<String> getValueList(bool makeUnique = false) const;
+    ArrayList<areg::String> getValueList(bool makeUnique = false) const;
 
     /**
      * \brief   Sets a list of string as a value.
      * \param   list    The list of strings to set as a value;
      **/
-    void setValueList(const std::vector<String>& list);
+    void setValueList(const std::vector<areg::String>& list);
 
     /**
      * \brief   Parses given string, extracts Value data.
@@ -290,13 +290,13 @@ public:
      * \brief   Parses given string, extracts Value data.
      * \param   value    The string, which contains data for Value.
      **/
-    void parseValue( const String & value );
+    void parseValue( const areg::String & value );
 
     /**
      * \brief   Parses given string, extracts Value data.
      * \param   value    The string, which contains data for Value.
      **/
-    void parseValue( String && value );
+    void parseValue( areg::String && value );
 
     /**
      * \brief   Resets and invalidates Value
@@ -306,7 +306,7 @@ public:
     /**
      * \brief   Converts and Value data to the string.
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -323,7 +323,7 @@ private:
     /**
      * \brief   String as a data of Value.
      **/
-    String mValue;
+    areg::String mValue;
 };
 
 #endif  // AREG_PERSIST_PROPERTYVALUE_HPP

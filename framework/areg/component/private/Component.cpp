@@ -85,7 +85,7 @@ void Component::unloadComponent( Component& comItem, const areg::ComponentEntry&
     entry.mFuncDelete(comItem, entry);
 }
 
-Component* Component::findComponentByName( const String & roleName )
+Component* Component::findComponentByName( const areg::String & roleName )
 {
     ASSERT(roleName.isEmpty() == false);
     
@@ -105,7 +105,7 @@ Component* Component::findComponentByAddress( const ComponentAddress& comAddress
     return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);
 }
 
-bool Component::existComponent( const String & roleName )
+bool Component::existComponent( const areg::String & roleName )
 {
     ASSERT(roleName.isEmpty() == false);
     return Component::resource_map().existResource(areg::crc32Calculate(roleName.getString()));
@@ -121,7 +121,7 @@ ComponentThread& Component::_getCurrentComponentThread()
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor 
 //////////////////////////////////////////////////////////////////////////
-Component::Component( const String & roleName, ComponentThread & ownerThread )
+Component::Component( const areg::String & roleName, ComponentThread & ownerThread )
     : RuntimeObject ( )
 
     , mComponentInfo( ownerThread, roleName )
@@ -141,7 +141,7 @@ Component::Component( const areg::ComponentEntry & regEntry, ComponentThread & o
     Component::resource_map().registerResourceObject(mMagicNum, this);
 }
 
-Component::Component( const String & roleName )
+Component::Component( const areg::String & roleName )
     : RuntimeObject           ( )
 
     , mComponentInfo    (_getCurrentComponentThread(), roleName)
@@ -160,7 +160,7 @@ Component::~Component()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-WorkerThread* Component::createWorkerThread(  const String & threadName
+WorkerThread* Component::createWorkerThread(  const areg::String & threadName
                                             , WorkerThreadConsumer& consumer
                                             , ComponentThread & /* ownerThread */
                                             , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE */
@@ -188,7 +188,7 @@ WorkerThread* Component::createWorkerThread(  const String & threadName
     return workThread;
 }
 
-void Component::deleteWorkerThread( const String & threadName )
+void Component::deleteWorkerThread( const areg::String & threadName )
 {
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread != nullptr)
@@ -255,7 +255,7 @@ void Component::registerServerItem( StubBase& server )
     mServerList.pushLast(&server);
 }
 
-StubBase* Component::findServerByName( const String & serviceName )
+StubBase* Component::findServerByName( const areg::String & serviceName )
 {
     StubBase* result = nullptr;
     for (ListServers::LISTPOS  pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
@@ -283,7 +283,7 @@ void Component::waitComponentCompletion( uint32_t waitTimeout )
     }
 }
 
-WorkerThreadConsumer* Component::workerThreadConsumer( const String & /* consumerName */, const String & /* workerThreadName */)
+WorkerThreadConsumer* Component::workerThreadConsumer( const areg::String & /* consumerName */, const areg::String & /* workerThreadName */)
 {
     return nullptr;
 }

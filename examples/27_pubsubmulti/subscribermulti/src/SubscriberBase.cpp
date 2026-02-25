@@ -31,7 +31,7 @@ SubscriberBase::SubscriberBase(const areg::DependencyEntry & entry, Component & 
 {
 }
 
-void SubscriberBase::onStringOnChangeUpdate(const String & StringOnChange, areg::DataState state)
+void SubscriberBase::onStringOnChangeUpdate(const areg::String & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
     ++ mStrEventCount;
@@ -73,7 +73,7 @@ void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataSta
     ++ mIntEventCount;
 
     Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::makeString(mOldInteger) : pubsub::StrInvalid;
+    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger) : pubsub::StrInvalid;
     if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);

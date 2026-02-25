@@ -51,7 +51,7 @@ public:
      * \param   namePrefix      The prefix to add to the areg::CLIENT_SEND_MESSAGE_THREAD
      *                          to have unique thread names.
      **/
-    ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
+    ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String & namePrefix );
     /**
      * \brief   Destructor
      **/

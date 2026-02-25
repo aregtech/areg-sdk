@@ -101,7 +101,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    virtual bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
+    virtual bool logScopeActivate(const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
     /**
      * \brief   Called when need to log the information of the list of scopes in the database.

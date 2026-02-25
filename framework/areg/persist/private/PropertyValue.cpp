@@ -28,13 +28,13 @@ PropertyValue::PropertyValue( PropertyValue && source ) noexcept
 {
 }
 
-PropertyValue::PropertyValue( const String & value )
+PropertyValue::PropertyValue( const areg::String & value )
     : mValue( )
 {
-    parseValue( static_cast<const String &>(value) );
+    parseValue( static_cast<const areg::String &>(value) );
 }
 
-PropertyValue::PropertyValue(String&& value) noexcept
+PropertyValue::PropertyValue(areg::String&& value) noexcept
     : mValue()
 {
     parseValue(std::move(value));
@@ -47,17 +47,17 @@ PropertyValue::PropertyValue( const char * value )
 }
 
 PropertyValue::PropertyValue(uint32_t intValue)
-    : mValue( String::makeString(intValue, areg::Radix::Decimal) )
+    : mValue( areg::String::makeString(intValue, areg::Radix::Decimal) )
 {
 }
 
 PropertyValue::PropertyValue(double dValue)
-    : mValue( String::makeString( dValue ) )
+    : mValue( areg::String::makeString( dValue ) )
 {
 }
 
 PropertyValue::PropertyValue(bool bValue)
-    : mValue(String::makeString(bValue))
+    : mValue(areg::String::makeString(bValue))
 {
 }
 
@@ -79,13 +79,13 @@ PropertyValue & PropertyValue::operator = ( PropertyValue && source ) noexcept
     return (*this);
 }
 
-PropertyValue & PropertyValue::operator = ( const String & value )
+PropertyValue & PropertyValue::operator = ( const areg::String & value )
 {
     parseValue(value);
     return (*this);
 }
 
-PropertyValue& PropertyValue::operator = (String && value) noexcept
+PropertyValue& PropertyValue::operator = (areg::String && value) noexcept
 {
     parseValue(std::move(value));
     return (*this);
@@ -130,7 +130,7 @@ PropertyValue::operator uint32_t() const
     return getInteger(areg::Radix::Decimal);
 }
 
-PropertyValue::operator const String& () const
+PropertyValue::operator const areg::String& () const
 {
     return getString();
 }
@@ -145,7 +145,7 @@ PropertyValue::operator bool() const
     return getBoolean();
 }
 
-const String & PropertyValue::getValue() const
+const areg::String & PropertyValue::getValue() const
 {
     return mValue;
 }
@@ -155,17 +155,17 @@ void PropertyValue::setValue( const char * value )
     parseValue(value);
 }
 
-void PropertyValue::setValue( const String & value )
+void PropertyValue::setValue( const areg::String & value )
 {
-    parseValue( static_cast<const String &>(value) );
+    parseValue( static_cast<const areg::String &>(value) );
 }
 
-void PropertyValue::setValue( String && value )
+void PropertyValue::setValue( areg::String && value )
 {
     parseValue( std::move(value) );
 }
 
-const String & PropertyValue::getString() const
+const areg::String & PropertyValue::getString() const
 {
     return mValue;
 }
@@ -188,10 +188,10 @@ uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) 
         std::vector<StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
-            String value{ entry.trimAll() };
+            areg::String value{ entry.trimAll() };
             for (const auto& id : idList)
             {
-                const String& idName = id.getName();
+                const areg::String& idName = id.getName();
                 if (value == idName)
                 {
                     if (result == Identifier::BAD_IDENTIFIER_VALUE)
@@ -222,17 +222,17 @@ bool PropertyValue::getBoolean() const
 
 void PropertyValue::setBoolean(bool newValue)
 {
-    mValue = String::makeString(newValue);
+    mValue = areg::String::makeString(newValue);
 }
 
 void PropertyValue::setInteger(uint32_t intValue, areg::Radix radix /*= areg::Decimal*/ )
 {
-    mValue = String::makeString(intValue, radix);
+    mValue = areg::String::makeString(intValue, radix);
 }
 
 void PropertyValue::setDouble(double dValue)
 {
-    mValue = String::makeString( dValue );
+    mValue = areg::String::makeString( dValue );
 }
 
 ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
@@ -243,10 +243,10 @@ ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identif
         std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
-            String value{ entry.trimAll() };
+            areg::String value{ entry.trimAll() };
             for (const auto& id : lookupList)
             {
-                const String& idName = id.getName();
+                const areg::String& idName = id.getName();
                 if (value == idName)
                 {
                     result.addIfUnique(id);
@@ -294,15 +294,15 @@ void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
     }
 }
 
-ArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
+ArrayList<areg::String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
 {
-    ArrayList<String> result;
+    ArrayList<areg::String> result;
     if (mValue.isEmpty() == false)
     {
         std::vector<StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
-            String value{ entry.trimAll() };
+            areg::String value{ entry.trimAll() };
             if (makeUnique)
             {
                 result.addIfUnique(value);
@@ -317,7 +317,7 @@ ArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
     return result;
 }
 
-void PropertyValue::setValueList(const std::vector<String>& list)
+void PropertyValue::setValueList(const std::vector<areg::String>& list)
 {
     mValue.clear();
     for (const auto& entry : list)
@@ -339,13 +339,13 @@ void PropertyValue::parseValue(const char * value)
     _parseValue();
 }
 
-void PropertyValue::parseValue( const String & value )
+void PropertyValue::parseValue( const areg::String & value )
 {
     mValue  = value;
     _parseValue();
 }
 
-void PropertyValue::parseValue( String && value )
+void PropertyValue::parseValue( areg::String && value )
 {
     mValue  = std::move(value);
     _parseValue();
@@ -356,9 +356,9 @@ void PropertyValue::resetValue()
     mValue.clear();
 }
 
-String PropertyValue::convToString() const
+areg::String PropertyValue::convToString() const
 {
-    String result (mValue);
+    areg::String result (mValue);
     if (mValue.isEmpty() == false)
     {
         result += areg::SYNTAX_END_COMMAND;

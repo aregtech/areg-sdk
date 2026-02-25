@@ -44,7 +44,7 @@ ResponseEvent::ResponseEvent( const EventDataStream & args
                             , uint32_t respId
                             , Event::EventType eventType
                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
-                            , const String & name /*= String::getEmptyString()*/ )
+                            , const areg::String & name /*= areg::String::getEmptyString()*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData (respId, args, name)
 {
@@ -101,7 +101,7 @@ LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
                                       , areg::ResultType result
                                       , uint32_t respId
                                       , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
-                                      , const String & name /*= String::getEmptyString()*/ )
+                                      , const areg::String & name /*= areg::String::getEmptyString()*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::EventType::EventLocalServiceResponse, seqNr, name)
 {
 }
@@ -142,7 +142,7 @@ RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
                                         , areg::ResultType result
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
-                                        , const String & name /*= String::getEmptyString()*/ )
+                                        , const areg::String & name /*= areg::String::getEmptyString()*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::EventType::EventRemoteServiceResponse, seqNr, name)
 {
     ASSERT(getData().getDataStream().isExternalDataStream());

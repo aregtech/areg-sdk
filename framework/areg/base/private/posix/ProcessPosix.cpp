@@ -88,9 +88,9 @@ void Process::_osInitilize()
 }
 
 
-String Process::_osGetEnvVariable( const char* var ) const
+areg::String Process::_osGetEnvVariable( const char* var ) const
 {
-    return String(var != nullptr ? ::getenv(var) : String::EmptyString);
+    return areg::String(var != nullptr ? ::getenv(var) : areg::String::EmptyString);
 }
 
 #endif // defined(_POSIX) || defined(POSIX)

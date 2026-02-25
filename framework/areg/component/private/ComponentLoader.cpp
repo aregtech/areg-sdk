@@ -53,7 +53,7 @@ ComponentLoader & ComponentLoader::getInstance()
     return _componentLoader;
 }
 
-bool ComponentLoader::loadComponentModel( const String & modelName )
+bool ComponentLoader::loadComponentModel( const areg::String & modelName )
 {
     bool result = ComponentLoader::getInstance().loadModel( modelName );
     if ( result == false )
@@ -64,17 +64,17 @@ bool ComponentLoader::loadComponentModel( const String & modelName )
     return result;
 }
 
-void ComponentLoader::unloadComponentModel(bool waitComplete, const String & modelName )
+void ComponentLoader::unloadComponentModel(bool waitComplete, const areg::String & modelName )
 {
     ComponentLoader::getInstance( ).unloadModel(waitComplete, modelName );
 }
 
-void ComponentLoader::waitModelUnload(const String & modelName)
+void ComponentLoader::waitModelUnload(const areg::String & modelName)
 {
     ComponentLoader::getInstance().waitModelThreads(modelName);
 }
 
-const areg::Model & ComponentLoader::findModel( const String & modelName )
+const areg::Model & ComponentLoader::findModel( const areg::String & modelName )
 {
     ComponentLoader & loader = getInstance( );
     Lock lock( loader.mLock );
@@ -83,7 +83,7 @@ const areg::Model & ComponentLoader::findModel( const String & modelName )
     return (result != nullptr ? *result : areg::invalidModel( ));
 }
 
-const areg::ComponentList& ComponentLoader::findComponentList( const String & threadName )
+const areg::ComponentList& ComponentLoader::findComponentList( const areg::String & threadName )
 {
 
     const areg::ComponentList * result{ nullptr };
@@ -111,7 +111,7 @@ const areg::ComponentList& ComponentLoader::findComponentList( const String & th
     return (result != nullptr ? *result : areg::invalidComponentList());
 }
 
-const areg::ComponentEntry& ComponentLoader::findComponentEntry( const String & roleName, const String & threadName )
+const areg::ComponentEntry& ComponentLoader::findComponentEntry( const areg::String & roleName, const areg::String & threadName )
 {
     const areg::ComponentEntry* result = nullptr;
     const areg::ComponentList& comList = findComponentList(threadName);
@@ -131,7 +131,7 @@ const areg::ComponentEntry& ComponentLoader::findComponentEntry( const String & 
     return (result != nullptr ? *result : areg::invalidComponentEntry());
 }
 
-const areg::ComponentEntry& ComponentLoader::findComponentEntry( const String & roleName )
+const areg::ComponentEntry& ComponentLoader::findComponentEntry( const areg::String & roleName )
 {
     const areg::ComponentEntry* result = nullptr;
     ComponentLoader & loader = ComponentLoader::getInstance();
@@ -158,7 +158,7 @@ const areg::ComponentEntry& ComponentLoader::findComponentEntry( const String & 
     return (result != nullptr ? *result : areg::invalidComponentEntry());
 }
 
-const areg::ComponentThreadEntry& ComponentLoader::findThreadEntry(const String& threadName)
+const areg::ComponentThreadEntry& ComponentLoader::findThreadEntry(const areg::String& threadName)
 {
     const areg::ComponentThreadEntry* result = nullptr;
     ComponentLoader& loader = ComponentLoader::getInstance();
@@ -182,7 +182,7 @@ const areg::ComponentThreadEntry& ComponentLoader::findThreadEntry(const String&
     return (result != nullptr ? *result : areg::invalidThreadEntry());
 }
 
-bool ComponentLoader::isModelLoaded( const String & modelName )
+bool ComponentLoader::isModelLoaded( const areg::String & modelName )
 {
     bool result = false;
 
@@ -205,7 +205,7 @@ bool ComponentLoader::isModelLoaded( const String & modelName )
     return result;
 }
 
-bool ComponentLoader::existModel( const String & modelName )
+bool ComponentLoader::existModel( const areg::String & modelName )
 {
     bool result = false;
 
@@ -228,7 +228,7 @@ bool ComponentLoader::existModel( const String & modelName )
     return result;
 }
 
-bool ComponentLoader::setComponentData( const String & roleName, std::any compData )
+bool ComponentLoader::setComponentData( const areg::String & roleName, std::any compData )
 {
     bool result = false;
     ComponentLoader & loader = ComponentLoader::getInstance( );
@@ -247,7 +247,7 @@ bool ComponentLoader::setComponentData( const String & roleName, std::any compDa
     return result;
 }
 
-bool ComponentLoader::resetComponentData(const String& roleName)
+bool ComponentLoader::resetComponentData(const areg::String& roleName)
 {
     bool result = false;
     ComponentLoader& loader = ComponentLoader::getInstance();
@@ -273,7 +273,7 @@ bool ComponentLoader::addModelUnique(const areg::Model & newModel)
     return loader.addModel(newModel);
 }
 
-void ComponentLoader::removeComponentModel(const String & modelName /*= String::getEmptyString() */)
+void ComponentLoader::removeComponentModel(const areg::String & modelName /*= areg::String::getEmptyString() */)
 {
     ComponentLoader::unloadComponentModel(true, modelName);
     ComponentLoader & loader = ComponentLoader::getInstance();
@@ -369,10 +369,10 @@ bool ComponentLoader::addModel( const areg::Model & newModel )
 
 int32_t ComponentLoader::loadAllModels()
 {
-    return loadModel(String::EmptyString);
+    return loadModel(areg::String::EmptyString);
 }
 
-int32_t ComponentLoader::loadModel( const String & modelName )
+int32_t ComponentLoader::loadModel( const areg::String & modelName )
 {
     Lock lock(mLock);
     int32_t result{ 0 };
@@ -436,7 +436,7 @@ bool ComponentLoader::loadModel( areg::Model & whichModel ) const
     return result;
 }
 
-void ComponentLoader::unloadModel(bool waitComplete, const String & modelName )
+void ComponentLoader::unloadModel(bool waitComplete, const areg::String & modelName )
 {
     for (uint32_t i = 0; i < mModelList.getSize(); ++ i)
     {
@@ -485,7 +485,7 @@ void ComponentLoader::unloadModel( bool waitComplete, areg::Model & whichModel )
     }
 }
 
-void ComponentLoader::waitModelThreads(const String & modelName )
+void ComponentLoader::waitModelThreads(const areg::String & modelName )
 {
     for (uint32_t i = 0; i < mModelList.getSize(); ++ i)
     {
@@ -558,7 +558,7 @@ void ComponentLoader::_shutdownThreads( const ThreadList & threadList ) const
     }
 }
 
-const areg::Model * ComponentLoader::findModelByName( const String & modelName ) const
+const areg::Model * ComponentLoader::findModelByName( const areg::String & modelName ) const
 {
     const areg::Model * result = nullptr;
     if ( modelName.isEmpty() == false)
@@ -577,7 +577,7 @@ const areg::Model * ComponentLoader::findModelByName( const String & modelName )
     return result;
 }
 
-const areg::ComponentThreadEntry * ComponentLoader::findThreadEntryByName( const String & threadName ) const
+const areg::ComponentThreadEntry * ComponentLoader::findThreadEntryByName( const areg::String & threadName ) const
 {
     const areg::ComponentThreadEntry * result = nullptr;
     if ( threadName.isEmpty() == false)
@@ -598,7 +598,7 @@ const areg::ComponentThreadEntry * ComponentLoader::findThreadEntryByName( const
     return result;
 }
 
-const areg::ComponentEntry * ComponentLoader::findComponentEntryByName( const String & roleName ) const
+const areg::ComponentEntry * ComponentLoader::findComponentEntryByName( const areg::String & roleName ) const
 {
     const areg::ComponentEntry * result = nullptr;
     if ( roleName.isEmpty() == false)

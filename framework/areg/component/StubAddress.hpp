@@ -60,7 +60,7 @@ public:
      * \param   addrStub    The Stub address containing information to crate path
      * \return  Returns converted path of Stub as string, containing Stub address information
      **/
-    static String convAddressToPath( const StubAddress & addrStub );
+    static areg::String convAddressToPath( const StubAddress & addrStub );
 
     /**
      * \brief   Instantiate Stub Address from given address path.
@@ -94,11 +94,11 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const String & serviceName
+    StubAddress( const areg::String & serviceName
                , const Version & serviceVersion
                , areg::ServiceType serviceType
-               , const String & roleName
-               , const String & threadName = String::getEmptyString() );
+               , const areg::String & roleName
+               , const areg::String & threadName = areg::String::getEmptyString() );
 
     /**
      * \brief   Initialize Stub address from given service item, role name and holder thread.
@@ -106,7 +106,7 @@ public:
      * \param   roleName    The role name of holder component
      * \param   threadName  Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
+    StubAddress( const ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
 
     /**
      * \brief   Initialize Stub address from given service data, role name and holder thread.
@@ -114,7 +114,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const areg::InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
+    StubAddress( const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.
@@ -291,13 +291,13 @@ public:
     /**
      * \brief   Returns the service owner thread name.
      **/
-    inline const String & getThread() const;
+    inline const areg::String & getThread() const;
 
     /**
      * \brief   Sets the service owner thread name.
      * \param   threadName  The thread name to set.
      **/
-    void setThread( const String & threadName );
+    void setThread( const areg::String & threadName );
 
     /**
      * \brief   Returns validity of stub address. 
@@ -331,7 +331,7 @@ public:
      *          path separator.
      * \return  Returns converted path of Stub as string, containing Stub address information
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief   Instantiate Stub Address from given address path.
@@ -365,7 +365,7 @@ private:
     /**
      * \brief   The name of owner thread.
      **/
-    String          mThreadName;
+    areg::String          mThreadName;
     /**
      * \brief   The communication channel.
      **/
@@ -446,7 +446,7 @@ inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService
     if ( static_cast<const ServiceAddress *>(this) != &addrService)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
-        mThreadName = String::getEmptyString();
+        mThreadName = areg::String::getEmptyString();
         mChannel    = Channel();
         mMagicNum   = StubAddress::_magicNumber(*this);
     }
@@ -459,7 +459,7 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     if ( static_cast<const ServiceAddress *>(this) != &addrService )
     {
         static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
-        mThreadName = String::getEmptyString();
+        mThreadName = areg::String::getEmptyString();
         mChannel    = Channel( );
         mMagicNum   = StubAddress::_magicNumber( *this );
     }
@@ -517,7 +517,7 @@ inline bool StubAddress::isTargetPublic() const
     return (mChannel.getCookie( ) >= areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
-inline const String & StubAddress::getThread() const
+inline const areg::String & StubAddress::getThread() const
 {
     return mThreadName;
 }

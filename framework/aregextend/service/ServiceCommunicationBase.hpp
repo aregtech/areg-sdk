@@ -80,7 +80,7 @@ public:
     ServiceCommunicationBase( const ITEM_ID & serviceId
                             , areg::RemoteServiceKind service
                             , uint32_t connectTypes
-                            , const String & dispatcher
+                            , const areg::String & dispatcher
                             , ServiceCommunicationBase::ConnectionPolicy behavior = ServiceCommunicationBase::ConnectionPolicy::Accept );
     /**
      * \brief   Destructor
@@ -271,7 +271,7 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    void applyServiceConnectionData( const String & hostName, uint16_t portNr ) override;
+    void applyServiceConnectionData( const areg::String & hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.

@@ -106,7 +106,7 @@ public:
      * \param   maxQeueue       The maximum number of events in the internal event queue.
      *                          Pass areg::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
      **/
-    explicit ComponentThread( const String & threadName
+    explicit ComponentThread( const areg::String & threadName
                             , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
                             , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
                             , uint32_t maxQeueue        = areg::IGNORE_VALUE);

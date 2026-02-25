@@ -76,7 +76,7 @@ void ServiceClient::responseIdentifier( uint32_t clientId )
     mClientId = clientId;
 
     LOG_DBG( "Received ID [ %u ] for the client, sending first request with sequence [ %u ]", mClientId, mSequenceId );
-    String timestamp(DateTime::getNow().formatTime());
+    areg::String timestamp(DateTime::getNow().formatTime());
     std::cout << ">>> Request at [ " << timestamp << " ]:"
               << " Client = " << mClientId
               << " Sequence = " << mSequenceId
@@ -96,7 +96,7 @@ void ServiceClient::responseHelloUnblock( uint32_t clientId, uint32_t seqNr )
     ASSERT((mReqCount >= 2) && (mReqCount <= (mSequenceId + 2)));
 
     uint32_t savedNr = mSequenceList.popFirst( );
-    String timestamp( DateTime::getNow( ).formatTime( ) );
+    areg::String timestamp( DateTime::getNow( ).formatTime( ) );
 
     ++ mRespReceived;
 
@@ -164,7 +164,7 @@ void ServiceClient::processTimer( Timer & /* timer */ )
     ASSERT(++mReqCount == getProxy()->getListenerCount());
     mSequenceList.pushLast( mSequenceId );
 
-    String timestamp( DateTime::getNow( ).formatTime( ) );
+    areg::String timestamp( DateTime::getNow( ).formatTime( ) );
     LOG_DBG( "Client [ %u ] timeout, sending next request with sequence [ %u ]", mClientId, mSequenceId );
     std::cout << ">>> Request at [ " << timestamp << " ]:"
               << " Client = " << mClientId

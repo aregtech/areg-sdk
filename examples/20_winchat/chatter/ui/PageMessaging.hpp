@@ -69,8 +69,8 @@ private:
     bool isServiceConnected() const;
 
     void outputMessage( CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie );
-    void outputMessage( const String & nickname, const String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );
-    void outputMessage( const String & nickname, const String & message, const DateTime & begin, const DateTime & end, uint32_t cookie);
+    void outputMessage( const areg::String & nickname, const areg::String & message, const uint64_t begin, const uint64_t end, uint32_t cookie );
+    void outputMessage( const areg::String & nickname, const areg::String & message, const DateTime & begin, const DateTime & end, uint32_t cookie);
     void outputTyping( CString nickName, CString message, uint32_t cookie );
     void removeTyping( const CString & nickName, uint32_t cookie );
 

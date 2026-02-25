@@ -25,7 +25,7 @@ protected:
      * \brief   The request to output a greeting.
      * \param   client  The name of the client to output the greeting.
      **/
-    void requestHelloService( const String & client ) override;
+    void requestHelloService( const areg::String & client ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden function calls

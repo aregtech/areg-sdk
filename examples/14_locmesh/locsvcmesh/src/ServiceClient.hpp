@@ -34,7 +34,7 @@ public:
      * \param   roleName    The role name of the component.
      * \param   owner       The component owning thread.
      **/
-    ServiceClient( const String & roleName, Component & owner );
+    ServiceClient( const areg::String & roleName, Component & owner );
 
     virtual ~ServiceClient() = default;
 
@@ -49,7 +49,7 @@ protected:
      * \param   clientId    Thegiven ID of the client that requested to output message.
      * \see     requestHelloWorld
      **/
-    void responseHelloWorld( const String & clientName, uint32_t clientId ) override;
+    void responseHelloWorld( const areg::String & clientName, uint32_t clientId ) override;
 
     /**
      * \brief   Server broadcast.
@@ -99,7 +99,7 @@ private:
     /**
      * \brief   Generates unique timer name.
      **/
-    inline String timerName( Component & owner ) const;
+    inline areg::String timerName( Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

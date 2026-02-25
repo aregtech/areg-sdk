@@ -71,7 +71,7 @@ namespace
         }
 
         file.moveToBegin();
-        String text;
+        areg::String text;
         file >> text;
 
         std::cout << "BEGIN File [" << file.getName() << "] content >>>" << std::endl;
@@ -133,8 +133,8 @@ int main()
     binary.close();
 
     // Copy and normalize paths
-    String src = File::normalizePath("./Debug/hello.txt");
-    String dst = File::normalizePath("./Debug/copy_%time%.txt");
+    areg::String src = File::normalizePath("./Debug/hello.txt");
+    areg::String dst = File::normalizePath("./Debug/copy_%time%.txt");
 
     printSeparator('.', 20);
     std::cout << "Copying file [" << src << "] to [" << dst << "]" << std::endl;

@@ -47,7 +47,7 @@ SqliteDatabase::SqliteDatabase()
 {
 }
 
-SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
+SqliteDatabase::SqliteDatabase(const areg::String& dbPath, bool open)
     : DatabaseEngine  ( )
     , mDbPath           ( )
     , mDbObject         ( nullptr )
@@ -58,7 +58,7 @@ SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
     }
     else
     {
-        mDbPath = dbPath.isEmpty() ? String::getEmptyString() : File::normalizePath(dbPath);
+        mDbPath = dbPath.isEmpty() ? areg::String::getEmptyString() : File::normalizePath(dbPath);
     }
 }
 
@@ -67,7 +67,7 @@ SqliteDatabase::~SqliteDatabase()
     _close();
 }
 
-inline bool SqliteDatabase::_open(const String& dbPath)
+inline bool SqliteDatabase::_open(const areg::String& dbPath)
 {
     bool result{ true };
     _close();
@@ -78,7 +78,7 @@ inline bool SqliteDatabase::_open(const String& dbPath)
         return false;
     }
 
-    String folder = File::getFileDirectory(mDbPath);
+    areg::String folder = File::getFileDirectory(mDbPath);
     if ((folder.isEmpty() == false) && (File::existDir(folder) == false))
     {
         File::createDirCascaded(folder);
@@ -107,7 +107,7 @@ bool SqliteDatabase::isOperable() const
     return (mDbObject != nullptr);
 }
 
-bool SqliteDatabase::connect(const String& dbPath, bool /*readOnly*/)
+bool SqliteDatabase::connect(const areg::String& dbPath, bool /*readOnly*/)
 {
     return _open(dbPath);
 }
@@ -117,7 +117,7 @@ void SqliteDatabase::disconnect()
     _close();
 }
 
-bool SqliteDatabase::execute(const String& sql)
+bool SqliteDatabase::execute(const areg::String& sql)
 {
     bool result{ false };
     if (mDbObject != nullptr)

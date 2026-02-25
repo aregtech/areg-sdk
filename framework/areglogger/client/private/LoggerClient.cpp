@@ -53,7 +53,7 @@ LoggerClient::LoggerClient()
 {
 }
 
-bool LoggerClient::startLoggerClient(const String & address /*= String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
+bool LoggerClient::startLoggerClient(const areg::String & address /*= areg::String::EmptyString*/, uint16_t portNr /*= areg::InvalidPort*/)
 {
     if ((address.isEmpty() == false) && (portNr != areg::InvalidPort))
     {
@@ -133,7 +133,7 @@ bool LoggerClient::isConfigLoggerConnectEnabled() const
     return (config.isConfigured() && config.getConnectionEnableFlag());
 }
 
-String LoggerClient::getConfigLoggerAddress() const
+areg::String LoggerClient::getConfigLoggerAddress() const
 {
     ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     if (config.isConfigured())
@@ -142,7 +142,7 @@ String LoggerClient::getConfigLoggerAddress() const
     }
     else
     {
-        return String::EmptyString;
+        return areg::String::EmptyString;
     }
 }
 
@@ -159,7 +159,7 @@ uint16_t LoggerClient::getConfigLoggerPort() const
     }
 }
 
-bool LoggerClient::setConfigLoggerConnection(const String& address, uint16_t portNr)
+bool LoggerClient::setConfigLoggerConnection(const areg::String& address, uint16_t portNr)
 {
     bool result{ false };
     ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
@@ -225,7 +225,7 @@ bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= areg::TARG
 
 bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
 {
-    String filePath (dbPath);
+    areg::String filePath (dbPath);
     if (filePath.isEmpty())
     {
         if (isSqliteEngine())
@@ -259,19 +259,19 @@ void LoggerClient::closeLoggingDatabase()
     mLogDatabase.disconnect();
 }
 
-String LoggerClient::getActiveDatabasePath() const
+areg::String LoggerClient::getActiveDatabasePath() const
 {
     return mLogDatabase.getDatabasePath();
 }
 
-String LoggerClient::getInitialDatabasePath() const
+areg::String LoggerClient::getInitialDatabasePath() const
 {
     return mLogDatabase.getInitialDatabasePath();
 }
 
-String LoggerClient::getConfigDatabasePath() const
+areg::String LoggerClient::getConfigDatabasePath() const
 {
-    String result;
+    areg::String result;
     if (isSqliteEngine())
     {
         LogConfiguration config;
@@ -281,14 +281,14 @@ String LoggerClient::getConfigDatabasePath() const
     return result;
 }
 
-bool LoggerClient::setConfigDatabasePath(const String& dbPath, bool enable)
+bool LoggerClient::setConfigDatabasePath(const areg::String& dbPath, bool enable)
 {
     bool result{ false };
     LogConfiguration config;
     if (config.getDatabaseEngine() == areg::LOGDB_ENGINE_NAME)
     {
-        String dbLocation = File::getFileDirectory(dbPath.getString());
-        String dbName = File::getFileNameWithExtension(dbPath.getString());
+        areg::String dbLocation = File::getFileDirectory(dbPath.getString());
+        areg::String dbName = File::getFileNameWithExtension(dbPath.getString());
         config.setDatabaseEnable(enable, false);
         config.setDatabaseLocation(dbLocation, false);
         config.setDatabaseName(dbName, false);
@@ -298,9 +298,9 @@ bool LoggerClient::setConfigDatabasePath(const String& dbPath, bool enable)
     return result;
 }
 
-String LoggerClient::getConfigDatabaseLocation() const
+areg::String LoggerClient::getConfigDatabaseLocation() const
 {
-    String result;
+    areg::String result;
     if (isSqliteEngine())
     {
         LogConfiguration config;
@@ -310,7 +310,7 @@ String LoggerClient::getConfigDatabaseLocation() const
     return result;
 }
 
-bool LoggerClient::setConfigDatabaseLocation(const String& dbLocation)
+bool LoggerClient::setConfigDatabaseLocation(const areg::String& dbLocation)
 {
     bool result{ false };
     if (isSqliteEngine())
@@ -323,9 +323,9 @@ bool LoggerClient::setConfigDatabaseLocation(const String& dbLocation)
     return result;
 }
 
-String LoggerClient::getConfigDatabaseName() const
+areg::String LoggerClient::getConfigDatabaseName() const
 {
-    String result;
+    areg::String result;
     if (isSqliteEngine())
     {
         LogConfiguration config;
@@ -335,7 +335,7 @@ String LoggerClient::getConfigDatabaseName() const
     return result;
 }
 
-bool LoggerClient::setConfigDatabaseName(const String& dbName)
+bool LoggerClient::setConfigDatabaseName(const areg::String& dbName)
 {
     bool result{ false };
     if (isSqliteEngine())
@@ -383,11 +383,11 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
 {
     FuncObserverConfigured callbackConf{ nullptr };
     FuncLogDbConfigured callbackConfDb{ nullptr };
-    String address;
+    areg::String address;
     uint16_t port{0};
-    String dbName;
-    String dbLocation;
-    String dbUser;
+    areg::String dbName;
+    areg::String dbLocation;
+    areg::String dbUser;
 
     config.setLogEnabled(areg::LogTarget::File, true, true);
     config.setLogEnabled(areg::LogTarget::Remote, true, true);
@@ -506,7 +506,7 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
 {
     FuncServiceConnected callbackConnect{ nullptr };
     FuncObserverStarted callbackStart{ nullptr };
-    String address;
+    areg::String address;
     uint16_t port{ areg::InvalidPort };
     bool isStarted{ false };
 
@@ -545,7 +545,7 @@ void LoggerClient::disconnectedRemoteServiceChannel(const Channel& /* channel */
 {
     FuncServiceConnected callbackConnect{ nullptr };
     FuncObserverStarted callbackStart{ nullptr };
-    String address;
+    areg::String address;
     uint16_t port{ areg::InvalidPort };
 
     do

@@ -29,7 +29,7 @@
  ************************************************************************/
 class OutStream;
 class Cursor;
-class String;
+namespace areg { class String; }
 class WideString;
 
 //////////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ public:
      * \param   in_value [in]    The ASCII string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
-    bool setString( const String & in_value );
+    bool setString( const areg::String & in_value );
  
     /**
      * \brief   Writes null-terminated ASCII string value to the writable streaming object

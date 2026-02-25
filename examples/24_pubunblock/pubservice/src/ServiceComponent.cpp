@@ -57,7 +57,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
 
     ASSERT( clientId != HelloUnblock::InvalidId );
 
-    String timestamp( DateTime::getNow( ).formatTime( ) );
+    areg::String timestamp( DateTime::getNow( ).formatTime( ) );
     uint32_t sessionId = unblockCurrentRequest( );
 
     LOG_DBG( "Received request: client [ %u ], sequence Nr [ %u ], unlock session [ %u ]", clientId, seqNr, sessionId );
@@ -84,7 +84,7 @@ void ServiceComponent::processTimer( Timer & /* timer */ )
 
     if ( prepareResponse( entry.id ) )
     {
-        String timestamp( DateTime::getNow( ).formatTime( ) );
+        areg::String timestamp( DateTime::getNow( ).formatTime( ) );
         responseHelloUnblock( entry.clientId, entry.seqNr );
         LOG_DBG( "Succeeded to send response to client [ %u ], sequence [ %u ]", entry.clientId, entry.seqNr );
 

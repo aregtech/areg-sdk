@@ -173,7 +173,7 @@ const WideString & WideString::getEmptyString()
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-WideString::WideString(const String & source)
+WideString::WideString(const areg::String & source)
     : StringBase<wchar_t>( )
 {
     assign(source.getString(), source.getLength());
@@ -189,13 +189,13 @@ WideString::WideString( const InStream & stream )
 // operators / operations
 //////////////////////////////////////////////////////////////////////////
 
-WideString & WideString::operator = (const String & src)
+WideString & WideString::operator = (const areg::String & src)
 {
     assign(src.getString(), src.getLength());
     return (*this);
 }
 
-bool WideString::operator == (const String& other) const
+bool WideString::operator == (const areg::String& other) const
 {
     bool result = false;
     if (getLength() == other.getLength())
@@ -250,7 +250,7 @@ bool WideString::operator != (const std::string& other) const
     return result;
 }
 
-bool WideString::operator != (const String& other) const
+bool WideString::operator != (const areg::String& other) const
 {
     bool result = true;
     if (getLength() == other.getLength())
@@ -261,7 +261,7 @@ bool WideString::operator != (const String& other) const
     return result;
 }
 
-WideString & WideString::operator += (const String & src)
+WideString & WideString::operator += (const areg::String & src)
 {
     append(src.getString(), src.getLength());
     return (*this);

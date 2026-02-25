@@ -31,7 +31,7 @@
  ************************************************************************/
 class InStream;
 class OutStream;
-class String;
+namespace areg { class String; }
 
 //////////////////////////////////////////////////////////////////////////
 // WideString class declaration.
@@ -104,7 +104,7 @@ public:
     inline WideString(const std::wstring& source);
     inline WideString(const std::wstring_view& source);
     inline WideString(std::wstring&& source) noexcept;
-    inline WideString(const String& source);
+    inline WideString(const areg::String& source);
     inline WideString(const std::string& source);
     inline WideString(const char* source);
 
@@ -160,7 +160,7 @@ public:
     inline WideString & operator = (const char src );
     inline WideString & operator = (WideString && src) noexcept;
     inline WideString & operator = (std::wstring && src) noexcept;
-    WideString & operator = ( const String & src );
+    WideString & operator = ( const areg::String & src );
 
     /**
      * \brief   Determines equality of two strings.
@@ -177,7 +177,7 @@ public:
     inline bool operator == (const wchar_t ch) const;
     bool operator == (const char* other) const;
     bool operator == (const std::string& other) const;
-    bool operator == (const String& other) const;
+    bool operator == (const areg::String& other) const;
 
     inline bool operator != (const WideString& other) const;
     inline bool operator != (const std::wstring& other) const;
@@ -186,7 +186,7 @@ public:
     inline bool operator != (const wchar_t ch) const;
     bool operator != (const char* other) const;
     bool operator != (const std::string& other) const;
-    bool operator != (const String& other) const;
+    bool operator != (const areg::String& other) const;
 
     /**
      * \brief   Appends given null-terminated wide-wchar_t string at the end of existing string.
@@ -201,7 +201,7 @@ public:
     inline WideString& operator += (const char* src);
     inline WideString& operator += (const char src);
     inline WideString& operator += (const std::string& src);
-    WideString & operator += ( const String & src );
+    WideString & operator += ( const areg::String & src );
 
 /************************************************************************/
 // Friend global operators to operate WideString

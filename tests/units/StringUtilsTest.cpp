@@ -21,7 +21,7 @@
 
 TEST( StringUtilsTest, TestBufferAutoSetWhenFormat )
 {
-    String str;
+    areg::String str;
     str.format("I want to try some extra [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], , [ %s ], , [ %s ] string"
                 , "extra"
                 , "very extra"

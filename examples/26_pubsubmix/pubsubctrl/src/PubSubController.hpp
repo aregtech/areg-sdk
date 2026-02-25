@@ -98,7 +98,7 @@ protected:
 private:
 
     //! Outputs message on console
-    inline void printMessage(const String & message, OptionFlag cmd);
+    inline void printMessage(const areg::String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
     inline PubSubController & self();

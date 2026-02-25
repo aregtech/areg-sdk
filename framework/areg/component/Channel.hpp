@@ -184,13 +184,13 @@ public:
     /**
      * \brief   Converts channel data to string
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief   Creates channel data from string
      * \param   channel     Null-terminated string, which contains channel data.
      **/
-    const Channel & convFromString( const String & channel );
+    const Channel & convFromString( const areg::String & channel );
 
 
 //////////////////////////////////////////////////////////////////////////

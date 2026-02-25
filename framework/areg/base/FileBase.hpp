@@ -28,7 +28,6 @@
 
 #include <string_view>
 
-class String;
 class WideString;
 class ByteBuffer;
 
@@ -237,7 +236,7 @@ public:
      * \param   ascii   The ASCII string to write.
      * \return  The instance of file.
      **/
-    friend inline FileBase & operator << (FileBase & stream, const String & ascii );
+    friend inline FileBase & operator << (FileBase & stream, const areg::String & ascii );
 
     /**
      * \brief   Inputs wide-char string to the file.
@@ -265,7 +264,7 @@ public:
      * \param   stream  The instance of file data contains the data.
      * \param   ascii   On output, this contains the ASCII string data.
      **/
-    friend inline const FileBase & operator >> ( const FileBase & stream, String & ascii );
+    friend inline const FileBase & operator >> ( const FileBase & stream, areg::String & ascii );
 
     /**
      * \brief   Writes files data as wide-char string. The file outputs string until reaches end of file,
@@ -294,7 +293,7 @@ public:
      *          or normalized full path. Can be empty string for buffered file.
      * \return  Returns the given name of file.
      **/
-    inline const String & getName() const;
+    inline const areg::String & getName() const;
 
     /**
      * \brief   Returns the file open mode (bits)
@@ -581,7 +580,7 @@ public:
      * \param[out]  buffer  The string containing data
      * \return	Returns number of characters, which could read.
      **/
-    int32_t readString(String & buffer) const;
+    int32_t readString(areg::String & buffer) const;
     int32_t readString(WideString & buffer) const;
 
     /**
@@ -605,7 +604,7 @@ public:
      * \param[out]  buffer  On output, this contains a string of a line.
      * \return	Returns number of characters, which could read.
      **/
-    int32_t readLine(String & buffer) const;
+    int32_t readLine(areg::String & buffer) const;
     int32_t readLine(WideString & buffer) const;
 
     /**
@@ -618,7 +617,7 @@ public:
      **/
     bool writeString(const char* buffer);
     bool writeString(const wchar_t* buffer);
-    bool writeString(const String& buffer);
+    bool writeString(const areg::String& buffer);
     bool writeString(const WideString& buffer);
 
     /**
@@ -632,7 +631,7 @@ public:
      **/
     bool writeLine(const char* inValue);
     bool writeLine(const wchar_t* inValue);
-    bool writeLine(const String& buffer);
+    bool writeLine(const areg::String& buffer);
     bool writeLine(const WideString& buffer);
 
     /**
@@ -669,7 +668,7 @@ public:
      **/
     uint32_t searchText( uint32_t startPos, const char * text, bool caseSensitive ) const;
     uint32_t searchText( uint32_t startPos, const wchar_t * text, bool caseSensitive ) const;
-    uint32_t searchText( uint32_t startPos, const String & text, bool caseSensitive ) const;
+    uint32_t searchText( uint32_t startPos, const areg::String & text, bool caseSensitive ) const;
     uint32_t searchText( uint32_t startPos, const WideString & text, bool caseSensitive ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -712,7 +711,7 @@ public:
      * \return	Returns true if file was opened with success.
      * \see     close()
      **/
-    virtual bool open(const String& fileName, uint32_t mode) = 0;
+    virtual bool open(const areg::String& fileName, uint32_t mode) = 0;
 
     /**
      * \brief   Call to close file object.
@@ -804,7 +803,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t read( String & ascii ) const override;
+    uint32_t read( areg::String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -832,7 +831,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const String & ascii ) override;
+    uint32_t write( const areg::String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -870,7 +869,7 @@ protected:
      * \brief   Normalizes the name, replace special masks such as time-stamp or process name in the give name.
      * \param[in,out]   name    On output, contains normalized name of file.
      **/
-    static void normalizeName( String & name );
+    static void normalizeName( areg::String & name );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -880,7 +879,7 @@ protected:
     /**
      * \brief   Absolute or relative file path
      **/
-    String          mFileName;
+    areg::String          mFileName;
 
     /**
      * \brief   File open mode
@@ -930,7 +929,7 @@ inline const FileBase & FileBase::self() const
     return (*this);
 }
 
-inline const String & FileBase::getName() const
+inline const areg::String & FileBase::getName() const
 {
     return mFileName;
 }
@@ -1123,7 +1122,7 @@ inline FileBase & operator << ( FileBase & stream, const char * ascii )
     return stream;
 }
 
-inline FileBase & operator << ( FileBase & stream, const String & ascii )
+inline FileBase & operator << ( FileBase & stream, const areg::String & ascii )
 {
     stream.write( ascii );
     return stream;
@@ -1141,7 +1140,7 @@ inline FileBase & operator << ( FileBase & stream, const WideString & wide )
     return stream;
 }
 
-inline const FileBase & operator >> ( const FileBase & stream, String & ascii )
+inline const FileBase & operator >> ( const FileBase & stream, areg::String & ascii )
 {
     stream.read(ascii);
     return stream;

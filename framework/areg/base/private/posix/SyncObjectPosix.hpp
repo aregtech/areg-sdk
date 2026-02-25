@@ -90,7 +90,7 @@ public:
     /**
      * \brief   Returns synchronization object name.
      **/
-    inline const String & getName() const;
+    inline const areg::String & getName() const;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
@@ -120,7 +120,7 @@ protected:
     /**
      * \brief   The name of synchronization object.
      **/
-    String  mSyncName;
+    areg::String  mSyncName;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -139,7 +139,7 @@ inline areg::os::SyncKind SyncObjectPosix::getSyncType() const
     return mSyncType;
 }
 
-inline const String & SyncObjectPosix::getName() const
+inline const areg::String & SyncObjectPosix::getName() const
 {
     return mSyncName;
 }

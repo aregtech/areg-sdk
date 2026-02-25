@@ -71,12 +71,12 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
     LOG_SCOPE(chatter_ui_PageConnections_OnServiceNetwork);
 #if AREG_LOGS
     uint32_t cookie = mConnectionHandler.GetCookie();
-    const String& nickName = mConnectionHandler.GetNickName();
+    const areg::String& nickName = mConnectionHandler.GetNickName();
     LOG_DBG("Handling network service: is [ %s ], owning thread [ %s ], connection handler [ %s ] (cookie = %s, nick name = %s), connection handler [ %s ], the connection SI [ %s ] ..."
                 , isConnected ? "CONNECTED" : "DISCONNECTED"
                 , ownerThread != nullptr ? "VALID" : "NULL"
                 , mConnectionHandler.IsValid() ? "VALID" : "INVALID"
-                , cookie != ConnectionManager::InvalidCookie ? String::makeString(cookie).getString() : "Invalid cookie"
+                , cookie != ConnectionManager::InvalidCookie ? areg::String::makeString(cookie).getString() : "Invalid cookie"
                 , nickName.getString()
                 , mConnectionHandler.GetRegistered() ? "REGISTERED" : "NOT REGISTERED"
                 , mClientConnections != nullptr ? mClientConnections->getServiceName().getString() : "NULL");
@@ -145,7 +145,7 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
     if ( isRegistered )
     {
         ASSERT(mClientConnections != nullptr);
-        const String & nickname   = mConnectionHandler.GetNickName();
+        const areg::String & nickname   = mConnectionHandler.GetNickName();
         const uint32_t cookie       = mConnectionHandler.GetCookie();
 
         LOG_DBG("The client with nickName [ %s ] and cookie [ %u ] is registered with success, the existing service name is [ %s ]."
@@ -236,7 +236,7 @@ void PageConnections::OnDestroy( )
     CPropertyPage::OnDestroy( );
 }
 
-const String & PageConnections::GetRegisteredName() const
+const areg::String & PageConnections::GetRegisteredName() const
 {
     return mConnectionHandler.GetNickName( );
 }
@@ -396,13 +396,13 @@ inline void PageConnections::unloadModel()
     mDirectConnectService.clear( );
 }
 
-inline bool PageConnections::loadModel( const String & nickName, const uint32_t cookie )
+inline bool PageConnections::loadModel( const areg::String & nickName, const uint32_t cookie )
 {
     LOG_SCOPE( chatter_ui_PageConnections_LoadModel );
 
     bool result = false;
 
-    String serviceName = DirectConnectionService::GetGeneratedService(nickName, cookie);
+    areg::String serviceName = DirectConnectionService::GetGeneratedService(nickName, cookie);
     if ( (mDirectConnectService.isEmpty() == true) || (mDirectConnectService != serviceName) )
     {
         unloadModel( );

@@ -164,7 +164,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
         {
-            String   ipAddress;
+            areg::String   ipAddress;
             uint16_t portNr = 0;
             stream >> ipAddress;
             stream >> portNr;
@@ -255,7 +255,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
         {
-            String threadName;
+            areg::String threadName;
             stream >> threadName;
             if ( _terminateComponentThread( threadName ) )
             {
@@ -266,7 +266,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
         {
-            String threadName;
+            areg::String threadName;
             stream >> threadName;
             _startComponentThread( threadName );
         }
@@ -463,7 +463,7 @@ void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddres
     }
 }
 
-bool ServiceManagerEventProcessor::_terminateComponentThread( const String & threadName )
+bool ServiceManagerEventProcessor::_terminateComponentThread( const areg::String & threadName )
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
 
@@ -485,7 +485,7 @@ bool ServiceManagerEventProcessor::_terminateComponentThread( const String & thr
     return result;
 }
 
-void ServiceManagerEventProcessor::_startComponentThread( const String & threadName )
+void ServiceManagerEventProcessor::_startComponentThread( const areg::String & threadName )
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 

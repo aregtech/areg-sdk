@@ -57,8 +57,8 @@ public:
      * \brief   Parses and initializes Key.
      * \param   key     The Key as a string to parse.
      **/
-    explicit PropertyKey( const String & key );
-    explicit PropertyKey( String && key );
+    explicit PropertyKey( const areg::String & key );
+    explicit PropertyKey( areg::String && key );
 
     /**
      * \brief   Copies data from given source
@@ -74,7 +74,7 @@ public:
      * \param   property    The property part of the property key.
      * \param   position    The position part of the property key.
      **/
-    PropertyKey( const String & section, const String & module, const String & property, const String & position);
+    PropertyKey( const areg::String & section, const areg::String & module, const areg::String & property, const areg::String & position);
     PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position);
 
     /**
@@ -85,7 +85,7 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    PropertyKey(const String& section, const String& module, const String& property, const String& position, areg::ConfigEntry keyType);
+    PropertyKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position, areg::ConfigEntry keyType);
     PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, areg::ConfigEntry keyType);
 
     /**
@@ -114,8 +114,8 @@ public:
      * \brief   Copies property Key from given source as a string
      * \param   source  The source as string to parse and copy data.
      **/
-    PropertyKey & operator = ( const String & source );
-    PropertyKey & operator = ( String && source );
+    PropertyKey & operator = ( const areg::String & source );
+    PropertyKey & operator = ( areg::String && source );
 
     /**
      * \brief   Checks equality of two Key objects.
@@ -150,7 +150,7 @@ public:
      * \param   position    The position part of the property key.
      **/
     void setValues( const char * section, const char * property, const char * module = nullptr, const char * position = nullptr);
-    void setValues( const String & section, const String & property, const String & module, const String & position);
+    void setValues( const areg::String & section, const areg::String & property, const areg::String & module, const areg::String & position);
 
     /**
      * \brief   Sets Key data, which consists of section, property, module and position sections.
@@ -161,27 +161,27 @@ public:
      * \param   position    The position part of the property key.
      * \param   keyType     The type of the property key.
      **/
-    void setValues(const String& section, const String& property, const String& module, const String& position, areg::ConfigEntry keyType);
+    void setValues(const areg::String& section, const areg::String& property, const areg::String& module, const areg::String& position, areg::ConfigEntry keyType);
 
     /**
      * \brief   Returns section part of the Key
      **/
-    const String & getSection() const;
+    const areg::String & getSection() const;
 
     /**
      * \brief   Returns property part of the Key
      **/
-    const String & getProperty() const;
+    const areg::String & getProperty() const;
 
     /**
      * \brief   Returns module part of the Key
      **/
-    const String & getModule() const;
+    const areg::String & getModule() const;
 
     /**
      * \brief   Returns position part of the Key
      **/
-    const String & getPosition() const;
+    const areg::String & getPosition() const;
 
     /**
      * \brief   Returns the type of the property key.
@@ -231,8 +231,8 @@ public:
      * \param   key     The string, which contains data for Key.
      * \return  Returns true if parsing succeeded and could extract property data.
      **/
-    bool parseKey( const String & key );
-    bool parseKey( String && key );
+    bool parseKey( const areg::String & key );
+    bool parseKey( areg::String && key );
 
     /**
      * \brief   Resets and invalidates Key
@@ -243,7 +243,7 @@ public:
      * \brief   Converts Key data to the string.
      *          If Key consists of several parts, each part is concatenated by key-separator symbol.
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief   Checks the exact match of the key by section and module names.
@@ -252,7 +252,7 @@ public:
      * \return  Returns true if the section and the module name of the key have exact match.
      *          Otherwise, returns false.
      **/
-    bool isExactModule(const String& section, const String& module) const;
+    bool isExactModule(const areg::String& section, const areg::String& module) const;
 
     /**
      * \brief   Checks the exact match of the key by all parameters.
@@ -261,7 +261,7 @@ public:
      * \param   property    The property part of the property key.
      * \param   position    The position part of the property key.
      **/
-    bool isExactProperty(const String& section, const String& module, const String& property, const String& position) const;
+    bool isExactProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const;
 
     /**
      * \brief   Checks if the section of the key is applicable to the specified module.
@@ -270,7 +270,7 @@ public:
      * \return  Returns true if the section has exact match, and the module is either global or has exact match.
      *          Otherwise, returns false.
      **/
-    bool isModuleSection(const String& section, const String& module) const;
+    bool isModuleSection(const areg::String& section, const areg::String& module) const;
 
     /**
      * \brief   Checks if the section of the key is applicable to the specified module.
@@ -287,7 +287,7 @@ public:
      *              3. "areg_*"
      *              4. "*"
      **/
-    bool isModuleProperty(const String& section, const String& module, const String& property, const String& position) const;
+    bool isModuleProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -295,7 +295,7 @@ public:
 private:
 
     //! Parses the passed key value and sets property key data.
-    inline void _parseKey(const String & key);
+    inline void _parseKey(const areg::String & key);
 
     /**
      * \return  Returns true if the 'right' position is compatible with the 'left'. 
@@ -310,7 +310,7 @@ private:
      * \param   right   The string value of the right position to compare.
      * \return  Returns true if specified positions are compatible.
      **/
-    inline static bool _isCompatible(const String& left, const String& right);
+    inline static bool _isCompatible(const areg::String& left, const areg::String& right);
 
     /**
      * \brief   Finds the key type that could match the property values.
@@ -320,7 +320,7 @@ private:
      * \param   position    The position part of the property key.
      * \return  Returns the key type, wich syntax matches the specified data.
      **/
-    inline static areg::ConfigEntry _findKey(const String& section, const String& module, const String& property, const String& position);
+    inline static areg::ConfigEntry _findKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -329,19 +329,19 @@ private:
     /**
      * \brief   Section part of the key, which is at position 1
      **/
-    String  mSection;      // pos 1
+    areg::String  mSection;      // pos 1
     /**
      * \brief   Module part of the key, which is at position 3
      **/
-    String  mModule;       // pos 2
+    areg::String  mModule;       // pos 2
     /**
      * \brief   Property part of the key, which is at position 2
      **/
-    String  mProperty;     // pos 3
+    areg::String  mProperty;     // pos 3
     /**
      * \brief   Position part of the key, which is at position 4
      **/
-    String  mPosition;     // pos 4
+    areg::String  mPosition;     // pos 4
 
     areg::ConfigEntry mKeyType;
 };

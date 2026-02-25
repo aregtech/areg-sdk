@@ -87,7 +87,7 @@ namespace
         {
             if (areg::isNumeric<char>(dirEntry->d_name[0]))
             {
-                String name;
+                areg::String name;
                 name.format(fmt, dirEntry->d_name);
                 FILE* file = fopen(name.getBuffer(), "r");
                 if (file != nullptr)
@@ -167,14 +167,14 @@ bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t
 {
     ASSERT(areg::isEmpty<wchar_t>(serviceName) == false);
     ASSERT(areg::isEmpty<wchar_t>(serviceExecutable) == false);
-    String serviceExe(serviceExecutable);
+    areg::String serviceExe(serviceExecutable);
     int32_t pid = _getProcIdByName(serviceExe);
     bool result{ pid > 0 };
     if (pid < 0)
     {
         constexpr std::string_view fmt { "systemctl start %s" };
         char cmd[512];
-        String::formatString(cmd, 512, fmt.data(), serviceName);
+        areg::String::formatString(cmd, 512, fmt.data(), serviceName);
         result = std::system(cmd);
     }
 

@@ -65,13 +65,13 @@
  *
  * \return	If succeeded, returns the full path to file (including file name). Otherwise returned string is empty.
  **/
-static String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
+static areg::String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
 {
-    String result;
+    areg::String result;
     if ( areg::isEmpty<char>(fileName) == false )
     {
         fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
-        String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
+        areg::String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
         char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
         uint32_t length = ::SearchPathA(searchPath, fileName, fileExtension, File::MAXIMUM_PATH, buffer, &fileName);
         result = length != 0 && length <= File::MAXIMUM_PATH ? buffer : "";

@@ -42,7 +42,7 @@ public:
      * \param   service     The name of the service to read configuration properties.
      * \param   connectType The name of the connection type to read configuration properties.
      **/
-    ConnectionConfiguration( const String & service, const String & connectType );
+    ConnectionConfiguration( const areg::String & service, const areg::String & connectType );
 
     /**
      * \brief   Initializes connection configuration object to use properties based
@@ -65,12 +65,12 @@ public:
     /**
      * \brief   Returns the optional name of the remote service.
      **/
-    inline const String& getRemoteServiceName() const;
+    inline const areg::String& getRemoteServiceName() const;
 
     /**
      * \brief   Returns the name of the connection type of the remote service.
      **/
-    inline const String& getConnectionType() const;
+    inline const areg::String& getConnectionType() const;
 
     /**
      * \brief   Returns true if the application already configured by reading configuration file or by default configuration.
@@ -100,19 +100,19 @@ public:
     /**
      * \brief   Returns the connection address of the remote service and type.
      **/
-    String getConnectionAddress() const;
+    areg::String getConnectionAddress() const;
 
     /**
      * \brief   Sets the connection address of the remote service and type.
      **/
-    void setConnectionAddress(const String& address);
+    void setConnectionAddress(const areg::String& address);
 
     /**
      * \brief   Sets the connection address and port number of the remote service and type.
      * \param   address     The connection address.
      * \param   portNr      The connection port number.
      **/
-    void setConnectionData(const String& address, uint16_t portNr);
+    void setConnectionData(const areg::String& address, uint16_t portNr);
 
     /**
      * \brief   Returns byte sets of connection host IP address of given connection section.
@@ -127,10 +127,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     //! The name of the remote connection service name to look in configuration.
-    const String    mServiceName;
+    const areg::String    mServiceName;
 
     //! The name of the connection type to look in configuration.
-    const String    mConnectType;
+    const areg::String    mConnectType;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -144,12 +144,12 @@ private:
 // ConnectionConfiguration inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& ConnectionConfiguration::getRemoteServiceName() const
+inline const areg::String& ConnectionConfiguration::getRemoteServiceName() const
 {
     return mServiceName;
 }
 
-inline const String& ConnectionConfiguration::getConnectionType() const
+inline const areg::String& ConnectionConfiguration::getConnectionType() const
 {
     return mConnectType;
 }

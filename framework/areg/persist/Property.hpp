@@ -55,7 +55,7 @@ public:
      * \param   strProperty     The string to parse. It should contain key and value.
      *                          Otherwise, the property remains invalid.
      **/
-    Property(const String strProperty);
+    Property(const areg::String strProperty);
 
     /**
      * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
@@ -65,12 +65,12 @@ public:
      * \param   comment     The comment to add to the property.
      * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
      **/
-    Property(const PropertyKey& key, const PropertyValue& value, const String & comment = String::EmptyString, bool isTemporary = false);
+    Property(const PropertyKey& key, const PropertyValue& value, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Moves objects during initialization.
      **/
-    Property(PropertyKey && key, PropertyValue && value, String && comment);
+    Property(PropertyKey && key, PropertyValue && value, areg::String && comment);
     Property(PropertyKey&& key, PropertyValue&& value);
 
     /**
@@ -79,7 +79,7 @@ public:
      * \param   valueSet    The Value as a string to parse.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const String & keySet, const String & valueSet, const String & comment = String::EmptyString, bool isTemporary = false);
+    Property( const areg::String & keySet, const areg::String & valueSet, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
@@ -90,7 +90,7 @@ public:
      * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
      **/
     Property(const char* keySet, const char* valueSet, const char* comment = nullptr, bool isTemporary = false);
-    Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment = String::EmptyString, bool isTemporary = false);
+    Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment = areg::String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Initializes the property, sets all data and the optional flag to indicate whether the
@@ -108,7 +108,7 @@ public:
             , const std::string_view& property
             , const std::string_view& position
             , const std::string_view& value
-            , const std::string_view& comment = String::EmptyString
+            , const std::string_view& comment = areg::String::EmptyString
             , bool isTemporary = false);
 
     /**
@@ -116,7 +116,7 @@ public:
      * \param   newProperty The property as a key and value pair to set.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const Property::Entry & newProperty, const String & comment = String::EmptyString, bool isTemporary = false);
+    Property( const Property::Entry & newProperty, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Copies data from given source
@@ -179,7 +179,7 @@ public:
      *          separated by key-separator symbol
      * \param   keySet  The key as a string to set and parse.
      **/
-    void parseKey( const String & keySet );
+    void parseKey( const areg::String & keySet );
 
     /**
      * \brief   Sets the key of property.
@@ -208,13 +208,13 @@ public:
      *          If Key consists of several sections, they are concatenated 
      *          and separated by key-separators symbol
      **/
-    String getKeyString() const;
+    areg::String getKeyString() const;
 
     /**
      * \brief   Sets and parses the value of property.
      * \param   valueSet    The value as a string to set and parse.
      **/
-    void parseValue( const String & valueSet );
+    void parseValue( const areg::String & valueSet );
 
     /**
      * \brief   Sets Value of the property.
@@ -236,22 +236,22 @@ public:
      * \brief   Returns Value of Property as a string.
      *          If Value consists of several perts, all parts are concatenated by value-separator symbol.
      **/
-    String getValueString() const;
+    areg::String getValueString() const;
 
     /**
      * \brief   Sets property comment, which is optional.
      **/
-    void setComment( const String & comment );
+    void setComment( const areg::String & comment );
 
     /**
      * \brief   Adds comment to the property
      **/
-    void addComment( const String & comment );
+    void addComment( const areg::String & comment );
 
     /**
      * \brief   Returns comment of the property
      **/
-    const String & getComment() const;
+    const areg::String & getComment() const;
 
     /**
      * \brief   Sets the Key-Value pair of the property.
@@ -282,12 +282,12 @@ public:
      * \param   strProperties   The string, which contains data to set for Key and Value.
      * \return  Returns true if parsing succeeded and could extract property data.
      **/
-    bool parseProperty( const String & strProperties );
+    bool parseProperty( const areg::String & strProperties );
 
     /**
      * \brief   Converts Key-Value pair data to the string.
      **/
-    String convToString() const;
+    areg::String convToString() const;
 
     /**
      * \brief   Resets and invalidates Property
@@ -302,7 +302,7 @@ public:
      * \return  Returns true if the property is global or the module of the property key is equal
      *          to the specified module. Otherwise, returns false.
      **/
-    bool isModuleProperty(const String& module) const;
+    bool isModuleProperty(const areg::String& module) const;
 
     /**
      * \brief   Sets or resets the temporary flag of the property.
@@ -329,7 +329,7 @@ protected:
     /**
      * \brief   Comment of Property
      **/
-    String              mComment;
+    areg::String              mComment;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)

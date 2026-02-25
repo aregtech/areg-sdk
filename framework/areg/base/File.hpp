@@ -134,7 +134,7 @@ public:
      * \param	mode	    file open mode. 
      *                      For modes, see description in FileBase class 
      **/
-    explicit File(const String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)));
+    explicit File(const areg::String& fileName, uint32_t mode = (static_cast<uint32_t>(OpenMode::Write) | static_cast<uint32_t>(OpenMode::Binary)));
 
     /**
      * \brief   Destructor
@@ -181,7 +181,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    bool open(const String& fileName, uint32_t mode) override;
+    bool open(const areg::String& fileName, uint32_t mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -270,7 +270,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t read( String & ascii ) const override;
+    uint32_t read( areg::String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -307,7 +307,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const String & ascii ) override;
+    uint32_t write( const areg::String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -367,34 +367,34 @@ public:
      * \brief	Returns the absolute path to file / folder.
      * \param	filePath	Absolute or relative file / folder name.
      **/
-    static String getFileFullPath(const char * filePath = nullptr);
+    static areg::String getFileFullPath(const char * filePath = nullptr);
 
     /**
      * \brief   Returns the full path of directory part of file path, including backslash
      * \param   filePath    Absolute or relative file path
      **/
-    static String getFileDirectory(const char * filePath);
+    static areg::String getFileDirectory(const char * filePath);
 
     /**
      * \brief	Returns file name with extension of the given file path.
      *          If path is a folder, the file name is empty.
      * \param	filePath	Absolute or relative file path
      **/
-    static String getFileNameWithExtension(const char * filePath);
+    static areg::String getFileNameWithExtension(const char * filePath);
 
     /**
      * \brief   Returns only file extension of the given file path.
      *          If path is a folder, the file name is empty.
      * \param   filePath    Absolute or relative file path
      **/
-    static String getFileExtension(const char * filePath);
+    static areg::String getFileExtension(const char * filePath);
 
     /**
      * \brief   Returns only file name without extension of the given file path.
      *          If path is a folder, the file name is empty.
      * \param   filePath    Absolute or relative file path
      **/
-    static String getFileName(const char * filePath);
+    static areg::String getFileName(const char * filePath);
 
     /**
      * \brief	Delete given file. Returns true if succeeds.
@@ -436,16 +436,16 @@ public:
      *                          File path in current folder will have relative path
      * \return	Absolute or relative path to temp file.
      **/
-    static String genTempFileName(const char * prefix, bool unique, bool inTempFolder);
+    static areg::String genTempFileName(const char * prefix, bool unique, bool inTempFolder);
     /**
      * \brief   Generate unique temp file name in temporary folder with prefix TEMP_FILE_PREFIX ("_cz")
      **/
-    static String genTempFileName();
+    static areg::String genTempFileName();
 
     /**
      * \brief	Returns absolute path of current directory
      **/
-    static String getCurrentDir();
+    static areg::String getCurrentDir();
 
     /**
      * \brief	Sets current directory. Returns true if succeeds.
@@ -468,7 +468,7 @@ public:
     /**
      * \brief	Returns full path of system defined temporary folder
      **/
-    static String getTempDir();
+    static areg::String getTempDir();
 
     /**
      * \brief	Checks whether the given path is an existing directory or not.
@@ -498,7 +498,7 @@ public:
      * \param   fileName    The file path and name to normalize.
      * \return  Returns generated unique and normalized file name.
      **/
-    static String normalizePath( const char * fileName );
+    static areg::String normalizePath( const char * fileName );
 
     /**
      * \brief	Create Directories cascaded (nested) and returns true if succeeded or directories were already existing
@@ -516,7 +516,7 @@ public:
     /**
      * \brief   Returns folder location of current executable.
      **/
-    static const String & getExecutableDir();
+    static const areg::String & getExecutableDir();
 
     /**
      * \brief   Returns special folder path. The type of required folder is defined in
@@ -525,14 +525,14 @@ public:
      * \return  If function succeeds, the return value is full path of special folder.
      *          Otherwise, it returns empty string.
      **/
-    static String getSpecialDir(const File::SpecialFolder specialFolder);
+    static areg::String getSpecialDir(const File::SpecialFolder specialFolder);
 
     /**
      * \brief   Returns the parent directory of given path, which can be either file or directory.
      * \param   filePath    Path of file or directory to get the parent directory.
      * \return  If succeeded, the return string contains full path to parent directory.
      **/
-    static String getParentDir( const char * filePath );
+    static areg::String getParentDir( const char * filePath );
 
     /**
      * \brief   Finds the parent directory name in the given file path. On output, if parameter 'nextPos' is not nullptr, 
@@ -592,7 +592,7 @@ public:
      * \param   fileName    The file name located in the given directory. The file name may contain a mask.
      * \return  Returns full path of the file `fileName` located in the directory `dirName`.
      */
-    static String makeFileFullPath(const char* dirName, const char* fileName);
+    static areg::String makeFileFullPath(const char* dirName, const char* fileName);
 
 private:
 

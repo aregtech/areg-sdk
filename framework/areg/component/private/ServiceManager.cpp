@@ -178,7 +178,7 @@ bool ServiceManager::_routingServiceStart( uint32_t connectTypes )
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceStart( const String & ipAddress, uint16_t portNr )
+bool ServiceManager::_routingServiceStart( const areg::String & ipAddress, uint16_t portNr )
 {
     bool result = false;
     if ( (ipAddress.isEmpty() == false) && (portNr != areg::InvalidPort) )
@@ -214,7 +214,7 @@ bool ServiceManager::_isRoutingServiceConfigured()
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostSetup( );
 }
 
-void ServiceManager::_requestCreateThread(const String& componentThread)
+void ServiceManager::_requestCreateThread(const areg::String& componentThread)
 {
     ServiceManager& serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::createComponentThread(componentThread)

@@ -407,7 +407,7 @@ public:
      *                      models, which are not loaded yet.
      * \return  Returns true if model is loaded with success.
      **/
-    static bool loadComponentModel( const String & modelName );
+    static bool loadComponentModel( const areg::String & modelName );
 
     /**
      * \brief   Call to shutdown and destroy instantiated objects of mode, and make cleanups.
@@ -420,14 +420,14 @@ public:
      * \param   modelName       The name of model to unload. If empty, it will unloaded
      *                          all previously loaded models.
      **/
-    static void unloadComponentModel( bool waitComplete, const String & modelName );
+    static void unloadComponentModel( bool waitComplete, const areg::String & modelName );
 
     /**
      * \brief   The calling thread is blocked until Component Loader did not
      *          complete the jobs and exit threads. This should be called if previously
      *          it was requested to stop the Watchdog Manager without waiting for completion.
      **/
-    static void waitModelUnload(const String & modelName);
+    static void waitModelUnload(const areg::String & modelName);
 
     /**
      * \brief   This call unloads components of specified mode and remove model
@@ -435,7 +435,7 @@ public:
      * \param   modelName   The name of model to unload and remove. If nullptr, it will unloaded
      *                      all previously loaded models and all models will be removed.
      **/
-    static void removeComponentModel( const String & modelName );
+    static void removeComponentModel( const areg::String & modelName );
 
     /**
      * \brief   Adds new model to the model list. The name of the new model, names of threads and
@@ -453,7 +453,7 @@ public:
      * \return  Returns instance of the model. If found, the model is valid. Otherwise, it is invalid model.
      *          Check the validity of the model by calling isValid() method.
      **/
-    static const areg::Model & findModel( const String & modelName );
+    static const areg::Model & findModel( const areg::String & modelName );
 
     /**
      * \brief   In the model list searches thread entry and returns the list of
@@ -464,7 +464,7 @@ public:
      * \return  If the thread name is valid, it returns list of registered components.
      *          Otherwise, returns invalid list.
      **/
-    static const areg::ComponentList & findComponentList( const String & threadName );
+    static const areg::ComponentList & findComponentList( const areg::String & threadName );
 
     /**
      * \brief   Returns registered component entry object of
@@ -472,35 +472,35 @@ public:
      * \param   roleName    The role name of registered component to lookup
      * \param   threadName  The name of registered thread.
      **/
-    static const areg::ComponentEntry & findComponentEntry(const String & roleName, const String & threadName);
+    static const areg::ComponentEntry & findComponentEntry(const areg::String & roleName, const areg::String & threadName);
 
     /**
      * \brief   Returns registered component entry object having specified role name.
      *          The component is searched in the complete Model list.
      * \param   roleName    The role name of registered component to lookup
      **/
-    static const areg::ComponentEntry & findComponentEntry(const String & roleName);
+    static const areg::ComponentEntry & findComponentEntry(const areg::String & roleName);
 
     /**
      * \brief   Returns registered component thread entry object having specified thread name.
      *          The component thread entry is searched in the complete Model list.
      * \param   threadName  The name of the component thread name to search.
      **/
-    static const areg::ComponentThreadEntry & findThreadEntry( const String & threadName );
+    static const areg::ComponentThreadEntry & findThreadEntry( const areg::String & threadName );
 
     /**
      * \brief   Returns true, if Model with specified name is already registered and loaded.
      * \param   modelName   The name of model to check. The name must be unique.
      * \return  Returns true, if Model with specified name is already loaded.
      **/
-    static bool isModelLoaded( const String & modelName );
+    static bool isModelLoaded( const areg::String & modelName );
 
     /**
      * \brief   Returns true, if the model with specified name is already registered.
      * \param   modelName   The unique name of model to search in registered list.
      * \return  Returns true, if the Model with specified name is already exist in the list.
      **/
-    static bool existModel( const String & modelName );
+    static bool existModel( const areg::String & modelName );
 
     /**
      * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -509,14 +509,14 @@ public:
      * \param   compData    The data to set in component which is passed to create method.
      * \note    You should manually free memory if the data was manually allocated in the memory
      **/
-    static bool setComponentData( const String & roleName, std::any compData );
+    static bool setComponentData( const areg::String & roleName, std::any compData );
 
     /**
      * \brief   Searches in the list the component by given name. If found, resets component data.
      *          Returns true if found component and the data was successfully reset.
      * \param   roleName    The name of component to search in the list.
      **/
-    static bool resetComponentData(const String& roleName);
+    static bool resetComponentData(const areg::String& roleName);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructors / Destructor
@@ -554,7 +554,7 @@ protected:
      *                      which are not loaded yet.
      * \return  Returns number of models that was loaded.
      **/
-    int32_t loadModel( const String & modelName);
+    int32_t loadModel( const areg::String & modelName);
 
     /**
      * \brief   Loads specified Model. It will start all registered in Model threads,
@@ -576,7 +576,7 @@ protected:
      *                          returns.
      * \param   modelName       The name of model to unload. If empty string, it will unload all models
      **/
-    void unloadModel( bool waitComplete, const String & modelName );
+    void unloadModel( bool waitComplete, const areg::String & modelName );
 
     /**
      * \brief   Unloads specified Model, deletes components and stops threads.
@@ -597,7 +597,7 @@ protected:
      * \param   modelName       The name of the model to wait. If empty, it waits for completion
      *                          of all model components.
      **/
-    void waitModelThreads(const String & modelName);
+    void waitModelThreads(const areg::String & modelName);
 
     /**
      * \brief   Call to wait the component threads defined in the model to complete the job
@@ -612,7 +612,7 @@ protected:
      * \param   modelName   The name of model to search. All models should be unique within one process context.
      * \return  If found model, returns valid pointer. Otherwise, returns null.
      **/
-    const areg::Model * findModelByName( const String & modelName ) const;
+    const areg::Model * findModelByName( const areg::String & modelName ) const;
 
     /**
      * \brief   Searches in registries thread entry by name. The threads should have unique names within process context.
@@ -620,7 +620,7 @@ protected:
      * \param   threadName  The name of thread to search in system.
      * \return  Returns valid pointer if found thread entry registered with specified name. Otherwise, returns null.
      **/
-    const areg::ComponentThreadEntry * findThreadEntryByName( const String & threadName ) const;
+    const areg::ComponentThreadEntry * findThreadEntryByName( const areg::String & threadName ) const;
 
     /**
      * \brief   Searches in registries component entry by role name. The role names should have unique within process context.
@@ -628,7 +628,7 @@ protected:
      * \param   roleName    The role name of component to search in system.
      * \return  Returns valid pointer if found component entry registered with specified role name. Otherwise, returns null.
      **/
-    const areg::ComponentEntry * findComponentEntryByName( const String & roleName ) const;
+    const areg::ComponentEntry * findComponentEntryByName( const areg::String & roleName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -698,7 +698,7 @@ private:
     /**
      * \brief   The name of default model
      **/
-    String        mDefaultModel;
+    areg::String        mDefaultModel;
 
     /**
      * \brief   Synchronization object

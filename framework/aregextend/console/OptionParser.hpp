@@ -230,7 +230,7 @@ public:
     };
 
     using FixedStrList  = std::vector<std::string_view>;//!< Fixed list of strings
-    using StrList       = std::vector<String>;          //!< List of strings
+    using StrList       = std::vector<areg::String>;          //!< List of strings
 
     /**
      * \brief   The entry to setup options for validation.
@@ -451,7 +451,7 @@ public:
     /**
      * \brief   Returns the input string, which was parsed.
      **/
-    inline const String & getInput() const;
+    inline const areg::String & getInput() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -466,7 +466,7 @@ private:
      *                      Otherwise, it should contain only the option string.
      * \param   refSetup    The index of option validation entries that had matching.
      **/
-    OptionParser::InputOption _setupInput( bool isShort, String cmdLine, uint32_t refSetup );
+    OptionParser::InputOption _setupInput( bool isShort, areg::String cmdLine, uint32_t refSetup );
 
     /**
      * \brief   Called to set value in the option. Depending on the flags and the validation range
@@ -475,7 +475,7 @@ private:
      * \param   opt         The option to set the value.
      * \param   refSetup    The index in the option validation setup to look for validation.
      **/
-    void _setInputValue( String & newValue, InputOption & opt, uint32_t refSetup );
+    void _setInputValue( areg::String & newValue, InputOption & opt, uint32_t refSetup );
 
     /**
      * \brief   Sets the integer value in the option. If needed, checks the validation in the range.
@@ -490,7 +490,7 @@ private:
     /**
      * \brief   Sets the string value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( const String & newValue, InputOption & opt, const OptionSetup & valid );
+    void _setValue( const areg::String & newValue, InputOption & opt, const OptionSetup & valid );
 
     /**
      * \brief   Checks the matching of the option. The option should not be
@@ -502,7 +502,7 @@ private:
      * \param   optCmd  The command of option to match.
      * \return  Returns true if `input` started with `optCmd`.
      **/
-    bool _matchOption( const String & input, const String & optCmd ) const;
+    bool _matchOption( const areg::String & input, const areg::String & optCmd ) const;
 
     /**
      * \brief   Cleans the string from the quotes ('\"').
@@ -510,14 +510,14 @@ private:
      *          Otherwise, the function returns false and 'data' should be considered
      *          as a wrong input.
      **/
-    bool _cleanQuote( String & data ) const;
+    bool _cleanQuote( areg::String & data ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The accumulative command line as a string separated by space.
-    String          mCmdLine;
+    areg::String          mCmdLine;
     //!< The list of option validation setup
     OptionSetupList mSetupOptions;
     //!< The list of parsed options
@@ -569,7 +569,7 @@ inline const OptionParser::InputOptionList & OptionParser::getOptions() const
     return mInputOptions;
 }
 
-inline const String & OptionParser::getInput() const
+inline const areg::String & OptionParser::getInput() const
 {
     return mCmdLine;
 }

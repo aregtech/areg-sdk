@@ -29,7 +29,7 @@ private:
 	DECLARE_DYNAMIC(PageChat)
 
 public:
-	PageChat( const String & serviceName
+	PageChat( const areg::String & serviceName
               , const DirectConnection::sInitiator & initiator
               , const DirectConnection::ListParticipants & listParties
               , const DirectConnection::Participant & ownerConnection
@@ -72,7 +72,7 @@ public:
 
 private:
     void setHeaders();
-    void setTabTitle( const String & title );
+    void setTabTitle( const areg::String & title );
     void outputMessage(CString nickName, CString message, CString dateStart, CString dateEnd, uint32_t cookie, bool removeType = true);
     void outputTyping(CString nickName, CString message, uint32_t cookie );
     void removeTyping(const CString & nickName, uint32_t cookie);
@@ -110,7 +110,7 @@ private:
     // The timer ID
     UINT_PTR            mTimerId;
     // The name of dynamically created model.
-    String              mModelName;
+    areg::String              mModelName;
 
 private:
     AREG_NOCOPY_NOMOVE(PageChat);

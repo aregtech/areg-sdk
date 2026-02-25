@@ -68,7 +68,7 @@ public:
      * \param   msgPrio     The priority of message to log.
      * \param   message     The text message to log.
      **/
-    inline LogMessage(areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const String & message );
+    inline LogMessage(areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const areg::String & message );
 
     /**
      * \brief   Initializes message log structure, sets the logging type value,
@@ -223,7 +223,7 @@ inline LogMessage::LogMessage( areg::LogMessageType msgType )
 {
 }
 
-inline LogMessage::LogMessage( areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const String & message )
+inline LogMessage::LogMessage( areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const areg::String & message )
     : areg::LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
 {
 }
@@ -316,7 +316,7 @@ inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/)
 {
 }
 
-inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const String& /*message*/)
+inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const areg::String& /*message*/)
     : areg::LogEntry()
 {
 }

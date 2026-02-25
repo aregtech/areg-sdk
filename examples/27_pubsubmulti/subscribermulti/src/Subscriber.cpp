@@ -64,12 +64,12 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    String publisherState = state == areg::DataState::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
+    areg::String publisherState = state == areg::DataState::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
     Console & console = Console::getInstance();    
-    String stateConnect = pubsub::TxtConnected;
+    areg::String stateConnect = pubsub::TxtConnected;
     if (PubSubClientBase::isConnected() == false)
     {
         ASSERT(PubSubClientBase::getProxy() != nullptr);

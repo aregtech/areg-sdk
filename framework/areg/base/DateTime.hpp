@@ -226,7 +226,7 @@ public:
      * \param[out]  result      On output this contains formated string of DateTime.
      * \param[in]   formatName  The formating to convert DateTime.
      **/
-    static void formatTime(const DateTime &dateTime, String& result, const std::string_view& formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT);
+    static void formatTime(const DateTime &dateTime, areg::String& result, const std::string_view& formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT);
 
 /************************************************************************/
 // Non-static operations
@@ -236,7 +236,7 @@ public:
      * \brief   Formats time and outputs as a string. The caller should specify the
      *          the time format name for output
      **/
-    String formatTime( const std::string_view & formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const;
+    areg::String formatTime( const std::string_view & formatName = areg::DEFAULT_TIME_FORMAT_OUTPUT) const;
 
     /**
      * \brief   Returns the time data.

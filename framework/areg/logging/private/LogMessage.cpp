@@ -36,7 +36,7 @@ LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 
 void LogMessage::setMessage(const char * message, int32_t msgLen )
 {
     uint32_t len = areg::memCopy(this->logMessage, areg::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
-    this->logMessage[len] = String::EmptyChar;
+    this->logMessage[len] = areg::String::EmptyChar;
 }
 
 #else   // AREG_LOGS

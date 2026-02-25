@@ -85,7 +85,7 @@ bool FileBuffer::open()
     return mIsOpened;
 }
 
-bool FileBuffer::open(const String& fileName, uint32_t mode)
+bool FileBuffer::open(const areg::String& fileName, uint32_t mode)
 {
     bool result = false;
     if (isOpened() == false)
@@ -152,7 +152,7 @@ bool FileBuffer::remove()
 {
     mSharedBuffer.invalidate();
 
-    mFileName   = String::getEmptyString();
+    mFileName   = areg::String::getEmptyString();
     mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
     mIsOpened   = false;
 
@@ -223,7 +223,7 @@ uint32_t FileBuffer::read(ByteBuffer & buffer) const
     return FileBase::read(buffer);
 }
 
-uint32_t FileBuffer::read(String & ascii) const
+uint32_t FileBuffer::read(areg::String & ascii) const
 {
     return FileBase::read(ascii);
 }
@@ -238,7 +238,7 @@ uint32_t FileBuffer::write(const ByteBuffer & buffer)
     return FileBase::write(buffer);
 }
 
-uint32_t FileBuffer::write(const String & ascii)
+uint32_t FileBuffer::write(const areg::String & ascii)
 {
     return FileBase::write(ascii);
 }

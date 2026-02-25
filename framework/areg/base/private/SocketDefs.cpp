@@ -113,7 +113,7 @@ areg::SocketAddress::SocketAddress()
 {
 }
 
-areg::SocketAddress::SocketAddress(const String& address, uint16_t portNr)
+areg::SocketAddress::SocketAddress(const areg::String& address, uint16_t portNr)
     : mIpAddr   ( )
     , mHostName ( )
     , mPortNr   ( portNr )
@@ -224,7 +224,7 @@ bool areg::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
     return result;
 }
 
-bool areg::SocketAddress::isEqualAddress(const String& host, uint16_t port) const
+bool areg::SocketAddress::isEqualAddress(const areg::String& host, uint16_t port) const
 {
     return  (port == mPortNr) &&
             (areg::isIpAddress(host) ? mIpAddr == host : mHostName == host);
@@ -238,11 +238,11 @@ bool areg::SocketAddress::resolveAddress( const std::string_view & hostName, uin
     mIpAddr.clear();
     mHostName.clear();
 
-    if (areg::isIpAddress(String(host)) == false)
+    if (areg::isIpAddress(areg::String(host)) == false)
     {
         // acquire address info
         char svcName[0x0F];
-        String::formatString(svcName, 0x0F, "%u", portNr);
+        areg::String::formatString(svcName, 0x0F, "%u", portNr);
 
         struct addrinfo hints;
         areg::memZero(&hints, sizeof(addrinfo));
@@ -302,7 +302,7 @@ areg::UserData::UserData()
 {
 }
 
-areg::UserData::UserData(const String& user, const String& password)
+areg::UserData::UserData(const areg::String& user, const areg::String& password)
     : mUser     ( user )
     , mPassword ( password )
 {
@@ -344,22 +344,22 @@ bool areg::UserData::operator!=(const areg::UserData& other)
     return (mUser != other.mUser) || (mPassword != other.mPassword);
 }
 
-const String& areg::UserData::getUser() const
+const areg::String& areg::UserData::getUser() const
 {
     return mUser;
 }
 
-void areg::UserData::setUser(const String& user)
+void areg::UserData::setUser(const areg::String& user)
 {
     mUser = user;
 }
 
-const String& areg::UserData::getPassword() const
+const areg::String& areg::UserData::getPassword() const
 {
     return mPassword;
 }
 
-void areg::UserData::setPassword(const String& password)
+void areg::UserData::setPassword(const areg::String& password)
 {
     mPassword = password;
 }
@@ -793,9 +793,9 @@ AREG_API_IMPL bool areg::disableReceive(SOCKETHANDLE hSocket)
     return ( isSocketHandleValid(hSocket) && (areg::RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
-AREG_API_IMPL const String & areg::getHostname()
+AREG_API_IMPL const areg::String & areg::getHostname()
 {
-    static String result;
+    static areg::String result;
 
     if ( result.isEmpty( ) )
     {
@@ -811,7 +811,7 @@ AREG_API_IMPL const String & areg::getHostname()
     return result;
 }
 
-AREG_API_IMPL bool areg::isIpAddress(const String& ipaddress)
+AREG_API_IMPL bool areg::isIpAddress(const areg::String& ipaddress)
 {
 #if 1   // use without exception
 
@@ -875,9 +875,9 @@ AREG_API_IMPL bool areg::isIpAddress(const String& ipaddress)
 #endif
 }
 
-AREG_API_IMPL String areg::convertHostNameToIpAddress(const String& hostName)
+AREG_API_IMPL areg::String areg::convertHostNameToIpAddress(const areg::String& hostName)
 {
-    String ipAddress(hostName);
+    areg::String ipAddress(hostName);
 
     addrinfo hints{}, * result = nullptr;
     hints.ai_family = AF_INET; // IPv4 only
@@ -899,9 +899,9 @@ AREG_API_IMPL String areg::convertHostNameToIpAddress(const String& hostName)
     return ipAddress;
 }
 
-AREG_API_IMPL String areg::convertIpAddressToHostName(const String& ipAddress)
+AREG_API_IMPL areg::String areg::convertIpAddressToHostName(const areg::String& ipAddress)
 {
-    String hostName(ipAddress);
+    areg::String hostName(ipAddress);
 
     sockaddr_in sa{};
     sa.sin_family = AF_INET;
@@ -917,9 +917,9 @@ AREG_API_IMPL String areg::convertIpAddressToHostName(const String& ipAddress)
     return hostName;
 }
 
-AREG_API_IMPL String areg::extractIpAddress(const sockaddr_in& addrHost)
+AREG_API_IMPL areg::String areg::extractIpAddress(const sockaddr_in& addrHost)
 {
-    String result;
+    areg::String result;
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
 
     char ipAddr[64] { };

@@ -33,7 +33,7 @@ namespace
     constexpr char const _modelName[]       { "ServiceModel" };
 
     //!< Generates the name of second Publisher that is using same interface.
-    String SecondRole(areg::generateName(pubsub::PublisherSecond));
+    areg::String SecondRole(areg::generateName(pubsub::PublisherSecond));
 }
 
 //////////////////////////////////////////////////////////////////////////

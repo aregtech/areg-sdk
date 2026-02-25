@@ -75,7 +75,7 @@ public:
      * \param   className   The name of Runtime Class ID
      **/
     explicit RuntimeClassID( const char * className );
-    explicit RuntimeClassID( const String& className );
+    explicit RuntimeClassID( const areg::String& className );
 
     /**
      * \brief   Copy constructor.
@@ -109,7 +109,7 @@ public:
      * \return  Returns true if string is equal to Runtime Class ID.
      **/
     friend inline bool operator == ( const char * lhs, const RuntimeClassID & rhs );
-    friend inline bool operator == ( const String& lhs, const RuntimeClassID & rhs );
+    friend inline bool operator == ( const areg::String& lhs, const RuntimeClassID & rhs );
 
     /**
      * \brief   Compare null-terminated string with Runtime Class ID name.
@@ -118,7 +118,7 @@ public:
      * \return  Returns true if string is not equal to Runtime Class ID.
      **/
     friend inline bool operator != ( const char * lhs, const RuntimeClassID & rhs );
-    friend inline bool operator != ( const String& lhs, const RuntimeClassID & rhs );
+    friend inline bool operator != ( const areg::String& lhs, const RuntimeClassID & rhs );
 
     /**
      * \brief   Compares number with Runtime Class ID calculated number.
@@ -160,7 +160,7 @@ public:
      * \return  Returns Runtime Class ID object.
      **/
     inline RuntimeClassID & operator = ( const char * src );
-    inline RuntimeClassID & operator = ( const String& src );
+    inline RuntimeClassID & operator = ( const areg::String& src );
 
     /**
      * \brief   Comparing operator. Compares 2 Runtime Class ID objects.
@@ -174,7 +174,7 @@ public:
      * \return  Returns true if Runtime Class ID value is equal to null-terminated string.
      **/
     inline bool operator == ( const char * other ) const;
-    inline bool operator == ( const String& other ) const;
+    inline bool operator == ( const areg::String& other ) const;
     /**
      * \brief   Comparing operator. Compares 2 Runtime Class ID objects.
      * \param   other   The Runtime Class ID object to compare
@@ -187,7 +187,7 @@ public:
      * \return  Returns true if Runtime Class ID value is not equal to given null-terminated string.
      **/
     inline bool operator != (const char * other) const;
-    inline bool operator != (const String& other) const;
+    inline bool operator != (const areg::String& other) const;
 
     /**
      * \brief   Operator to convert the value or Runtime Class ID to unsigned integer value.
@@ -206,13 +206,13 @@ public:
     /**
      * \brief   Returns the name of Runtime Class ID.
      **/
-    inline const String& getName() const;
+    inline const areg::String& getName() const;
 
     /**
      * \brief   Sets the name of Runtime Class ID.
      **/
     void setName( const char* className );
-    void setName( const String& className );
+    void setName( const areg::String& className );
 
     /**
      * \brief   Returns calculated number of runtime class.
@@ -236,7 +236,7 @@ private:
     /**
      * \brief   Runtime Class ID value.
      **/
-    String          mClassName;
+    areg::String          mClassName;
     /**
      * \brief   The calculated number of runtime class.
      **/
@@ -293,7 +293,7 @@ inline RuntimeClassID & RuntimeClassID::operator = ( const char * src )
     return (*this);
 }
 
-inline RuntimeClassID & RuntimeClassID::operator = ( const String & src )
+inline RuntimeClassID & RuntimeClassID::operator = ( const areg::String & src )
 {
     setName(src);
     return (*this);
@@ -309,7 +309,7 @@ inline bool RuntimeClassID::operator == ( const char * other ) const
     return mClassName == other;
 }
 
-inline bool RuntimeClassID::operator == (const String& other) const
+inline bool RuntimeClassID::operator == (const areg::String& other) const
 {
     return mClassName == other;
 }
@@ -324,7 +324,7 @@ inline bool RuntimeClassID::operator != ( const char* other ) const
     return mClassName != other;
 }
 
-inline bool RuntimeClassID::operator != (const String & other) const
+inline bool RuntimeClassID::operator != (const areg::String & other) const
 {
     return mClassName != other;
 }
@@ -339,7 +339,7 @@ inline bool RuntimeClassID::isValid() const
     return (mMagicNum != areg::CHECKSUM_IGNORE);
 }
 
-inline const String & RuntimeClassID::getName() const
+inline const areg::String & RuntimeClassID::getName() const
 {
     return mClassName;
 }
@@ -354,7 +354,7 @@ inline bool operator == ( const char * lhs, const RuntimeClassID & rhs )
     return rhs.mClassName   == lhs;
 }
 
-inline bool operator == ( const String & lhs, const RuntimeClassID & rhs )
+inline bool operator == ( const areg::String & lhs, const RuntimeClassID & rhs )
 {
     return rhs.mClassName   == lhs;
 }
@@ -364,7 +364,7 @@ inline bool operator != ( const char* lhs, const RuntimeClassID & rhs )
     return rhs.mClassName != lhs;
 }
 
-inline bool operator != ( const String & lhs, const RuntimeClassID & rhs )
+inline bool operator != ( const areg::String & lhs, const RuntimeClassID & rhs )
 {
     return rhs.mClassName != lhs;
 }

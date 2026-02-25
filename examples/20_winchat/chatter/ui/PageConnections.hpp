@@ -6,7 +6,6 @@
 #include "examples/20_winchat/services/DirectConnection.hpp"
 #include "examples/20_winchat/services/ConnectionManager.hpp"
 
-class String;
 class Component;
 class ConnectionList;
 class DispatcherThread;
@@ -42,7 +41,7 @@ public:
 
 public:
 
-    const String & GetRegisteredName() const;
+    const areg::String & GetRegisteredName() const;
 
     uint32_t GetRegisteredCookie() const;
 
@@ -74,7 +73,7 @@ private:
 
     inline void unloadModel();
 
-    inline bool loadModel( const String & nickName, const uint32_t cookie );
+    inline bool loadModel( const areg::String & nickName, const uint32_t cookie );
 
 private:
     // List of connections
@@ -82,9 +81,9 @@ private:
     // Connection list service client
     ConnectionList *    mClientConnections;
     // The name of direct connection model, which contains service
-    String              mDirectConnectModel;
+    areg::String              mDirectConnectModel;
     // The name of generated direct connection service
-    String              mDirectConnectService;
+    areg::String              mDirectConnectService;
     // The instance of connection handler object
     ConnectionHandler & mConnectionHandler;
     BOOL                mChatEnable;

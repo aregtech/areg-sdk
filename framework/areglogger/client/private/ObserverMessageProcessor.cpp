@@ -49,29 +49,29 @@ void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgR
     switch (connection)
     {
     case areg::ServiceConnectionState::Connected:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Log observer connected to log collector service.");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Log observer connected to log collector service.");
         break;
     case areg::ServiceConnectionState::Pending:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The connection to the log collector service is pending.");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The connection to the log collector service is pending.");
         break;
     case areg::ServiceConnectionState::ConnectionLost:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The connection to the log collector service is lost.");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The connection to the log collector service is lost.");
         break;
     case areg::ServiceConnectionState::Disconnected:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Log observer disconnected from log collector service.");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Log observer disconnected from log collector service.");
         break;
     case areg::ServiceConnectionState::Failed:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Failed to connect to the log collector service.");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Failed to connect to the log collector service.");
         break;
     case areg::ServiceConnectionState::Rejected:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The connection to the log collector service is rejected.");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The connection to the log collector service is rejected.");
         break;
     case areg::ServiceConnectionState::Shutdown:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The log collector service is shutting down.");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "The log collector service is shutting down.");
         break;
     case areg::ServiceConnectionState::Unknown:
     default:
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Undefined log collector service connection event...");
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Undefined log collector service connection event...");
         break;
     }
 
@@ -132,7 +132,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
 
         areg::LogEntry log;
         _initLocalLogMessage(log, areg::COOKIE_LOGGER, now);
-        log.logMessageLen = String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
+        log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
         RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
         notifyLogMessage(msgLog);
 
@@ -301,7 +301,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
 
                     areg::LogEntry log;
                     _initLocalLogMessage(log, areg::COOKIE_LOGGER, now);
-                    log.logMessageLen = String::formatString( log.logMessage
+                    log.logMessageLen = areg::String::formatString( log.logMessage
                                                             , areg::LOG_MESSAGE_IZE
                                                             , "Log observer have got %u-bit %s (%lu) client connection event, ready to receive logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
@@ -329,7 +329,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
 
                     areg::LogEntry log;
                     _initLocalLogMessage(log, areg::COOKIE_LOGGER, now);
-                    log.logMessageLen = String::formatString( log.logMessage
+                    log.logMessageLen = areg::String::formatString( log.logMessage
                                                             , areg::LOG_MESSAGE_IZE
                                                             , "Log observer have got %u-bit %s (%lu) client connection event, starts receiving logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
@@ -439,7 +439,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
 inline void ObserverMessageProcessor::_initLocalLogMessage(areg::LogEntry& log, ITEM_ID cookie, TIME64 timestamp /*= 0*/) const
 {
     Process& process = Process::getInstance();
-    String instance  = process.getName();
+    areg::String instance  = process.getName();
     DateTime now     = DateTime::getNow();
 
     log.logDataType     = areg::LogDataType::Local;
@@ -456,9 +456,9 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(areg::LogEntry& log, 
     log.logScopeId      = areg::LOG_SCOPE_ID_NONE;
     log.logSessionId    = 0u;
     log.logMessageLen   = 0u;
-    log.logMessage[0]   = String::EmptyChar;
+    log.logMessage[0]   = areg::String::EmptyChar;
     log.logThreadLen    = 0u;
-    log.logThread[0]    = String::EmptyChar;
+    log.logThread[0]    = areg::String::EmptyChar;
     log.logModuleLen    = 0u;
-    log.logModule[0]    = String::EmptyChar;
+    log.logModule[0]    = areg::String::EmptyChar;
 }

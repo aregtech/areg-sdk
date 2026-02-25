@@ -173,7 +173,7 @@ bool File::_osOpenFile()
                 mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
             }
 
-            String dirName(File::getFileDirectory(mFileName));
+            areg::String dirName(File::getFileDirectory(mFileName));
             if ( (flag & O_CREAT) != 0 )
             {
                 if (std::filesystem::exists(mFileName.getData(), err))
@@ -339,7 +339,7 @@ uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const cha
         char temp[128];
         sprintf(temp, fmtFdName, fno);
         int count = readlink(temp, buffer, File::MAXIMUM_PATH);
-        buffer[count > 0 ? count : 0] = String::EmptyChar;
+        buffer[count > 0 ? count : 0] = areg::String::EmptyChar;
         ::close(fno);
     }
 

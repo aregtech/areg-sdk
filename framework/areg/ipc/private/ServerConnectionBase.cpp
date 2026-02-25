@@ -27,7 +27,7 @@ ServerConnectionBase::ServerConnectionBase()
 {
 }
 
-ServerConnectionBase::ServerConnectionBase(const String & hostName, uint16_t portNr)
+ServerConnectionBase::ServerConnectionBase(const areg::String & hostName, uint16_t portNr)
     : mServerSocket         ( hostName, portNr )
     , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
@@ -49,7 +49,7 @@ ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAdd
 {
 }
 
-bool ServerConnectionBase::createSocket(const String & hostName, uint16_t portNr)
+bool ServerConnectionBase::createSocket(const areg::String & hostName, uint16_t portNr)
 {
     Lock lock(mLock);
     return mServerSocket.createSocket(hostName, portNr);

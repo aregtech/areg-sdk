@@ -357,7 +357,7 @@ protected:
     /**
      * \brief   The relative or full path to the configuration file. By default, areg::DEFAULT_CONFIG_FILE
      **/
-    String                                  mFileConfig;
+    areg::String                                  mFileConfig;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

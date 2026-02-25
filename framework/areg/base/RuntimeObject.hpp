@@ -74,7 +74,7 @@ public:                                                                         
     /** \brief   Returns the Runtime Class Identifier object        **/                                 \
     virtual const RuntimeClassID & getRuntimeClassId() const override;                                  \
     /** \brief   Returns the class name (Identifier name)           **/                                 \
-    virtual const String& getRuntimeClassName() const override;                                         \
+    virtual const areg::String& getRuntimeClassName() const override;                                         \
     /** \brief   Returns the calculated number of runtime class.    **/                                 \
     virtual uint32_t getRuntimeClassNumber() const override;                                        \
     /** \brief   Checks class instance by Class Identifier.         **/                                 \
@@ -82,7 +82,7 @@ public:                                                                         
     virtual bool isInstanceOfRuntimeClass(const RuntimeClassID & classId) const override;               \
     /** \brief   Checks class instance by given name.               **/                                 \
     virtual bool isInstanceOfRuntimeClass(const char * className) const override;                       \
-    virtual bool isInstanceOfRuntimeClass(const String & className) const override;                     \
+    virtual bool isInstanceOfRuntimeClass(const areg::String & className) const override;                     \
     /** \brief   Checks class instance by magic number.             **/                                 \
     virtual bool isInstanceOfRuntimeClass( uint32_t classMagic ) const override;                    \
 
@@ -101,7 +101,7 @@ const RuntimeClassID & ClassName::_getClassId()                                 
 {   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
 const RuntimeClassID & ClassName::getRuntimeClassId() const                                                     \
 {   return ClassName::_getClassId();                                                                        }   \
-const String& ClassName::getRuntimeClassName() const                                                            \
+const areg::String& ClassName::getRuntimeClassName() const                                                            \
 {   return ClassName::_getClassId().getName();                                                              }   \
 uint32_t ClassName::getRuntimeClassNumber() const                                                           \
 {   return ClassName::_getClassId().getMagic();                                                             }   \
@@ -110,7 +110,7 @@ bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const
 {   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
 bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                                        \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
-bool ClassName::isInstanceOfRuntimeClass( const String & className ) const                                      \
+bool ClassName::isInstanceOfRuntimeClass( const areg::String & className ) const                                      \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
 bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const                                       \
 {   return ((classMagic == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(classMagic));   }
@@ -135,7 +135,7 @@ Template const RuntimeClassID & ClassName::_getClassId()                        
 Template const RuntimeClassID& ClassName::getRuntimeClassId() const                                             \
 {   return ClassName::_getClassId();                                                                        }   \
 /** Return class name **/                                                                                       \
-Template const String & ClassName::getRuntimeClassName() const                                                  \
+Template const areg::String & ClassName::getRuntimeClassName() const                                                  \
 {   return ClassName::_getClassId().getName();                                                              }   \
 /** Return class number **/                                                                                     \
 Template uint32_t ClassName::getRuntimeClassNumber() const                                                  \
@@ -146,7 +146,7 @@ Template bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classI
 /** Check class instance by name**/                                                                             \
 Template bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                               \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
-Template bool ClassName::isInstanceOfRuntimeClass( const String & className ) const                             \
+Template bool ClassName::isInstanceOfRuntimeClass( const areg::String & className ) const                             \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
 /** Check class instance by number **/                                                                          \
 Template bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const                              \
@@ -348,7 +348,7 @@ public:
      *          class name. Otherwise return nullptr.
      **/
     inline const RuntimeObject* runtimeCast(const char * className) const;
-    inline const RuntimeObject* runtimeCast(const String & className) const;
+    inline const RuntimeObject* runtimeCast(const areg::String & className) const;
 
     /**
      * \brief	Makes casting of pointer of object during runtime 
@@ -388,7 +388,7 @@ public:
      *          class name. Otherwise return nullptr.
      **/
     friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const char* className);
-    friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className);
+    friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const areg::String & className);
 
     /**
      * \brief	Makes casting of constant pointer of object during runtime
@@ -423,7 +423,7 @@ inline const RuntimeObject* RuntimeObject::runtimeCast( const char* className ) 
     return (isInstanceOfRuntimeClass( className ) ? this : nullptr);
 }
 
-inline const RuntimeObject* RuntimeObject::runtimeCast(const String & className) const
+inline const RuntimeObject* RuntimeObject::runtimeCast(const areg::String & className) const
 {
     return (isInstanceOfRuntimeClass(className) ? this : nullptr);
 }
@@ -443,7 +443,7 @@ inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const char * 
     return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
 }
 
-inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className)
+inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const areg::String & className)
 {
     return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
 }

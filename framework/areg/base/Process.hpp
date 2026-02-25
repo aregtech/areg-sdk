@@ -102,30 +102,30 @@ public:
      * \brief   Return application name of current process.
      *          The name does not contain files extension.
      **/
-    inline const String & getAppName() const;
+    inline const areg::String & getAppName() const;
     /**
      * \brief   Returns the name of current process. 
      *          The name may contain file extension as well.
      **/
-    inline const String & getName() const;
+    inline const areg::String & getName() const;
 
     /**
      * \brief   Returns the extension of current process.
      **/
-    inline const String & getExtension() const;
+    inline const areg::String & getExtension() const;
 
     /**
      * \brief   Returns the path of current process.
      *          The path does not contain path-separation
      *          character '\\' at the end.
      **/
-    inline const String & getPath() const;
+    inline const areg::String & getPath() const;
 
     /**
      * \brief   Returns the full path of current process,
      *          including file name and file extension.
      **/
-    inline const String & getFullPath() const;
+    inline const areg::String & getFullPath() const;
 
     /**
      * \brief   Return the ID of current process.
@@ -147,7 +147,7 @@ public:
      *                  (e.g. elevated privileges in Linux).
      * \param   var   The environment variable to return value.
      **/
-    String getSafeEnvVariable( const char * var ) const;
+    areg::String getSafeEnvVariable( const char * var ) const;
 
 private:
 
@@ -166,7 +166,7 @@ private:
      * \brief   Returns the value of environment variable or empty strig.
      * \param   var     The environment variable to return value.
      **/
-    String _osGetEnvVariable( const char * var ) const;
+    areg::String _osGetEnvVariable( const char * var ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -187,23 +187,23 @@ private:
     /**
      * \brief   The name of application without extension.
      **/
-    String          mAppName;
+    areg::String          mAppName;
     /**
      * \brief   The name of process file
      **/
-    String          mProcessName;
+    areg::String          mProcessName;
     /**
      * \brief   The extension of process file
      **/
-    String          mProcessExt;
+    areg::String          mProcessExt;
     /**
      * \brief   The path of process
      **/
-    String          mProcessPath;
+    areg::String          mProcessPath;
     /**
      * \brief   The full path of process, including name and extension
      **/
-    String          mProcessFullPath;
+    areg::String          mProcessFullPath;
     /**
      * \brief	Flag, indicating whether process object is initialized or not.
      **/
@@ -220,27 +220,27 @@ private:
 // Process class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & Process::getAppName() const
+inline const areg::String & Process::getAppName() const
 {
     return mAppName;
 }
 
-inline const String & Process::getName() const
+inline const areg::String & Process::getName() const
 {
     return mProcessName;
 }
 
-inline const String & Process::getExtension() const
+inline const areg::String & Process::getExtension() const
 {
     return mProcessExt;
 }
 
-inline const String & Process::getPath() const
+inline const areg::String & Process::getPath() const
 {
     return mProcessPath;
 }
 
-inline const String & Process::getFullPath() const
+inline const areg::String & Process::getFullPath() const
 {
     return mProcessFullPath;
 }

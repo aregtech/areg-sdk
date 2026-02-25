@@ -91,7 +91,7 @@ public:
                                 , ConnectionConsumer& connectionConsumer
                                 , RemoteMessageHandler & messageHandler
                                 , DispatcherThread & messageDispatcher
-                                , const String & prefixName);
+                                , const areg::String & prefixName);
     /**
      * \brief   Destructor
      **/
@@ -195,7 +195,7 @@ protected:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    void applyServiceConnectionData( const String & hostName, uint16_t portNr ) override;
+    void applyServiceConnectionData( const areg::String & hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.

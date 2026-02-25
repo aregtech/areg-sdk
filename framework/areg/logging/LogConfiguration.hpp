@@ -101,20 +101,20 @@ public:
     /**
      * \brief   Gets and sets property value of layout format of scope enter.
      **/
-    String getLayoutEnter() const;
-    void setLayoutEnter( const String & prop );
+    areg::String getLayoutEnter() const;
+    void setLayoutEnter( const areg::String & prop );
 
     /**
      * \brief   Gets and sets property value of layout format form message text output.
      **/
-    String getLayoutMessage() const;
-    void setLayoutMessage( const String & prop );
+    areg::String getLayoutMessage() const;
+    void setLayoutMessage( const areg::String & prop );
 
     /**
      * \brief   Gets and sets property value of layout format of scope exit.
      **/
-    String getLayoutExit() const;
-    void setLayoutExit( const String & prop );
+    areg::String getLayoutExit() const;
+    void setLayoutExit( const areg::String & prop );
 
     /**
      * \brief   Gets and sets property value of stack size.
@@ -137,8 +137,8 @@ public:
     /**
      * \brief   Gets and sets property value of file logging setting.
      **/
-    String getLogFile() const;
-    void setLogFile( const String & prop );
+    areg::String getLogFile() const;
+    void setLogFile( const areg::String & prop );
 
     /**
      * \brief   Gets and sets property value of remote logging enable setting.
@@ -149,8 +149,8 @@ public:
     /**
      * \brief   Gets and sets property value of remote host name logging setting.
      **/
-    String getRemoteTcpAddress() const;
-    void setRemoteTcpAddress( const String & prop, bool isTemporary = false);
+    areg::String getRemoteTcpAddress() const;
+    void setRemoteTcpAddress( const areg::String & prop, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets property value of remote host port logging setting.
@@ -173,48 +173,48 @@ public:
     /**
      * \brief   Gets and sets the name of database engine such as `sqlite`.
      **/
-    String getDatabaseEngine() const;
-    void setDatabaseEngine(const String & dbEngine, bool isTemporary = false);
+    areg::String getDatabaseEngine() const;
+    void setDatabaseEngine(const areg::String & dbEngine, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the full path of the database file.
      *          When gets, it adds database file name to the location.
      *          Wehn sets, it splits file path to 2 parts: database name and database location.
      **/
-    String getDatabaseFullPath() const;
-    void setDatabaseFullPath(const String & dbFullPath, bool isTemporary = false);
+    areg::String getDatabaseFullPath() const;
+    void setDatabaseFullPath(const areg::String & dbFullPath, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database name like "SQLite" or "MySQL", etc.
      **/
-    String getDatabaseName() const;
-    void setDatabaseName(const String & dbName, bool isTemporary = false);
+    areg::String getDatabaseName() const;
+    void setDatabaseName(const areg::String & dbName, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database location. The location can be full or relative file path, or an URI.
      **/
-    String getDatabaseLocation() const;
-    void setDatabaseLocation(const String& dbLocation, bool isTemporary = false);
+    areg::String getDatabaseLocation() const;
+    void setDatabaseLocation(const areg::String& dbLocation, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database driver, if needed.
      **/
-    String getDatabaseDriver() const;
-    void setDatabaseDriver(const String& dbDriver, bool isTemporary = false);
+    areg::String getDatabaseDriver() const;
+    void setDatabaseDriver(const areg::String& dbDriver, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database service address that contains IP-address and port number.
      **/
     areg::SocketAddress getDatabaseAddress() const;
     void setDatabaseAddress(const areg::SocketAddress& dbAddress, bool isTemporary = false);
-    void setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
+    void setDatabaseAddress(const areg::String& dbAddress, uint16_t dbPort, bool isTemporary = false);
 
     /**
      * \brief   Gets and sets the database user name and user password.
      **/
     areg::UserData getDatabaseUser() const;
     void setDatabaseUser(const areg::UserData& dbUser, bool isTemporary = false);
-    void setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
+    void setDatabaseUser(const areg::String& dbUserName, const areg::String& dbUserPassword, bool isTemporary = false);
 
     /**
      * \brief   Saves the configuration in the current config file.

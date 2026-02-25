@@ -29,7 +29,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class String;
+namespace areg { class String; }
 class InStream;
 class OutStream;
 
@@ -483,7 +483,7 @@ namespace areg
      * \param   itemName        The name of component item.
      * \return  Returns created new string containing componentName and itemName separated by COMPONENT_ITEM_SEPARATOR.
      **/
-    AREG_API String createComponentItemName(const String & componentName, const String & itemName);
+    AREG_API areg::String createComponentItemName(const areg::String & componentName, const areg::String & itemName);
 
     /**
      * \brief   This function generates and returns name 
@@ -501,7 +501,7 @@ namespace areg
      *                  a prefix for name.
      * \return  Returns system generated unique name.
      **/
-    AREG_API String generateName( const char * prefix );
+    AREG_API areg::String generateName( const char * prefix );
 
     /**
      * \brief   This function generates and returns name 

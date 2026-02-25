@@ -29,8 +29,8 @@ namespace
 {
     constexpr char const _modelName[]   { "PubSub" };                  //!< The name of model
     constexpr std::string_view  _title  { "PubSub mix features, secondary application..."};
-    const String SecondRole(areg::generateName(pubsub::PublisherSecond));
-    const String ThirddRole(areg::generateName(pubsub::PublisherThird));
+    const areg::String SecondRole(areg::generateName(pubsub::PublisherSecond));
+    const areg::String ThirddRole(areg::generateName(pubsub::PublisherThird));
 }
 
 //////////////////////////////////////////////////////////////////////////

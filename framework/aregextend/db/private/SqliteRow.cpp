@@ -89,9 +89,9 @@ double SqliteRow::getDouble(int32_t column) const
     return sqlite3_column_double(_sqlite_stmt(mStatement), column);
 }
 
-String SqliteRow::getText(int32_t column) const
+areg::String SqliteRow::getText(int32_t column) const
 {
-    return String(reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), column)));
+    return areg::String(reinterpret_cast<const char*>(sqlite3_column_text(_sqlite_stmt(mStatement), column)));
 }
 
 bool SqliteRow::isNull(int32_t column) const
@@ -142,15 +142,15 @@ int32_t SqliteRow::getColumnCount() const
     return sqlite3_column_count(_sqlite_stmt(mStatement));
 }
 
-String SqliteRow::getColumnName(int32_t column) const
+areg::String SqliteRow::getColumnName(int32_t column) const
 {
     ASSERT(isValid());
     ASSERT(column >= 0);
     const char* columnName = sqlite3_column_name(_sqlite_stmt(mStatement), column);
-    return String((columnName != nullptr) ? columnName : String::EmptyString);
+    return areg::String((columnName != nullptr) ? columnName : areg::String::EmptyString);
 }
 
-int32_t SqliteRow::getColumnIndex(const String& columnName) const
+int32_t SqliteRow::getColumnIndex(const areg::String& columnName) const
 {
     ASSERT(isValid());
     ASSERT(!columnName.isEmpty());

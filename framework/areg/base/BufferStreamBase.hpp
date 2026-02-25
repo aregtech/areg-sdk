@@ -114,7 +114,7 @@ public:
      * \param   ascii     The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const String & ascii ) override;
+    uint32_t write( const areg::String & ascii ) override;
 
     /**
      * \brief   Writes string data from given wide-char String object to output stream object.
@@ -154,7 +154,7 @@ public:
      * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t read( String & ascii ) const override;
+    uint32_t read( areg::String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.

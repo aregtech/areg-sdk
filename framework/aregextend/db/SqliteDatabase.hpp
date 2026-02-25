@@ -44,7 +44,7 @@ public:
      * \param   dbPath  The relative or absolute path to the SQLite database file. The path may have a mask.
      * \param   open    The flag, indicating whether it needs to connect to the database or not.
      **/
-    SqliteDatabase(const String & dbPath, bool open);
+    SqliteDatabase(const areg::String & dbPath, bool open);
 
     /**
      * \brief   Closes SQLite database file if it is still opened.
@@ -59,7 +59,7 @@ public:
     /**
      * \brief   Returns the path to the SQLite database file.
      **/
-    inline const String & getPath() const;
+    inline const areg::String & getPath() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -85,7 +85,7 @@ public:
      * \param   readOnly    If true, the database engine should connect in read-only mode.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
-    bool connect(const String& dbPath, bool readOnly) override;
+    bool connect(const areg::String& dbPath, bool readOnly) override;
 
     /**
      * \brief   Disconnects connected SqliteDatabase.
@@ -97,7 +97,7 @@ public:
      * \param   sql     The SQL script to execute.
      * \return  Returns true if succeeds to execute the SQL script.
      **/
-    bool execute(const String & sql) override;
+    bool execute(const areg::String & sql) override;
 
     /**
      * \brief   Call if need to make multiple operation. This call starts the transaction,
@@ -129,7 +129,7 @@ private:
      *                      The file path may contain a mask.
      * \return  Returns true if succeeded to open or create the database file.
      **/
-    inline bool _open(const String& dbPath);
+    inline bool _open(const areg::String& dbPath);
 
     /**
      * \brief   Closes previously opened database and releases resources.
@@ -141,7 +141,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
     //!< The path to the SQLite database file.
-    String      mDbPath;
+    areg::String      mDbPath;
 
     //!< The SQLite database object.
     void *      mDbObject;
@@ -157,7 +157,7 @@ private:
 // SqliteDatabase class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& SqliteDatabase::getPath() const
+inline const areg::String& SqliteDatabase::getPath() const
 {
     return mDbPath;
 }

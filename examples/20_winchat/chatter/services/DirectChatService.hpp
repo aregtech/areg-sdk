@@ -21,8 +21,8 @@ class DirectChatService : public Component
                         , public DirectMessagerStub
                           
 {
-    using HashMapDirectConnections      = OrderedMap<String, DirectChatService *>;
-    using MapDirectConnections          = ConcurrentResourceMap<String, DirectChatService *, HashMapDirectConnections>;
+    using HashMapDirectConnections      = OrderedMap<areg::String, DirectChatService *>;
+    using MapDirectConnections          = ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
     using ListDirectConnectionClients   = ArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    void requestMessageSend( const DirectMessager::Participant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void requestMessageSend( const DirectMessager::Participant & sender, const areg::String & msgText, const DateTime & timeSent ) override;
 
     /**
      * \brief   Request call.
@@ -66,7 +66,7 @@ protected:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    void requestMessageType( const DirectMessager::Participant & participant, const String & msgText ) override;
+    void requestMessageType( const DirectMessager::Participant & participant, const areg::String & msgText ) override;
 
     /**
      * \brief   Request call.

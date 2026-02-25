@@ -86,7 +86,7 @@ uint32_t BufferStreamBase::read( ByteBuffer & buffer ) const
 /**
  * \brief   Reads string data from Input Stream object, copies into given ASCII String and returns the size of copied data.
  **/
-uint32_t BufferStreamBase::read( String & ascii ) const
+uint32_t BufferStreamBase::read( areg::String & ascii ) const
 {
     uint32_t result = 0;
     ascii.clear();
@@ -168,7 +168,7 @@ uint32_t BufferStreamBase::write( const ByteBuffer & buffer )
 /**
  * \brief   Writes string data from given ASCII String object to output stream object.
  **/
-uint32_t BufferStreamBase::write( const String & ascii )
+uint32_t BufferStreamBase::write( const areg::String & ascii )
 {
     return write( reinterpret_cast<const uint8_t *>(ascii.getString()), ascii.getSpace() );
 }

@@ -20,7 +20,7 @@
 // Tokenizer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Tokenizer::Tokenizer( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+Tokenizer::Tokenizer( const areg::String & str, const areg::String & delimiters, bool keepEmpty/*=true*/)
     : mTokens   ()
 {
    tokenize(str, delimiters, keepEmpty);
@@ -36,7 +36,7 @@ Tokenizer::Tokenizer( Tokenizer && src ) noexcept
 {
 }
 
-const StringArray& Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+const StringArray& Tokenizer::tokenize( const areg::String & str, const areg::String & delimiters, bool keepEmpty/*=true*/)
 {
     areg::CharPos lastPos   = 0;
     areg::CharCount length  = str.getLength();
@@ -50,7 +50,7 @@ const StringArray& Tokenizer::tokenize( const String & str, const String & delim
 
         if (pos != lastPos || keepEmpty)
         {
-            String temp;
+            areg::String temp;
             str.substring(temp, lastPos, pos - lastPos);
             mTokens.add(temp);
         }
