@@ -39,7 +39,7 @@ public:
     /**
      * \brief   The definition of type Property, which is a pair of Key and Value
      **/
-    using Entry = KeyValuePair<PropertyKey, PropertyValue>;
+    using Entry = areg::KeyValuePair<PropertyKey, PropertyValue>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor

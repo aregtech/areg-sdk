@@ -26,7 +26,7 @@
  **/
 TEST(KeyValuePairTest, TestConstructors)
 {
-    using Property = KeyValuePair<areg::String, uint32_t>;
+    using Property = areg::KeyValuePair<areg::String, uint32_t>;
     areg::String  propName{ "Areg Property" };
 
     // Step 1: test constructors.
@@ -56,7 +56,7 @@ TEST(KeyValuePairTest, TestConstructors)
  **/
 TEST(KeyValuePairTest, TestOperators)
 {
-    using Property = KeyValuePair<areg::String, uint32_t>;
+    using Property = areg::KeyValuePair<areg::String, uint32_t>;
     areg::String  propName{ "Areg Property" };
 
     // Step 1: test constructors.
@@ -91,7 +91,7 @@ TEST(KeyValuePairTest, TestOperators)
  **/
 TEST(KeyValuePairTest, TestAttributes)
 {
-    using Property = KeyValuePair<areg::String, areg::String>;
+    using Property = areg::KeyValuePair<areg::String, areg::String>;
     const areg::String propName{ "Areg Property" };
     const areg::String propValue{ "Areg Value" };
 
@@ -140,7 +140,7 @@ TEST(KeyValuePairTest, TestAttributes)
  **/
 TEST(KeyValuePairTest, TestStreaming)
 {
-    using Property = KeyValuePair<areg::String, areg::String>;
+    using Property = areg::KeyValuePair<areg::String, areg::String>;
     const areg::String propName{ "Areg Property" };
     const areg::String propValue{ "Areg Value" };
 
