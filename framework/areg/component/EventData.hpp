@@ -90,7 +90,7 @@ public:
      *          Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    EventData( const InStream & stream );
+    EventData( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -120,7 +120,7 @@ public:
      * \param	input	The Event Data Buffer object to write data.
      * \return	Reference to Streaming object.
      **/
-    friend inline const InStream & operator >> ( const InStream & stream, EventData & input );
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, EventData & input );
 
     /**
      * \brief	Friend global operator to write object into streaming buffer.
@@ -128,7 +128,7 @@ public:
      * \param	output	The Event Data Buffer object of data source.
      * \return	Reference to Streaming object.
      **/
-    friend inline OutStream & operator << ( OutStream & stream, const EventData & output );
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const EventData & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -145,13 +145,13 @@ public:
      * \brief   Returns reference of data input streaming object
      *          to deserialize message parameters.
      **/
-    inline const InStream & getReadStream() const;
+    inline const areg::InStream & getReadStream() const;
     
     /**
      * \brief   Returns reference of data output streaming object
      *          to serialize message parameters
      **/
-    inline OutStream & getWriteStream();
+    inline areg::OutStream & getWriteStream();
 
     /**
      * \brief   Returns reference of data container object,
@@ -182,12 +182,12 @@ inline areg::MessageDataType EventData::getDataType() const
     return mDataType;
 }
 
-inline const InStream& EventData::getReadStream() const
+inline const areg::InStream& EventData::getReadStream() const
 {
     return mData.getStreamForRead();
 }
 
-inline OutStream & EventData::getWriteStream()
+inline areg::OutStream & EventData::getWriteStream()
 {
     return mData.getStreamForWrite();
 }
@@ -197,7 +197,7 @@ inline const EventDataStream & EventData::getDataStream() const
     return mData;
 }
 
-inline const InStream & operator >> ( const InStream & stream, EventData & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, EventData & input )
 {
     stream >> input.mDataType;
     stream >> input.mData;
@@ -205,7 +205,7 @@ inline const InStream & operator >> ( const InStream & stream, EventData & input
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const EventData & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const EventData & output )
 {
     stream << output.mDataType;
     stream << output.mData;

@@ -30,7 +30,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
+namespace areg { class InStream; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceItem class declaration
@@ -104,7 +104,7 @@ public:
      * \brief   Creates service item and initializes data from given stream.
      * \param   stream      The streaming object, which contains service item information.
      **/
-    ServiceItem( const InStream & stream );
+    ServiceItem( const areg::InStream & stream );
 
     /**
      * \brief   Copy constructor.
@@ -165,7 +165,7 @@ public:
      * \param   stream  The streaming object to read out data
      * \param   input   The Service Item to initialize data from stream.
      **/
-    friend inline const InStream & operator >> ( const InStream & stream, ServiceItem & input);
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, ServiceItem & input);
 
     /**
      * \brief   Streaming operator.
@@ -173,7 +173,7 @@ public:
      * \param   stream  The streaming object to write data
      * \param   output  The Service Item containing data for streaming
      **/
-    friend inline OutStream & operator << ( OutStream & stream, const ServiceItem & output );
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const ServiceItem & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -397,7 +397,7 @@ inline bool ServiceItem::isServiceCompatible( const ServiceItem & other ) const
     return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
 }
 
-inline const InStream & operator >> ( const InStream & stream, ServiceItem & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, ServiceItem & input )
 {
     stream >> input.mServiceName;
     stream >> input.mServiceVersion;
@@ -408,7 +408,7 @@ inline const InStream & operator >> ( const InStream & stream, ServiceItem & inp
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const ServiceItem & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const ServiceItem & output )
 {
     stream << output.mServiceName;
     stream << output.mServiceVersion;

@@ -41,7 +41,7 @@ class Cursor;
  *
  **/
 class AREG_API BufferStreamBase : public    ByteBuffer
-                                , public    IOStream
+                                , public    areg::IOStream
 {
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor / destructor. Do not call directly to instantiate object

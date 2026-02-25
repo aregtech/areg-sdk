@@ -82,7 +82,7 @@ protected:
      * \brief   Initializes event data from streaming object.
      * \param   stream      Streaming object, containing event data.
      **/
-    ProxyEvent( const InStream & stream );
+    ProxyEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor. Protected.
@@ -123,14 +123,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const areg::InStream & readStream( const areg::InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable

@@ -68,7 +68,7 @@ void LayoutManager::deleteLayouts()
     mLayoutList.clear();
 }
 
-void LayoutManager::logMessage(const areg::LogEntry & logMsg, OutStream & stream) const
+void LayoutManager::logMessage(const areg::LogEntry & logMsg, areg::OutStream & stream) const
 {
     if (logMsg.logMessagePrio == areg::LogPriority::PrioIgnoreLayout)
     {

@@ -63,7 +63,7 @@ public:
      * \brief   Initializes the logging scope object from the stream.
      * \param   stream  The streaming object that contains the scope attributes.
      **/
-    LogScope(const InStream & stream);
+    LogScope(const areg::InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -89,7 +89,7 @@ public:
      * \param   stream  The stream object to write data.
      * \param   output  The scope to write into the stream object.
      **/
-    inline friend OutStream & operator << ( OutStream & stream, const LogScope & output );
+    inline friend areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output );
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -235,7 +235,7 @@ namespace std
 // inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline OutStream & operator << ( OutStream & stream, const LogScope & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output )
 {
     stream << output.mScopeId;
     stream << output.mScopePrio;

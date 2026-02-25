@@ -181,7 +181,7 @@ namespace areg
         assign(source.getString(), source.getLength());
     }
 
-    String::String( const InStream & stream )
+    String::String( const areg::InStream & stream )
         : areg::StringBase<char>( )
     {
         readStream(stream);
@@ -626,12 +626,12 @@ namespace areg
         return (*this);
     }
 
-    void String::readStream(const InStream& stream)
+    void String::readStream(const areg::InStream& stream)
     {
         stream.read(*this);
     }
 
-    void String::writeStream(OutStream& stream) const
+    void String::writeStream(areg::OutStream& stream) const
     {
         stream.write(*this);
     }

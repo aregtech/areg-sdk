@@ -155,7 +155,7 @@ StubAddress::StubAddress( ServiceAddress && source)
         mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
-StubAddress::StubAddress( const InStream & stream )
+StubAddress::StubAddress( const areg::InStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )
     , mChannel      ( )
@@ -281,7 +281,7 @@ bool StubAddress::isValidated() const
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
-AREG_API_IMPL const InStream & operator >> ( const InStream & stream, StubAddress & input )
+AREG_API_IMPL const areg::InStream & operator >> ( const areg::InStream & stream, StubAddress & input )
 {
     ITEM_ID cookie = areg::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
@@ -294,7 +294,7 @@ AREG_API_IMPL const InStream & operator >> ( const InStream & stream, StubAddres
     return stream;
 }
 
-AREG_API_IMPL OutStream & operator << ( OutStream & stream, const StubAddress & output)
+AREG_API_IMPL areg::OutStream & operator << ( areg::OutStream & stream, const StubAddress & output)
 {
     stream << static_cast<const ServiceAddress &>(output);
     stream << output.mThreadName;

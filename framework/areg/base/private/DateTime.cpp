@@ -52,7 +52,7 @@ DateTime::DateTime( const TIME64 & dateTime )
 {
 }
 
-DateTime::DateTime( const InStream & stream )
+DateTime::DateTime( const areg::InStream & stream )
     : mDateTime ( stream.read64Bits() )
 {
 }

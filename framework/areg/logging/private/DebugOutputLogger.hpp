@@ -36,7 +36,7 @@
  *          and any Unicode character might output wrong.
  **/
 class DebugOutputLogger : public    LoggerBase
-                        , private   OutStream
+                        , private   areg::OutStream
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

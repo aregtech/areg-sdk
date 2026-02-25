@@ -32,7 +32,7 @@ class RegistrationProvider;
 class ServiceManager;
 class ProxyAddress;
 class StubAddress;
-class InStream;
+namespace areg { class InStream; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManagerEventProcessor class declaration
@@ -66,7 +66,7 @@ public:
      * \param   registerProvider    The instance of service register provider to forward register requests
      **/
     void processServiceEvent( ServiceManagerEventData::ServiceManagerCommand cmdService
-                            , const InStream & stream
+                            , const areg::InStream & stream
                             , ConnectionProvider& connectProvider
                             , RegistrationProvider & registerProvider );
 

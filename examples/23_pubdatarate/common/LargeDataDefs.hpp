@@ -146,12 +146,12 @@ namespace NELargeData
         /**
          * \brief   The streaming operators to serialize image block into the streaming buffer.
          */
-        friend inline OutStream& operator << (OutStream& stream, const NELargeData::ImageBlock& output);
+        friend inline areg::OutStream& operator << (areg::OutStream& stream, const NELargeData::ImageBlock& output);
 
         /**
          * \brief   Initializes image block from the streaming buffer.
          */
-        friend inline const InStream& operator >> (const InStream& stream, NELargeData::ImageBlock& input);
+        friend inline const areg::InStream& operator >> (const areg::InStream& stream, NELargeData::ImageBlock& input);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -171,12 +171,12 @@ namespace NELargeData
     /**
      * \brief   The streaming operators to serialize image block into the streaming buffer.
      */
-    inline OutStream& operator << (OutStream& stream, const NELargeData::ImageBlock& output);
+    inline areg::OutStream& operator << (areg::OutStream& stream, const NELargeData::ImageBlock& output);
 
     /**
      * \brief   Initializes image block from the streaming buffer.
      */
-    inline const InStream& operator >> (const InStream& stream, NELargeData::ImageBlock& input);
+    inline const areg::InStream& operator >> (const areg::InStream& stream, NELargeData::ImageBlock& input);
 
 }
 
@@ -275,7 +275,7 @@ inline void NELargeData::ImageBlock::setIds(uint32_t channelId, uint32_t frameId
     }
 }
 
-inline OutStream& NELargeData::operator << (OutStream& stream, const NELargeData::ImageBlock& output)
+inline areg::OutStream& NELargeData::operator << (areg::OutStream& stream, const NELargeData::ImageBlock& output)
 {
     uint32_t size{ output.getSize() };
     if (size != 0)
@@ -291,7 +291,7 @@ inline OutStream& NELargeData::operator << (OutStream& stream, const NELargeData
     return stream;
 }
 
-inline const InStream& NELargeData::operator >> (const InStream& stream, NELargeData::ImageBlock& input)
+inline const areg::InStream& NELargeData::operator >> (const areg::InStream& stream, NELargeData::ImageBlock& input)
 {
     uint32_t size{ 0 };
     stream >> size;

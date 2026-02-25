@@ -44,7 +44,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyCo
 {
 }
 
-ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
+ProxyConnectEvent::ProxyConnectEvent(const areg::InStream & stream)
     : ServiceResponseEvent  ( stream )
     , mStubAddress          ( stream )
     , mConnectionStatus     ( areg::ServiceConnectionState::Unknown )
@@ -52,7 +52,7 @@ ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
      stream >> mConnectionStatus;
 }
 
-const InStream & ProxyConnectEvent::readStream(const InStream & stream)
+const areg::InStream & ProxyConnectEvent::readStream(const areg::InStream & stream)
 {
     ServiceResponseEvent::readStream(stream);
     stream >> mStubAddress;
@@ -60,7 +60,7 @@ const InStream & ProxyConnectEvent::readStream(const InStream & stream)
     return stream;
 }
 
-OutStream & ProxyConnectEvent::writeStream(OutStream & stream) const
+areg::OutStream & ProxyConnectEvent::writeStream(areg::OutStream & stream) const
 {
     ServiceResponseEvent::writeStream(stream);
     stream << mStubAddress;

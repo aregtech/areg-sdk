@@ -647,7 +647,7 @@ void ProxyBase::processServiceAvailableEvent( NotificationConsumer & consumer, u
     }
 }
 
-RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const InStream & /* stream */) const
+RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const areg::InStream & /* stream */) const
 {
     return nullptr;
 }

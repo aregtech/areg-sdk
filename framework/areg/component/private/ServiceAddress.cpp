@@ -80,7 +80,7 @@ ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-ServiceAddress::ServiceAddress( const InStream & stream )
+ServiceAddress::ServiceAddress( const areg::InStream & stream )
     : ServiceItem   ( stream )
     , mRoleName     ( stream )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )

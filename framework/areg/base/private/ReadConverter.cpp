@@ -30,7 +30,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ReadConverter::ReadConverter( InStream & readStream, Cursor & readPosition )
+ReadConverter::ReadConverter( areg::InStream & readStream, Cursor & readPosition )
     : mReadStream   (readStream)
     , mReadPosition (readPosition)
 {

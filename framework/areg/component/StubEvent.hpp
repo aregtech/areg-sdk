@@ -93,7 +93,7 @@ protected:
     /**
      * \brief   Initialize component event from streaming object.
      **/
-    StubEvent( const InStream & stream );
+    StubEvent( const areg::InStream & stream );
     
     /**
      * \brief   Initializes target Stub addresses and sets event type.
@@ -140,13 +140,13 @@ protected:
      * \brief   Initialize component address from reading stream
      * \param   stream  The reading stream to read out data
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const areg::InStream & readStream( const areg::InStream & stream ) override;
 
     /**
      * \brief   Write component address to stream.
      * \param   stream  The writing stream to write in data
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

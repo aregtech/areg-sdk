@@ -56,20 +56,20 @@ ResponseEvent::ResponseEvent( const ProxyAddress& proxyTarget, const ResponseEve
 {
 }
 
-ResponseEvent::ResponseEvent(const InStream & stream)
+ResponseEvent::ResponseEvent(const areg::InStream & stream)
     : ServiceResponseEvent(stream)
     , mData (stream)
 {
 }
 
-const InStream & ResponseEvent::readStream(const InStream & stream)
+const areg::InStream & ResponseEvent::readStream(const areg::InStream & stream)
 {
     ServiceResponseEvent::readStream(stream);
     stream >> mData;
     return stream;
 }
 
-OutStream & ResponseEvent::writeStream(OutStream & stream) const
+areg::OutStream & ResponseEvent::writeStream(areg::OutStream & stream) const
 {
     ServiceResponseEvent::writeStream(stream);
     stream << mData;
@@ -111,7 +111,7 @@ LocalResponseEvent::LocalResponseEvent( const ProxyAddress& proxyTarget, const L
 {
 }
 
-LocalResponseEvent::LocalResponseEvent( const InStream & stream )
+LocalResponseEvent::LocalResponseEvent( const areg::InStream & stream )
     : ResponseEvent(stream)
 {
 }
@@ -154,7 +154,7 @@ RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress& proxyTarget, const
     ASSERT(getData().getDataStream().isExternalDataStream());
 }
 
-RemoteResponseEvent::RemoteResponseEvent( const InStream & stream )
+RemoteResponseEvent::RemoteResponseEvent( const areg::InStream & stream )
     : ResponseEvent(stream)
 {
     ASSERT(getData().getDataStream().isExternalDataStream());

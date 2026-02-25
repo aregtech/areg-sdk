@@ -29,7 +29,7 @@
 
 DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
     : LoggerBase        ( logConfig )
-    , OutStream       ( )
+    , areg::OutStream       ( )
 
     , mIsOpened         ( false )
     , mOutputMessageA   ( )
@@ -95,15 +95,15 @@ void DebugOutputLogger::logMessage(const areg::LogEntry & logMessage)
         switch (logMessage.logMsgType)
         {
         case areg::LogMessageType::MessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(*this));
+            getLayoutMessage().logMessage(logMessage, static_cast<areg::OutStream&>(*this));
             break;
 
         case areg::LogMessageType::ScopeEnter:
-            getLayoutEnterScope().logMessage(logMessage, static_cast<OutStream&>(*this));
+            getLayoutEnterScope().logMessage(logMessage, static_cast<areg::OutStream&>(*this));
             break;
 
         case areg::LogMessageType::ScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(*this) );
+            getLayoutExitScope().logMessage( logMessage, static_cast<areg::OutStream &>(*this) );
             break;
 
         default:

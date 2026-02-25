@@ -29,8 +29,8 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class InStream;
-class OutStream;
+namespace areg { class InStream; }
+namespace areg { class OutStream; }
 namespace areg { class WideString; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ namespace areg
         /**
          * \brief   Constructor, initializes string from streaming object
          **/
-        explicit String( const InStream & stream );
+        explicit String( const areg::InStream & stream );
 
     //////////////////////////////////////////////////////////////////////////
     // operators
@@ -253,7 +253,7 @@ namespace areg
          * \param   input    String object to initialize and write string data.
          * \return  Reference to stream object.
          **/
-        friend inline const InStream & operator >> (const InStream & stream, String & input);
+        friend inline const areg::InStream & operator >> (const areg::InStream & stream, String & input);
 
         /**
          * \brief   Streams from output object, i.e. write data from string to streaming object.
@@ -261,7 +261,7 @@ namespace areg
          * \param   output    String object to read data from
          * \return  Reference to stream object.
          **/
-        friend inline OutStream & operator << (OutStream & stream, const String & output);
+        friend inline areg::OutStream & operator << (areg::OutStream & stream, const String & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -676,13 +676,13 @@ namespace areg
          * \brief   Reads string data from streaming object.
          * \param   stream  The streaming object, which contains string source data
          **/
-        void readStream(const InStream & stream);
+        void readStream(const areg::InStream & stream);
 
         /**
          * \brief   Writes string data to streaming object.
          * \param   stream  The streaming object to write string data.
          **/
-        void writeStream(OutStream & stream) const;
+        void writeStream(areg::OutStream & stream) const;
     };
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
@@ -985,13 +985,13 @@ namespace areg
         return result;
     }
 
-    inline const InStream& operator >> (const InStream& stream, String& input)
+    inline const areg::InStream& operator >> (const areg::InStream& stream, String& input)
     {
         input.readStream(stream);
         return stream;
     }
 
-    inline OutStream& operator << (OutStream& stream, const String& output)
+    inline areg::OutStream& operator << (areg::OutStream& stream, const String& output)
     {
         output.writeStream(stream);
         return stream;

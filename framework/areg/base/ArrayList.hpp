@@ -173,7 +173,7 @@ public:
      * \param   input   The array object to save initialized values.
      **/
     template <typename V>
-    friend const InStream & operator >> (const InStream & stream, ArrayList< V > & input);
+    friend const areg::InStream & operator >> (const areg::InStream & stream, ArrayList< V > & input);
 
     /**
      * \brief   Writes to the stream the values of array.
@@ -184,7 +184,7 @@ public:
      * \param   output   The array object containing value to stream.
      **/
     template <typename V>
-    friend OutStream & operator << (OutStream & stream, const ArrayList< V > & output);
+    friend areg::OutStream & operator << (areg::OutStream & stream, const ArrayList< V > & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -1130,7 +1130,7 @@ inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(type
 //////////////////////////////////////////////////////////////////////////
 
 template<typename V>
-const InStream & operator >> ( const InStream & stream, ArrayList< V > & input )
+const areg::InStream & operator >> ( const areg::InStream & stream, ArrayList< V > & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -1145,7 +1145,7 @@ const InStream & operator >> ( const InStream & stream, ArrayList< V > & input )
 }
 
 template<typename V>
-OutStream & operator << ( OutStream& stream, const ArrayList< V >& output )
+areg::OutStream & operator << ( areg::OutStream& stream, const ArrayList< V >& output )
 {
     stream << output.getSize();
     for (const auto & elem : output.mValueList)

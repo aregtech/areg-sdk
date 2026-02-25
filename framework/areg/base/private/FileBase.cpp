@@ -282,13 +282,13 @@ uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType *
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 FileBase::FileBase()
-    : IOStream        ( )
+    : areg::IOStream        ( )
     , Cursor  ( )
 
     , mFileName         (areg::String::getEmptyString())
     , mFileMode         (static_cast<uint32_t>(OpenMode::Invalid))
-    , mReadConvert      (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
-    , mWriteConvert     (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
+    , mReadConvert      (static_cast<areg::InStream &>(self()), static_cast<Cursor &>(self()) )
+    , mWriteConvert     (static_cast<areg::OutStream &>(self()), static_cast<Cursor &>(self()) )
 {
 }
 

@@ -218,12 +218,12 @@ public:
     /**
      * \brief   Returns streaming object to read data
      **/
-    inline const InStream & getReadStream() const;
+    inline const areg::InStream & getReadStream() const;
 
     /**
      * \brief   Returns streaming object to write data
      **/
-    inline OutStream & getWriteStream();
+    inline areg::OutStream & getWriteStream();
 
     /**
      * \brief   Returns Service Manager command
@@ -287,14 +287,14 @@ inline ServiceManagerEventData & ServiceManagerEventData::operator = ( ServiceMa
     return (*this);
 }
 
-inline const InStream & ServiceManagerEventData::getReadStream() const
+inline const areg::InStream & ServiceManagerEventData::getReadStream() const
 {
-    return static_cast<const InStream &>(mStream);
+    return static_cast<const areg::InStream &>(mStream);
 }
 
-inline OutStream & ServiceManagerEventData::getWriteStream()
+inline areg::OutStream & ServiceManagerEventData::getWriteStream()
 {
-    return static_cast<OutStream &>(mStream);
+    return static_cast<areg::OutStream &>(mStream);
 }
 
 inline ServiceManagerEventData::ServiceManagerCommand ServiceManagerEventData::getCommand() const

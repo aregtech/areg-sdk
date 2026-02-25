@@ -85,9 +85,9 @@ namespace areg
     };
 
     /**
-     * \brief   Returns string value of areg::ResultType type
+     * \brief   Returns string value of ResultType type
      **/
-    inline const char* getString(areg::ResultType resultType);
+    inline const char* getString(ResultType resultType);
 
     /**
      * \brief   Data types
@@ -102,9 +102,9 @@ namespace areg
         , DataUnexpectedError   = 16389 /*0x4005*/  //!< other errors
     };
     /**
-     * \brief   Returns string value of areg::DataState type
+     * \brief   Returns string value of DataState type
      **/
-    inline const char* getString(areg::DataState dataState);
+    inline const char* getString(DataState dataState);
 
     /**
      * \brief   Type of request.
@@ -122,9 +122,9 @@ namespace areg
         , LoadComponent     = 16391 /*0x4007*/  //!< request load component
     };
     /**
-     * \brief   Returns string value of areg::RequestType type
+     * \brief   Returns string value of RequestType type
      **/
-    inline const char* getString( areg::RequestType resultType );
+    inline const char* getString( RequestType resultType );
 
     /**
      * \brief   Message Data types
@@ -142,17 +142,17 @@ namespace areg
 
     };
     /**
-     * \brief   Returns string value of areg::MessageDataType type
+     * \brief   Returns string value of MessageDataType type
      **/
-    inline const char* getString( areg::MessageDataType dataType );
+    inline const char* getString( MessageDataType dataType );
 
     /**
      * \brief   From passed message ID finds data type
      **/
-    inline areg::MessageDataType getMessageDataType( uint32_t msgId );
+    inline MessageDataType getMessageDataType( uint32_t msgId );
 
     /**
-     * \brief   areg::ServiceConnectionState
+     * \brief   ServiceConnectionState
      *          Service Connections. Used in service calls
      **/
     enum class ServiceConnectionState   : uint16_t
@@ -168,37 +168,37 @@ namespace areg
     };
 
     /**
-     * \brief   Returns string value of areg::ServiceConnectionState type
+     * \brief   Returns string value of ServiceConnectionState type
      **/
-    inline const char* getString( areg::ServiceConnectionState serviceConnection );
+    inline const char* getString( ServiceConnectionState serviceConnection );
 
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnected( areg::ServiceConnectionState connectionStatus );
+    inline bool isServiceConnected( ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnectionPending( areg::ServiceConnectionState connectionStatus );
+    inline bool isServiceConnectionPending( ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is rejected.
      **/
-    inline bool isServiceRejected( areg::ServiceConnectionState connectionStatus );
+    inline bool isServiceRejected( ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the service connection status is connection lost.
      **/
-    inline bool isServiceConnectionLost( areg::ServiceConnectionState connectionStatus );
+    inline bool isServiceConnectionLost( ServiceConnectionState connectionStatus );
 
     /**
      * \brief   Returns true if the status is not connected.
      **/
-    inline bool isServiceDisconnected( areg::ServiceConnectionState connectionStatus );
+    inline bool isServiceDisconnected( ServiceConnectionState connectionStatus );
 
     /**
-     * \brief   areg::DisconnectReason
+     * \brief   DisconnectReason
      *          The service provider and service consumer disconnect reason.
      *          Valid only when service is not connected. Otherwise, it should be ignored.
      **/
@@ -219,12 +219,12 @@ namespace areg
         , ClientConnectionClosed= 2048  //!< The client requested to disconnect. General reason.
     };
 
-    inline const char * getString( areg::DisconnectReason reason );
+    inline const char * getString( DisconnectReason reason );
 
-    inline areg::ServiceConnectionState serviceConnection( areg::DisconnectReason reason );
+    inline ServiceConnectionState serviceConnection( DisconnectReason reason );
 
     /**
-     * \brief   areg::RegistrationAction
+     * \brief   RegistrationAction
      *          The service request types.
      **/
     enum class RegistrationAction   : uint16_t
@@ -236,12 +236,12 @@ namespace areg
     };
     
     /**
-     * \brief   Returns string value of areg::RegistrationAction type
+     * \brief   Returns string value of RegistrationAction type
      **/
-    inline const char * getString( areg::RegistrationAction svcRequestType );
+    inline const char * getString( RegistrationAction svcRequestType );
 
     /**
-     * \brief   areg::ServiceType
+     * \brief   ServiceType
      *          Service Type. Either local or Remote.
      **/
     enum class ServiceType  : uint16_t
@@ -254,12 +254,12 @@ namespace areg
     };
 
     /**
-     * \brief   Returns string value of areg::ServiceType type
+     * \brief   Returns string value of ServiceType type
      **/
-    inline const char * getString( areg::ServiceType srvcType );
+    inline const char * getString( ServiceType srvcType );
 
     /**
-     * \brief   areg::MessageSource
+     * \brief   MessageSource
      *          The source of the communication message
      **/
     enum class MessageSource    : uint16_t
@@ -273,12 +273,12 @@ namespace areg
     };
 
     /**
-     * \brief   Returns string value of areg::ServiceType type
+     * \brief   Returns string value of ServiceType type
      **/
-    inline const char * getString(areg::MessageSource msgSource);
+    inline const char * getString(MessageSource msgSource);
 
     /**
-     * \brief   areg::InstanceBitness
+     * \brief   InstanceBitness
      *          The bitness of the executable instance.
      **/
     enum class InstanceBitness  : uint16_t
@@ -289,79 +289,79 @@ namespace areg
     };
 
     /**
-     * \brief   Returns string value of areg::ServiceType type
+     * \brief   Returns string value of ServiceType type
      **/
-    inline const char* getString(areg::InstanceBitness bitness);
+    inline const char* getString(InstanceBitness bitness);
 
     /**
-     * \brief   areg::SEQUENCE_NUMBER_NOTIFY
+     * \brief   SEQUENCE_NUMBER_NOTIFY
      *          Sequence number predefining notification message ID
      **/
     constexpr SequenceNumber    SEQUENCE_NUMBER_NOTIFY  { static_cast<SequenceNumber>(0) };    /*0x00000000*/
     /**
-     * \brief   areg::SEQUENCE_NUMBER_ANY
+     * \brief   SEQUENCE_NUMBER_ANY
      *          Any sequence number, used in messages. "Any sequence number" used to find any listener object with same message ID.
      **/
     constexpr SequenceNumber    SEQUENCE_NUMBER_ANY     { static_cast<SequenceNumber>(~0) };    /*0xFFFFFFFF*/
 
     /**
-     * \brief   areg::COOKIE_UNKNOWN
+     * \brief   COOKIE_UNKNOWN
      *          Unknown cookie
      **/
-    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(Cookie::Invalid) };
     /**
-     * \brief   areg::COOKIE_LOCAL
+     * \brief   COOKIE_LOCAL
      *          The indication of local service.
      **/
-    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
+    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(Cookie::Local) };
     /**
-     * \brief   areg::COOKIE_ROUTER
+     * \brief   COOKIE_ROUTER
      *          Indicates message router cookie
      **/
-    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(areg::Cookie::Router) };
+    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(Cookie::Router) };
     /**
-     * \brief   areg::COOKIE_LOGGER
+     * \brief   COOKIE_LOGGER
      *          Indicates log collector cookie
      **/
-    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(areg::Cookie::Logger) };
+    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(Cookie::Logger) };
     /**
-     * \brief   areg::COOKIE_ANY
+     * \brief   COOKIE_ANY
      *          Indicates any valid cookie
      **/
-    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(areg::Cookie::Any) };
+    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(Cookie::Any) };
     /**
-     * \brief   areg::TARGET_UNKNOWN
+     * \brief   TARGET_UNKNOWN
      *          The unknown target ID
      **/
-    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(Cookie::Invalid) };
     /**
-     * \brief   areg::TARGET_LOCAL
+     * \brief   TARGET_LOCAL
      *          The local target ID
      **/
-    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
+    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(Cookie::Local) };
     /**
-     * \brief   areg::TARGET_ALL
+     * \brief   TARGET_ALL
      *          The undefined (all) target ID
      **/
-    constexpr ITEM_ID   TARGET_ALL                  { static_cast<ITEM_ID>(areg::COOKIE_ANY) };
+    constexpr ITEM_ID   TARGET_ALL                  { static_cast<ITEM_ID>(COOKIE_ANY) };
     /**
-     * \brief   areg::SOURCE_UNKNOWN
+     * \brief   SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(areg::Cookie::Invalid) };
+    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(Cookie::Invalid) };
     /**
-     * \brief   areg::SOURCE_UNKNOWN
+     * \brief   SOURCE_UNKNOWN
      *          The unknown source ID.
      **/
-    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(areg::Cookie::Local) };
+    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(Cookie::Local) };
     /**
-     * \brief   areg::COOKIE_REMOTE_SERVICE
+     * \brief   COOKIE_REMOTE_SERVICE
      *          The ID of first valid remote cookie.
      **/
-    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(areg::Cookie::FirstRemote) };
+    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(Cookie::FirstRemote) };
 
     /**
-     * \brief   areg::ServiceCallType
+     * \brief   ServiceCallType
      *          Specifies the service call type
      **/
     enum class ServiceCallType : uint16_t
@@ -384,57 +384,57 @@ namespace areg
     constexpr uint32_t  SERVICE_FUNCTION    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };    /*0x1000*/
 
     /**
-     * \brief   areg::REQUEST_ID_FIRST
+     * \brief   REQUEST_ID_FIRST
      *          The first ID in request call.
      **/
     constexpr uint32_t  REQUEST_ID_FIRST    { static_cast<uint32_t>(ServiceCallType::RequestFunction) };
     /**
-     * \brief   areg::REQUEST_ID_LAST
+     * \brief   REQUEST_ID_LAST
      *          The last ID in request call.
      **/
     constexpr uint32_t  REQUEST_ID_LAST     { REQUEST_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   areg::RESPONSE_ID_FIRST
+     * \brief   RESPONSE_ID_FIRST
      *          The first ID in response call.
      **/
     constexpr uint32_t  RESPONSE_ID_FIRST   { static_cast<uint32_t>(ServiceCallType::ResponseFunction) };
     /**
-     * \brief   areg::RESPONSE_ID_LAST
+     * \brief   RESPONSE_ID_LAST
      *          The last ID in response call.
      **/
     constexpr uint32_t  RESPONSE_ID_LAST    { RESPONSE_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   areg::ATTRIBUTE_ID_FIRST
+     * \brief   ATTRIBUTE_ID_FIRST
      *          The first ID in attribute call.
      **/
     constexpr uint32_t  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(ServiceCallType::AttributeUpdate) };
     /**
-     * \brief   areg::ATTRIBUTE_ID_LAST
+     * \brief   ATTRIBUTE_ID_LAST
      *          The last ID in attribute call.
      **/
     constexpr uint32_t  ATTRIBUTE_ID_LAST   { ATTRIBUTE_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   areg::SERVICE_ID_FIRST
+     * \brief   SERVICE_ID_FIRST
      *          The last ID in service call.
      **/
-    constexpr uint32_t  SERVICE_ID_FIRST    { static_cast<uint32_t>(areg::ServiceCallType::ServiceRegisteration) };
+    constexpr uint32_t  SERVICE_ID_FIRST    { static_cast<uint32_t>(ServiceCallType::ServiceRegisteration) };
     /**
-     * \brief   areg::SERVICE_ID_LAST
+     * \brief   SERVICE_ID_LAST
      *          The last ID in service call.
      **/
     constexpr uint32_t  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
 
     /**
-     * \brief   areg::RESPONSE_ID_NONE
+     * \brief   RESPONSE_ID_NONE
      *          Constant no response. Used to indicate that the request has no response.
      **/
     constexpr uint32_t  RESPONSE_ID_NONE    { static_cast<uint32_t>(ServiceCallType::NoFunction) };
 
     /**
-     * \brief   areg::INVALID_MESSAGE_ID
+     * \brief   INVALID_MESSAGE_ID
      *          The invalid message ID
      **/
     constexpr uint32_t  INVALID_MESSAGE_ID  { static_cast<uint32_t>(~0) };    /*0xFFFFFFFF*/
@@ -513,9 +513,9 @@ namespace areg
     };
 
     /**
-     * \brief   Returns string value of areg::FuncIdRange type
+     * \brief   Returns string value of FuncIdRange type
      **/
-    inline const char * getString( areg::FuncIdRange funcId );
+    inline const char * getString( FuncIdRange funcId );
 
     /**
      * \brief   Converts request message ID to array index. Returns INVALID_INDEX if empty.
@@ -524,7 +524,7 @@ namespace areg
     {
         return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
                 ? msgId - static_cast<uint32_t>(FuncIdRange::RequestFirstId)
-                : static_cast<uint32_t>(areg::INVALID_INDEX);
+                : static_cast<uint32_t>(INVALID_INDEX);
     }
 
     /**
@@ -534,7 +534,7 @@ namespace areg
     {
         return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
                 ? msgId - static_cast<uint32_t>(FuncIdRange::ResponseFirstId)
-                : static_cast<uint32_t>(areg::INVALID_INDEX);
+                : static_cast<uint32_t>(INVALID_INDEX);
     }
 
     /**
@@ -544,7 +544,7 @@ namespace areg
     {
         return (msgId != static_cast<uint32_t>(FuncIdRange::EmptyFunctionId))
                 ? msgId - static_cast<uint32_t>(FuncIdRange::AttributeFirstId)
-                : static_cast<uint32_t>(areg::INVALID_INDEX);
+                : static_cast<uint32_t>(INVALID_INDEX);
     }
 
     /**
@@ -592,7 +592,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    using StateArrayBase    = FixedArray<areg::DataState>;
+    using StateArrayBase    = FixedArray<DataState>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/
@@ -627,18 +627,18 @@ namespace areg
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline const areg::DataState& operator [] (uint32_t index) const;
+        inline const DataState& operator [] (uint32_t index) const;
         /**
          * \brief   Returns element by the index for reading. The index must be valid.
          **/
-        inline areg::DataState& operator [] (uint32_t index);
+        inline DataState& operator [] (uint32_t index);
 
         /**
          * \brief   Returns the number of elements in the array.
          */
         inline uint32_t getSize() const;
         /**
-         * \brief   Resets states in array. All states will be set to areg::DataIsUnavailable
+         * \brief   Resets states in array. All states will be set to DataIsUnavailable
          **/
         inline void resetStates();
 
@@ -653,13 +653,13 @@ namespace areg
          * \param   whichIndex  The index of entry in array which state should be changed
          * \param   newState    The state to set
          **/
-        inline void setState(int32_t whichIndex, areg::DataState newState);
+        inline void setState(int32_t whichIndex, DataState newState);
 
         /**
          * \brief   All entries are set to the same given state
          * \param   newState    The state to set for all entries
          **/
-        inline void setAllState(areg::DataState newState);
+        inline void setAllState(DataState newState);
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -695,7 +695,7 @@ namespace areg
         /**
          * \brief   Service interface implementation version
          **/
-        areg::Version       idVersion{ 0, 0, 0 };
+        Version       idVersion{ 0, 0, 0 };
 
         /**
          * \brief   The service type. Should be either local or public / remote.
@@ -735,16 +735,16 @@ namespace areg
         /**
          * \brief   Request to Response map. All requests are accessed by index 
          *          and every request indexed is calculated by calculating 
-         *          ('request ID' - areg::FuncIdRange::RequestFirstId)
+         *          ('request ID' - FuncIdRange::RequestFirstId)
          *          Every request should have appropriate response value. If request does not
-         *          have response, it should have value areg::RESPONSE_ID_NONE
+         *          have response, it should have value RESPONSE_ID_NONE
          *          The size of this map should be equal to idRequestCount.
          **/
         const uint32_t* idRequestToResponseMap{ nullptr };
 
         /**
          * \brief   Map of parameter count in every response. Every response index
-         *          is calculated by formula ('response ID' - areg::FuncIdRange::ResponseFirstId)
+         *          is calculated by formula ('response ID' - FuncIdRange::ResponseFirstId)
          *          The size of this map should be equal to idResponseCount.
          **/
         const uint32_t* idResponseParamCountMap{ nullptr };
@@ -761,11 +761,11 @@ namespace areg
     /**
      * \brief   Empty service version
      **/
-    extern AREG_API const areg::Version EmptyServiceVersion /*(1, 0, 0)*/;
+    extern AREG_API const Version EmptyServiceVersion /*(1, 0, 0)*/;
     /**
      * \brief   Returns the instance of empty local service interface.
      **/
-    AREG_API areg::InterfaceData & getEmptyInterface();
+    AREG_API InterfaceData & getEmptyInterface();
 
     //////////////////////////////////////////////////////////////////////////
     // Invalid service
@@ -789,7 +789,7 @@ namespace areg
      *          For example, if there is a response function prototype
      *          responseAREG(const bool &param1, const int32_t &param2)
      *          the 'param1' state can be accessed by index pair
-     *          param1State = states[areg::respIndex(UPD_ID_responseAREG)][0];
+     *          param1State = states[respIndex(UPD_ID_responseAREG)][0];
      **/
     class AREG_API ParameterArray
     {
@@ -805,7 +805,7 @@ namespace areg
          * \param   ifData  The service interface data structure containing
          *                  parameter map table
          **/
-        ParameterArray(const areg::InterfaceData& ifData);
+        ParameterArray(const InterfaceData& ifData);
 
 
         /**
@@ -842,17 +842,17 @@ namespace areg
         /**
          * \brief   Access state by given index of array allowed for writing.
          *          The index is calculated by formula
-         *          ('response ID' - areg::FuncIdRange::ResponseFirstId) or use
-         *          areg::respIndex() macro
+         *          ('response ID' - FuncIdRange::ResponseFirstId) or use
+         *          respIndex() macro
          **/
-        inline areg::StateArray & operator [] (uint32_t index);
+        inline StateArray & operator [] (uint32_t index);
         /**
          * \brief   Access read-only state by given index of array.
          *          The index is calculated by formula
-         *          ('response ID' - areg::FuncIdRange::ResponseFirstId) or use
-         *          areg::respIndex() macro
+         *          ('response ID' - FuncIdRange::ResponseFirstId) or use
+         *          respIndex() macro
          **/
-        inline const areg::StateArray & operator [] (uint32_t index) const;
+        inline const StateArray & operator [] (uint32_t index) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -862,36 +862,36 @@ namespace areg
         /**
          * \brief   Returns the state of parameter of certain response entry
          *          and certain parameter. The parameter entry is calculated
-         *          row = areg::respIndex('response ID').
-         * \param   row     The index of response call. Should be areg::respIndex('response ID')
+         *          row = respIndex('response ID').
+         * \param   row     The index of response call. Should be respIndex('response ID')
          * \param   col     The index of parameter entry in response call. 
          *                  First parameter has index zero
          * \return  The state of parameter in call.
          **/
-        inline areg::DataState getAt(uint32_t row, uint32_t col) const;
+        inline DataState getAt(uint32_t row, uint32_t col) const;
 
         /**
          * \brief   Sets state of parameter of certain response.
          * \param   row         The index of response entry, which can be calculated
-         *                      by macro areg::respIndex('response ID')
+         *                      by macro respIndex('response ID')
          * \param   col         The index of parameter in response call. 
          *                      First parameter has index zero
          * \param   newValue    The state to set for parameter
          **/
-        inline void setAt(uint32_t row, uint32_t col, areg::DataState newValue);
+        inline void setAt(uint32_t row, uint32_t col, DataState newValue);
 
         /**
          * \brief   Returns true if specified response index has parameters.
-         *          The response index is calculated by macro areg::respIndex('response ID')
+         *          The response index is calculated by macro respIndex('response ID')
          **/
         inline bool hasParameters(uint32_t whichRespIndex) const;
         /**
          * \brief   Returns true if valid response index. For example,
          *          the response ID RESPONSE_ID_NONE does not have valid
          *          response index. The index of response is calculated
-         *          by macro areg::respIndex('response ID')
+         *          by macro respIndex('response ID')
          * \param   whichRespIndex  The index of response, should be calculated by
-         *                          macro areg::respIndex('response ID')
+         *                          macro respIndex('response ID')
          * \return  Returns true if given index is valid
          **/
         inline bool isValidParamIndex(uint32_t whichRespIndex) const;
@@ -907,16 +907,16 @@ namespace areg
 
         /**
          * \brief   Sets all parameter states of specified entry.
-         *          The index should be calculated by areg::respIndex('response ID')
-         * \param   whichParam  The index of entry, should be calculated by areg::respIndex('response ID')
+         *          The index should be calculated by respIndex('response ID')
+         * \param   whichParam  The index of entry, should be calculated by respIndex('response ID')
          * \param   newState    The state to set
          **/
-        inline void setParamState(uint32_t whichParam, areg::DataState newState);
+        inline void setParamState(uint32_t whichParam, DataState newState);
 
         /**
          * \brief   Resets all states of parameter of specified entry index.
-         *          The index should be calculated by areg::respIndex('response ID')
-         * \param   whichParam  The index of entry, should be calculated by areg::respIndex('response ID')
+         *          The index should be calculated by respIndex('response ID')
+         * \param   whichParam  The index of entry, should be calculated by respIndex('response ID')
          **/
         void resetParamState(uint32_t whichParam);
 
@@ -950,7 +950,7 @@ namespace areg
         /**
          * \brief   Table of parameter states
          **/
-        areg::StateArray **    mParamList;
+        StateArray **    mParamList;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -963,14 +963,14 @@ namespace areg
     /**
      * \brief   Type of parameter array
      **/
-    using ParamState    = areg::ParameterArray;
+    using ParamState    = ParameterArray;
     /**
      * \brief   Type of state array
      **/
-    using AttrState     = areg::StateArray;
+    using AttrState     = StateArray;
 
     //////////////////////////////////////////////////////////////////////////
-    // areg::ProxyData class declaration
+    // ProxyData class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   ProxyData class. 
@@ -986,7 +986,7 @@ namespace areg
          * \brief   Initialize data from given service interface data object.
          * \param   ifData  Service Interface data object.
          **/
-        ProxyData(const areg::InterfaceData & ifData);
+        ProxyData(const InterfaceData & ifData);
         /**
          * \brief   Destructor
          **/
@@ -1000,41 +1000,41 @@ namespace areg
         void resetStates();
 
         /**
-         * \brief	Set state for specified request ID (range in areg::FuncIdRange)
+         * \brief	Set state for specified request ID (range in FuncIdRange)
          *          First, it will figure our whether it is attribute or response request ID.
          *          Then it will convert to index value and set appropriate entry state.
-         *          If the request ID is areg::ATTRIBUTE_SI_VERSION, it will only set
+         *          If the request ID is ATTRIBUTE_SI_VERSION, it will only set
          *          state of component implementation version.
-         * \param	msgId	    The function ID in range areg::FuncIdRange.
+         * \param	msgId	    The function ID in range FuncIdRange.
          *                      Can be either attribute or response range ID.
          *                      Otherwise it is ignored.
          * \param	newState	New state to set. If requested ID is response range,
          *                      it will set state for all parameters of that response, 
          *                      if any exist.
          **/
-        void setDataState(uint32_t msgId, areg::DataState newState);
+        void setDataState(uint32_t msgId, DataState newState);
 
         /**
          * \brief   Returns data state of given message (attribute or response) ID.
          **/
-        areg::DataState getDataState(uint32_t msgId) const;
+        DataState getDataState(uint32_t msgId) const;
 
         /**
          * \brief   Returns the response message ID of given request message ID.
          *          If message is wrong and/or is not in request to response map,
-         *          it will return areg::INVALID_MESSAGE_ID
+         *          it will return INVALID_MESSAGE_ID
          **/
         uint32_t getResponseId(uint32_t requestId) const;
 
         /**
          * \brief   Returns data state of given attribute ID
          **/
-        inline areg::DataState getAttributeState(uint32_t msgId) const;
+        inline DataState getAttributeState(uint32_t msgId) const;
 
         /**
          * \brief   Returns parameter state of given response ID
          **/
-        inline areg::DataState getParamState(uint32_t msgId) const;
+        inline DataState getParamState(uint32_t msgId) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -1044,22 +1044,22 @@ namespace areg
         /**
          * \brief   Implementation version
          **/
-        areg::DataState           mImplVersion;   // implementation version
+        DataState           mImplVersion;   // implementation version
 
         /**
          * \brief   Service Interface data
          **/
-        const areg::InterfaceData &   mIfData;        // fixed service interface data
+        const InterfaceData &   mIfData;        // fixed service interface data
 
         /**
          * \brief   Table of attribute states
          **/
-        areg::AttrState                mAttrState;     // state of attributes
+        AttrState                mAttrState;     // state of attributes
 
         /**
          * \brief   Table of response parameter state
          **/
-        areg::ParamState               mParamState;    // state of parameters in response call.
+        ParamState               mParamState;    // state of parameters in response call.
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -1071,17 +1071,17 @@ namespace areg
 
 
     /**
-     * \brief   areg::ConnectedInstance
+     * \brief   ConnectedInstance
      *          Service connected instance of application.
      **/
     struct ConnectedInstance
     {
         //!< The type of the application
-        areg::MessageSource   ciSource    { areg::MessageSource::SourceUndefined };
+        MessageSource   ciSource    { MessageSource::SourceUndefined };
         //!< The bit-set of connected instance
-        areg::InstanceBitness ciBitness   { areg::InstanceBitness::BitnessUnknown };
+        InstanceBitness ciBitness   { InstanceBitness::BitnessUnknown };
         //!< The cookie of the connected instance.
-        ITEM_ID                     ciCookie    { areg::COOKIE_UNKNOWN };
+        ITEM_ID                     ciCookie    { COOKIE_UNKNOWN };
         //!< The connection timestamp
         TIME64                      ciTimestamp { 0 };
         //!< The name of the application
@@ -1093,610 +1093,610 @@ namespace areg
     /**
      * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.
      **/
-    using MapInstances = areg::OrderedMap<ITEM_ID, areg::ConnectedInstance>;
-}
+    using MapInstances = OrderedMap<ITEM_ID, ConnectedInstance>;
 
-//////////////////////////////////////////////////////////////////////////
-// Global namespace areg inline function implementation
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE(areg::ResultType)
-AREG_IMPLEMENT_STREAMABLE(areg::DataState)
-AREG_IMPLEMENT_STREAMABLE(areg::RequestType)
-AREG_IMPLEMENT_STREAMABLE(areg::MessageDataType)
-AREG_IMPLEMENT_STREAMABLE(areg::ServiceConnectionState)
-AREG_IMPLEMENT_STREAMABLE(areg::DisconnectReason)
-AREG_IMPLEMENT_STREAMABLE(areg::RegistrationAction)
-AREG_IMPLEMENT_STREAMABLE(areg::ServiceType)
-AREG_IMPLEMENT_STREAMABLE(areg::InstanceBitness)
-AREG_IMPLEMENT_STREAMABLE(areg::MessageSource)
-AREG_IMPLEMENT_STREAMABLE(areg::FuncIdRange)
+    //////////////////////////////////////////////////////////////////////////
+    // Global namespace areg inline function implementation
+    //////////////////////////////////////////////////////////////////////////
+    AREG_IMPLEMENT_STREAMABLE(ResultType)
+    AREG_IMPLEMENT_STREAMABLE(DataState)
+    AREG_IMPLEMENT_STREAMABLE(RequestType)
+    AREG_IMPLEMENT_STREAMABLE(MessageDataType)
+    AREG_IMPLEMENT_STREAMABLE(ServiceConnectionState)
+    AREG_IMPLEMENT_STREAMABLE(DisconnectReason)
+    AREG_IMPLEMENT_STREAMABLE(RegistrationAction)
+    AREG_IMPLEMENT_STREAMABLE(ServiceType)
+    AREG_IMPLEMENT_STREAMABLE(InstanceBitness)
+    AREG_IMPLEMENT_STREAMABLE(MessageSource)
+    AREG_IMPLEMENT_STREAMABLE(FuncIdRange)
 
-//////////////////////////////////////////////////////////////////////////
-// namespace areg inline function implementation
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // namespace areg inline function implementation
+    //////////////////////////////////////////////////////////////////////////
 
-inline bool areg::isServiceConnected(areg::ServiceConnectionState connectionStatus)
-{
-    return (connectionStatus == areg::ServiceConnectionState::Connected);
-}
-
-inline bool areg::isServiceConnectionPending( areg::ServiceConnectionState connectionStatus )
-{
-    return (connectionStatus == areg::ServiceConnectionState::Pending);
-}
-
-inline bool areg::isServiceRejected( areg::ServiceConnectionState connectionStatus )
-{
-    return (connectionStatus == areg::ServiceConnectionState::Rejected);
-}
-
-inline bool areg::isServiceConnectionLost( areg::ServiceConnectionState connectionStatus )
-{
-    return (connectionStatus == areg::ServiceConnectionState::ConnectionLost);
-}
-
-inline bool areg::isServiceDisconnected( areg::ServiceConnectionState connectionStatus )
-{
-    return (connectionStatus != areg::ServiceConnectionState::Connected);
-}
-
-inline areg::ServiceConnectionState areg::serviceConnection( areg::DisconnectReason reason )
-{
-    switch ( reason )
+    inline bool isServiceConnected(ServiceConnectionState connectionStatus)
     {
-    case areg::DisconnectReason::UndefinedReason:
-        return areg::ServiceConnectionState::Unknown;
-    
-    case areg::DisconnectReason::ServiceDisconnected:
-    case areg::DisconnectReason::ServiceLost:
-    case areg::DisconnectReason::ProviderLost:
-    case areg::DisconnectReason::ConsumerLost:
-    case areg::DisconnectReason::ClientConnectionLost:
-        return areg::ServiceConnectionState::ConnectionLost;
-
-    case areg::DisconnectReason::ServiceRejected:
-    case areg::DisconnectReason::ProviderRejected:
-    case areg::DisconnectReason::ConsumerNotSupported:
-        return areg::ServiceConnectionState::Rejected;
-
-    case areg::DisconnectReason::ConsumerDisconnected:
-    case areg::DisconnectReason::ProviderDisconnected:
-    case areg::DisconnectReason::ClientConnectionClosed:
-        return areg::ServiceConnectionState::Disconnected;
-
-    case areg::DisconnectReason::SystemShutdown:
-        return areg::ServiceConnectionState::Shutdown;
-
-    default:
-        return areg::ServiceConnectionState::Connected;
+        return (connectionStatus == ServiceConnectionState::Connected);
     }
-}
 
-inline bool areg::isRequestId(uint32_t msgId)
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)) != 0);
-}
-
-inline bool areg::isResponseId(uint32_t msgId)
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)) != 0);
-}
-
-inline bool areg::isAttributeId(uint32_t msgId)
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate)) != 0);
-}
-
-inline bool areg::isServiceRegistryId( uint32_t msgId )
-{
-    return ((msgId & static_cast<uint32_t>(areg::ServiceCallType::ServiceRegisteration)) != 0);
-}
-
-inline bool areg::isEmptyFunctionId(uint32_t msgId)
-{
-    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::EmptyFunctionId));
-}
-
-inline bool areg::isVersionNotifyId( uint32_t msgId )
-{
-    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderVersion));
-}
-
-inline bool areg::isConnectNotifyId( uint32_t msgId )
-{
-    return (msgId == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection));
-}
-
-inline bool areg::isExecutableId(uint32_t msgId)
-{
-    return ( (msgId  & static_cast<uint32_t>(areg::ServiceCallType::RequestFunction)     ) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::ResponseFunction)    ) != 0 ||
-             (msgId  & static_cast<uint32_t>(areg::ServiceCallType::AttributeUpdate)   ) != 0 ||
-             (msgId == static_cast<uint32_t>(areg::ServiceCallType::NoFunction)  ) );
-}
-
-
-inline areg::MessageDataType areg::getMessageDataType( uint32_t msgId )
-{
-    if ( areg::isRequestId(msgId) )
-        return areg::MessageDataType::RequestData;
-    else if (areg::isResponseId(msgId))
-        return areg::MessageDataType::ResponseData;
-    else if (areg::isAttributeId(msgId))
-        return areg::MessageDataType::AttributeData;
-    else if (areg::isServiceRegistryId(msgId))
-        return areg::MessageDataType::ServiceData;
-    else
-        return areg::MessageDataType::UndefinedData;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// class areg::StateArray inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline const areg::DataState& areg::StateArray::operator [] (uint32_t index) const
-{
-    return StateArrayBase::operator[](index);
-}
-
-inline areg::DataState& areg::StateArray::operator [] (uint32_t index)
-{
-    return StateArrayBase::operator[](index);
-}
-
-inline uint32_t areg::StateArray::getSize() const
-{
-    return StateArrayBase::getSize();
-}
-
-inline void areg::StateArray::resetStates()
-{
-    setAllState(areg::DataState::DataIsUnavailable);
-}
-
-inline bool areg::StateArray::hasParams() const
-{
-    return (isEmpty() == false);
-}
-
-inline void areg::StateArray::setState(int32_t whichIndex, areg::DataState newState)
-{
-    mValueList[whichIndex] = newState;
-}
-
-inline void areg::StateArray::setAllState(areg::DataState newState)
-{
-    for ( uint32_t i = 0; i < this->mElemCount; ++ i )
-        mValueList[i] = newState;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// class areg::ParameterArray inline function implementation
-//////////////////////////////////////////////////////////////////////////
-inline areg::StateArray& areg::ParameterArray::operator [] ( uint32_t index )
-{
-    ASSERT(isValidParamIndex(index));
-    return *(mParamList[index]);
-}
-
-inline const areg::StateArray& areg::ParameterArray::operator [] ( uint32_t index ) const
-{
-    ASSERT(isValidParamIndex(index));
-    return *(mParamList[index]);
-}
-
-inline areg::DataState areg::ParameterArray::getAt( uint32_t row, uint32_t col ) const
-{
-    ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
-    return mParamList[row]->getAt(static_cast<uint32_t>(col));
-}
-
-inline void areg::ParameterArray::setAt( uint32_t row, uint32_t col, areg::DataState newValue )
-{
-    ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
-    mParamList[row]->setAt(static_cast<uint32_t>(col), newValue);
-}
-
-inline bool areg::ParameterArray::hasParameters( uint32_t whichRespIndex ) const
-{
-    ASSERT(isValidParamIndex(whichRespIndex));
-    return mParamList[whichRespIndex]->hasParams();
-}
-
-inline void areg::ParameterArray::resetAllStates()
-{
-    for (int col = 0; col < mElemCount; ++col)
+    inline bool isServiceConnectionPending( ServiceConnectionState connectionStatus )
     {
-        mParamList[col]->resetStates();
+        return (connectionStatus == ServiceConnectionState::Pending);
     }
-}
 
-inline bool areg::ParameterArray::isValidParamIndex(uint32_t whichRespIndex) const
-{
-    return ((static_cast<int32_t>(whichRespIndex) >= 0) && (static_cast<int32_t>(whichRespIndex) < mElemCount));
-}
-
-inline void areg::ParameterArray::setParamState(uint32_t whichParam, areg::DataState newState)
-{
-    ASSERT(isValidParamIndex(whichParam));
-    mParamList[whichParam]->setAllState(newState);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// class areg::ProxyData inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline areg::DataState areg::ProxyData::getAttributeState( uint32_t msgId ) const
-{
-    return areg::isVersionNotifyId(msgId) ? mImplVersion : mAttrState[areg::attrIndex(msgId)];
-}
-
-inline areg::DataState areg::ProxyData::getParamState( uint32_t msgId ) const
-{
-    const areg::StateArray& param = mParamState[areg::respIndex(msgId)];
-    return (param.hasParams() ? param[0u] : areg::DataState::DataIsUnavailable);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// class areg::ConnectedInstance serialization
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Serializes the instance structure to the stream.
- * \param   stream  The streaming object to serialize.
- * \param   output  The single structure of instance to serialize.
- **/
-inline OutStream& operator << (OutStream& stream, const areg::ConnectedInstance & output)
-{
-    stream << output.ciSource << output.ciBitness << output.ciCookie << output.ciTimestamp << output.ciInstance << output.ciLocation;
-    return stream;
-}
-
-/**
- * \brief   De-serializes the instance structure from the stream.
- * \param   stream  The streaming object that contains the information of the connected instance.
- * \param   input  The single structure of instance to initialize.
- **/
-inline const InStream& operator >> (const InStream& stream, areg::ConnectedInstance & input)
-{
-    stream >> input.ciSource >> input.ciBitness >> input.ciCookie >> input.ciTimestamp >> input.ciInstance >> input.ciLocation;
-    return stream;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// class NEService enumerations string conversion
-//////////////////////////////////////////////////////////////////////////
-
-inline const char* areg::getString(areg::ResultType resultType)
-{
-    switch (resultType)
+    inline bool isServiceRejected( ServiceConnectionState connectionStatus )
     {
-    case    areg::ResultType::Undefined:
-        return "areg::ResultType::Undefined";
-
-    case    areg::ResultType::Error:
-        return "areg::ResultType::Error";
-    case areg::ResultType::Undelivered:
-        return "areg::ResultType::Undelivered";
-    case    areg::ResultType::NotProcessed:
-        return "areg::ResultType::NotProcessed";
-    case areg::ResultType::Processed:
-        return "areg::ResultType::Processed";
-
-    case areg::ResultType::MessageUndelivered:
-        return "areg::ResultType::MessageUndelivered";
-
-    case    areg::ResultType::RequestOK:
-        return "areg::ResultType::RequestOK";
-    case    areg::ResultType::RequestInvalid:
-        return "areg::ResultType::RequestInvalid";
-    case    areg::ResultType::RequestError:
-        return "areg::ResultType::RequestError";
-    case    areg::ResultType::RequestBusy:
-        return "areg::ResultType::RequestBusy";
-    case    areg::ResultType::RequestCanceled:
-        return "areg::ResultType::RequestCanceled";
-
-    case    areg::ResultType::DataOK:
-        return "areg::ResultType::DataOK";
-    case    areg::ResultType::DataInvalid:
-        return "areg::ResultType::DataInvalid";
-
-    case    areg::ResultType::ServiceOK:
-        return "areg::ResultType::ServiceOK";
-    case    areg::ResultType::ServiceUnavailable:
-        return "areg::ResultType::ServiceUnavailable";
-    case    areg::ResultType::Invalid:
-        return "areg::ResultType::Invalid";
-    case    areg::ResultType::ServiceRejected:
-        return "areg::ResultType::ServiceRejected";
-
-    default:
-        ASSERT(false);
-        return "ERR: Undefined areg::ResultType value!";
+        return (connectionStatus == ServiceConnectionState::Rejected);
     }
-}
 
-inline const char* areg::getString(areg::DataState dataState)
-{
-    switch (dataState)
+    inline bool isServiceConnectionLost( ServiceConnectionState connectionStatus )
     {
-    case    areg::DataState::DataIsUndefined:
-        return "areg::DataState::DataIsUndefined";
-
-    case    areg::DataState::DataIsOK:
-        return "areg::DataState::DataIsOK";
-
-    case    areg::DataState::DataIsInvalid:
-        return "areg::DataState::DataIsInvalid";
-
-    case    areg::DataState::DataIsUnavailable:
-        return "areg::DataState::DataIsUnavailable";
-
-    case    areg::DataState::DataUnexpectedError:
-        return "areg::DataState::DataUnexpectedError";
-
-    default:
-        ASSERT(false);
-        return "ERR: Undefined areg::DataState value!";
+        return (connectionStatus == ServiceConnectionState::ConnectionLost);
     }
-}
 
-inline const char* areg::getString( areg::RequestType resultType )
-{
-    switch (resultType)
+    inline bool isServiceDisconnected( ServiceConnectionState connectionStatus )
     {
-    case    areg::RequestType::Unprocessed:
-        return "areg::RequestType::Unprocessed";
-    case    areg::RequestType::StartNotify:
-        return "areg::RequestType::StartNotify";
-    case    areg::RequestType::StopNotify:
-        return "areg::RequestType::StopNotify";        
-    case    areg::RequestType::RemoveAllNotify:
-        return "areg::RequestType::RemoveAllNotify";
-    case    areg::RequestType::CallFunction:
-        return "areg::RequestType::CallFunction";
-    case    areg::RequestType::ServiceConnection:
-        return "areg::RequestType::ServiceConnection";
-    case    areg::RequestType::ClientConnection:
-        return "areg::RequestType::ClientConnection";
-    case    areg::RequestType::LoadComponent:
-        return "areg::RequestType::LoadComponent";
-    default:
-        ASSERT(false);
-        return "ERR: Undefined areg::RequestType value!";
+        return (connectionStatus != ServiceConnectionState::Connected);
     }
-}
 
-inline const char* areg::getString( areg::MessageDataType dataType )
-{
-    switch (dataType)
+    inline ServiceConnectionState serviceConnection( DisconnectReason reason )
     {
-    case areg::MessageDataType::UndefinedData:
-        return "areg::MessageDataType::UndefinedData";
-    case areg::MessageDataType::RequestData:
-        return "areg::MessageDataType::RequestData";
-    case areg::MessageDataType::ResponseData:
-        return "areg::MessageDataType::ResponseData";
-    case areg::MessageDataType::AttributeData:
-        return "areg::MessageDataType::AttributeData";
-    case areg::MessageDataType::ServiceData:
-        return "areg::MessageDataType::ServiceData";
-
-    default:
-        ASSERT(false);
-        return "ERR: Undefined areg::MessageDataType value!";
-    }
-}
-
-inline const char* areg::getString( areg::ServiceConnectionState serviceConnection )
-{
-    switch (serviceConnection)
-    {
-    case areg::ServiceConnectionState::Unknown:
-        return "areg::ServiceConnectionState::Unknown";
-    case areg::ServiceConnectionState::Connected:
-        return "areg::ServiceConnectionState::Connected";
-    case areg::ServiceConnectionState::Pending:
-        return "areg::ServiceConnectionState::Pending";
-    case areg::ServiceConnectionState::Disconnected:
-        return "areg::ServiceConnectionState::Disconnected";
-    case areg::ServiceConnectionState::ConnectionLost:
-        return "areg::ServiceConnectionState::ConnectionLost";
-    case areg::ServiceConnectionState::Rejected:
-        return "areg::ServiceConnectionState::Rejected";
-    case areg::ServiceConnectionState::Failed:
-        return "areg::ServiceConnectionState::Failed";
-    case areg::ServiceConnectionState::Shutdown:
-        return "areg::ServiceConnectionState::Shutdown";
-    default:
-        ASSERT(false);
-        return "ERR: Undefined areg::ServiceConnectionState value!";
-    }
-}
-
-inline const char * areg::getString( areg::DisconnectReason reason )
-{
-    switch ( reason )
-    {
-    case areg::DisconnectReason::UndefinedReason:
-        return "areg::DisconnectReason::UndefinedReason";
-    case areg::DisconnectReason::ServiceDisconnected:
-        return "areg::DisconnectReason::ServiceDisconnected";
-    case areg::DisconnectReason::ServiceLost:
-        return "areg::DisconnectReason::ServiceLost";
-    case areg::DisconnectReason::ServiceRejected:
-        return "areg::DisconnectReason::ServiceRejected";
-    case areg::DisconnectReason::ProviderDisconnected:
-        return "areg::DisconnectReason::ProviderDisconnected";
-    case areg::DisconnectReason::ProviderLost:
-        return "areg::DisconnectReason::ProviderLost";
-    case areg::DisconnectReason::ProviderRejected:
-        return "areg::DisconnectReason::ProviderRejected";
-    case areg::DisconnectReason::ConsumerDisconnected:
-        return "areg::DisconnectReason::ConsumerDisconnected";
-    case areg::DisconnectReason::ConsumerLost:
-        return "areg::DisconnectReason::ConsumerLost";
-    case areg::DisconnectReason::ConsumerNotSupported:
-        return "areg::DisconnectReason::ConsumerNotSupported";
-    case areg::DisconnectReason::SystemShutdown:
-        return "areg::DisconnectReason::SystemShutdown";
-    case areg::DisconnectReason::ClientConnectionLost:
-        return "areg::DisconnectReason::ClientConnectionLost";
-    case areg::DisconnectReason::ClientConnectionClosed:
-        return "areg::DisconnectReason::ClientConnectionClosed";
-    default:
-        ASSERT( false );
-        return "ERR: Undefined areg::DisconnectReason value!";
-    }
-}
-
-inline const char * areg::getString( areg::RegistrationAction svcRequestType )
-{
-    switch ( svcRequestType )
-    {
-    case areg::RegistrationAction::RegisterClient:
-        return "areg::RegistrationAction::RegisterClient";
-    case areg::RegistrationAction::UnregisterClient:
-        return "areg::RegistrationAction::UnregisterClient";
-    case areg::RegistrationAction::RegisterStub:
-        return "areg::RegisterStub";
-    case areg::RegistrationAction::UnregisterStub:
-        return "areg::RegistrationAction::UnregisterStub";
-    default:
-        return "ERR: Unexpected areg::RegistrationAction value!!!";
-    }
-}
-
-inline const char * areg::getString( areg::ServiceType srvcType )
-{
-    switch ( srvcType )
-    {
-    case areg::ServiceType::Local:
-        return "areg::ServiceType::Local";
-    case areg::ServiceType::Public:
-        return "areg::ServiceType::Public";
-    case areg::ServiceType::Any:
-        return "areg::ServiceType::Any";
-    case areg::ServiceType::Invalid:
-        return "areg::ServiceType::Invalid";
-    default:
-        return "ERR: Unexpected areg::RegistrationAction value!!!";
-    }
-}
-
-const char* areg::getString(areg::InstanceBitness bitness)
-{
-    switch (bitness)
-    {
-    case areg::InstanceBitness::Bitness32:
-        return "areg::InstanceBitness::Bitness32";
-    case areg::InstanceBitness::Bitness64:
-        return "areg::InstanceBitness::Bitness64";
-    case areg::InstanceBitness::BitnessUnknown:
-        return "areg::InstanceBitness::BitnessUnknown";
-    default:
-        return "ERR: Unexpected areg::InstanceBitness value!!!";
-    }
-}
-
-
-const char * areg::getString(areg::MessageSource msgSource)
-{
-    switch (msgSource)
-    {
-    case areg::MessageSource::SourceUndefined:
-        return "areg::MessageSource::SourceUndefined";
-    case areg::MessageSource::SourceClient:
-        return "areg::MessageSource::SourceClient";
-    case areg::MessageSource::SourceService:
-        return "areg::MessageSource::SourceService";
-    case areg::MessageSource::SourceObserver:
-        return "areg::MessageSource::SourceObserver";
-    case areg::MessageSource::SourceTest:
-        return "areg::MessageSource::SourceTest";
-    case areg::MessageSource::SourceSimulation:
-        return "areg::MessageSource::SourceSimulation";
-    default:
-        return "ERR: Unexpected areg::MessageSource value!!!";
-    }
-}
-
-
-inline const char * areg::getString( areg::FuncIdRange funcId )
-{
-    switch ( funcId )
-    {
-    case areg::FuncIdRange::EmptyFunctionId:
-        return "areg::FuncIdRange::EmptyFunctionId";
-    case areg::FuncIdRange::ComponentCleanup:
-        return "areg::FuncIdRange::ComponentCleanup";
-    case areg::FuncIdRange::RequestRegisterService:
-        return "areg::FuncIdRange::RequestRegisterService";
-    case areg::FuncIdRange::RequestServiceProviderVersion:
-        return "areg::FuncIdRange::RequestServiceProviderVersion";
-    case areg::FuncIdRange::ResponseServiceProviderVersion:
-        return "areg::FuncIdRange::ResponseServiceProviderVersion";
-    case areg::FuncIdRange::RequestServiceProviderConnection:
-        return "areg::FuncIdRange::RequestServiceProviderConnection";
-    case areg::FuncIdRange::ResponseServiceProviderConnection:
-        return "areg::FuncIdRange::ResponseServiceProviderConnection";
-    case areg::FuncIdRange::SystemServiceConnect:
-        return "areg::FuncIdRange::SystemServiceConnect";
-    case areg::FuncIdRange::SystemServiceDisconnect:
-        return "areg::FuncIdRange::SystemServiceDisconnect";
-    case areg::FuncIdRange::SystemServiceNotifyConnection:
-        return "areg::FuncIdRange::SystemServiceNotifyConnection";
-    case areg::FuncIdRange::SystemServiceQueryInstances:
-        return "areg::FuncIdRange::SystemServiceQueryInstances";
-    case areg::FuncIdRange::SystemServiceNotifyInstances:
-        return "areg::FuncIdRange::SystemServiceNotifyInstances";
-    case areg::FuncIdRange::SystemServiceRequestRegister:
-        return "areg::FuncIdRange::SystemServiceRequestRegister";
-    case areg::FuncIdRange::SystemServiceNotifyRegister:
-        return "areg::FuncIdRange::SystemServiceNotifyRegister";
-    case areg::FuncIdRange::ServiceLogRegisterScopes:
-        return "areg::FuncIdRange::ServiceLogRegisterScopes";
-    case areg::FuncIdRange::ServiceLogUpdateScopes:
-        return "areg::FuncIdRange::ServiceLogUpdateScopes";
-    case areg::FuncIdRange::ServiceLogQueryScopes:
-        return "areg::FuncIdRange::ServiceLogQueryScopes";
-    case areg::FuncIdRange::ServiceLogScopesUpdated:
-        return "areg::FuncIdRange::ServiceLogScopesUpdated";
-    case areg::FuncIdRange::ServiceSaveLogConfiguration:
-        return "areg::FuncIdRange::ServiceSaveLogConfiguration";
-    case areg::FuncIdRange::ServiceLogConfigurationSaved:
-        return "areg::FuncIdRange::ServiceLogConfigurationSaved";
-    case areg::FuncIdRange::ServiceLogMessage:
-        return "areg::FuncIdRange::ServiceLogMessage";
-    case areg::FuncIdRange::RequestFirstId:
-        return "areg::FuncIdRange::RequestFirstId";
-    case areg::FuncIdRange::ResponseFirstId:
-        return "areg::FuncIdRange::ResponseFirstId";
-    case areg::FuncIdRange::AttributeFirstId:
-        return "areg::FuncIdRange::AttributeFirstId";
-    case areg::FuncIdRange::RequestLastId:
-        return "areg::FuncIdRange::RequestLastId";
-    case areg::FuncIdRange::ResponseLastId:
-        return "areg::FuncIdRange::ResponseLastId";
-    case areg::FuncIdRange::AttributeLastId:
-        return "areg::FuncIdRange::AttributeLastId";
-    case areg::FuncIdRange::ServiceLastId:
-        return "areg::FuncIdRange::ServiceLastId";
-
-    default:
+        switch ( reason )
         {
-            if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::RequestFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::RequestLastId)) )
-                return "Request ID range";
-            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::ResponseFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::ResponseLastId)) )
-                return "Response ID range";
-            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::AttributeFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::AttributeLastId)) )
-                return "Attribute ID range";
-            else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(areg::FuncIdRange::RequestRegisterService)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(areg::FuncIdRange::ServiceLastId)) )
-                return "Service registration ID";
-            else
-                return "ERR: Unexpected ID";
+        case DisconnectReason::UndefinedReason:
+            return ServiceConnectionState::Unknown;
+        
+        case DisconnectReason::ServiceDisconnected:
+        case DisconnectReason::ServiceLost:
+        case DisconnectReason::ProviderLost:
+        case DisconnectReason::ConsumerLost:
+        case DisconnectReason::ClientConnectionLost:
+            return ServiceConnectionState::ConnectionLost;
+
+        case DisconnectReason::ServiceRejected:
+        case DisconnectReason::ProviderRejected:
+        case DisconnectReason::ConsumerNotSupported:
+            return ServiceConnectionState::Rejected;
+
+        case DisconnectReason::ConsumerDisconnected:
+        case DisconnectReason::ProviderDisconnected:
+        case DisconnectReason::ClientConnectionClosed:
+            return ServiceConnectionState::Disconnected;
+
+        case DisconnectReason::SystemShutdown:
+            return ServiceConnectionState::Shutdown;
+
+        default:
+            return ServiceConnectionState::Connected;
         }
     }
-}
 
+    inline bool isRequestId(uint32_t msgId)
+    {
+        return ((msgId & static_cast<uint32_t>(ServiceCallType::RequestFunction)) != 0);
+    }
+
+    inline bool isResponseId(uint32_t msgId)
+    {
+        return ((msgId & static_cast<uint32_t>(ServiceCallType::ResponseFunction)) != 0);
+    }
+
+    inline bool isAttributeId(uint32_t msgId)
+    {
+        return ((msgId & static_cast<uint32_t>(ServiceCallType::AttributeUpdate)) != 0);
+    }
+
+    inline bool isServiceRegistryId( uint32_t msgId )
+    {
+        return ((msgId & static_cast<uint32_t>(ServiceCallType::ServiceRegisteration)) != 0);
+    }
+
+    inline bool isEmptyFunctionId(uint32_t msgId)
+    {
+        return (msgId == static_cast<uint32_t>(FuncIdRange::EmptyFunctionId));
+    }
+
+    inline bool isVersionNotifyId( uint32_t msgId )
+    {
+        return (msgId == static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderVersion));
+    }
+
+    inline bool isConnectNotifyId( uint32_t msgId )
+    {
+        return (msgId == static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection));
+    }
+
+    inline bool isExecutableId(uint32_t msgId)
+    {
+        return ( (msgId  & static_cast<uint32_t>(ServiceCallType::RequestFunction)     ) != 0 ||
+                (msgId  & static_cast<uint32_t>(ServiceCallType::ResponseFunction)    ) != 0 ||
+                (msgId  & static_cast<uint32_t>(ServiceCallType::AttributeUpdate)   ) != 0 ||
+                (msgId == static_cast<uint32_t>(ServiceCallType::NoFunction)  ) );
+    }
+
+
+    inline MessageDataType getMessageDataType( uint32_t msgId )
+    {
+        if ( isRequestId(msgId) )
+            return MessageDataType::RequestData;
+        else if (isResponseId(msgId))
+            return MessageDataType::ResponseData;
+        else if (isAttributeId(msgId))
+            return MessageDataType::AttributeData;
+        else if (isServiceRegistryId(msgId))
+            return MessageDataType::ServiceData;
+        else
+            return MessageDataType::UndefinedData;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // class StateArray inline function implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    inline const DataState& StateArray::operator [] (uint32_t index) const
+    {
+        return StateArrayBase::operator[](index);
+    }
+
+    inline DataState& StateArray::operator [] (uint32_t index)
+    {
+        return StateArrayBase::operator[](index);
+    }
+
+    inline uint32_t StateArray::getSize() const
+    {
+        return StateArrayBase::getSize();
+    }
+
+    inline void StateArray::resetStates()
+    {
+        setAllState(DataState::DataIsUnavailable);
+    }
+
+    inline bool StateArray::hasParams() const
+    {
+        return (isEmpty() == false);
+    }
+
+    inline void StateArray::setState(int32_t whichIndex, DataState newState)
+    {
+        mValueList[whichIndex] = newState;
+    }
+
+    inline void StateArray::setAllState(DataState newState)
+    {
+        for ( uint32_t i = 0; i < this->mElemCount; ++ i )
+            mValueList[i] = newState;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // class ParameterArray inline function implementation
+    //////////////////////////////////////////////////////////////////////////
+    inline StateArray& ParameterArray::operator [] ( uint32_t index )
+    {
+        ASSERT(isValidParamIndex(index));
+        return *(mParamList[index]);
+    }
+
+    inline const StateArray& ParameterArray::operator [] ( uint32_t index ) const
+    {
+        ASSERT(isValidParamIndex(index));
+        return *(mParamList[index]);
+    }
+
+    inline DataState ParameterArray::getAt( uint32_t row, uint32_t col ) const
+    {
+        ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
+        return mParamList[row]->getAt(static_cast<uint32_t>(col));
+    }
+
+    inline void ParameterArray::setAt( uint32_t row, uint32_t col, DataState newValue )
+    {
+        ASSERT(isValidParamIndex(row) && mParamList[row]->isValidIndex(static_cast<uint32_t>(col)));
+        mParamList[row]->setAt(static_cast<uint32_t>(col), newValue);
+    }
+
+    inline bool ParameterArray::hasParameters( uint32_t whichRespIndex ) const
+    {
+        ASSERT(isValidParamIndex(whichRespIndex));
+        return mParamList[whichRespIndex]->hasParams();
+    }
+
+    inline void ParameterArray::resetAllStates()
+    {
+        for (int col = 0; col < mElemCount; ++col)
+        {
+            mParamList[col]->resetStates();
+        }
+    }
+
+    inline bool ParameterArray::isValidParamIndex(uint32_t whichRespIndex) const
+    {
+        return ((static_cast<int32_t>(whichRespIndex) >= 0) && (static_cast<int32_t>(whichRespIndex) < mElemCount));
+    }
+
+    inline void ParameterArray::setParamState(uint32_t whichParam, DataState newState)
+    {
+        ASSERT(isValidParamIndex(whichParam));
+        mParamList[whichParam]->setAllState(newState);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // class ProxyData inline function implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    inline DataState ProxyData::getAttributeState( uint32_t msgId ) const
+    {
+        return isVersionNotifyId(msgId) ? mImplVersion : mAttrState[attrIndex(msgId)];
+    }
+
+    inline DataState ProxyData::getParamState( uint32_t msgId ) const
+    {
+        const StateArray& param = mParamState[respIndex(msgId)];
+        return (param.hasParams() ? param[0u] : DataState::DataIsUnavailable);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // class ConnectedInstance serialization
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Serializes the instance structure to the stream.
+     * \param   stream  The streaming object to serialize.
+     * \param   output  The single structure of instance to serialize.
+     **/
+    inline OutStream& operator << (OutStream& stream, const ConnectedInstance & output)
+    {
+        stream << output.ciSource << output.ciBitness << output.ciCookie << output.ciTimestamp << output.ciInstance << output.ciLocation;
+        return stream;
+    }
+
+    /**
+     * \brief   De-serializes the instance structure from the stream.
+     * \param   stream  The streaming object that contains the information of the connected instance.
+     * \param   input  The single structure of instance to initialize.
+     **/
+    inline const InStream& operator >> (const InStream& stream, ConnectedInstance & input)
+    {
+        stream >> input.ciSource >> input.ciBitness >> input.ciCookie >> input.ciTimestamp >> input.ciInstance >> input.ciLocation;
+        return stream;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // class NEService enumerations string conversion
+    //////////////////////////////////////////////////////////////////////////
+
+    inline const char* getString(ResultType resultType)
+    {
+        switch (resultType)
+        {
+        case    ResultType::Undefined:
+            return "ResultType::Undefined";
+
+        case    ResultType::Error:
+            return "ResultType::Error";
+        case ResultType::Undelivered:
+            return "ResultType::Undelivered";
+        case    ResultType::NotProcessed:
+            return "ResultType::NotProcessed";
+        case ResultType::Processed:
+            return "ResultType::Processed";
+
+        case ResultType::MessageUndelivered:
+            return "ResultType::MessageUndelivered";
+
+        case    ResultType::RequestOK:
+            return "ResultType::RequestOK";
+        case    ResultType::RequestInvalid:
+            return "ResultType::RequestInvalid";
+        case    ResultType::RequestError:
+            return "ResultType::RequestError";
+        case    ResultType::RequestBusy:
+            return "ResultType::RequestBusy";
+        case    ResultType::RequestCanceled:
+            return "ResultType::RequestCanceled";
+
+        case    ResultType::DataOK:
+            return "ResultType::DataOK";
+        case    ResultType::DataInvalid:
+            return "ResultType::DataInvalid";
+
+        case    ResultType::ServiceOK:
+            return "ResultType::ServiceOK";
+        case    ResultType::ServiceUnavailable:
+            return "ResultType::ServiceUnavailable";
+        case    ResultType::Invalid:
+            return "ResultType::Invalid";
+        case    ResultType::ServiceRejected:
+            return "ResultType::ServiceRejected";
+
+        default:
+            ASSERT(false);
+            return "ERR: Undefined ResultType value!";
+        }
+    }
+
+    inline const char* getString(DataState dataState)
+    {
+        switch (dataState)
+        {
+        case    DataState::DataIsUndefined:
+            return "DataState::DataIsUndefined";
+
+        case    DataState::DataIsOK:
+            return "DataState::DataIsOK";
+
+        case    DataState::DataIsInvalid:
+            return "DataState::DataIsInvalid";
+
+        case    DataState::DataIsUnavailable:
+            return "DataState::DataIsUnavailable";
+
+        case    DataState::DataUnexpectedError:
+            return "DataState::DataUnexpectedError";
+
+        default:
+            ASSERT(false);
+            return "ERR: Undefined DataState value!";
+        }
+    }
+
+    inline const char* getString( RequestType resultType )
+    {
+        switch (resultType)
+        {
+        case    RequestType::Unprocessed:
+            return "RequestType::Unprocessed";
+        case    RequestType::StartNotify:
+            return "RequestType::StartNotify";
+        case    RequestType::StopNotify:
+            return "RequestType::StopNotify";        
+        case    RequestType::RemoveAllNotify:
+            return "RequestType::RemoveAllNotify";
+        case    RequestType::CallFunction:
+            return "RequestType::CallFunction";
+        case    RequestType::ServiceConnection:
+            return "RequestType::ServiceConnection";
+        case    RequestType::ClientConnection:
+            return "RequestType::ClientConnection";
+        case    RequestType::LoadComponent:
+            return "RequestType::LoadComponent";
+        default:
+            ASSERT(false);
+            return "ERR: Undefined RequestType value!";
+        }
+    }
+
+    inline const char* getString( MessageDataType dataType )
+    {
+        switch (dataType)
+        {
+        case MessageDataType::UndefinedData:
+            return "MessageDataType::UndefinedData";
+        case MessageDataType::RequestData:
+            return "MessageDataType::RequestData";
+        case MessageDataType::ResponseData:
+            return "MessageDataType::ResponseData";
+        case MessageDataType::AttributeData:
+            return "MessageDataType::AttributeData";
+        case MessageDataType::ServiceData:
+            return "MessageDataType::ServiceData";
+
+        default:
+            ASSERT(false);
+            return "ERR: Undefined MessageDataType value!";
+        }
+    }
+
+    inline const char* getString( ServiceConnectionState serviceConnection )
+    {
+        switch (serviceConnection)
+        {
+        case ServiceConnectionState::Unknown:
+            return "ServiceConnectionState::Unknown";
+        case ServiceConnectionState::Connected:
+            return "ServiceConnectionState::Connected";
+        case ServiceConnectionState::Pending:
+            return "ServiceConnectionState::Pending";
+        case ServiceConnectionState::Disconnected:
+            return "ServiceConnectionState::Disconnected";
+        case ServiceConnectionState::ConnectionLost:
+            return "ServiceConnectionState::ConnectionLost";
+        case ServiceConnectionState::Rejected:
+            return "ServiceConnectionState::Rejected";
+        case ServiceConnectionState::Failed:
+            return "ServiceConnectionState::Failed";
+        case ServiceConnectionState::Shutdown:
+            return "ServiceConnectionState::Shutdown";
+        default:
+            ASSERT(false);
+            return "ERR: Undefined ServiceConnectionState value!";
+        }
+    }
+
+    inline const char * getString( DisconnectReason reason )
+    {
+        switch ( reason )
+        {
+        case DisconnectReason::UndefinedReason:
+            return "DisconnectReason::UndefinedReason";
+        case DisconnectReason::ServiceDisconnected:
+            return "DisconnectReason::ServiceDisconnected";
+        case DisconnectReason::ServiceLost:
+            return "DisconnectReason::ServiceLost";
+        case DisconnectReason::ServiceRejected:
+            return "DisconnectReason::ServiceRejected";
+        case DisconnectReason::ProviderDisconnected:
+            return "DisconnectReason::ProviderDisconnected";
+        case DisconnectReason::ProviderLost:
+            return "DisconnectReason::ProviderLost";
+        case DisconnectReason::ProviderRejected:
+            return "DisconnectReason::ProviderRejected";
+        case DisconnectReason::ConsumerDisconnected:
+            return "DisconnectReason::ConsumerDisconnected";
+        case DisconnectReason::ConsumerLost:
+            return "DisconnectReason::ConsumerLost";
+        case DisconnectReason::ConsumerNotSupported:
+            return "DisconnectReason::ConsumerNotSupported";
+        case DisconnectReason::SystemShutdown:
+            return "DisconnectReason::SystemShutdown";
+        case DisconnectReason::ClientConnectionLost:
+            return "DisconnectReason::ClientConnectionLost";
+        case DisconnectReason::ClientConnectionClosed:
+            return "DisconnectReason::ClientConnectionClosed";
+        default:
+            ASSERT( false );
+            return "ERR: Undefined DisconnectReason value!";
+        }
+    }
+
+    inline const char * getString( RegistrationAction svcRequestType )
+    {
+        switch ( svcRequestType )
+        {
+        case RegistrationAction::RegisterClient:
+            return "RegistrationAction::RegisterClient";
+        case RegistrationAction::UnregisterClient:
+            return "RegistrationAction::UnregisterClient";
+        case RegistrationAction::RegisterStub:
+            return "RegisterStub";
+        case RegistrationAction::UnregisterStub:
+            return "RegistrationAction::UnregisterStub";
+        default:
+            return "ERR: Unexpected RegistrationAction value!!!";
+        }
+    }
+
+    inline const char * getString( ServiceType srvcType )
+    {
+        switch ( srvcType )
+        {
+        case ServiceType::Local:
+            return "ServiceType::Local";
+        case ServiceType::Public:
+            return "ServiceType::Public";
+        case ServiceType::Any:
+            return "ServiceType::Any";
+        case ServiceType::Invalid:
+            return "ServiceType::Invalid";
+        default:
+            return "ERR: Unexpected RegistrationAction value!!!";
+        }
+    }
+
+    const char* getString(InstanceBitness bitness)
+    {
+        switch (bitness)
+        {
+        case InstanceBitness::Bitness32:
+            return "InstanceBitness::Bitness32";
+        case InstanceBitness::Bitness64:
+            return "InstanceBitness::Bitness64";
+        case InstanceBitness::BitnessUnknown:
+            return "InstanceBitness::BitnessUnknown";
+        default:
+            return "ERR: Unexpected InstanceBitness value!!!";
+        }
+    }
+
+
+    const char * getString(MessageSource msgSource)
+    {
+        switch (msgSource)
+        {
+        case MessageSource::SourceUndefined:
+            return "MessageSource::SourceUndefined";
+        case MessageSource::SourceClient:
+            return "MessageSource::SourceClient";
+        case MessageSource::SourceService:
+            return "MessageSource::SourceService";
+        case MessageSource::SourceObserver:
+            return "MessageSource::SourceObserver";
+        case MessageSource::SourceTest:
+            return "MessageSource::SourceTest";
+        case MessageSource::SourceSimulation:
+            return "MessageSource::SourceSimulation";
+        default:
+            return "ERR: Unexpected MessageSource value!!!";
+        }
+    }
+
+
+    inline const char * getString( FuncIdRange funcId )
+    {
+        switch ( funcId )
+        {
+        case FuncIdRange::EmptyFunctionId:
+            return "FuncIdRange::EmptyFunctionId";
+        case FuncIdRange::ComponentCleanup:
+            return "FuncIdRange::ComponentCleanup";
+        case FuncIdRange::RequestRegisterService:
+            return "FuncIdRange::RequestRegisterService";
+        case FuncIdRange::RequestServiceProviderVersion:
+            return "FuncIdRange::RequestServiceProviderVersion";
+        case FuncIdRange::ResponseServiceProviderVersion:
+            return "FuncIdRange::ResponseServiceProviderVersion";
+        case FuncIdRange::RequestServiceProviderConnection:
+            return "FuncIdRange::RequestServiceProviderConnection";
+        case FuncIdRange::ResponseServiceProviderConnection:
+            return "FuncIdRange::ResponseServiceProviderConnection";
+        case FuncIdRange::SystemServiceConnect:
+            return "FuncIdRange::SystemServiceConnect";
+        case FuncIdRange::SystemServiceDisconnect:
+            return "FuncIdRange::SystemServiceDisconnect";
+        case FuncIdRange::SystemServiceNotifyConnection:
+            return "FuncIdRange::SystemServiceNotifyConnection";
+        case FuncIdRange::SystemServiceQueryInstances:
+            return "FuncIdRange::SystemServiceQueryInstances";
+        case FuncIdRange::SystemServiceNotifyInstances:
+            return "FuncIdRange::SystemServiceNotifyInstances";
+        case FuncIdRange::SystemServiceRequestRegister:
+            return "FuncIdRange::SystemServiceRequestRegister";
+        case FuncIdRange::SystemServiceNotifyRegister:
+            return "FuncIdRange::SystemServiceNotifyRegister";
+        case FuncIdRange::ServiceLogRegisterScopes:
+            return "FuncIdRange::ServiceLogRegisterScopes";
+        case FuncIdRange::ServiceLogUpdateScopes:
+            return "FuncIdRange::ServiceLogUpdateScopes";
+        case FuncIdRange::ServiceLogQueryScopes:
+            return "FuncIdRange::ServiceLogQueryScopes";
+        case FuncIdRange::ServiceLogScopesUpdated:
+            return "FuncIdRange::ServiceLogScopesUpdated";
+        case FuncIdRange::ServiceSaveLogConfiguration:
+            return "FuncIdRange::ServiceSaveLogConfiguration";
+        case FuncIdRange::ServiceLogConfigurationSaved:
+            return "FuncIdRange::ServiceLogConfigurationSaved";
+        case FuncIdRange::ServiceLogMessage:
+            return "FuncIdRange::ServiceLogMessage";
+        case FuncIdRange::RequestFirstId:
+            return "FuncIdRange::RequestFirstId";
+        case FuncIdRange::ResponseFirstId:
+            return "FuncIdRange::ResponseFirstId";
+        case FuncIdRange::AttributeFirstId:
+            return "FuncIdRange::AttributeFirstId";
+        case FuncIdRange::RequestLastId:
+            return "FuncIdRange::RequestLastId";
+        case FuncIdRange::ResponseLastId:
+            return "FuncIdRange::ResponseLastId";
+        case FuncIdRange::AttributeLastId:
+            return "FuncIdRange::AttributeLastId";
+        case FuncIdRange::ServiceLastId:
+            return "FuncIdRange::ServiceLastId";
+
+        default:
+            {
+                if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(FuncIdRange::RequestFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(FuncIdRange::RequestLastId)) )
+                    return "Request ID range";
+                else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(FuncIdRange::ResponseFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(FuncIdRange::ResponseLastId)) )
+                    return "Response ID range";
+                else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(FuncIdRange::AttributeFirstId)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(FuncIdRange::AttributeLastId)) )
+                    return "Attribute ID range";
+                else if ( (static_cast<uint32_t>(funcId) > static_cast<uint32_t>(FuncIdRange::RequestRegisterService)) && (static_cast<uint32_t>(funcId) < static_cast<uint32_t>(FuncIdRange::ServiceLastId)) )
+                    return "Service registration ID";
+                else
+                    return "ERR: Unexpected ID";
+            }
+        }
+    }
+
+} // namespace areg
 #endif  // AREG_COMPONENT_SERVICEDEFS_HPP

@@ -576,7 +576,7 @@ namespace areg
  * \param   input   The areg::Primitive item to initialize from stream
  * \return  Reading streaming object
  **/
-inline const InStream & operator >> (const InStream & stream, areg::Primitive & input)
+inline const areg::InStream & operator >> (const areg::InStream & stream, areg::Primitive & input)
 {
     stream.read( reinterpret_cast<uint8_t *>(&input), sizeof(areg::Primitive) );
     return stream;
@@ -589,7 +589,7 @@ inline const InStream & operator >> (const InStream & stream, areg::Primitive & 
  * \param   output  The areg::Primitive item to write to stream
  * \return  Writing streaming object
  **/
-inline OutStream & operator << (OutStream & stream, const areg::Primitive & output)
+inline areg::OutStream & operator << (areg::OutStream & stream, const areg::Primitive & output)
 {
     stream.write( reinterpret_cast<const uint8_t *>(&output), sizeof(areg::Primitive) );
     return stream;

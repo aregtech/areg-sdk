@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
+namespace areg { class InStream; }
 
 namespace areg
 {
@@ -108,7 +108,7 @@ namespace areg
          * \brief   Initialization constructor. Initialize variables from given stream
          * \param   stream  Input Streaming object that contains Thread Address data.
          **/
-        ThreadAddress( const InStream & stream );
+        ThreadAddress( const areg::InStream & stream );
         /**
          * \brief   Destructor
          **/
@@ -162,7 +162,7 @@ namespace areg
          * \param	input	The reference to Thread Address object to initialize data.
          * \return	Reference to streaming object.
          **/
-        friend inline const InStream & operator >> ( const InStream & stream, ThreadAddress & input );
+        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, ThreadAddress & input );
 
         /**
          * \brief	Write data to streaming object and copies Thread Address object.
@@ -170,7 +170,7 @@ namespace areg
          * \param	output	The reference to Thread Address object to get data
          * \return	Reference to streaming object.
          **/
-        friend inline OutStream & operator << ( OutStream & stream, const ThreadAddress & output);
+        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const ThreadAddress & output);
 
     //////////////////////////////////////////////////////////////////////////
     // ThreadAddress operations and attributes
@@ -288,12 +288,12 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Global operators for ThreadAddress class
     //////////////////////////////////////////////////////////////////////////
-    inline const InStream & operator >> (const InStream & stream, ThreadAddress & input)
+    inline const areg::InStream & operator >> (const areg::InStream & stream, ThreadAddress & input)
     {
         return ( stream >> input.mThreadName );
     }
 
-    inline OutStream & operator << (OutStream & stream, const ThreadAddress & output)
+    inline areg::OutStream & operator << (areg::OutStream & stream, const ThreadAddress & output)
     {
         return ( stream << output.mThreadName );
     }

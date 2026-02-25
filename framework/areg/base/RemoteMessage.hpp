@@ -122,7 +122,7 @@ namespace areg
          * \param	input	The Remote Buffer object to write data
          * \return	Reference to Streaming object.
          **/
-        friend inline const InStream & operator >> ( const InStream & stream, RemoteMessage & input );
+        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, RemoteMessage & input );
 
         /**
          * \brief	Friend operator to make Remote Message streamable.
@@ -131,7 +131,7 @@ namespace areg
          * \param	output	The Remote Message object to read data
          * \return	Reference to Streaming object.
          **/
-        friend inline OutStream & operator << ( OutStream & stream, const RemoteMessage & output );
+        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const RemoteMessage & output );
 
     //////////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -398,9 +398,9 @@ namespace areg
     // Friend streamable operators
     /************************************************************************/
 
-    inline const InStream & operator >> (const InStream & stream, RemoteMessage & input)
+    inline const areg::InStream & operator >> (const areg::InStream & stream, RemoteMessage & input)
     {
-        if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
+        if ( static_cast<const areg::InStream *>(&stream) != static_cast<const areg::InStream *>(&input) )
         {
             stream.read(input);
             input.moveToBegin();
@@ -409,9 +409,9 @@ namespace areg
         return stream;
     }
 
-    inline OutStream & operator << (OutStream & stream, const RemoteMessage & output)
+    inline areg::OutStream & operator << (areg::OutStream & stream, const RemoteMessage & output)
     {
-        if ( (static_cast<const OutStream *>(&stream)) != (static_cast<const OutStream *>(&output)) )
+        if ( (static_cast<const areg::OutStream *>(&stream)) != (static_cast<const areg::OutStream *>(&output)) )
         {
             stream.write( output );
         }

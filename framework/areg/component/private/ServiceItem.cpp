@@ -59,7 +59,7 @@ ServiceItem::ServiceItem( const areg::String & serviceName, const areg::Version 
     mMagicNum = ServiceItem::_magicNumber(*this);
 }
 
-ServiceItem::ServiceItem( const InStream & stream )
+ServiceItem::ServiceItem( const areg::InStream & stream )
     : mServiceName      ( stream )
     , mServiceVersion   ( stream )
     , mServiceType      ( areg::ServiceType::Local )

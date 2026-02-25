@@ -50,7 +50,7 @@ EventData::EventData( EventData && src ) noexcept
 {
 }
 
-EventData::EventData(const InStream & stream)
+EventData::EventData(const areg::InStream & stream)
     : mDataType ( areg::MessageDataType::UndefinedData )
     , mData     ( EventDataStream::EventDataKind::External )
 {

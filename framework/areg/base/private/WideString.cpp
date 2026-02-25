@@ -181,7 +181,7 @@ namespace areg
         assign(source.getString(), source.getLength());
     }
 
-    WideString::WideString( const InStream & stream )
+    WideString::WideString( const areg::InStream & stream )
         : areg::StringBase<wchar_t>( )
     {
         readStream(stream);
@@ -626,12 +626,12 @@ namespace areg
         return (*this);
     }
 
-    void WideString::readStream(const InStream& stream)
+    void WideString::readStream(const areg::InStream& stream)
     {
         stream.read(*this);
     }
 
-    void WideString::writeStream(OutStream& stream) const
+    void WideString::writeStream(areg::OutStream& stream) const
     {
         stream.write(*this);
     }

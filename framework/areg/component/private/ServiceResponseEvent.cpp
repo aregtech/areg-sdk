@@ -38,7 +38,7 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const Se
 {
 }
 
-ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
+ServiceResponseEvent::ServiceResponseEvent(const areg::InStream & stream)
     : ProxyEvent    ( stream )
     , mResponseId   ( areg::INVALID_MESSAGE_ID )
     , mResult       ( areg::ResultType::Undefined )
@@ -55,7 +55,7 @@ ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const ProxyAddress &
     return DEBUG_NEW ServiceResponseEvent(target, *this);
 }
 
-const InStream & ServiceResponseEvent::readStream( const InStream & stream )
+const areg::InStream & ServiceResponseEvent::readStream( const areg::InStream & stream )
 {
     ProxyEvent::readStream(stream);
     stream >> mResponseId;
@@ -64,7 +64,7 @@ const InStream & ServiceResponseEvent::readStream( const InStream & stream )
     return stream;
 }
 
-OutStream & ServiceResponseEvent::writeStream( OutStream & stream ) const
+areg::OutStream & ServiceResponseEvent::writeStream( areg::OutStream & stream ) const
 {
     ProxyEvent::writeStream(stream);
     stream << mResponseId;

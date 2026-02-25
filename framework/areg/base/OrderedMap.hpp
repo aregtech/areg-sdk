@@ -191,7 +191,7 @@ namespace areg
          * \param   input   The sorted map object to save initialized values.
          **/
         template < typename K, typename V >
-        friend inline const InStream & operator >> ( const InStream & stream, OrderedMap<K, V> & input);
+        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, OrderedMap<K, V> & input);
 
         /**
          * \brief   Writes to the stream the key and value pairs of the map.
@@ -202,7 +202,7 @@ namespace areg
          * \param   output  The sorted map object containing value to stream.
          **/
         template < typename K, typename V >
-        friend inline OutStream & operator << ( OutStream & stream, const OrderedMap<K, V> & output );
+        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const OrderedMap<K, V> & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -991,7 +991,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template < typename K, typename V >
-    inline const InStream & operator >> ( const InStream & stream, OrderedMap<K, V> & input )
+    inline const areg::InStream & operator >> ( const areg::InStream & stream, OrderedMap<K, V> & input )
     {
         uint32_t size = 0;
         stream >> size;
@@ -1009,7 +1009,7 @@ namespace areg
     }
 
     template < typename K, typename V >
-    inline OutStream & operator << ( OutStream & stream, const OrderedMap<K, V> & output )
+    inline areg::OutStream & operator << ( areg::OutStream & stream, const OrderedMap<K, V> & output )
     {
         uint32_t size = output.getSize();
         stream << size;

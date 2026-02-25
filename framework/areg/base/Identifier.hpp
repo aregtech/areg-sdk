@@ -194,7 +194,7 @@ public:
      * \param   input   Identifier to write values
      * \return  Returns instance of read streaming object
      **/
-    friend inline const InStream & operator >> (const InStream & stream, Identifier & input);
+    friend inline const areg::InStream & operator >> (const areg::InStream & stream, Identifier & input);
 
     /**
      * \brief   Writes identifier value to stream.
@@ -202,7 +202,7 @@ public:
      * \param   output  Identifier to read values
      * \return  Returns instance of write streaming object
      **/
-    friend inline OutStream & operator << (OutStream & stream, const Identifier & output);
+    friend inline areg::OutStream & operator << (areg::OutStream & stream, const Identifier & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -330,14 +330,14 @@ inline uint32_t Identifier::getValue() const
  * Friend functions. Declare to make it streamable
  * It is streamable object and the values can be streamed between different threads
  ************************************************************************/
-inline const InStream& operator >> (const InStream& stream, Identifier& input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, Identifier& input)
 {
     stream >> input.mValue;
     stream >> input.mName;
     return stream;
 }
 
-inline OutStream & operator << (OutStream& stream, const Identifier& output)
+inline areg::OutStream & operator << (areg::OutStream& stream, const Identifier& output)
 {
     stream << output.mValue;
     stream << output.mName;

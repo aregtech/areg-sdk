@@ -178,7 +178,7 @@ namespace areg
          * \param	input	The Shared Buffer object to write data
          * \return	Reference to Streaming object.
          **/
-        friend inline const InStream & operator >> ( const InStream & stream, SharedBuffer & input );
+        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, SharedBuffer & input );
 
         /**
          * \brief	Friend global operator declaration to make Shared Buffer streamable.
@@ -187,7 +187,7 @@ namespace areg
          * \param	output	The Shared Buffer object to write data
          * \return	Reference to Streaming object.
          **/
-        friend inline OutStream & operator << ( OutStream & stream, const SharedBuffer & output );
+        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const SharedBuffer & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -368,9 +368,9 @@ namespace areg
     // Friend streamable operators
     /************************************************************************/
 
-    inline const InStream & operator >> (const InStream & stream, SharedBuffer & input)
+    inline const areg::InStream & operator >> (const areg::InStream & stream, SharedBuffer & input)
     {
-        if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
+        if ( static_cast<const areg::InStream *>(&stream) != static_cast<const areg::InStream *>(&input) )
         {
             stream.read(input);
             input.moveToBegin();
@@ -379,9 +379,9 @@ namespace areg
         return stream;
     }
 
-    inline OutStream & operator << (OutStream & stream, const SharedBuffer & output)
+    inline areg::OutStream & operator << (areg::OutStream & stream, const SharedBuffer & output)
     {
-        if ( static_cast<const OutStream *>(&stream) != static_cast<const OutStream *>(&output) )
+        if ( static_cast<const areg::OutStream *>(&stream) != static_cast<const areg::OutStream *>(&output) )
         {
             stream.write( output );
             output.moveToBegin();

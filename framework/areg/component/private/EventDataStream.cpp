@@ -42,7 +42,7 @@ const EventDataStream& EventDataStream::empty_data()
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const areg::String & name /*= areg::String::getEmptyString()*/ )
-    : IOStream      ( )
+    : areg::IOStream      ( )
 
     , mEventDataType(evetDataType)
     , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
@@ -52,7 +52,7 @@ EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, c
 }
 
 EventDataStream::EventDataStream( const EventDataStream & buffer, const areg::String & name )
-    : IOStream    ( )
+    : areg::IOStream    ( )
 
     , mEventDataType(buffer.mEventDataType)
     , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
@@ -63,7 +63,7 @@ EventDataStream::EventDataStream( const EventDataStream & buffer, const areg::St
 }
 
 EventDataStream::EventDataStream( const EventDataStream & src )
-    : IOStream    ( )
+    : areg::IOStream    ( )
 
     , mEventDataType(src.mEventDataType)
     , mBufferName   (src.mBufferName)
@@ -73,7 +73,7 @@ EventDataStream::EventDataStream( const EventDataStream & src )
 }
 
 EventDataStream::EventDataStream( EventDataStream && src ) noexcept
-    : IOStream    ( )
+    : areg::IOStream    ( )
 
     , mEventDataType( src.mEventDataType )
     , mBufferName   ( std::move(src.mBufferName) )
@@ -82,8 +82,8 @@ EventDataStream::EventDataStream( EventDataStream && src ) noexcept
 {
 }
 
-EventDataStream::EventDataStream(const InStream & stream)
-    : IOStream    ( )
+EventDataStream::EventDataStream(const areg::InStream & stream)
+    : areg::IOStream    ( )
 
     , mEventDataType( EventDataStream::EventDataKind::External)
     , mBufferName   ( DefaultStreamName)

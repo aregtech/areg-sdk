@@ -41,7 +41,7 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
 {
 }
 
-ServiceRequestEvent::ServiceRequestEvent(const InStream & stream)
+ServiceRequestEvent::ServiceRequestEvent(const areg::InStream & stream)
     : StubEvent     (stream)
     , mProxySource  (stream)
     , mMessageId    (areg::INVALID_MESSAGE_ID)
@@ -53,7 +53,7 @@ ServiceRequestEvent::ServiceRequestEvent(const InStream & stream)
     stream >> mSequenceNr;
 }
 
-const InStream & ServiceRequestEvent::readStream(const InStream & stream)
+const areg::InStream & ServiceRequestEvent::readStream(const areg::InStream & stream)
 {
     StubEvent::readStream(stream);
     stream >> mProxySource;
@@ -63,7 +63,7 @@ const InStream & ServiceRequestEvent::readStream(const InStream & stream)
     return stream;
 }
 
-OutStream & ServiceRequestEvent::writeStream(OutStream & stream) const
+areg::OutStream & ServiceRequestEvent::writeStream(areg::OutStream & stream) const
 {
     StubEvent::writeStream(stream);
     stream << mProxySource;

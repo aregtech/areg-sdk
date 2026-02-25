@@ -40,21 +40,21 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
 {
 }
 
-StubConnectEvent::StubConnectEvent( const InStream & stream )
+StubConnectEvent::StubConnectEvent( const areg::InStream & stream )
     : ServiceRequestEvent   ( stream )
     , mConnectionStatus    ( areg::ServiceConnectionState::Unknown )
 {
     stream >> mConnectionStatus;
 }
 
-const InStream & StubConnectEvent::readStream(const InStream & stream)
+const areg::InStream & StubConnectEvent::readStream(const areg::InStream & stream)
 {
     ServiceRequestEvent::readStream(stream);
     stream >> mConnectionStatus;
     return stream;
 }
 
-OutStream & StubConnectEvent::writeStream(OutStream & stream) const
+areg::OutStream & StubConnectEvent::writeStream(areg::OutStream & stream) const
 {
     ServiceRequestEvent::writeStream(stream);
     stream << mConnectionStatus;

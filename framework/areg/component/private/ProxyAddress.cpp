@@ -156,7 +156,7 @@ ProxyAddress::ProxyAddress( ServiceAddress && source)
 {
 }
 
-ProxyAddress::ProxyAddress( const InStream & stream )
+ProxyAddress::ProxyAddress( const areg::InStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )
     , mChannel      ( )
@@ -287,7 +287,7 @@ bool ProxyAddress::isValidated() const
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
-AREG_API_IMPL const InStream & operator >> ( const InStream & stream, ProxyAddress & input )
+AREG_API_IMPL const areg::InStream & operator >> ( const areg::InStream & stream, ProxyAddress & input )
 {
     ITEM_ID cookie = areg::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
@@ -300,7 +300,7 @@ AREG_API_IMPL const InStream & operator >> ( const InStream & stream, ProxyAddre
     return stream;
 }
 
-AREG_API_IMPL OutStream & operator << ( OutStream & stream, const ProxyAddress & output)
+AREG_API_IMPL areg::OutStream & operator << ( areg::OutStream & stream, const ProxyAddress & output)
 {
     stream << static_cast<const ServiceAddress &>(output);
     stream << output.mThreadName;

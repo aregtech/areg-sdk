@@ -365,7 +365,7 @@ inline bool chat::ConnectionRecord::operator != ( const chat::ConnectionRecord &
  * \param   input       The instance of chat::ConnectionRecord structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const InStream & operator >> ( const InStream & stream, chat::ConnectionRecord & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, chat::ConnectionRecord & input )
 {
     stream  >> input.cookie;
     stream  >> input.nickName;
@@ -379,7 +379,7 @@ inline const InStream & operator >> ( const InStream & stream, chat::ConnectionR
  * \param   output      The instance of chat::ConnectionRecord structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline OutStream & operator << ( OutStream & stream, const chat::ConnectionRecord & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const chat::ConnectionRecord & output )
 {
     stream  << output.cookie;
     stream  << output.nickName;
@@ -480,7 +480,7 @@ inline bool chat::Participant::operator != ( const chat::Participant & other ) c
  * \param   input       The instance of chat::Participant structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const InStream & operator >> ( const InStream & stream, chat::Participant & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, chat::Participant & input )
 {
     stream  >> input.sessionId;
     stream  >> input.cookie;
@@ -493,7 +493,7 @@ inline const InStream & operator >> ( const InStream & stream, chat::Participant
  * \param   output      The instance of chat::Participant structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline OutStream & operator << ( OutStream & stream, const chat::Participant & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const chat::Participant & output )
 {
     stream  << output.sessionId;
     stream  << output.cookie;

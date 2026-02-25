@@ -192,7 +192,7 @@ public:
      * \param   input   The hash-map object to save initialized values.
      **/
     template < typename K, typename V >
-    friend inline const InStream & operator >> ( const InStream & stream, HashMap<K, V> & input);
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, HashMap<K, V> & input);
 
     /**
      * \brief   Writes to the stream the key and value pairs of hash-map.
@@ -203,7 +203,7 @@ public:
      * \param   output  The hash-map object containing value to stream.
      **/
     template < typename K, typename V >
-    friend inline OutStream & operator << ( OutStream & stream, const HashMap<K, V> & output );
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const HashMap<K, V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -1013,7 +1013,7 @@ inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::_citer2pos(type
 //////////////////////////////////////////////////////////////////////////
 
 template < typename K, typename V >
-inline const InStream & operator >> ( const InStream & stream, HashMap<K, V> & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, HashMap<K, V> & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -1033,7 +1033,7 @@ inline const InStream & operator >> ( const InStream & stream, HashMap<K, V> & i
 }
 
 template < typename K, typename V >
-inline OutStream & operator << ( OutStream & stream, const HashMap<K, V> & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const HashMap<K, V> & output )
 {
     uint32_t size = output.getSize();
     stream << size;

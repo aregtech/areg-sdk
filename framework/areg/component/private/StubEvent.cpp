@@ -40,7 +40,7 @@ StubEvent::StubEvent( const StubAddress& toTarget, Event::EventType eventType )
 {
 }
 
-StubEvent::StubEvent( const InStream & stream  )
+StubEvent::StubEvent( const areg::InStream & stream  )
     : StreamableEvent   (stream)
     , mTargetStubAddress(stream)
 {
@@ -49,14 +49,14 @@ StubEvent::StubEvent( const InStream & stream  )
 //////////////////////////////////////////////////////////////////////////
 // StubEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-const InStream & StubEvent::readStream( const InStream & stream )
+const areg::InStream & StubEvent::readStream( const areg::InStream & stream )
 {
     StreamableEvent::readStream(stream);
     stream >> mTargetStubAddress;
     return stream;
 }
 
-OutStream & StubEvent::writeStream( OutStream & stream ) const
+areg::OutStream & StubEvent::writeStream( areg::OutStream & stream ) const
 {
     StreamableEvent::writeStream(stream);
     stream << mTargetStubAddress;

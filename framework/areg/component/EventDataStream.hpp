@@ -37,7 +37,7 @@
  *              contains at least information of function parameters,
  *              attributes and states.
  **/
-class AREG_API EventDataStream : public IOStream
+class AREG_API EventDataStream : public areg::IOStream
 {
     //! The list of shared buffer list (stack).
     using SharedList    = areg::Stack<areg::SharedBuffer>;
@@ -101,7 +101,7 @@ public:
      *          Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    EventDataStream( const InStream & stream );
+    EventDataStream( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -134,13 +134,13 @@ public:
      * \param	stream	The data streaming object to read data
      * \param	input	The Event Data Stream Buffer object to write data
      **/
-    friend inline const InStream & operator >> ( const InStream & stream, EventDataStream & input );
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, EventDataStream & input );
     /**
      * \brief	Friend global operator declaration to write data to streaming object
      * \param	stream	The data streaming object to write data
      * \param	output	The Event Data Stream Buffer object containing data
      **/
-    friend inline OutStream & operator << ( OutStream & stream, const EventDataStream & output );
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const EventDataStream & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -159,12 +159,12 @@ public:
     /**
      * \brief   Returns reference to the streaming object to read data
      **/
-    inline const InStream & getStreamForRead() const;
+    inline const areg::InStream & getStreamForRead() const;
 
     /**
      * \brief   Returns reference to the streaming object to write data
      **/
-    inline OutStream & getStreamForWrite();
+    inline areg::OutStream & getStreamForWrite();
 
 /************************************************************************/
 // InStream interface overrides
@@ -334,17 +334,17 @@ inline bool EventDataStream::isExternalDataStream() const
     return (mEventDataType != EventDataStream::EventDataKind::Internal);
 }
 
-inline const InStream & EventDataStream::getStreamForRead() const
+inline const areg::InStream & EventDataStream::getStreamForRead() const
 {
-    return static_cast<const InStream &>(*this);
+    return static_cast<const areg::InStream &>(*this);
 }
 
-inline OutStream & EventDataStream::getStreamForWrite()
+inline areg::OutStream & EventDataStream::getStreamForWrite()
 {
-    return static_cast<OutStream &>(*this);
+    return static_cast<areg::OutStream &>(*this);
 }
 
-inline const InStream & operator >> ( const InStream & stream, EventDataStream & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, EventDataStream & input )
 {
     stream >> input.mEventDataType;
     stream >> input.mBufferName;
@@ -352,7 +352,7 @@ inline const InStream & operator >> ( const InStream & stream, EventDataStream &
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const EventDataStream & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const EventDataStream & output )
 {
     ASSERT(output.mEventDataType != EventDataStream::EventDataKind::Internal);
     stream << EventDataStream::EventDataKind::External;

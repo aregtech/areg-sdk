@@ -103,7 +103,7 @@ public:
      * \brief   Initializes service address data from given streaming object.
      * \param   stream      The streaming object, which contain service address information
      **/
-    ServiceAddress( const InStream & stream );
+    ServiceAddress( const areg::InStream & stream );
 
     /**
      * \brief   Copies data from given source.
@@ -165,14 +165,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Service address object to initialize data.
      **/
-    friend inline const InStream & operator >> ( const InStream & stream, ServiceAddress & input );
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, ServiceAddress & input );
 
     /**
      * \brief   Streaming operator. Writes proxy address into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Service address object to serialize.
      **/
-    friend inline OutStream & operator << ( OutStream & stream, const ServiceAddress & output);
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const ServiceAddress & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -330,7 +330,7 @@ inline bool ServiceAddress::isValidated() const
 // Global serialization operators
 //////////////////////////////////////////////////////////////////////////
 
-inline const InStream & operator >> ( const InStream & stream, ServiceAddress & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, ServiceAddress & input )
 {
     stream >> static_cast<ServiceItem &>(input); 
     stream >> input.mRoleName; 
@@ -339,7 +339,7 @@ inline const InStream & operator >> ( const InStream & stream, ServiceAddress & 
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const ServiceAddress & output)
+inline areg::OutStream & operator << ( areg::OutStream & stream, const ServiceAddress & output)
 {
     stream << static_cast<const ServiceItem &>(output);
     stream << output.mRoleName;

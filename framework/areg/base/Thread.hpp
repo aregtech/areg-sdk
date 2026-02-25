@@ -39,7 +39,7 @@
  ************************************************************************/
 namespace areg { class ThreadLocalStorage; }
 namespace areg { class ThreadConsumer; }
-class InStream;
+namespace areg { class InStream; }
 
 namespace areg
 {

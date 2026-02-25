@@ -39,7 +39,7 @@ ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::EventType event
 {
 }
 
-ProxyEvent::ProxyEvent( const InStream & stream )
+ProxyEvent::ProxyEvent( const areg::InStream & stream )
     : StreamableEvent       ( stream )
     , mTargetProxyAddress   ( stream )
 {
@@ -66,14 +66,14 @@ void ProxyEvent::deliverEvent()
     }
 }
 
-const InStream & ProxyEvent::readStream( const InStream & stream )
+const areg::InStream & ProxyEvent::readStream( const areg::InStream & stream )
 {
     StreamableEvent::readStream(stream);
     stream >> mTargetProxyAddress;
     return stream;
 }
 
-OutStream & ProxyEvent::writeStream( OutStream & stream ) const
+areg::OutStream & ProxyEvent::writeStream( areg::OutStream & stream ) const
 {
     StreamableEvent::writeStream(stream);
     stream << mTargetProxyAddress;

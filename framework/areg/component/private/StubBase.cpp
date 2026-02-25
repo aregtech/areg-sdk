@@ -567,12 +567,12 @@ ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy
     return nullptr;
 }
 
-RemoteRequestEvent * StubBase::createRemoteRequestEvent( const InStream & /* stream */ ) const
+RemoteRequestEvent * StubBase::createRemoteRequestEvent( const areg::InStream & /* stream */ ) const
 {
     return nullptr;
 }
 
-RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const InStream & /* stream */ ) const
+RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const areg::InStream & /* stream */ ) const
 {
     return nullptr;
 }

@@ -164,7 +164,7 @@ namespace areg
          * \param   input   The Stack object to save initialized values.
          **/
         template<typename V>
-        friend const InStream & operator >> (const InStream & stream, StackBase<V> & input);
+        friend const areg::InStream & operator >> (const areg::InStream & stream, StackBase<V> & input);
         /**
          * \brief   Writes to the stream Stack values.
          *          The values will be written to the stream starting from head position.
@@ -174,7 +174,7 @@ namespace areg
          * \param   output  The Stack object to read out values.
          **/
         template<typename V>
-        friend OutStream & operator << (OutStream & stream, const StackBase<V> & output);
+        friend areg::OutStream & operator << (areg::OutStream & stream, const StackBase<V> & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Operations and Attributes
@@ -1189,7 +1189,7 @@ namespace areg
     // StackBase<VALUE> friend operators implementation
     //////////////////////////////////////////////////////////////////////////
     template<typename V>
-    const InStream & operator >> ( const InStream & stream, StackBase<V> & input )
+    const areg::InStream & operator >> ( const areg::InStream & stream, StackBase<V> & input )
     {
         Lock lock(input.mSyncObject);
 
@@ -1206,7 +1206,7 @@ namespace areg
     }
 
     template<typename V>
-    OutStream & operator << ( OutStream & stream, const StackBase<V> & output )
+    areg::OutStream & operator << ( areg::OutStream & stream, const StackBase<V> & output )
     {
         Lock lock(output.mSyncObject);
 

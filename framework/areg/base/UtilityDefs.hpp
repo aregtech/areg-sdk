@@ -30,8 +30,8 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class String; }
-class InStream;
-class OutStream;
+namespace areg { class InStream; }
+namespace areg { class OutStream; }
 
 struct tm;
 

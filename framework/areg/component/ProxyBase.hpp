@@ -695,7 +695,7 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Response event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteResponseEvent * createRemoteResponseEvent( const InStream & stream ) const;
+    virtual RemoteResponseEvent * createRemoteResponseEvent( const areg::InStream & stream ) const;
 
     /**
      * \brief   Overwrite method to create error remote response event.

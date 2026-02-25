@@ -25,8 +25,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
-class OutStream;
+namespace areg { class InStream; }
+namespace areg { class OutStream; }
 class LogScope;
 
 //////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ public:
      * \brief   Initialization constructor.
      *          Initializes log message data from stream.
      **/
-    inline LogMessage( const InStream & stream );
+    inline LogMessage( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -233,7 +233,7 @@ inline LogMessage::LogMessage( areg::LogMessageType msgType, uint32_t scopeId, u
 {
 }
 
-inline LogMessage::LogMessage( const InStream & stream )
+inline LogMessage::LogMessage( const areg::InStream & stream )
     : areg::LogEntry( )
 {
     stream >> static_cast<areg::LogEntry &>(*this);
@@ -326,7 +326,7 @@ inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*scope
 {
 }
 
-inline LogMessage::LogMessage(const InStream& stream)
+inline LogMessage::LogMessage(const areg::InStream& stream)
     : areg::LogEntry()
 {
     stream >> static_cast<areg::LogEntry&>(*this);

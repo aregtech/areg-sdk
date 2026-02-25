@@ -29,7 +29,7 @@
 class LogManager;
 class LogConfiguration;
 class LoggerBase;
-class InStream;
+namespace areg { class InStream; }
 
 //////////////////////////////////////////////////////////////////////////
 // LogEventProcessor class declaration

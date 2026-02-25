@@ -83,7 +83,7 @@ namespace areg
         src.mMagicNum   = areg::CHECKSUM_IGNORE;
     }
 
-    ThreadAddress::ThreadAddress( const InStream & stream )
+    ThreadAddress::ThreadAddress( const areg::InStream & stream )
         : mThreadName   ( stream )
         , mMagicNum     ( areg::CHECKSUM_IGNORE )
     {

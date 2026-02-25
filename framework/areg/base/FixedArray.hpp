@@ -174,7 +174,7 @@ public:
      * \param   input   The fixed array object to save initialized values.
      **/
     template<typename V>
-    friend const InStream & operator >> ( const InStream & stream, FixedArray<V> & input );
+    friend const areg::InStream & operator >> ( const areg::InStream & stream, FixedArray<V> & input );
     /**
      * \brief   Writes to the stream the values of fixed array.
      *          The values will be written to the stream starting from firs entry.
@@ -184,7 +184,7 @@ public:
      * \param   output  The fixed array object containing value to stream.
      **/
     template<typename V>
-    friend OutStream & operator << ( OutStream & stream, const FixedArray<V> & output );
+    friend areg::OutStream & operator << ( areg::OutStream & stream, const FixedArray<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -622,7 +622,7 @@ inline uint32_t FixedArray<VALUE>::getElements(VALUE* list, uint32_t elemCount)
 //////////////////////////////////////////////////////////////////////////
 
 template<typename V>
-const InStream & operator >> ( const InStream & stream, FixedArray<V> & input )
+const areg::InStream & operator >> ( const areg::InStream & stream, FixedArray<V> & input )
 {
     uint32_t size = 0;
     stream >> size;
@@ -638,7 +638,7 @@ const InStream & operator >> ( const InStream & stream, FixedArray<V> & input )
 }
 
 template<typename V>
-OutStream & operator << ( OutStream & stream, const FixedArray<V> & output )
+areg::OutStream & operator << ( areg::OutStream & stream, const FixedArray<V> & output )
 {
     stream << output.mElemCount;
     for (uint32_t i = 0; i < output.mElemCount; ++ i )

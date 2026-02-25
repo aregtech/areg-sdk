@@ -27,7 +27,7 @@
  * Dependencies
  ************************************************************************/
 class LogLayout;
-class OutStream;
+namespace areg { class OutStream; }
 
 //////////////////////////////////////////////////////////////////////////
 // ClientService class declaration
@@ -84,7 +84,7 @@ public:
      * \param   logMsg  The logging message to stream.
      * \param   stream  The streaming object to write output message.
      **/
-    void logMessage( const areg::LogEntry & logMsg, OutStream & stream ) const;
+    void logMessage( const areg::LogEntry & logMsg, areg::OutStream & stream ) const;
 
     /**
      * \brief   Returns true if layout manager is valid.

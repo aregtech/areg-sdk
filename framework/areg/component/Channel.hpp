@@ -123,14 +123,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Connection channel to initialize.
      **/
-    friend inline const InStream & operator >> ( const InStream & stream, Channel & input );
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, Channel & input );
 
     /**
      * \brief   Streaming operator. Writes connection channel data into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Connection channel to stream.
      **/
-    friend inline OutStream & operator << ( OutStream & stream, const Channel & output);
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const Channel & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -272,7 +272,7 @@ inline void Channel::invalidate()
     mCookie = areg::COOKIE_UNKNOWN;
 }
 
-inline const InStream & operator >> ( const InStream & stream, Channel & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, Channel & input )
 {
     stream >> input.mSource;
     stream >> input.mTarget;
@@ -280,7 +280,7 @@ inline const InStream & operator >> ( const InStream & stream, Channel & input )
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const Channel & output)
+inline areg::OutStream & operator << ( areg::OutStream & stream, const Channel & output)
 {
     stream << output.mSource;
     stream << output.mTarget;

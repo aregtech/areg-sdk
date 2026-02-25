@@ -161,7 +161,7 @@ namespace areg
          * \param   input   The Ring Stack object to save initialized values.
          **/
         template<typename V>
-        friend const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input );
+        friend const areg::InStream & operator >> ( const areg::InStream & stream, RingStackBase<V> & input );
         /**
          * \brief   Writes to the stream Ring Stack values. The values are written into the stream
          *          starting from head position.
@@ -172,7 +172,7 @@ namespace areg
          * \param   output  The Stack object to read out values.
          **/
         template<typename V>
-        friend OutStream & operator << ( OutStream & stream, const RingStackBase<V> & output );
+        friend areg::OutStream & operator << ( areg::OutStream & stream, const RingStackBase<V> & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations and Attributes
@@ -1358,7 +1358,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template <typename V>
-    const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input )
+    const areg::InStream & operator >> ( const areg::InStream & stream, RingStackBase<V> & input )
     {
         Lock lock(input.mSyncObj);
 
@@ -1383,7 +1383,7 @@ namespace areg
     }
 
     template <typename V>
-    OutStream & operator << ( OutStream & stream, const RingStackBase<V> & output )
+    areg::OutStream & operator << ( areg::OutStream & stream, const RingStackBase<V> & output )
     {
         Lock lock(output.mSyncObj);
 

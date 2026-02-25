@@ -28,7 +28,7 @@
  ************************************************************************/
 namespace areg { class String; }
 namespace areg { class WideString; }
-class InStream;
+namespace areg { class InStream; }
 class Cursor;
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
      * \param   readStream      The readable streaming object
      * \param   readPosition    The position object of readable stream.
      **/
-    ReadConverter( InStream & readStream, Cursor & readPosition );
+    ReadConverter( areg::InStream & readStream, Cursor & readPosition );
 
     /**
      * \brief   Destructor.
@@ -194,7 +194,7 @@ private:
     /**
      * \brief   Reference of readable streaming object
      **/
-    InStream  &      mReadStream;
+    areg::InStream  &      mReadStream;
     /**
      * \brief   Reference of cursor position object in readable stream.
      **/

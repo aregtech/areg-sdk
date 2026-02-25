@@ -368,7 +368,7 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteRequestEvent * createRemoteRequestEvent( const InStream & stream ) const;
+    virtual RemoteRequestEvent * createRemoteRequestEvent( const areg::InStream & stream ) const;
 
     /**
      * \brief   Overwrite method to create remote notify request event from streaming object for 
@@ -377,7 +377,7 @@ protected:
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
      *          Otherwise, it returns nullptr.
      **/
-    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const InStream & stream ) const;
+    virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const areg::InStream & stream ) const;
 
 /************************************************************************/
 // StubEventConsumer interface overrides.

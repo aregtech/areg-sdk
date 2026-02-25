@@ -155,7 +155,7 @@ namespace areg
          * \param   input   The Linked List object to save initialized values.
          **/
         template<typename V>
-        friend const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input);
+        friend const areg::InStream& operator >> (const areg::InStream& stream, SortedLinkedList<V>& input);
         /**
          * \brief   Writes to the stream Linked List values.
          *          The values will be written to the stream starting from head position.
@@ -165,7 +165,7 @@ namespace areg
          * \param   output  The Linked List object to read out values.
          **/
         template<typename V>
-        friend OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output);
+        friend areg::OutStream& operator << (areg::OutStream& stream, const SortedLinkedList<V>& output);
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -1216,7 +1216,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     template <typename V>
-    const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input)
+    const areg::InStream& operator >> (const areg::InStream& stream, SortedLinkedList<V>& input)
     {
         input.clear();
 
@@ -1236,7 +1236,7 @@ namespace areg
     }
 
     template <typename V>
-    OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output)
+    areg::OutStream& operator << (areg::OutStream& stream, const SortedLinkedList<V>& output)
     {
         uint32_t size = output.getSize();
         uint8_t sort = static_cast<uint8_t>(output.mSorting);

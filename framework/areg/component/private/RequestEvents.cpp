@@ -50,20 +50,20 @@ RequestEvent::RequestEvent( const EventDataStream & args
 {
 }
 
-RequestEvent::RequestEvent( const InStream & stream )
+RequestEvent::RequestEvent( const areg::InStream & stream )
     : ServiceRequestEvent( stream )
     , mData( stream )
 {
 }
 
-const InStream & RequestEvent::readStream(const InStream & stream)
+const areg::InStream & RequestEvent::readStream(const areg::InStream & stream)
 {
     ServiceRequestEvent::readStream(stream);
     stream >> mData;
     return stream;
 }
 
-OutStream & RequestEvent::writeStream(OutStream & stream) const
+areg::OutStream & RequestEvent::writeStream(areg::OutStream & stream) const
 {
     ServiceRequestEvent::writeStream(stream);
     stream << mData;
@@ -96,7 +96,7 @@ LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
 {
 }
 
-LocalRequestEvent::LocalRequestEvent( const InStream & stream )
+LocalRequestEvent::LocalRequestEvent( const areg::InStream & stream )
     : RequestEvent ( stream)
 {
 }
@@ -127,7 +127,7 @@ RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
 {
 }
 
-RemoteRequestEvent::RemoteRequestEvent( const InStream & stream )
+RemoteRequestEvent::RemoteRequestEvent( const areg::InStream & stream )
     : RequestEvent ( stream)
 {
     ASSERT(getData().getDataStream().isExternalDataStream());
@@ -154,7 +154,7 @@ NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
 {
 }
 
-NotifyRequestEvent::NotifyRequestEvent(const InStream & stream)
+NotifyRequestEvent::NotifyRequestEvent(const areg::InStream & stream)
     : ServiceRequestEvent ( stream )
 {
 }
@@ -179,7 +179,7 @@ LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress & fromProxy
 {
 }
 
-LocalNotifyRequestEvent::LocalNotifyRequestEvent( const InStream & stream )
+LocalNotifyRequestEvent::LocalNotifyRequestEvent( const areg::InStream & stream )
     : NotifyRequestEvent ( stream )
 {
 }
@@ -204,7 +204,7 @@ RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress & fromPro
 {
 }
 
-RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const InStream & stream )
+RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const areg::InStream & stream )
     : NotifyRequestEvent ( stream )
 {
 }

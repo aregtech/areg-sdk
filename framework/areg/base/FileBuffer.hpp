@@ -101,7 +101,7 @@ public:
      * \param	input	The File Buffer object to write data
      * \return	The instance of streaming object.
      **/
-    friend inline const InStream & operator >> ( const InStream & stream, FileBuffer & input );
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, FileBuffer & input );
     /**
      * \brief   Friend global operator declaration to make File Buffer streamable.
      *          Writes the from file buffer to streaming object
@@ -109,7 +109,7 @@ public:
      * \param	output	The File Buffer object to read data
      * \return	The instance of streaming object.
      **/
-    friend inline OutStream & operator << ( OutStream & stream, const FileBuffer & output );
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const FileBuffer & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -421,12 +421,12 @@ inline bool FileBuffer::isEmpty() const
     return ((isOpened() == false) || mSharedBuffer.isEmpty());
 }
 
-inline const InStream & operator >> ( const InStream & stream, FileBuffer & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, FileBuffer & input )
 {
     return (stream >> static_cast<areg::SharedBuffer &>(input.mSharedBuffer));
 }
 
-inline OutStream & operator << ( OutStream & stream, const FileBuffer & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const FileBuffer & output )
 {
     return (stream << static_cast<const areg::SharedBuffer &>(output.mSharedBuffer));
 }

@@ -56,7 +56,7 @@ public:
      * \brief   Constructor. Reads data from streaming object.
      * \param   stream      The instance of streaming object, which contains information.
      **/
-    StubConnectEvent( const InStream & stream );
+    StubConnectEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -86,14 +86,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const areg::InStream & readStream( const areg::InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
 private:
     /**

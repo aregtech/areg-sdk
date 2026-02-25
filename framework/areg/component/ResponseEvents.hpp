@@ -109,7 +109,7 @@ protected:
      * \brief   Creates event from streaming object and initializes data
      * \param   stream  The streaming object to read data
      **/
-    ResponseEvent( const InStream & stream );
+    ResponseEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -134,13 +134,13 @@ public:
      * \brief   Returns reference of data input streaming object
      *          to deserialize parameters.
      **/
-    inline const InStream & getReadStream() const;
+    inline const areg::InStream & getReadStream() const;
 
     /**
      * \brief   Returns reference of data output streaming object
      *          to serialize parameters.
      **/
-    inline OutStream & getWriteStream();
+    inline areg::OutStream & getWriteStream();
 
 protected:
     /**
@@ -160,14 +160,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const areg::InStream & readStream( const areg::InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -249,7 +249,7 @@ protected:
      * \brief   Creates event from streaming object and initializes data
      * \param   stream  The streaming object to read data
      **/
-    LocalResponseEvent(const InStream & stream);
+    LocalResponseEvent(const areg::InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -328,7 +328,7 @@ protected:
      * \brief   Creates event from streaming object and initializes data
      * \param   stream  The streaming object to read data
      **/
-    RemoteResponseEvent(const InStream & stream);
+    RemoteResponseEvent(const areg::InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -378,12 +378,12 @@ inline EventData & ResponseEvent::getData()
     return mData;
 }
 
-inline const InStream & ResponseEvent::getReadStream() const
+inline const areg::InStream & ResponseEvent::getReadStream() const
 {
     return mData.getReadStream();
 }
 
-inline OutStream & ResponseEvent::getWriteStream()
+inline areg::OutStream & ResponseEvent::getWriteStream()
 {
     return mData.getWriteStream();
 }

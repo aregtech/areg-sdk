@@ -39,7 +39,7 @@ LogScope::LogScope( const char * scopeName, areg::LogPriority priority /*= areg:
     LogManager::registerLogScope( self() );
 }
 
-LogScope::LogScope(const InStream & stream)
+LogScope::LogScope(const areg::InStream & stream)
     : mScopeId      ( stream.read32Bits() )
     , mScopePrio    ( stream.read32Bits() )
     , mScopeName    ( stream )
@@ -76,7 +76,7 @@ LogScope::LogScope(const char* /*scopeName*/, areg::LogPriority /*priority*/ /*=
 {
 }
 
-LogScope::LogScope(const InStream& /*stream*/ )
+LogScope::LogScope(const areg::InStream& /*stream*/ )
     : mScopeId      ( 0 )
     , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
     , mScopeName    ( )

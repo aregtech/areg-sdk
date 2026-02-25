@@ -99,7 +99,7 @@ class ByteBuffer;
  *                            because an application deletes a temporary file after a handle is closed.
  *                            In that case, the system can entirely avoid writing the data.
  **/
-class AREG_API FileBase : public IOStream
+class AREG_API FileBase : public areg::IOStream
                         , public Cursor
 {
 //////////////////////////////////////////////////////////////////////////
@@ -281,12 +281,12 @@ public:
     /**
      * \brief   Returns instance of streaming object to read data.
      **/
-    inline const InStream & getReadStream() const;
+    inline const areg::InStream & getReadStream() const;
 
     /**
      * \brief   Returns instance of streaming object to write data.
      **/
-    inline OutStream & getWriteStream();
+    inline areg::OutStream & getWriteStream();
 
     /**
      * \brief   Returns the name of file object set by user. This can be either int16_t name
@@ -1024,16 +1024,16 @@ inline uint32_t FileBase::getInvalidPosition()
     return Cursor::INVALID_CURSOR_POSITION;
 }
 
-inline const InStream& FileBase::getReadStream() const
+inline const areg::InStream& FileBase::getReadStream() const
 {
     ASSERT(isOpened());
-    return static_cast<const InStream &>(*this);
+    return static_cast<const areg::InStream &>(*this);
 }
 
-inline OutStream& FileBase::getWriteStream()
+inline areg::OutStream& FileBase::getWriteStream()
 {
     ASSERT(isOpened());
-    return static_cast<OutStream &>(*this);
+    return static_cast<areg::OutStream &>(*this);
 }
 
 inline bool FileBase::readBool(bool & Value) const

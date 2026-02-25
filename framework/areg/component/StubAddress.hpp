@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
+namespace areg { class InStream; }
 class ProxyAddress;
 class ServiceRequestEvent;
 
@@ -144,7 +144,7 @@ public:
      * \brief   Initialize Stub address from stream.
      * \param   stream  The streaming object to read data.
      **/
-    StubAddress( const InStream & stream);
+    StubAddress( const areg::InStream & stream);
 
     /**
      * \brief   Destructor.
@@ -215,14 +215,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Service address object to initialize data.
      **/
-    friend AREG_API const InStream & operator >> ( const InStream & stream, StubAddress & input );
+    friend AREG_API const areg::InStream & operator >> ( const areg::InStream & stream, StubAddress & input );
 
     /**
      * \brief   Streaming operator. Writes proxy address into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Service address object to serialize.
      **/
-    friend AREG_API OutStream & operator << ( OutStream & stream, const StubAddress & output);
+    friend AREG_API areg::OutStream & operator << ( areg::OutStream & stream, const StubAddress & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations

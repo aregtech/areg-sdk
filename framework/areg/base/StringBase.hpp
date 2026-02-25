@@ -31,8 +31,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
-class OutStream;
+namespace areg { class InStream; }
+namespace areg { class OutStream; }
 
 namespace areg
 {
@@ -252,7 +252,7 @@ namespace areg
          * \return  Reference to stream object.
          **/
         template<typename CT>
-        friend inline const InStream & operator >> (const InStream & stream, StringBase<CT> & input);
+        friend inline const areg::InStream & operator >> (const areg::InStream & stream, StringBase<CT> & input);
 
         /**
          * \brief   Streams from output object, i.e. write data from string to streaming object.
@@ -262,7 +262,7 @@ namespace areg
          * \return  Reference to stream object.
          **/
         template<typename CT>
-        friend inline OutStream & operator << (OutStream & stream, const StringBase<CT> & output);
+        friend inline areg::OutStream & operator << (areg::OutStream & stream, const StringBase<CT> & output);
 
         /**
          * \brief   Prints string message to the standard output stream.
@@ -3313,13 +3313,13 @@ namespace areg
     }
 
     template<typename CT>
-    inline const InStream& operator >> (const InStream& stream, StringBase<CT>& input)
+    inline const areg::InStream& operator >> (const areg::InStream& stream, StringBase<CT>& input)
     {
         return (stream >> input.mData);
     }
 
     template<typename CT>
-    inline OutStream& operator << (OutStream& stream, const StringBase<CT>& output)
+    inline areg::OutStream& operator << (areg::OutStream& stream, const StringBase<CT>& output)
     {
         return (stream << output.mData);
     }

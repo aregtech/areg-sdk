@@ -113,7 +113,7 @@ ComponentAddress::ComponentAddress( ComponentAddress && src ) noexcept
 {
 }
 
-ComponentAddress::ComponentAddress( const InStream & stream )
+ComponentAddress::ComponentAddress( const areg::InStream & stream )
     : mRoleName     ( stream )
     , mThreadAddress( stream )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )

@@ -28,8 +28,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class InStream;
-class OutStream;
+namespace areg { class InStream; }
+namespace areg { class OutStream; }
 
 namespace areg
 {
@@ -86,7 +86,7 @@ namespace areg
          * \brief   Initialization constructor.
          *          Initializes data from streaming object.
          **/
-        Version(const InStream & stream);
+        Version(const areg::InStream & stream);
         /**
          * \brief   Destructor
          **/
@@ -163,7 +163,7 @@ namespace areg
          * \param	input	Version object to write version data.
          * \return	Reference to stream object.
          **/
-        friend inline const InStream & operator >> (const InStream & stream, Version & input);
+        friend inline const areg::InStream & operator >> (const areg::InStream & stream, Version & input);
 
         /**
          * \brief	Streams to input object, i.e. write data from version to streaming object.
@@ -171,7 +171,7 @@ namespace areg
          * \param	output	Version object to read version data.
          * \return	Reference to stream object.
          **/
-        friend inline OutStream & operator << (OutStream & stream, const Version & output);
+        friend inline areg::OutStream & operator << (areg::OutStream & stream, const Version & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -297,7 +297,7 @@ namespace areg
      * \param	input	String object to initialize and write string data.
      * \return	Reference to stream object.
      **/
-    inline const InStream & operator >> (const InStream & stream, Version& input)
+    inline const areg::InStream & operator >> (const areg::InStream & stream, Version& input)
     {
         stream >> input.mMajor;
         stream >> input.mMinor;
@@ -311,7 +311,7 @@ namespace areg
      * \param	output	String object to read data from
      * \return	Reference to stream object.
      **/
-    inline OutStream & operator << (OutStream& stream, const Version& output)
+    inline areg::OutStream & operator << (areg::OutStream& stream, const Version& output)
     {
         stream << output.mMajor;
         stream << output.mMinor;

@@ -34,7 +34,7 @@
 
 BufferStreamBase::BufferStreamBase( Cursor & readPosition, Cursor & writePosition )
     : ByteBuffer  ( )
-    , IOStream    ( )
+    , areg::IOStream    ( )
 
     , mReadPosition ( readPosition )
     , mWritePosition( writePosition )

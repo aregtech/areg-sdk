@@ -86,7 +86,7 @@ public:
     /**
      * \brief   Initializes data from streaming object
      **/
-    DateTime( const InStream & stream );
+    DateTime( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -178,7 +178,7 @@ public:
      * \param   input   Date and time object, which is initialized by deserializing 
      *                  date and time value from stream
      **/
-    friend inline const InStream & operator >> ( const InStream & stream, DateTime & input );
+    friend inline const areg::InStream & operator >> ( const areg::InStream & stream, DateTime & input );
 
     /**
      * \brief   Writes (serializes) date and time value to streaming object.
@@ -186,7 +186,7 @@ public:
      * \param   output  Date and time object, which is contains date and time value and
      *                  should be serialized to streaming object
      **/
-    friend inline OutStream & operator << ( OutStream & stream, const DateTime & output );
+    friend inline areg::OutStream & operator << ( areg::OutStream & stream, const DateTime & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -412,13 +412,13 @@ inline bool DateTime::isValid() const
     return (mDateTime != INVALID_TIME);
 }
 
-inline const InStream & operator >> ( const InStream & stream, DateTime & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, DateTime & input )
 {
     stream >> input.mDateTime;
     return stream;
 }
 
-inline OutStream & operator << ( OutStream & stream, const DateTime & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const DateTime & output )
 {
     stream << output.mDateTime;
     return stream;

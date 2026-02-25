@@ -31,7 +31,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    WriteConverter::WriteConverter( OutStream & writeStream, Cursor & /*writePosition*/ )
+    WriteConverter::WriteConverter( areg::OutStream & writeStream, Cursor & /*writePosition*/ )
         : mWriteStream  (writeStream)
     {
     }

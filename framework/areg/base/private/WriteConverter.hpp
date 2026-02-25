@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class OutStream;
+namespace areg { class OutStream; }
 class Cursor;
 namespace areg { class String; }
 namespace areg { class WideString; }
@@ -51,7 +51,7 @@ namespace areg
          * \param   writeStream     The writable streaming object
          * \param   writePosition   The position object of writable stream.
          **/
-        WriteConverter( OutStream & writeStream, Cursor & writePosition );
+        WriteConverter( areg::OutStream & writeStream, Cursor & writePosition );
 
         /**
          * \brief   Destructor.
@@ -201,7 +201,7 @@ namespace areg
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        OutStream &      mWriteStream;    //!< Reference of a writable streaming object
+        areg::OutStream &      mWriteStream;    //!< Reference of a writable streaming object
         // Cursor & mWritePosition;  //!< Reference of cursor position object in writable stream.
 
     //////////////////////////////////////////////////////////////////////////

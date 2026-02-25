@@ -606,7 +606,7 @@ AREG_IMPLEMENT_STREAMABLE(areg::LogMessageType)
  * \param   stream  The source of log message data.
  * \param   input   On output this contains structured logging message.
  **/
-inline const InStream & operator >> (const InStream& stream, areg::LogEntry& input)
+inline const areg::InStream & operator >> (const areg::InStream& stream, areg::LogEntry& input)
 {
     stream.read(reinterpret_cast<uint8_t *>(&input), offsetof(areg::LogEntry, logMessage));
     stream.read(reinterpret_cast<uint8_t *>(input.logMessage), input.logMessageLen + 1);
@@ -618,7 +618,7 @@ inline const InStream & operator >> (const InStream& stream, areg::LogEntry& inp
  * \param   stream  The streaming object to save log message.
  * \param   output  The source of log message to serialize message.
  **/
-inline OutStream& operator << (OutStream& stream, const areg::LogEntry& output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const areg::LogEntry& output)
 {
     stream.write(reinterpret_cast<const uint8_t *>(&output), offsetof(areg::LogEntry, logMessage));
     stream.write(reinterpret_cast<const uint8_t *>(output.logMessage), output.logMessageLen + 1);
@@ -630,7 +630,7 @@ inline OutStream& operator << (OutStream& stream, const areg::LogEntry& output)
  * \param   stream  The source of data that contains scope update structure information.
  * \param   input   On output this contains structured scope update data.
  **/
-inline const InStream& operator >> (const InStream& stream, areg::ScopeEntry & input)
+inline const areg::InStream& operator >> (const areg::InStream& stream, areg::ScopeEntry & input)
 {
     stream >> input.scopeId >> input.scopePrio >> input.scopeName;
     return stream;
@@ -641,7 +641,7 @@ inline const InStream& operator >> (const InStream& stream, areg::ScopeEntry & i
  * \param   stream  The streaming object to save scope update information.
  * \param   output  The source of scope update structure to serialize message.
  **/
-inline OutStream& operator << (OutStream& stream, const areg::ScopeEntry & output)
+inline areg::OutStream& operator << (areg::OutStream& stream, const areg::ScopeEntry & output)
 {
     stream << output.scopeId << output.scopePrio << output.scopeName;
     return stream;

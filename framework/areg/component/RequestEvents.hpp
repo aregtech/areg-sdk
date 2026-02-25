@@ -110,7 +110,7 @@ protected:
      * \brief   Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    RequestEvent( const InStream & stream );
+    RequestEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -135,13 +135,13 @@ public:
      * \brief   Returns reference of data input streaming object
      *          to deserialize parameters.
      **/
-    inline const InStream & getReadStream() const;
+    inline const areg::InStream & getReadStream() const;
 
     /**
      * \brief   Returns reference of data output streaming object
      *          to serialize parameters.
      **/
-    inline OutStream & getWriteStream();
+    inline areg::OutStream & getWriteStream();
 
 protected:
     /**
@@ -161,14 +161,14 @@ protected:
      * \param   stream  The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const areg::InStream & readStream( const areg::InStream & stream ) override;
 
     /**
      * \brief   Writes event data to streaming object
      * \param   stream  The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -237,7 +237,7 @@ protected:
      * \brief   Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    LocalRequestEvent( const InStream & stream );
+    LocalRequestEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -304,7 +304,7 @@ protected:
      * \brief   Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    RemoteRequestEvent( const InStream & stream );
+    RemoteRequestEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -382,7 +382,7 @@ protected:
      * \brief   Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    NotifyRequestEvent( const InStream & stream );
+    NotifyRequestEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -432,7 +432,7 @@ protected:
      * \brief   Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    LocalNotifyRequestEvent( const InStream & stream );
+    LocalNotifyRequestEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -483,7 +483,7 @@ protected:
      * \brief   Initializes object data from streaming object.
      * \param   stream  Streaming object, containing initialized data information.
      **/
-    RemoteNotifyRequestEvent( const InStream & stream );
+    RemoteNotifyRequestEvent( const areg::InStream & stream );
 
     /**
      * \brief   Destructor.
@@ -544,12 +544,12 @@ inline EventData& RequestEvent::getData()
     return mData;
 }
 
-inline const InStream & RequestEvent::getReadStream() const
+inline const areg::InStream & RequestEvent::getReadStream() const
 {
     return mData.getReadStream();
 }
 
-inline OutStream & RequestEvent::getWriteStream()
+inline areg::OutStream & RequestEvent::getWriteStream()
 {
     return mData.getWriteStream();
 }

@@ -63,7 +63,7 @@ namespace areg
     {
     }
 
-    Version::Version(const InStream & stream)
+    Version::Version(const areg::InStream & stream)
         : mMajor    ( 0 )
         , mMinor    ( 0 )
         , mPatch    ( 0 )
