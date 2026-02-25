@@ -44,7 +44,7 @@ namespace areg
      *          If the watchdog timeout is zero (areg::WATCHDOG_IGNORE), the
      *          watchdog is ignored for the thread and thread is not terminated.
      **/
-    class AREG_API Watchdog  : public TimerBase
+    class AREG_API Watchdog  : public areg::TimerBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Object specific types and constants

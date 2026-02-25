@@ -89,7 +89,7 @@ bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
 #endif  // __APPLE__
 }
 
-bool TimerPosix::startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
+bool TimerPosix::startTimer( areg::TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
 {
 	SpinAutolockPosix lock(mLock);
 
@@ -166,7 +166,7 @@ void TimerPosix::timerExpired()
     SpinAutolockPosix lock(mLock);
     if (mContext != nullptr)
     {
-        if (mContext->getEventCount() > TimerBase::ONE_TIME)
+        if (mContext->getEventCount() > areg::TimerBase::ONE_TIME)
         {
             areg::os::convTimeout(mDueTime, mContext->getTimeout());
         }

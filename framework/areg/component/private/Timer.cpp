@@ -37,7 +37,7 @@ Timer::Timer( areg::TimerConsumer& timerConsumer
             , const areg::String & timerName  /*= areg::String::getEmptyString()*/
             , uint32_t timeoutMs        /*= areg::INVALID_TIMEOUT*/
             , int32_t maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
-    : TimerBase         (TimerBase::TimerType::PerThreadTimer, areg::generateName(timerName), timeoutMs)
+    : areg::TimerBase         (areg::TimerBase::TimerType::PerThreadTimer, areg::generateName(timerName), timeoutMs)
     , mConsumer         (timerConsumer)
 
     , mCurrentQueued    (0)
@@ -88,7 +88,7 @@ bool Timer::startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uin
         mCurrentQueued  = 0;
         mActive         = true;
 
-        if (TimerBase::createWaitableTimer())
+        if (areg::TimerBase::createWaitableTimer())
         {
             mStarted = TimerManager::startTimer(self(), whichThread);
             mDispatchThread = mStarted ? &whichThread : nullptr;
@@ -121,7 +121,7 @@ bool Timer::timerIsExpired(uint32_t highValue, uint32_t lowValue, ptr_type /*con
     }
 
     mExpiredAt = areg::make64(highValue, lowValue);
-    mEventsCount -= (mEventsCount != 0 && mEventsCount != TimerBase::CONTINUOUSLY ? 1 : 0);
+    mEventsCount -= (mEventsCount != 0 && mEventsCount != areg::TimerBase::CONTINUOUSLY ? 1 : 0);
     mActive = mEventsCount != 0;
 
     if (mTimeoutInMs != areg::INVALID_TIMEOUT)

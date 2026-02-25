@@ -30,7 +30,7 @@ namespace areg
     }
 
     Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+        : areg::TimerBase         (areg::TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, areg::TimerBase::ONE_TIME)
         , mGuardId          (_generateId())
         , mSequence         (0u)
         , mComponentThread  (thread)
@@ -38,7 +38,7 @@ namespace areg
     }
 
     Watchdog::Watchdog(areg::WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+        : areg::TimerBase         (areg::TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, areg::TimerBase::ONE_TIME)
         , mGuardId          (_generateId())
         , mSequence         (0u)
         , mComponentThread  (thread.getBindingComponentThread())

@@ -41,7 +41,7 @@ class DispatcherThread;
  *              - Periodic timer to set the number of timer events to fire.
  *              - Continues timers run in cycle until are not manually stopped.
  **/
-class AREG_API Timer : public TimerBase
+class AREG_API Timer : public areg::TimerBase
 {
 /************************************************************************/
 // Friend classes to access protected members.
@@ -122,7 +122,7 @@ public:
      *                      reached specified number.
      * \return  Returns true if Timer was successfully started.
      **/
-    bool startTimer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY);
+    bool startTimer(uint32_t timeoutInMs, uint32_t eventCount = areg::TimerBase::CONTINUOUSLY);
 
     /**
      * \brief   Call to start timer. The system will send and the
@@ -145,7 +145,7 @@ public:
      *                      reaching specified number.
      * \return  Returns true if Timer was successfully started.
      **/
-    bool startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = TimerBase::CONTINUOUSLY);
+    bool startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = areg::TimerBase::CONTINUOUSLY);
 
     /**
      * \brief   Call to stop previously started timer.

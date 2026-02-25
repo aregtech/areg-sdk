@@ -78,7 +78,7 @@ public:
      * \brief   Initializes data object to start timer.
      * \param   timer   The Timer object to set in Event Data. Can be nullptr if not used.
      **/
-    inline explicit TimerManagerEventData(TimerBase* timer);
+    inline explicit TimerManagerEventData(areg::TimerBase* timer);
 
     /**
      * \brief   Copy constructor.
@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Returns the Timer object.
      **/
-    inline TimerBase* getTimer() const;
+    inline areg::TimerBase* getTimer() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -118,7 +118,7 @@ private:
     /**
      * \brief   The Timer object of Event Data
      **/
-    TimerBase*      mTimer;
+    areg::TimerBase*      mTimer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ inline TimerManagerEventData::TimerManagerEventData()
 {
 }
 
-inline TimerManagerEventData::TimerManagerEventData(TimerBase* timer)
+inline TimerManagerEventData::TimerManagerEventData(areg::TimerBase* timer)
     : mTimer    ( timer     )
 {
 }
@@ -158,7 +158,7 @@ inline TimerManagerEventData& TimerManagerEventData::operator = (const TimerMana
     return (*this);
 }
 
-inline TimerBase* TimerManagerEventData::getTimer() const
+inline areg::TimerBase* TimerManagerEventData::getTimer() const
 {
     return mTimer;
 }

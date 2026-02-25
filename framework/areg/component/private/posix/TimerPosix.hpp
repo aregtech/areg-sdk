@@ -33,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
-class TimerBase;
+namespace areg { class TimerBase; }
 class TimerPosix;
 namespace areg { class WatchdogManager; }
 
@@ -139,7 +139,7 @@ public:
      * \param   funcTimer   The callback function to trigger when timer expires.
      * \return  Returns true if timer is created and started with success.
      **/
-    bool startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
+    bool startTimer( areg::TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
 
     /**
      * \brief   Restarts the timer if the timeout and the period values are not zero.
@@ -236,7 +236,7 @@ private:
      * \brief   The context pointer passed to POSIX timer, set when using Timer object.
      *          Otherwise, should be nullptr.
      */
-    TimerBase *             mContext;
+    areg::TimerBase *             mContext;
 
     /**
      * \brief   The context ID passed to POSIX timer, set when using Watchdog object.
