@@ -315,7 +315,7 @@ private:
      * \param[out]  msgList     On output it contains a list a messages to send to the targets.
      *                          If a message is referred to all connected clients, the target is areg::TARGET_ALL.
      **/
-    static void _createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage> & msgList);
+    static void _createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<areg::RemoteMessage> & msgList);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.
@@ -329,7 +329,7 @@ private:
      * \param   scope   The scope priority string to parse and create message.
      * \return  Returns message to send to the remote target client.
      **/
-    static RemoteMessage _createScopeUpdateMessage(const areg::String& scope);
+    static areg::RemoteMessage _createScopeUpdateMessage(const areg::String& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

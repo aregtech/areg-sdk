@@ -484,7 +484,7 @@ protected:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
+    void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
@@ -497,14 +497,14 @@ protected:
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
+    void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

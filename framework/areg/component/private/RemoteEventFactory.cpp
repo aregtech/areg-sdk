@@ -30,7 +30,7 @@ DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
-StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage & stream, const Channel & comChannel )
+StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteMessage & stream, const Channel & comChannel )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 
@@ -170,7 +170,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
     return result;
 }
 
-bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
+bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
 {
     bool result = false;
     stream.invalidate();
@@ -286,7 +286,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
     return result;
 }
 
-StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMessage & stream, const Channel & /* comChannel */ )
+StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg::RemoteMessage & stream, const Channel & /* comChannel */ )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 

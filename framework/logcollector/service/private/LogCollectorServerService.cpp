@@ -125,7 +125,7 @@ void LogCollectorServerService::removeAllInstances()
     mObservers.clear();
 }
 
-void LogCollectorServerService::dispatchAndForwardLoggerMessage(const RemoteMessage& msgForward)
+void LogCollectorServerService::dispatchAndForwardLoggerMessage(const areg::RemoteMessage& msgForward)
 {
     Lock lock(mLock);
 
@@ -177,7 +177,7 @@ void LogCollectorServerService::dispatchAndForwardLoggerMessage(const RemoteMess
     }
 }
 
-void LogCollectorServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
+void LogCollectorServerService::onServiceMessageReceived(const areg::RemoteMessage &msgReceived)
 {
     LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);
 
@@ -260,7 +260,7 @@ void LogCollectorServerService::processTimer(Timer& /* timer */ )
 {
 }
 
-void LogCollectorServerService::onServiceMessageSend(const RemoteMessage &msgSend)
+void LogCollectorServerService::onServiceMessageSend(const areg::RemoteMessage &msgSend)
 {
     LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSend);
 
@@ -299,7 +299,7 @@ void LogCollectorServerService::lostRemoteServiceChannel(const Channel & /* chan
 {
 }
 
-void LogCollectorServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
+void LogCollectorServerService::failedProcessMessage(const areg::RemoteMessage & /* msgUnprocessed */)
 {
 }
 

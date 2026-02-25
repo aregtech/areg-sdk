@@ -145,7 +145,7 @@ public:
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool sendMessage(const areg::RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -210,7 +210,7 @@ public:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
+    void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
@@ -223,7 +223,7 @@ public:
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
+    void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer
@@ -314,7 +314,7 @@ public:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+    areg::RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -322,7 +322,7 @@ public:
      * \param   target  The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    areg::RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -435,7 +435,7 @@ public:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommunicationMessage(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool sendCommunicationMessage(ServiceEventData::ServiceCommand cmd, const areg::RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
@@ -568,7 +568,7 @@ inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceComm
 }
 
 inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData::ServiceCommand cmd
-                                                                , const RemoteMessage & msg
+                                                                , const areg::RemoteMessage & msg
                                                                 , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
@@ -577,7 +577,7 @@ inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendMessage( const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::sendMessage( const areg::RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData( data )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)

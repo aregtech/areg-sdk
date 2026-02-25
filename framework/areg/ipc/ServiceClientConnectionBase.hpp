@@ -170,7 +170,7 @@ protected:
      *          Override the method if need custom connection reaction.
      * \param   msgReceived     The message sent by service to the client.
      **/
-    virtual void serviceConnectionEvent(const RemoteMessage& msgReceived);
+    virtual void serviceConnectionEvent(const areg::RemoteMessage& msgReceived);
 
 /************************************************************************/
 // ConnectionProvider interface overrides
@@ -238,7 +238,7 @@ protected:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+    areg::RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -246,7 +246,7 @@ protected:
      * \param   target  The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    areg::RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -300,13 +300,13 @@ protected:
      * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message.
      **/
-    void onServiceMessageReceived(const RemoteMessage& msgReceived) override;
+    void onServiceMessageReceived(const areg::RemoteMessage& msgReceived) override;
 
     /**
      * \brief   Called when need to send a communication message.
      * \param   msgSend     The communication message sent.
      **/
-    void onServiceMessageSend(const RemoteMessage& msgSend) override;
+    void onServiceMessageSend(const areg::RemoteMessage& msgSend) override;
 
     /**
      * \brief   Called when need to inform the channel connection.
@@ -335,7 +335,7 @@ protected:
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool sendMessage(const areg::RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Called to start client socket connection. Returns true if connected.
@@ -575,7 +575,7 @@ inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::ServiceC
                                  , eventPrio );
 }
 
-inline bool ServiceClientConnectionBase::sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::sendMessage(const areg::RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData(data)
                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)

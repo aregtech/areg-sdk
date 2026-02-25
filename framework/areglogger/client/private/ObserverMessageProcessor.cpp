@@ -36,7 +36,7 @@ ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
 {
 }
 
-void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notifyServiceConnection(const areg::RemoteMessage& msgReceived)
 {
     ITEM_ID cookie{ areg::COOKIE_UNKNOWN };
     areg::ServiceConnectionState connection{ areg::ServiceConnectionState::Unknown };
@@ -75,11 +75,11 @@ void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgR
         break;
     }
 
-    RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, cookie);
+    areg::RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, cookie);
     notifyLogMessage(msgLog);
 }
 
-void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notifyConnectedClients(const areg::RemoteMessage& msgReceived)
 {
     areg::RemoteConnectionState remConnect{ areg::RemoteConnectionState::Disconnected };
 
@@ -99,7 +99,7 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
     } while (false);
 }
 
-void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notifyLogRegisterScopes(const areg::RemoteMessage& msgReceived)
 {
     FuncLogRegisterScopes callback{ nullptr };
     ITEM_ID cookie{ msgReceived.getSource() };
@@ -133,7 +133,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         areg::LogEntry log;
         _initLocalLogMessage(log, areg::COOKIE_LOGGER, now);
         log.logMessageLen = areg::String::formatString(log.logMessage, areg::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
-        RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
+        areg::RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
         notifyLogMessage(msgLog);
 
         mLoggerClient.mLogDatabase.commit(true);
@@ -155,7 +155,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
     }
 }
 
-void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notifyLogUpdateScopes(const areg::RemoteMessage& msgReceived)
 {
     FuncLogUpdateScopes callback{ nullptr };
     ITEM_ID cookie{ msgReceived.getSource() };
@@ -205,7 +205,7 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgRec
     }
 }
 
-void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notifyLogMessage(const areg::RemoteMessage& msgReceived)
 {
     FuncLogMessage callback{ nullptr };
     FuncLogMessageEx callbackEx{ nullptr };
@@ -273,7 +273,7 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
     }
 }
 
-void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::_clientsConnected(const areg::RemoteMessage& msgReceived)
 {
     ArrayList< areg::ConnectedInstance > listConnected;
     msgReceived >> listConnected;
@@ -307,7 +307,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
                                                             , static_cast<uint64_t>(client.ciCookie));
-                    RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
+                    areg::RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
             }
@@ -335,7 +335,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
                                                             , static_cast<uint64_t>(client.ciCookie));
-                    RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
+                    areg::RemoteMessage msgLog = areg::createLogMessage(log, areg::LogDataType::Local, areg::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
 
@@ -370,7 +370,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
     }
 }
 
-void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::_clientsDisconnected(const areg::RemoteMessage& msgReceived)
 {
     ArrayList<ITEM_ID> listClients;
     ArrayList< areg::ConnectedInstance > listDisconnected;

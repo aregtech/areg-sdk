@@ -96,7 +96,7 @@ public:
      * \param   logData     The instance of remote message buffer, which contains the
      *                      log message from another process.
      **/
-    static void logMessage( const RemoteMessage& logData );
+    static void logMessage( const areg::RemoteMessage& logData );
 
     /**
      * \brief   Generates and queues a message to execute internal command.

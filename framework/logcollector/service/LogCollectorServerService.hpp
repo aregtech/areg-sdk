@@ -76,7 +76,7 @@ public:
      *          to the clients or to the observers.
      * \param   msgForward  The message to dispatch and forward.
      **/
-    void dispatchAndForwardLoggerMessage(const RemoteMessage& msgForward);
+    void dispatchAndForwardLoggerMessage(const areg::RemoteMessage& msgForward);
 
 public:
 /************************************************************************/
@@ -134,7 +134,7 @@ protected:
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -159,13 +159,13 @@ protected:
      * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message. 
      **/
-    void onServiceMessageReceived(const RemoteMessage & msgReceived) override;
+    void onServiceMessageReceived(const areg::RemoteMessage & msgReceived) override;
 
     /**
      * \brief   Called when need to send a communication message.
      * \param   msgSend     The communication message to send. 
      **/
-    void onServiceMessageSend(const RemoteMessage & msgSend) override;
+    void onServiceMessageSend(const areg::RemoteMessage & msgSend) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.

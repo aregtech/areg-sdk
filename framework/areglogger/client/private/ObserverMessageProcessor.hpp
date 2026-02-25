@@ -25,7 +25,7 @@
  * Dependencies
  ************************************************************************/
 class LoggerClient;
-class RemoteMessage;
+namespace areg { class RemoteMessage; }
 namespace areg {
     struct LogEntry;
 }
@@ -54,14 +54,14 @@ public:
      *          The message contains Cookie ID of the observer.
      * \param   msgReceived     The buffer with data of the message received when connect to the service.
      **/
-    void notifyServiceConnection(const RemoteMessage& msgReceived);
+    void notifyServiceConnection(const areg::RemoteMessage& msgReceived);
 
     /**
      * \brief   Triggered to notify the list of connected clients.
      *          This message is sent as a reply on query the connected clients.
      * \param   msgReceived     The buffer with data of connected clients.
      **/
-    void notifyConnectedClients(const RemoteMessage& msgReceived);
+    void notifyConnectedClients(const areg::RemoteMessage& msgReceived);
 
     /**
      * \brief   Triggered to notify the list of scopes, scope ID and the scope message priority.
@@ -69,28 +69,28 @@ public:
      * \param   msgReceived     The buffer with data of scope names, scope IDs and the message priority.
      *                          This contains the information of all scopes.
      **/
-    void notifyLogRegisterScopes(const RemoteMessage& msgReceived);
+    void notifyLogRegisterScopes(const areg::RemoteMessage& msgReceived);
 
     /**
      * \brief   Triggered when the observer is notified that the scope priorities are updated.
      * \param   msgReceived     The buffer with data of scope names, scope IDs and the message priority.
      *                          This contains the information of all scopes.
      **/
-    void notifyLogUpdateScopes(const RemoteMessage& msgReceived);
+    void notifyLogUpdateScopes(const areg::RemoteMessage& msgReceived);
 
     /**
      * \brief   Triggered to notify to log a message.
      * \param   msgReceived     The buffer with the log message.
      **/
-    void notifyLogMessage(const RemoteMessage& msgReceived);
+    void notifyLogMessage(const areg::RemoteMessage& msgReceived);
 
 private:
 
     //!< Triggered to process client connected message.
-    void _clientsConnected(const RemoteMessage& msgReceived);
+    void _clientsConnected(const areg::RemoteMessage& msgReceived);
 
     //!< Triggered to process client disconnected message.
-    void _clientsDisconnected(const RemoteMessage& msgReceived);
+    void _clientsDisconnected(const areg::RemoteMessage& msgReceived);
 
     //!< Initializes the local log message with default values.
     void _initLocalLogMessage(areg::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;

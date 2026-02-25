@@ -31,7 +31,7 @@
   ************************************************************************/
 class StubAddress;
 class ProxyAddress;
-class RemoteMessage;
+namespace areg { class RemoteMessage; }
 class Channel;
 
 //////////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ namespace areg
      * \param   target      The ID of the target to send the connect message request.
      * \param   msgSource   The message source of the application to connect to service
      **/
-    AREG_API RemoteMessage createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
+    AREG_API areg::RemoteMessage createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
 
     /**
      * \brief   areg::CreateDisconnectRequest
@@ -134,7 +134,7 @@ namespace areg
      * \param   source  The ID of the source that sends the disconnect message request.
      * \param   target  The ID of the target to send the disconnect message request.
      **/
-    AREG_API RemoteMessage createDisconnectRequest( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createDisconnectRequest( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::CreateConnectNotify
@@ -142,7 +142,7 @@ namespace areg
      * \param   source  The ID of the source that sends the connect notification message.
      * \param   target  The ID of the target to send the connect notification message.
      **/
-    AREG_API RemoteMessage createConnectNotify( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createConnectNotify( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::CreateRejectNotify
@@ -150,7 +150,7 @@ namespace areg
      * \param   source  The ID of the source that sends the connection rejected message.
      * \param   target  The ID of the target to send the connection rejected message.
      **/
-    AREG_API RemoteMessage createRejectNotify( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createRejectNotify( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::CreateDisconnectNotify
@@ -158,7 +158,7 @@ namespace areg
      * \param   source  The ID of the source that sends the disconnect notification message.
      * \param   target  The ID of the target to send the disconnect notification message.
      **/
-    AREG_API RemoteMessage createDisconnectNotify( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createDisconnectNotify( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::createRouterRegisterService
@@ -168,7 +168,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to register service provider.
      * \see     createRouterUnregisterService
      **/
-    AREG_API RemoteMessage createRouterRegisterService( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createRouterRegisterService( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createRouterUnregisterService
@@ -179,7 +179,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to unregister service provider.
      * \see     createRouterRegisterService
      **/
-    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createRouterUnregisterService( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createRouterRegisterClient
@@ -189,7 +189,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to register service consumer.
      * \see     createRouterUnregisterClient
      **/
-    AREG_API RemoteMessage createRouterRegisterClient( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createRouterRegisterClient( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::createRouterUnregisterClient
@@ -200,7 +200,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to unregister service consumer.
      * \see     createRouterRegisterClient
      **/
-    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createServiceRegisteredNotification
@@ -210,7 +210,7 @@ namespace areg
      * \param   target  The ID of the target to send the service provider is registered notification message.
      * \see     createServiceUnregisteredNotification
      **/
-    AREG_API RemoteMessage createServiceRegisteredNotification( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createServiceRegisteredNotification( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::createServiceUnregisteredNotification
@@ -221,7 +221,7 @@ namespace areg
      * \param   target  The ID of the target to send the service provider is unregistered notification message.
      * \see     createServiceRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createServiceClientRegisteredNotification
@@ -231,7 +231,7 @@ namespace areg
      * \param   target  The ID of the target to send the service consumer is registered notification message.
      * \see     createServiceClientUnregisteredNotification
      **/
-    AREG_API RemoteMessage createServiceClientRegisteredNotification( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createServiceClientRegisteredNotification( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createServiceClientUnregisteredNotification
@@ -242,7 +242,7 @@ namespace areg
      * \param   target  The ID of the target to send the service consumer is unregistered notification message.
      * \see     createServiceClientRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::isMessageHelloServer
@@ -250,7 +250,7 @@ namespace areg
      * \param   msgHelloServer      The instance of remote message to check.
      * \return  Returns true if the message is connect request.
      **/
-    AREG_API bool isMessageHelloServer( const RemoteMessage & msgHelloServer );
+    AREG_API bool isMessageHelloServer( const areg::RemoteMessage & msgHelloServer );
 
     /**
      * \brief   areg::isMessageByeServer
@@ -258,7 +258,7 @@ namespace areg
      * \param   msgByeServer        The instance of remote message to check.
      * \return  Returns true if the message is disconnect request.
      **/
-    AREG_API bool isMessageByeServer( const RemoteMessage & msgByeServer );
+    AREG_API bool isMessageByeServer( const areg::RemoteMessage & msgByeServer );
 
     /**
      * \brief   areg::isMessagNotifyClient
@@ -266,7 +266,7 @@ namespace areg
      * \param   msgNotifyClient     The instance of remote message to check.
      * \return  Returns true if the message is a client notification request.
      **/
-    AREG_API bool isMessagNotifyClient( const RemoteMessage & msgNotifyClient );
+    AREG_API bool isMessagNotifyClient( const areg::RemoteMessage & msgNotifyClient );
 
     /**
      * \brief   areg::isMessageRegisterService
@@ -274,7 +274,7 @@ namespace areg
      * \param   msgRegisterService  The instance of remote message to check.
      * \return  Returns true if the message is a service notification request.
      **/
-    AREG_API bool isMessageRegisterService( const RemoteMessage & msgRegisterService );
+    AREG_API bool isMessageRegisterService( const areg::RemoteMessage & msgRegisterService );
 }
 
 //////////////////////////////////////////////////////////////////////////

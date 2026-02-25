@@ -48,7 +48,7 @@ bool ServerReceiveThread::runDispatcher()
         areg::SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
 
-        RemoteMessage msgReceived;
+        areg::RemoteMessage msgReceived;
         uint32_t retryCount = 0;
         do 
         {

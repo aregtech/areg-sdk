@@ -41,7 +41,7 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::Socket
 void ServerConnection::rejectConnection(areg::SocketAccepted & clientConnection)
 {
     const ITEM_ID & cookie = getCookie(clientConnection.getHandle());
-    RemoteMessage msgReject = areg::createRejectNotify(mChannelId, cookie);
+    areg::RemoteMessage msgReject = areg::createRejectNotify(mChannelId, cookie);
     sendMessage(msgReject, clientConnection);
     closeConnection(clientConnection);
 }
@@ -49,7 +49,7 @@ void ServerConnection::rejectConnection(areg::SocketAccepted & clientConnection)
 void ServerConnection::closeAllConnections()
 {
     Lock lock( mLock );
-    RemoteMessage msgByeClient;
+    areg::RemoteMessage msgByeClient;
     if ( msgByeClient.initMessage(areg::getMessageNotifyClientConnection().rbHeader ) != nullptr )
     {
         msgByeClient.setSequenceNr( areg::SEQUENCE_NUMBER_ANY );
@@ -61,7 +61,7 @@ void ServerConnection::closeAllConnections()
             const ITEM_ID& target{ getCookie(clientConnection) };
             if (target >= areg::COOKIE_REMOTE_SERVICE)
             {
-                RemoteMessage msgDisconnect{ msgByeClient.clone() };
+                areg::RemoteMessage msgDisconnect{ msgByeClient.clone() };
                 msgDisconnect.setTarget(target);
                 msgDisconnect << target << areg::ServiceConnectionState::Disconnected;
                 sendMessage(msgDisconnect, clientConnection);

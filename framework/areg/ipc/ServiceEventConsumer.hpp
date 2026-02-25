@@ -33,7 +33,7 @@ class ServiceServerConsumer;
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class RemoteMessage;
+namespace areg { class RemoteMessage; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceEventConsumer class declaration
@@ -98,13 +98,13 @@ public:
      * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message.
      **/
-    virtual void onServiceMessageReceived(const RemoteMessage& msgReceived) = 0;
+    virtual void onServiceMessageReceived(const areg::RemoteMessage& msgReceived) = 0;
 
     /**
      * \brief   Called when need to send a communication message.
      * \param   msgSend     The communication message sent.
      **/
-    virtual void onServiceMessageSend(const RemoteMessage& msgSend) = 0;
+    virtual void onServiceMessageSend(const areg::RemoteMessage& msgSend) = 0;
 
     /**
      * \brief   Called when need to inform the channel connection.

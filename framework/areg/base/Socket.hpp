@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessage;
+namespace areg { class RemoteMessage; }
 
 namespace areg
 {

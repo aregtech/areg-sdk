@@ -173,7 +173,7 @@ void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, 
     }
 }
 
-void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, areg::Socket & whichTarget )
+void RouterClient::failedSendMessage(const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedSendMessage);
 
@@ -242,7 +242,7 @@ void RouterClient::failedReceiveMessage( areg::Socket & whichSource )
     }
 }
 
-void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
+void RouterClient::failedProcessMessage( const areg::RemoteMessage & msgUnprocessed )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedProcessMessage);
 
@@ -260,7 +260,7 @@ void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
             if ( eventError != nullptr )
             {
-                RemoteMessage data;
+                areg::RemoteMessage data;
                 if ( RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
                 {
                     sendMessage(data);
@@ -278,7 +278,7 @@ void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
     }
 }
 
-void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource )
+void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
     if ( msgReceived.isValid() && whichSource.isValid() )
@@ -426,7 +426,7 @@ void RouterClient::processRemoteRequestEvent( RemoteRequestEvent & requestEvent)
 
     if ( requestEvent.isRemote() )
     {
-        RemoteMessage data;
+        areg::RemoteMessage data;
         if ( RemoteEventFactory::createStreamFromEvent( data, requestEvent, mChannel) )
         {
             LOG_DBG("Sending [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
@@ -454,7 +454,7 @@ void RouterClient::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & r
 
     if ( requestNotifyEvent.isRemote() )
     {
-        RemoteMessage data;
+        areg::RemoteMessage data;
         if ( RemoteEventFactory::createStreamFromEvent( data, requestNotifyEvent, mChannel) )
         {
             LOG_DBG("Send [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
@@ -483,7 +483,7 @@ void RouterClient::processRemoteResponseEvent(RemoteResponseEvent & responseEven
 
     if ( responseEvent.isRemote() )
     {
-        RemoteMessage data;
+        areg::RemoteMessage data;
         if ( RemoteEventFactory::createStreamFromEvent( data, responseEvent, mChannel) )
         {
             LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"

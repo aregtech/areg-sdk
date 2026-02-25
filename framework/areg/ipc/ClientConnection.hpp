@@ -174,7 +174,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
      **/
-    int32_t sendMessage( const RemoteMessage & in_message ) const;
+    int32_t sendMessage( const areg::RemoteMessage & in_message ) const;
 
     /**
      * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
@@ -191,7 +191,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
      **/
-    int32_t receiveMessage( RemoteMessage & out_message ) const;
+    int32_t receiveMessage( areg::RemoteMessage & out_message ) const;
 
     /**
      * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
@@ -275,12 +275,12 @@ inline areg::Socket & ClientConnection::getSocket()
     return mClientSocket;
 }
 
-inline int32_t ClientConnection::sendMessage(const RemoteMessage & in_message) const
+inline int32_t ClientConnection::sendMessage(const areg::RemoteMessage & in_message) const
 {
     return SocketConnectionBase::sendMessage(in_message, mClientSocket);
 }
 
-inline int32_t ClientConnection::receiveMessage(RemoteMessage & out_message) const
+inline int32_t ClientConnection::receiveMessage(areg::RemoteMessage & out_message) const
 {
     return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
 }

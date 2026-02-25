@@ -225,7 +225,7 @@ void ServiceCommunicationBase::connectionLost( areg::SocketAccepted & clientSock
     if ( cookie != areg::COOKIE_UNKNOWN )
     {
         removeInstance(cookie);
-        RemoteMessage msgDisconnect = areg::createDisconnectRequest(cookie, channel);
+        areg::RemoteMessage msgDisconnect = areg::createDisconnectRequest(cookie, channel);
         sendCommunicationMessage(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
     }
 
@@ -375,9 +375,9 @@ bool ServiceCommunicationBase::startReceiveThread()
 }
 
 #ifdef DEBUG
-void ServiceCommunicationBase::failedSendMessage(const RemoteMessage & msgFailed, areg::Socket & whichTarget )
+void ServiceCommunicationBase::failedSendMessage(const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget )
 #else  // DEBUG
-void ServiceCommunicationBase::failedSendMessage(const RemoteMessage& /*msgFailed*/, areg::Socket& whichTarget)
+void ServiceCommunicationBase::failedSendMessage(const areg::RemoteMessage& /*msgFailed*/, areg::Socket& whichTarget)
 #endif // DEBUG
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
@@ -416,7 +416,7 @@ void ServiceCommunicationBase::failedReceiveMessage(areg::Socket & whichSource)
     }
 }
 
-void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgReceived, areg::Socket & whichSource)
+void ServiceCommunicationBase::processReceivedMessage(const areg::RemoteMessage & msgReceived, areg::Socket & whichSource)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_processReceivedMessage);
     if ( msgReceived.isValid() )
@@ -460,7 +460,7 @@ void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgR
             instance.ciTimestamp = static_cast<TIME64>(DateTime::getNow());
             instance.ciCookie = cookie;
             addInstance(cookie, instance);
-            RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, areg::MessageSource::SourceService));
+            areg::RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, areg::MessageSource::SourceService));
             LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                         , areg::getString( static_cast<areg::FuncIdRange>(msgConnect.getMessageId()))
                         , static_cast<uint32_t>(msgConnect.getMessageId())
@@ -503,15 +503,15 @@ bool ServiceCommunicationBase::postEvent( Event & eventElem )
     return EventDispatcher::postEvent( eventElem );
 }
 
-RemoteMessage ServiceCommunicationBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+areg::RemoteMessage ServiceCommunicationBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
 {
-    RemoteMessage result{ areg::createConnectNotify(source, target) };
+    areg::RemoteMessage result{ areg::createConnectNotify(source, target) };
     result.moveToEnd();
     result << msgSource;
     return result;
 }
 
-RemoteMessage ServiceCommunicationBase::createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const
+areg::RemoteMessage ServiceCommunicationBase::createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const
 {
     return areg::createDisconnectNotify(source, target);
 }

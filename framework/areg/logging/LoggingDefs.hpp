@@ -472,13 +472,13 @@ namespace areg
      * \param   srcCookie   The cookie of the source generated message.
      * \return  Returns message object for network communication.
      **/
-    AREG_API RemoteMessage createLogMessage(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID & srcCookie);
+    AREG_API areg::RemoteMessage createLogMessage(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID & srcCookie);
 
     /**
      * \brief   Triggers an event to log the message, contained in the buffer.
      * \param   message     The shared buffer with the information to log.
      **/
-    AREG_API void logMessage(const RemoteMessage& message);
+    AREG_API void logMessage(const areg::RemoteMessage& message);
 
     /**
      * \brief   Log local custom message ignoring process and thread names.
@@ -499,7 +499,7 @@ namespace areg
      * \param   scopeList   The list of scopes to register.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList);
+    AREG_API areg::RemoteMessage messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList);
 
     /**
      * \brief   Creates a message to update the list of log scopes and priorities. This message can change the priority either
@@ -512,7 +512,7 @@ namespace areg
      *                      The scope IDs can be set or missed (set 0).
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageUpdateScopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeNames & scopeNames);
+    AREG_API areg::RemoteMessage messageUpdateScopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeNames & scopeNames);
 
     /**
      * \brief   Creates a message to update the logging priority of a single scope or a single group of scopes.
@@ -524,7 +524,7 @@ namespace areg
      * \param   scopePrio   The logging priority of the scope.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio);
+    AREG_API areg::RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio);
 
     /**
      * \brief   Creates a message to query instances connected to the service.
@@ -532,7 +532,7 @@ namespace areg
      * \param   target      The target ID to send the message. The target is either concrete target or areg::TARGET_ALL if message targets all clients.
      * \return  Returns generated message ready to forward to target client(s) via log collector service.
      **/
-    AREG_API RemoteMessage messageQueryInstances(const ITEM_ID& source, const ITEM_ID& target);
+    AREG_API areg::RemoteMessage messageQueryInstances(const ITEM_ID& source, const ITEM_ID& target);
 
     /**
      * \brief   Creates a message to query the list of scopes of connected client applications.
@@ -547,7 +547,7 @@ namespace areg
      *                      If the ID is areg::TARGET_ALL, the message is sent to all connected clients.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target);
+    AREG_API areg::RemoteMessage messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target);
 
     /**
      * \brief   Creates a message to notify that scopes priority have been changed.
@@ -559,7 +559,7 @@ namespace areg
      * \return  Returns generated remote message that contains information of scopes, IDS and priorities to send to log collector.
      * \see     messageRegisterScopes
      **/
-    AREG_API RemoteMessage messageScopesUpdated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList);
+    AREG_API areg::RemoteMessage messageScopesUpdated(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeList& scopeList);
 
     /**
      * \brief   Creates a message to send request to the connected client target to save configuration.
@@ -569,7 +569,7 @@ namespace areg
      *                      or can be areg::TARGET_ALL if should be forwarded to all connected clients.
      * \return  Returns generated message ready to send to client(s) via log collector service.
      **/
-    AREG_API RemoteMessage messageSaveConfiguration(const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage messageSaveConfiguration(const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   Create a message to notify the log collector that the configuration file has been saved.
@@ -579,7 +579,7 @@ namespace areg
      * \return  Returns generate remote message to notify the log collector that the configuration file has been saved.
      * \see     messageSaveConfiguration
      **/
-    AREG_API RemoteMessage messageConfigurationSaved();
+    AREG_API areg::RemoteMessage messageConfigurationSaved();
 
     /**
      * \brief   Call to set external logging database engine.

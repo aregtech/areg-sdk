@@ -218,7 +218,7 @@ int32_t SystemServiceBase::serviceMain(aregext::ServiceOption optStartup, const 
     return result;
 }
 
-void SystemServiceBase::sendMessageToTarget(const RemoteMessage& message)
+void SystemServiceBase::sendMessageToTarget(const areg::RemoteMessage& message)
 {
     mCommunication.sendMessage(message);
 }

@@ -610,7 +610,7 @@ void LogCollector::_cleanHelp()
 void LogCollector::_processUpdateScopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
-    ArrayList<RemoteMessage> msgList;
+    ArrayList<areg::RemoteMessage> msgList;
     _createScopeMessage(optScope, msgList);
     for (uint32_t i = 0; i < msgList.getSize(); ++ i)
     {
@@ -649,7 +649,7 @@ void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage>& msgList)
+void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<areg::RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
@@ -660,7 +660,7 @@ void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope
     {
         if (entry == areg::SYNTAX_END_COMMAND)
         {
-            RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
+            areg::RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
             scope.clear();
             if (msg.isValid() == false)
             {
@@ -680,7 +680,7 @@ void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope
 
     if (scope.isEmpty() == false)
     {
-        RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
+        areg::RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
         if (msg.isValid() == false)
         {
             msgList.clear();
@@ -735,9 +735,9 @@ areg::String LogCollector::_normalizeScopeProperty(const areg::String & scope)
     return result;
 }
 
-RemoteMessage LogCollector::_createScopeUpdateMessage(const areg::String& scope)
+areg::RemoteMessage LogCollector::_createScopeUpdateMessage(const areg::String& scope)
 {
-    RemoteMessage result;
+    areg::RemoteMessage result;
 
     if (scope.isEmpty() == false)
     {

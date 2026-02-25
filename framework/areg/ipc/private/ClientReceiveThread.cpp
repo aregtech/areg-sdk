@@ -41,7 +41,7 @@ bool ClientReceiveThread::runDispatcher()
 
     areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
-    RemoteMessage msgReceived;
+    areg::RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
     do

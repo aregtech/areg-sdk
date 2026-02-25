@@ -71,7 +71,7 @@ void RouterServerService::unregisterServiceConsumer(const ProxyAddress & /* prox
     LOG_ERR("Method is not implemented, this should not be called");
 }
 
-void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
+void RouterServerService::onServiceMessageReceived(const areg::RemoteMessage &msgReceived)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageReceived);
 
@@ -218,7 +218,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     }
 }
 
-void RouterServerService::onServiceMessageSend(const RemoteMessage &msgSend)
+void RouterServerService::onServiceMessageSend(const areg::RemoteMessage &msgSend)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 
@@ -292,7 +292,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
                 const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
                 if ( (proxyService.getServiceStatus() == areg::ServiceConnectionState::Connected) && (addrProxy.getSource() != stub.getSource()) )
                 {
-                    RemoteMessage msgRegisterProxy = areg::createServiceClientRegisteredNotification(addrProxy, mServerConnection.getChannelId(), stub.getSource());
+                    areg::RemoteMessage msgRegisterProxy = areg::createServiceClientRegisteredNotification(addrProxy, mServerConnection.getChannelId(), stub.getSource());
                     sendMessage(msgRegisterProxy);
 
                     LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -305,7 +305,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
 
                     if ( sendList.addIfUnique(addrProxy.getSource()) )
                     {
-                        RemoteMessage msgRegisterStub  = areg::createServiceRegisteredNotification(stub, mServerConnection.getChannelId(), addrProxy.getSource());
+                        areg::RemoteMessage msgRegisterStub  = areg::createServiceRegisteredNotification(stub, mServerConnection.getChannelId(), addrProxy.getSource());
                         sendMessage(msgRegisterStub);
 
                         LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -362,7 +362,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
 
         if ( (proxyService.getServiceStatus() == areg::ServiceConnectionState::Connected) && (proxy.getSource() != addrStub.getSource()) )
         {
-            RemoteMessage msgRegisterProxy = areg::createServiceClientRegisteredNotification(proxy, mServerConnection.getChannelId(), addrStub.getSource());
+            areg::RemoteMessage msgRegisterProxy = areg::createServiceClientRegisteredNotification(proxy, mServerConnection.getChannelId(), addrStub.getSource());
             sendMessage(msgRegisterProxy);
 
             LOG_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -373,7 +373,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
                         , static_cast<uint32_t>(msgRegisterProxy.getSource())
                         , static_cast<uint32_t>(msgRegisterProxy.getTarget()));
 
-            RemoteMessage msgRegisterStub  = areg::createServiceRegisteredNotification(addrStub, mServerConnection.getChannelId(), proxy.getSource());
+            areg::RemoteMessage msgRegisterStub  = areg::createServiceRegisteredNotification(addrStub, mServerConnection.getChannelId(), proxy.getSource());
             sendMessage(msgRegisterStub);
 
             LOG_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -457,7 +457,7 @@ void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress &
                     , ProxyAddress::convAddressToPath(proxy).getString()
                     , static_cast<uint32_t>(cookie));
 
-    RemoteMessage msgRegisterProxy;
+    areg::RemoteMessage msgRegisterProxy;
     ServiceProxy svcProxy;
     const ServiceStub * svcStub     = nullptr;
 
@@ -502,7 +502,7 @@ void RouterServerService::lostRemoteServiceChannel(const Channel & /* channel */
 {
 }
 
-void RouterServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
+void RouterServerService::failedProcessMessage(const areg::RemoteMessage & /* msgUnprocessed */)
 {
 }
 

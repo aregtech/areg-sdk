@@ -48,7 +48,7 @@ void LogManager::logMessage(const areg::SharedBuffer& logData)
     LogManager::getInstance().sendLogEvent(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
 }
 
-void LogManager::logMessage(const RemoteMessage& logData)
+void LogManager::logMessage(const areg::RemoteMessage& logData)
 {
     LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
 }

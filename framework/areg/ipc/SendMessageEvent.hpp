@@ -62,7 +62,7 @@ public:
      *                          The message should already contain information and instructions
      *                          for remote process.
      **/
-    inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
+    inline explicit SendMessageEventData( const areg::RemoteMessage & remoteMessage );
 
     /**
      * \brief   Copies remote message data from given source.
@@ -100,7 +100,7 @@ public:
     /**
      * \brief   Returns instance of remote message.
      **/
-    inline const RemoteMessage & getRemoteMessage() const;
+    inline const areg::RemoteMessage & getRemoteMessage() const;
 
     /**
      * \brief   Returns the command instruction to handle messages.
@@ -124,7 +124,7 @@ private:
     /**
      * \brief   The instance of remote message
      **/
-    RemoteMessage   mRemoteMessage;
+    areg::RemoteMessage   mRemoteMessage;
 
     /**
      * \brief   The action to perform on the message.
@@ -142,7 +142,7 @@ AREG_DECLARE_EVENT(SendMessageEventData, SendMessageEvent, SendMessageEventConsu
 // SendMessageEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMessage)
+inline SendMessageEventData::SendMessageEventData(const areg::RemoteMessage& remoteMessage)
     : mRemoteMessage    (remoteMessage)
     , mCmdSendMessage   ( SendMessageEventData::SendCommand::ForwardMessage )
 {
@@ -180,7 +180,7 @@ inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventD
     return (*this);
 }
 
-inline const RemoteMessage & SendMessageEventData::getRemoteMessage() const
+inline const areg::RemoteMessage & SendMessageEventData::getRemoteMessage() const
 {
     return mRemoteMessage;
 }

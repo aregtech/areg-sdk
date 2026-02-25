@@ -124,7 +124,7 @@ public:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
+    virtual areg::RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -132,7 +132,7 @@ public:
      * \param   target  The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+    virtual areg::RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

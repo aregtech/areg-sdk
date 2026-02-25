@@ -69,7 +69,7 @@ public:
      * \param   cmdService  The command to set in event data.
      * \param   msgService  The message data buffer to initialize.
      **/
-    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
+    inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const areg::RemoteMessage& msgService);
     /**
      * \brief   Copies the event data from given source.
      * \param   source  The source to copy data.
@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Returns message data buffer object saved in event data.
      **/
-    inline const RemoteMessage & getMessage() const;
+    inline const areg::RemoteMessage & getMessage() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -123,7 +123,7 @@ private:
     /**
      * \brief   The message data buffer saved in service event.
      **/
-    mutable RemoteMessage                       mMessageData;
+    mutable areg::RemoteMessage                       mMessageData;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -153,7 +153,7 @@ inline ServiceEventData::ServiceEventData( ServiceEventData::ServiceCommand cmdS
 {
 }
 
-inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService)
+inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdService, const areg::RemoteMessage& msgService)
     : mServiceCommand   ( cmdService )
     , mMessageData      ( msgService )
 {
@@ -164,7 +164,7 @@ inline ServiceEventData::ServiceCommand ServiceEventData::getCommand() const
     return mServiceCommand;
 }
 
-inline const RemoteMessage& ServiceEventData::getMessage() const
+inline const areg::RemoteMessage& ServiceEventData::getMessage() const
 {
     return mMessageData;
 }

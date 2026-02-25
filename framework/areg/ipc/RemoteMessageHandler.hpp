@@ -23,7 +23,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessage;
+namespace areg { class RemoteMessage; }
 namespace areg { class Socket; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ public:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, areg::Socket & whichTarget ) = 0;
+    virtual void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) = 0;
 
     /**
      * \brief   Triggered, when failed to receive message.
@@ -73,14 +73,14 @@ public:
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) = 0;
+    virtual void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) = 0;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource ) = 0;
+    virtual void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -54,7 +54,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
     LOG_SCOPE( areg_aregextend_service_ServerSendThread_processEvent );
     if (data.isForwardMessage())
     {
-        const RemoteMessage & msgSend = data.getRemoteMessage( );
+        const areg::RemoteMessage & msgSend = data.getRemoteMessage( );
         ASSERT( msgSend.isValid( ) );
 
         const ITEM_ID & target{ msgSend.getTarget() };

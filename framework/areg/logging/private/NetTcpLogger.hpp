@@ -62,7 +62,7 @@ class NetTcpLogger  : public    LoggerBase
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
-    using RingStack = areg::RingStack<RemoteMessage>;
+    using RingStack = areg::RingStack<areg::RemoteMessage>;
 
     //!< A prefix to add in front of thread and timer names.
     static constexpr std::string_view   PREFIX_THREAD{ "logger_" };
@@ -157,7 +157,7 @@ private:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
+    void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
@@ -170,14 +170,14 @@ private:
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
+    void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

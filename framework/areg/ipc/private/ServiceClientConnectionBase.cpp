@@ -73,7 +73,7 @@ ServiceClientConnectionBase::~ServiceClientConnectionBase()
 {
 }
 
-void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& msgReceived)
+void ServiceClientConnectionBase::serviceConnectionEvent(const areg::RemoteMessage& msgReceived)
 {
     LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
 
@@ -208,12 +208,12 @@ bool ServiceClientConnectionBase::isServiceHostSetup() const
     return mClientConnection.getAddress().isValid();
 }
 
-RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
+areg::RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const
 {
     return areg::createConnectRequest(source, target, msgSource);
 }
 
-RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const
+areg::RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const
 {
     return areg::createDisconnectRequest(source, target);
 }
@@ -347,11 +347,11 @@ void ServiceClientConnectionBase::onServiceExit()
     onServiceStop( );
 }
 
-void ServiceClientConnectionBase::onServiceMessageReceived( const RemoteMessage & /* msgReceived */ )
+void ServiceClientConnectionBase::onServiceMessageReceived( const areg::RemoteMessage & /* msgReceived */ )
 {
 }
 
-void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & /* msgSend */ )
+void ServiceClientConnectionBase::onServiceMessageSend( const areg::RemoteMessage & /* msgSend */ )
 {
 }
 

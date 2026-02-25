@@ -169,7 +169,7 @@ public:
      * \brief   Sends remote message to the target specified in the message structure.
      * \param   message     The message to send to the target. The message contains information of the source and target.
      **/
-    virtual void sendMessageToTarget(const RemoteMessage& message);
+    virtual void sendMessageToTarget(const areg::RemoteMessage& message);
 
     /**
      * \brief   Triggered to initialize the service application.
