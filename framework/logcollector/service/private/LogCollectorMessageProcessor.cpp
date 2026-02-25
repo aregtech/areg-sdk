@@ -72,7 +72,7 @@ void LogCollectorMessageProcessor::notifyConnectedInstances(const areg::MapInsta
 
         if (count != 0)
         {
-            msgInstances.setPosition(static_cast<int32_t>(pos), Cursor::SeekOrigin::Begin);
+            msgInstances.setPosition(static_cast<int32_t>(pos), areg::Cursor::SeekOrigin::Begin);
             msgInstances << count;
             msgInstances.moveToEnd();
         }

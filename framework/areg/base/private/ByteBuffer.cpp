@@ -69,7 +69,7 @@ uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
                 sizeBuffer = areg::alignSize(sizeBuffer, sizeAlign);
                 uint8_t* buffer = DEBUG_NEW uint8_t[sizeBuffer];
                 int32_t copied = static_cast<int32_t>(initBuffer(buffer, sizeBuffer, copy));
-                if (static_cast<uint32_t>(copied) != Cursor::INVALID_CURSOR_POSITION)
+                if (static_cast<uint32_t>(copied) != areg::Cursor::INVALID_CURSOR_POSITION)
                 {
                     areg::RawBuffer * temp = reinterpret_cast<areg::RawBuffer *>(buffer);
                     mByteBuffer = std::shared_ptr<areg::RawBuffer>(temp, ByteBufferDeleter());
@@ -91,7 +91,7 @@ uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
 
 uint32_t ByteBuffer::initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const
 {
-    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
+    uint32_t result = areg::Cursor::INVALID_CURSOR_POSITION;
 
     if ( newBuffer != nullptr )
     {

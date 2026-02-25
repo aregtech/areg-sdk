@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 BufferPosition::BufferPosition( ByteBuffer & buffer )
     : mBuffer           ( buffer )
-    , mPosition         ( Cursor::INVALID_CURSOR_POSITION )
+    , mPosition         ( areg::Cursor::INVALID_CURSOR_POSITION )
 {
 }
 
@@ -43,39 +43,39 @@ uint32_t BufferPosition::getPosition() const
 {
     if ( mBuffer.isValid() )
     {
-        return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
+        return (mPosition == areg::Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
     }
     else
     {
-        return Cursor::INVALID_CURSOR_POSITION;
+        return areg::Cursor::INVALID_CURSOR_POSITION;
     }
 }
 
 /**
  * \brief   Sets the current position of cursor
  **/
-uint32_t BufferPosition::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
+uint32_t BufferPosition::setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const
 {
     if (mBuffer.isValid() == false)
     {
-        return Cursor::INVALID_CURSOR_POSITION;
+        return areg::Cursor::INVALID_CURSOR_POSITION;
     }
 
     int32_t size{ static_cast<int32_t>(mBuffer.getSizeUsed()) };
-    int32_t curPos{ static_cast<int32_t>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
+    int32_t curPos{ static_cast<int32_t>(mPosition == areg::Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
 
     switch (startAt)
     {
-    case Cursor::SeekOrigin::Begin:
+    case areg::Cursor::SeekOrigin::Begin:
         curPos = 0;
         offset = offset < 0 ? 0 : std::min(offset, size);
         break;
 
-    case Cursor::SeekOrigin::Current:
+    case areg::Cursor::SeekOrigin::Current:
         offset = offset < 0 ? std::max(offset, -1 * curPos) : std::min(offset, size - curPos);
         break;
 
-    case Cursor::SeekOrigin::End:
+    case areg::Cursor::SeekOrigin::End:
         curPos = size;
         offset = offset < 0 ? std::max(offset, -1 * size) : 0;
         break;

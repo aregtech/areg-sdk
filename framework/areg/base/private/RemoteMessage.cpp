@@ -59,7 +59,7 @@ namespace areg
 
     uint32_t RemoteMessage::initBuffer(uint8_t *newBuffer, uint32_t bufLength, bool makeCopy) const
     {
-        uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
+        uint32_t result{ areg::Cursor::INVALID_CURSOR_POSITION };
 
         if (newBuffer != nullptr)
         {

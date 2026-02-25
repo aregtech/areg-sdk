@@ -90,7 +90,7 @@ public:
      *
      * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
      **/
-    uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const;
+    uint32_t setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -121,7 +121,7 @@ private:
 
 inline void BufferPosition::invalidate()
 {
-    mPosition   = Cursor::INVALID_CURSOR_POSITION;
+    mPosition   = areg::Cursor::INVALID_CURSOR_POSITION;
 }
 
 #endif  // AREG_BASE_PRIVATE_BUFFERPOSITION_HPP

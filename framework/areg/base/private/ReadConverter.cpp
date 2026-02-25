@@ -30,7 +30,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ReadConverter::ReadConverter( areg::InStream & readStream, Cursor & readPosition )
+ReadConverter::ReadConverter( areg::InStream & readStream, areg::Cursor & readPosition )
     : mReadStream   (readStream)
     , mReadPosition (readPosition)
 {
@@ -133,7 +133,7 @@ bool ReadConverter::readLine( areg::String & Value ) const
         {
             if (getChar(ch) && (areg::isCarriageReturn<char>(ch) == false) && (areg::isEndOfString<char>(ch) == false))
             {
-                mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(char)), Cursor::SeekOrigin::Current);
+                mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(char)), areg::Cursor::SeekOrigin::Current);
             }
 
             break;
@@ -156,7 +156,7 @@ bool ReadConverter::readLine( areg::WideString & Value ) const
         {
             if ( getChar( ch ) && (areg::isCarriageReturn<wchar_t>( ch ) == false) && (areg::isEndOfString<wchar_t>( ch ) == false) )
             {
-                mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(wchar_t)), Cursor::SeekOrigin::Current);
+                mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(wchar_t)), areg::Cursor::SeekOrigin::Current);
             }
 
             break;

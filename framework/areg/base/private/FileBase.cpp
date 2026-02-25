@@ -60,7 +60,7 @@ inline int32_t _readString(const FileBase & file, ClassType & outValue)
             outValue    += str;
             result      += length;
             int32_t newPos   = static_cast<int32_t>(result * sizeof(CharType)) + static_cast<int32_t>(oldPos);
-            file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+            file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -103,7 +103,7 @@ inline int32_t _readLine(const FileBase & file, ClassType & outValue)
             outValue+= str;
             result  += length;
             int32_t newPos  = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-            file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+            file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -136,7 +136,7 @@ inline int32_t _readString(const FileBase & file, CharType * buffer, int32_t cha
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
                 int32_t newPos = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+                file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -165,7 +165,7 @@ inline int32_t _readLine(const FileBase & file, CharType * buffer, int32_t charC
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
                 int32_t newPos = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+                file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -219,10 +219,10 @@ areg::Ordering _compareData( const DataType * memBuffer1, const DataType * memBu
 template<typename CharType>
 uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType * text, uint32_t length, bool sensitive )
 {
-    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
-    if ( file.canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION) )
+    uint32_t result{ areg::Cursor::INVALID_CURSOR_POSITION };
+    if ( file.canRead( ) && (startPos != areg::Cursor::INVALID_CURSOR_POSITION) )
     {
-        uint32_t posSearch = file.setPosition( static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin );
+        uint32_t posSearch = file.setPosition( static_cast<int32_t>(startPos), areg::Cursor::SeekOrigin::Begin );
         if ( (areg::isEmpty<CharType>(text) == false) && (length != 0) )
         {
             uint32_t dataLen = length * 2;
@@ -230,7 +230,7 @@ uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType *
             uint32_t readLen = 0;
             CharType * fileData = new CharType[ bufLen ];
 
-            while ( result == Cursor::INVALID_CURSOR_POSITION )
+            while ( result == areg::Cursor::INVALID_CURSOR_POSITION )
             {
                 if ( readLen != 0 )
                 {
@@ -283,12 +283,12 @@ uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType *
 //////////////////////////////////////////////////////////////////////////
 FileBase::FileBase()
     : areg::IOStream        ( )
-    , Cursor  ( )
+    , areg::Cursor  ( )
 
     , mFileName         (areg::String::getEmptyString())
     , mFileMode         (static_cast<uint32_t>(OpenMode::Invalid))
-    , mReadConvert      (static_cast<areg::InStream &>(self()), static_cast<Cursor &>(self()) )
-    , mWriteConvert     (static_cast<areg::OutStream &>(self()), static_cast<Cursor &>(self()) )
+    , mReadConvert      (static_cast<areg::InStream &>(self()), static_cast<areg::Cursor &>(self()) )
+    , mWriteConvert     (static_cast<areg::OutStream &>(self()), static_cast<areg::Cursor &>(self()) )
 {
 }
 
@@ -526,9 +526,9 @@ uint32_t FileBase::resizeAndFill(uint32_t newSize, uint8_t fillValue )
     if (newSize > 0)
     {
         uint32_t newPos = reserve(newSize);
-        if ((newPos != Cursor::INVALID_CURSOR_POSITION) && (newPos > curPos))
+        if ((newPos != areg::Cursor::INVALID_CURSOR_POSITION) && (newPos > curPos))
         {
-            setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
+            setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
             for (uint32_t i = 0; i < newPos; ++ i)
             {
                 write( &fillValue, sizeof( uint8_t ) );
@@ -544,7 +544,7 @@ uint32_t FileBase::resizeAndFill(uint32_t newSize, uint8_t fillValue )
 
 void FileBase::resetCursor() const
 {
-    setPosition(0, Cursor::SeekOrigin::Begin);
+    setPosition(0, areg::Cursor::SeekOrigin::Begin);
 }
 
 uint32_t FileBase::read(ByteBuffer & buffer) const
@@ -627,17 +627,17 @@ bool FileBase::write(const wchar_t * wide)
 
 uint32_t FileBase::searchData( uint32_t startPos, const uint8_t * buffer, uint32_t length ) const
 {
-    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
-    if ( canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION))
+    uint32_t result{ areg::Cursor::INVALID_CURSOR_POSITION };
+    if ( canRead( ) && (startPos != areg::Cursor::INVALID_CURSOR_POSITION))
     {
-        uint32_t posSearch = setPosition( static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin );
+        uint32_t posSearch = setPosition( static_cast<int32_t>(startPos), areg::Cursor::SeekOrigin::Begin );
         if ( (buffer != nullptr) && (length != 0) )
         {
             uint32_t dataLen = length * 2;
             uint32_t readLen = 0;
             uint8_t * fileData = new uint8_t[ dataLen ];
 
-            while ((result == Cursor::INVALID_CURSOR_POSITION) && (posSearch != Cursor::INVALID_CURSOR_POSITION))
+            while ((result == areg::Cursor::INVALID_CURSOR_POSITION) && (posSearch != areg::Cursor::INVALID_CURSOR_POSITION))
             {
                 if ( readLen != 0 )
                 {

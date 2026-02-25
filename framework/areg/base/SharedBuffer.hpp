@@ -59,7 +59,7 @@ namespace areg
      *          The instance of Shared Buffer can be used for data streaming.
      **/
     class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streaming object
-                                , public  Cursor  // To control read and write operations
+                                , public  areg::Cursor  // To control read and write operations
     {
         friend class areg::FileBuffer;
 
@@ -256,7 +256,7 @@ namespace areg
          *
          * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
          **/
-        uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const override;
+        uint32_t setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const override;
 
     /************************************************************************/
     // ByteBuffer interface overrides, not implemented in BufferStreamBase
@@ -351,7 +351,7 @@ namespace areg
     inline bool SharedBuffer::isBeginOfBuffer() const
     {
         uint32_t curPos = getPosition();
-        return ((isValid() == false) || (curPos == 0) || (curPos == Cursor::INVALID_CURSOR_POSITION));
+        return ((isValid() == false) || (curPos == 0) || (curPos == areg::Cursor::INVALID_CURSOR_POSITION));
     }
 
     inline bool SharedBuffer::isEndOfBuffer() const

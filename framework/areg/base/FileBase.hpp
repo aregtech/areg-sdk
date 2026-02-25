@@ -100,7 +100,7 @@ class ByteBuffer;
  *                            In that case, the system can entirely avoid writing the data.
  **/
 class AREG_API FileBase : public areg::IOStream
-                        , public Cursor
+                        , public areg::Cursor
 {
 //////////////////////////////////////////////////////////////////////////
 // Defined types
@@ -1005,23 +1005,23 @@ inline bool FileBase::canRead() const
 inline bool FileBase::moveToBegin() const
 {
     ASSERT(isOpened());
-    return Cursor::moveToBegin();
+    return areg::Cursor::moveToBegin();
 }
 
 inline bool FileBase::moveToEnd() const
 {
     ASSERT(isOpened());
-    return Cursor::moveToEnd();
+    return areg::Cursor::moveToEnd();
 }
 
 inline uint32_t FileBase::getStartPosition()
 {
-    return Cursor::START_CURSOR_POSITION;
+    return areg::Cursor::START_CURSOR_POSITION;
 }
 
 inline uint32_t FileBase::getInvalidPosition()
 {
-    return Cursor::INVALID_CURSOR_POSITION;
+    return areg::Cursor::INVALID_CURSOR_POSITION;
 }
 
 inline const areg::InStream& FileBase::getReadStream() const

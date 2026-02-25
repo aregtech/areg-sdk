@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Cursor;
+namespace areg { class Cursor; }
 
 //////////////////////////////////////////////////////////////////////////
 // BufferStreamBase class declaration
@@ -52,7 +52,7 @@ protected:
      * \param	readPosition	Read position object.
      * \param	writePosition	Write position object.
      **/
-    BufferStreamBase( Cursor & readPosition, Cursor & writePosition );
+    BufferStreamBase( areg::Cursor & readPosition, areg::Cursor & writePosition );
     /**
      * \brief	Destructor
      **/
@@ -259,11 +259,11 @@ private:
     /**
      * \brief   Read position object
      **/
-    Cursor &  mReadPosition;
+    areg::Cursor &  mReadPosition;
     /**
      * \brief   Write position object
      **/
-    Cursor &  mWritePosition;
+    areg::Cursor &  mWritePosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / forbidden function calls

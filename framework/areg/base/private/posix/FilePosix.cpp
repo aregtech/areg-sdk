@@ -274,23 +274,23 @@ uint32_t areg::File::_osWriteFile(const uint8_t* buffer, uint32_t size)
     return result;
 }
 
-uint32_t areg::File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t areg::File::_osSetPositionFile(int32_t offset, areg::Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
-    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
+    uint32_t result = areg::Cursor::INVALID_CURSOR_POSITION;
 
     PosixFile* file = reinterpret_cast<PosixFile*>(mFileHandle);
     switch (startAt)
     {
-    case Cursor::SeekOrigin::Begin:
+    case areg::Cursor::SeekOrigin::Begin:
         result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_SET));
         break;
 
-    case Cursor::SeekOrigin::Current:
+    case areg::Cursor::SeekOrigin::Current:
         result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_CUR));
         break;
 
-    case Cursor::SeekOrigin::End:
+    case areg::Cursor::SeekOrigin::End:
         result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_END));
         break;
 

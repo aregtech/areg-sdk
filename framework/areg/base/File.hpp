@@ -216,7 +216,7 @@ namespace areg
          *
          * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
          **/
-        uint32_t setPosition(int32_t offset, Cursor::SeekOrigin startAt) const override;
+        uint32_t setPosition(int32_t offset, areg::Cursor::SeekOrigin startAt) const override;
 
         /**
          * \brief	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
@@ -668,7 +668,7 @@ namespace areg
          * \return  If succeeded, returns the new position of the cursor. Otherwise, returns
          *          invalid position (Cursor::INVALID_CURSOR_POSITION).
          */
-        uint32_t _osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const;
+        uint32_t _osSetPositionFile(int32_t offset, areg::Cursor::SeekOrigin startAt) const;
 
         /**
          * \brief   If file is opened, return the current cursor position in the file.

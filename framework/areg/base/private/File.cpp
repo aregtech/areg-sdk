@@ -469,14 +469,14 @@ namespace areg
         return result;
     }
 
-    uint32_t File::setPosition(int32_t offset, Cursor::SeekOrigin startAt) const
+    uint32_t File::setPosition(int32_t offset, areg::Cursor::SeekOrigin startAt) const
     {
-        return (isOpened() ? _osSetPositionFile(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
+        return (isOpened() ? _osSetPositionFile(offset, startAt) : areg::Cursor::INVALID_CURSOR_POSITION);
     }
 
     uint32_t File::getPosition() const
     {
-        return (isOpened() ? _osGetPositionFile() : Cursor::INVALID_CURSOR_POSITION);
+        return (isOpened() ? _osGetPositionFile() : areg::Cursor::INVALID_CURSOR_POSITION);
     }
 
     uint32_t File::getLength() const
@@ -493,7 +493,7 @@ namespace areg
 
     uint32_t File::reserve(uint32_t newSize)
     {
-        uint32_t result = Cursor::INVALID_CURSOR_POSITION;
+        uint32_t result = areg::Cursor::INVALID_CURSOR_POSITION;
         if (isOpened() && canWrite())
         {
             uint32_t curPos = _osGetPositionFile();
@@ -507,7 +507,7 @@ namespace areg
                 {
                     if (moveToBegin())
                     {
-                        result = Cursor::START_CURSOR_POSITION;
+                        result = areg::Cursor::START_CURSOR_POSITION;
                     }
                 }
                 else if (newSize <= curPos)
@@ -519,7 +519,7 @@ namespace areg
                 }
                 else
                 {
-                    result = setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
+                    result = setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
                 }
             }
         }

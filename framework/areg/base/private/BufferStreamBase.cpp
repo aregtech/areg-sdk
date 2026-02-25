@@ -32,7 +32,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-BufferStreamBase::BufferStreamBase( Cursor & readPosition, Cursor & writePosition )
+BufferStreamBase::BufferStreamBase( areg::Cursor & readPosition, areg::Cursor & writePosition )
     : ByteBuffer  ( )
     , areg::IOStream    ( )
 
@@ -97,7 +97,7 @@ uint32_t BufferStreamBase::read( areg::String & ascii ) const
     {
         ascii.assign(reinterpret_cast<const char*>(data));
         result = ascii.getSpace();
-        mReadPosition.setPosition(static_cast<int32_t>(curPos + result), Cursor::SeekOrigin::Begin);
+        mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
     }
 
     return result;
@@ -117,7 +117,7 @@ uint32_t BufferStreamBase::read( areg::WideString & wide ) const
     {
         wide.assign(reinterpret_cast<const wchar_t *>(data));
         result = wide.getSpace();
-        mReadPosition.setPosition(static_cast<int32_t>(curPos + result), Cursor::SeekOrigin::Begin);
+        mReadPosition.setPosition(static_cast<int32_t>(curPos + result), areg::Cursor::SeekOrigin::Begin);
     }
 
     return result;
@@ -207,7 +207,7 @@ void BufferStreamBase::flush()
 
 void BufferStreamBase::resetCursor() const
 {
-    mReadPosition.setPosition(0, Cursor::SeekOrigin::Begin);
+    mReadPosition.setPosition(0, areg::Cursor::SeekOrigin::Begin);
 }
 
 /**
@@ -255,7 +255,7 @@ uint32_t BufferStreamBase::insertAt( const uint8_t* buffer, uint32_t size, uint3
                 uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
                 uint32_t newPos     = writePos + result;
                 setSizeUsed( std::max(usedSize, newPos) );
-                mWritePosition.setPosition(static_cast<int32_t>(newPos), Cursor::SeekOrigin::Begin);
+                mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -279,7 +279,7 @@ uint32_t BufferStreamBase::writeData(const uint8_t* buffer, uint32_t size)
         uint32_t usedSize   = mByteBuffer->bufHeader.biUsed;
         uint32_t newPos     = writePos + result;
         setSizeUsed( std::max(usedSize, newPos) );
-        mWritePosition.setPosition(static_cast<int32_t>(newPos), Cursor::SeekOrigin::Begin);
+        mWritePosition.setPosition(static_cast<int32_t>(newPos), areg::Cursor::SeekOrigin::Begin);
     }
 
     return result;
@@ -301,7 +301,7 @@ uint32_t BufferStreamBase::readData(uint8_t* buffer, uint32_t size) const
         {
             const uint8_t* src = getBufferToRead();
             areg::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
-            mReadPosition.setPosition(static_cast<int32_t>(result), Cursor::SeekOrigin::Current);
+            mReadPosition.setPosition(static_cast<int32_t>(result), areg::Cursor::SeekOrigin::Current);
         }
     }
 
@@ -337,9 +337,9 @@ uint32_t BufferStreamBase::reserve(uint32_t size, bool copy)
     {
         uint32_t curPos = mWritePosition.getPosition();
         result = ByteBuffer::reserve(size, copy);
-        if (curPos != Cursor::INVALID_CURSOR_POSITION)
+        if (curPos != areg::Cursor::INVALID_CURSOR_POSITION)
         {
-            mWritePosition.setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
+            mWritePosition.setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
         }
     }
 

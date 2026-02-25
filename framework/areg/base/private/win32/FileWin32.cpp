@@ -183,7 +183,7 @@ uint32_t areg::File::_osWriteFile(const uint8_t* buffer, uint32_t size)
     return static_cast<uint32_t>(sizeWrite);
 }
 
-uint32_t areg::File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t areg::File::_osSetPositionFile(int32_t offset, areg::Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
 
@@ -191,15 +191,15 @@ uint32_t areg::File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin start
     unsigned long moveOffset = static_cast<unsigned long>(offset);
     switch (startAt)
     {
-    case    Cursor::SeekOrigin::Begin:
+    case    areg::Cursor::SeekOrigin::Begin:
         moveMethod = FILE_BEGIN;
         break;
 
-    case    Cursor::SeekOrigin::Current:
+    case    areg::Cursor::SeekOrigin::Current:
         moveMethod = FILE_CURRENT;
         break;
 
-    case    Cursor::SeekOrigin::End:
+    case    areg::Cursor::SeekOrigin::End:
         moveMethod = FILE_END;
         break;
 
@@ -221,7 +221,7 @@ uint32_t areg::File::_osGetPositionFile() const
 bool areg::File::_osTruncateFile()
 {
     bool result{ false };
-    if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != Cursor::INVALID_CURSOR_POSITION)
+    if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != areg::Cursor::INVALID_CURSOR_POSITION)
     {
         result = SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? true : false;
     }
