@@ -49,7 +49,7 @@ class ComponentAddress;
  *              set additional data parameter.
  *
  **/
-class AREG_API ServiceRequestEvent : public StubEvent
+class AREG_API ServiceRequestEvent : public areg::StubEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime event class

@@ -54,7 +54,7 @@ class Component;
  *          main basic logic of asynchronous communication. It keeps 
  *          track of requests and contains list of listeners
  **/
-class AREG_API StubBase    : public StubEventConsumer
+class AREG_API StubBase    : public areg::StubEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // friend classes
@@ -418,7 +418,7 @@ protected:
      * \brief   Triggered to process generic stub event.
      *          Usually should not be triggered.
      **/
-    void processStubEvent( StubEvent & eventElem ) override;
+    void processStubEvent( areg::StubEvent & eventElem ) override;
 
     /**
      * \brief   Triggered to process generic event. Usually is not triggered.

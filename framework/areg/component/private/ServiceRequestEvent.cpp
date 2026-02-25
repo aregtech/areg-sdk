@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceRequestEvent class, declare runtime event
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, StubEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, areg::StubEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRequestEvent class, constructor / destructor
@@ -33,7 +33,7 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
                                         , uint32_t reqId
                                         , areg::RequestType reqType
                                         , Event::EventType eventType)
-    : StubEvent     (target, eventType)
+    : areg::StubEvent     (target, eventType)
     , mProxySource  (proxyAddress)
     , mMessageId    (reqId)
     , mRequestType  (reqType)
@@ -42,7 +42,7 @@ ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
 }
 
 ServiceRequestEvent::ServiceRequestEvent(const areg::InStream & stream)
-    : StubEvent     (stream)
+    : areg::StubEvent     (stream)
     , mProxySource  (stream)
     , mMessageId    (areg::INVALID_MESSAGE_ID)
     , mRequestType  (areg::RequestType::Unprocessed)
@@ -55,7 +55,7 @@ ServiceRequestEvent::ServiceRequestEvent(const areg::InStream & stream)
 
 const areg::InStream & ServiceRequestEvent::readStream(const areg::InStream & stream)
 {
-    StubEvent::readStream(stream);
+    areg::StubEvent::readStream(stream);
     stream >> mProxySource;
     stream >> mMessageId;
     stream >> mRequestType;
@@ -65,7 +65,7 @@ const areg::InStream & ServiceRequestEvent::readStream(const areg::InStream & st
 
 areg::OutStream & ServiceRequestEvent::writeStream(areg::OutStream & stream) const
 {
-    StubEvent::writeStream(stream);
+    areg::StubEvent::writeStream(stream);
     stream << mProxySource;
     stream << mMessageId;
     stream << mRequestType;
