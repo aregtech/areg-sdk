@@ -175,7 +175,7 @@ int32_t EventDispatcherBase::removeConsumer( EventConsumer & whichConsumer )
     mConsumerMap.lock();
 
     int32_t result = 0;
-    LinkedList<areg::RuntimeClassID> removedList;
+    areg::LinkedList<areg::RuntimeClassID> removedList;
     areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
     EventConsumerList* Value = nullptr;
 

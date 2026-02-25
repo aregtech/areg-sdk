@@ -52,7 +52,7 @@ private:
      * \brief   ComponentThread::ListComponent;
      *          Linked List of instantiated components in the Component Thread.
      **/
-    using ListComponent     = LinkedList<Component*>;
+    using ListComponent     = areg::LinkedList<Component*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance

@@ -57,7 +57,7 @@ class AREG_API DispatcherThread : public areg::Thread
      * \brief   DispatcherList
      *          List of Dispatcher Thread type.
      **/
-    using DispatcherList    = LinkedList<DispatcherThread *>;
+    using DispatcherList    = areg::LinkedList<DispatcherThread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal types, constants, etc.

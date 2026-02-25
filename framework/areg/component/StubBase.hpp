@@ -176,7 +176,7 @@ protected:
     /**
      * \brief   StubBase::StubListenerList class defines list of pending listeners.
      **/
-    using StubListenerList  = LinkedList<StubBase::Listener>;
+    using StubListenerList  = areg::LinkedList<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase session tracking

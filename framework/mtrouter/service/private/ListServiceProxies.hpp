@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 class ServiceStub;
-using ListServiceProxiesBase = LinkedList<ServiceProxy>;
+using ListServiceProxiesBase = areg::LinkedList<ServiceProxy>;
 
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class declaration

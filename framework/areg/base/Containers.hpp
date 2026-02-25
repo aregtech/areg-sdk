@@ -495,17 +495,17 @@ using PointerToStringMap = PtrMap<areg::String>;
 /**
  * \brief   Linked List where values are integers.
  **/
-using IntegerList   = LinkedList<uint32_t>;
+using IntegerList   = areg::LinkedList<uint32_t>;
 
 /**
  * \brief   Linked List where values are strings.
  **/
-using StringList    = LinkedList<areg::String>;
+using StringList    = areg::LinkedList<areg::String>;
 
 /**
  * \brief   Linked List where values are pointers
  **/
-using PointerList   = LinkedList<void *>;
+using PointerList   = areg::LinkedList<void *>;
 
 /**
 * \brief   Sorted List class where values are integers.

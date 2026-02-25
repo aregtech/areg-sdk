@@ -56,7 +56,7 @@ class SyncLockAndWaitPosix
     /**
      * \brief   The list of LockAndWait objects.
      **/
-    using ListLockAndWait       = LinkedList<SyncLockAndWaitPosix *>;
+    using ListLockAndWait       = areg::LinkedList<SyncLockAndWaitPosix *>;
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/

@@ -28,7 +28,7 @@
 class ProxyAddress;
 class ServerInfo;
 
-using ClientListBase = LinkedList<ClientInfo>;
+using ClientListBase = areg::LinkedList<ClientInfo>;
 
 /**
  * \brief   ClientList is a linked list object containing the list

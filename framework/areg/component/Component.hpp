@@ -89,7 +89,7 @@ public:
      *          The list of addresses of Servers.
      *          StubBase  The pointer to base class of Stub objects.
      **/
-    using ListServers           = LinkedList<StubBase*>;
+    using ListServers           = areg::LinkedList<StubBase*>;
 
 /************************************************************************/
 // static functions to load / unload component

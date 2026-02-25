@@ -45,7 +45,7 @@ class EventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using EventConsumerListBase	= LinkedList<EventConsumer *>;
+using EventConsumerListBase	= areg::LinkedList<EventConsumer *>;
 
 /**
  * \brief   Event Consumer List is a helper class containing 

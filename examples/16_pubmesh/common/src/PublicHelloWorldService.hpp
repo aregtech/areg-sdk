@@ -19,7 +19,7 @@
 //! \brief  Implementation of a public service to receive requests from remote clients.
 class PublicHelloWorldService : private PublicHelloWorldStub
 {
-    using ClientList = LinkedList< PublicHelloWorld::sClientRegister >;
+    using ClientList = areg::LinkedList< PublicHelloWorld::sClientRegister >;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

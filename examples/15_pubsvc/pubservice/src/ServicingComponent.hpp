@@ -30,7 +30,7 @@ class ServicingComponent    : public    Component
                             , protected HelloWorldStub
 {
     //!< The type of list of connected clients.
-    using ClientList = LinkedList<HelloWorld::sConnectedClient>;
+    using ClientList = areg::LinkedList<HelloWorld::sConnectedClient>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

@@ -63,7 +63,7 @@ namespace areg
         //!< Definition of storage item to store.
         using StorageItem       = std::pair<areg::String, areg::Primitive>;
         //!< Definition of storage list object to store items.
-        using StorageList       = LinkedList<ThreadLocalStorage::StorageItem>;
+        using StorageList       = areg::LinkedList<ThreadLocalStorage::StorageItem>;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
