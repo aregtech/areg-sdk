@@ -191,7 +191,7 @@ void RouterClient::failedSendMessage(const areg::RemoteMessage & msgFailed, areg
                        , whichTarget.isAlive() ? "ALIVE" : "DEAD");
 
             msgFailed.moveToBegin();
-            StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
+            areg::StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
             if ( eventError != nullptr )
             {
                 LOG_DBG("Replying with failure event [ %s ]", eventError->getRuntimeClassName().getString());
@@ -257,7 +257,7 @@ void RouterClient::failedProcessMessage( const areg::RemoteMessage & msgUnproces
                       , msgUnprocessed.getSource());
 
             msgUnprocessed.moveToBegin();
-            StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
+            areg::StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
             if ( eventError != nullptr )
             {
                 areg::RemoteMessage data;
@@ -393,7 +393,7 @@ void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceiv
             {
                 if ( areg::isExecutableId(static_cast<uint32_t>(msgId)) )
                 {
-                    StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
+                    areg::StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
                     if ( eventRemote != nullptr )
                     {
                         eventRemote->deliverEvent();

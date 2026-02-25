@@ -30,19 +30,19 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // StubEvent class, implement runtime
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(StubEvent, StreamableEvent)
+    AREG_IMPLEMENT_RUNTIME_EVENT(StubEvent, areg::StreamableEvent)
 
     //////////////////////////////////////////////////////////////////////////
     // StubEvent class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
     StubEvent::StubEvent( const areg::StubAddress& toTarget, Event::EventType eventType )
-        : StreamableEvent   (eventType)
+        : areg::StreamableEvent   (eventType)
         , mTargetStubAddress(toTarget)
     {
     }
 
     StubEvent::StubEvent( const areg::InStream & stream  )
-        : StreamableEvent   (stream)
+        : areg::StreamableEvent   (stream)
         , mTargetStubAddress(stream)
     {
     }
@@ -52,14 +52,14 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     const areg::InStream & StubEvent::readStream( const areg::InStream & stream )
     {
-        StreamableEvent::readStream(stream);
+        areg::StreamableEvent::readStream(stream);
         stream >> mTargetStubAddress;
         return stream;
     }
 
     areg::OutStream & StubEvent::writeStream( areg::OutStream & stream ) const
     {
-        StreamableEvent::writeStream(stream);
+        areg::StreamableEvent::writeStream(stream);
         stream << mTargetStubAddress;
         return stream;
     }
@@ -74,7 +74,7 @@ namespace areg
 
         if ( mTargetThread != nullptr )
         {
-            StreamableEvent::deliverEvent();
+            areg::StreamableEvent::deliverEvent();
         }
         else
         {

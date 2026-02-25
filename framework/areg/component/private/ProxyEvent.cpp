@@ -28,19 +28,19 @@
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, runtime implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, areg::StreamableEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType )
-    : StreamableEvent       (eventType)
+    : areg::StreamableEvent       (eventType)
     , mTargetProxyAddress   (targetProxy)
 {
 }
 
 ProxyEvent::ProxyEvent( const areg::InStream & stream )
-    : StreamableEvent       ( stream )
+    : areg::StreamableEvent       ( stream )
     , mTargetProxyAddress   ( stream )
 {
 }
@@ -58,7 +58,7 @@ void ProxyEvent::deliverEvent()
 
     if ( mTargetThread != nullptr )
     {
-        StreamableEvent::deliverEvent();
+        areg::StreamableEvent::deliverEvent();
     }
     else
     {
@@ -68,14 +68,14 @@ void ProxyEvent::deliverEvent()
 
 const areg::InStream & ProxyEvent::readStream( const areg::InStream & stream )
 {
-    StreamableEvent::readStream(stream);
+    areg::StreamableEvent::readStream(stream);
     stream >> mTargetProxyAddress;
     return stream;
 }
 
 areg::OutStream & ProxyEvent::writeStream( areg::OutStream & stream ) const
 {
-    StreamableEvent::writeStream(stream);
+    areg::StreamableEvent::writeStream(stream);
     stream << mTargetProxyAddress;
     return stream;
 }

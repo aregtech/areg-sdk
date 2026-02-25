@@ -60,7 +60,7 @@ class ProxyConnectEvent;
  *          finish request to execute a certain function call. Proxy event
  *          is a runtime class and contains Proxy target address.
  **/
-class AREG_API ProxyEvent  : public StreamableEvent
+class AREG_API ProxyEvent  : public areg::StreamableEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare as a Runtime event class

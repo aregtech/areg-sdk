@@ -30,11 +30,11 @@ DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
-StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteMessage & stream, const Channel & comChannel )
+areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteMessage & stream, const Channel & comChannel )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 
-    StreamableEvent * result = nullptr;
+    areg::StreamableEvent * result = nullptr;
     Event::EventType eventType;
     stream >> eventType;
 
@@ -68,7 +68,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
                                 , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
                 }
 
-                result = static_cast<StreamableEvent *>(eventRequest);
+                result = static_cast<areg::StreamableEvent *>(eventRequest);
             }
         }
         break;
@@ -99,7 +99,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
                                 , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
                 }
 
-                result = static_cast<StreamableEvent *>(eventNotify);
+                result = static_cast<areg::StreamableEvent *>(eventNotify);
             }
         }
         break;
@@ -125,7 +125,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
                                 , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
                 }
 
-                result = static_cast<StreamableEvent *>(eventResponse);
+                result = static_cast<areg::StreamableEvent *>(eventResponse);
             }
 
             ProxyBase::unlockProxyResource();
@@ -170,7 +170,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
     return result;
 }
 
-bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
+bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, const areg::StreamableEvent & eventStreamable, const Channel & comChannel )
 {
     bool result = false;
     stream.invalidate();
@@ -286,11 +286,11 @@ bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, co
     return result;
 }
 
-StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg::RemoteMessage & stream, const Channel & /* comChannel */ )
+areg::StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg::RemoteMessage & stream, const Channel & /* comChannel */ )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
-    StreamableEvent * result = nullptr;
+    areg::StreamableEvent * result = nullptr;
     Event::EventType eventType;
     stream >> eventType;
 
@@ -303,7 +303,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg::Remo
             stream.moveToBegin();
             RemoteRequestEvent eventRequest(stream);
             const ProxyAddress & addrProxy = eventRequest.getEventSource();
-            result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
+            result = static_cast<areg::StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventRequest.getRequestId()
                                                                                          , areg::ResultType::MessageUndelivered
                                                                                          , eventRequest.getSequenceNumber()) );
@@ -315,7 +315,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg::Remo
             stream.moveToBegin();
             RemoteNotifyRequestEvent eventNotify(stream);
             const ProxyAddress & addrProxy = eventNotify.getEventSource();
-            result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
+            result = static_cast<areg::StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventNotify.getRequestId()
                                                                                          , areg::ResultType::MessageUndelivered
                                                                                          , eventNotify.getSequenceNumber()) );

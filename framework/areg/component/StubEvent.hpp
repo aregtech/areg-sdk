@@ -72,7 +72,7 @@ namespace areg
      *          By default it is marked as Service Internal to communicate with
      *          ServiceManager.
      **/
-    class AREG_API StubEvent  : public StreamableEvent
+    class AREG_API StubEvent  : public areg::StreamableEvent
     {
     /************************************************************************/
     // Friend classes
