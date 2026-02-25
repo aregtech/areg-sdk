@@ -239,7 +239,7 @@ private:
      *          ProxyBase     The Values are pointers of Proxy object.
      *          ProxyMap      The type of Hash Mapping object used as container
      **/
-    using MapProxyResource  = ConcurrentResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
+    using MapProxyResource  = areg::ConcurrentResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ThreadProxyList internal class declaration

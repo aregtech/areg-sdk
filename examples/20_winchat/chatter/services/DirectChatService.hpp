@@ -22,7 +22,7 @@ class DirectChatService : public Component
                           
 {
     using HashMapDirectConnections      = OrderedMap<areg::String, DirectChatService *>;
-    using MapDirectConnections          = ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
+    using MapDirectConnections          = areg::ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
     using ListDirectConnectionClients   = ArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////

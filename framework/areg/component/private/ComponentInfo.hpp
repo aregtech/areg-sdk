@@ -65,7 +65,7 @@ private:
      *          As a value, it saves pointers of Worker Thread object
      *          As a Hash Map used ComponentInfo::_WorkerThreadMap object
      **/
-    using MapWorkerThread   = ConcurrentResourceMap<areg::ThreadAddress, WorkerThread *, _WorkerThreadMap, areg::ResourceMapImpl<areg::ThreadAddress, WorkerThread>>;
+    using MapWorkerThread   = areg::ConcurrentResourceMap<areg::ThreadAddress, WorkerThread *, _WorkerThreadMap, areg::ResourceMapImpl<areg::ThreadAddress, WorkerThread>>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

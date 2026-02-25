@@ -126,7 +126,7 @@ class SyncLockAndWaitPosix
      * \brief   Resource map of waitable where the keys are pthread_t (thread ID) and the values are
      *          LockAndWait objects. It is used in the timer.
      **/
-    using MapWaitIDResource = ConcurrentResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
+    using MapWaitIDResource = areg::ConcurrentResourceMap<ptr_type, SyncLockAndWaitPosix *, MapWaitID, ImplWaitIDResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Friend classes

@@ -197,7 +197,7 @@ protected:
     /**
      * \brief   Resource Map definition.
      **/
-    using MapStubResource   = ConcurrentResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
+    using MapStubResource   = areg::ConcurrentResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

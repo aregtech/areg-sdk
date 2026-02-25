@@ -74,7 +74,7 @@ class AREG_API Component   : public    areg::RuntimeObject
      *          MapComponentContainer   The hash-map object to store containers.
      *          ImplComponentResource   The implementation of basic resource+map operations.
      **/
-    using MapComponentResource  = ConcurrentResourceMap<uint32_t, Component *, MapComponentContainer, ImplComponentResource>;
+    using MapComponentResource  = areg::ConcurrentResourceMap<uint32_t, Component *, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
 //////////////////////////////////////////////////////////////////////////

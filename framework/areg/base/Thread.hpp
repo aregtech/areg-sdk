@@ -657,21 +657,21 @@ private:
      **/
     using   MapThreadID             = IdMap<Thread *>;
     using   ImplThreadIDResource    = areg::ResourceMapImpl<id_type, Thread *>;
-    using   MapThreadIDResource     = ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
+    using   MapThreadIDResource     = areg::ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
     using   MapThreadPoiters        = PtrMap<Thread *>;
     using   ImplThreadHandleResource= areg::ResourceMapImpl< void *, Thread *>;
-    using   MapThreadHandleResource = ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
+    using   MapThreadHandleResource = areg::ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
     using   MapThreadName           = StringMap<Thread *>;
     using   ImplThreadNameResource  = areg::ResourceMapImpl<areg::String, Thread *>;
-    using   MapThreadNameResource   = ConcurrentResourceMap<areg::String, Thread *, MapThreadName, ImplThreadNameResource>;
+    using   MapThreadNameResource   = areg::ConcurrentResourceMap<areg::String, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables

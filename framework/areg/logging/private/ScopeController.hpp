@@ -46,7 +46,7 @@ using ListScopes    = StringToIntegerHashMap;
 /**
  * \brief   Resource map, container of all logging scopes
  **/
-class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
+class LogScopeMap   : public areg::ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
 {
     friend class NetTcpLogger;
     friend class ScopeController;

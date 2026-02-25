@@ -94,7 +94,7 @@ namespace areg
      * \tparam  Deleter             The implementation of resource clean call.
      **/
     template <class RUNTIME_DELEGATE, class Deleter>
-    class RuntimeResourceMapBase : public ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
+    class RuntimeResourceMapBase : public areg::ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -226,7 +226,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     template <class RUNTIME_DELEGATE, class Deleter>
     RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>::RuntimeResourceMapBase( Lockable& syncObject )
-        : ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
+        : areg::ResourceMapBase<areg::RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter> (syncObject)
     {
     }
 
