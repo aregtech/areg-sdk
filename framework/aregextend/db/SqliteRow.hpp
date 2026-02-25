@@ -94,28 +94,28 @@ public:
      * \brief   Checks if the row is valid (i.e., associated with a statement).
      * \return  True if valid, false otherwise.
      */
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
      * \brief   Retrieves the integer value of the specified column.
      * \param   column  The 0-based column index.
      * \return  The integer value of the column.
      */
-    int32_t getInt(int32_t column) const;
+    int32_t as_int(int32_t column) const;
 
     /**
      * \brief   Retrieves the 64-bit integer value of the specified column.
      * \param   column  The 0-based column index.
      * \return  The 64-bit integer value of the column.
      */
-    int64_t getInt64(int32_t column) const;
+    int64_t int64(int32_t column) const;
 
     /**
      * \brief   Retrieves the double value of the specified column.
      * \param   column  The 0-based column index.
      * \return  The double value of the column.
      */
-    double getDouble(int32_t column) const;
+    double as_double(int32_t column) const;
 
     /**
      * \brief   Retrieves the text value of the specified column.
@@ -196,7 +196,7 @@ protected:
     void* mStatement;
 };
 
-inline bool SqliteRow::isValid() const
+inline bool SqliteRow::is_valid() const
 {
     return (mStatement != nullptr);
 }

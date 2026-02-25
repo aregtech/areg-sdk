@@ -71,9 +71,11 @@ namespace NESyncTypesIX
         , Automatic //!< The event is reset automatically.
     };
     /**
-     * \brief   Returns string value of NESyncTypesIX::ResetMode
+     * \brief   Returns the string representation of a ResetMode value.
+     *
+     * \param   val     The ResetMode value to convert.
      **/
-    inline const char * getString(NESyncTypesIX::ResetMode val);
+    inline const char * as_string(NESyncTypesIX::ResetMode val);
 
     /**
      * \brief   NESyncTypesIX::WaitCondition
@@ -86,9 +88,11 @@ namespace NESyncTypesIX
         , Any     //!< Any event in the list should be fired to unlock the thread.
     };
     /**
-     * \brief   Returns string value of NESyncTypesIX::WaitCondition
+     * \brief   Returns the string representation of a WaitCondition value.
+     *
+     * \param   val     The WaitCondition value to convert.
      **/
-    inline const char * getString(NESyncTypesIX::WaitCondition val);
+    inline const char * as_string(NESyncTypesIX::WaitCondition val);
 
     /**
      * \brief   NESyncTypesIX::SyncKind
@@ -106,24 +110,30 @@ namespace NESyncTypesIX
         , SoWaitTimer       = (1 << 4) | 1  //!< Waitable timer, so that it can be used in the waiting list
     };
     /**
-     * \brief   Returns string value of NESyncTypesIX::SyncKind
+     * \brief   Returns the string representation of a SyncKind value.
+     *
+     * \param   val     The SyncKind value to convert.
      **/
-    inline const char * getString(NESyncTypesIX::SyncKind val);
+    inline const char * as_string(NESyncTypesIX::SyncKind val);
 
     /**
-     * \brief   Calculates the timeout value starting from now.
-     * \param   out_result  The object that contains timeout information in nanosecond range.
-     * \param   msTimeout   The timeout to be calculated.
-     * \return  Returns true if succeeded to get time and convert.
+     * \brief   Calculates the absolute timeout starting from the current time.
+     *
+     * \param[out] out_result      The timespec structure that receives the timeout value in
+     *                             nanosecond range.
+     * \param   msTimeout       The relative timeout in milliseconds to be converted.
+     * \return  Returns true if the calculation succeeded; false if current time could not be
+     *          obtained.
      **/
-    inline bool timeoutFromNow( timespec & out_result, uint32_t msTimeout );
+    inline bool timeout_from_now( timespec & out_result, uint32_t msTimeout );
 
     /**
-     * \brief   Converts the given timeout value into POSIX time structure.
-     * \param   out_result  The object that contains timeout information in nanosecond range.
-     * \param   msTimeout   The timeout to be calculated.
+     * \brief   Converts the timeout value to a POSIX timespec structure.
+     *
+     * \param[out] out_result      The timespec structure that receives the converted timeout.
+     * \param   msTimeout       The timeout value in milliseconds to convert.
      **/
-    inline void convTimeout( timespec & out_result, uint32_t msTimeout );
+    inline void conv_timeout( timespec & out_result, uint32_t msTimeout );
 
 } // namespace NESyncTypesIX
 
@@ -131,19 +141,19 @@ namespace NESyncTypesIX
 // NESyncTypesIX namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NESyncTypesIX::timeoutFromNow( timespec & out_result, uint32_t msTimeout )
+inline bool NESyncTypesIX::timeout_from_now( timespec & out_result, uint32_t msTimeout )
 {
     bool result = false;
     if ( NESyncTypesIX::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
     {
-        convTimeout(out_result, msTimeout);
+        conv_timeout(out_result, msTimeout);
         result = true;
     }
 
     return result;
 }
 
-inline void NESyncTypesIX::convTimeout( timespec & out_result, uint32_t msTimeout )
+inline void NESyncTypesIX::conv_timeout( timespec & out_result, uint32_t msTimeout )
 {
 	constexpr std::chrono::nanoseconds _sec_to_nano{NEUtilities::SEC_TO_NS};
 
@@ -158,7 +168,7 @@ inline void NESyncTypesIX::convTimeout( timespec & out_result, uint32_t msTimeou
     out_result.tv_nsec  = static_cast<int64_t>(ns.count());
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::ResetMode val)
+inline const char * NESyncTypesIX::as_string(NESyncTypesIX::ResetMode val)
 {
     switch (val)
     {
@@ -171,7 +181,7 @@ inline const char * NESyncTypesIX::getString(NESyncTypesIX::ResetMode val)
     }
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::WaitCondition val)
+inline const char * NESyncTypesIX::as_string(NESyncTypesIX::WaitCondition val)
 {
     switch (val)
     {
@@ -184,7 +194,7 @@ inline const char * NESyncTypesIX::getString(NESyncTypesIX::WaitCondition val)
     }
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::SyncKind val)
+inline const char * NESyncTypesIX::as_string(NESyncTypesIX::SyncKind val)
 {
     switch (val)
     {

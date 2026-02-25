@@ -140,7 +140,7 @@ public:
     /**
      * \brief   Returns true if the log observer is connected to the log collector service.
      **/
-    bool isConnected() const;
+    bool is_connected() const;
 
     /**
      * \brief   Returns true if the log observer is fully operable, and is able to collect and write logs.
@@ -394,38 +394,38 @@ protected:
      * \brief   The callback of the event triggered when initializing and configuring the observer.
      *          The callback indicates the IP address and port number of the log collector service set
      *          in the configuration file.
-     * \param   isEnabled       The flag, indicating whether the logging service is enabled or not.
+     * \param   is_enabled       The flag, indicating whether the logging service is enabled or not.
      * \param   address         The null-terminated string of the IP address of the log collector service set in the configuration file.
      * \param   port            The IP port number of the log collector service set in the configuration file.
      **/
-    virtual void onLogObserverConfigured(bool isEnabled, const std::string & address, uint16_t port) = 0;
+    virtual void onLogObserverConfigured(bool is_enabled, const std::string & address, uint16_t port) = 0;
 
     /**
      * \brief   The callback of the event triggered when initializing and configuring the observer.
      *          The callback indicates the supported database, the database location or URI and
      *          the database user name.
-     * \param   isEnabled       The flag, indicating whether the logging in the database is enabler or not.
+     * \param   is_enabled       The flag, indicating whether the logging in the database is enabler or not.
      * \param   dbName          The name of the  supported database.
      * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
      * \param   dbUser          The database user to use when log in. If null or empty, the database may not require the user name.
      **/
-    virtual void onLogDbConfigured(bool isEnabled, const std::string & dbName, const std::string & dbLocation, const std::string & dbUser) = 0;
+    virtual void onLogDbConfigured(bool is_enabled, const std::string & dbName, const std::string & dbLocation, const std::string & dbUser) = 0;
 
     /**
      * \brief   The callback of the event triggered when the observer connects or disconnects from the log collector service.
-     * \param   isConnected     Flag, indicating whether observer is connected or disconnected.
+     * \param   is_connected     Flag, indicating whether observer is connected or disconnected.
      * \param   address         The IP address of the log collector service to connect or disconnect.
      * \param   port            The IP port number of the log collector service to connect or disconnect.
      **/
-    virtual void onLogServiceConnected(bool isConnected, const std::string & address, uint16_t port) = 0;
+    virtual void onLogServiceConnected(bool is_connected, const std::string & address, uint16_t port) = 0;
 
     /**
      * \brief   The callback of the event trigger when starting or pausing the log observer.
      *          If the log observer is paused, on start it continues to write logs in the same file.
      *          If the log observer is stopped (disconnected is called), on start it creates new file.
-     * \param   isStarted       The flag indicating whether the lob observer is started or paused.
+     * \param   is_started       The flag indicating whether the lob observer is started or paused.
      **/
-    virtual void onLogObserverStarted(bool isStarted) = 0;
+    virtual void onLogObserverStarted(bool is_started) = 0;
 
     /**
      * \brief   The callback of the event triggered when the logging database is created.
@@ -474,9 +474,9 @@ protected:
 
     /**
      * \brief   The callback of the event triggered when receive message to log.
-     * \param   logMessage  The structure of the message to log.
+     * \param   log_message  The structure of the message to log.
      **/
-    virtual void onLogMessage(const SharedBuffer & logMessage) = 0;
+    virtual void onLogMessage(const SharedBuffer & log_message) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

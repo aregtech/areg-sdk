@@ -33,10 +33,7 @@ class String;
 // ConnectionProvider interface
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This is an interface of Remote Service Connection, which should be implemented
- *          on client and server side to handle remote service functionalities
- *          like configuring service, start and stop, registering and
- *          unregistering services and its clients.
+ * \brief   Interface for remote service connection handling on client and server sides.
  **/
 class AREG_API ConnectionProvider
 {
@@ -45,7 +42,7 @@ class AREG_API ConnectionProvider
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default constructor. Protected.
+     * \brief
      **/
     ConnectionProvider() = default;
 
@@ -63,76 +60,78 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Call to configure remote service. The passed file name
-     *          can be either absolute or relative path.
-     *          The function will read configuration file and initialize settings.
-     *          If file path is nullptr or empty, Remote Service will have default 
-     *          configuration settings.
-     * \param   service         The service module name of the configuration to extract connection information.
-     * \param   connectTypes    The bitwise set of connection types like 'tcpip' or 'udp'.
-     * \return  Returns true if system could configure. Otherwise, it returns false.
+     * \brief   Configures remote service with specified service type and connection types.
+     *
+     * \param   service         The service type to configure.
+     * \param   connectTypes    Bitwise set of connection types (e.g., tcpip, udp).
+     * \return  Returns true if configuration succeeded; false otherwise.
      **/
-    virtual bool setupServiceConnectionData( NERemoteService::RemoteServiceKind service, uint32_t connectTypes ) = 0;
+    virtual bool setup_connection_data( NERemoteService::RemoteServiceKind service, uint32_t connectTypes ) = 0;
 
     /**
-     * \brief   Call manually to set router service host name and port number.
-     *          Note, if remote service is already started, this call will change
-     *          data, but will not restart service.
-     * \param   hostName    IP-address or host name of routing service to connect.
-     * \param   portNr      Port number of routing service to connect.
+     * \brief   Sets router service host name and port number. Does not restart service if already
+     *          running.
+     *
+     * \param   hostName    IP address or host name of routing service.
+     * \param   portNr      Port number of routing service.
      **/
-    virtual void applyServiceConnectionData( const String & hostName, uint16_t portNr ) = 0;
+    virtual void apply_connection_data( const String & hostName, uint16_t portNr ) = 0;
 
     /**
-     * \brief   Call to start remote service. The host name and port number should be already set.
-     * \return  Returns true if start service is triggered.
+     * \brief   Starts remote service. Host name and port must already be set.
+     *
+     * \return  Returns true if start is triggered successfully.
      **/
-    virtual bool connectServiceHost() = 0;
+    virtual bool connect_service_host() = 0;
 
     /**
-     * \brief   Call to restart remove service. The host name and the port number should be already set.
-     *          If the service had connection, it will be lost and re-connected again. If there was no
-     *          connection, it starts new connection.
-     * \return  Returns true if succeeded to restart service.
+     * \brief   Restarts remote service. Host name and port must already be set. Re-establishes lost
+     *          connections or initiates new ones.
+     *
+     * \return  Returns true if restart succeeded.
      **/
-    virtual bool reconnectServiceHost() = 0;
+    virtual bool reconnect_service_host() = 0;
 
     /**
-     * \brief   Call to stop service. No more remote communication should be possible.
+     * \brief   Stops service and disables remote communication.
      **/
-    virtual void disconnectServiceHost() = 0;
+    virtual void disconnect_service_host() = 0;
 
     /**
-     * \brief   Returns true, if remote service is started and ready to operate.
+     * \brief   Returns true if remote service is started and ready to operate.
      **/
-    virtual bool isServiceHostConnected() const = 0;
+    virtual bool is_host_connected() const = 0;
 
     /**
-     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     * \brief   Returns true if remote service connection is pending (triggered but not yet
+     *          connected).
      **/
-    virtual bool isServiceHostPending() const = 0;
+    virtual bool is_host_pending() const = 0;
 
     /**
-     * \brief   Returns true if service is configured and ready to start
+     * \brief   Returns true if service is configured and ready to start.
      **/
-    virtual bool isServiceHostSetup() const = 0;
+    virtual bool is_host_setup() const = 0;
 
     /**
-     * \brief   Creates the service connect request message, sets the message target and the source.
-     * \param   source      The ID of the source that sends connection message request.
-     * \param   target      The ID of the target to send the connection message request.
-     * \param   msgSource   The message source type of the connected client.
+     * \brief   Creates service connect request message with specified source, target, and message
+     *          source type.
+     *
+     * \param   source          ID of the source sending the connect message.
+     * \param   target          ID of the target receiving the connect message.
+     * \param   msgSource       Message source type of the connecting client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const = 0;
+    virtual RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const = 0;
 
     /**
-     * \brief   Creates the service disconnect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends the disconnect message request.
-     * \param   target  The ID of the target to send the disconnection message request.
+     * \brief   Creates service disconnect request message with specified source and target.
+     *
+     * \param   source      ID of the source sending the disconnect message.
+     * \param   target      ID of the target receiving the disconnect message.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+    virtual RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

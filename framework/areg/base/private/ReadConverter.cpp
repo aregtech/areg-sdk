@@ -30,8 +30,8 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ReadConverter::ReadConverter( InStream & readStream, Cursor & readPosition )
-    : mReadStream   (readStream)
+ReadConverter::ReadConverter( InStream & read_stream, Cursor & readPosition )
+    : mReadStream   (read_stream)
     , mReadPosition (readPosition)
 {
 }
@@ -40,80 +40,80 @@ ReadConverter::ReadConverter( InStream & readStream, Cursor & readPosition )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool ReadConverter::getBool( bool & Value ) const
+bool ReadConverter::as_bool( bool & Value ) const
 {
     static constexpr uint32_t size = sizeof(bool);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getChar( char & Value ) const
+bool ReadConverter::as_char( char & Value ) const
 {
     static constexpr uint32_t size = sizeof(char);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getChar( wchar_t & Value ) const
+bool ReadConverter::as_char( wchar_t & Value ) const
 {
     static constexpr uint32_t size = sizeof(wchar_t);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getShort( int16_t & Value ) const
+bool ReadConverter::as_short( int16_t & Value ) const
 {
     static constexpr uint32_t size = sizeof(int16_t);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getInt( int32_t & Value ) const
+bool ReadConverter::as_int( int32_t & Value ) const
 {
     static constexpr uint32_t size = sizeof(int32_t);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getInt64( int64_t & Value ) const
+bool ReadConverter::int64( int64_t & Value ) const
 {
     static constexpr uint32_t size = sizeof(int64_t);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getFloat( float & Value ) const
+bool ReadConverter::as_float( float & Value ) const
 {
     static constexpr uint32_t size = sizeof(float);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getDouble( double & Value ) const
+bool ReadConverter::as_double( double & Value ) const
 {
     static constexpr uint32_t size = sizeof(double);
     return (mReadStream.read(reinterpret_cast<uint8_t *>(&Value), size) == size);
 }
 
-bool ReadConverter::getString( String & Value ) const
+bool ReadConverter::as_string( String & Value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');
     Value.clear();
 
-    while ( getChar(ch) )
+    while ( as_char(ch) )
     {
         result = true;
-        if ( NEString::isEndOfString<char>(ch) )
+        if ( NEString::is_eos<char>(ch) )
             break;
         Value += ch;
     }
     return result;
 }
 
-bool ReadConverter::getString( WideString & Value ) const
+bool ReadConverter::as_string( WideString & Value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');
     Value.clear();
 
-    while ( getChar(ch) )
+    while ( as_char(ch) )
     {
         result = true;
-        if ( NEString::isEndOfString(ch) )
+        if ( NEString::is_eos(ch) )
             break;
 
         Value += ch;
@@ -122,18 +122,18 @@ bool ReadConverter::getString( WideString & Value ) const
     return result;
 }
 
-bool ReadConverter::readLine( String & Value ) const
+bool ReadConverter::read_line( String & Value ) const
 {
     bool result = false;
     char ch     = static_cast<char>('\0');
-    while ( getChar(ch) )
+    while ( as_char(ch) )
     {
         result = true;
-        if ( NEString::isEndOfLine<char>(ch) )
+        if ( NEString::is_eol<char>(ch) )
         {
-            if (getChar(ch) && (NEString::isCarriageReturn<char>(ch) == false) && (NEString::isEndOfString<char>(ch) == false))
+            if (as_char(ch) && (NEString::is_carriage_return<char>(ch) == false) && (NEString::is_eos<char>(ch) == false))
             {
-                mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(char)), Cursor::SeekOrigin::Current);
+                mReadPosition.set_position(-1 * static_cast<int32_t>(sizeof(char)), Cursor::SeekOrigin::Current);
             }
 
             break;
@@ -145,18 +145,18 @@ bool ReadConverter::readLine( String & Value ) const
     return result;
 }
 
-bool ReadConverter::readLine( WideString & Value ) const
+bool ReadConverter::read_line( WideString & Value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');
-    while (getChar(ch))
+    while (as_char(ch))
     {
         result = true;
-        if (NEString::isEndOfLine<wchar_t>(ch))
+        if (NEString::is_eol<wchar_t>(ch))
         {
-            if ( getChar( ch ) && (NEString::isCarriageReturn<wchar_t>( ch ) == false) && (NEString::isEndOfString<wchar_t>( ch ) == false) )
+            if ( as_char( ch ) && (NEString::is_carriage_return<wchar_t>( ch ) == false) && (NEString::is_eos<wchar_t>( ch ) == false) )
             {
-                mReadPosition.setPosition(-1 * static_cast<int32_t>(sizeof(wchar_t)), Cursor::SeekOrigin::Current);
+                mReadPosition.set_position(-1 * static_cast<int32_t>(sizeof(wchar_t)), Cursor::SeekOrigin::Current);
             }
 
             break;

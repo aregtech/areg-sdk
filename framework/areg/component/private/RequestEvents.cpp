@@ -35,7 +35,7 @@ RequestEvent::RequestEvent( const ProxyAddress & fromSource
                           , uint32_t reqId
                           , Event::EventType eventType )
     : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::RequestType::CallFunction, eventType)
-    , mData(reqId, Event::isExternal(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
+    , mData(reqId, Event::is_external(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
 {
 }
 
@@ -44,7 +44,7 @@ RequestEvent::RequestEvent( const EventDataStream & args
                           , const StubAddress& toTarget
                           , uint32_t reqId
                           , Event::EventType eventType
-                          , const String & name /*= String::getEmptyString()*/ )
+                          , const String & name /*= String::empty_string()*/ )
     : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::RequestType::CallFunction, eventType)
     , mData(reqId, args, name)
 {
@@ -56,16 +56,16 @@ RequestEvent::RequestEvent( const InStream & stream )
 {
 }
 
-const InStream & RequestEvent::readStream(const InStream & stream)
+const InStream & RequestEvent::read_stream(const InStream & stream)
 {
-    ServiceRequestEvent::readStream(stream);
+    ServiceRequestEvent::read_stream(stream);
     stream >> mData;
     return stream;
 }
 
-OutStream & RequestEvent::writeStream(OutStream & stream) const
+OutStream & RequestEvent::write_stream(OutStream & stream) const
 {
-    ServiceRequestEvent::writeStream(stream);
+    ServiceRequestEvent::write_stream(stream);
     stream << mData;
     return stream;
 }
@@ -91,7 +91,7 @@ LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
                                     , const ProxyAddress & fromSource
                                     , const StubAddress & toTarget
                                     , uint32_t reqId
-                                    , const String & name /*= String::getEmptyString()*/ )
+                                    , const String & name /*= String::empty_string()*/ )
     : RequestEvent(args, fromSource, toTarget, reqId, Event::EventType::EventLocalServiceRequest, name)
 {
 }
@@ -122,7 +122,7 @@ RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
                                       , const ProxyAddress & fromSource
                                       , const StubAddress & toTarget
                                       , uint32_t reqId
-                                      , const String & name /*= String::getEmptyString()*/ )
+                                      , const String & name /*= String::empty_string()*/ )
     : RequestEvent(args, fromSource, toTarget, reqId, Event::EventType::EventRemoteServiceRequest, name)
 {
 }
@@ -130,7 +130,7 @@ RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
 RemoteRequestEvent::RemoteRequestEvent( const InStream & stream )
     : RequestEvent ( stream)
 {
-    ASSERT(getData().getDataStream().isExternalDataStream());
+    ASSERT(data().data_stream().is_external_stream());
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -237,7 +237,7 @@ public:
     /**
      * \brief   Sets the state of the system service.
      **/
-    virtual bool setState( NESystemService::ServicePhase newState ) = 0;
+    virtual bool set_state( NESystemService::ServicePhase newState ) = 0;
 
     /**
      * \brief   Called to setup service and start service dispatcher.

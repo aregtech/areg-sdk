@@ -46,20 +46,20 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const NEServi
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
         NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
-        String::formatString( logMsgHello.logMessage
+        String::format_string( logMsgHello.log_message
                             , NELogging::LOG_MESSAGE_IZE
                             , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
                             , instance.ciInstance.c_str()
                             , instance.ciCookie
                             , instance.ciLocation.c_str());
-        NELogging::logAnyMessageLocal(logMsgHello);
+        NELogging::log_local(logMsgHello);
 
         mLoggerProcessor.notifyConnectedInstances(getInstances(), NEService::TARGET_ALL);
     }
     else if (LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
     {
-        mObservers.addIfUnique(cookie, instance);
+        mObservers.add_if_unique(cookie, instance);
     }
 }
 
@@ -76,21 +76,21 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
     if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
         NELogging::LogEntry logMsgBye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
-        String::formatString(logMsgBye.logMessage
+        String::format_string(logMsgBye.log_message
                             , NELogging::LOG_MESSAGE_IZE
                             , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
                             , static_cast<uint32_t>(instance.ciBitness)
                             , instance.ciInstance.c_str()
                             , instance.ciCookie
                             , instance.ciLocation.c_str());
-        NELogging::logAnyMessageLocal(logMsgBye);
+        NELogging::log_local(logMsgBye);
 
         listIds.add(instance.ciCookie);
         mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::TARGET_ALL);
     }
     else if (LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
     {
-        mObservers.removeAt(cookie);
+        mObservers.remove_at(cookie);
     }
 }
 
@@ -98,12 +98,12 @@ void LogCollectorServerService::removeAllInstances()
 {
     Lock lock(mLock);
     
-    mSaveTimer.stopTimer();
+    mSaveTimer.stop_timer();
 
-    if (mInstanceMap.getSize() != 0)
+    if (mInstanceMap.size() != 0)
     {
         ArrayList<ITEM_ID> listIds;
-        for (const auto& entry : getInstances().getData())
+        for (const auto& entry : getInstances().data())
         {
             if (LogCollectorMessageProcessor::isLogSource(entry.second.ciSource))
             {
@@ -112,11 +112,11 @@ void LogCollectorServerService::removeAllInstances()
         }
 
         NELogging::LogEntry logMsgClose(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioAny, nullptr, 0);
-        String::formatString(logMsgClose.logMessage, NELogging::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
-        NELogging::logAnyMessageLocal(logMsgClose);
+        String::format_string(logMsgClose.log_message, NELogging::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.size());
+        NELogging::log_local(logMsgClose);
         ServiceCommunicationBase::removeAllInstances();
 
-        if (listIds.isEmpty() == false)
+        if (listIds.is_empty() == false)
         {
             mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::TARGET_ALL);
         }
@@ -129,9 +129,9 @@ void LogCollectorServerService::dispatchAndForwardLoggerMessage(const RemoteMess
 {
     Lock lock(mLock);
 
-    ASSERT(msgForward.isValid());
-    ASSERT(msgForward.getSource() == NEService::COOKIE_LOGGER);
-    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>(msgForward.getMessageId());
+    ASSERT(msgForward.is_valid());
+    ASSERT(msgForward.source() == NEService::COOKIE_LOGGER);
+    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>(msgForward.message_id());
     switch (msgId)
     {
     case NEService::FuncIdRange::ServiceLogUpdateScopes:
@@ -177,19 +177,19 @@ void LogCollectorServerService::dispatchAndForwardLoggerMessage(const RemoteMess
     }
 }
 
-void LogCollectorServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
+void LogCollectorServerService::on_message_received(const RemoteMessage &msgReceived)
 {
     LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);
 
     Lock lock(mLock);
-    ASSERT( msgReceived.isValid() );
-    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>( msgReceived.getMessageId() );
+    ASSERT( msgReceived.is_valid() );
+    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>( msgReceived.message_id() );
 
     LOG_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
-                    , NEService::getString(msgId)
+                    , NEService::as_string(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(msgReceived.getSource())
-                    , static_cast<uint32_t>(msgReceived.getTarget()));
+                    , static_cast<uint32_t>(msgReceived.source())
+                    , static_cast<uint32_t>(msgReceived.target()));
 
     switch (msgId)
     {
@@ -222,8 +222,8 @@ void LogCollectorServerService::onServiceMessageReceived(const RemoteMessage &ms
         break;
 
     case NEService::FuncIdRange::ServiceLogMessage:
-        mLoggerProcessor.logMessage(msgReceived);
-        NELogging::logMessage(msgReceived);
+        mLoggerProcessor.log_message(msgReceived);
+        NELogging::log_message(msgReceived);
         break;
 
     case NEService::FuncIdRange::SystemServiceConnect:
@@ -256,26 +256,26 @@ void LogCollectorServerService::onServiceMessageReceived(const RemoteMessage &ms
     }
 }
 
-void LogCollectorServerService::processTimer(Timer& /* timer */ )
+void LogCollectorServerService::process_timer(Timer& /* timer */ )
 {
 }
 
-void LogCollectorServerService::onServiceMessageSend(const RemoteMessage &msgSend)
+void LogCollectorServerService::on_message_send(const RemoteMessage &msgSend)
 {
     LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSend);
 
-    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>( msgSend.getMessageId() );
+    NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>( msgSend.message_id() );
     LOG_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
-                    , NEService::getString(msgId)
+                    , NEService::as_string(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(msgSend.getTarget())
-                    , static_cast<uint32_t>(msgSend.getSource()));
+                    , static_cast<uint32_t>(msgSend.target())
+                    , static_cast<uint32_t>(msgSend.source()));
 
-    if ( NEService::isExecutableId( static_cast<uint32_t>(msgId)) )
+    if ( NEService::is_executable_id( static_cast<uint32_t>(msgId)) )
     {
-        if ( msgSend.getTarget( ) != NEService::TARGET_UNKNOWN )
+        if ( msgSend.target( ) != NEService::TARGET_UNKNOWN )
         {
-            sendMessage( msgSend );
+            send_message( msgSend );
         }
     }
     else
@@ -285,32 +285,32 @@ void LogCollectorServerService::onServiceMessageSend(const RemoteMessage &msgSen
     }
 }
 
-void LogCollectorServerService::connectedRemoteServiceChannel(const Channel & /* channel */)
+void LogCollectorServerService::on_service_channel_connected(const Channel & /* channel */)
 {
 
 }
 
-void LogCollectorServerService::disconnectedRemoteServiceChannel(const Channel & /* channel */)
+void LogCollectorServerService::on_service_channel_disconnected(const Channel & /* channel */)
 {
 
 }
 
-void LogCollectorServerService::lostRemoteServiceChannel(const Channel & /* channel */)
+void LogCollectorServerService::on_service_channel_lost(const Channel & /* channel */)
 {
 }
 
-void LogCollectorServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
+void LogCollectorServerService::failed_process_message(const RemoteMessage & /* msgUnprocessed */)
 {
 }
 
-void LogCollectorServerService::onServiceConnectionStarted()
+void LogCollectorServerService::on_connection_started()
 {
 }
 
-void LogCollectorServerService::onServiceConnectionStopped()
+void LogCollectorServerService::on_connection_stopped()
 {
 }
 
-void LogCollectorServerService::onServiceConnectionLost()
+void LogCollectorServerService::on_connection_lost()
 {
 }

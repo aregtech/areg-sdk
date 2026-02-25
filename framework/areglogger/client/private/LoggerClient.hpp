@@ -86,7 +86,7 @@ public:
     /**
      * \brief   Returns the singleton instance of the LoggerClient
      **/
-    static LoggerClient& getInstance();
+    static LoggerClient& instance();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor and destructor.
@@ -141,7 +141,7 @@ public:
      * \brief   Returns the socket address (IP address and port number) to connect to the log collector service.
      *          The connection might be not established yet.
      **/
-    const NESocket::SocketAddress& getAddress() const;
+    const NESocket::SocketAddress& address() const;
 
     /**
      * \brief   Returns true if the logging database engine is SQLite. Otherwise, returns false.
@@ -278,12 +278,12 @@ public:
     /**
      * \brief   Sets logging connection flag in the configuration file.
      **/
-    bool setConfigLoggerConnectEnabled(bool isEnabled);
+    bool setConfigLoggerConnectEnabled(bool is_enabled);
 
     /**
      * \brief   Save current configuration of the log observer to the configuration file.
      **/
-    void saveConfiguration();
+    void save_configuration();
 
     /**
      * \brief   Call to query and get list of names of connected instances from log database.
@@ -380,25 +380,25 @@ protected:
      * \brief   Called by configuration manager before the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    void prepareSaveConfiguration(ConfigManager& config) override;
+    void prepare_save_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    void postSaveConfiguration(ConfigManager& config) override;
+    void post_save_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager before the configuration is loaded from the file.
      * \param   config  The instance of configuration manager.
      **/
-    void prepareReadConfiguration(ConfigManager& config) override;
+    void prepare_read_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    void postReadConfiguration(ConfigManager& config) override;
+    void post_read_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -407,7 +407,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -422,14 +422,14 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    bool postEvent(Event& eventElem) override;
+    bool post_event(Event& eventElem) override;
 
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
      *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
      **/
-    void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) override;
 
 /************************************************************************/
 // ServiceClientConnectionBase overrides
@@ -439,17 +439,17 @@ protected:
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    bool connectServiceHost() override;
+    bool connect_service_host() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    void disconnectServiceHost() override;
+    void disconnect_service_host() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    void onServiceExit() override;
+    void on_service_exit() override;
 
 /************************************************************************/
 // ConnectionConsumer overrides
@@ -459,13 +459,13 @@ protected:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void connectedRemoteServiceChannel(const Channel& channel) override;
+    void on_service_channel_connected(const Channel& channel) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void disconnectedRemoteServiceChannel(const Channel& channel) override;
+    void on_service_channel_disconnected(const Channel& channel) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -473,7 +473,7 @@ protected:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void lostRemoteServiceChannel(const Channel& channel) override;
+    void on_service_channel_lost(const Channel& channel) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -484,27 +484,27 @@ protected:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    void failedReceiveMessage( Socket & whichSource ) override;
+    void failed_receive_message( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

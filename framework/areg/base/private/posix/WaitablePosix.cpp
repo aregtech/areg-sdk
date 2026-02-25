@@ -34,12 +34,12 @@ WaitablePosix::WaitablePosix( NESyncTypesIX::SyncKind syncType, bool isRecursive
 
 WaitablePosix::~WaitablePosix()
 {
-    ASSERT(SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
+    ASSERT(SyncLockAndWaitPosix::is_waitable_registered(*this) == false);
 }
 
-void WaitablePosix::freeResources()
+void WaitablePosix::free_resources()
 {
-    SyncLockAndWaitPosix::eventRemove(*this);
+    SyncLockAndWaitPosix::event_remove(*this);
 }
 
 #endif  //  defined(_POSIX) || defined(POSIX)

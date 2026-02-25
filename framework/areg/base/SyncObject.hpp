@@ -25,8 +25,8 @@
 // SyncObject class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Base class of synchronization objects. Contains locking and unlocking 
- *          functions  and has basic attributes for all synchronization objects.
+ * \brief   Base class for synchronization objects. Provides locking and unlocking interface and
+ *          basic attributes for all synchronization objects.
  **/
 class AREG_API SyncObject
 {
@@ -55,10 +55,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Protected constructor, initialize synchronization object.
-     *          Cannot be called directly. Only child classes that have 
-     *          overwritten pure virtual functions.
-     * \param	synchObjectType	Type of synchronization object
+     * \brief   Initializes synchronization object. Protected; only accessible to derived classes.
+     *
+     * \param   synchObjectType     Type of synchronization object
      **/
     explicit SyncObject( SyncObject::SyncKind syncObjectType );
 
@@ -74,7 +73,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Converts Synchronization object instance to void pointer
+     * \brief   Converts synchronization object instance to void pointer handle.
      **/
     inline operator SYNCHANDLE ();
 
@@ -83,42 +82,40 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the synchronization object
-     *          Handle value.
+     * \brief   Returns the synchronization object handle value.
      **/
-    inline SYNCHANDLE getHandle() const;
+    inline SYNCHANDLE handle() const;
 
     /**
-     * \brief   Returns type of synchronization object
+     * \brief   Returns the type of synchronization object.
      **/
-    inline SyncObject::SyncKind getObjectType() const;
+    inline SyncObject::SyncKind object_type() const;
 
     /**
-     * \brief   Returns true if a synchronization object is valid.
+     * \brief   Returns true if the synchronization object is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Locks synchronization object and if succeeds, returns true.
-     *          The thread is locked if it successfully owns synchronization object.
-     *          For different Synchronization objects, this function call may
-     *          perform different actions.
-     * \param	timeout	    The timeout in milliseconds to wait if synchronization
-     *                      object cannot be owned by thread. Otherwise function
-     *                      returns immediately.
-     *                      WAIT_INFINITE means endless timeout to wait to
-     *                      own synchronization object
-     * \return	If thread successfully owns object, returns true. Otherwise returns false.
+     * \brief   Acquires ownership of the synchronization object. If the object is already owned,
+     *          waits up to the timeout interval. Different synchronization objects may perform
+     *          different actions.
+     *
+     * \param   timeout     The timeout in milliseconds to wait for ownership. WAIT_INFINITE means
+     *                      wait indefinitely.
+     * \return  Returns true if the thread successfully acquired ownership; false if timeout
+     *          expired.
      **/
     virtual bool lock( uint32_t timeout = NECommon::WAIT_INFINITE );
 
     /**
-     * \brief   Unlocks / Release current thread ownership of synchronization object
-     * \return  Returns true if thread ownership is successfully released.
+     * \brief   Releases ownership of the synchronization object.
+     *
+     * \return  Returns true if the thread successfully released ownership.
      **/
     virtual bool unlock();
 
@@ -129,7 +126,7 @@ private:
     /**
      * \brief   Destroys the synchronization object. Normally called in the destructor.
      **/
-    void _osDestroySyncObject();
+    void _os_destroy();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -149,6 +146,9 @@ protected:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     SyncObject() = delete;
     AREG_NOCOPY_NOMOVE( SyncObject );
 };
@@ -165,17 +165,17 @@ inline SyncObject::operator SYNCHANDLE ()
     return mSyncObject;
 }
 
-inline SYNCHANDLE SyncObject::getHandle() const
+inline SYNCHANDLE SyncObject::handle() const
 {
     return mSyncObject;
 }
 
-inline SyncObject::SyncKind SyncObject::getObjectType() const
+inline SyncObject::SyncKind SyncObject::object_type() const
 {
     return mSyncObjectType;
 }
 
-inline bool SyncObject::isValid() const
+inline bool SyncObject::is_valid() const
 {
     return (mSyncObjectType == SyncObject::SyncKind::SoNolock) || (mSyncObject != nullptr);
 }

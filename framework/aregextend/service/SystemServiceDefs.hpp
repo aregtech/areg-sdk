@@ -50,7 +50,7 @@ namespace NESystemService
     /**
      * \brief   Converts and returns string value of NESystemService::ServiceOption type.
      **/
-    inline const char * getString( NESystemService::ServiceOption cmdService );
+    inline const char * as_string( NESystemService::ServiceOption cmdService );
 
     /**
      * \brief   The default setup for the system service executable options.
@@ -93,7 +93,7 @@ namespace NESystemService
     /**
      * \brief   Returns the human readable string of NESystemService::ServicePhase value
      **/
-    inline const char * getString( NESystemService::ServicePhase serviceState );
+    inline const char * as_string( NESystemService::ServicePhase serviceState );
 
     /**
      * \brief   The default option to run Multitarget System as a console application.
@@ -188,7 +188,7 @@ namespace NESystemService
 // NESystemService namespace inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * NESystemService::getString( NESystemService::ServiceOption cmdService )
+inline const char * NESystemService::as_string( NESystemService::ServiceOption cmdService )
 {
     switch ( cmdService )
     {
@@ -216,7 +216,7 @@ inline const char * NESystemService::getString( NESystemService::ServiceOption c
     }
 }
 
-inline const char * NESystemService::getString( NESystemService::ServicePhase serviceState )
+inline const char * NESystemService::as_string( NESystemService::ServicePhase serviceState )
 {
     switch ( serviceState )
     {
@@ -249,10 +249,10 @@ inline char** NESystemService::convertArguments(CharType** argv, int32_t argc)
         for (uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i)
         {
             CharType* entry = argv[i];
-            uint32_t length = static_cast<uint32_t>(NEString::getStringLength<CharType>(entry));
+            uint32_t length = static_cast<uint32_t>(NEString::string_length<CharType>(entry));
             uint32_t size = length + 1u;
             char* arg = DEBUG_NEW char[size];
-            NEString::copyString<char, CharType>(arg, static_cast<NEString::CharCount>(size), entry);
+            NEString::copy_string<char, CharType>(arg, static_cast<NEString::CharCount>(size), entry);
             result[i] = arg;
         }
     }

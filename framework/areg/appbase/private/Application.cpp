@@ -47,331 +47,331 @@ Application::Application()
 {
 }
 
-void Application::initApplication(  bool startTracing   /*= true */
+void Application::init_application(  bool startTracing   /*= true */
                                   , bool startServicing /*= true */
                                   , bool startRouting   /*= true */
-                                  , bool startTimer     /*= true */
+                                  , bool start_timer     /*= true */
                                   , bool startWatchdog  /*= true */
                                   , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
                                   , ConfigListener* configListener /*= nullptr*/)
 {
-    Application::_setAppState(NEApplication::AppState::Initializing);
-    Application::_osSetupHandlers();
-    Application::setWorkingDirectory( nullptr );
-    startTimer = startTimer == false ? startServicing : startTimer;
+    Application::_set_app_state(NEApplication::AppState::Initializing);
+    Application::_os_setup_handlers();
+    Application::set_working_directory( nullptr );
+    start_timer = start_timer == false ? startServicing : start_timer;
 
-    Application::loadConfiguration(NEString::isEmpty(configFile) ? NEApplication::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
+    Application::load_configuration(NEString::is_empty(configFile) ? NEApplication::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
 
     if (startTracing)
     {
-        Application::startLogging(true);
+        Application::start_logging(true);
     }
 
-    if ( startTimer )
+    if ( start_timer )
     {
-        Application::startTimerManager();
+        Application::start_timer_manager();
     }
 
     if ( startWatchdog )
     {
-        Application::startWatchdogManager();
+        Application::start_watchdog_manager();
     }
 
     if ( startServicing )
     {
-        Application::startServiceManager();
+        Application::start_service_manager();
     }
 
     if (startRouting)
     {
-        Application::startMessageRouting(static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip));
+        Application::start_message_routing(static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip));
     }
 
-    if (Application::getInstance().mAppState == NEApplication::AppState::Initializing)
+    if (Application::instance().mAppState == NEApplication::AppState::Initializing)
     {
-        Application::_setAppState(NEApplication::AppState::Ready);
+        Application::_set_app_state(NEApplication::AppState::Ready);
     }
 
-    Application::getInstance().mAppQuit.resetEvent();
+    Application::instance().mAppQuit.reset();
 }
 
-void Application::releaseApplication()
+void Application::release_application()
 {
-    Application::_setAppState(NEApplication::AppState::Releasing);
+    Application::_set_app_state(NEApplication::AppState::Releasing);
 
-    WatchdogManager::stopWatchdogManager(false);
-    TimerManager::stopTimerManager(false);
-    ComponentLoader::unloadComponentModel(false, String::EmptyString);
-    ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
-    NELogging::stopLogging(false);
+    WatchdogManager::stop_watchdog_manager(false);
+    TimerManager::stop_timer_manager(false);
+    ComponentLoader::unload_component_model(false, String::EmptyString);
+    ServiceManager::_stop_service_manager(false); // the message routing client is automatically stopped.
+    NELogging::stop_logging(false);
 
-    WatchdogManager::waitWatchdogManager();
-    TimerManager::waitTimerManager();
-    ComponentLoader::waitModelUnload(String::EmptyString);
-    ServiceManager::_waitServiceManager();
-    NELogging::waitLoggingEnd();
+    WatchdogManager::wait_watchdog_manager();
+    TimerManager::wait_timer_manager();
+    ComponentLoader::wait_model_unload(String::EmptyString);
+    ServiceManager::_wait_service_manager();
+    NELogging::wait_logging_end();
 
-    Application::_setAppState(NEApplication::AppState::Stopped);
-    Application::_osReleaseHandlers();
+    Application::_set_app_state(NEApplication::AppState::Stopped);
+    Application::_os_release_handlers();
 }
 
-bool Application::loadModel(const char * modelName /*= nullptr */)
+bool Application::load_model(const char * modelName /*= nullptr */)
 {
-    return ComponentLoader::loadComponentModel( modelName );
+    return ComponentLoader::load_component_model( modelName );
 }
 
-void Application::unloadModel(const char * modelName /*= nullptr */)
+void Application::unload_model(const char * modelName /*= nullptr */)
 {
-    ComponentLoader::unloadComponentModel(true, modelName);
+    ComponentLoader::unload_component_model(true, modelName);
 }
 
-bool Application::isModelLoaded(const char * modelName)
+bool Application::is_model_loaded(const char * modelName)
 {
-    return ComponentLoader::isModelLoaded(modelName);
+    return ComponentLoader::is_model_loaded(modelName);
 }
 
-const NERegistry::Model & Application::findModel( const char * modelName )
+const NERegistry::Model & Application::find_model( const char * modelName )
 {
-    return ComponentLoader::findModel( modelName );
+    return ComponentLoader::find_model( modelName );
 }
 
-void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
+void Application::set_working_directory( const char * dirPath /*= nullptr*/ )
 {
-    String path( NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
-    File::setCurrentDir(path);
+    String path( NEString::is_empty<char>(dirPath) ? Process::instance().path().as_string() : dirPath);
+    File::set_current_dir(path);
 }
 
-bool Application::startLogging(bool force /*= false*/ )
+bool Application::start_logging(bool force /*= false*/ )
 {
-    return NELogging::isStarted() || NELogging::startLogging() || (force && NELogging::forceStartLogging());
+    return NELogging::is_started() || NELogging::start_logging() || (force && NELogging::force_start_logging());
 }
 
-void Application::stopLogging()
+void Application::stop_logging()
 {
-    NELogging::stopLogging(true);
+    NELogging::stop_logging(true);
 }
 
-void Application::stopServiceManager()
+void Application::stop_service_manager()
 {
-    Application::_setAppState(NEApplication::AppState::Releasing);
+    Application::_set_app_state(NEApplication::AppState::Releasing);
     
-    if ( ServiceManager::isServiceManagerStarted() )
+    if ( ServiceManager::is_manager_started() )
     {
-        ServiceManager::_stopServiceManager(true);
+        ServiceManager::_stop_service_manager(true);
     }
     
-    Application::_setAppState(NEApplication::AppState::Stopped);
+    Application::_set_app_state(NEApplication::AppState::Stopped);
 }
 
-bool Application::startServiceManager()
+bool Application::start_service_manager()
 {
-    Application::_setAppState(NEApplication::AppState::Initializing);
+    Application::_set_app_state(NEApplication::AppState::Initializing);
 
     bool result = false;
 
-    if ( ServiceManager::isServiceManagerStarted( ) == false )
+    if ( ServiceManager::is_manager_started( ) == false )
     {
-        if (ServiceManager::_startServiceManager( ))
+        if (ServiceManager::_start_service_manager( ))
         {
-            Application::startTimerManager();
-            Application::startWatchdogManager();
+            Application::start_timer_manager();
+            Application::start_watchdog_manager();
             result = true;
-            Application::_setAppState(NEApplication::AppState::Ready);
+            Application::_set_app_state(NEApplication::AppState::Ready);
         }
         else
         {
-            Application::_setAppState(NEApplication::AppState::Failure);
+            Application::_set_app_state(NEApplication::AppState::Failure);
         }
     }
     else
     {
         result = true;
-        Application::_setAppState(NEApplication::AppState::Ready);
+        Application::_set_app_state(NEApplication::AppState::Ready);
     }
 
     return result;
 }
 
-bool Application::startTimerManager()
+bool Application::start_timer_manager()
 {
-    Application::_osSetupHandlers();
-    return (TimerManager::isTimerManagerStarted() == false ? TimerManager::startTimerManager() : true);
+    Application::_os_setup_handlers();
+    return (TimerManager::is_manager_started() == false ? TimerManager::start_timer_manager() : true);
 }
 
-void Application::stopTimerManager()
+void Application::stop_timer_manager()
 {
-    Application::_osReleaseHandlers();
-    TimerManager::stopTimerManager(true);
+    Application::_os_release_handlers();
+    TimerManager::stop_timer_manager(true);
 }
 
-bool Application::startWatchdogManager()
+bool Application::start_watchdog_manager()
 {
-    return (WatchdogManager::isWatchdogManagerStarted() == false ? WatchdogManager::startWatchdogManager() : true);
+    return (WatchdogManager::is_manager_started() == false ? WatchdogManager::start_watchdog_manager() : true);
 }
 
-void Application::stopWatchdogManager()
+void Application::stop_watchdog_manager()
 {
-    WatchdogManager::stopWatchdogManager(true);
+    WatchdogManager::stop_watchdog_manager(true);
 }
 
-bool Application::startMessageRouting(uint32_t connectTypes)
+bool Application::start_message_routing(uint32_t connectTypes)
 {
     bool result{ false };
 
-    if (Application::isServiceManagerStarted())
+    if (Application::is_service_manager_started())
     {
-        result = (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceStart(connectTypes));
+        result = (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(connectTypes));
     }
 
     return result;
 }
 
-bool Application::configMessageRouting()
+bool Application::config_message_routing()
 {
-    return (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceConfigure());
+    return (ServiceManager::_is_routing_started() || ServiceManager::_routing_service_configure());
 }
 
-bool Application::startMessageRouting( const char * ipAddress, uint16_t portNr )
+bool Application::start_message_routing( const char * ipAddress, uint16_t portNr )
 {
     bool result{ false };
 
-    if ( Application::startServiceManager() )
+    if ( Application::start_service_manager() )
     {
-        result = ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceStart(ipAddress, portNr);
+        result = ServiceManager::_is_routing_started() || ServiceManager::_routing_service_start(ipAddress, portNr);
     }
 
     return result;
 }
 
-void Application::stopMessageRouting()
+void Application::stop_message_routing()
 {
-    ServiceManager::_routingServiceStop();
+    ServiceManager::_routing_service_stop();
 }
 
-bool Application::isServiceManagerStarted()
+bool Application::is_service_manager_started()
 {
-    return ServiceManager::isServiceManagerStarted();
+    return ServiceManager::is_manager_started();
 }
 
-bool Application::isRouterConnected()
+bool Application::is_router_connected()
 {
-    return ServiceManager::_isRoutingServiceStarted();
+    return ServiceManager::_is_routing_started();
 }
 
-bool Application::isRouterConnectionPending()
+bool Application::is_router_connection_pending()
 {
-    return ServiceManager::_isRoutingServicePending();
+    return ServiceManager::_is_routing_pending();
 }
 
-bool Application::isMessageRoutingConfigured()
+bool Application::is_message_routing_configured()
 {
-    return ServiceManager::_isRoutingServiceConfigured();
+    return ServiceManager::_is_routing_configured();
 }
 
-bool Application::startRouterService()
+bool Application::start_router_service()
 {
-    return Application::_osStartLocalService(NEApplication::ROUTER_SERVICE_NAME_WIDE, NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE);
+    return Application::_os_start_local_service(NEApplication::ROUTER_SERVICE_NAME_WIDE, NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE);
 }
 
-bool Application::startLoggingService()
+bool Application::start_logging_service()
 {
-    return Application::_osStartLocalService(NEApplication::LOGGER_SERVICE_NAME_WIDE, NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE);
+    return Application::_os_start_local_service(NEApplication::LOGGER_SERVICE_NAME_WIDE, NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE);
 }
 
-bool Application::isElementStored( const String & elemName )
+bool Application::is_element_stored( const String & elemName )
 {
-    Application & theApp = Application::getInstance();
+    Application & theApp = Application::instance();
     Lock lock(theApp.mLock);
     return theApp.mStorage.contains(elemName);
 }
 
-NEMemory::Primitive Application::storeElement( const String & elemName, NEMemory::Primitive elem )
+NEMemory::Primitive Application::store_element( const String & elemName, NEMemory::Primitive elem )
 {
-    Application & theApp = Application::getInstance( );
+    Application & theApp = Application::instance( );
     Lock lock( theApp.mLock );
 
     MapAppStorage::MAPPOS pos = theApp.mStorage.find(elemName);
     NEMemory::Primitive result = NEMemory::InvalidElement;
-    if (theApp.mStorage.isValidPosition(pos))
+    if (theApp.mStorage.is_valid_position(pos))
     {
-        result = theApp.mStorage.valueAtPosition(pos);
-        theApp.mStorage.removePosition(pos);
+        result = theApp.mStorage.value_at_position(pos);
+        theApp.mStorage.remove_position(pos);
     }
 
-    theApp.mStorage.setAt(elemName, elem);
+    theApp.mStorage.set_at(elemName, elem);
     return result;
 }
 
-NEMemory::Primitive Application::getStoredElement( const String & elemName )
+NEMemory::Primitive Application::stored_element( const String & elemName )
 {
-    Application & theApp = Application::getInstance( );
+    Application & theApp = Application::instance( );
     Lock lock( theApp.mLock );
 
     MapAppStorage::MAPPOS pos = theApp.mStorage.find( elemName );
-    return (theApp.mStorage.isValidPosition(pos) ? theApp.mStorage.valueAtPosition( pos ) : NEMemory::InvalidElement);
+    return (theApp.mStorage.is_valid_position(pos) ? theApp.mStorage.value_at_position( pos ) : NEMemory::InvalidElement);
 }
 
-bool Application::waitAppQuit(uint32_t waitTimeout /*= NECommon::WAIT_INFINITE*/)
+bool Application::wait_app_quit(uint32_t waitTimeout /*= NECommon::WAIT_INFINITE*/)
 {
-    Application & theApp = Application::getInstance( );
+    Application & theApp = Application::instance( );
     return theApp.mAppQuit.lock(waitTimeout);
 }
 
-void Application::signalAppQuit()
+void Application::signal_app_quit()
 {
-    Application & theApp = Application::getInstance( );
-    theApp.mAppQuit.setEvent();
+    Application & theApp = Application::instance( );
+    theApp.mAppQuit.set_event();
 }
 
-bool Application::isServicingReady()
+bool Application::is_servicing_ready()
 {
-    Application & theApp = Application::getInstance();
+    Application & theApp = Application::instance();
     return (theApp.mAppState == NEApplication::AppState::Ready);
 }
 
-void Application::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive )
+void Application::query_communication_data( uint32_t & sizeSend, uint32_t & sizeReceive )
 {
-    ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
+    ServiceManager::query_communication_data( sizeSend, sizeReceive );
 }
 
-const String & Application::getApplicationName()
+const String & Application::application_name()
 {
-    return Process::getInstance().getAppName();
+    return Process::instance().app_name();
 }
 
-const String & Application::getMachineName()
+const String & Application::machine_name()
 {
-    return NESocket::getHostname();
+    return NESocket::hostname();
 }
 
-ConfigManager& Application::getConfigManager()
+ConfigManager& Application::config_manager()
 {
-    return Application::getInstance().mConfigManager;
+    return Application::instance().mConfigManager;
 }
 
-bool Application::loadConfiguration(const char* fileName /*= nullptr*/, ConfigListener * listener /*= nullptr*/)
+bool Application::load_configuration(const char* fileName /*= nullptr*/, ConfigListener * listener /*= nullptr*/)
 {
-    Application& theApp = Application::getInstance();
+    Application& theApp = Application::instance();
     bool result{ true };
-    if (theApp.mConfigManager.readConfig(fileName == nullptr ? NEApplication::DEFAULT_CONFIG_FILE : fileName, listener) == false)
+    if (theApp.mConfigManager.read_config(fileName == nullptr ? NEApplication::DEFAULT_CONFIG_FILE : fileName, listener) == false)
     {
         result = false;
-        Application::setupDefaultConfiguration(listener);
+        Application::setup_default_configuration(listener);
     }
 
     return result;
 }
 
-bool Application::saveConfiguration(const char* fileName /*= nullptr*/, ConfigListener * /*listener*/ /*= nullptr*/)
+bool Application::save_configuration(const char* fileName /*= nullptr*/, ConfigListener * /*listener*/ /*= nullptr*/)
 {
-    Application& theApp = Application::getInstance();
-    return theApp.mConfigManager.saveConfig(fileName);
+    Application& theApp = Application::instance();
+    return theApp.mConfigManager.save_config(fileName);
 }
 
-void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullptr*/)
+void Application::setup_default_configuration(ConfigListener * listener /*= nullptr*/)
 {
-    Application& theApp = Application::getInstance();
-    const String& module = Process::getInstance().getAppName();
+    Application& theApp = Application::instance();
+    const String& module = Process::instance().app_name();
 
     const uint32_t countReadonly{ std::size(NEApplication::DefaultReadonlyProperties) };
     NEPersistence::ListProperties defReadonly(countReadonly);
@@ -389,18 +389,18 @@ void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullpt
         }
     }
 
-    theApp.mConfigManager.setConfiguration(defReadonly, defWritable, listener);
+    theApp.mConfigManager.set_configuration(defReadonly, defWritable, listener);
 }
 
-bool Application::isConfigured()
+bool Application::is_configured()
 {
-    return Application::getInstance().mConfigManager.isConfigured();
+    return Application::instance().mConfigManager.is_configured();
 }
 
-bool Application::_setAppState(NEApplication::AppState newState)
+bool Application::_set_app_state(NEApplication::AppState newState)
 {
     bool result = false;
-    Application & theApp = Application::getInstance();
+    Application & theApp = Application::instance();
     if (newState == NEApplication::AppState::Failure)
     {
         theApp.mAppState = newState;

@@ -73,7 +73,7 @@ void Console::_osOutputText(Console::Coord pos, const String& text) const
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        mvwaddstr(reinterpret_cast<WINDOW *>(mContext), pos.posY, pos.posX, text.getString());
+        mvwaddstr(reinterpret_cast<WINDOW *>(mContext), pos.posY, pos.posX, text.as_string());
         wclrtoeol(reinterpret_cast<WINDOW *>(mContext));
     }
 }
@@ -97,7 +97,7 @@ void Console::_osOutputText(const String& text) const
     if (mContext != 0)
     {
         ASSERT(mIsReady);
-        waddstr(reinterpret_cast<WINDOW*>(mContext), text.getString());
+        waddstr(reinterpret_cast<WINDOW*>(mContext), text.as_string());
     }
 }
 
@@ -149,8 +149,8 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
     if ((stdscr == nullptr) || (getnstr(buffer, static_cast<int32_t>(size)) != OK))
         return false;
 
-    NEString::trimAll<char>(buffer);
-    return (NEString::isEmpty<char>(buffer) == false);
+    NEString::trim_all<char>(buffer);
+    return (NEString::is_empty<char>(buffer) == false);
 }
 
 void Console::_osRefreshScreen() const

@@ -34,9 +34,8 @@ class ProxyAddress;
 // ServiceAddress class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The service address is a base of Proxy and Stub addresses created in the system.
- *          Since Service are not stand-alone module, but part of components, besides of
- *          service information it contains role name, which is given to component.
+ * \brief   Represents the address of a service (stub or proxy) within a component. Combines service
+ *          identification (name, version, type) with the component role name.
  **/
 class AREG_API ServiceAddress : public    ServiceItem
 {
@@ -45,35 +44,40 @@ class AREG_API ServiceAddress : public    ServiceItem
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates Service address path as a string.
-     * \param   addService  The service address object to convert.
-     * /return  Returns service address as a string.
+     * \brief   Converts a service address to its string path representation.
+     *
+     * \param   addService      The service address to convert.
+     * \return  Returns the service address as a string path.
      **/
-    static String convAddressToPath( const ServiceAddress & addService );
+    static String to_path( const ServiceAddress & addService );
 
     /**
-     * \brief   Converts given service address path as a string to service address object.
-     * \param   pathService     The path of service address as a string.
-     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service address.
-     * \return  Returns generated service address object.
+     * \brief   Converts a service address string path to a ServiceAddress object.
+     *
+     * \param   pathService     The string path representing the service address.
+     * \param   out_nextPart    Optional output parameter that points to the next part of the string
+     *                          after the service address.
+     * \return  Returns the constructed ServiceAddress object.
      **/
-    static ServiceAddress convPathToAddress( const char * pathService, const char** out_nextPart = nullptr );
+    static ServiceAddress from_path( const char * pathService, const char** out_nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor. Creates empty service address.
+     * \brief   Creates an empty service address.
      **/
     ServiceAddress();
 
     /**
-     * \brief   Creates service address. Sets given service name, version, service type and role name of owner component.
-     * \param   serviceName     The name of service.
-     * \param   serviceVersion  The version of service.
-     * \param   serviceType     The type of service.
-     * \param   roleName        The role name of owner component.
+     * \brief   Creates a service address with the specified name, version, type, and component role
+     *          name.
+     *
+     * \param   serviceName         The service name.
+     * \param   serviceVersion      The service version.
+     * \param   serviceType         The service type.
+     * \param   roleName            The role name of the component owning the service.
      **/
     ServiceAddress( const String & serviceName
                   , const Version & serviceVersion
@@ -81,39 +85,45 @@ public:
                   , const String & roleName );
 
     /**
-     * \brief   Creates service address. Sets given service item information and role name of owner component.
-     * \param   serviceItem     The service item object, which contains name, version and type information.
-     * \param   roleName        The role name of owner component.
+     * \brief   Creates a service address from a service item and component role name.
+     *
+     * \param   serviceItem     The service item containing name, version, and type.
+     * \param   roleName        The role name of the component owning the service.
      **/
     ServiceAddress( const ServiceItem  & serviceItem, const String & roleName );
 
     /**
-     * \brief   Creates service address, which is contained in stub address object.
-     * \param   addrStub        The address of stub object with contains information of service address.
+     * \brief   Creates a service address from a stub address.
+     *
+     * \param   addrStub    The stub address containing the service address information.
      **/
     explicit ServiceAddress( const StubAddress & addrStub );
 
     /**
-     * \brief   Creates service address, which is contained in proxy address object.
-     * \param   addrProxy       The address of proxy object with contains information of service address.
+     * \brief   Creates a service address from a proxy address.
+     *
+     * \param   addrProxy       The proxy address containing the service address information.
      **/
     explicit ServiceAddress( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Initializes service address data from given streaming object.
-     * \param   stream      The streaming object, which contain service address information
+     * \brief   Initializes a service address by reading from a stream.
+     *
+     * \param   stream      The stream containing serialized service address data.
      **/
     ServiceAddress( const InStream & stream );
 
     /**
-     * \brief   Copies data from given source.
-     * \param   source      The source of data to copy
+     * \brief   Copies a service address from the source.
+     *
+     * \param   source      The source service address to copy.
      **/
     ServiceAddress( const ServiceAddress & source );
 
     /**
-     * \brief   Moves data from given source.
-     * \param   source      The source of data to move.
+     * \brief   Moves a service address from the source.
+     *
+     * \param   source      The source service address to move.
      **/
     ServiceAddress( ServiceAddress && source ) noexcept;
 
@@ -128,31 +138,35 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies service address from given source.
-     * \param   source      The source of service address to copy data.
+     * \brief   Copies a service address from the source.
+     *
+     * \param   source      The source service address.
      **/
     inline ServiceAddress & operator = ( const ServiceAddress & source );
 
     /**
-     * \brief   Copies service address from given source.
-     * \param   source      The source of service address to copy data.
+     * \brief   Moves a service address from the source.
+     *
+     * \param   source      The source service address.
      **/
     inline ServiceAddress & operator = ( ServiceAddress && source ) noexcept;
 
     /**
-     * \brief   Checks equality of 2 service addresses and returns true if they are equal.
-     * \param   other       The service address to check
+     * \brief   Returns true if two service addresses are equal.
+     *
+     * \param   other       The service address to compare.
      **/
     inline bool operator == (const ServiceAddress & other ) const;
 
     /**
-     * \brief   Checks inequality of 2 service addresses and returns true if they are not equal.
-     * \param   other       The service address to check
+     * \brief   Returns true if two service addresses are not equal.
+     *
+     * \param   other       The service address to compare.
      **/
     inline bool operator != (const ServiceAddress & other ) const;
 
     /**
-     * \brief   Converts service address to 32-bit unsigned integer value.
+     * \brief   Converts the service address to a 32-bit unsigned integer (hash value).
      **/
     inline explicit operator uint32_t () const;
 
@@ -161,16 +175,18 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Streaming operator. Reads and initialize proxy address from stream.
-     * \param   stream  The streaming object to read data.
-     * \param   input   Service address object to initialize data.
+     * \brief   Reads and initializes a service address from a stream.
+     *
+     * \param   stream      The stream to read data from.
+     * \param   input       The service address object to initialize.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, ServiceAddress & input );
 
     /**
-     * \brief   Streaming operator. Writes proxy address into stream.
-     * \param   stream  The streaming object to write data.
-     * \param   output  Service address object to serialize.
+     * \brief   Writes a service address into a stream.
+     *
+     * \param   stream      The stream to write data to.
+     * \param   output      The service address to serialize.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const ServiceAddress & output);
 
@@ -180,48 +196,52 @@ public:
 public:
 
     /**
-     * \brief   Returns role name of service address.
+     * \brief   Returns the role name of the component owning the service.
      **/
-    inline const String & getRoleName() const;
+    inline const String & role_name() const;
 
     /**
-     * \brief   Sets the role name of service address
-     * \param   roleName        New role name to set.
+     * \brief   Sets the role name of the component owning the service.
+     *
+     * \param   roleName    The role name to set.
      **/
-    inline void setRoleName( const String & roleName );
+    inline void set_role_name( const String & roleName );
 
     /**
-     * \brief   Returns service item information, which contains service name, version and type.
+     * \brief   Returns the service item containing the service name, version, and type.
      **/
-    inline const ServiceItem & getService() const;
+    inline const ServiceItem & service() const;
 
     /**
-     * \brief   Creates Service address path as a string.
-     * /return  Returns service address as a string.
+     * \brief   Converts the service address to its string path representation.
      **/
-    String convToString() const;
+    String to_string() const;
 
     /**
-     * \brief   Converts given service address path as a string to service address object.
-     * \param   pathService     The path of service address as a string.
-     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service address.
+     * \brief   Converts a service address string path to initialize this object.
+     *
+     * \param   pathService     The string path representing the service address.
+     * \param   out_nextPart    Optional output parameter that points to the next part of the string
+     *                          after the service address.
      **/
-    void convFromString( const char * pathService, const char** out_nextPart = nullptr );
+    void conv_from_string( const char * pathService, const char** out_nextPart = nullptr );
 
 protected:
     /**
-     * \brief   Returns true if service address has validated data.
+     * \brief   Returns true if the service address contains valid data.
      **/
-    inline bool isValidated() const;
+    inline bool is_validated() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Calculates the number of specified service address object.
+     * \brief   Calculates a hash value for the service address.
+     *
+     * \param   addrService     The service address to hash.
      **/
-    static uint32_t _magicNumber( const ServiceAddress addrService );
+    static uint32_t _magic_number( const ServiceAddress addrService );
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
@@ -304,26 +324,26 @@ inline ServiceAddress::operator uint32_t () const
     return mMagicNum;
 }
 
-inline const String & ServiceAddress::getRoleName() const
+inline const String & ServiceAddress::role_name() const
 {
     return mRoleName;
 }
 
-inline void ServiceAddress::setRoleName(const String & roleName)
+inline void ServiceAddress::set_role_name(const String & roleName)
 {
     mRoleName = roleName;
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    mMagicNum = ServiceAddress::_magicNumber(*this);
+    mMagicNum = ServiceAddress::_magic_number(*this);
 }
 
-inline const ServiceItem & ServiceAddress::getService() const
+inline const ServiceItem & ServiceAddress::service() const
 {
     return static_cast<const ServiceItem &>(*this);
 }
 
-inline bool ServiceAddress::isValidated() const
+inline bool ServiceAddress::is_validated() const
 {
-    return ServiceItem::isValidated() && (mRoleName.isEmpty() == false);
+    return ServiceItem::is_validated() && (mRoleName.is_empty() == false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -334,7 +354,7 @@ inline const InStream & operator >> ( const InStream & stream, ServiceAddress & 
 {
     stream >> static_cast<ServiceItem &>(input); 
     stream >> input.mRoleName; 
-    input.mMagicNum = ServiceAddress::_magicNumber(input);
+    input.mMagicNum = ServiceAddress::_magic_number(input);
 
     return stream;
 }

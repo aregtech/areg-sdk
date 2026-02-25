@@ -24,7 +24,7 @@ NEService::StateArray::StateArray(uint32_t count)
     , mExternal     (false)
 {
     ASSERT((count != 0) || (mValueList == nullptr));
-    resetStates();
+    reset();
 }
 
 NEService::StateArray::StateArray( uint8_t* thisBuffer, int32_t elemCount )
@@ -33,7 +33,7 @@ NEService::StateArray::StateArray( uint8_t* thisBuffer, int32_t elemCount )
 {
     mValueList  = reinterpret_cast<NEService::DataState *>(thisBuffer);
     mElemCount  = static_cast<uint32_t>(elemCount);
-    resetStates();
+    reset();
 }
 
 NEService::StateArray::~StateArray()
@@ -115,7 +115,7 @@ void NEService::ParameterArray::construct( const uint32_t * params, int32_t coun
         // here we start having parameter list.
         uint32_t skipBegin  = size;
         // space for parameters
-        size += countParamSpace(params, count);
+        size += count_param_space(params, count);
 
         uint8_t* buffer = DEBUG_NEW uint8_t[size];
         if (buffer != nullptr)
@@ -159,7 +159,7 @@ void NEService::ParameterArray::construct( const uint32_t * params, int32_t coun
     }
 }
 
-uint32_t NEService::ParameterArray::countParamSpace( const uint32_t* params, int32_t count )
+uint32_t NEService::ParameterArray::count_param_space( const uint32_t* params, int32_t count )
 {
     uint32_t result = 0;
     // space for size of class NEService::StateArray + 
@@ -170,10 +170,10 @@ uint32_t NEService::ParameterArray::countParamSpace( const uint32_t* params, int
     return result;
 }
 
-void NEService::ParameterArray::resetParamState( uint32_t whichParam )
+void NEService::ParameterArray::reset( uint32_t whichParam )
 {
     ASSERT((static_cast<int32_t>(whichParam) >= 0) && (static_cast<int32_t>(whichParam) < mElemCount));
-    mParamList[whichParam]->resetStates();
+    mParamList[whichParam]->reset();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -185,51 +185,51 @@ NEService::ProxyData::ProxyData( const NEService::InterfaceData& ifData )
     , mAttrState    (static_cast<uint32_t>(ifData.idAttributeCount))
     , mParamState   (ifData)
 {
-    resetStates(); 
+    reset(); 
 }
 
-void NEService::ProxyData::resetStates()
+void NEService::ProxyData::reset()
 {
     mImplVersion    = NEService::DataState::DataIsUnavailable;
-    mAttrState.resetStates();
-    mParamState.resetAllStates();
+    mAttrState.reset();
+    mParamState.reset();
 }
 
-void NEService::ProxyData::setDataState( uint32_t msgId, NEService::DataState newState )
+void NEService::ProxyData::set_data_state( uint32_t msgId, NEService::DataState newState )
 {
-    if ( NEService::isAttributeId(msgId) )
+    if ( NEService::is_attribute_id(msgId) )
     {
-        if ( NEService::isVersionNotifyId(msgId) )
+        if ( NEService::is_version_id(msgId) )
         {
             mImplVersion    = newState;
         }
         else
         {
-            mAttrState[NEService::attrIndex(msgId)]   = newState;
+            mAttrState[NEService::attr_index(msgId)]   = newState;
         }
     }
-    else if ( NEService::isResponseId(msgId) )
+    else if ( NEService::is_response_id(msgId) )
     {
-        mParamState.setParamState(NEService::respIndex(msgId), newState);
+        mParamState.set_param_state(NEService::resp_index(msgId), newState);
     }
     // else ignore
 }
 
-NEService::DataState NEService::ProxyData::getDataState( uint32_t msgId ) const
+NEService::DataState NEService::ProxyData::data_state( uint32_t msgId ) const
 {
     NEService::DataState result = NEService::DataState::DataUnexpectedError;
-    if (NEService::isAttributeId(msgId))
-        result = getAttributeState(msgId);
-    else if (NEService::isResponseId(msgId))
-        result = getParamState(msgId);
+    if (NEService::is_attribute_id(msgId))
+        result = attribute_state(msgId);
+    else if (NEService::is_response_id(msgId))
+        result = param_state(msgId);
     // else, ignore
 
     return result;
 }
 
-uint32_t NEService::ProxyData::getResponseId( uint32_t requestId ) const
+uint32_t NEService::ProxyData::response_id( uint32_t requestId ) const
 {
-    uint32_t index = NEService::reqIndex(requestId);
+    uint32_t index = NEService::req_index(requestId);
     return  (
                 (static_cast<int32_t>(index) >= 0) && (index < mIfData.idRequestCount) ? 
                         static_cast<uint32_t>(mIfData.idRequestToResponseMap[index]) :
@@ -239,7 +239,7 @@ uint32_t NEService::ProxyData::getResponseId( uint32_t requestId ) const
 
 AREG_API_IMPL const Version NEService::EmptyServiceVersion (1, 0, 0);
 
-AREG_API_IMPL NEService::InterfaceData & NEService::getEmptyInterface()
+AREG_API_IMPL NEService::InterfaceData & NEService::empty_interface()
 {
     /**
      * \brief   System Service Interface data

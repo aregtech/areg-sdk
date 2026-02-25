@@ -35,8 +35,7 @@ class Cursor;
 // ReadConverter class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This helper class is reading data from a stream and converts
- *          to basic types.
+ * \brief   Helper class for reading data from a stream and converting to basic types.
  **/
 class AREG_API ReadConverter
 {
@@ -45,13 +44,12 @@ class AREG_API ReadConverter
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor.
-     *          Initialize converting helper class and holds
-     *          references of streaming buffer and its position.
-     * \param   readStream      The readable streaming object
-     * \param   readPosition    The position object of readable stream.
+     * \brief   Initializes the converter with a readable stream and position cursor.
+     *
+     * \param   read_stream     The readable stream to read from.
+     * \param   readPosition    The position cursor in the readable stream.
      **/
-    ReadConverter( InStream & readStream, Cursor & readPosition );
+    ReadConverter( InStream & read_stream, Cursor & readPosition );
 
     /**
      * \brief   Destructor.
@@ -64,128 +62,105 @@ public:
 public:
 
     /**
-     * \brief   Reads data from streaming object and converts to boolean.
-     *          On output, the Value contains boolean value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted boolean value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a boolean value.
+     *
+     * \param[out] Value       On return, contains the converted boolean value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getBool( bool & Value ) const;
+    bool as_bool( bool & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to character.
-     *          On output, the Value contains character value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted character value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a character value.
+     *
+     * \param[out] Value       On return, contains the converted character value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getChar( char & Value ) const;
+    bool as_char( char & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to wide-character.
-     *          On output, the Value contains wide-character value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted wide-character value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a wide-character value.
+     *
+     * \param[out] Value       On return, contains the converted wide-character value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getChar( wchar_t & Value ) const;
+    bool as_char( wchar_t & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to int16_t integer.
-     *          On output, the Value contains int16_t integer value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted int16_t integer value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a 16-bit signed integer value.
+     *
+     * \param[out] Value       On return, contains the converted 16-bit signed integer value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getShort(int16_t & Value) const;
+    bool as_short(int16_t & Value) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to integer.
-     *          On output, the Value contains integer value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted integer value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a 32-bit signed integer value.
+     *
+     * \param[out] Value       On return, contains the converted 32-bit signed integer value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getInt( int32_t & Value ) const;
+    bool as_int( int32_t & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to 64-bit integer.
-     *          On output, the Value contains 64-bit integer value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted 64-bit integer value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a 64-bit signed integer value.
+     *
+     * \param[out] Value       On return, contains the converted 64-bit signed integer value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getInt64( int64_t & Value ) const;
+    bool int64( int64_t & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to number with floating point.
-     *          On output, the Value contains number with floating point value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted number with floating point value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a floating-point value.
+     *
+     * \param[out] Value       On return, contains the converted floating-point value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getFloat( float & Value ) const;
+    bool as_float( float & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to number with floating point.
-     *          On output, the Value contains number with floating point value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted number with floating point value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a double-precision floating-point value.
+     *
+     * \param[out] Value       On return, contains the converted double-precision floating-point
+     *                         value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getDouble( double & Value ) const;
+    bool as_double( double & Value ) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to null-terminated ASCII string.
-     *          On output, the Value contains null-terminated ASCII string value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted null-terminated ASCII string value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to an ASCII string value.
+     *
+     * \param[out] Value       On return, contains the converted ASCII string value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getString(String & Value) const;
+    bool as_string(String & Value) const;
 
     /**
-     * \brief   Reads data from streaming object and converts to null-terminated wide-char string.
-     *          On output, the Value contains null-terminated wide-char string value.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains converted null-terminated wide-char string value.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads and converts stream data to a wide-character string value.
+     *
+     * \param[out] Value       On return, contains the converted wide-character string value.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool getString(WideString & Value) const;
+    bool as_string(WideString & Value) const;
 
     /**
-     * \brief   Reads from streaming object single line of null-terminated ASCII string.
-     *          On output, the Value contains single line of null-terminated ASCII string value.
-     *          The new line indicator character is not included in the string.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains single line of converted null-terminated ASCII string value.
-     *                      The new line indicator character is not included in the string.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads a single line from the stream as an ASCII string, excluding the newline
+     *          character.
+     *
+     * \param[out] Value       On return, contains a single line of ASCII string without the newline
+     *                         character.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool readLine(String & Value) const;
+    bool read_line(String & Value) const;
 
     /**
-     * \brief   Reads from streaming object single line of null-terminated wide-char string.
-     *          On output, the Value contains single line of null-terminated wide-char string value.
-     *          The new line indicator character is not included in the string.
-     *          Function returns true if reading succeeded.
-     * \param[out]  Value   On output, this parameter contains single line of converted null-terminated wide-char string value.
-     *                          The new line indicator character is not included in the string.
-     * \return  If reading succeeded, function returns true and the output parameter is valid.
-     *          Otherwise, the value of output parameter should be ignored.
+     * \brief   Reads a single line from the stream as a wide-character string, excluding the
+     *          newline character.
+     *
+     * \param[out] Value       On return, contains a single line of wide-character string without
+     *                         the newline character.
+     * \return  Returns true if reading succeeded; false otherwise.
      **/
-    bool readLine(WideString & Value) const;
+    bool read_line(WideString & Value) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -204,6 +179,9 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ReadConverter() = delete;
     AREG_NOCOPY_NOMOVE( ReadConverter );
 };

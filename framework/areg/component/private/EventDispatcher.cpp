@@ -42,35 +42,35 @@ EventDispatcher::~EventDispatcher()
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class, methods
 //////////////////////////////////////////////////////////////////////////
-bool EventDispatcher::onThreadRegistered( Thread * threadObj )
+bool EventDispatcher::on_thread_registered( Thread * threadObj )
 {
     mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
     ASSERT(mDispatcherThread != nullptr);
 
-    EventDispatcherBase::removeAllEvents( );
-    return EventDispatcherBase::mEventExit.resetEvent();
+    EventDispatcherBase::remove_all_events( );
+    return EventDispatcherBase::mEventExit.reset();
 }
 
-void EventDispatcher::onThreadUnregistering()
+void EventDispatcher::on_thread_unregistering()
 {
-    stopDispatcher();
+    stop_dispatcher();
     mDispatcherThread   = nullptr;
 }
 
-void EventDispatcher::onThreadRuns()
+void EventDispatcher::on_thread_runs()
 {
     ASSERT(mDispatcherThread != nullptr);
-    startDispatcher();
+    start_dispatcher();
 }
 
-int32_t EventDispatcher::onThreadExit()
+int32_t EventDispatcher::on_thread_exit()
 {
-    exitDispatcher( );
+    exit_dispatcher( );
     mDispatcherThread   = nullptr;
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
 }
 
-bool EventDispatcher::postEvent( Event& eventElem )
+bool EventDispatcher::post_event( Event& eventElem )
 {
-    return queueEvent(eventElem);
+    return queue_event(eventElem);
 }

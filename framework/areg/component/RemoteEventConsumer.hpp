@@ -34,14 +34,14 @@ class RemoteResponseEvent;
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   The interface of remote event consumer. Derived by Stub object
- *          with type of remote to trigger event processing.
+ * \brief   Interface for remote event consumers (stub objects) to process remote request,
+ *          notification, and response events.
  **/
 class AREG_API RemoteEventConsumer   : public EventConsumer
 {
 protected:
     /**
-     * \brief   Default constructor. Protected
+     * \brief
      **/
     RemoteEventConsumer() = default;
     /**
@@ -55,26 +55,27 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Triggered when the Stub receives remote request event to process.
-     * \param   requestEvent        The remote request event to be processed.
+     * \brief   Processes a remote request event received by the stub.
+     *
+     * \param   requestEvent    The remote request event to process.
      **/
-    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) = 0;
+    virtual void process_request_event( RemoteRequestEvent & requestEvent ) = 0;
 
     /**
-     * \brief   Triggered when the Stub receives remote notification request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          sending attribute update notifications.
-     * \param   requestNotifyEvent  The remote notification request event to be processed.
+     * \brief   Processes a remote notification request event received by the stub (e.g., to start
+     *          or stop attribute notifications).
+     *
+     * \param   requestNotifyEvent      The remote notification request event to process.
      **/
-    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
+    virtual void process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
 
     /**
-     * \brief   Triggered when the Stub receives remote response request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          to subscribe on information or response sent by Stub.
-     * \param   responseEvent  The remote response event on the request to processed.
+     * \brief   Processes a remote response event received by the stub (e.g., to subscribe or
+     *          unsubscribe from information).
+     *
+     * \param   responseEvent       The remote response event to process.
      **/
-    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) = 0;
+    virtual void process_response_event( RemoteResponseEvent & responseEvent ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -85,14 +86,12 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Triggered by Dispatcher object when starts dispatch event.
-     *          This pure virtual method should be overwritten by child
-     *          class to process event.
-     * \param   eventElem   Event object, which currently dispatcher is
-     *                      processing. As soon as event is finished processing
-     *                      it will be destroyed.
+     * \brief   Triggered by the dispatcher when starting to process an event. Overwrite to handle
+     *          event processing.
+     *
+     * \param   eventElem       The event object being processed by the dispatcher.
      **/
-    void startEventProcessing( Event & eventElem ) override;
+    void start_event_processing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

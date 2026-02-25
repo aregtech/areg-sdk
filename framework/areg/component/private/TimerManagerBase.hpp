@@ -32,10 +32,8 @@ class TimerBase;
 // TimerManager class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Time Manager Base class to start and stop system timers,
- *          and process event messages. The base class is extended by
- *          Timer Manager and Watchdog Manager to execute specific tasks.
- *          It requires to run as separate thread.
+ * \brief   Base class to manage system timers and process event messages. Extended by Timer Manager
+ *          and Watchdog Manager. Must run as separate thread.
  **/
 class TimerManagerBase  : protected DispatcherThread
                         , protected TimerManagerEventConsumer
@@ -51,7 +49,9 @@ class TimerManagerBase  : protected DispatcherThread
 protected:
 
     /**
-     * \brief   protected Constructor / destructor
+     * \brief   Creates Timer Manager Base with specified thread name.
+     *
+     * \param   threadName      The name of the timer manager thread.
      **/
     TimerManagerBase( const String & threadName );
     virtual ~TimerManagerBase() = default;
@@ -65,58 +65,56 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target thread / process.
-     * \param	eventElem	Event object to post.
-     * \return	Returns true if target was found and the event
-     *          delivered with success. Otherwise it returns false.
+     * \brief   Posts event and delivers to its target thread or process.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true if target was found and the event delivered successfully. Otherwise
+     *          returns false.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) override;
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Runs main dispatching loop to pick and dispatch events. Override if logic should be
+     *          changed.
+     *
+     * \return  Returns true if Exit Event is signaled.
      **/
-    bool runDispatcher() override;
+    bool run_dispatcher() override;
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables event dispatching threads to receive events. Override if event
+     *          dispatching preparation is needed.
+     *
+     * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
-    void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) override;
 
     /**
-     * \brief   Starts Timer Manager Thread it is not started yet.
+     * \brief   Starts Timer Manager Thread if not already started.
+     *
      * \return  Returns true if Timer Manager Thread is started and ready to process events.
      **/
-    bool startTimerManagerThread();
+    bool start_manager_thread();
 
     /**
-     * \brief   Stops Timer Manager Thread. Cancels and stops all timers.
-     *          If 'waitComplete' is set to True, the calling thread is
-     *          blocked until Timer Manager thread completes jobs and cleans resources.
-     *          Otherwise, this triggers stop and exit events, and immediately returns.
-     * \param   waitComplete    If true, waits for Timer Manager Thread to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and returns.
+     * \brief   Stops Timer Manager Thread and cancels all timers. Optionally waits for completion.
+     *
+     * \param   waitComplete    If true, waits for Timer Manager Thread to complete jobs and exit.
+     *                          Otherwise triggers exit and returns immediately.
      **/
-    void stopTimerManagerThread( bool waitComplete );
+    void stop_manager_thread( bool waitComplete );
 
     /**
-     * \brief   The calling thread is blocked until Timer Manager Thread did not
-     *          complete the job and exit. This should be called if previously
-     *          it was requested to stop the Timer Manager Thread without waiting for completion.
+     * \brief   Blocks the calling thread until Timer Manager Thread completes and exits.
      **/
-    void waitCompletion();
+    void wait_completion();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations. Called from Timer Thread.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns TimerManager object. for internal calls.
+     * \brief   Returns reference to this Timer Manager object.
      **/
     inline TimerManagerBase & self();
 
@@ -124,6 +122,9 @@ private:
 //  Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     TimerManagerBase() = delete;
     AREG_NOCOPY_NOMOVE( TimerManagerBase );
 };

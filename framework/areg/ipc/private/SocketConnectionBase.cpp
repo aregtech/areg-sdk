@@ -20,48 +20,48 @@
 
 #include "areg/logging/GELog.h"
 
-int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
+int32_t SocketConnectionBase::send_message(const RemoteMessage & in_message, const Socket & clientSocket) const
 {
     int32_t result{ -1 };
-    if ( in_message.isValid() && clientSocket.isValid() )
+    if ( in_message.is_valid() && clientSocket.is_valid() )
     {
-        in_message.bufferCompletionFix();
-        const NEMemory::MessageHeader & buffer = reinterpret_cast<const NEMemory::MessageHeader &>( *in_message.getByteBuffer() );
-        result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(NEMemory::MessageHeader) );
+        in_message.buffer_completion_fix();
+        const NEMemory::MessageHeader & buffer = reinterpret_cast<const NEMemory::MessageHeader &>( *in_message.byte_buffer() );
+        result = clientSocket.send_data( reinterpret_cast<const uint8_t *>(&buffer), sizeof(NEMemory::MessageHeader) );
         if ((result == sizeof(NEMemory::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
         {
             ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
             // send the aligned length.
-            result += clientSocket.sendData(in_message.getBuffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
+            result += clientSocket.send_data(in_message.buffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
         }
     }
 
     return result;
 }
 
-int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
+int32_t SocketConnectionBase::receive_message(RemoteMessage & out_message, const Socket & clientSocket) const
 {
     int32_t result{ -1 };
-    if ( clientSocket.isValid() && clientSocket.isAlive() )
+    if ( clientSocket.is_valid() && clientSocket.is_alive() )
     {
         NEMemory::MessageHeader msgHeader{};
 
         out_message.invalidate();
-        result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(NEMemory::MessageHeader));
+        result = clientSocket.receive_data(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(NEMemory::MessageHeader));
         if ( result == sizeof(NEMemory::MessageHeader) )
         {
             result = sizeof(NEMemory::MessageHeader);
-            uint8_t * buffer = out_message.initMessage( msgHeader );
+            uint8_t * buffer = out_message.init_message( msgHeader );
             if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
             {
                 ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
 
                 // receive aligned length of data.
-                result += clientSocket.receiveData(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
+                result += clientSocket.receive_data(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
             }
 
-            out_message.moveToBegin();
-            if ( out_message.isChecksumValid() == false )
+            out_message.move_to_begin();
+            if ( out_message.is_checksum_valid() == false )
             {
                 result = 0;
                 out_message.invalidate();

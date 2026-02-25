@@ -273,17 +273,17 @@ constexpr uint8_t  UTF8_256_Table_upper[] =
 // NEString namespace global method implementation
 /************************************************************************/
 
-AREG_API_IMPL uint16_t NEString::getUTF8_256CharDef( int32_t ch )
+AREG_API_IMPL uint16_t NEString::utf8_char_def( int32_t ch )
 {
     return static_cast<uint16_t>(ch >= -128 && ch <= 127 ? UTF8_256_Table[static_cast<uint8_t>(ch & 0xFF)] : DUMMY);
 }
 
-AREG_API_IMPL uint32_t NEString::makeUTF8_256LowerChar( int32_t ch )
+AREG_API_IMPL uint32_t NEString::make_lower_char( int32_t ch )
 {
     return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_lower[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }
 
-AREG_API_IMPL uint32_t NEString::makeUTF8_256UpperChar( int32_t ch )
+AREG_API_IMPL uint32_t NEString::make_upper_char( int32_t ch )
 {
     return (ch >= -128 && ch <= 127 ? static_cast<uint32_t>(UTF8_256_Table_upper[static_cast<uint8_t>(ch & 0xFF)]) : static_cast<uint32_t>(ch));
 }

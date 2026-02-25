@@ -52,6 +52,9 @@
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <typename RUNTIME_DELEGATE>
+/**
+ * \brief   Hash map template for tracking run-time objects by Runtime Class ID.
+ **/
 class RuntimeHashMap : public HashMap<RuntimeClassID, RUNTIME_DELEGATE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -59,7 +62,7 @@ class RuntimeHashMap : public HashMap<RuntimeClassID, RUNTIME_DELEGATE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor.
+     * \brief   Creates an empty hash map with default settings.
      **/
     RuntimeHashMap() = default;
     /**
@@ -71,9 +74,21 @@ public:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     RuntimeHashMap(const RuntimeHashMap<RUNTIME_DELEGATE> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     RuntimeHashMap<RUNTIME_DELEGATE> & operator = (const RuntimeHashMap<RUNTIME_DELEGATE> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     RuntimeHashMap( RuntimeHashMap<RUNTIME_DELEGATE> && /*src*/ ) noexcept = delete;
+    /**
+     * \brief
+     **/
     RuntimeHashMap<RUNTIME_DELEGATE> & operator = ( RuntimeHashMap<RUNTIME_DELEGATE> && /*src*/ ) noexcept = delete;
 };
 
@@ -92,6 +107,10 @@ private:
  * \tparam  Deleter             The implementation of resource clean call.
  **/
 template <class RUNTIME_DELEGATE, class Deleter>
+/**
+ * \brief   Base class for resource maps tracking run-time objects by Runtime Class ID.
+ *          Thread-safety depends on the synchronization object passed to the constructor.
+ **/
 class RuntimeResourceMapBase : public ResourceMapBase<RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -99,9 +118,9 @@ class RuntimeResourceMapBase : public ResourceMapBase<RuntimeClassID, RUNTIME_DE
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialization constructor. The only public available.
-     *          Requires instance of synchronization object.
-     * \param   syncObject Reference to synchronization object.
+     * \brief   Initializes the resource map with the specified synchronization object.
+     *
+     * \param   syncObject      Reference to synchronization object for thread-safe access.
      **/
     RuntimeResourceMapBase( Lockable & syncObject );
 
@@ -114,10 +133,25 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     RuntimeResourceMapBase() = delete;
+    /**
+     * \brief
+     **/
     RuntimeResourceMapBase(const RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & operator = (const RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     RuntimeResourceMapBase( RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
+    /**
+     * \brief
+     **/
     RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & operator = ( RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
 };
 
@@ -134,6 +168,10 @@ private:
  * \tparam  Deleter           The implementation of resource clean call.
  **/
 template <class RUNTIME_DELEGATE, class Deleter>
+/**
+ * \brief   Non-thread-safe resource map template for tracking run-time objects by Runtime Class ID.
+ *          Use in single-threaded contexts only.
+ **/
 class RuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -141,7 +179,7 @@ class RuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DELEGATE, Del
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief   Creates a non-thread-safe resource map with no synchronization.
      **/
     RuntimeResourceMap();
     /**
@@ -163,9 +201,21 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     RuntimeResourceMap(const RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     RuntimeResourceMap( RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
+    /**
+     * \brief
+     **/
     RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = ( RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/) noexcept = delete;
 };
 
@@ -181,6 +231,10 @@ private:
  * \tparam      RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <class RUNTIME_DELEGATE, class Deleter>
+/**
+ * \brief   Thread-safe resource map template for tracking run-time objects by Runtime Class ID in
+ *          multi-threaded contexts.
+ **/
 class ConcurrentRuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -188,7 +242,7 @@ class ConcurrentRuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DEL
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor.
+     * \brief   Creates a thread-safe resource map with built-in synchronization.
      **/
     ConcurrentRuntimeResourceMap();
     /**
@@ -209,9 +263,21 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ConcurrentRuntimeResourceMap(const ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     ConcurrentRuntimeResourceMap( ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
+    /**
+     * \brief
+     **/
     ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = ( ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
 };
 

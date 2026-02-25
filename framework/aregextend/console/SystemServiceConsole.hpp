@@ -75,7 +75,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startup_service_interface( Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -83,7 +83,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdown_service_interface ( Component & holder ) override;
 
 /************************************************************************/
 // TimerConsumer class overrides.
@@ -95,7 +95,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void process_timer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -114,7 +114,7 @@ protected:
      *
      * \param   msgId   The attribute message ID to notify clients.
      **/
-    void sendNotification( uint32_t msgId ) override;
+    void send_notification( uint32_t msgId ) override;
 
     /**
      * \brief   Sends error message to clients.
@@ -130,7 +130,7 @@ protected:
      *                      This parameter has sense only for request IDs.
      *                      It is ignored for response and attributes IDs.
      **/
-    void errorRequest( uint32_t msgId, bool msgCancel ) override;
+    void error_request( uint32_t msgId, bool msgCancel ) override;
 
 /************************************************************************/
 // StubEventConsumer class overrides.
@@ -142,7 +142,7 @@ protected:
      * \param   eventElem   Service Request Event object, contains request
      *                      call ID and parameters.
      **/
-    void processRequestEvent( ServiceRequestEvent & eventElem ) override;
+    void process_request_event( ServiceRequestEvent & eventElem ) override;
 
     /**
      * \brief   Triggered to process attribute update notification event.
@@ -150,7 +150,7 @@ protected:
      *          process notification request of attribute update.
      * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
-    void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
+    void process_attribute_event( ServiceRequestEvent & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

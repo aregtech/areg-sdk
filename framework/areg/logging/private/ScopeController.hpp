@@ -44,7 +44,7 @@ using LogScopePair  = std::pair<uint32_t, LogScope *>;
 using ListScopes    = StringToIntegerHashMap;
     
 /**
- * \brief   Resource map, container of all logging scopes
+ * \brief   Resource map, container of all logging scopes.
  **/
 class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
 {
@@ -56,6 +56,9 @@ class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogS
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief
+     **/
     LogScopeMap() = default;
     ~LogScopeMap() = default;
 
@@ -67,10 +70,9 @@ private:
 };
 
 /**
- * \brief   The controller of scopes in the application.
- *          It contains all scopes in the application.
- *          It contains the list of initialized scopes in the configuration file.
- *          It activates and deactivates scopes, and changes the scope priority.
+ * \brief   Container and controller of all registered log scopes in the application. Manages scope
+ *          registration, activation, and priority changes including individual scopes and scope
+ *          groups.
  **/
 class ScopeController
 {
@@ -78,6 +80,9 @@ class ScopeController
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief
+     **/
     ScopeController() = default;
     ~ScopeController() = default;
 
@@ -87,44 +92,41 @@ public:
 public:
 
     /**
-     * \brief   Returns the list of scopes registered in the application.
+     * \brief   Returns a read-only list of registered scopes.
      **/
-    inline const LogScopeMap & getScopeList() const;
+    inline const LogScopeMap & scope_list() const;
 
     /**
-     * \brief   By given scope ID it returns instance of Log Scope object.
-     *          Returns null if no scope found.
-     * \param   scopeId     The log scope ID to lookup in the system.
-     * \return  If found, returns valid pointer of registered Log Scope object;
-     *          otherwise, it returns null.
-     **/
-    inline const LogScope * getScope( uint32_t scopeId ) const;
-
-    /**
-     * \brief   By given unique scope name it returns instance of registered Log Scope object.
-     *          Returns null if there is no log scope object with specified name registered
-     *          in the system.
-     * \param   scopeName   The unique log scope name to lookup in the system.
-     * \return  If found, returns valid pointer of registered Log Scope object;
-     *          otherwise, it returns null.
-     **/
-    inline const LogScope * getScope( const char * scopeName ) const;
-
-    /**
-     * \brief   Checks if there is a log scope object registered with the given ID.
+     * \brief   Returns the log scope object with the specified ID, or nullptr if not found.
+     *
      * \param   scopeId     The log scope ID to lookup.
-     * \return  Returns true if there is a log scope with specified ID is registered in the system;
-     *          otherwise, it returns false.
+     * \return  Valid pointer to the log scope if found; nullptr otherwise.
      **/
-    bool isScopeRegistered( uint32_t scopeId ) const;
+    inline const LogScope * scope( uint32_t scopeId ) const;
 
     /**
-     * \brief   Checks whether there is a log scope object registered with the given name;
-     * \param   scopeName   The log scope name to lookup.
-     * \return  Returns true if there is a log scope with specified name is registered in the system;
-     *          otherwise, it returns false.
+     * \brief   Returns the log scope object with the specified name, or nullptr if not found.
+     *
+     * \param   scopeName       The unique log scope name to lookup.
+     * \return  Valid pointer to the log scope if found; nullptr otherwise.
      **/
-    bool isScopeRegistered( const char * scopeName ) const;
+    inline const LogScope * scope( const char * scopeName ) const;
+
+    /**
+     * \brief   Returns true if a log scope with the specified ID is registered.
+     *
+     * \param   scopeId     The log scope ID to lookup.
+     * \return  True if a scope with the specified ID is registered; false otherwise.
+     **/
+    bool is_scope_registered( uint32_t scopeId ) const;
+
+    /**
+     * \brief   Returns true if a log scope with the specified name is registered.
+     *
+     * \param   scopeName       The log scope name to lookup.
+     * \return  True if a scope with the specified name is registered; false otherwise.
+     **/
+    bool is_scope_registered( const char * scopeName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -132,227 +134,235 @@ public:
 public:
 
     /**
-     * \brief   Registers instance of log scope object in Scope Controller.
-     * \param   scope   The instance log scope object to register.
+     * \brief   Registers a log scope in the scope controller.
+     *
+     * \param   scope       The log scope object to register.
      **/
-    void registerScope( LogScope & scope );
+    void register_scope( LogScope & scope );
 
     /**
-     * \brief   Unregisters instance of log scope object in Scope Controller.
-     * \param   scope   The instance log scope object to unregister.
+     * \brief   Unregisters a log scope from the scope controller.
+     *
+     * \param   scope       The log scope object to unregister.
      **/
-    void unregisterScope( LogScope & scope );
+    void unregister_scope( LogScope & scope );
 
     /**
-     * \brief   Searches the log scope object by given ID and sets specified priority.
-     * \param   scopeId     The ID of log scope to search in the system.
-     * \param   newPrio     The priority value to set to log scope.
-     **/
-    void setScopePriority( uint32_t scopeId, uint32_t newPrio );
-
-    /**
-     * \brief   By given ID searches log scope and sets the specified priority.
-     * \param   scopeId     The ID of the log scope to search.
-     * \param   newPrio     The name of priority to set.
-     **/
-    inline void setScopePriority( uint32_t scopeId, const String & newPrio );
-
-    /**
-     * \brief   By given name searches log scope and sets the specified priority.
-     * \param   scopeName   The name of the log scope to search.
+     * \brief   Sets the logging priority for a scope by ID.
+     *
+     * \param   scopeId     The ID of the log scope.
      * \param   newPrio     The priority value to set.
      **/
-    inline void setScopePriority( const String & scopeName, uint32_t newPrio );
+    void set_scope_priority( uint32_t scopeId, uint32_t newPrio );
 
     /**
-     * \brief   By given name searches log scope and sets the specified priority.
-     * \param   scopeName   The name of log scope to search.
-     * \param   newPrio     The name of priority value to set.
+     * \brief   Sets the logging priority for a scope by ID using a priority name.
+     *
+     * \param   scopeId     The ID of the log scope.
+     * \param   newPrio     The name of the priority to set.
      **/
-    inline void setScopePriority( const String & scopeName, const String & newPrio );
+    inline void set_scope_priority( uint32_t scopeId, const String & newPrio );
 
     /**
-     * \brief   By given ID searches log scope map adds the specified priority.
-     * \param   scopeId     The ID of the log scope to search.
+     * \brief   Sets the logging priority for a scope by name.
+     *
+     * \param   scopeName       The name of the log scope.
+     * \param   newPrio         The priority value to set.
+     **/
+    inline void set_scope_priority( const String & scopeName, uint32_t newPrio );
+
+    /**
+     * \brief   Sets the logging priority for a scope by name using a priority name.
+     *
+     * \param   scopeName       The name of the log scope.
+     * \param   newPrio         The name of the priority to set.
+     **/
+    inline void set_scope_priority( const String & scopeName, const String & newPrio );
+
+    /**
+     * \brief   Adds a priority flag to a scope by ID.
+     *
+     * \param   scopeId     The ID of the log scope.
      * \param   addPrio     The priority value to add.
      **/
-    void addScopePriority( uint32_t scopeId, NELogging::LogPriority addPrio );
+    void add_scope_priority( uint32_t scopeId, NELogging::LogPriority addPrio );
 
     /**
-     * \brief   By given ID searches log scope and adds the specified priority.
-     * \param   scopeId     The ID of the log scope to search.
-     * \param   addPrio     The name of priority value to add.
+     * \brief   Adds a priority flag to a scope by ID using a priority name.
+     *
+     * \param   scopeId     The ID of the log scope.
+     * \param   addPrio     The name of the priority to add.
      **/
-    inline void addScopePriority( uint32_t scopeId, const String & addPrio );
+    inline void add_scope_priority( uint32_t scopeId, const String & addPrio );
 
     /**
-     * \brief   By given name searches log scope and adds the specified scope priority.
-     * \param   scopeName   The name of the log scope to search.
-     * \param   addPrio     The priority value to add.
+     * \brief   Adds a priority flag to a scope by name.
+     *
+     * \param   scopeName       The name of the log scope.
+     * \param   addPrio         The priority value to add.
      **/
-    inline void addScopePriority( const String & scopeName, NELogging::LogPriority addPrio );
+    inline void add_scope_priority( const String & scopeName, NELogging::LogPriority addPrio );
 
     /**
-     * \brief   By given name searches log scope and adds the specified scope priority.
-     * \param   scopeName   The name of the log scope to search.
-     * \param   addPrio     The name of priority to add.
+     * \brief   Adds a priority flag to a scope by name using a priority name.
+     *
+     * \param   scopeName       The name of the log scope.
+     * \param   addPrio         The name of the priority to add.
      **/
-    inline void addScopePriority( const String & scopeName, const String & addPrio );
+    inline void add_scope_priority( const String & scopeName, const String & addPrio );
 
     /**
-     * \brief   By given ID searches log scope and removes the specified priority.
-     * \param   scopeId     The ID of the log scope to search.
+     * \brief   Removes a priority flag from a scope by ID.
+     *
+     * \param   scopeId     The ID of the log scope.
      * \param   remPrio     The priority value to remove.
      **/
-    void removeScopePriority( uint32_t scopeId, NELogging::LogPriority remPrio );
+    void remove_scope_priority( uint32_t scopeId, NELogging::LogPriority remPrio );
 
     /**
-     * \brief   By given ID searches log scope and removes the specified priority.
-     * \param   scopeId     The ID of the log scope to search.
-     * \param   remPrio     The name of priority value to remove.
+     * \brief   Removes a priority flag from a scope by ID using a priority name.
+     *
+     * \param   scopeId     The ID of the log scope.
+     * \param   remPrio     The name of the priority to remove.
      **/
-    inline void removeScopePriority( uint32_t scopeId, const String & remPrio );
+    inline void remove_scope_priority( uint32_t scopeId, const String & remPrio );
 
     /**
-     * \brief   By given name searches log scope and removes the specified priority.
-     * \param   scopeName   The name of the log scope to search.
-     * \param   remPrio     The priority value to remove.
+     * \brief   Removes a priority flag from a scope by name.
+     *
+     * \param   scopeName       The name of the log scope.
+     * \param   remPrio         The priority value to remove.
      **/
-    inline void removeScopePriority( const String & scopeName, NELogging::LogPriority remPrio );
+    inline void remove_scope_priority( const String & scopeName, NELogging::LogPriority remPrio );
 
     /**
-     * \brief   By given name searches log scope and removes the specified priority.
-     * \param   scopeName   The name of the log scope to search.
-     * \param   remPrio     The name of priority to remove.
+     * \brief   Removes a priority flag from a scope by name using a priority name.
+     *
+     * \param   scopeName       The name of the log scope.
+     * \param   remPrio         The name of the priority to remove.
      **/
-    inline void removeScopePriority( const String & scopeName, const String & remPrio );
+    inline void remove_scope_priority( const String & scopeName, const String & remPrio );
 
     /**
-     * \brief   By given name of scope group searches log scopes and sets 
-     *          the log message priority to each scope.
-     * \param   scopeGroupName  The name of log scope group to search.
-     * \param   newPrio         The priority value to set to each log scope.
-     * \return  Returns number of log scope, which priority has been set.
-     *          Returns zero, if no log scope found.
+     * \brief   Sets the logging priority for all scopes in a group.
+     *
+     * \param   scopeGroupName      The name of the scope group (typically ending with '*').
+     * \param   newPrio             The priority value to set to each scope.
+     * \return  The number of scopes whose priority was set; 0 if no scopes matched.
      **/
-    int32_t setScopeGroupPriority( const String & scopeGroupName, uint32_t newPrio );
-
-     /**
-      * \brief   By given name of scope group searches log scopes and sets
-      *          the log message priority to each scope.
-      * \param   scopeGroupName  The name of log scope group to search.
-      * \param   newPrio         The name of priority to set to each log scope.
-      * \return  Returns number of log scope, which priority has been set.
-      *          Returns zero, if no log scope found.
-      **/
-    inline int32_t setScopeGroupPriority( const String & scopeGroupName, const String & newPrio );
+    int32_t set_group_priority( const String & scopeGroupName, uint32_t newPrio );
 
     /**
-     * \brief   By given name of scope group searches log scopes and adds
-     *          the log message priority to each scope.
-     * \param   scopeGroupName  The name of log scope group to search.
-     * \param   addPrio         The priority value to add to each log scope.
-     * \return  Returns number of log scope, which priority has been added.
-     *          Returns zero, if no log scope found.
+     * \brief   Sets the logging priority for all scopes in a group using a priority name.
+     *
+     * \param   scopeGroupName      The name of the scope group (typically ending with '*').
+     * \param   newPrio             The name of the priority to set.
+     * \return  The number of scopes whose priority was set; 0 if no scopes matched.
      **/
-    int32_t addScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority addPrio );
+    inline int32_t set_group_priority( const String & scopeGroupName, const String & newPrio );
 
     /**
-     * \brief   By given name of scope group searches log scopes and adds
-     *          the log message priority to each scope.
-     * \param   scopeGroupName  The name of log scope group to search.
-     * \param   addPrio         The name of priority to add to each log scope.
-     * \return  Returns number of log scope, which priority has been added.
-     *          Returns zero, if no log scope found.
+     * \brief   Adds a priority flag to all scopes in a group.
+     *
+     * \param   scopeGroupName      The name of the scope group (typically ending with '*').
+     * \param   addPrio             The priority value to add to each scope.
+     * \return  The number of scopes whose priority was modified; 0 if no scopes matched.
      **/
-    inline int32_t addScopeGroupPriority( const String & scopeGroupName, const String & addPrio );
+    int32_t add_group_priority( const String & scopeGroupName, NELogging::LogPriority addPrio );
 
     /**
-     * \brief   By given name of scope group searches log scopes and removes
-     *          the log message priority to each scope.
-     * \param   scopeGroupName  The name of log scope group to search.
-     * \param   remPrio         The priority value to remove from each log scope.
-     * \return  Returns number of log scope, which priority has been removed.
-     *          Returns zero, if no log scope found.
+     * \brief   Adds a priority flag to all scopes in a group using a priority name.
+     *
+     * \param   scopeGroupName      The name of the scope group (typically ending with '*').
+     * \param   addPrio             The name of the priority to add.
+     * \return  The number of scopes whose priority was modified; 0 if no scopes matched.
      **/
-    int32_t removeScopeGroupPriority( const String & scopeGroupName, NELogging::LogPriority remPrio );
+    inline int32_t add_group_priority( const String & scopeGroupName, const String & addPrio );
 
     /**
-     * \brief   By given name of scope group searches log scopes and removes
-     *          the log message priority to each scope.
-     * \param   scopeGroupName  The name of log scope group to search.
-     * \param   remPrio         The priority name to remove from each log scope.
-     * \return  Returns number of log scope, which priority has been removed.
-     *          Returns zero, if no log scope found.
+     * \brief   Removes a priority flag from all scopes in a group.
+     *
+     * \param   scopeGroupName      The name of the scope group (typically ending with '*').
+     * \param   remPrio             The priority value to remove from each scope.
+     * \return  The number of scopes whose priority was modified; 0 if no scopes matched.
      **/
-    inline int32_t removeScopeGroupPriority( const String & scopeGroupName, const String & remPrio );
+    int32_t remove_group_priority( const String & scopeGroupName, NELogging::LogPriority remPrio );
+
+    /**
+     * \brief   Removes a priority flag from all scopes in a group using a priority name.
+     *
+     * \param   scopeGroupName      The name of the scope group (typically ending with '*').
+     * \param   remPrio             The name of the priority to remove.
+     * \return  The number of scopes whose priority was modified; 0 if no scopes matched.
+     **/
+    inline int32_t remove_group_priority( const String & scopeGroupName, const String & remPrio );
 
     /**
      * \brief   Clears the list of configured scopes.
-     *          Call this method if making new configuration.
      **/
-    inline void clearConfigScopes();
+    inline void clear_config_scopes();
 
     /**
-     * \brief   Call to reset and disable any message priority of scopes.
+     * \brief   Resets and disables all scope priorities.
      **/
-    void resetScopes();
+    void reset();
 
     /**
-     * \brief   Activates default scopes listed in the internally.
+     * \brief   Activates the default scopes configured internally.
      **/
-    void activateDefaults();
+    void activate_defaults();
 
     /**
-     * \brief   Configures the scope or scope group defined in the property.
-     * \param   prop    The property, which contains the scope name to search
-     *                  and priority information to set.
+     * \brief   Configures a scope or scope group priority from a property.
+     *
+     * \param   prop    The property containing the scope name and priority information.
      **/
-    void configureScopes( const Property & prop );
+    void configure_scopes( const Property & prop );
 
     /**
-     * \brief   Sets the log message priority to the log scope or scope group.
-     * \param   scopeName   The name of the scope or scope group to change.
-     * \param   scopePrio   The priority to set to scope or scope group.
+     * \brief   Sets the logging priority for a scope or scope group.
+     *
+     * \param   scopeName       The name of a single scope or scope group ending with '*'.
+     * \param   scopePrio       The priority to set.
      **/
-    void configureScopes( const String & scopeName, uint32_t scopePrio );
+    void configure_scopes( const String & scopeName, uint32_t scopePrio );
 
     /**
-     * \brief   Picks up the list of configured scopes and log priorities and sets the scope priorities,
-     *          so that they are activated or deactivated.
+     * \brief   Applies configured priorities from the internal configuration to all scopes.
      **/
-    void configureScopes();
+    void configure_scopes();
 
     /**
-     * \brief   Activates specified scope. The system cannot log if a scope is inactive.
-     *          No property of specified scope is changed, the priority remains unchanged.
-     * \param   logScope  The scope to activate.
+     * \brief   Activates a scope without changing its priority.
+     *
+     * \param   logScope    The scope to activate.
      **/
-    void activateScope( LogScope & logScope );
+    void activate_scope( LogScope & logScope );
 
     /**
-     * \brief   Activates specified scope and sets specified logging priority. 
-     *          The system cannot log if a scope is inactive. The method as well changes logging priority.
-     * \param   logScope      The scope to activate and update logging priority.
-     * \param   defaultPrio     The default priority to set to the scope.
+     * \brief   Activates a scope and sets its logging priority.
+     *
+     * \param   logScope        The scope to activate and set priority for.
+     * \param   defaultPrio     The default priority to set.
      **/
-    void activateScope( LogScope & logScope, uint32_t defaultPrio );
+    void activate_scope( LogScope & logScope, uint32_t defaultPrio );
 
     /**
-     * \brief   Activates or deactivates the scope based on the log scope priority set in the configuration.
-     * \param   makeActive  Flag, indicating whether scopes should be activated or deactivated.
-     *                      If true, it lookups in the configuration settings and updates the priority.
-     *                      Otherwise, it deactivates all scopes, so that no messages are logged.
+     * \brief   Activates or deactivates all scopes based on their configured priorities.
+     *
+     * \param   makeActive      If true, activates scopes with priorities from the configuration. If
+     *                          false, deactivates all scopes.
      **/
-    void changeScopeActivityStatus( bool makeActive );
+    void set_scope_activity( bool makeActive );
 
     /**
-     * \brief   Changes the logging priority of the scope.
-     * \param   scopeName   The name of a scope or scope group.
-     * \param   scopeId     The ID of the scope. Can be zero if it is a scope group.
-     * \param   logPrio     The priority of the log to set.
+     * \brief   Changes the logging priority of a scope or scope group.
+     *
+     * \param   scopeName       The name of a single scope or scope group.
+     * \param   scopeId         The ID of the scope; can be 0 for scope groups.
+     * \param   logPrio         The priority to set.
      **/
-    void changeScopeActivityStatus( const String & scopeName, uint32_t scopeId, uint32_t logPrio );
+    void set_scope_activity( const String & scopeName, uint32_t scopeId, uint32_t logPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -360,10 +370,12 @@ public:
 private:
 
     /**
-     * \brief   Checks whether the specified scope name indicates the group of scopes or a single scope name.
-     *          The group of scopes ends with symbol '*'.
+     * \brief   Returns true if the scope name indicates a scope group (ends with '*').
+     *
+     * \param   scopeName       The scope name to check.
+     * \return  True if the name ends with '*'; false otherwise.
      **/
-    static inline bool _isScopeGroup( const String & scopeName );
+    static inline bool _is_scope_group( const String & scopeName );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -387,92 +399,92 @@ private:
 // ScopeController inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const LogScopeMap & ScopeController::getScopeList() const
+inline const LogScopeMap & ScopeController::scope_list() const
 {
     return mMapLogScope;
 }
 
-inline const LogScope * ScopeController::getScope( uint32_t scopeId ) const
+inline const LogScope * ScopeController::scope( uint32_t scopeId ) const
 {
-    return mMapLogScope.findResourceObject( scopeId );
+    return mMapLogScope.find_resource_object( scopeId );
 }
 
-inline const LogScope * ScopeController::getScope( const char * scopeName ) const
+inline const LogScope * ScopeController::scope( const char * scopeName ) const
 {
-    return getScope( NELogging::makeScopeId(scopeName) );
+    return scope( NELogging::make_scope_id(scopeName) );
 }
 
-inline bool ScopeController::isScopeRegistered( uint32_t scopeId ) const
+inline bool ScopeController::is_scope_registered( uint32_t scopeId ) const
 {
-    return (getScope(scopeId) != nullptr);
+    return (scope(scopeId) != nullptr);
 }
 
-inline bool ScopeController::isScopeRegistered( const char * scopeName ) const
+inline bool ScopeController::is_scope_registered( const char * scopeName ) const
 {
-    return (getScope( scopeName ) != nullptr);
+    return (scope( scopeName ) != nullptr);
 }
 
-inline void ScopeController::setScopePriority( uint32_t scopeId, const String & newPrio )
+inline void ScopeController::set_scope_priority( uint32_t scopeId, const String & newPrio )
 {
-    setScopePriority( scopeId, static_cast<uint32_t>(NELogging::stringToLogPrio( newPrio )) );
+    set_scope_priority( scopeId, static_cast<uint32_t>(NELogging::string_to_priority( newPrio )) );
 }
 
-inline void ScopeController::setScopePriority( const String & scopeName, uint32_t newPrio )
+inline void ScopeController::set_scope_priority( const String & scopeName, uint32_t newPrio )
 {
-    setScopePriority( NELogging::makeScopeId( scopeName ), newPrio );
+    set_scope_priority( NELogging::make_scope_id( scopeName ), newPrio );
 }
 
-inline void ScopeController::setScopePriority( const String & scopeName, const String & newPrio )
+inline void ScopeController::set_scope_priority( const String & scopeName, const String & newPrio )
 {
-    setScopePriority( NELogging::makeScopeId( scopeName ), static_cast<uint32_t>(NELogging::stringToLogPrio( newPrio )) );
+    set_scope_priority( NELogging::make_scope_id( scopeName ), static_cast<uint32_t>(NELogging::string_to_priority( newPrio )) );
 }
 
-inline void ScopeController::addScopePriority( uint32_t scopeId, const String & addPrio )
+inline void ScopeController::add_scope_priority( uint32_t scopeId, const String & addPrio )
 {
-    addScopePriority( scopeId, NELogging::stringToLogPrio( addPrio ) );
+    add_scope_priority( scopeId, NELogging::string_to_priority( addPrio ) );
 }
 
-inline void ScopeController::addScopePriority( const String & scopeName, NELogging::LogPriority addPrio )
+inline void ScopeController::add_scope_priority( const String & scopeName, NELogging::LogPriority addPrio )
 {
-    addScopePriority( NELogging::makeScopeId( scopeName ), addPrio );
+    add_scope_priority( NELogging::make_scope_id( scopeName ), addPrio );
 }
 
-inline void ScopeController::addScopePriority( const String & scopeName, const String & addPrio )
+inline void ScopeController::add_scope_priority( const String & scopeName, const String & addPrio )
 {
-    addScopePriority( NELogging::makeScopeId( scopeName ), NELogging::stringToLogPrio( addPrio ) );
+    add_scope_priority( NELogging::make_scope_id( scopeName ), NELogging::string_to_priority( addPrio ) );
 }
 
-inline void ScopeController::removeScopePriority( uint32_t scopeId, const String & remPrio )
+inline void ScopeController::remove_scope_priority( uint32_t scopeId, const String & remPrio )
 {
-    removeScopePriority( scopeId, NELogging::stringToLogPrio( remPrio ) );
+    remove_scope_priority( scopeId, NELogging::string_to_priority( remPrio ) );
 }
 
-inline void ScopeController::removeScopePriority( const String & scopeName, NELogging::LogPriority remPrio )
+inline void ScopeController::remove_scope_priority( const String & scopeName, NELogging::LogPriority remPrio )
 {
-    removeScopePriority( NELogging::makeScopeId( scopeName ), remPrio );
+    remove_scope_priority( NELogging::make_scope_id( scopeName ), remPrio );
 }
 
-inline void ScopeController::removeScopePriority( const String & scopeName, const String & remPrio )
+inline void ScopeController::remove_scope_priority( const String & scopeName, const String & remPrio )
 {
-    removeScopePriority( NELogging::makeScopeId( scopeName ), NELogging::stringToLogPrio( remPrio ) );
+    remove_scope_priority( NELogging::make_scope_id( scopeName ), NELogging::string_to_priority( remPrio ) );
 }
 
-inline int32_t ScopeController::setScopeGroupPriority( const String & scopeGroupName, const String & newPrio )
+inline int32_t ScopeController::set_group_priority( const String & scopeGroupName, const String & newPrio )
 {
-    return setScopeGroupPriority( scopeGroupName, static_cast<uint32_t>(NELogging::stringToLogPrio( newPrio )) );
+    return set_group_priority( scopeGroupName, static_cast<uint32_t>(NELogging::string_to_priority( newPrio )) );
 }
 
-inline int32_t ScopeController::addScopeGroupPriority( const String & scopeGroupName, const String & addPrio )
+inline int32_t ScopeController::add_group_priority( const String & scopeGroupName, const String & addPrio )
 {
-    return addScopeGroupPriority( scopeGroupName, NELogging::stringToLogPrio( addPrio ) );
+    return add_group_priority( scopeGroupName, NELogging::string_to_priority( addPrio ) );
 }
 
-inline int32_t ScopeController::removeScopeGroupPriority( const String & scopeGroupName, const String & remPrio )
+inline int32_t ScopeController::remove_group_priority( const String & scopeGroupName, const String & remPrio )
 {
-    return removeScopeGroupPriority( scopeGroupName, NELogging::stringToLogPrio( remPrio ) );
+    return remove_group_priority( scopeGroupName, NELogging::string_to_priority( remPrio ) );
 }
 
-inline void ScopeController::clearConfigScopes()
+inline void ScopeController::clear_config_scopes()
 {
     mConfigScopeList.clear( );
     mConfigScopeGroup.clear( );

@@ -140,7 +140,7 @@ public:
     /**
      * \brief   Returns singleton instance of the LogObserver.
      **/
-    static LogObserver& getInstance();
+    static LogObserver& instance();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -175,39 +175,39 @@ private:
      * \brief   The callback of the event triggered when initializing and configuring the observer.
      *          The callback indicates the IP address and port number of the remote log collector
      *          service set in the configuration file.
-     * \param   isEnabled       Flag, indicating whether the logging service is enabled or not.
+     * \param   is_enabled       Flag, indicating whether the logging service is enabled or not.
      * \param   address         IP address of the remote log collector service set in the configuration file.
      * \param   port            IP port number of the remote log collector service set in the configuration file.
      **/
-    static void callbackObserverConfigured(bool isEnabled, const char * address, uint16_t port);
+    static void callbackObserverConfigured(bool is_enabled, const char * address, uint16_t port);
 
     /**
      * \brief   The callback of the event triggered when initializing and configuring the observer.
      *          The callback indicates the supported database, the database location or URI and
      *          the database user name.
-     * \param   isEnabled       The flag, indicating whether the logging in the database is enabler or not.
+     * \param   is_enabled       The flag, indicating whether the logging in the database is enabler or not.
      * \param   dbName          The name of the  supported database.
      * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
      * \param   user            The database user to use when log in. If null or empty, the database may not require the user name.
      **/
-    static void callbackDatabaseConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* user);
+    static void callbackDatabaseConfigured(bool is_enabled, const char* dbName, const char* dbLocation, const char* user);
 
     /**
      * \brief   The callback of the event triggered when the observer connects or disconnects
      *          from the remote log collector service.
-     * \param   isConnected     Flag, indicating whether observer is connected or disconnected.
+     * \param   is_connected     Flag, indicating whether observer is connected or disconnected.
      * \param   address         IP address of the remote log collector service to connect or disconnect.
      * \param   port            IP port number of the remote log collector service to connect or disconnect.
      **/
-    static void callbackServiceConnected(bool isConnected, const char* address, uint16_t port);
+    static void callbackServiceConnected(bool is_connected, const char* address, uint16_t port);
 
     /**
      * \brief   The callback of the event trigger when starting or pausing the log observer.
      *          If the log observer is paused, on start it continues to write logs in the same file.
      *          If the log observer is stopped (disconnected is called), on start it creates new file.
-     * \param   isStarted       The flag indicating whether the lob observer is started or paused.
+     * \param   is_started       The flag indicating whether the lob observer is started or paused.
      **/
-    static void callbackObserverStarted(bool isStarted);
+    static void callbackObserverStarted(bool is_started);
 
     /**
      * \brief   The callback of the event triggered when the logging database is created.
@@ -252,9 +252,9 @@ private:
 
     /**
      * \brief   The callback of the event triggered when receive message to log.
-     * \param   logMessage  The pointer to the log message to log.
+     * \param   log_message  The pointer to the log message to log.
      **/
-    static void callbackLogMessage(const LogEntry* logMessage);
+    static void callbackLogMessage(const LogEntry* log_message);
 
     /**
      * \brief   The callback of the event triggered when receive remote message to log.

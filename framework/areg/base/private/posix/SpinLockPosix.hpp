@@ -36,7 +36,7 @@
 // SpinLockPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   POSIX specific recursive spin-lock with atomic operations.
+ * \brief   POSIX-specific recursive spin-lock with atomic operations.
  **/
 class SpinLockPosix
 {
@@ -45,8 +45,7 @@ class SpinLockPosix
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets the instance of CriticalSectionPosix object, which is the 
-     *          real POSIX spin-lock wrapper class.
+     * \brief   Creates and initializes the POSIX spin-lock.
      **/
     SpinLockPosix();
 
@@ -64,70 +63,65 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Waits for ownership of spin-lock object. If the spin-lock
-     *          object is currently owned by another thread, call of
-     *          this function cause wait indefinitely for ownership.
-     *          In contrast, when a mutex object is used for mutual exclusion,
-     *          the lock() function accept a specified time-out interval.
+     * \brief   Acquires spin-lock ownership, waiting indefinitely if the lock is held by another
+     *          thread.
      **/
     bool lock();
 
     /**
-     * \brief   Releases ownership of the spin-lock object.
-     * \return  Returns true if spin-lock owning thread called unlock.
-     *          Otherwise, it returns false.
+     * \brief   Releases ownership of the spin-lock.
+     *
+     * \return  Returns true if the spin-lock owning thread called unlock; false otherwise.
      **/
     bool unlock();
 
     /**
-     * \brief   Attempts to take the spin-lock ownership without blocking thread.
-     *          If the call is successful, the calling thread
-     *          takes ownership of the spin-lock.
-     * \return  If current thread successfully has taken the ownership or the thread
-     *          already has the ownership of spin-lock, the return value is true.
-     *          If another thread already owns the critical section,
-     *          the return value is false.
+     * \brief   Attempts to acquire spin-lock ownership without blocking. Returns immediately.
+     *
+     * \return  Returns true if the current thread acquired ownership or already owns the spin-lock;
+     *          false if another thread owns it.
      **/
-    bool tryLock();
+    bool try_lock();
 
     /**
-     * \brief   Returns true if spin lock is valid.
+     * \brief   Returns true if the spin-lock is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
-     * \brief   Free the spin-lock resources. Cannot run anymore
+     * \brief   Releases spin-lock resources. The lock cannot be used after this call.
      **/
-    void freeResources();
+    void free_resources();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Takes the ownership of critical section spin lock.
+     * \brief   Acquires critical section spin-lock ownership.
+     *
      * \return  Returns true if operation succeeded.
-     */
-    inline bool _lockSpin();
+     **/
+    inline bool _lock_spin();
     /**
-     * \brief   Releases the ownership of critical section spin lock.
-     */
-    inline void _unlockSpin();
+     * \brief   Releases critical section spin-lock ownership.
+     **/
+    inline void _unlock_spin();
     /**
-     * \brief   Takes the ownership of spin lock to access resources of critical section.
-     */
-    inline void _lockIntern();
+     * \brief   Acquires spin-lock for accessing critical section resources.
+     **/
+    inline void _lock_intern();
     /**
-     * \brief   Releases the ownership of spin lock to access resources of critical section.
-     */
-    inline void _unlockIntern();
+     * \brief   Releases spin-lock for accessing critical section resources.
+     **/
+    inline void _unlock_intern();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    pthread_spinlock_ix     mSpinLock;  //!< The POSIX spin lock to synchronize multi-threading access of critical section.
+    pthread_spinlock_ix     m_spin_lock;  //!< The POSIX spin lock to synchronize multi-threading access of critical section.
     pthread_spinlock_ix     mInternLock;//!< The POSIX spin lock to synchronize internal structure resources.
     std::atomic<pthread_t>  mSpinOwner; //!< The spin-lock owner POSIX thread
     std::atomic<uint32_t>   mLockCount; //!< The lock counter to release spin lock when counter reaches zero.
@@ -145,8 +139,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   The automatic lock of spin-lock It is not used for any other objects.
- *          Use the spin lock for quick operations only.
+ * \brief   RAII wrapper for automatic scoped locking of a POSIX spin-lock.
  **/
 class SpinAutolockPosix
 {
@@ -156,14 +149,15 @@ class SpinAutolockPosix
 public:
 
     /**
-     * \brief   Initializes the SpinLock object and immediately locks it.
-     *          Since the lock can be done recursive, it will not block
-     *          the spin owning thread.
+     * \brief   Acquires the spin-lock immediately upon construction. The lock is recursive and will
+     *          not block the owning thread.
+     *
+     * \param   spinLock    Reference to the SpinLockPosix to acquire.
      **/
     inline SpinAutolockPosix( SpinLockPosix & spinLock )
-        : mSpinLock ( spinLock )
+        : m_spin_lock ( spinLock )
     {
-        mSpinLock.lock();
+        m_spin_lock.lock();
     }
 
     /**
@@ -171,7 +165,7 @@ public:
      **/
     inline ~SpinAutolockPosix()
     {
-        mSpinLock.unlock();
+        m_spin_lock.unlock();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -180,21 +174,23 @@ public:
 public:
 
     /**
-     * \brief   Manually locks the spin lock and returns the result.
-     * \return  Returns true if operation succeeded.
+     * \brief   Manually acquires the spin-lock.
+     *
+     * \return  Returns true if the operation succeeded.
      **/
     inline bool lock()
     {
-        return mSpinLock.lock();
+        return m_spin_lock.lock();
     }
 
     /**
-     * \brief   Manually unlocks the spin lock and returns the result.
-     * \return  Returns true if operation succeeded.
+     * \brief   Manually releases the spin-lock.
+     *
+     * \return  Returns true if the operation succeeded.
      **/
     inline bool unlock()
     {
-        return mSpinLock.unlock();
+        return m_spin_lock.unlock();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -202,12 +198,15 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    SpinLockPosix &    mSpinLock;  //!< The valid instance of SpinLock object.
+    SpinLockPosix &    m_spin_lock;  //!< The valid instance of SpinLock object.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     SpinAutolockPosix() = delete;
     AREG_NOCOPY_NOMOVE( SpinAutolockPosix );
 };
@@ -216,7 +215,7 @@ private:
 // SpinLockPosix inline  methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SpinLockPosix::isValid() const
+inline bool SpinLockPosix::is_valid() const
 {
     return mIsValid.load();
 }

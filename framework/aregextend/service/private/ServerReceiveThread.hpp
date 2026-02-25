@@ -65,19 +65,19 @@ public:
      * \brief   Returns accumulative value of received data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataReceive() const;
+    inline uint32_t extract_data_receive() const;
 
     /**
      * \brief   Call to enable or disable the received data calculation.
      *          It as well resets the existing calculated data.
      * \param   enable  Flag, indicating whether data calculation is enabled or not.
      **/
-    inline void setEnableCalculateData(bool enable);
+    inline void set_data_rate_enabled(bool enable);
 
     /**
      * \brief   Returns flag, indicating whether data calculation is enabled or not.
      **/
-    inline bool isCalculateDataEnabled() const;
+    inline bool is_data_rate_enabled() const;
 
 protected:
 /************************************************************************/
@@ -91,7 +91,7 @@ protected:
      *          Override if logic should be changed.
      * \return	Returns true if Exit Event is signaled.
      **/
-    bool runDispatcher() override;
+    bool run_dispatcher() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -130,12 +130,12 @@ private:
 // ServerConnection inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerReceiveThread::extractDataReceive() const
+inline uint32_t ServerReceiveThread::extract_data_receive() const
 {
     return mBytesReceive.exchange(0);
 }
 
-inline void ServerReceiveThread::setEnableCalculateData(bool enable)
+inline void ServerReceiveThread::set_data_rate_enabled(bool enable)
 {
     if (mSaveDataReceive != enable)
     {
@@ -144,7 +144,7 @@ inline void ServerReceiveThread::setEnableCalculateData(bool enable)
     }
 }
 
-inline bool ServerReceiveThread::isCalculateDataEnabled() const
+inline bool ServerReceiveThread::is_data_rate_enabled() const
 {
     return mSaveDataReceive;
 }

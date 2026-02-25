@@ -32,9 +32,8 @@
 // Identifier class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The Identifier is binding string and integer values to
- *              provide conversion from string to integer and from 
- *              integer to string. It is used to pass enum values as strings.
+ * \brief   Binds string and integer values to provide bidirectional conversion between string and
+ *          integer representations, used for passing enum values as strings.
  **/
 class AREG_API Identifier
 {
@@ -75,30 +74,44 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor. 
-     *          By default, initial values are equal to BAD_DENTIFIER
-     *          and the identifier object is invalid
+     * \brief   Creates an invalid identifier with default values.
      **/
     Identifier();
 
     /**
-     * \brief   Initialization constructor. Sets integer value and name
-     * \param   idValue     The integer value of identifier
-     * \param   idName      The name of identifier associated with integer value.
+     * \brief   Initializes the identifier with an integer value and name.
+     *
+     * \param   idValue     The integer value of the identifier.
+     * \param   idName      The name associated with the integer value.
      **/
     Identifier(uint32_t idValue, const char* idName);
+    /**
+     * \brief   Initializes the identifier with an integer value and name.
+     *
+     * \param   idValue     The integer value of the identifier.
+     * \param   idName      The name associated with the integer value.
+     **/
     Identifier(uint32_t idValue, const std::string_view& idName);
+    /**
+     * \brief   Initializes the identifier with an integer value and name.
+     *
+     * \param   idValue     The integer value of the identifier.
+     * \param   idName      The name associated with the integer value.
+     **/
     Identifier(uint32_t idValue, const String& idName);
 
     /**
-     * \brief   Copy constructor.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source identifier to copy.
      **/
     Identifier(const Identifier & src);
 
     /**
-     * \brief   Move constructor.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source identifier to move.
+     * \note    Move constructor.
      **/
     Identifier( Identifier && src ) noexcept;
 
@@ -113,74 +126,100 @@ public:
 public:
 
     /**
-     * \brief   Converts given integer value of the identifier into the string.
-     *          It uses lookup table to make conversion.
-     * \param   idValue     The digital value of the identifier to convert.
-     * \param   lookupList  The lookup table to search identifier to return string value.
-     * \param   defIndex    The index of the value to return in case if did not find the identifier.
-     *                      Pass NECommon::INVALID_POSITION value to ignore and return empty string
-     *                      if no identifier entry exists.
-     * \return  Returns the string value of the identifier it found.
-     *          Return the string value of the given default identifier entry index if identifier not found and default index is valid.
-     *          Returns empty string if identifier not found and the index is invalid.
+     * \brief   Converts an integer value to its corresponding string representation using a lookup
+     *          table.
+     *
+     * \param   idValue         The integer value to convert.
+     * \param   lookupList      The lookup table to search for the identifier.
+     * \param   defIndex        The index of the default string to return if the identifier is not
+     *                          found; pass NECommon::INVALID_POSITION to return an empty string if
+     *                          not found.
+     * \return  Returns the string representation of the identifier if found; returns the default
+     *          string if the identifier is not found and defIndex is valid; returns an empty string
+     *          if not found and defIndex is invalid.
      **/
-    inline static const String& convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex);
+    inline static const String& to_string(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
     /**
-     * \brief   Converts given string value of the identifier into the digital value.
-     *          It uses lookup table make conversion.
-     * \param   idName      The string value of the identifier to convert.
-     * \param   lookupList  The lookup table to search identifier to return integer value.
-     * \param   defIndex    The index of the value to return in case if did not find the identifier.
-     *                      Pass NECommon::INVALID_POSITION value to ignore and return 0xFFFFFFFF
-     *                      if no identifier entry exists.
-     * \return  Returns the integer value of the identifier it found.
-     *          Return the integer value of the given default identifier entry index if identifier not found and default index is valid.
-     *          Returns 0xFFFF'FFFF if identifier not found and the index is invalid.
+     * \brief   Converts a string value to its corresponding integer representation using a lookup
+     *          table.
+     *
+     * \param   idName          The string value to convert.
+     * \param   lookupList      The lookup table to search for the identifier.
+     * \param   defIndex        The index of the default integer to return if the identifier is not
+     *                          found; pass NECommon::INVALID_POSITION to return 0xFFFFFFFF if not
+     *                          found.
+     * \return  Returns the integer representation of the identifier if found; returns the default
+     *          integer if the identifier is not found and defIndex is valid; returns 0xFFFFFFFF if
+     *          not found and defIndex is invalid.
      **/
-    inline static uint32_t convFromString(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
+    inline static uint32_t conv_from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex);
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigning operator. Copies identifier data from given source
+     * \brief   Copies identifier data from the source.
+     *
+     * \param   src     The source identifier to copy from.
+     * \return  Reference to this identifier.
      **/
     Identifier & operator = (const Identifier & src);
 
     /**
-     * \brief   Move operator. Moves identifier data from given source
+     * \brief   Moves identifier data from the source.
+     *
+     * \param   src     The source identifier to move from.
+     * \return  Reference to this identifier.
      **/
     Identifier & operator = ( Identifier && src ) noexcept;
 
     /**
-     * \brief   Returns true if 2 identifier objects are equal.
+     * \brief   Returns true if two identifiers are equal.
+     *
+     * \param   other       The identifier to compare.
+     * \return  Returns true if both identifiers are equal; false otherwise.
      **/
     inline bool operator == (const Identifier & other) const;
 
     /**
-     * \brief   Returns true if the name of identifier is equal.
+     * \brief   Returns true if the identifier name equals the given string.
+     *
+     * \param   rhs     The string to compare with the identifier name.
+     * \return  Returns true if the identifier name matches the string; false otherwise.
      **/
     inline bool operator == (const char * rhs) const;
 
     /**
-     * \brief   Returns true if the integer value of identifier is equal.
+     * \brief   Returns true if the identifier value equals the given integer.
+     *
+     * \param   rhs     The integer to compare with the identifier value.
+     * \return  Returns true if the identifier value matches the integer; false otherwise.
      **/
     inline bool operator == (uint32_t rhs) const;
 
     /**
-     * \brief   Returns true if 2 identifier objects are not equal.
+     * \brief   Returns true if two identifiers are not equal.
+     *
+     * \param   other       The identifier to compare.
+     * \return  Returns true if the identifiers are not equal; false otherwise.
      **/
     inline bool operator != ( const Identifier & other ) const;
 
     /**
-     * \brief   Returns true if the name of identifier is not equal.
+     * \brief   Returns true if the identifier name does not equal the given string.
+     *
+     * \param   rhs     The string to compare with the identifier name.
+     * \return  Returns true if the identifier name does not match the string; false otherwise.
      **/
     inline bool operator != ( const char * rhs ) const;
 
     /**
-     * \brief   Returns true if the integer value of identifier is equal.
+     * \brief   Returns true if the identifier value does not equal the given integer.
+     *
+     * \param   rhs     The integer to compare with the identifier value.
+     * \return  Returns true if the identifier value does not match the integer; false otherwise.
      **/
     inline bool operator != ( uint32_t rhs ) const;
 
@@ -189,18 +228,20 @@ public:
  ************************************************************************/
 
     /**
-     * \brief   Reads identifier value from stream.
-     * \param   stream  Streaming object to read identifier value
-     * \param   input   Identifier to write values
-     * \return  Returns instance of read streaming object
+     * \brief   Reads identifier data from a stream.
+     *
+     * \param   stream      The input stream to read from.
+     * \param[out] input       The identifier to write the values into.
+     * \return  Reference to the input stream.
      **/
     friend inline const InStream & operator >> (const InStream & stream, Identifier & input);
 
     /**
-     * \brief   Writes identifier value to stream.
-     * \param   stream  Streaming object to write identifier value
-     * \param   output  Identifier to read values
-     * \return  Returns instance of write streaming object
+     * \brief   Writes identifier data to a stream.
+     *
+     * \param   stream      The output stream to write to.
+     * \param   output      The identifier to read the values from.
+     * \return  Reference to the output stream.
      **/
     friend inline OutStream & operator << (OutStream & stream, const Identifier & output);
 
@@ -209,25 +250,24 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns true if Identifier is valid. 
-     *          Invalid Identifier has values of BAD_DENTIFIER.
+     * \brief   Returns true if the identifier is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
-     * \brief   Reset Identifier data. Set to BAD_DENTIFIER.
+     * \brief   Resets the identifier to an invalid state.
      **/
     inline void invalidate();
 
     /**
-     * \brief   Returns Identifier string value
+     * \brief   Returns the identifier's string name.
      **/
-    inline const String & getName() const;
+    inline const String & name() const;
 
     /**
-     * \brief   Returns Identifier integer value
+     * \brief   Returns the identifier's integer value.
      **/
-    inline uint32_t getValue() const;
+    inline uint32_t value() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -247,7 +287,7 @@ private:
 // Identifier class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& Identifier::convToString(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex)
+inline const String& Identifier::to_string(uint32_t idValue, const std::vector<Identifier>& lookupList, uint32_t defIndex)
 {
     ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
@@ -258,10 +298,10 @@ inline const String& Identifier::convToString(uint32_t idValue, const std::vecto
         }
     }
 
-    return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::getEmptyString());
+    return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::empty_string());
 }
 
-inline uint32_t Identifier::convFromString(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
+inline uint32_t Identifier::conv_from_string(const String& idName, const std::vector<Identifier>& lookupList, uint32_t defIndex)
 {
     ASSERT(defIndex < lookupList.size());
     for (const Identifier& entry : lookupList)
@@ -305,7 +345,7 @@ inline bool Identifier::operator != ( uint32_t rhs ) const
     return (mValue != rhs);
 }
 
-inline bool Identifier::isValid() const
+inline bool Identifier::is_valid() const
 {
     return (*this != BAD_IDENTIFIER);
 }
@@ -316,12 +356,12 @@ inline void Identifier::invalidate()
     mName   = BAD_IDENTIFIER.mName;
 }
 
-inline const String & Identifier::getName() const
+inline const String & Identifier::name() const
 {
     return mName;
 }
 
-inline uint32_t Identifier::getValue() const
+inline uint32_t Identifier::value() const
 {
     return mValue;
 }

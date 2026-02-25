@@ -34,13 +34,7 @@ class Thread;
 // ThreadLocalStorage class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A local storage of a thread.
- *          When thread starts, it initializes local storage.
- *          Any object of local thread can save an entry in thread local storage
- *          accessed by unique name. By default, every local storage of a Thread
- *          contains the entry of the thread consumer. The entries of the 
- *          local storage are access by name.
- * \see     Thread
+ * \brief   Manages thread-local storage entries accessed by unique names; one instance per thread.
  **/
 class AREG_API ThreadLocalStorage
 {
@@ -67,12 +61,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Creates thread local storage object by passing owning thread object.
-     *          The thread local storage class cannot be manually created. It is
-     *          automatically instantiated when thread is created and deleted
-     *          when thread exists. The local storage object is valid and accessible only 
-     *          withing thread context where it was created.
-     * \param   owningThread    The local storage owning thread.
+     * \brief   Initializes the local storage associated with the given thread.
+     *
+     * \param   owningThread    The thread that owns this local storage.
      **/
     explicit ThreadLocalStorage( Thread & owningThread );
     /**
@@ -85,114 +76,87 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the name of thread local storage.
-     *          The name of local storage is same as thread name.
+     * \brief   Returns the name of the local storage (same as the owning thread's name).
      **/
-    const String & getName() const;
+    const String & name() const;
 
     /**
-     * \brief   Returns true, if there is an local storage item 
-     *          exists in the list with specified name.
-     * \param   Key     The name of a local storage item.
-     * \return  Returns true if local storage has an item with specified name.
+     * \brief   Returns true if a local storage entry with the given name exists.
+     *
+     * \param   Key     The name of the local storage entry.
+     * \return  Returns true if the entry exists; false otherwise.
      **/
-    bool existKey(const String & Key) const;
+    bool exist(const String & Key) const;
 
     /**
      * \brief   Returns the owning thread object.
      **/
-    inline Thread & getOwnerThread() const;
+    inline Thread & owner_thread() const;
 
     /**
-     * \brief   Returns the size of a thread local storage, 
-     *          i.e. the number of items saved in storage.
+     * \brief   Returns the number of entries in the local storage.
      **/
-    inline uint32_t getSize() const;
+    inline uint32_t size() const;
 
     /**
-     * \brief   Returns the element value, saved in the 
-     *          local storage by given name.
-     *          The Key should be exist in the list when function is called.
-     *          Otherwise it will return NEMemory::InvalidElement element,
-     *          which is defining invalid element.
-     *          If element was not found, it will raise assertion in Debug version.
-     *          In release version either call existKey() before calling the method,
-     *          or check the address of returned element with NEMemory::InvalidElement
-     * \param   Key     The name of a local storage item.
-     * \return  Returns local storage element if Key exists. 
-     *          Otherwise it returns NEMemory::InvalidElement, if there is no element
-     *          with specified name.
+     * \brief   Returns the value of the local storage entry with the given name.
+     *
+     * \param   Key     The name of the local storage entry.
+     * \return  Returns the entry value if found; returns NEMemory::InvalidElement if not found.
      **/
-    NEMemory::Primitive getStorageItem( const String & Key ) const;
+    NEMemory::Primitive storage_item( const String & Key ) const;
 
     /**
-     * \brief   Saves specified item in thread local storage object.
-     *          The method is not checking whether the local storage already has
-     *          item with specified name or not. If item with specified name
-     *          exists, it will not be replaced. To make sure that every item
-     *          is saved by unique name, first call removeStoragteItem() method
-     * \param   Key     The name of local storage item
-     * \param   Value   The value of local storage item
+     * \brief   Saves a primitive value in the local storage with the given name.
+     *
+     * \param   Key         The name of the local storage entry.
+     * \param   Value       The primitive value to save.
      **/
-    void setStorageItem(const String & Key, NEMemory::Primitive Value);
+    void set_storage_item(const String & Key, NEMemory::Primitive Value);
 
     /**
-     * \brief   Saves pointer value in thread local storage object.
-     *          The method is not checking whether the local storage already has
-     *          item with specified name or not. If item with specified name
-     *          exists, it will not be replaced. To make sure that every item
-     *          is saved by unique name, first call removeStoragteItem() method
-     * \param   Key     The name of local storage item
-     * \param   Value   The value of local storage item
+     * \brief   Saves a pointer value in the local storage with the given name.
+     *
+     * \param   Key         The name of the local storage entry.
+     * \param   Value       The pointer value to save.
      **/
-    void setStorageItem(const String & Key, const void * Value);
+    void set_storage_item(const String & Key, const void * Value);
 
     /**
-     * \brief   Saves integer value in thread local storage object.
-     *          The method is not checking whether the local storage already has
-     *          item with specified name or not. If item with specified name
-     *          exists, it will not be replaced. To make sure that every item
-     *          is saved by unique name, first call removeStoragteItem() method
-     * \param   Key     The name of local storage item
-     * \param   Value   The value of local storage item
+     * \brief   Saves a 32-bit unsigned integer value in the local storage with the given name.
+     *
+     * \param   Key         The name of the local storage entry.
+     * \param   Value       The 32-bit unsigned integer value to save.
      **/
-    void setStorageItem(const String & Key, uint32_t Value);
+    void set_storage_item(const String & Key, uint32_t Value);
 
     /**
-     * \brief   Saves 64-bit integer value in thread local storage object.
-     *          The method is not checking whether the local storage already has
-     *          item with specified name or not. If item with specified name
-     *          exists, it will not be replaced. To make sure that every item
-     *          is saved by unique name, first call removeStoragteItem() method
-     * \param   Key     The name of local storage item
-     * \param   Value   The value of local storage item
+     * \brief   Saves a 64-bit unsigned integer value in the local storage with the given name.
+     *
+     * \param   Key         The name of the local storage entry.
+     * \param   Value       The 64-bit unsigned integer value to save.
      **/
-    void setStorageItem(const String & Key, uint64_t Value);
+    void set_storage_item(const String & Key, uint64_t Value);
 
     /**
-     * \brief   Saves number with floating point value in thread local storage object.
-     *          The method is not checking whether the local storage already has
-     *          item with specified name or not. If item with specified name
-     *          exists, it will not be replaced. To make sure that every item
-     *          is saved by unique name, first call removeStoragteItem() method
-     * \param   Key     The name of local storage item
-     * \param   Value   The value of local storage item
+     * \brief   Saves a floating-point value in the local storage with the given name.
+     *
+     * \param   Key         The name of the local storage entry.
+     * \param   Value       The floating-point value to save.
      **/
-    void setStorageItem(const String & Key, double Value);
+    void set_storage_item(const String & Key, double Value);
 
     /**
-     * \brief   If thread local storage has an item with specified name
-     *          it will be removed. If thread local storage
-     *          has more than one item with the same name, the first matching
-     *          item will be removed.
-     * \param   Key     The name of local storage item to be removed
-     * \return  Returns the value of returned element. If element does not
-     *          exist, it will return dummy zero value.
+     * \brief   Removes the first local storage entry with the given name.
+     *
+     * \param   Key     The name of the local storage entry to remove.
+     * \return  Returns the value of the removed entry; returns a dummy zero value if the entry does
+     *          not exist.
      **/
-    NEMemory::Primitive removeStoragteItem(const String & Key);
+    NEMemory::Primitive remove_storagte_item(const String & Key);
 
     /**
-     * \brief   Removes all items in thread local storage
+     * \brief   Removes all entries from the local storage.
      **/
     inline void clear();
 
@@ -222,6 +186,9 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ThreadLocalStorage() = delete;
     AREG_NOCOPY_NOMOVE( ThreadLocalStorage );
 };
@@ -230,14 +197,14 @@ private:
 // ThreadLocalStorage class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Thread & ThreadLocalStorage::getOwnerThread() const
+inline Thread & ThreadLocalStorage::owner_thread() const
 {
     return mOwningThread;
 }
 
-inline uint32_t ThreadLocalStorage::getSize() const
+inline uint32_t ThreadLocalStorage::size() const
 {
-    return mStorageList.getSize();
+    return mStorageList.size();
 }
 
 inline void ThreadLocalStorage::clear()

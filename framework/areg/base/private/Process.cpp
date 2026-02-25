@@ -24,7 +24,7 @@
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Process & Process::getInstance()
+Process & Process::instance()
 {
     static Process _theProcess;
     return _theProcess;
@@ -42,25 +42,25 @@ Process::Process()
     , mProcessFullPath  ( )
     , mIsInitialized    ( false )
 {
-    _osInitilize();
+    _os_initilize();
 }
 
-void Process::_initPaths( const char * fullPath )
+void Process::_init_paths( const char * fullPath )
 {
     ASSERT(fullPath != nullptr);
     mProcessFullPath = fullPath;
-    std::filesystem::path procPath(mProcessFullPath.getData());
+    std::filesystem::path procPath(mProcessFullPath.data());
 
     if (procPath.empty() == false)
     {
-        mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
-        mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
-        mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
-        mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
+        mProcessPath = procPath.parent_path().empty() ? String::empty_string() : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? String::empty_string() : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? String::empty_string() : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? String::empty_string() : procPath.extension().string();
     }
 }
 
-uint32_t Process::getBitness() const
+uint32_t Process::bitness() const
 {
     if ((static_cast<uint16_t>(mProcEnv) & static_cast<uint16_t>(Process::Bitness::Bits32)) != 0)
     {
@@ -76,8 +76,8 @@ uint32_t Process::getBitness() const
     }
 }
 
-String Process::getSafeEnvVariable( const char * var ) const
+String Process::safe_env_variable( const char * var ) const
 {
-    return _osGetEnvVariable( var );
+    return _os_env_variable( var );
 }
 

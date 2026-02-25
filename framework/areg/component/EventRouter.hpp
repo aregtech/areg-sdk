@@ -29,13 +29,8 @@ class Event;
 // EventRouter class declarations
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event Route interface. Defines class, which is delivering
- *          Event to its target thread.
- * 
- *          Dispatcher classes are instances of EventRouter and
- *          have implemented post method to find target thread and
- *          delivery event for further processing.
- *
+ * \brief   Interface for objects that deliver events to their target threads. Dispatchers are
+ *          instances of EventRouter.
  **/
 class AREG_API EventRouter
 {
@@ -44,7 +39,7 @@ class AREG_API EventRouter
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected constructor and destructor.
+     * \brief
      **/
     EventRouter() = default;
     virtual ~EventRouter() = default;
@@ -54,12 +49,13 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Posts event and delivers to its target thread / process.
-     * \param	eventElem	Event object to post.
-     * \return	Returns true if target was found and the event
-     *          delivered with success. Otherwise it returns false.
+     * \brief   Posts and delivers an event to its target thread or process. Override to implement
+     *          routing logic.
+     *
+     * \param   eventElem       The event object to post.
+     * \return  True if the target was found and the event delivered successfully; false otherwise.
      **/
-    virtual bool postEvent( Event & eventElem ) = 0;
+    virtual bool post_event( Event & eventElem ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

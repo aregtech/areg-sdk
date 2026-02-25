@@ -156,12 +156,12 @@ public:
     /**
      * \brief   Returns true if connection status of Stub service is connected
      **/
-    inline bool isConnected() const;
+    inline bool is_connected() const;
 
     /**
      * \brief   Returns true if connection status of Stub service is pending
      **/
-    inline bool isWaiting() const;
+    inline bool is_waiting() const;
 
     /**
      * \brief   Returns the current connection status of Stub service
@@ -171,12 +171,12 @@ public:
     /**
      * \brief   Returns Stub remote address of service
      **/
-    inline const StubAddress & getServiceAddress() const;
+    inline const StubAddress & service_address() const;
 
     /**
      * \brief   Returns true if Stub service object is valid.
      **/
-    bool isValid() const;
+    bool is_valid() const;
 
     /**
      * \brief   Sets new connection status of Stub service
@@ -215,7 +215,7 @@ namespace std
         //! A function to convert ServiceStub object to uint32_t.
         inline uint32_t operator()(const ServiceStub& key) const
         {
-            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.getServiceAddress()));
+            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.service_address()));
         }
     };
 
@@ -225,7 +225,7 @@ namespace std
         //! A function operator to compare 2 StubAddress objects.
         inline bool operator() (const ServiceStub& key1, const ServiceStub& key2) const
         {
-            return static_cast<const ServiceAddress&>(key1.getServiceAddress()) == static_cast<const ServiceAddress&>(key2.getServiceAddress());
+            return static_cast<const ServiceAddress&>(key1.service_address()) == static_cast<const ServiceAddress&>(key2.service_address());
         }
     };
 }
@@ -234,12 +234,12 @@ namespace std
 // ServiceStub class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ServiceStub::isConnected() const
+inline bool ServiceStub::is_connected() const
 {
     return ( mConnectStatus == NEService::ServiceConnectionState::Connected );
 }
 
-inline bool ServiceStub::isWaiting() const
+inline bool ServiceStub::is_waiting() const
 {
     return ( mConnectStatus == NEService::ServiceConnectionState::Pending );
 }
@@ -249,7 +249,7 @@ inline NEService::ServiceConnectionState ServiceStub::getServiceStatus() const
     return mConnectStatus;
 }
 
-inline const StubAddress & ServiceStub::getServiceAddress() const
+inline const StubAddress & ServiceStub::service_address() const
 {
     return mStubAddress;
 }

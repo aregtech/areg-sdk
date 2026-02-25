@@ -64,7 +64,7 @@ namespace NEUtilities
             ASSERT(milli < 1000);
             ASSERT(micro < 1000);
 
-            NEUtilities::convToSystemTime(now, sysTime);
+            NEUtilities::to_system_time(now, sysTime);
             sysTime.stMillisecs = milli;
             sysTime.stMicrosecs = micro;
         }
@@ -72,7 +72,7 @@ namespace NEUtilities
 
     void _osMakeTmLocal(struct tm& utcTime)
     {
-        NEMemory::memSet(&utcTime, sizeof(struct tm), 0);
+        NEMemory::mem_set(&utcTime, sizeof(struct tm), 0);
         time_t _timer = mktime(&utcTime);
         localtime_r(&_timer, &utcTime);
     }
@@ -83,12 +83,12 @@ namespace NEUtilities
 
         time_t secs;
         uint16_t milli, micro;
-        NEUtilities::convMicrosecs(utcTime, secs, milli, micro);
+        NEUtilities::conv_microsecs(utcTime, secs, milli, micro);
 
         struct tm tmLocal { 0 };
         if (::localtime_r(&secs, &tmLocal) != nullptr)
         {
-            NEUtilities::convToSystemTime(tmLocal, localTime);
+            NEUtilities::to_system_time(tmLocal, localTime);
             localTime.stMillisecs = milli;
             localTime.stMicrosecs = micro;
 
@@ -109,12 +109,12 @@ namespace NEUtilities
         time_t secs;
         uint16_t milli{ 0 };
         uint16_t micro{ 0 };
-        NEUtilities::convMicrosecs(timeValue, secs, milli, micro);
+        NEUtilities::conv_microsecs(timeValue, secs, milli, micro);
 
         struct tm gmt {};
         if (::gmtime_r(&secs, &gmt) != nullptr)
         {
-            convToSystemTime(gmt, sysTime);
+            to_system_time(gmt, sysTime);
             sysTime.stMillisecs = milli;
             sysTime.stMicrosecs = micro;
         }

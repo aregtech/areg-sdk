@@ -27,15 +27,15 @@
 // WaitableEventPosix class implementation
 //////////////////////////////////////////////////////////////////////////
 
-WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
+WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool is_auto_reset, const char * asciiName /* = nullptr */ )
     : WaitablePosix  ( NESyncTypesIX::SyncKind::SoWaitEvent, true, asciiName )
 
-    , mEventReset       ( isAutoReset ? NESyncTypesIX::ResetMode::Automatic : NESyncTypesIX::ResetMode::Manual )
+    , mEventReset       ( is_auto_reset ? NESyncTypesIX::ResetMode::Automatic : NESyncTypesIX::ResetMode::Manual )
     , mIsSignaled       ( isInitSignaled )
 {
 }
 
-bool WaitableEventPosix::setEvent()
+bool WaitableEventPosix::set_event()
 {
     bool result     = false;
     bool sendSignal = false;
@@ -44,7 +44,7 @@ bool WaitableEventPosix::setEvent()
     {
         ObjectLockPosix lock(*this);
 
-        if (isValid())
+        if (is_valid())
         {
             result = true;
             if ( mIsSignaled == false)
@@ -55,7 +55,7 @@ bool WaitableEventPosix::setEvent()
 #ifdef DEBUG
             else
             {
-                // AREG_OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", getName());
+                // AREG_OUTPUT_DBG("The waitable event [ %s ] was already in signal state. Ignoring call to set event", name());
             }
 #endif // DEBUG
 
@@ -64,28 +64,28 @@ bool WaitableEventPosix::setEvent()
 
     if (sendSignal)
     {
-        SyncLockAndWaitPosix::eventSignaled(*this);
+        SyncLockAndWaitPosix::event_signaled(*this);
     }
 
     return result;
 }
 
-bool WaitableEventPosix::resetEvent()
+bool WaitableEventPosix::reset()
 {
     bool result = false;
     ObjectLockPosix lock(*this);
-    if ( isValid() )
+    if ( is_valid() )
     {
 #ifdef DEBUG
         if (mIsSignaled)
         {
             if (NESyncTypesIX::ResetMode::Automatic == mEventReset)
             {
-                AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
+                AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", name().as_string());
             }
             else
             {
-                AREG_OUTPUT_DBG("Manually reseting event [ %s ]", getName().getString());
+                AREG_OUTPUT_DBG("Manually reseting event [ %s ]", name().as_string());
             }
         }
 #endif // DEBUG
@@ -98,21 +98,21 @@ bool WaitableEventPosix::resetEvent()
 }
 
 
-void WaitableEventPosix::pulseEvent()
+void WaitableEventPosix::pulse_event()
 {
     do 
     {
         ObjectLockPosix lock(*this);
-        if (isValid())
+        if (is_valid())
         {
             if (mIsSignaled == false)
             {
-                AREG_OUTPUT_DBG("Pulsing event [ %s ]", getName().getString( ));
+                AREG_OUTPUT_DBG("Pulsing event [ %s ]", name().as_string( ));
 
                 mIsSignaled = true;
                 lock.unlock();
 
-                SyncLockAndWaitPosix::eventSignaled(*this);
+                SyncLockAndWaitPosix::event_signaled(*this);
 
                 lock.lock();
                 mIsSignaled = false;
@@ -121,23 +121,23 @@ void WaitableEventPosix::pulseEvent()
     } while (false);
 }
 
-bool WaitableEventPosix::checkSignaled(pthread_t /*contextThread*/) const
+bool WaitableEventPosix::check_signaled(pthread_t /*contextThread*/) const
 {
     ObjectLockPosix lock(*this);
     return mIsSignaled;
 }
 
-bool WaitableEventPosix::notifyRequestOwnership( pthread_t /* ownerThread */ )
+bool WaitableEventPosix::notify_request_ownership( pthread_t /* ownerThread */ )
 {
     return true;
 }
 
-bool WaitableEventPosix::checkCanSignalMultipleThreads() const
+bool WaitableEventPosix::can_signal_threads() const
 {
     return true;
 }
 
-void WaitableEventPosix::notifyReleasedThreads(int32_t numThreads)
+void WaitableEventPosix::notify_released_threads(int32_t numThreads)
 {
     ObjectLockPosix lock(*this);
 

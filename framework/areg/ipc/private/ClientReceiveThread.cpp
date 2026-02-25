@@ -32,12 +32,12 @@ ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, Cl
 {
 }
 
-bool ClientReceiveThread::runDispatcher()
+bool ClientReceiveThread::run_dispatcher()
 {
     LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
-    LOG_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
+    LOG_DBG("Starting client service dispatcher thread [ %s ]", name().as_string());
     
-    readyForEvents( true );
+    ready_for_events( true );
 
     SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
@@ -50,11 +50,11 @@ bool ClientReceiveThread::runDispatcher()
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
             whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
-            int32_t sizeReceive = mConnection.receiveMessage( msgReceived );
+            int32_t sizeReceive = mConnection.receive_message( msgReceived );
             if ( sizeReceive <= 0 )
             {
                 msgReceived.invalidate();
-                mRemoteService.failedReceiveMessage( mConnection.getSocket() );
+                mRemoteService.failed_receive_message( mConnection.socket() );
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
             }
             else
@@ -64,24 +64,24 @@ bool ClientReceiveThread::runDispatcher()
                     mBytesReceive += static_cast<uint32_t>(sizeReceive);
                 }
 
-                mRemoteService.processReceivedMessage( msgReceived, mConnection.getSocket( ) );
+                mRemoteService.process_received_message( msgReceived, mConnection.socket( ) );
             }
 
             msgReceived.invalidate();
         }
         else
         {
-            Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-            whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+            Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
+            whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
         }
 
     } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
 
-    readyForEvents(false);
-    removeAllEvents( );
+    ready_for_events(false);
+    remove_all_events( );
 
     LOG_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
-                , getName().getString()
+                , name().as_string()
                 , whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) ? "SUCCESS" : "FAILURE");
 
     return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));

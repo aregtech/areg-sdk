@@ -26,7 +26,7 @@
 
 SortedEventStack::SortedEventStack(uint32_t maxQueue)
     : ConcurrentStack<Event*>( )
-    , mMaxQueueSize      (SortedEventStack::_calcQueueSize(maxQueue))
+    , mMaxQueueSize      (SortedEventStack::_calc_queue_size(maxQueue))
 {
 }
 
@@ -40,7 +40,7 @@ SortedEventStack::~SortedEventStack()
     mValueList.clear();
 }
 
-void SortedEventStack::deleteAllEvents()
+void SortedEventStack::delete_all_events()
 {
     Lock lock( mSyncObject );
 
@@ -53,7 +53,7 @@ void SortedEventStack::deleteAllEvents()
     }
 }
 
-uint32_t SortedEventStack::deleteAllLowerPriority(Event::EventPriority eventPrio)
+uint32_t SortedEventStack::delete_lower_priority(Event::EventPriority eventPrio)
 {
     Lock lock(mSyncObject);
 
@@ -61,7 +61,7 @@ uint32_t SortedEventStack::deleteAllLowerPriority(Event::EventPriority eventPrio
     {
         Event* evt = mValueList.back();
         ASSERT(evt != nullptr);
-        if (evt->getEventPriority() < eventPrio)
+        if (evt->event_priority() < eventPrio)
         {
             evt->destroy();
             mValueList.pop_back();
@@ -76,18 +76,18 @@ uint32_t SortedEventStack::deleteAllLowerPriority(Event::EventPriority eventPrio
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::deleteAllExceptClass(const RuntimeClassID& eventClassId)
+uint32_t SortedEventStack::delete_except_class(const RuntimeClassID& eventClassId)
 {
     Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
+        if ((*it)->event_priority() == Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
-        else if (eventClassId != (*it)->getRuntimeClassId())
+        else if (eventClassId != (*it)->runtime_class_id())
         {
             (*it)->destroy();
             it = mValueList.erase(it);
@@ -101,18 +101,18 @@ uint32_t SortedEventStack::deleteAllExceptClass(const RuntimeClassID& eventClass
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::deleteAllMatchPriority(Event::EventPriority eventPrio)
+uint32_t SortedEventStack::delete_matching_priority(Event::EventPriority eventPrio)
 {
     Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
+        if ((*it)->event_priority() == Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
-        else if (eventPrio == (*it)->getEventPriority())
+        else if (eventPrio == (*it)->event_priority())
         {
             (*it)->destroy();
             it = mValueList.erase(it);
@@ -126,18 +126,18 @@ uint32_t SortedEventStack::deleteAllMatchPriority(Event::EventPriority eventPrio
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassId)
+uint32_t SortedEventStack::delete_matching_class(const RuntimeClassID& eventClassId)
 {
     Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
+        if ((*it)->event_priority() == Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
-        else if (eventClassId == (*it)->getRuntimeClassId())
+        else if (eventClassId == (*it)->runtime_class_id())
         {
             (*it)->destroy();
             it = mValueList.erase(it);
@@ -151,16 +151,16 @@ uint32_t SortedEventStack::deleteAllMatchClass(const RuntimeClassID& eventClassI
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
+uint32_t SortedEventStack::push_event(Event * newEvent, Event** removedEvent)
 {
     ASSERT(newEvent != nullptr);
     Lock lock(mSyncObject);
-    switch (newEvent->getEventPriority())
+    switch (newEvent->event_priority())
     {
     case Event::EventPriority::LowPrio:
         if (mValueList.size() < mMaxQueueSize)
         {
-            _insertAtEnd(newEvent);
+            _insert_at_end(newEvent);
         }
         else if (removedEvent != nullptr)
         {
@@ -188,7 +188,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertAfterPrio(newEvent, Event::EventPriority::NormalPrio);
+        _insert_after_prio(newEvent, Event::EventPriority::NormalPrio);
         break;
 
     case Event::EventPriority::HighPrio:
@@ -207,7 +207,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertBeforePrio(newEvent, Event::EventPriority::NormalPrio);
+        _insert_before_prio(newEvent, Event::EventPriority::NormalPrio);
         break;
 
     case Event::EventPriority::CriticalPrio:
@@ -226,7 +226,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertBeforePrio(newEvent, Event::EventPriority::HighPrio);
+        _insert_before_prio(newEvent, Event::EventPriority::HighPrio);
         break;
 
     case Event::EventPriority::ExitPrio:
@@ -245,7 +245,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertAtBegin(newEvent);
+        _insert_at_begin(newEvent);
         break;
 
     case Event::EventPriority::UndefinedPrio: // fall through
@@ -258,7 +258,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t  SortedEventStack::popEvent(Event** stackEvent)
+uint32_t  SortedEventStack::pop_event(Event** stackEvent)
 {
     ASSERT(stackEvent != nullptr);
 
@@ -276,24 +276,24 @@ uint32_t  SortedEventStack::popEvent(Event** stackEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline void SortedEventStack::_insertAtEnd(Event* newEvent)
+inline void SortedEventStack::_insert_at_end(Event* newEvent)
 {
     mValueList.push_back(newEvent);
 }
 
-inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::EventPriority eventPrio)
+inline void SortedEventStack::_insert_after_prio(Event* newEvent, Event::EventPriority eventPrio)
 {
     auto it = mValueList.end();
     if (mValueList.empty() == false)
     {
         const auto begin = mValueList.begin();
         it = std::prev(it);
-        while ( (it != begin) && ((*it)->getEventPriority() < eventPrio) )
+        while ( (it != begin) && ((*it)->event_priority() < eventPrio) )
         {
             it = std::prev(it);
         }
 
-        if ((*it)->getEventPriority() >= eventPrio)
+        if ((*it)->event_priority() >= eventPrio)
         {
             it = std::next(it);
         }
@@ -302,13 +302,13 @@ inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::EventPrio
     mValueList.insert(it, newEvent);
 }
 
-inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::EventPriority eventPrio)
+inline void SortedEventStack::_insert_before_prio(Event* newEvent, Event::EventPriority eventPrio)
 {
     auto it = mValueList.begin();
     if (mValueList.empty() == false)
     {
         const auto end = mValueList.end();
-        while ((it != end) && ((*it)->getEventPriority() > eventPrio))
+        while ((it != end) && ((*it)->event_priority() > eventPrio))
         {
             it = std::next(it);
         }
@@ -317,15 +317,15 @@ inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::EventPri
     mValueList.insert(it, newEvent);
 }
 
-inline void SortedEventStack::_insertAtBegin(Event* newEvent)
+inline void SortedEventStack::_insert_at_begin(Event* newEvent)
 {
     mValueList.push_front(newEvent);
 }
 
-inline constexpr uint32_t SortedEventStack::_calcQueueSize(uint32_t requestedSize)
+inline constexpr uint32_t SortedEventStack::_calc_queue_size(uint32_t requestedSize)
 {
     if (requestedSize == NECommon::IGNORE_VALUE)
-        requestedSize = Application::getConfigManager().getDefaultMessageQueueSize();
+        requestedSize = Application::config_manager().message_queue_size();
 
     return (requestedSize != NECommon::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
 }

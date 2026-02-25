@@ -27,44 +27,44 @@
 
 EventConsumerList::~EventConsumerList()
 {
-    removeAllConsumers();
+    remove_all_consumers();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class, methods
 //////////////////////////////////////////////////////////////////////////
-bool EventConsumerList::addConsumer( EventConsumer& whichConsumer )
+bool EventConsumerList::add_consumer( EventConsumer& whichConsumer )
 {
     bool result = false;
-    if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
+    if (EventConsumerListBase::push_last_unique(&whichConsumer))
     {
         result = true;
-        whichConsumer.consumerRegistered(true);
+        whichConsumer.consumer_registered(true);
     }
     
     return result;
 }
 
-bool EventConsumerList::removeConsumer( EventConsumer& whichConsumer )
+bool EventConsumerList::remove_consumer( EventConsumer& whichConsumer )
 {
     bool result = false;
-    if ( EventConsumerListBase::removeEntry(&whichConsumer) )
+    if ( EventConsumerListBase::remove_entry(&whichConsumer) )
     {
         result = true;
-        whichConsumer.consumerRegistered(false);
+        whichConsumer.consumer_registered(false);
     }
 
     return result;
 }
 
-void EventConsumerList::removeAllConsumers()
+void EventConsumerList::remove_all_consumers()
 {
-    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
-    for (; isValidPosition(pos); pos = nextPosition(pos))
+    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::first_position();
+    for (; is_valid_position(pos); pos = next_position(pos))
     {
-        EventConsumer* consumer = valueAtPosition(pos);
+        EventConsumer* consumer = value_at_position(pos);
         ASSERT(consumer != nullptr);
-        consumer->consumerRegistered(false);
+        consumer->consumer_registered(false);
     }
 
     EventConsumerListBase::clear();
@@ -78,20 +78,20 @@ void EventConsumerList::removeAllConsumers()
 //////////////////////////////////////////////////////////////////////////
 #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
 
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
+void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & Key, EventConsumerList * Resource )
 {
-    AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
+    AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.name().as_string(), Resource);
     ASSERT(Resource != nullptr);
-    Resource->removeAllConsumers();
+    Resource->remove_all_consumers();
     delete Resource;
     Resource = nullptr;
 }
 
 #else   // !(defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG))
 
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
+void ImplEventConsumerMap::impl_clean_resource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
 {
-    Resource->removeAllConsumers();
+    Resource->remove_all_consumers();
     delete Resource;
     Resource = nullptr;
 }

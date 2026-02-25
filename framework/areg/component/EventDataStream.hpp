@@ -31,11 +31,9 @@
 // EventDataStream class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       This object is used to serialize and deserialize event
- *              data. Every instance of Component and Proxy event
- *              contains data, which has a streaming object and which
- *              contains at least information of function parameters,
- *              attributes and states.
+ * \brief   Object used to serialize and deserialize event data. Every instance of Component and
+ *          Proxy event contains data, which has a streaming object and which contains at least
+ *          information of function parameters, attributes and states.
  **/
 class AREG_API EventDataStream : public IOStream
 {
@@ -60,8 +58,8 @@ public:
     };
 
     /**
-     * \brief   Returns predefined Empty Data object. Can be used when event has
-     *          no data to transfer and no data should write or read.
+     * \brief   Returns predefined Empty Data object. Can be used when event has no data to transfer
+     *          and no data should write or read.
      **/
     static const EventDataStream& empty_data();
 
@@ -71,35 +69,41 @@ public:
 public:
 
     /**
-     * \brief   Constructor. Sets event data type and optional name.
-     * \param   evetDataType    The type of event data. Either for internal or for external communication
+     * \brief   Sets event data type and optional name.
+     *
+     * \param   evetDataType    The type of event data. Either for internal or for external
+     *                          communication
      * \param   name            The name for streaming object. Can be ignored.
      **/
-    explicit EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name = String::getEmptyString() );
+    explicit EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name = String::empty_string() );
 
     /**
-     * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.
-     * \param	buffer	The shared buffer to pass to streaming object.
-     * \param	name	The name of streaming object.
+     * \brief   Creates read only event data streaming object containing read only data of shared
+     *          buffer.
+     *
+     * \param   buffer      The shared buffer to pass to streaming object.
+     * \param   name        The name of streaming object.
      **/
     EventDataStream(const EventDataStream & buffer, const String & name);
 
     /**
-     * \brief   Copy constructor.
+     * \brief
+     *
      * \param   src     The source of data to copy.
      **/
     EventDataStream( const EventDataStream & src );
 
     /**
-     * \brief   Move constructor.
+     * \brief
+     *
      * \param   src     The source of data to move.
      **/
     EventDataStream( EventDataStream && src ) noexcept;
 
     /**
-     * \brief   Initialization constructor.
-     *          Initializes object data from streaming object.
-     * \param   stream  Streaming object, containing initialized data information.
+     * \brief   Initializes object data from streaming object.
+     *
+     * \param   stream      Streaming object, containing initialized data information.
      **/
     EventDataStream( const InStream & stream );
 
@@ -113,13 +117,15 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies Event Data from given source.
+     * \brief
+     *
      * \param   src     The source of event data to copy.
      **/
     EventDataStream & operator = ( const EventDataStream & src );
 
     /**
-     * \brief   Moves Event Data from given source.
+     * \brief
+     *
      * \param   src     The source of event data to move.
      **/
     EventDataStream & operator = ( EventDataStream && src ) noexcept;
@@ -130,15 +136,17 @@ public:
 /************************************************************************/
 
     /**
-     * \brief	Friend global operator declaration to read data from streaming object
-     * \param	stream	The data streaming object to read data
-     * \param	input	The Event Data Stream Buffer object to write data
+     * \brief   Friend global operator declaration to read data from streaming object.
+     *
+     * \param   stream      The data streaming object to read data
+     * \param   input       The Event Data Stream Buffer object to write data
      **/
     friend inline const InStream & operator >> ( const InStream & stream, EventDataStream & input );
     /**
-     * \brief	Friend global operator declaration to write data to streaming object
-     * \param	stream	The data streaming object to write data
-     * \param	output	The Event Data Stream Buffer object containing data
+     * \brief   Friend global operator declaration to write data to streaming object.
+     *
+     * \param   stream      The data streaming object to write data
+     * \param   output      The Event Data Stream Buffer object containing data
      **/
     friend inline OutStream & operator << ( OutStream & stream, const EventDataStream & output );
 
@@ -149,22 +157,22 @@ public:
     /**
      * \brief   Returns true if buffer is either empty or is invalid.
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
      * \brief   Returns true if buffer is saving for external data streaming.
      **/
-    inline bool isExternalDataStream() const;
+    inline bool is_external_stream() const;
 
     /**
-     * \brief   Returns reference to the streaming object to read data
+     * \brief   Returns reference to the streaming object to read data.
      **/
-    inline const InStream & getStreamForRead() const;
+    inline const InStream & stream_for_read() const;
 
     /**
-     * \brief   Returns reference to the streaming object to write data
+     * \brief   Returns reference to the streaming object to write data.
      **/
-    inline OutStream & getStreamForWrite();
+    inline OutStream & stream_for_write();
 
 /************************************************************************/
 // InStream interface overrides
@@ -172,9 +180,8 @@ public:
 
     /**
      * \brief   Resets cursor pointer and moves to the begin of data.
-     *          Implement the function if stream has pointer reset mechanism
      **/
-    void resetCursor() const override;
+    void reset() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -185,36 +192,37 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Reads data from input stream object, copies into given buffer and
-     *          returns the size of copied data
-     * \param	buffer	The pointer to buffer to copy data from input object
-     * \param	size	The size in bytes of available buffer
-     * \return	Returns the size in bytes of copied data
+     * \brief   Reads data from input stream object, copies into given buffer and returns the size
+     *          of copied data.
+     *
+     * \param   buffer      The pointer to buffer to copy data from input object
+     * \param   size        The size in bytes of available buffer
+     * \return  Returns the size in bytes of copied data.
      **/
     uint32_t read( uint8_t* buffer, uint32_t size ) const override;
 
     /**
-     * \brief   Reads data from input stream object, copies into give Byte Buffer object
-     *          and returns the size of copied data. Overwrite this method if copy behavior
-     *          changed for certain buffer. For other buffers it should have simple behavior
-     *          as copying to raw buffer
-     * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
-     * \return	Returns the size in bytes of copied data
+     * \brief   Reads data from input stream object, copies into given Byte Buffer object and
+     *          returns the size of copied data.
+     *
+     * \param   buffer      The instance of Byte Buffer object to stream data from Input Stream
+     *                      object
+     * \return  Returns the size in bytes of copied data.
      **/
     uint32_t read( ByteBuffer & buffer ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given ASCII String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
+     *
+     * \param   ascii       The buffer of ASCII String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
     uint32_t read( String & ascii ) const override;
 
     /**
      * \brief   Reads string data from Input Stream object and copies into given Wide String.
-     *          Overwrite method if need to change behavior of streaming string.
-     * \param   wide      The buffer of Wide String to stream data from Input Stream object.
+     *
+     * \param   wide    The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
     uint32_t read( WideString & wide ) const override;
@@ -224,64 +232,62 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Write data to output stream object from given buffer
-     *          and returns the size of written data
-     * \param	buffer	The pointer to buffer to read data and 
-     *          copy to output stream object
-     * \param	size	The size in bytes of data buffer
-     * \return	Returns the size in bytes of written data
+     * \brief   Writes data to output stream object from given buffer and returns the size of
+     *          written data.
+     *
+     * \param   buffer      The pointer to buffer to read data and copy to output stream object
+     * \param   size        The size in bytes of data buffer
+     * \return  Returns the size in bytes of written data.
      **/
     uint32_t write( const uint8_t* buffer, uint32_t size ) override;
 
     /**
-     * \brief	Writes Binary data from Byte Buffer object to Output Stream object
-     *          and returns the size of written data. Overwrite this method if need 
-     *          to change behavior of streaming buffer.
-     * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
-     * \return	Returns the size in bytes of written data
+     * \brief   Writes Binary data from Byte Buffer object to Output Stream object and returns the
+     *          size of written data.
+     *
+     * \param   buffer      The instance of Byte Buffer object containing data to stream to Output
+     *                      Stream.
+     * \return  Returns the size in bytes of written data.
      **/
     uint32_t write( const ByteBuffer & buffer ) override;
 
     /**
-    * \brief   Writes string data from given ASCII String object to output stream object.
-    *          Overwrite method if need to change behavior of streaming string.
-    * \param   ascii     The buffer of String containing data to stream to Output Stream.
-    * \return  Returns the size in bytes of copied string data.
-    **/
+     * \brief   Writes string data from given ASCII String object to output stream object.
+     *
+     * \param   ascii       The buffer of String containing data to stream to Output Stream.
+     * \return  Returns the size in bytes of copied string data.
+     **/
     uint32_t write( const String & ascii ) override;
 
     /**
-    * \brief   Writes string data from given wide-char String object to output stream object.
-    *          Overwrite method if need to change behavior of streaming string.
-    * \param   wide  The buffer of String containing data to stream to Output Stream.
-    * \return  Returns the size in bytes of copied string data.
-    **/
+     * \brief   Writes string data from given wide-char String object to output stream object.
+     *
+     * \param   wide    The buffer of String containing data to stream to Output Stream.
+     * \return  Returns the size in bytes of copied string data.
+     **/
     uint32_t write( const WideString & wide ) override;
 
     /**
-     * \brief	Flushes cached data to output stream object.
-     *          Implement the function is device has caching mechanism
+     * \brief   Flushes cached data to output stream object.
      **/
     void flush() override;
 
 protected:
     /**
-     * \brief	Returns size in bytes of available data that can be read, 
-     *          i.e. remaining readable size.
-     *          No necessarily that this size is equal to size of streamable buffer.
-     *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-     *          already read from stream, the available readable size is 'n - x'.
+     * \brief   Returns size in bytes of available data that can be read, i.e. remaining readable
+     *          size. No necessarily that this size is equal to size of streamable buffer. For
+     *          example, if the size of buffer is 'n' and 'x' bytes of data was already read from
+     *          stream, the available readable size is 'n - x'.
      **/
-    uint32_t getSizeReadable() const override;
+    uint32_t size_readable() const override;
 
     /**
-     * \brief	Returns size in bytes of available space that can be written, 
-     *          i.e. remaining writable size.
-     *          No necessarily that this size is equal to size of streamable buffer.
-     *          For example, if the size of buffer is 'n' and 'x' bytes of data was
-     *          already written to stream, the available writable size is 'n - x'.
+     * \brief   Returns size in bytes of available space that can be written, i.e. remaining
+     *          writable size. No necessarily that this size is equal to size of streamable buffer.
+     *          For example, if the size of buffer is 'n' and 'x' bytes of data was already written
+     *          to stream, the available writable size is 'n - x'.
      **/
-    uint32_t getSizeWritable() const override;
+    uint32_t size_writable() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -324,22 +330,22 @@ AREG_IMPLEMENT_STREAMABLE(EventDataStream::EventDataKind)
 // EventDataStream inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool EventDataStream::isEmpty() const
+inline bool EventDataStream::is_empty() const
 {
-    return (mDataBuffer.isEmpty() && mSharedList.isEmpty());
+    return (mDataBuffer.is_empty() && mSharedList.is_empty());
 }
 
-inline bool EventDataStream::isExternalDataStream() const
+inline bool EventDataStream::is_external_stream() const
 {
     return (mEventDataType != EventDataStream::EventDataKind::Internal);
 }
 
-inline const InStream & EventDataStream::getStreamForRead() const
+inline const InStream & EventDataStream::stream_for_read() const
 {
     return static_cast<const InStream &>(*this);
 }
 
-inline OutStream & EventDataStream::getStreamForWrite()
+inline OutStream & EventDataStream::stream_for_write()
 {
     return static_cast<OutStream &>(*this);
 }

@@ -26,9 +26,8 @@
 // ConnectionConfiguration class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The connected configuration class. The object loads configuration file,
- *          parses and initializes properties such as connection enable / disable,
- *          connection type (protocol), host name and port number, etc.
+ * \brief   Loads and manages connection configuration for remote services including protocol type,
+ *          host name, and port number.
  **/
 class AREG_API ConnectionConfiguration
 {
@@ -37,18 +36,18 @@ class AREG_API ConnectionConfiguration
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes connection configuration object to use properties based
-     *          on specified service and connection type.
-     * \param   service     The name of the service to read configuration properties.
-     * \param   connectType The name of the connection type to read configuration properties.
+     * \brief   Initializes connection configuration with service and connection type names.
+     *
+     * \param   service         Service name to read configuration properties.
+     * \param   connectType     Connection type name to read configuration properties.
      **/
     ConnectionConfiguration( const String & service, const String & connectType );
 
     /**
-     * \brief   Initializes connection configuration object to use properties based
-     *          on specified service and connection type.
-     * \param   service     The type of the service to read configuration properties.
-     * \param   connectType The type of the connection to read configuration properties.
+     * \brief   Initializes connection configuration with service and connection type enums.
+     *
+     * \param   service         Service type to read configuration properties.
+     * \param   connectType     Connection type to read configuration properties.
      **/
     ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType);
 
@@ -63,61 +62,74 @@ public:
 public:
 
     /**
-     * \brief   Returns the optional name of the remote service.
+     * \brief   Returns the remote service name.
      **/
-    inline const String& getRemoteServiceName() const;
+    inline const String& remote_service_name() const;
 
     /**
-     * \brief   Returns the name of the connection type of the remote service.
+     * \brief   Returns the connection type name.
      **/
-    inline const String& getConnectionType() const;
+    inline const String& connection_type() const;
 
     /**
-     * \brief   Returns true if the application already configured by reading configuration file or by default configuration.
+     * \brief   Returns true if application is configured via file or defaults.
      **/
-    bool isConfigured() const;
+    bool is_configured() const;
 
     /**
-     * \brief   Returns connection enabled / disabled flag of the remote service and type.
+     * \brief   Returns the connection enabled/disabled flag.
      **/
-    bool getConnectionEnableFlag() const;
+    bool connection_enable_flag() const;
 
     /**
-     * \brief   Set service connection enable flag of the remote service and type.
+     * \brief   Sets the connection enabled/disabled flag.
+     *
+     * \param   is_enabled       Flag indicating whether connection should be enabled.
      **/
-    void setConnectionEnableFlag(bool isEnabled);
+    void set_connection_enable(bool is_enabled);
 
     /**
-     * \brief   Returns the connection port number of the remote service and type.
+     * \brief   Returns the connection port number.
      **/
-    uint16_t getConnectionPort() const;
+    uint16_t connection_port() const;
 
     /**
-     * \brief   Sets the connection port number of the remote service and type.
+     * \brief   Sets the connection port number.
+     *
+     * \param   portNr      Port number to set.
      **/
-    void setConnectionPort(uint16_t portNr);
+    void set_connection_port(uint16_t portNr);
 
     /**
-     * \brief   Returns the connection address of the remote service and type.
+     * \brief   Returns the connection address.
      **/
-    String getConnectionAddress() const;
+    String connection_address() const;
 
     /**
-     * \brief   Sets the connection address of the remote service and type.
+     * \brief   Sets the connection address.
+     *
+     * \param   address     Address to set.
      **/
-    void setConnectionAddress(const String& address);
+    void set_connection_address(const String& address);
 
     /**
-     * \brief   Sets the connection address and port number of the remote service and type.
-     * \param   address     The connection address.
-     * \param   portNr      The connection port number.
+     * \brief   Sets the connection address and port number.
+     *
+     * \param   address     Address to set.
+     * \param   portNr      Port number to set.
      **/
-    void setConnectionData(const String& address, uint16_t portNr);
+    void set_connection_data(const String& address, uint16_t portNr);
 
     /**
-     * \brief   Returns byte sets of connection host IP address of given connection section.
+     * \brief   Extracts IP address bytes from connection address.
+     *
+     * \param[out] field0      First byte of IP address.
+     * \param[out] field1      Second byte of IP address.
+     * \param[out] field2      Third byte of IP address.
+     * \param[out] field3      Fourth byte of IP address.
+     * \return  Returns true if valid IP address was extracted.
      **/
-    bool getConnectionIpAddress( uint8_t & field0
+    bool connection_ip_address( uint8_t & field0
                                , uint8_t & field1
                                , uint8_t & field2
                                , uint8_t & field3);
@@ -136,6 +148,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ConnectionConfiguration() = delete;
     AREG_NOCOPY_NOMOVE( ConnectionConfiguration );
 };
@@ -144,12 +159,12 @@ private:
 // ConnectionConfiguration inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& ConnectionConfiguration::getRemoteServiceName() const
+inline const String& ConnectionConfiguration::remote_service_name() const
 {
     return mServiceName;
 }
 
-inline const String& ConnectionConfiguration::getConnectionType() const
+inline const String& ConnectionConfiguration::connection_type() const
 {
     return mConnectType;
 }

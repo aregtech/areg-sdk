@@ -124,7 +124,7 @@ public:
      * \brief   Called to forward the log message to the observer application.
      * \param   msgReceived     The message to process.
      **/
-    void logMessage(const RemoteMessage& msgReceived) const;
+    void log_message(const RemoteMessage& msgReceived) const;
 
     /**
      * \brief   Called when the connected instance of log source updates the scope priorities.

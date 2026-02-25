@@ -42,14 +42,14 @@ class LogDatabaseEngine;
 class DatabaseLogger : public LoggerBase
 {
 public:
-     /**
-      * \brief  Initializes the logger and sets the provided log configuration object,
-      *         which supplies methods for accessing property values.
-      *         The constructor will not automatically start database engine, it should
-      *         be manually started.
-      * \param  logConfig   An instance of the log configuration object containing
-      *                     settings for initialization and message output.
-      **/
+    /**
+     * \brief   Initializes the logger and sets the provided log configuration object, which
+     *          supplies methods for accessing property values. The constructor will not
+     *          automatically start database engine, it should be manually started.
+     *
+     * \param   logConfig       An instance of the log configuration object containing settings for
+     *                          initialization and message output.
+     **/
     explicit DatabaseLogger(LogConfiguration & logConfig);
 
     virtual ~DatabaseLogger();
@@ -60,26 +60,31 @@ public:
 public:
 
     /**
-     * \brief   Returns the pointer to the database engine handler object,
-     *          which is responsible to handle the database.
+     * \brief   Returns the pointer to the database engine handler object, which is responsible to
+     *          handle the database.
      **/
-    inline const LogDatabaseEngine * getDatabaseEngine() const;
-    inline LogDatabaseEngine * getDatabaseEngine();
+    inline const LogDatabaseEngine * database_engine() const;
+    /**
+     * \brief   Returns the pointer to the database engine handler object, which is responsible to
+     *          handle the database.
+     * \note    Non-const overload. Allows modification of the database engine.
+     **/
+    inline LogDatabaseEngine * database_engine();
 
     /**
-     * \brief   Call to set the logging database engine object.
-     *          If nullptr, no data is logged in the database.
-     *          Otherwise, the log messages are forwarded to the 
-     *          database engine for further processing.
-     * \param   dbEngine    The pointer to the log database engine to save log messages.
-     *                      If nullptr, no message is forwarded to the database engine.
+     * \brief   Call to set the logging database engine object. If nullptr, no data is logged in the
+     *          database. Otherwise, the log messages are forwarded to the database engine for
+     *          further processing.
+     *
+     * \param   dbEngine    The pointer to the log database engine to save log messages. If nullptr,
+     *                      no message is forwarded to the database engine.
      **/
-    inline void setDatabaseEngine(LogDatabaseEngine * dbEngine);
+    inline void set_database_engine(LogDatabaseEngine * dbEngine);
 
     /**
-     * \brief   Returns true if the logging database engine is nut null.
+     * \brief   Returns true if the logging database engine is not null.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -91,51 +96,52 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Initializes and opens the logger. If this method returns true,
-     *          the log manager will start forwarding messages for logging.
-     *          If it returns false, the log manager assumes the logger is not
-     *          initialized and will not send messages for logging.
-     *          The logger must be opened before any messages can be logged.
+     * \brief   Initializes and opens the logger. If this method returns true, the log manager will
+     *          start forwarding messages for logging. If it returns false, the log manager assumes
+     *          the logger is not initialized and will not send messages for logging. The logger
+     *          must be opened before any messages can be logged.
+     *
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    bool openLogger() override;
+    bool open_logger() override;
 
     /**
-     * \brief   Called to close logger and stop logging.
+     * \brief   Closes the logger and stops logging.
      **/
-    void closeLogger() override;
+    void close_logger() override;
 
     /**
-     * \brief   Called when message should be logged.
-     *          Every logger should implement method to process logger specific logging.
+     * \brief   Called when message should be logged. Every logger should implement method to
+     *          process logger specific logging.
+     *
+     * \param   log_message     The logging message to process.
      **/
-    void logMessage( const NELogging::LogEntry & logMessage ) override;
+    void log_message( const NELogging::LogEntry & log_message ) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    bool isLoggerOpened() const override;
+    bool is_logger_opened() const override;
 
 public:
     /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
+     * \brief   Flushes queued logs. Some loggers might ignore this.
      **/
-    void flushLogs();
+    void flush_logs();
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Creates message layout objects. Returns true if succeeded.
-     *          Overwrite method to change layouts.
+     * \brief   Creates message layout objects and returns true if succeeded.
      **/
-    bool createLayouts() override;
+    bool create_layouts() override;
 
     /**
-     * \brief   Release previously crated layouts
+     * \brief   Releases previously created layouts.
      **/
-    void releaseLayouts() override;
+    void release_layouts() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -151,6 +157,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     DatabaseLogger() = delete;
     AREG_NOCOPY_NOMOVE(DatabaseLogger);
 };
@@ -159,25 +168,25 @@ private:
 // DatabaseLogger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
+inline const LogDatabaseEngine * DatabaseLogger::database_engine() const
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
+inline LogDatabaseEngine * DatabaseLogger::database_engine()
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline void DatabaseLogger::setDatabaseEngine(LogDatabaseEngine * dbEngine)
+inline void DatabaseLogger::set_database_engine(LogDatabaseEngine * dbEngine)
 {
     Lock lock(mLock);
     mDatabase = dbEngine;
 }
 
-inline bool DatabaseLogger::isValid() const
+inline bool DatabaseLogger::is_valid() const
 {
     Lock lock(mLock);
     return (mDatabase != nullptr);

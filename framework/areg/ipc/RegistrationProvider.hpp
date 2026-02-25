@@ -28,8 +28,7 @@ class ProxyAddress;
 // RegistrationProvider interface
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This is an interface to register and register the public
- *          service providers and service consumers.
+ * \brief   Interface for registering and unregistering remote service providers and consumers.
  **/
 class AREG_API RegistrationProvider
 {
@@ -38,7 +37,7 @@ class AREG_API RegistrationProvider
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected constructor.
+     * \brief
      **/
     RegistrationProvider() = default;
 
@@ -56,38 +55,40 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Call to register the remote service provider in the system and connect with service consumers.
-     *          When service provider is registered, the service provider and all waiting service consumers
-     *          receive appropriate connection notifications.
-     * \param   stubService     The address of service provider to register in the system.
-     * \return  Returns true if succeeded registration.
+     * \brief   Registers remote service provider and connects with waiting service consumers. All
+     *          parties receive connection notifications.
+     *
+     * \param   stubService     Address of service provider to register.
+     * \return  Returns true if registration succeeded.
      **/
-    virtual bool registerServiceProvider(const StubAddress& stubService) = 0;
+    virtual bool register_service_provider(const StubAddress& stubService) = 0;
 
     /**
-     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
-     *          All connected service consumers automatically receive disconnect notifications.
-     * \param   stubService     The address of service provider to unregister in the system.
-     * \param   reason          The reason to unregister and disconnect the service provider.
+     * \brief   Unregisters service provider and disconnects all service consumers. Connected
+     *          consumers receive disconnect notifications.
+     *
+     * \param   stubService     Address of service provider to unregister.
+     * \param   reason          Reason for unregistration.
      **/
-    virtual void unregisterServiceProvider(const StubAddress& stubService, const NEService::DisconnectReason reason) = 0;
+    virtual void unregister_service_provider(const StubAddress& stubService, const NEService::DisconnectReason reason) = 0;
 
     /**
-     * \brief   Call to register the remote service consumer in the system and connect to service provider.
-     *          If the service provider is already available, the service consumer and the service provider
-     *          receive a connection notification.
-     * \param   proxyService    The address of the service consumer to register in system.
-     * \return  Returns true if registration process started with success. Otherwise, it returns false.
+     * \brief   Registers remote service consumer and connects to service provider if available.
+     *          Both parties receive connection notification.
+     *
+     * \param   proxyService    Address of service consumer to register.
+     * \return  Returns true if registration started successfully.
      **/
-    virtual bool registerServiceConsumer(const ProxyAddress& proxyService) = 0;
+    virtual bool register_service_consumer(const ProxyAddress& proxyService) = 0;
 
     /**
-     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
-     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
-     * \param   proxyService    The address of the service consumer to unregister from the system.
-     * \param   reason          The reason to unregister and disconnect the service consumer.
+     * \brief   Unregisters service consumer and disconnects from service provider. Both parties
+     *          receive disconnect notification.
+     *
+     * \param   proxyService    Address of service consumer to unregister.
+     * \param   reason          Reason for unregistration.
      **/
-    virtual void unregisterServiceConsumer(const ProxyAddress& proxyService, const NEService::DisconnectReason reason) = 0;
+    virtual void unregister_service_consumer(const ProxyAddress& proxyService, const NEService::DisconnectReason reason) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

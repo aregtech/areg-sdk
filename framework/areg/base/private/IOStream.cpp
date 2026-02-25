@@ -22,28 +22,28 @@
 // InStream class implementation: to read data from
 //////////////////////////////////////////////////////////////////////////
 
-uint8_t InStream::read8Bits() const
+uint8_t InStream::read8_bits() const
 {
     uint8_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 1 );
     return result;
 }
 
-uint16_t InStream::read16Bits() const
+uint16_t InStream::read16_bits() const
 {
     uint16_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 2 );
     return result;
 }
 
-uint32_t InStream::read32Bits() const
+uint32_t InStream::read32_bits() const
 {
     uint32_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 4 );
     return result;
 }
 
-uint64_t InStream::read64Bits() const
+uint64_t InStream::read64_bits() const
 {
     uint64_t result{ 0u };
     read( reinterpret_cast<uint8_t *>(&result), 8 );
@@ -54,22 +54,22 @@ uint64_t InStream::read64Bits() const
 // OutStream class implementation: to write data to
 //////////////////////////////////////////////////////////////////////////
 
-bool OutStream::write8Bits( uint8_t value8Bit )
+bool OutStream::write8_bits( uint8_t value8Bit )
 {
     return write( reinterpret_cast<const uint8_t *>(&value8Bit), 1) == 1;
 }
 
-bool OutStream::write16Bits( uint16_t value16Bit )
+bool OutStream::write16_bits( uint16_t value16Bit )
 {
     return write( reinterpret_cast<const uint8_t *>(&value16Bit), 2) == 2;
 }
 
-bool OutStream::write32Bits( uint32_t value32Bit )
+bool OutStream::write32_bits( uint32_t value32Bit )
 {
     return write( reinterpret_cast<const uint8_t *>(&value32Bit), 4) == 4;
 }
 
-bool OutStream::write64Bits( uint64_t value64Bit )
+bool OutStream::write64_bits( uint64_t value64Bit )
 {
     return write( reinterpret_cast<const uint8_t *>(&value64Bit), 8) == 8;
 }

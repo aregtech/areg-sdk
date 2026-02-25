@@ -47,12 +47,8 @@
  * ResponseEvent class, used to send responses
  ************************************************************************/
 /**
- * \brief   Generic Response Event object used to trigger response or 
- *          attribute update events on Proxy side.
- *          Response Event is derived from Service Response event and
- *          should be base class for all Service Interface specific
- *          response and update calls. It is containing data object to 
- *          transfer message specific parameter information.
+ * \brief   Service response event sent from stub to proxy; carries serialized response/update data
+ *          and target proxy address.
  **/
 class AREG_API ResponseEvent   : public ServiceResponseEvent
 {
@@ -66,13 +62,13 @@ class AREG_API ResponseEvent   : public ServiceResponseEvent
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Initializes event. Sets target address, result type and response ID, etc.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	result	    The type of result to indicate whether it is response or update event, as well as to specify
-     *                      message validation flag.
-     * \param	respId	    The ID of response. Can also be update ID.
-     * \param   eventType   The event type.
-     * \param   seqNr       The call sequence number.
+     * \brief   Initializes a response event with target address, result type, and response ID.
+     *
+     * \param   proxyTarget     Target proxy address.
+     * \param   result          Result type indicating success/failure and validation.
+     * \param   respId          Response or update ID.
+     * \param   eventType       Event type.
+     * \param   seqNr           Sequence number for ordering.
      **/
     ResponseEvent( const ProxyAddress & proxyTarget
                  , const NEService::ResultType result
@@ -81,14 +77,15 @@ protected:
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
-     * \brief	Initializes event. Sets buffer of serialized arguments, event target address, result type and response ID.
-     * \param	args	    Shared Buffer object with information of serialized parameters.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	result	    The type of result to indicate whether it is response or update event, as well as to specify
-     *                      message validation flag.
-     * \param	respId	    The ID of response. Can also be update ID.
-     * \param   seqNr       The call sequence number.
-     * \param	name	    Optional. Name for event data. Can be nullptr.
+     * \brief   Initializes a response event with serialized data.
+     *
+     * \param   args            Serialized response parameters.
+     * \param   proxyTarget     Target proxy address.
+     * \param   result          Result type indicating success/failure and validation.
+     * \param   respId          Response or update ID.
+     * \param   eventType       Event type.
+     * \param   seqNr           Sequence number for ordering.
+     * \param   name            Optional data stream name.
      **/
     ResponseEvent( const EventDataStream & args
                  , const ProxyAddress & proxyTarget
@@ -96,18 +93,20 @@ protected:
                  , uint32_t respId
                  , Event::EventType eventType
                  , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                 , const String & name = String::getEmptyString() );
+                 , const String & name = String::empty_string() );
 
     /**
-     * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	src	        The Event source to copy data.
+     * \brief   Clones an existing response but changes the target proxy address.
+     *
+     * \param   proxyTarget     New target proxy address.
+     * \param   src             Source event to clone.
      **/
     ResponseEvent( const ProxyAddress & proxyTarget, const ResponseEvent & src );
 
     /**
-     * \brief   Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
+     * \brief   Initializes the event from a stream.
+     *
+     * \param   stream      Input stream to read data.
      **/
     ResponseEvent( const InStream & stream );
 
@@ -121,32 +120,30 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns event data object.
+     * \brief   Returns the event data object.
      **/
-    inline const EventData & getData() const;
+    inline const EventData & data() const;
 
     /**
-     * \brief   Returns data type of request data
+     * \brief   Returns the data type of the response.
      **/
-    inline NEService::MessageDataType getDataType() const;
+    inline NEService::MessageDataType data_type() const;
 
     /**
-     * \brief   Returns reference of data input streaming object
-     *          to deserialize parameters.
+     * \brief   Returns the input stream for deserializing response parameters.
      **/
-    inline const InStream & getReadStream() const;
+    inline const InStream & read_stream() const;
 
     /**
-     * \brief   Returns reference of data output streaming object
-     *          to serialize parameters.
+     * \brief   Returns the output stream for serializing response parameters.
      **/
-    inline OutStream & getWriteStream();
+    inline OutStream & write_stream();
 
 protected:
     /**
-     * \brief   Returns data object valid for modification.
+     * \brief   Returns the event data object for modification.
      **/
-    inline EventData & getData();
+    inline EventData & data();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -156,18 +153,20 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
+     * \brief   Reads and initializes event data from a stream.
+     *
+     * \param   stream      Input stream to read data.
+     * \return  The input stream.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const InStream & read_stream( const InStream & stream ) override;
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
+     * \brief   Writes event data to a stream.
+     *
+     * \param   stream      Output stream to write data.
+     * \return  The output stream.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    OutStream & write_stream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -182,6 +181,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ResponseEvent() = delete;
     AREG_NOCOPY_NOMOVE( ResponseEvent );
 };
@@ -193,9 +195,8 @@ private:
  * LocalResponseEvent class, used to send responses
  ************************************************************************/
 /**
- * \brief   Generic Local Response Event object used to trigger response or 
- *          attribute update events on Proxy side. It is not used
- *          for remote service interface communication
+ * \brief   Generic Local Response Event object for triggering response or attribute update events
+ *          on Proxy side within same process.
  **/
 class AREG_API LocalResponseEvent : public    ResponseEvent
 {
@@ -209,12 +210,13 @@ class AREG_API LocalResponseEvent : public    ResponseEvent
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Initializes local event. Sets target address, result type and response ID, etc.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	result	    The type of result to indicate whether it is response or update event, as well as to specify
-     *                      message validation flag.
-     * \param	respId	    The ID of response. Can also be update ID.
-     * \param   seqNr       The call sequence number.
+     * \brief   Initializes local event with target address, result type, and response ID.
+     *
+     * \param   proxyTarget     The address of target Proxy
+     * \param   result          The type of result to indicate whether it is response or update
+     *                          event, as well as to specify message validation flag.
+     * \param   respId          The ID of response. Can also be update ID.
+     * \param   seqNr           The call sequence number.
      **/
     LocalResponseEvent( const ProxyAddress & proxyTarget
                       , NEService::ResultType result
@@ -222,32 +224,37 @@ protected:
                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
 
     /**
-     * \brief	Initializes local event. Sets buffer of serialized arguments, event target address, result type and response ID.
-     * \param	args	    Shared Buffer object with information of serialized parameters.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	result	    The type of result to indicate whether it is response or update event, as well as to specify
-     *                      message validation flag.
-     * \param	respId	    The ID of response. Can also be update ID.
-     * \param   seqNr       The call sequence number.
-     * \param	name	    Optional. Name for event data. Can be nullptr.
+     * \brief   Initializes local event with serialized arguments, target address, result type, and
+     *          response ID.
+     *
+     * \param   args            Shared Buffer object with information of serialized parameters.
+     * \param   proxyTarget     The address of target Proxy
+     * \param   result          The type of result to indicate whether it is response or update
+     *                          event, as well as to specify message validation flag.
+     * \param   respId          The ID of response. Can also be update ID.
+     * \param   seqNr           The call sequence number.
+     * \param   name            Optional. name for event data. Can be nullptr.
      **/
     LocalResponseEvent( const EventDataStream & args
                       , const ProxyAddress & proxyTarget
                       , NEService::ResultType result
                       , uint32_t respId
                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                      , const String & name = String::getEmptyString() );
+                      , const String & name = String::empty_string() );
 
     /**
-     * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	src	        The Event source to copy data.
+     * \brief   Clones existing information, except target Proxy address to send same message to
+     *          different Proxies.
+     *
+     * \param   proxyTarget     The address of target Proxy
+     * \param   src             The Event source to copy data.
      **/
     LocalResponseEvent(const ProxyAddress & proxyTarget, const LocalResponseEvent & src);
 
     /**
-     * \brief   Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
+     * \brief   Creates event from streaming object and initializes data.
+     *
+     * \param   stream      The streaming object to read data
      **/
     LocalResponseEvent(const InStream & stream);
 
@@ -260,6 +267,9 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     LocalResponseEvent() = delete;
     AREG_NOCOPY_NOMOVE( LocalResponseEvent );
 };
@@ -271,9 +281,8 @@ private:
  * RemoteResponseEvent class, used to send responses
  ************************************************************************/
 /**
- * \brief   Generic Remote Response Event object used to trigger response or 
- *          attribute update events on Proxy side. It is not used
- *          for remote service interface communication
+ * \brief   Generic Remote Response Event object for triggering response or attribute update events
+ *          on Proxy side.
  **/
 class AREG_API RemoteResponseEvent: public    ResponseEvent
 {
@@ -288,12 +297,13 @@ class AREG_API RemoteResponseEvent: public    ResponseEvent
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Initializes remote event. Sets target address, result type and response ID, etc.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	result	    The type of result to indicate whether it is response or update event, as well as to specify
-     *                      message validation flag.
-     * \param	respId	    The ID of response. Can also be update ID.
-     * \param   seqNr       The call sequence number.
+     * \brief   Initializes remote event with target address, result type, and response ID.
+     *
+     * \param   proxyTarget     The address of target Proxy
+     * \param   result          The type of result to indicate whether it is response or update
+     *                          event, as well as to specify message validation flag.
+     * \param   respId          The ID of response. Can also be update ID.
+     * \param   seqNr           The call sequence number.
      **/
     RemoteResponseEvent( const ProxyAddress & proxyTarget
                        , NEService::ResultType result
@@ -301,32 +311,37 @@ protected:
                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
-     * \brief	Initializes remote event. Sets buffer of serialized arguments, event target address, result type and response ID.
-     * \param	args	    Shared Buffer object with information of serialized parameters.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	result	    The type of result to indicate whether it is response or update event, as well as to specify
-     *                      message validation flag.
-     * \param	respId	    The ID of response. Can also be update ID.
-     * \param   seqNr       The call sequence number.
-     * \param	name	    Optional. Name for event data. Can be nullptr.
+     * \brief   Initializes remote event with serialized arguments, target address, result type, and
+     *          response ID.
+     *
+     * \param   args            Shared Buffer object with information of serialized parameters.
+     * \param   proxyTarget     The address of target Proxy
+     * \param   result          The type of result to indicate whether it is response or update
+     *                          event, as well as to specify message validation flag.
+     * \param   respId          The ID of response. Can also be update ID.
+     * \param   seqNr           The call sequence number.
+     * \param   name            Optional. name for event data. Can be nullptr.
      **/
     RemoteResponseEvent( const EventDataStream & args
                        , const ProxyAddress & proxyTarget
                        , NEService::ResultType result
                        , uint32_t respId
                        , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                       , const String & name = String::getEmptyString() );
+                       , const String & name = String::empty_string() );
 
     /**
-     * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
-     * \param	proxyTarget	The address of target Proxy
-     * \param	src	        The Event source to copy data.
+     * \brief   Clones existing information, except target Proxy address to send same message to
+     *          different Proxies.
+     *
+     * \param   proxyTarget     The address of target Proxy
+     * \param   src             The Event source to copy data.
      **/
     RemoteResponseEvent(const ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
 
     /**
-     * \brief   Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
+     * \brief   Creates event from streaming object and initializes data.
+     *
+     * \param   stream      The streaming object to read data
      **/
     RemoteResponseEvent(const InStream & stream);
 
@@ -342,19 +357,23 @@ protected:
 
     /**
      * \brief   Sets the target communication channel object.
+     *
      * \param   channel     The communication channel to set in remote event.
      **/
-    inline void setTargetChannel( const Channel & channel );
+    inline void set_target_channel( const Channel & channel );
 
     /**
      * \brief   Returns the event communication channel object.
      **/
-    inline const Channel & getTargetChannel() const;
+    inline const Channel & target_channel() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     RemoteResponseEvent() = delete;
     AREG_NOCOPY_NOMOVE( RemoteResponseEvent );
 };
@@ -363,43 +382,43 @@ private:
 // ResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const EventData & ResponseEvent::getData() const
+inline const EventData & ResponseEvent::data() const
 {
     return mData;
 }
 
-inline NEService::MessageDataType ResponseEvent::getDataType() const
+inline NEService::MessageDataType ResponseEvent::data_type() const
 {
-    return mData.getDataType();
+    return mData.data_type();
 }
 
-inline EventData & ResponseEvent::getData()
+inline EventData & ResponseEvent::data()
 {
     return mData;
 }
 
-inline const InStream & ResponseEvent::getReadStream() const
+inline const InStream & ResponseEvent::read_stream() const
 {
-    return mData.getReadStream();
+    return mData.read_stream();
 }
 
-inline OutStream & ResponseEvent::getWriteStream()
+inline OutStream & ResponseEvent::write_stream()
 {
-    return mData.getWriteStream();
+    return mData.write_stream();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteResponseEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void RemoteResponseEvent::setTargetChannel(const Channel & channel)
+inline void RemoteResponseEvent::set_target_channel(const Channel & channel)
 {
-    mTargetProxyAddress.setChannel(channel);
+    mTargetProxyAddress.set_channel(channel);
 }
 
-inline const Channel & RemoteResponseEvent::getTargetChannel() const
+inline const Channel & RemoteResponseEvent::target_channel() const
 {
-    return mTargetProxyAddress.getChannel();
+    return mTargetProxyAddress.channel();
 }
 
 #endif  // AREG_COMPONENT_RESPONSEEVENTS_HPP

@@ -68,23 +68,23 @@ SqliteRow& SqliteRow::operator = (SqliteRow&& src) noexcept
     return (*this);
 }
 
-int32_t SqliteRow::getInt(int32_t column) const
+int32_t SqliteRow::as_int(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return sqlite3_column_int(_sqlite_stmt(mStatement), column);
 }
 
-int64_t SqliteRow::getInt64(int32_t column) const
+int64_t SqliteRow::int64(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return sqlite3_column_int64(_sqlite_stmt(mStatement), column);
 }
 
-double SqliteRow::getDouble(int32_t column) const
+double SqliteRow::as_double(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return sqlite3_column_double(_sqlite_stmt(mStatement), column);
 }
@@ -96,55 +96,55 @@ String SqliteRow::getText(int32_t column) const
 
 bool SqliteRow::isNull(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_NULL);
 }
 
 bool SqliteRow::isColumnValid(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) != SQLITE_NULL);
 }
 
 bool SqliteRow::isString(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_TEXT);
 }
 
 bool SqliteRow::isInteger(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_INTEGER);
 }
 
 bool SqliteRow::isInteger64(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_INTEGER);
 }
 
 bool SqliteRow::isDouble(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     return (sqlite3_column_type(_sqlite_stmt(mStatement), column) == SQLITE_FLOAT);
 }
 
 int32_t SqliteRow::getColumnCount() const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     return sqlite3_column_count(_sqlite_stmt(mStatement));
 }
 
 String SqliteRow::getColumnName(int32_t column) const
 {
-    ASSERT(isValid());
+    ASSERT(is_valid());
     ASSERT(column >= 0);
     const char* columnName = sqlite3_column_name(_sqlite_stmt(mStatement), column);
     return String((columnName != nullptr) ? columnName : String::EmptyString);
@@ -152,8 +152,8 @@ String SqliteRow::getColumnName(int32_t column) const
 
 int32_t SqliteRow::getColumnIndex(const String& columnName) const
 {
-    ASSERT(isValid());
-    ASSERT(!columnName.isEmpty());
+    ASSERT(is_valid());
+    ASSERT(!columnName.is_empty());
     int32_t columnCount = getColumnCount();
     for (int index = 0; index < columnCount; ++index)
     {

@@ -38,14 +38,14 @@ ThreadLocalStorage::~ThreadLocalStorage()
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-NEMemory::Primitive ThreadLocalStorage::getStorageItem( const String & Key ) const
+NEMemory::Primitive ThreadLocalStorage::storage_item( const String & Key ) const
 {
     NEMemory::Primitive result{ NEMemory::InvalidElement };
 
-    StorageList::LISTPOS pos = mStorageList.firstPosition();
-    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.first_position();
+    for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
-        const ThreadLocalStorage::StorageItem& value = mStorageList.valueAtPosition(pos);
+        const ThreadLocalStorage::StorageItem& value = mStorageList.value_at_position(pos);
         if (value.first == Key)
         {
             result = value.second;
@@ -56,50 +56,50 @@ NEMemory::Primitive ThreadLocalStorage::getStorageItem( const String & Key ) con
     return result;
 }
 
-void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::Primitive Value)
+void ThreadLocalStorage::set_storage_item(const String & Key, NEMemory::Primitive Value)
 {
-    mStorageList.pushFirst(ThreadLocalStorage::StorageItem(Key, Value));
+    mStorageList.push_first(ThreadLocalStorage::StorageItem(Key, Value));
 }
 
-void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
+void ThreadLocalStorage::set_storage_item( const String & Key, const void* Value )
 {
     NEMemory::Primitive aln;
     aln.valPtr.mElement = const_cast<void *>(Value);
-    setStorageItem(Key, aln);
+    set_storage_item(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const String & Key, uint32_t Value )
+void ThreadLocalStorage::set_storage_item( const String & Key, uint32_t Value )
 {
     NEMemory::Primitive aln;
     aln.valUInt.mElement = Value;
-    setStorageItem(Key, aln);
+    set_storage_item(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const String & Key, uint64_t Value )
+void ThreadLocalStorage::set_storage_item( const String & Key, uint64_t Value )
 {
     NEMemory::Primitive aln;
     aln.valUInt64.mElement = Value;
-    setStorageItem(Key, aln);
+    set_storage_item(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const String & Key, double Value )
+void ThreadLocalStorage::set_storage_item( const String & Key, double Value )
 {
     NEMemory::Primitive aln;
     aln.valDouble.mElement = Value;
-    setStorageItem(Key, aln);
+    set_storage_item(Key, aln);
 }
 
-NEMemory::Primitive ThreadLocalStorage::removeStoragteItem( const String & Key )
+NEMemory::Primitive ThreadLocalStorage::remove_storagte_item( const String & Key )
 {
     NEMemory::Primitive result{ {0} };
-    StorageList::LISTPOS pos = mStorageList.firstPosition();
-    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.first_position();
+    for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
-        const ThreadLocalStorage::StorageItem & value = mStorageList.valueAtPosition(pos);
+        const ThreadLocalStorage::StorageItem & value = mStorageList.value_at_position(pos);
         if (value.first == Key)
         {
             result = value.second;
-            mStorageList.removeAt(pos);
+            mStorageList.remove_at(pos);
             break;
         }
     }
@@ -107,19 +107,19 @@ NEMemory::Primitive ThreadLocalStorage::removeStoragteItem( const String & Key )
     return result;
 }
 
-bool ThreadLocalStorage::existKey( const String & Key ) const
+bool ThreadLocalStorage::exist( const String & Key ) const
 {
-    StorageList::LISTPOS pos = mStorageList.firstPosition();
-    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.first_position();
+    for ( ; mStorageList.is_valid_position(pos); pos = mStorageList.next_position(pos))
     {
-        if (mStorageList.valueAtPosition(pos).first== Key)
+        if (mStorageList.value_at_position(pos).first== Key)
             break;
     }
 
-    return mStorageList.isValidPosition(pos);
+    return mStorageList.is_valid_position(pos);
 }
 
-const String & ThreadLocalStorage::getName() const
+const String & ThreadLocalStorage::name() const
 {
-    return mOwningThread.getName();
+    return mOwningThread.name();
 }

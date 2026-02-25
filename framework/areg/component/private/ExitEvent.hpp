@@ -21,9 +21,7 @@
 #include "areg/component/Event.hpp"
 
 /**
- * \brief   Special exit event used to indicate completion of a job.
- *          The exit event is a singleton object, which is shared by more than thread.
- *          Normally, used to exit thread.
+ * \brief   Singleton event used to signal thread completion. Shared across multiple threads.
  **/
 class ExitEvent : public Event
 {
@@ -37,16 +35,16 @@ class ExitEvent : public Event
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the instance of special exit event object
+     * \brief   Returns the singleton exit event instance.
      **/
-    static ExitEvent & getExitEvent();
+    static ExitEvent & exit_event();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Default constructor. Hidden. Instantiated only in static method
+     * \brief   Hidden constructor. The singleton is instantiated internally.
      **/
     ExitEvent();
 
@@ -61,9 +59,7 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Call to destroy Event object.
-     *          Overwrite if there is any special action should be performed
-     *          before destroying event object.
+     * \brief   Destroys the event object. Override to perform cleanup before destruction.
      **/
     void destroy() override;
 

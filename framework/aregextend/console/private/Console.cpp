@@ -22,7 +22,7 @@
 // Console class implementations.
 //////////////////////////////////////////////////////////////////////////
 
-Console& Console::getInstance()
+Console& Console::instance()
 {
     static Console _instance;   // singleton instance.
     return _instance;
@@ -84,10 +84,10 @@ bool Console::readInputList(const char* format, va_list varList) const
     return _osReadInputList(format, varList);
 }
 
-String Console::readString() const
+String Console::read_string() const
 {
     char buffer[512] { 0 };
-    return String(readInputs("%510s", buffer) ? buffer : String::getEmptyString());
+    return String(readInputs("%510s", buffer) ? buffer : String::empty_string());
 }
 
 void Console::outputMsg(Console::Coord pos, const char* format, ...) const
@@ -96,7 +96,7 @@ void Console::outputMsg(Console::Coord pos, const char* format, ...) const
     va_start(argptr, format);
 
     String text;
-    text.formatList(format, argptr);
+    text.format_list(format, argptr);
     va_end(argptr);
 
     outputStr(pos, text);
@@ -108,7 +108,7 @@ void Console::printMsg(const char* format, ...) const
     va_start(argptr, format);
 
     String text;
-    text.formatList(format, argptr);
+    text.format_list(format, argptr);
     va_end(argptr);
 
     _osOutputText(text);

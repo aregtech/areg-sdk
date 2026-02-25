@@ -37,7 +37,7 @@ constexpr std::string_view   INVALID_THREAD_NAME     { "INVALID_THREAD_NAME" };
 // ThreadAddress
 /************************************************************************/
 
-const ThreadAddress & ThreadAddress::getInvalidThreadAddress()
+const ThreadAddress & ThreadAddress::invalid_thread_address()
 {
     static const ThreadAddress _invalidAddress;
     return _invalidAddress;
@@ -57,14 +57,14 @@ ThreadAddress::ThreadAddress( const char * threadName )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mThreadName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
 ThreadAddress::ThreadAddress( const String & threadName )
     : mThreadName   ( threadName )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
 ThreadAddress::ThreadAddress( const ThreadAddress & src )
@@ -84,10 +84,10 @@ ThreadAddress::ThreadAddress( const InStream & stream )
     : mThreadName   ( stream )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 }
 
-bool ThreadAddress::isValid() const
+bool ThreadAddress::is_valid() const
 {
     return (mMagicNum != NEMath::CHECKSUM_IGNORE);
 }
@@ -95,15 +95,15 @@ bool ThreadAddress::isValid() const
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
+String ThreadAddress::to_path( const ThreadAddress& threadAddress )
 {
-    return threadAddress.convToString();
+    return threadAddress.to_string();
 }
 
-ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** out_nextPart /*= nullptr*/ )
+ThreadAddress ThreadAddress::from_path( const char* threadPath, const char** out_nextPart /*= nullptr*/ )
 {
     ThreadAddress result;
-    result.convFromString(threadPath, out_nextPart);
+    result.conv_from_string(threadPath, out_nextPart);
     return result;
 }
 
@@ -111,7 +111,7 @@ ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const ch
 // Operators
 //////////////////////////////////////////////////////////////////////////
 
-void ThreadAddress::convFromString(const char * threadPath, const char** out_nextPart /*= nullptr*/)
+void ThreadAddress::conv_from_string(const char * threadPath, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource   = threadPath;
     if (out_nextPart != nullptr)
@@ -119,8 +119,8 @@ void ThreadAddress::convFromString(const char * threadPath, const char** out_nex
         *out_nextPart = threadPath;
     }
 
-    mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mMagicNum    = ThreadAddress::_magicNumber(*this);
+    mThreadName  = String::substr(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mMagicNum    = ThreadAddress::_magic_number(*this);
 
     if (out_nextPart != nullptr)
     {
@@ -128,12 +128,12 @@ void ThreadAddress::convFromString(const char * threadPath, const char** out_nex
     }
 }
 
-uint32_t ThreadAddress::_magicNumber(const ThreadAddress & addrThread)
+uint32_t ThreadAddress::_magic_number(const ThreadAddress & addrThread)
 {
     uint32_t result = NEMath::CHECKSUM_IGNORE;
-    if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME))
+    if ((addrThread.mThreadName.is_empty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME))
     {
-        result = NEMath::crc32Calculate(addrThread.mThreadName.getString());
+        result = NEMath::crc32_calculate(addrThread.mThreadName.as_string());
     }
 
     return result;

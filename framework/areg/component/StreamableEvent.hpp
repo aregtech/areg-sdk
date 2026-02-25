@@ -26,12 +26,8 @@
 // StreamableEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Streamable Event is communication event and provides 
- *          possibility to serialize and deserialize event data in the 
- *          streaming object. All Events used to transfer data are
- *          declared as streamable Event. The Streamable Event is not
- *          created and used directly. Instead, one of derived classes
- *          should be used.
+ * \brief   Base class for events that serialize and deserialize data using streaming objects. Not
+ *          created directly; use derived classes instead.
  **/
 class AREG_API StreamableEvent : public Event
 {
@@ -49,14 +45,16 @@ class AREG_API StreamableEvent : public Event
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Creates streamable event and defines event type.
-     * \param   eventType   The type of event.
+     * \brief   Initializes a streamable event with the specified event type.
+     *
+     * \param   eventType       The type of event.
      **/
     explicit StreamableEvent( Event::EventType eventType );
 
     /**
-     * \brief   Creates streamable event and initialize data
-     * \param   stream  The streaming object to read data
+     * \brief   Initializes a streamable event by deserializing data from the given input stream.
+     *
+     * \param   stream      The input stream to read event data from.
      **/
     StreamableEvent( const InStream & stream );
 
@@ -73,23 +71,28 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
+     * \brief   Deserializes event data from the given input stream.
+     *
+     * \param   stream      The input stream to read from.
+     * \return  The input stream for method chaining.
      **/
-    virtual const InStream & readStream( const InStream & stream );
+    virtual const InStream & read_stream( const InStream & stream );
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
+     * \brief   Serializes event data to the given output stream.
+     *
+     * \param   stream      The output stream to write to.
+     * \return  The output stream for method chaining.
      **/
-    virtual OutStream & writeStream( OutStream & stream ) const;
+    virtual OutStream & write_stream( OutStream & stream ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     StreamableEvent() = delete;
     AREG_NOCOPY_NOMOVE( StreamableEvent );
 };

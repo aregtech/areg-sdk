@@ -32,11 +32,8 @@ class ClientInfo;
 // ServerInfo class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Server Info is a helper class used by Routing Service,
- *          which contains information of Stub address,
- *          target Stub address, server state and Service Info objects.
- *          Every instantiated Stub is registered in Router Service,
- *          which will notify clients about service availability.
+ * \brief   Stores stub server information for the routing service, including address, state, and
+ *          service details. Used to track server status and notify clients of availability.
  **/
 class ServerInfo
 {
@@ -45,43 +42,44 @@ class ServerInfo
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default Constructor.
-     *          Creates Server Info with invalid Stub address and sets state Undefined.
+     * \brief   Creates server info with invalid stub address and undefined state.
      **/
     ServerInfo();
 
     /**
-     * \brief   Initialization constructor.
-     *          Creates Server Info object, copies given address
-     *          and sets state to Registered if specified server address is valid.
-     * \param   server  The address of Stub server
+     * \brief   Initializes with stub address; sets state to Registered if valid.
+     *
+     * \param   server      The stub server address.
      **/
     explicit ServerInfo( const StubAddress & server );
 
     /**
-     * \brief   Initialization constructor.
-     *          Creates Server Info object, copies given address
-     *          and sets state to Registered if specified server address is valid.
-     * \param   server  The address of Stub server
+     * \brief   Initializes with stub address (move); sets state to Registered if valid.
+     *
+     * \param   server      The stub server address.
+     * \note    Move overload.
      **/
     explicit ServerInfo( StubAddress && server );
 
     /**
-     * \brief   Initialization constructor.
-     *          Creates Server Info object, copies server address data from proxy address.
-     * \param   proxy   The Proxy address to extract data of Stub address
+     * \brief   Initializes with stub address extracted from proxy address.
+     *
+     * \param   proxy       The proxy address to extract stub address from.
      **/
     explicit ServerInfo( const ProxyAddress & proxy );
 
     /**
-     * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
+     * \brief
+     *
+     * \param   src     The source to copy.
      **/
     ServerInfo( const ServerInfo & src );
 
     /**
-     * \brief   Move constructor.
-     * \param   src     The source of data to move.
+     * \brief
+     *
+     * \param   src     The source to move.
+     * \note    Move overload.
      **/
     ServerInfo( ServerInfo && src ) noexcept;
 
@@ -95,67 +93,70 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies Server Info data from given source.
-     * \param   src     The source of Server Info to copy data.
+     * \brief   Copies server info data from given source.
+     *
+     * \param   src     The source to copy.
      **/
     ServerInfo & operator = ( const ServerInfo & src );
 
     /**
-     * \brief   Moves Server Info data from given source.
-     * \param   src     The source of Server Info to move data.
+     * \brief   Moves server info data from given source.
+     *
+     * \param   src     The source to move.
      **/
     ServerInfo & operator = ( ServerInfo && src ) noexcept;
 
     /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   server  The stub address to set.
+     * \brief   Sets stub address and state to Connected if valid, otherwise Undefined.
+     *
+     * \param   server      The stub address to set.
      **/
     ServerInfo & operator = ( const StubAddress & server );
 
     /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   server  The stub address to set.
+     * \brief   Sets stub address (move) and state to Connected if valid, otherwise Undefined.
+     *
+     * \param   server      The stub address to set.
      **/
     ServerInfo & operator = ( StubAddress && server ) noexcept;
 
     /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   addService  Service address.
+     * \brief   Sets stub address and state to Pending if valid, otherwise Undefined.
+     *
+     * \param   addService      The service address to convert.
      **/
     ServerInfo & operator = ( const ServiceAddress & addService );
 
     /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   addService  Service address.
+     * \brief   Sets stub address (move) and state to Pending if valid, otherwise Undefined.
+     *
+     * \param   addService      The service address to convert.
      **/
     ServerInfo & operator = ( ServiceAddress && addService ) noexcept;
 
     /**
-     * \brief   Returns true, if 2 Server Info objects are equal. Otherwise returns false.
-     * \param   other   Server Info object to compare
+     * \brief   Returns true if server info objects are equal.
+     *
+     * \param   other       The server info to compare.
      **/
     bool operator == ( const ServerInfo & other ) const;
 
     /**
-     * \brief   Returns true, if specified and the existing Stub address objects are equal. Otherwise returns false.
-     * \param   server  The Stub server address to compare
+     * \brief   Returns true if stub addresses are equal.
+     *
+     * \param   server      The stub address to compare.
      **/
     bool operator == ( const StubAddress & server ) const;
 
     /**
-     * \brief   Returns true, if the Service Info of specified Client Info object and the existing Service Info objects are equal.
-     *          Otherwise returns false.
-     * \param   proxy   The Proxy client address to compare
+     * \brief   Returns true if the stub address of this and the proxy are equal.
+     *
+     * \param   proxy       The proxy address to compare.
      **/
     bool operator == ( const ProxyAddress & proxy ) const;
 
     /**
-     * \brief   Converts Server Info object to unsigned integer.
-     *          The conversion is done based on Service Info conversion mechanism.
+     * \brief   Converts server info to 32-bit unsigned integer.
      **/
     explicit operator uint32_t () const;
 
@@ -164,32 +165,31 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns Stub server address
+     * \brief   Returns the stub server address.
      **/
-    inline const StubAddress & getAddress() const;
+    inline const StubAddress & address() const;
 
     /**
-     * \brief   Returns the state of Server Info.
-     *          The Server Info state is updated only when Stub address is set.
-     *          No separate Set-method presented
+     * \brief   Returns the server connection state.
      **/
-    inline NEService::ServiceConnectionState getConnectionStatus() const;
+    inline NEService::ServiceConnectionState connection_status() const;
 
     /**
-     * \brief   Changes the network connection status.
-     * \param   newConnection   The service connection status.
+     * \brief   Sets the connection status.
+     *
+     * \param   newConnection       The service connection status.
      **/
-    void setConnectionStatus( NEService::ServiceConnectionState newConnection );
+    void set_connection_status( NEService::ServiceConnectionState newConnection );
 
     /**
-     * \brief   Returns true if server status is Connected
+     * \brief   Returns true if server is connected.
      **/
-    inline bool isConnected() const;
+    inline bool is_connected() const;
 
     /**
-     * \brief   Returns true if server status is Pending
+     * \brief   Returns true if server is pending.
      **/
-    inline bool isWaiting() const;
+    inline bool is_waiting() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -219,7 +219,7 @@ namespace std
         //! A function to convert ServerInfo object to uint32_t.
         inline uint32_t operator()(const ServerInfo& key) const
         {
-            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.getAddress()));
+            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.address()));
         }
     };
 
@@ -229,7 +229,7 @@ namespace std
         //! A function operator to compare 2 ServerInfo objects.
         inline bool operator() (const ServerInfo& key1, const ServerInfo& key2) const
         {
-            return static_cast<const ServiceAddress&>(key1.getAddress()) == static_cast<const ServiceAddress&>(key2.getAddress());
+            return static_cast<const ServiceAddress&>(key1.address()) == static_cast<const ServiceAddress&>(key2.address());
         }
     };
 }
@@ -238,22 +238,22 @@ namespace std
 // ServerInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress& ServerInfo::getAddress() const
+inline const StubAddress& ServerInfo::address() const
 {
     return mServerAddress;
 }
 
-inline NEService::ServiceConnectionState ServerInfo::getConnectionStatus() const
+inline NEService::ServiceConnectionState ServerInfo::connection_status() const
 {
     return mServerState;
 }
 
-inline bool ServerInfo::isConnected() const
+inline bool ServerInfo::is_connected() const
 {
     return mServerState == NEService::ServiceConnectionState::Connected;
 }
 
-inline bool ServerInfo::isWaiting() const
+inline bool ServerInfo::is_waiting() const
 {
     return mServerState == NEService::ServiceConnectionState::Pending;
 }

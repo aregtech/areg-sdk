@@ -36,27 +36,27 @@ DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
 {
 }
 
-bool DebugOutputLogger::openLogger()
+bool DebugOutputLogger::open_logger()
 {
 #if defined(OUTPUT_DEBUG)
     if ( mIsOpened == false )
     {
-        if (mLogConfiguration.isDebugOutputLoggingEnabled())
+        if (mLogConfiguration.is_debug_logging_enabled())
         {
-            mIsOpened = createLayouts();
+            mIsOpened = create_layouts();
 
             if (mIsOpened)
             {
-                Process& curProcess = Process::getInstance();
+                Process& curProcess = Process::instance();
                 NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::formatString( logMsgHello.logMessage
+                String::format_string( logMsgHello.log_message
                                     , NELogging::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                    , Process::getString(curProcess.getEnvironment())
-                                    , curProcess.getFullPath().getString()
+                                    , Process::as_string(curProcess.environment())
+                                    , curProcess.full_path().as_string()
                                     , logMsgHello.logModuleId);
 
-                logMessage(logMsgHello);
+                log_message(logMsgHello);
             }
         }
     }
@@ -65,45 +65,45 @@ bool DebugOutputLogger::openLogger()
     return mIsOpened;
 }
 
-void DebugOutputLogger::closeLogger()
+void DebugOutputLogger::close_logger()
 {
 #if defined(OUTPUT_DEBUG)
     if ( mIsOpened )
     {
-        Process & curProcess = Process::getInstance();
+        Process & curProcess = Process::instance();
         NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::formatString( logMsgGoodbye.logMessage
+        String::format_string( logMsgGoodbye.log_message
                             , NELogging::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
-                            , Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath().getString()
+                            , Process::as_string(curProcess.environment())
+                            , curProcess.full_path().as_string()
                             , logMsgGoodbye.logModuleId);
-        logMessage(logMsgGoodbye);
+        log_message(logMsgGoodbye);
     }
 #endif  // !defined(OUTPUT_DEBUG)
 
-    releaseLayouts();
+    release_layouts();
     mIsOpened = false;
 }
 
 #if defined(OUTPUT_DEBUG)
 
-void DebugOutputLogger::logMessage(const NELogging::LogEntry & logMessage)
+void DebugOutputLogger::log_message(const NELogging::LogEntry & log_message)
 {
     if ( mIsOpened )
     {
-        switch (logMessage.logMsgType)
+        switch (log_message.logMsgType)
         {
         case NELogging::LogMessageType::MessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(*this));
+            layout_message().log_message(log_message, static_cast<OutStream&>(*this));
             break;
 
         case NELogging::LogMessageType::ScopeEnter:
-            getLayoutEnterScope().logMessage(logMessage, static_cast<OutStream&>(*this));
+            layout_enter_scope().log_message(log_message, static_cast<OutStream&>(*this));
             break;
 
         case NELogging::LogMessageType::ScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(*this) );
+            layout_exit_scope().log_message( log_message, static_cast<OutStream &>(*this) );
             break;
 
         default:
@@ -117,14 +117,14 @@ void DebugOutputLogger::logMessage(const NELogging::LogEntry & logMessage)
 
 #else // !defined(OUTPUT_DEBUG)
 
-void DebugOutputLogger::logMessage(const NELogging::LogEntry & /*logMessage*/)
+void DebugOutputLogger::log_message(const NELogging::LogEntry & /*log_message*/)
 {
 }
 
 #endif // !defined(OUTPUT_DEBUG)
 
 
-bool DebugOutputLogger::isLoggerOpened() const
+bool DebugOutputLogger::is_logger_opened() const
 {
     return mIsOpened;
 }
@@ -144,7 +144,7 @@ uint32_t DebugOutputLogger::write(const uint8_t * /* buffer */, uint32_t size)
 
 uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
 {
-    return write(buffer.getBuffer(), buffer.getSizeUsed());
+    return write(buffer.buffer(), buffer.size_used());
 }
 
 uint32_t DebugOutputLogger::write( const String & ascii )
@@ -152,7 +152,7 @@ uint32_t DebugOutputLogger::write( const String & ascii )
 #if defined(OUTPUT_DEBUG)
     mOutputMessageA += ascii;
 #endif  // defined(OUTPUT_DEBUG)
-    return ascii.getSpace();
+    return ascii.space();
 }
 
 uint32_t DebugOutputLogger::write( const WideString & wide )
@@ -160,19 +160,19 @@ uint32_t DebugOutputLogger::write( const WideString & wide )
 #if defined(OUTPUT_DEBUG)
     mOutputMessageA += wide;
 #endif  // !defined(OUTPUT_DEBUG)
-    return wide.getSpace();
+    return wide.space();
 }
 
 void DebugOutputLogger::flush()
 {
 #if defined(OUTPUT_DEBUG)
-    NEDebug::outputMessageOS(mOutputMessageA.getString());
+    NEDebug::output_message_os(mOutputMessageA.as_string());
 #endif // !defined(OUTPUT_DEBUG)
 
     mOutputMessageA.clear();
 }
 
-uint32_t DebugOutputLogger::getSizeWritable() const
+uint32_t DebugOutputLogger::size_writable() const
 {
     return static_cast<uint32_t>(0xFFFF);
 }

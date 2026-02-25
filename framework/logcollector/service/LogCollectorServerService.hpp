@@ -109,13 +109,13 @@ protected:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void connectedRemoteServiceChannel( const Channel & channel ) override;
+    void on_service_channel_connected( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void disconnectedRemoteServiceChannel( const Channel & channel ) override;
+    void on_service_channel_disconnected( const Channel & channel ) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -123,7 +123,7 @@ protected:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void lostRemoteServiceChannel( const Channel & channel ) override;
+    void on_service_channel_lost( const Channel & channel ) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -134,7 +134,7 @@ protected:
      *          In case of request message processing, the source should receive error notification.
      * \param   msgUnprocessed  Unprocessed message data.
      **/
-    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -143,29 +143,29 @@ protected:
     /**
      * \brief   Called when receive event the client connection is started.
      **/
-    void onServiceConnectionStarted() override;
+    void on_connection_started() override;
 
     /**
      * \brief   Called when receive event the client connection is stopped.
      **/
-    void onServiceConnectionStopped() override;
+    void on_connection_stopped() override;
 
     /**
      * \brief   Called when receive event the client connection is lost.
      **/
-    void onServiceConnectionLost() override;
+    void on_connection_lost() override;
 
     /**
      * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message. 
      **/
-    void onServiceMessageReceived(const RemoteMessage & msgReceived) override;
+    void on_message_received(const RemoteMessage & msgReceived) override;
 
     /**
      * \brief   Called when need to send a communication message.
      * \param   msgSend     The communication message to send. 
      **/
-    void onServiceMessageSend(const RemoteMessage & msgSend) override;
+    void on_message_send(const RemoteMessage & msgSend) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -177,7 +177,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void process_timer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

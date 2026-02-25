@@ -40,8 +40,7 @@ class SyncObjectPosix;
 // SyncObjectPosix class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   POSIX specific Synchronization object base class.
- *          All synchronization objects should inherit from this class.
+ * \brief   POSIX-specific base class for all synchronization objects. Stores object type and name.
  **/
 class SyncObjectPosix
 {
@@ -59,9 +58,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialization constructor.
-     * \param   syncType    The type of synchronization object.
-     * \param   asciiName   The name of synchronization object.
+     * \brief   Initializes the POSIX synchronization object with the specified type and optional
+     *          name.
+     *
+     * \param   syncType        The type of synchronization object.
+     * \param   asciiName       Optional name of the synchronization object.
      **/
     SyncObjectPosix( NESyncTypesIX::SyncKind syncType, const char* asciiName = nullptr );
 
@@ -85,27 +86,28 @@ public:
     /**
      * \brief   Returns the type of synchronization object.
      **/
-    inline NESyncTypesIX::SyncKind getSyncType() const;
+    inline NESyncTypesIX::SyncKind sync_type() const;
 
     /**
-     * \brief   Returns synchronization object name.
+     * \brief   Returns the name of the synchronization object.
      **/
-    inline const String & getName() const;
+    inline const String & name() const;
 
 /************************************************************************/
 // SyncObjectPosix overrides.
 /************************************************************************/
     
     /**
-     * \brief   Returns true if synchronization object is valid.
+     * \brief   Returns true if the synchronization object is valid. Pure virtual; must be
+     *          implemented by subclasses.
      **/
-    virtual bool isValid() const = 0;
+    virtual bool is_valid() const = 0;
 
     /**
-     * \brief   Triggered when synchronization object is going to be deleted.
-     *          This should free all resources.
+     * \brief   Called when the synchronization object is being destroyed. Subclasses must implement
+     *          resource cleanup.
      **/
-    virtual void freeResources() = 0;
+    virtual void free_resources() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -126,6 +128,9 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     SyncObjectPosix() = delete;
     AREG_NOCOPY_NOMOVE( SyncObjectPosix );
 };
@@ -134,12 +139,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class inline implementation
 //////////////////////////////////////////////////////////////////////////
-inline NESyncTypesIX::SyncKind SyncObjectPosix::getSyncType() const
+inline NESyncTypesIX::SyncKind SyncObjectPosix::sync_type() const
 {
     return mSyncType;
 }
 
-inline const String & SyncObjectPosix::getName() const
+inline const String & SyncObjectPosix::name() const
 {
     return mSyncName;
 }

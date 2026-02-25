@@ -32,10 +32,8 @@
  * EventData class, used in request and response events
  ************************************************************************/
 /**
- * \brief   Event Data object is used in request and response events
- *          to transfer data. It contains information like message ID, 
- *          data type and data serialized in binary buffer. De-serialization 
- *          of parameters depends on parameter type and specific for every call.
+ * \brief   Container for message data (request or response); holds message ID and serialized
+ *          parameter buffer.
  **/
 class AREG_API EventData
 {
@@ -52,43 +50,42 @@ class AREG_API EventData
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Constructor.
-     * \param	msgId	The ID of communication message.
-     *                  Data type will be set according of
-     *                  message ID type.
-     * \param	name	Optional. Used to name data streaming object.
-     *                  Can be nullptr if there is no need to name streaming object.
+     * \brief   Initializes event data with a message ID and data type.
+     *
+     * \param   msgId       Message ID.
+     * \param   dataType    Data type determined by the message ID.
+     * \param   name        Optional name for the data stream.
      **/
-    EventData(uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name = String::getEmptyString());
+    EventData(uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name = String::empty_string());
 
     /**
-     * \brief	Constructor.
-     * \param	msgId	The ID of communication message.
-     *                  Data type will be set according of
-     *                  message ID type.
-     * \param	args	Streaming object containing serialized information
-     *                  of parameters.
-     * \param	name	Optional. Used to name data streaming object.
-     *                  Can be nullptr if there is no need to name streaming object.
+     * \brief   Initializes event data with a message ID and serialized parameters.
+     *
+     * \param   msgId       Message ID.
+     * \param   args        Stream containing serialized parameters.
+     * \param   name        Optional name for the data stream.
      **/
-    EventData(uint32_t msgId, const EventDataStream & args, const String & name = String::getEmptyString());
+    EventData(uint32_t msgId, const EventDataStream & args, const String & name = String::empty_string());
 
     /**
-     * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
+     * \brief   Copies event data from another instance.
+     *
+     * \param   src     Source to copy.
      **/
     EventData(const EventData & src);
     
     /**
-     * \brief   Move constructor.
-     * \param   src     The source of data to move.
+     * \brief   Moves event data from another instance.
+     *
+     * \param   src     Source to move.
+     * \note    Move overload. Takes ownership of the source data.
      **/
     EventData( EventData && src ) noexcept;
 
     /**
-     * \brief   Initialization constructor.
-     *          Initializes object data from streaming object.
-     * \param   stream  Streaming object, containing initialized data information.
+     * \brief   Initializes event data from a stream.
+     *
+     * \param   stream      Stream containing event data.
      **/
     EventData( const InStream & stream );
 
@@ -103,30 +100,35 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Copies event data from given source.
-     * \param   src     The source of data to copy.
+     * \brief   Copies event data from another instance.
+     *
+     * \param   src     Source to copy.
      **/
     EventData & operator = ( const EventData & src );
 
     /**
-     * \brief   Moves event data from given source.
-     * \param   src     The source of data to move.
+     * \brief   Moves event data from another instance.
+     *
+     * \param   src     Source to move.
+     * \note    Move overload. Takes ownership of the source data.
      **/
     EventData & operator = ( EventData && src ) noexcept;
 
     /**
-     * \brief	Friend global operator to initialize data from streaming.
-     * \param	stream	The data streaming object to read data.
-     * \param	input	The Event Data Buffer object to write data.
-     * \return	Reference to Streaming object.
+     * \brief   Initializes event data from a stream.
+     *
+     * \param   stream      Input stream.
+     * \param   input       Event data object to initialize.
+     * \return  The input stream.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, EventData & input );
 
     /**
-     * \brief	Friend global operator to write object into streaming buffer.
-     * \param	stream	The data streaming object to write data.
-     * \param	output	The Event Data Buffer object of data source.
-     * \return	Reference to Streaming object.
+     * \brief   Writes event data to a stream.
+     *
+     * \param   stream      Output stream.
+     * \param   output      Event data object to write.
+     * \return  The output stream.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const EventData & output );
 
@@ -135,29 +137,24 @@ public:
 //////////////////////////////////////////////////////////////////////////
     
     /**
-     * \brief   Returns type of data. There are 2 types of data defined.
-     *          It is either request or response. The update messages
-     *          are classified as response.
+     * \brief   Returns the data type (request or response).
      **/
-    inline NEService::MessageDataType getDataType() const;
+    inline NEService::MessageDataType data_type() const;
     
     /**
-     * \brief   Returns reference of data input streaming object
-     *          to deserialize message parameters.
+     * \brief   Returns the input stream for deserializing message parameters.
      **/
-    inline const InStream & getReadStream() const;
+    inline const InStream & read_stream() const;
     
     /**
-     * \brief   Returns reference of data output streaming object
-     *          to serialize message parameters
+     * \brief   Returns the output stream for serializing message parameters.
      **/
-    inline OutStream & getWriteStream();
+    inline OutStream & write_stream();
 
     /**
-     * \brief   Returns reference of data container object,
-     *          which is a streaming object.
+     * \brief   Returns the underlying data stream container.
      **/
-    inline const EventDataStream & getDataStream() const;
+    inline const EventDataStream & data_stream() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -177,22 +174,22 @@ private:
 // EventData class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::MessageDataType EventData::getDataType() const
+inline NEService::MessageDataType EventData::data_type() const
 {
     return mDataType;
 }
 
-inline const InStream& EventData::getReadStream() const
+inline const InStream& EventData::read_stream() const
 {
-    return mData.getStreamForRead();
+    return mData.stream_for_read();
 }
 
-inline OutStream & EventData::getWriteStream()
+inline OutStream & EventData::write_stream()
 {
-    return mData.getStreamForWrite();
+    return mData.stream_for_write();
 }
 
-inline const EventDataStream & EventData::getDataStream() const
+inline const EventDataStream & EventData::data_stream() const
 {
     return mData;
 }
@@ -201,7 +198,7 @@ inline const InStream & operator >> ( const InStream & stream, EventData & input
 {
     stream >> input.mDataType;
     stream >> input.mData;
-    input.mData.resetCursor();
+    input.mData.reset();
     return stream;
 }
 
@@ -209,7 +206,7 @@ inline OutStream & operator << ( OutStream & stream, const EventData & output )
 {
     stream << output.mDataType;
     stream << output.mData;
-    output.mData.resetCursor();
+    output.mData.reset();
     return stream;
 }
 

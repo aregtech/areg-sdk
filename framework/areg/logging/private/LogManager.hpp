@@ -52,11 +52,9 @@ namespace NELogging
 // LogManager class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The log manager is a singleton container of all scopes registered
- *          in the system. It configures, starts and stops logging, loads scopes
- *          and changes priorities. Every created scope is registered in the
- *          Log Manager and unregistered when destroyed. Before logging, it should 
- *          be started and the configuration should be loaded.
+ * \brief   Singleton container for all registered log scopes. Manages logging initialization,
+ *          configuration, scope registration, and priority changes. Every scope is registered on
+ *          creation and unregistered on destruction.
  **/
 class LogManager    : public    DispatcherThread
                     , private   LoggingEventConsumer
@@ -80,212 +78,201 @@ private:
 public:
 
     /**
-     * \brief   Triggers an event to log message created locally in the same process.
-     * \param   logData The logging message object, which will be sent to all loggers.
+     * \brief   Triggers an event to log a message created locally.
+     *
+     * \param   logData     The logging message object to send to all loggers.
      **/
-    static void logMessage( const NELogging::LogEntry & logData );
+    static void log_message( const NELogging::LogEntry & logData );
 
     /**
-     * \brief   Triggers an event to log message contained in the shared buffer.
-     * \param   logData     The instance of message in shared buffer to log.
+     * \brief   Triggers an event to log a message contained in a shared buffer.
+     *
+     * \param   logData     The message in the shared buffer to log.
      **/
-    static void logMessage(const SharedBuffer& logData);
+    static void log_message(const SharedBuffer& logData);
 
     /**
-     * \brief   Triggers an event to log remote message.
-     * \param   logData     The instance of remote message buffer, which contains the
-     *                      log message from another process.
+     * \brief   Triggers an event to log a remote message.
+     *
+     * \param   logData     The remote message buffer containing a log message from another process.
      **/
-    static void logMessage( const RemoteMessage& logData );
+    static void log_message( const RemoteMessage& logData );
 
     /**
-     * \brief   Generates and queues a message to execute internal command.
+     * \brief   Generates and queues an internal command message.
+     *
      * \param   cmd     The command to execute.
      * \param   data    The binary data to pass in the command.
      **/
-    static void sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data);
+    static void send_command_message(LoggingEventData::LogAction cmd, const SharedBuffer& data);
 
     /**
-     * \brief   Call to configure logging. The passed configuration file name should be either
-     *          full or relative path to configuration file. If passed nullptr,
-     *          the default configuration file will be loaded.
+     * \brief   Reads logging configuration from a file.
+     *
+     * \param   configFile      Path to the configuration file (full or relative). If nullptr, loads
+     *                          the default configuration file.
+     * \return  Returns true if configuration was loaded successfully.
      **/
-    static bool readLogConfig( const char * configFile = nullptr );
+    static bool read_log_config( const char * configFile = nullptr );
 
     /**
-     * \brief   Call to initialize and start logging.
-     *          The initialization data is read out from specified log configuration file.
-     *          If specified file is nullptr, the configuration will be read out from
-     *          default log configuration.
-     * \param   configFile  The full or relative path to configuration file.
-     *                      If nullptr, the log configuration will be read out
-     *                      from default configuration file.
-     * \return  Returns true if could read configuration and start logging thread.
-     *          If logging was already started, the call will be ignored and return true.
-     *          If starting fails, returns false.
+     * \brief   Initializes and starts the logging thread.
+     *
+     * \param   configFile      Path to the logging configuration file (full or relative). If
+     *                          nullptr, uses the default configuration file.
+     * \return  Returns true if configuration was read and logging thread started. Returns true if
+     *          logging was already running. Returns false on failure.
      **/
-    static bool startLogging( const char * configFile = nullptr );
+    static bool start_logging( const char * configFile = nullptr );
 
     /**
-     * \brief   Saves the current logging state in the configuration file.
-     * \param   configFile  Relative of absolute path to the configuration file.
-     *                      If nullptr, it uses the file used to configure the logs.
-     * \return  Returns true if succeeded to save the current logging state in the configuration file.
+     * \brief   Saves the current logging configuration state to a file.
+     *
+     * \param   configFile      Path to the configuration file (relative or absolute). If nullptr,
+     *                          uses the file used to configure logging.
+     * \return  Returns true if the configuration was saved successfully.
      **/
-    static bool saveLogConfig( const char * configFile = nullptr );
+    static bool save_log_config( const char * configFile = nullptr );
 
     /**
-     * \brief   Updates the list of scopes and log priorities in the application configuration.
+     * \brief   Updates the list of scopes and logging priorities in the application configuration.
      **/
-    static void updateScopeConfiguration();
+    static void update_scope_configuration();
 
     /**
-     * \brief   Call to stop Logging Manager and exits the thread.
-     *          If 'waitComplete' is set to true, the calling thread is
-     *          blocked until logging Manager completes jobs and cleans resources.
-     *          Otherwise, this triggers stop and exit events, and immediately returns.
-     * \param   waitComplete    If true, waits for Logging Manager to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and returns.
+     * \brief   Stops the logging manager and exits the thread.
+     *
+     * \param   waitComplete    If true, blocks until logging completes and cleans resources.
+     *                          Otherwise, triggers exit and returns immediately.
      **/
-    inline static void stopLogging(bool waitComplete);
+    inline static void stop_logging(bool waitComplete);
 
     /**
-     * \brief   The calling thread is blocked until Logging Manager did not
-     *          complete the job and exit. This should be called if previously
-     *          it was requested to stop the Logging Manager without waiting for completion.
+     * \brief   Blocks until the logging manager completes and exits.
      **/
-    inline static void waitLoggingEnd();
+    inline static void wait_logging_end();
 
     /**
-     * \brief   Registers instance of log scope object in log manager.
-     * \param   scope   The instance of log scope object to register.
+     * \brief   Registers a log scope object in the log manager.
+     *
+     * \param   scope       The log scope object to register.
      **/
-    inline static void registerLogScope( LogScope & scope );
+    inline static void register_log_scope( LogScope & scope );
 
     /**
-     * \brief   Unregisters instance of log scope object from log manager.
-     * \param   scope   The instance of log scope to unregister.
+     * \brief   Unregisters a log scope object from the log manager.
+     *
+     * \param   scope       The log scope object to unregister.
      **/
-    inline static void unregisterLogScope( LogScope & scope );
+    inline static void unregister_log_scope( LogScope & scope );
 
     /**
-     * \brief   Activates log scope. Finds priority in priority list
-     *          and sets scope message priority.
-     * \param   scope   The instance of log scope object to activate
-     *                  and set logging priority.
+     * \brief   Activates a log scope and sets its logging priority from the configuration.
+     *
+     * \param   scope       The log scope object to activate and set priority for.
      **/
-    inline static void activateLogScope( LogScope & scope );
+    inline static void activate_log_scope( LogScope & scope );
 
     /**
-     * \brief   Returns true if logging has started
+     * \brief   Returns true if logging has started.
      **/
-    inline static bool isLoggingStarted();
+    inline static bool is_logging_started();
 
     /**
-     * \brief   Returns true if logging is configured and ready to start
+     * \brief   Returns true if logging is configured and ready to start.
      **/
-    static bool isLoggingConfigured();
+    static bool is_logging_configured();
 
     /**
      * \brief   Returns true if logging is enabled.
      **/
-    static bool isLoggingEnabled();
+    static bool is_logging_enabled();
 
     /**
-     * \brief   Call to force to activate logging with default settings.
-     *          The logging will be activated only if logging is not running and
-     *          only in debug build. For release, please use real logging configuration.
-     * \return  Returns true if could activate logging. For non-debug builds, the function always returns false.
+     * \brief   Forces logging to activate with default settings for debug builds only.
+     *
+     * \return  Returns true if logging was activated. Always returns false for release builds.
      **/
-    static bool forceActivateLogging();
+    static bool force_activate_logging();
 
     /**
-     * \brief   Forces to enable logging.
-     *          If logging is not configured, it will set default configuration,
-     *          then it will enable and start logging. If logging is configured,
-     *          it will enable and start logging with the existing configuration.
-     *          To overwrite the existing configuration and use default, call
-     *          method setDefaultConfiguration()
-     * \see     setDefaultConfiguration
+     * \brief   Enables logging with default configuration or existing configuration if already
+     *          configured.
      **/
-    static void forceEnableLogging();
+    static void force_enable_logging();
 
     /**
-     * \brief   Call to set the default configuration of logging if it is not
-     *          configured or overwrite the existing configuration, depending
-     *          on the passed overwriteExisting parameter.
-     * \param   overwriteExisting   Flag, indicating whether the existing configuration
-     *                              should be overwritten or not.
-     *                              If the parameter is true, then independent whether
-     *                              whether the configuration was already loaded or not
-     *                              the function will reset the existing configuration
-     *                              and set default parameters. Otherwise, the default
-     *                              configuration is used only if not configured.
-     *                              Note, that after calling this method, the application
-     *                              ignores to load configuration from the file.
-     *                              Reset configuration to load from file.
+     * \brief   Sets default logging configuration or overwrites existing configuration if
+     *          requested.
+     *
+     * \param   overwriteExisting       If true, resets and overwrites existing configuration with
+     *                                  defaults regardless of prior state. If false, only applies
+     *                                  defaults if not previously configured. After calling with
+     *                                  true, configuration will not be loaded from file until
+     *                                  reset.
      **/
-    static void setDefaultConfiguration(bool overwriteExisting);
+    static void set_default_configuration(bool overwriteExisting);
 
     /**
-     * \brief   Call to change the scope log priority.
-     * \param   scopeName   The name of the existing scope. Ignored if scope does not exit.
-     * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
-     * \return  Returns true if scope found and priority changed.
+     * \brief   Sets the logging priority for a scope.
+     *
+     * \param   scopeName       The name of the existing scope. Ignored if scope does not exist.
+     * \param   newPrio         The new priority to set. Can be a bitwise combination of priorities.
+     * \return  Returns true if the scope was found and priority was changed.
      **/
-    static bool setScopePriority( const char * scopeName, uint32_t newPrio );
+    static bool set_scope_priority( const char * scopeName, uint32_t newPrio );
 
     /**
-     * \brief   Call to change the scope log priority.
-     * \param   scopeName   The name of a single scope or scope group ended with '*' to change priority.
-     * \param   scopeId     The ID of the scope, ignored in case of scope group.
-     * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
+     * \brief   Updates the logging priority of a scope or scope group.
+     *
+     * \param   scopeName       The name of a single scope or scope group ending with '*'.
+     * \param   scopeId         The ID of the scope; ignored for scope groups.
+     * \param   newPrio         The new priority to set. Can be a bitwise combination of priorities.
      **/
-    static void updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio);
+    static void update_scopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio);
 
     /**
-     * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
-     * \param   scopeName   The name of the existing scope.
-     * \return  Is found the scope, returns the actual priority of the scope.
-     *          Otherwise, returns invalid priority (NELogging::LogPriority::PrioInvalid).
+     * \brief   Returns the logging priority of a scope.
+     *
+     * \param   scopeName       The name of the existing scope.
+     * \return  The priority of the scope if found; otherwise, returns
+     *          NELogging::LogPriority::PrioInvalid.
      **/
-    static uint32_t getScopePriority( const char * scopeName );
+    static uint32_t scope_priority( const char * scopeName );
 
     /**
-     * \brief   Call to set the instance of log database engine responsible to handle the database.
-     *          If not null, the log messages are forwarded to the database engine.
-     *          Otherwise, ignores to write the log messages.
-     * \param   dbEngine    The pointer to the log database engine to set.
+     * \brief   Sets the log database engine instance for handling database storage.
+     *
+     * \param   dbEngine    The log database engine instance. If nullptr, disables database logging.
      **/
-    static void setLogDatabaseEngine(LogDatabaseEngine * dbEngine);
+    static void set_db_engine(LogDatabaseEngine * dbEngine);
 
     /**
-     * \brief   Returns true if database and data tables are initialized and the
-     *          logging database is ready to save messages.
+     * \brief   Returns true if the logging database and tables are initialized and ready.
      **/
-    static bool isLogDabaseEngineInitialized();
+    static bool is_db_initialized();
 
     /**
-     * \brief   Returns true if logging in the database is enabled. The value is read from configuration file.
+     * \brief   Returns true if logging to the database is enabled in the configuration.
      **/
-    static bool isLogDatabaseEnabled();
+    static bool is_db_enabled();
 
     /**
-     * \brief   Returns the Log Collector service connection cookie.
-     */
-    inline static const ITEM_ID & getConnectionCookie();
+     * \brief   Returns the connection cookie of the log collector service.
+     **/
+    inline static const ITEM_ID & connection_cookie();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns singleton instance of Log Manager.
+     * \brief   Returns the singleton instance of the log manager.
      **/
-    static LogManager& getInstance();
+    static LogManager& instance();
 
     /**
-     * \brief   Protected default constructor.
+     * \brief
      **/
     LogManager();
 
@@ -304,35 +291,33 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Posts an event and delivers it to its target.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables the dispatcher to receive events.
+     *
+     * \param   is_ready     True to enable event dispatching, false to disable.
      **/
-    void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) override;
 
 /************************************************************************/
 // LoggingEventConsumer interface overrides
 /************************************************************************/
     /**
-     * \brief   Called by event dispatcher when processes the logging event data.
+     * \brief   Processes a logging event.
+     *
      * \param   data    The logging event data to process.
      **/
-    void processEvent( const LoggingEventData & data ) override;
+    void process_event( const LoggingEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -344,97 +329,97 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Starts logging thread, loads scopes and sets up all logging objects.
-     *          The configuration should be already loaded.
-     * \return  Returns true if started with success.
+     * \brief   Starts the logging thread and loads scopes with configured priorities.
+     *
+     * \return  Returns true if started successfully.
      **/
-    bool startLoggingThread();
+    bool start_logging_thread();
      
-     /**
-      * \brief   Call to stop Logging Manager and exits the thread.
-      *          If 'waitComplete' is set to true, the calling thread is
-      *          blocked until logging Manager completes jobs and cleans resources.
-      *          Otherwise, this triggers stop and exit events, and immediately returns.
-      * \param   waitComplete    If true, waits for Logging Manager to complete the jobs
-      *                          and exit threads. Otherwise, it triggers exit and returns.
-      **/
-    void stopLoggingThread(bool waitComplete);
-
     /**
-     * \brief   The calling thread is blocked until Logging Manager did not
-     *          complete the job and exit. This should be called if previously
-     *          it was requested to stop the Logging Manager without waiting for completion.
+     * \brief   Stops the logging manager and exits the thread.
+     *
+     * \param   waitComplete    If true, blocks until logging completes and cleans resources.
+     *                          Otherwise, triggers exit and returns immediately.
      **/
-    void waitLoggingThreadEnd();
+    void stop_logging_thread(bool waitComplete);
 
     /**
-     * \brief   Returns true, if in configuration the remote logging is enabled.
+     * \brief   Blocks until the logging manager completes and exits.
      **/
-    bool isRemoteLoggingEnabled() const;
+    void wait_thread_end();
 
     /**
-     * \brief   Returns true, if in configuration the database logging is enabled.
+     * \brief   Returns true if remote logging is enabled in the configuration.
      **/
-    bool isDatabaseLoggingEnabled() const;
+    bool is_remote_logging_enabled() const;
 
     /**
-     * \brief   Returns true, if in configuration the logging in file is enabled.
+     * \brief   Returns true if database logging is enabled in the configuration.
      **/
-    bool isFileLoggingEnabled() const;
+    bool is_db_logging_enabled() const;
 
     /**
-     * \brief   Returns true, if in configuration the logging in debug output window is enable.
-     *          This setting is relevant only to Microsoft Visual Studio.
+     * \brief   Returns true if file logging is enabled in the configuration.
      **/
-    bool isDebugOutputLoggingEnabled() const;
+    bool is_file_logging_enabled() const;
 
     /**
-     * \brief   Clears logging configuration data.
+     * \brief   Returns true if debug output window logging is enabled. Only relevant for Visual
+     *          Studio.
      **/
-    void clearConfigData();
+    bool is_debug_logging_enabled() const;
 
     /**
-     * \brief   Resets the scopes.
+     * \brief   Clears all logging configuration data.
      **/
-    void resetScopes();
+    void clear_config_data();
 
     /**
-     * \brief   Loads scopes and sets priorities specified in configuration.
+     * \brief   Resets and deactivates all scopes.
      **/
-    void startLogs();
+    void reset();
 
     /**
-     * \brief   Deactivates all scopes to stop logging.
+     * \brief   Activates scopes and sets their priorities from the configuration.
      **/
-    void stopLogs();
+    void start_logs();
 
     /**
-     * \brief   Writes a log message to the existing loggers.
-     * \param   logMessage  The message to log.
+     * \brief   Deactivates all scopes to prevent logging.
      **/
-    void writeLogMessage( const NELogging::LogEntry & logMessage );
+    void stop_logs();
 
     /**
-     * \brief   Sends log event with the preferred priority.
-     *          By default, it the priority is Normal.
+     * \brief   Writes a log message to all registered loggers.
+     *
+     * \param   log_message     The message to log.
      **/
-    void sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
+    void write_log_message( const NELogging::LogEntry & log_message );
 
     /**
-     * \brief   Changes the scope priority. It can be either a single scope or scope group.
-     * \param   scopeName   The name of a single scope or group of scopes ending with '*'.
-     * \param   scopeId     The ID of the scope. If it is a scope group, the value is ignored.
-     * \param   scopePrio   The new priority to set to the scope or scope group.
+     * \brief   Sends a logging event with the specified priority.
+     *
+     * \param   data            The logging event data.
+     * \param   eventPrio       The priority of the event. Defaults to NormalPrio.
      **/
-    void changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio );
+    void send_log_event( const LoggingEventData & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
 
     /**
-     * \brief   Returns read-only list of registered scopes.
+     * \brief   Changes the logging priority of a scope or scope group.
+     *
+     * \param   scopeName       The name of a single scope or scope group ending with '*'.
+     * \param   scopeId         The ID of the scope; ignored for scope groups.
+     * \param   scopePrio       The new logging priority to set.
      **/
-    inline const HashMap<uint32_t, LogScope *> & getScopeList() const;
+    void change_scope_priority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio );
 
     /**
-     * \brief   Returns instance of log manager.
+     * \brief   Returns a read-only list of registered scopes.
+     **/
+    inline const HashMap<uint32_t, LogScope *> & scope_list() const;
+
+    /**
+     * \brief   Returns the log manager instance.
      **/
     inline LogManager & self();
 
@@ -494,39 +479,39 @@ private:
 // LogManager class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline void LogManager::stopLogging(bool waitComplete)
+inline void LogManager::stop_logging(bool waitComplete)
 {
-    getInstance().stopLoggingThread(waitComplete);
+    instance().stop_logging_thread(waitComplete);
 }
 
-inline void LogManager::waitLoggingEnd()
+inline void LogManager::wait_logging_end()
 {
-    getInstance().waitLoggingThreadEnd();
+    instance().wait_thread_end();
 }
 
-inline void LogManager::registerLogScope(LogScope& scope)
+inline void LogManager::register_log_scope(LogScope& scope)
 {
-    getInstance().mScopeController.registerScope(scope);
+    instance().mScopeController.register_scope(scope);
 }
 
-inline void LogManager::unregisterLogScope( LogScope & scope )
+inline void LogManager::unregister_log_scope( LogScope & scope )
 {
-    getInstance( ).mScopeController.unregisterScope( scope );
+    instance( ).mScopeController.unregister_scope( scope );
 }
 
-inline void LogManager::activateLogScope(LogScope& scope)
+inline void LogManager::activate_log_scope(LogScope& scope)
 {
-    getInstance().mScopeController.activateScope(scope);
+    instance().mScopeController.activate_scope(scope);
 }
 
-inline const ITEM_ID & LogManager::getConnectionCookie()
+inline const ITEM_ID & LogManager::connection_cookie()
 {
-    return LogManager::getInstance().mLoggerTcp.getConnectionCookie();
+    return LogManager::instance().mLoggerTcp.connection_cookie();
 }
 
-inline const HashMap<uint32_t, LogScope *> & LogManager::getScopeList() const
+inline const HashMap<uint32_t, LogScope *> & LogManager::scope_list() const
 {
-    return mScopeController.getScopeList( );
+    return mScopeController.scope_list( );
 }
 
 inline LogManager & LogManager::self()
@@ -534,10 +519,10 @@ inline LogManager & LogManager::self()
     return (*this);
 }
 
-inline bool LogManager::isLoggingStarted()
+inline bool LogManager::is_logging_started()
 {
-    Lock lock(getInstance().mLock);
-    return getInstance().mIsStarted;
+    Lock lock(instance().mLock);
+    return instance().mIsStarted;
 }
 
 #endif  // AREG_LOGS

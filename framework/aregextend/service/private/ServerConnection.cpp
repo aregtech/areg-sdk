@@ -40,31 +40,31 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId, const NESocket::So
 
 void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
 {
-    const ITEM_ID & cookie = getCookie(clientConnection.getHandle());
-    RemoteMessage msgReject = NERemoteService::createRejectNotify(mChannelId, cookie);
-    sendMessage(msgReject, clientConnection);
-    closeConnection(clientConnection);
+    const ITEM_ID & cookie = cookie(clientConnection.handle());
+    RemoteMessage msgReject = NERemoteService::create_reject_notify(mChannelId, cookie);
+    send_message(msgReject, clientConnection);
+    close_connection(clientConnection);
 }
 
 void ServerConnection::closeAllConnections()
 {
     Lock lock( mLock );
     RemoteMessage msgByeClient;
-    if ( msgByeClient.initMessage(NERemoteService::getMessageNotifyClientConnection().rbHeader ) != nullptr )
+    if ( msgByeClient.init_message(NERemoteService::notify_client_connection().rbHeader ) != nullptr )
     {
-        msgByeClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
-        msgByeClient.setSource( mChannelId );
+        msgByeClient.set_sequence_nr( NEService::SEQUENCE_NUMBER_ANY );
+        msgByeClient.set_source( mChannelId );
 
-        for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos))
+        for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position(); mAcceptedConnections.is_valid_position(pos); pos = mAcceptedConnections.next_position(pos))
         {
-            SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
-            const ITEM_ID& target{ getCookie(clientConnection) };
+            SocketAccepted clientConnection = mAcceptedConnections.value_at_position(pos);
+            const ITEM_ID& target{ cookie(clientConnection) };
             if (target >= NEService::COOKIE_REMOTE_SERVICE)
             {
                 RemoteMessage msgDisconnect{ msgByeClient.clone() };
-                msgDisconnect.setTarget(target);
+                msgDisconnect.set_target(target);
                 msgDisconnect << target << NEService::ServiceConnectionState::Disconnected;
-                sendMessage(msgDisconnect, clientConnection);
+                send_message(msgDisconnect, clientConnection);
             }
         }
     }

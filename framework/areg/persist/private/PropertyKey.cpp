@@ -148,7 +148,7 @@ bool PropertyKey::operator == ( const PropertyKey & other ) const
         {
             if ((mModule == other.mModule) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (other.mModule == NEPersistence::SYNTAX_ALL_MODULES))
             {
-                result = mProperty == other.mProperty ? mPosition == other.mPosition : other.mSection.isEmpty() && PropertyKey::_is_compatible(mProperty, other.mProperty);
+                result = mProperty == other.mProperty ? mPosition == other.mPosition : other.mSection.is_empty() && PropertyKey::_is_compatible(mProperty, other.mProperty);
             }
         }
     }
@@ -168,14 +168,14 @@ bool PropertyKey::operator != ( const PropertyKey & other ) const
 PropertyKey::operator uint32_t () const
 {
     uint32_t result{ NEMath::CHECKSUM_IGNORE };
-    if (mSection.isEmpty() == false)
+    if (mSection.is_empty() == false)
     {
-        result = NEMath::crc32Init();
-        result = NEMath::crc32Start(result, mSection.as_string());
-        result = NEMath::crc32Start(result, mModule.as_string());
-        result = NEMath::crc32Start(result, mProperty.as_string());
-        result = NEMath::crc32Start(result, mPosition.as_string());
-        result = NEMath::crc32Finish(result);
+        result = NEMath::crc32_init();
+        result = NEMath::crc32_start(result, mSection.as_string());
+        result = NEMath::crc32_start(result, mModule.as_string());
+        result = NEMath::crc32_start(result, mProperty.as_string());
+        result = NEMath::crc32_start(result, mPosition.as_string());
+        result = NEMath::crc32_finish(result);
     }
 
     return result;
@@ -184,8 +184,8 @@ PropertyKey::operator uint32_t () const
 bool PropertyKey::parse_key( const String & key )
 {
     String temp(key);
-    temp.trimAll();
-    if ( temp.isEmpty() == false )
+    temp.trim_all();
+    if ( temp.is_empty() == false )
     {
         _parse_key(temp);
     }
@@ -196,8 +196,8 @@ bool PropertyKey::parse_key( const String & key )
 bool PropertyKey::parse_key( String && key )
 {
     String temp(std::move(key));
-    temp.trimAll();
-    if ( temp.isEmpty() == false )
+    temp.trim_all();
+    if ( temp.is_empty() == false )
     {
         _parse_key(temp);
     }
@@ -216,7 +216,7 @@ String PropertyKey::to_string() const
               .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
               .append(mProperty);
 
-        if (mPosition.isEmpty() == false)
+        if (mPosition.is_empty() == false)
         {
             result.append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mPosition);
         }
@@ -239,7 +239,7 @@ bool PropertyKey::is_module_property(const String& section, const String& module
 {
     bool result{ false };
 
-    if (is_valid() && (mSection == section) && (mProperty == property) && (module.isEmpty() == false))
+    if (is_valid() && (mSection == section) && (mProperty == property) && (module.is_empty() == false))
     {
         if ((mModule == module) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (module == NEPersistence::SYNTAX_ALL_MODULES))
         {
@@ -254,7 +254,7 @@ bool PropertyKey::is_module_section(const String& section, const String& module)
 {
     bool result{ false };
 
-    if (is_valid() && (mSection == section) && (module.isEmpty() == false))
+    if (is_valid() && (mSection == section) && (module.is_empty() == false))
     {
         result = ((mModule == module) || (mModule == NEPersistence::SYNTAX_ALL_MODULES) || (module == NEPersistence::SYNTAX_ALL_MODULES));
     }
@@ -316,17 +316,17 @@ NEPersistence::ConfigEntry PropertyKey::key_type() const
 
 bool PropertyKey::is_valid() const
 {
-    return ( mSection.isEmpty() == false && mModule.isEmpty() == false && mProperty.isEmpty() == false );
+    return ( mSection.is_empty() == false && mModule.is_empty() == false && mProperty.is_empty() == false );
 }
 
 bool PropertyKey::has_module() const
 {
-    return mModule.isEmpty() == false;
+    return mModule.is_empty() == false;
 }
 
 bool PropertyKey::has_property() const
 {
-    return (mProperty.isEmpty() == false);
+    return (mProperty.is_empty() == false);
 }
 
 bool PropertyKey::is_all_modules() const
@@ -336,17 +336,17 @@ bool PropertyKey::is_all_modules() const
 
 bool PropertyKey::is_group_property() const
 {
-    return mPosition.endsWith(NEPersistence::SYNTAX_GROUP) || mProperty.endsWith(NEPersistence::SYNTAX_GROUP);
+    return mPosition.ends_with(NEPersistence::SYNTAX_GROUP) || mProperty.ends_with(NEPersistence::SYNTAX_GROUP);
 }
 
 bool PropertyKey::has_section() const
 {
-    return (mSection.isEmpty() == false);
+    return (mSection.is_empty() == false);
 }
 
 bool PropertyKey::has_position() const
 {
-    return mPosition.isEmpty() == false;
+    return mPosition.is_empty() == false;
 }
 
 void PropertyKey::reset()

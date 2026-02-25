@@ -25,88 +25,88 @@
 #if AREG_LOGS
 
 ScopeMessage::ScopeMessage( const LogScope & logScope )
-    : mScopeName( logScope.getScopeName() )
+    : mScopeName( logScope.scope_name() )
     , mScopeId  ( logScope.mScopeId       )
-    , mSessionId( logScope.nextSession()  )
-    , mTimestamp( DateTime::getNow()      )
+    , mSessionId( logScope.next_session()  )
+    , mTimestamp( DateTime::now()      )
     , mScopePrio( logScope.mScopePrio     )
 {
-    if ( isScopeEnabled() )
+    if ( is_scope_enabled() )
     {
         LogMessage msg{ NELogging::LogMessageType::ScopeEnter, mScopeId, mSessionId, 0u, NELogging::LogPriority::PrioScope, mScopeName };
-        LogManager::logMessage(msg);
+        LogManager::log_message(msg);
     }
 }
 
 ScopeMessage::~ScopeMessage()
 {
-    if ( isScopeEnabled() )
+    if ( is_scope_enabled() )
     {
         LogMessage msg{ NELogging::LogMessageType::ScopeExit, mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioScope, mScopeName };
-        LogManager::logMessage(msg);
+        LogManager::log_message(msg);
     }
 }
 
-void ScopeMessage::logDebug( const char * format, ... ) const
+void ScopeMessage::log_debug( const char * format, ... ) const
 {
-    if ( isDbgEnabled() )
+    if ( is_dbg_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioDebug, format, args);
+        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioDebug, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logInfo( const char * format, ... ) const
+void ScopeMessage::log_info( const char * format, ... ) const
 {
-    if ( isInfoEnabled() )
+    if ( is_info_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioInfo, format, args);
+        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioInfo, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logWarning(const char * format, ...) const
+void ScopeMessage::log_warning(const char * format, ...) const
 {
-    if ( isWarnEnabled() )
+    if ( is_warn_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioWarning, format, args);
+        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioWarning, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logError( const char * format, ... ) const
+void ScopeMessage::log_error( const char * format, ... ) const
 {
-    if ( isErrEnabled() )
+    if ( is_err_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioError, format, args);
+        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioError, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logFatal( const char * format, ... ) const
+void ScopeMessage::log_fatal( const char * format, ... ) const
 {
-    if ( isFatalEnabled() )
+    if ( is_fatal_enabled() )
     {
         va_list args;
         va_start(args, format);
-        ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioFatal, format, args);
+        ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, NELogging::LogPriority::PrioFatal, format, args);
         va_end(args);
     }
 }
 
-void ScopeMessage::logMessage(NELogging::LogPriority logPrio, const char * format, ...)
+void ScopeMessage::log_message(NELogging::LogPriority logPrio, const char * format, ...)
 {
     va_list args;
     va_start(args, format);
-    ScopeMessage::_sendLog(mScopeId, mSessionId, mTimestamp, logPrio, format, args);
+    ScopeMessage::_send_log(mScopeId, mSessionId, mTimestamp, logPrio, format, args);
     va_end(args);
 }
 
@@ -114,15 +114,15 @@ void ScopeMessage::log( NELogging::LogPriority logPrio, const char * format, ...
 {
     va_list args;
     va_start(args, format);
-    ScopeMessage::_sendLog(NELogging::LOG_SCOPE_ID_NONE, 0u, 0u, logPrio, format, args);
+    ScopeMessage::_send_log(NELogging::LOG_SCOPE_ID_NONE, 0u, 0u, logPrio, format, args);
     va_end(args);
 }
 
-inline void ScopeMessage::_sendLog( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * format, va_list args )
+inline void ScopeMessage::_send_log( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * format, va_list args )
 {
     LogMessage logData(NELogging::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
-    logData.logMessageLen = static_cast<uint32_t>(String::formatStringList( logData.logMessage, NELogging::LOG_MESSAGE_IZE, format, args ));
-    LogManager::logMessage( logData );
+    logData.logMessageLen = static_cast<uint32_t>(String::format_string_list( logData.log_message, NELogging::LOG_MESSAGE_IZE, format, args ));
+    LogManager::log_message( logData );
 }
 
 #else   // AREG_LOGS

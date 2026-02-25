@@ -164,7 +164,7 @@ public:
      * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const;
+    void service_list(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
@@ -194,7 +194,7 @@ private:
      * \return  Returns valid position value if could find an entry matching given servicing address.
      *          Otherwise, returns nullptr.
      **/
-    MAPPOS findService( const ServiceAddress & addrService ) const;
+    MAPPOS find_service( const ServiceAddress & addrService ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

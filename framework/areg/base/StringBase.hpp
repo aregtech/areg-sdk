@@ -83,40 +83,51 @@ public:
 
     /**
      * \brief   Sets the char to string.
-     * \param   source    The character to set at the begin of string.
+     *
+     * \param   source      The character to set at the begin of string.
      **/
     inline StringBase( const CharType source );
+    /**
+     * \brief   Sets the char to string.
+     **/
     inline StringBase( const CharType * source );
+    /**
+     * \brief   Sets the char to string.
+     **/
     inline StringBase( const std::basic_string<CharType>& source );
+    /**
+     * \brief   Sets the char to string.
+     **/
     inline StringBase( const std::basic_string_view<CharType>& source );
 
 
     /**
      * \brief   Copies specified amount of symbols from given string.
-     * \param   source  The null-terminated string buffer to initialize. If nullptr, empty string is created.
-     * \param   count   The number of character to initialize from given string source. If zero, empty string is created.
      **/
     inline StringBase( const CharType * source, NEString::CharCount count );
 
     /**
      * \brief   Copy constructor.
-     * \param   source   The source to copy data.
      **/
     inline StringBase( const StringBase<CharType> & source );
 
     /**
      * \brief   Move constructor.
-     * \param   source   The source to move data.
+     * \note    Move overload.
      **/
     inline StringBase( StringBase<CharType> && source ) noexcept;
+    /**
+     * \brief   Move constructor.
+     * \note    Move overload.
+     **/
     inline StringBase( std::basic_string<CharType>&& source ) noexcept;
 
     /**
-     * \brief   Initializes string and reserves a space for specified amount of characters.
-     *          Note, the size of string remains zero.
+     * \brief   Initializes string reserves a space for specified amount of characters. Note, the
+     *          size of string remains zero.
      *
-     * \param   count   The space to reserve.
-     */
+     * \param   count       The space to reserve.
+     **/
     explicit inline StringBase(uint32_t count);
 
     /**
@@ -129,86 +140,240 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Converting operator, converts object to string buffer
+     * \brief   Converting operator, converts object to string buffer.
      **/
     inline operator const CharType* () const;
 
     /**
-     * \brief   Returns character at the given valid position. The position should not be
-     *          neither negative, nor more than the string length.
-     * 
-     * \param index     Valid zero-based index, which value should not be more than the length of string.
+     * \brief   Returns character at the given valid position. The position should not be neither
+     *          negative, nor more than the string length.
+     *
+     * \param   index       Valid zero-based index, which value should not be more than the length
+     *                      of string.
      **/
     inline const CharType operator[ ](int32_t index) const;
 
     /**
-     * \brief   Assigning operator, copies data from given string source
-     * \param   src     The source of string to copy.
+     * \brief   Assigning operator, copies data from given string source.
+     *
      * \return  Returns the string object.
      **/
     inline StringBase<CharType>& operator = (const StringBase<CharType>& src);
+    /**
+     * \brief   Assigning operator, copies data from given string source.
+     *
+     * \return  Returns the string object.
+     **/
     inline StringBase<CharType>& operator = (const std::basic_string<CharType>& src);
+    /**
+     * \brief   Assigning operator, copies data from given string source.
+     *
+     * \return  Returns the string object.
+     **/
     inline StringBase<CharType>& operator = (const std::basic_string_view<CharType>& src);
+    /**
+     * \brief   Assigning operator, copies data from given string source.
+     *
+     * \return  Returns the string object.
+     **/
     inline StringBase<CharType>& operator = (const CharType* src);
+    /**
+     * \brief   Assigning operator, copies data from given string source.
+     *
+     * \return  Returns the string object.
+     * \note    Move overload.
+     **/
     inline StringBase<CharType>& operator = (StringBase<CharType> && src) noexcept;
+    /**
+     * \brief   Assigning operator, copies data from given string source.
+     *
+     * \return  Returns the string object.
+     * \note    Move overload.
+     **/
     inline StringBase<CharType>& operator = (std::basic_string<CharType> && src) noexcept;
+    /**
+     * \brief   Assigning operator, copies data from given string source.
+     *
+     * \param   src     The source of string to copy.
+     * \return  Returns the string object.
+     **/
     inline StringBase<CharType>& operator = (const CharType src);
 
     /**
      * \brief   Determines equality of two strings.
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use compare() methods.
-     * \param   other   The second string to compare
+     *
      * \return  Returns true if 2 strings are equal.
      **/
     inline bool operator == (const StringBase<CharType>& other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator == (const std::basic_string<CharType>& other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator == (const std::basic_string_view<CharType>& other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator == (const CharType * other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator == (const CharType ch ) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator != (const StringBase<CharType>& other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator != (const std::basic_string<CharType>& other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator != (const std::basic_string_view<CharType>& other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator != (const CharType* other) const;
+    /**
+     * \brief   Determines equality of two strings.
+     *
+     * \return  Returns true if 2 strings are equal.
+     **/
     inline bool operator != (const CharType ch) const;
 
     /**
      * \brief   Comparing operator. Checks whether strings are bigger or smaller.
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use Compare() method.
-     * \param   other   The second string to compare
+     *
      * \return  Returns true if existing string is more than given.
      **/
     inline bool operator > (const StringBase<CharType>& other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator > (const std::basic_string<CharType>& other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator > (const std::basic_string_view<CharType>& other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator > (const CharType* other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator < (const StringBase<CharType>& other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator < (const CharType* other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator < (const std::basic_string<CharType>& other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator < (const std::basic_string_view<CharType>& other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator >= (const StringBase<CharType>& other) const;
+    /**
+     * \brief   Comparing operator. Checks whether strings are bigger or smaller.
+     *
+     * \return  Returns true if existing string is more than given.
+     **/
     inline bool operator >= (const CharType* other) const;
+    /**
+     * \brief
+     **/
     inline bool operator >= (const std::basic_string<CharType>& other) const;
+    /**
+     * \brief
+     **/
     inline bool operator >= (const std::basic_string_view<CharType>& other) const;
+    /**
+     * \brief
+     **/
     inline bool operator <= (const StringBase<CharType>& other) const;
+    /**
+     * \brief
+     **/
     inline bool operator <= (const CharType* other) const;
+    /**
+     * \brief
+     **/
     inline bool operator <= (const std::basic_string<CharType>& other) const;
+    /**
+     * \brief
+     **/
     inline bool operator <= (const std::basic_string_view<CharType>& other) const;
 
     /**
      * \brief   Appends given string at the end of existing string.
-     * \param   src     The source of string to append at the end
+     *
      * \return  Returns string object
      **/
     inline StringBase<CharType>& operator += (const StringBase<CharType>& src);
+    /**
+     * \brief   Appends given string at the end of existing string.
+     *
+     * \return  Returns string object
+     **/
     inline StringBase<CharType>& operator += (const std::basic_string<CharType>& src);
+    /**
+     * \brief   Appends given string at the end of existing string.
+     *
+     * \return  Returns string object
+     **/
     inline StringBase<CharType>& operator += (const std::basic_string_view<CharType>& src);
+    /**
+     * \brief   Appends given string at the end of existing string.
+     *
+     * \return  Returns string object
+     **/
     inline StringBase<CharType>& operator += (const CharType* src);
 
     /**
      * \brief   Appends given character at the end of existing string.
-     * \param   chSource   The source of character to append at the end
+     *
+     * \param   chSource    The source of character to append at the end
      * \return  Returns string object
      **/
     inline StringBase<CharType>& operator += (const CharType chSource);
@@ -221,22 +386,60 @@ public:
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
     template<typename CT>
+    /**
+     * \brief   Operator to concatenate 2 strings.
+     *
+     * \return  Returns newly constructed string object by concatenating 2 strings
+     **/
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const StringBase<CT>& rhs);
     template<typename CT>
+    /**
+     * \brief   Operator to concatenate 2 strings.
+     *
+     * \return  Returns newly constructed string object by concatenating 2 strings
+     **/
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string<CT>& rhs);
     template<typename CT>
+    /**
+     * \brief   Operator to concatenate 2 strings.
+     *
+     * \return  Returns newly constructed string object by concatenating 2 strings
+     **/
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string_view<CT>& rhs);
     template<typename CT>
+    /**
+     * \brief   Operator to concatenate 2 strings.
+     *
+     * \return  Returns newly constructed string object by concatenating 2 strings
+     **/
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT* rhs);
     template<typename CT>
+    /**
+     * \brief   Operator to concatenate 2 strings.
+     *
+     * \param   rhs     Right-hand side string object
+     * \return  Returns newly constructed string object by concatenating 2 strings
+     **/
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT rhs);
     template<typename CT>
+    /**
+     * \brief
+     **/
     friend inline StringBase<CT> operator + (const std::basic_string<CT>& lhs, const StringBase<CT>& rhs);
     template<typename CT>
+    /**
+     * \brief
+     **/
     friend inline StringBase<CT> operator + (const std::basic_string_view<CT>& lhs, const StringBase<CT>& rhs);
     template<typename CT>
+    /**
+     * \brief
+     **/
     friend inline StringBase<CT> operator + (const CT* lhs, const StringBase<CT>& rhs);
     template<typename CT>
+    /**
+     * \brief
+     **/
     friend inline StringBase<CT> operator + (const CT lhs, const StringBase<CT>& rhs);
 
     /**
@@ -249,6 +452,12 @@ public:
      * \return  Reference to stream object.
      **/
     template<typename CT>
+    /**
+     * \brief   Streams to input object, i.e. reads data from streaming object to string, initialize
+     *          string data.
+     *
+     * \return  Reference to stream object.
+     **/
     friend inline const InStream & operator >> (const InStream & stream, StringBase<CT> & input);
 
     /**
@@ -259,6 +468,11 @@ public:
      * \return  Reference to stream object.
      **/
     template<typename CT>
+    /**
+     * \brief   Streams from output object, i.e. write data from string to streaming object.
+     *
+     * \return  Reference to stream object.
+     **/
     friend inline OutStream & operator << (OutStream & stream, const StringBase<CT> & output);
 
     /**
@@ -269,6 +483,11 @@ public:
      * \return  Reference to stream object.
      **/
     template<typename CT>
+    /**
+     * \brief   Prints string message to the standard output stream.
+     *
+     * \return  Reference to stream object.
+     **/
     friend inline std::ostream & operator << ( std::ostream & stream, const StringBase<CT> & output );
 
     /**
@@ -279,6 +498,11 @@ public:
      * \return  Reference to stream object.
      **/
     template<typename CT>
+    /**
+     * \brief   Reads string message from the standard input stream.
+     *
+     * \return  Reference to stream object.
+     **/
     friend inline const std::istream & operator >> ( const std::istream & stream, StringBase<CT> & input );
 
 //////////////////////////////////////////////////////////////////////////
@@ -287,8 +511,9 @@ public:
 public:
 
     /**
-     * \brief   Checks validity of the string. The valid characters are listed in the passed list, which is null-terminated string.
-     * \param   validityList    Null-terminated string of valid characters to check the string.
+     * \brief   Checks validity of the string. The valid characters are listed in the passed list,
+     *          which is null-terminated string.
+     *
      * \return  Returns true, if string does not contain any character different in validity list.
      *          Otherwise, it returns false
      **/
@@ -296,93 +521,96 @@ public:
 
     /**
      * \brief   Checks whether the string is numeric. Checks only integer numbers.
+     *
      * \param   signIgnore      If true, ignores '-' and '+' signs in front of number
-     * \return  Returns true if characters are between '0' and '9', or optional '+' or '-' in front if
-     *          signs should be ignored.
+     * \return  Returns true if characters are between '0' and '9', or optional '+' or '-' in front
+     *          if signs should be ignored.
      **/
-    inline bool isNumeric( bool signIgnore = true ) const;
+    inline bool is_numeric( bool signIgnore = true ) const;
 
     /**
-     * \brief   Returns true if string is contains only letters and numbers. No symbols or other controls are allowed.
+     * \brief   Returns true if string is contains only letters numbers. No symbols or other
+     *          controls are allowed.
      **/
-    inline bool isAlphanumeric() const;
+    inline bool is_alphanumeric() const;
 
     /**
-     * \brief   Returns true if string is valid for name.
-     *          The name is valid if it contains letters, numbers and following symbols {'_'}.
-     *          All other symbols are rejected.
+     * \brief   Returns true if string is valid for name. The name is valid if it contains letters,
+     *          numbers following symbols {'_'}. All other symbols are rejected.
      **/
-    inline bool isValidName() const;
+    inline bool is_valid_name() const;
 
     /**
      * \brief   Returns true if the passed character is valid for the name.
      **/
-    inline bool isValidNameChar(const CharType checkChar) const;
+    inline bool is_name_char(const CharType checkChar) const;
 
     /**
-     * \brief   Returns true if string is empty
+     * \brief   Returns true if string is empty.
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
      * \brief   Returns the length of the string.
      **/
-    inline NEString::CharCount getLength() const;
+    inline NEString::CharCount length() const;
 
     /**
      * \brief   Returns the number of characters that can store in the string.
      **/
-    inline NEString::CharCount getCapacity() const;
+    inline NEString::CharCount capacity() const;
 
     /**
      * \brief   Return the size of string in bytes including the end of the string character.
      **/
-    inline uint32_t getSpace() const;
+    inline uint32_t space() const;
 
     /**
      * \brief   Returns string buffer starting at specified valid position.
      *
-     * \param   startAt     The offset of position in string to return buffer.
-     *                      By default it returns begin of string buffer.
      * \return  Returns valid pointer of the string buffer at specified position.
      **/
-    inline const CharType* getBuffer(NEString::CharPos startAt = NEString::START_POS) const;
-    inline CharType* getBuffer(NEString::CharPos startAt = NEString::START_POS);
+    inline const CharType* buffer(NEString::CharPos startAt = NEString::START_POS) const;
+    /**
+     * \brief   Returns string buffer starting at specified valid position.
+     *
+     * \return  Returns valid pointer of the string buffer at specified position.
+     **/
+    inline CharType* buffer(NEString::CharPos startAt = NEString::START_POS);
 
     /**
      * \brief   Returns the buffer of string.
      **/
-    inline const CharType* getString() const;
+    inline const CharType* as_string() const;
 
     /**
      * \brief   Returns the string object.
      **/
-    inline const std::basic_string<CharType>& getData() const;
+    inline const std::basic_string<CharType>& data() const;
 
     /**
      * \brief   Returns true if specified character position is valid in the string.
-     * \param   pos     Zero-based position in the string.
+     *
      * \return  Returns true if specified position is valid to read character.
      **/
-    inline bool isValidPosition(NEString::CharPos pos) const;
+    inline bool is_valid_position(NEString::CharPos pos) const;
 
     /**
      * \brief   Returns true if specified character position is invalid in the string.
-     * \param   pos     Zero-based position in the string.
+     *
      * \return  Returns true if specified position is invalid.
      **/
-    inline bool isInvalidPosition(NEString::CharPos pos) const;
+    inline bool is_invalid_position(NEString::CharPos pos) const;
 
     /**
      * \brief   Returns true if specified position is equal to the end of the string.
-     * \param   pos     The zero-based position in the string.
      **/
-    inline bool isLastPosition(NEString::CharPos pos) const;
+    inline bool is_last_position(NEString::CharPos pos) const;
 
     /**
-     * \brief   Returns true if string is not empty and the specified position is zero.
+     * \brief   Returns true if string is not empty the specified position is zero.
      **/
-    inline bool isFirstPosition(NEString::CharPos pos) const;
+    inline bool is_first_position(NEString::CharPos pos) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -390,206 +618,232 @@ public:
 public:
 
     /**
-     * \brief   Clears the string, makes it empty and invalid.
+     * \brief   Clears the string, makes it empty invalid.
      **/
     inline void clear();
 
     /**
      * \brief   Delete unused space in the string.
      **/
-    inline void freeExtra();
+    inline void free_extra();
 
     /**
-     * \brief   Sets the size of string to zero and deletes the space.
-     */
+     * \brief   Sets the size of string to zero deletes the space.
+     **/
     inline void release();
 
     /**
-     * \brief   Searches the whole word in the string at specified 'startAt' position.
-     *          On output, the 'startAt' and 'endAt' contain start and end of position where each
-     *          word start and end. The length of the word calculated by 'endAt - startAt' formula.
-     *          The word is a collection of characters and digits, and allowed in the valid name
-     *          characters ('_'), which are surrounded by other symbols (whitespace, comma, dot, etc),
-     *          or if it starts at the beginning or end of the string.
-     *
-     * \param[in,out]   startAt On input, this should be valid position in the string to start to search.
-     *                          On output, it contains the next position of the next word.
-     * \param[out]      endAt   On output, it contains the position where the next word finishes.
+     * \brief   Searches the whole word in the string at specified 'startAt' position. On output,
+     *          the 'startAt' and 'endAt' contain start end of position where each word start end.
+     *          The length of the word calculated by 'endAt - startAt' formula. The word is a
+     *          collection of characters digits, allowed in the valid name characters ('_'), which
+     *          are surrounded by other symbols (whitespace, comma, dot, etc), or if it starts at
+     *          the beginning or end of the string.
      **/
-    void findWord(NEString::CharPos& startAt, NEString::CharPos& endAt) const;
+    void find_word(NEString::CharPos& startAt, NEString::CharPos& endAt) const;
 
     /**
-     * \brief   Searches the whole word in the string at specified 'startAt' position.
-     *          On output, the 'startAt' and 'endAt' contain start and end of position where each
-     *          word start and end. On output, the 'word' is the word with length 'endAt - startAt'.
-     *          The word is a collection of characters and digits, and allowed in the valid name
-     *          characters ('_'), which are surrounded by other symbols (whitespace, comma, dot, etc),
-     *          or if it starts at the beginning or end of the string.
-     *
-     * \param[out]      word        On output contains the word that it could find.
-     * \param[in,out]   startAt     On input, this should be valid position in the string to start to search.
-     *                              On output, it contains the next position of the next word.
-     * \param[out]      endAt       On output, it contains the position where the next word finishes.
+     * \brief   Searches the whole word in the string at specified 'startAt' position. On output,
+     *          the 'startAt' and 'endAt' contain start end of position where each word start end.
+     *          On output, the 'word' is the word with length 'endAt - startAt'. The word is a
+     *          collection of characters digits, allowed in the valid name characters ('_'), which
+     *          are surrounded by other symbols (whitespace, comma, dot, etc), or if it starts at
+     *          the beginning or end of the string.
      **/
-    void getWord(StringBase<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const;
+    void word(StringBase<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const;
 
     /**
-     * \brief   Find the first occurrence of any of the characters in string buffer 'chars'.
-     *          The search starts at given 'startPos'. Returns valid position if found any.
-     *          Otherwise, returns NEString::INVALID_POS.
+     * \brief   Find the first occurrence of any of the characters in string buffer 'chars'. The
+     *          search starts at given 'startPos'. Returns valid position if found any. Otherwise,
+     *          returns NEString::INVALID_POS.
      *
-     * \param   chars       The one or more characters as null-terminated string to search.
-     * \param   startPos    The starting position in string to search. Should be valid.
-     *                      By default, starts to search at begin of string, i.e. at 'NEString::START_POS'
      * \return  Returns valid string position value, if any occurrence of given characters found.
      *          Otherwise, returns NEString::INVALID_POS value.
      **/
-    NEString::CharPos findOneOf( const CharType * chars, NEString::CharPos startPos = NEString::START_POS ) const;
+    NEString::CharPos find_one_of( const CharType * chars, NEString::CharPos startPos = NEString::START_POS ) const;
 
     /**
      * \brief   Find the first occurrence of given character in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      *
-     * \param   chSearch        The character to search in the string.
-     * \param   startPos        The starting position in string to search. Should be valid.
-     *                          By default, starts to search at the begin of string, i.e. at 'NEString::START_POS'
-     * \param   caseSensitive   If true, the character match should be by exact, i.e. case-sensitive.
-     *                          Otherwise, the search is by upper and lower case.
-     * \return  Returns valid string position value, if found given character.
-     *          Otherwise, returns NEString::INVALID_POS value.
+     * \param   chSearch            The character to search in the string.
+     * \param   caseSensitive       If true, the character match should be by exact, i.e.
+     *                              case-sensitive. Otherwise, the search is by upper and lower
+     *                              case.
+     * \return  Returns valid string position value, if found given character. Otherwise, returns
+     *          NEString::INVALID_POS value.
      **/
-    NEString::CharPos findFirst( CharType chSearch, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true ) const;
+    NEString::CharPos find_first( CharType chSearch, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      *
-     * \param   phrase          The phrase to search in the string.
-     * \param   startPos        The starting position in string to search. Should be valid.
-     *                          By default, starts to search at the begin of string, i.e. at 'NEString::START_POS'
-     * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
-     *                          Otherwise, the search is by upper and lower case.
-     * \param   wholeWord       If true, the search of phrase should be the whole word.
-     *                          Otherwise, searches by any match. By default, the search is by any match.
-     * \return  Returns valid string position value, if found given character.
-     *          Otherwise, returns NEString::INVALID_POS value.
+     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
+     *                              case-sensitive. Otherwise, the search is by upper and lower
+     *                              case.
+     * \param   wholeWord           If true, the search of phrase should be the whole word.
+     *                              Otherwise, searches by any match. By default, the search is by
+     *                              any match.
+     * \return  Returns valid string position value, if found given character. Otherwise, returns
+     *          NEString::INVALID_POS value.
      **/
-    NEString::CharPos findFirst( const CharType * phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
-    NEString::CharPos findFirst( const StringBase<CharType> & phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
+    NEString::CharPos find_first( const CharType * phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
+    /**
+     * \brief   Find the first occurrence of given phrase in the string. If found, returns valid
+     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *
+     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
+     *                              case-sensitive. Otherwise, the search is by upper and lower
+     *                              case.
+     * \param   wholeWord           If true, the search of phrase should be the whole word.
+     *                              Otherwise, searches by any match. By default, the search is by
+     *                              any match.
+     * \return  Returns valid string position value, if found given character. Otherwise, returns
+     *          NEString::INVALID_POS value.
+     **/
+    NEString::CharPos find_first( const StringBase<CharType> & phrase, NEString::CharPos startPos = NEString::START_POS, bool caseSensitive = true, bool wholeWord = false ) const;
 
     /**
      * \brief   Find the last occurrence of given character in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      *
-     * \param   chSearch        The character to search in the string.
-     * \param   startPos        The starting position in string to search. Should be valid.
-     *                          By default, starts to search at the end of string, i.e. at 'NEString::END_POS'
-     * \param   caseSensitive   If true, the character match should be by exact, i.e. case-sensitive.
-     *                          Otherwise, the search is by upper and lower case.
-     * \return  Returns valid string position value, if found given character.
-     *          Otherwise, returns NEString::INVALID_POS value.
+     * \param   chSearch            The character to search in the string.
+     * \param   caseSensitive       If true, the character match should be by exact, i.e.
+     *                              case-sensitive. Otherwise, the search is by upper and lower
+     *                              case.
+     * \return  Returns valid string position value, if found given character. Otherwise, returns
+     *          NEString::INVALID_POS value.
      **/
-    NEString::CharPos findLast( CharType chSearch, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
+    NEString::CharPos find_last( CharType chSearch, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
 
     /**
      * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
-     * \param   phrase          The phrase to search in the string.
-     * \param   phraseCount     The length of the phrase or the number of characters in the phrase to search.
-     * \param   startPos        The starting position in string to search. Should be valid.
-     *                          By default, starts to search at the begin of string, i.e. at 'NEString::END_POS'
-     * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
-     *                          Otherwise, the search is by upper and lower case.
-     * \return  Returns valid string position value, if found given character.
-     *          Otherwise, returns NEString::INVALID_POS value.
-     **/
-    NEString::CharPos findLast( const CharType * phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const;
-
-    /**
-     * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
-     * \param   phrase          The phrase to search in the string.
-     * \param   startPos        The starting position in string to search. Should be valid.
-     *                          By default, starts to search at the begin of string, i.e. at 'NEString::END_POS'
-     * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
-     * \return  Returns valid string position value, if found given character.
-     *          Otherwise, returns NEString::INVALID_POS value.
-     **/
-    NEString::CharPos findLast( const CharType* phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true) const;
-
-    /**
-     * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
-     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
-     * \param   phrase          The phrase to search in the string.
-     * \param   startPos        The starting position in string to search. Should be valid.
-     *                          By default, starts to search at the begin of string, i.e. at 'NEString::END_POS'
-     * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
-     * \return  Returns valid string position value, if found given character.
-     *          Otherwise, returns NEString::INVALID_POS value.
-     **/
-    NEString::CharPos findLast( const StringBase<CharType> & phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
-
-    /**
-     * \brief   Compares the given string. The comparing is done by certain position, certain amount of characters
-     *          or by ignoring upper and lower cases, depending parameters are passed in the function.
      *
-     * \param   strOther        The given string to compare.
-     * \param   startAt         If given, compares at specified zero-based position of the string.
-     *                          Otherwise, it compares at the begin of string (NEString::START_POS).
-     * \param   count           The number of characters to compare. By default, it compares until end of string
-     * \param   caseSensitive   If true, compares by exact match, i.e. case-sensitive.
-     *                          Otherwise, it ignores upper and lower cases.
-     * \return  Returns:
-     *              NEMath::Smaller if string is less than given string
-     *              NEMath::Equal   if strings have equal
-     *              NEMath::Bigger  if string is more than given string
+     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
+     *                              case-sensitive. Otherwise, the search is by upper and lower
+     *                              case.
+     * \return  Returns valid string position value, if found given character. Otherwise, returns
+     *          NEString::INVALID_POS value.
+     **/
+    NEString::CharPos find_last( const CharType * phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const;
+
+    /**
+     * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
+     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *
+     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
+     *                              case-sensitive.
+     * \return  Returns valid string position value, if found given character. Otherwise, returns
+     *          NEString::INVALID_POS value.
+     **/
+    NEString::CharPos find_last( const CharType* phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true) const;
+
+    /**
+     * \brief   Find the last occurrence of given phrase in the string. If found, returns valid
+     *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
+     *
+     * \param   caseSensitive       If true, the search of phrase should be exact, i.e.
+     *                              case-sensitive.
+     * \return  Returns valid string position value, if found given character. Otherwise, returns
+     *          NEString::INVALID_POS value.
+     **/
+    NEString::CharPos find_last( const StringBase<CharType> & phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
+
+    /**
+     * \brief   Compares the given string. The comparing is done by certain position, certain amount
+     *          of characters or by ignoring upper lower cases, depending parameters are passed in
+     *          the function.
+     *
+     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
+     *                              Otherwise, it ignores upper and lower cases.
+     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
+     *          strings have equal NEMath::Bigger if string is more than given string
      **/
     NEMath::Ordering compare( const CharType * strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    /**
+     * \brief   Compares the given string. The comparing is done by certain position, certain amount
+     *          of characters or by ignoring upper lower cases, depending parameters are passed in
+     *          the function.
+     *
+     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
+     *                              Otherwise, it ignores upper and lower cases.
+     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
+     *          strings have equal NEMath::Bigger if string is more than given string
+     **/
     inline NEMath::Ordering compare(const StringBase<CharType> & strOther, bool caseSensitive = true) const;
+    /**
+     * \brief   Compares the given string. The comparing is done by certain position, certain amount
+     *          of characters or by ignoring upper lower cases, depending parameters are passed in
+     *          the function.
+     *
+     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
+     *                              Otherwise, it ignores upper and lower cases.
+     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
+     *          strings have equal NEMath::Bigger if string is more than given string
+     **/
     inline NEMath::Ordering compare(const std::basic_string<CharType>& strOther, bool caseSensitive = true) const;
+    /**
+     * \brief   Compares the given string. The comparing is done by certain position, certain amount
+     *          of characters or by ignoring upper lower cases, depending parameters are passed in
+     *          the function.
+     *
+     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
+     *                              Otherwise, it ignores upper and lower cases.
+     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
+     *          strings have equal NEMath::Bigger if string is more than given string
+     **/
     inline NEMath::Ordering compare(const std::basic_string_view<CharType>& strOther, bool caseSensitive = true) const;
+    /**
+     * \brief   Compares the given string. The comparing is done by certain position, certain amount
+     *          of characters or by ignoring upper lower cases, depending parameters are passed in
+     *          the function.
+     *
+     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
+     *                              Otherwise, it ignores upper and lower cases.
+     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
+     *          strings have equal NEMath::Bigger if string is more than given string
+     **/
     inline NEMath::Ordering compare(const StringBase<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
+    /**
+     * \brief   Compares the given string. The comparing is done by certain position, certain amount
+     *          of characters or by ignoring upper lower cases, depending parameters are passed in
+     *          the function.
+     *
+     * \param   caseSensitive       If true, compares by exact match, i.e. case-sensitive.
+     *                              Otherwise, it ignores upper and lower cases.
+     * \return  Returns: NEMath::Smaller if string is less than given string NEMath::Equal if
+     *          strings have equal NEMath::Bigger if string is more than given string
+     **/
     inline NEMath::Ordering compare(const std::basic_string<CharType>& strOther, NEString::CharPos startAt = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true) const;
 
     /**
-     * \brief   Truncates the starting at zero-based 'startPos' and given number of characters.
-     *          If 'startPos' is beginning of the string (NEString::START_POS) and 'count' is
-     *          equal to the length of the string or NEString::COUNT_ALL, the string is not modified.
+     * \brief   Truncates the starting at zero-based 'startPos' given number of characters. If
+     *          'startPos' is beginning of the string (NEString::START_POS) and 'count' is equal to
+     *          the length of the string or NEString::COUNT_ALL, the string is not modified.
      *
-     * \param   startPos    Starting position of the substring to create.
-     *                      By default, the substring starts at the begin, i.e. NEString::START_POS
-     * \param   count       The number of characters in substring, starting at given starting position.
-     *                      By default, it gets characters until end of string.
      * \return  Returns truncated string.
      **/
     inline StringBase<CharType>& substring(NEString::CharPos startPos, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Extracts the substring starting at startPos and given number of characters.
-     * \param[out]  outResult   On output, this parameter contains resulting substring.
-     * \param[in]   startPos    Starting position of the substring to create.
-     *                          By default, the substring starts at the begin, i.e. NEString::START_POS
-     * \param[in]   count       The number of characters in substring, starting at given starting position.
-     *                          By default, it gets characters until end of string.
+     * \brief   Extracts the substring starting at startPos given number of characters.
      **/
     inline void substring( StringBase<CharType> & outResult, NEString::CharPos startPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL ) const;
 
     /**
-     * \brief   Searches given phrase in the string starting from given position until the end of string.
-     *          If found, copies the string data into the result until the found position and returns position
-     *          next after phrase. If not found, will copy complete string until end.
-     * \param[out]  outResult   On output, the string contains result of copied data until found position
-     *                          or contains the complete string until the end.
-     * \param[in]   strPhrase   The phrase to search in the string.
-     * \param[in]   startPos    The starting position to search the string.
-     * \return  Returns next position after searched phrase and value are followings:
-     *              -   Valid string position not equal to NEString::END_POS,
-     *                  if found phrase and the phrase is not at the end;
-     *              -   NEString::END_POS if found the phrase at end of string;
-     *              -   NEString::INVALID_POS if could not find the phrase.
+     * \brief   Searches given phrase in the string starting from given position until the end of
+     *          string. If found, copies the string data into the result until the found position
+     *          returns position next after phrase. If not found, will copy complete string until
+     *          end.
      *
-     * \example     The example of substring
-     * \code [cpp]
+     * \return  Returns next position after searched phrase and value are followings: - Valid string
+     *          position not equal to NEString::END_POS, if found phrase and the phrase is not at
+     *          the end; - NEString::END_POS if found the phrase at end of string; -
+     *          NEString::INVALID_POS if could not find the phrase.
+     * 
+     * \code[cpp]
      *
      *  String test("0123 456 789 0123");
      *  String result;
@@ -604,487 +858,523 @@ public:
      * \endcode
      **/
     inline NEString::CharPos substring(StringBase<CharType>& outResult, const CharType* strPhrase, NEString::CharPos startPos = NEString::START_POS) const;
+    /**
+     * \brief   Searches given phrase in the string starting from given position until the end of
+     *          string. If found, copies the string data into the result until the found position
+     *          returns position next after phrase. If not found, will copy complete string until
+     *          end.
+     *
+     * \return  Returns next position after searched phrase and value are followings: - Valid string
+     *          position not equal to NEString::END_POS, if found phrase and the phrase is not at
+     *          the end; - NEString::END_POS if found the phrase at end of string; -
+     *          NEString::INVALID_POS if could not find the phrase.
+     **/
     inline NEString::CharPos substring(StringBase<CharType>& outResult, const StringBase<CharType>& strPhrase, NEString::CharPos startPos = NEString::START_POS) const;
+    /**
+     * \brief   Searches given phrase in the string starting from given position until the end of
+     *          string. If found, copies the string data into the result until the found position
+     *          returns position next after phrase. If not found, will copy complete string until
+     *          end.
+     *
+     * \return  Returns next position after searched phrase and value are followings: - Valid string
+     *          position not equal to NEString::END_POS, if found phrase and the phrase is not at
+     *          the end; - NEString::END_POS if found the phrase at end of string; -
+     *          NEString::INVALID_POS if could not find the phrase.
+     **/
     inline NEString::CharPos substring(StringBase<CharType>& outResult, const std::basic_string<CharType>& strPhrase, NEString::CharPos startPos = NEString::START_POS) const;
 
     /**
-     * \brief   Searches given symbol in the string starting from given position until end of string.
-     *          If found, copies the string data into the result until the found position and returns position
-     *          next after symbol. If not found, will copy complete string until end.
-     * \param[out]  outResult   On output, the string contains result of copied data until found position
-     *                          or contains the complete string until the end.
-     * \param[in]   chSymbol    The symbol to search in the string.
-     * \param[in]   startPos    The starting position to search the symbol.
-     * \return  Returns next position after searched symbol and value are followings:
-     *              -   Valid string position not equal to NEString::END_POS,
-     *                  if found phrase and the symbol is not at the end;
-     *              -   NEString::END_POS if found the symbol at end of string;
-     *              -   NEString::INVALID_POS if could not find the phrase.
+     * \brief   Searches given symbol in the string starting from given position until end of
+     *          string. If found, copies the string data into the result until the found position
+     *          returns position next after symbol. If not found, will copy complete string until
+     *          end.
+     *
+     * \param   chSymbol    The symbol to search in the string.
+     * \return  Returns next position after searched symbol and value are followings: - Valid string
+     *          position not equal to NEString::END_POS, if found phrase and the symbol is not at
+     *          the end; - NEString::END_POS if found the symbol at end of string; -
+     *          NEString::INVALID_POS if could not find the phrase.
      **/
     NEString::CharPos substring( StringBase<CharType> & outResult, CharType chSymbol, NEString::CharPos startPos = NEString::START_POS ) const;
 
     /**
-     * \brief   Returns left side (begin) substring of length 'charCount'
-     * \param   charCount   The number of characters to extract.
-     * \return  Returns the left side substring of length 'charCount' or empty string is string is empty.
+     * \brief   Returns left side (begin) substring of length 'charCount'.
+     *
+     * \return  Returns the left side substring of length 'charCount' or empty string is string is
+     *          empty.
      **/
-    inline StringBase<CharType> leftSide(NEString::CharCount charCount) const;
+    inline StringBase<CharType> left_side(NEString::CharCount charCount) const;
 
     /**
-     * \brief   Returns right side (end) substring of length 'charCount'
-     * \param   charCount   The number of characters to extract.
-     * \return  Returns the right side substring of length 'charCount' or empty string is string is empty.
+     * \brief   Returns right side (end) substring of length 'charCount'.
+     *
+     * \return  Returns the right side substring of length 'charCount' or empty string is string is
+     *          empty.
      **/
-    inline StringBase<CharType> rightSide(NEString::CharCount charCount) const;
+    inline StringBase<CharType> right_side(NEString::CharCount charCount) const;
 
     /**
-     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-     *          If string has not enough space to copy characters, it will reallocate the space.
-     * \param   source  The source of string to copy characters.
-     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \brief   Copies given amount of characters of given string returns the amount of copied
+     *          characters. If string has not enough space to copy characters, it will reallocate
+     *          the space.
+     *
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& assign(const CharType * source, NEString::CharCount count = NEString::COUNT_ALL );
 
     /**
-     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-     *          If string has not enough space to copy characters, it will reallocate the space.
-     * \param   source  The source of string to copy characters.
-     * \param   pos     The position in source string to start to copy.
-     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \brief   Copies given amount of characters of given string returns the amount of copied
+     *          characters. If string has not enough space to copy characters, it will reallocate
+     *          the space.
+     *
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& assign(const std::basic_string<CharType> & source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-     *          If string has not enough space to copy characters, it will reallocate the space.
-     * \param   source  The source of string to copy characters.
-     * \param   pos     The position in source string to start to copy.
-     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \brief   Copies given amount of characters of given string returns the amount of copied
+     *          characters. If string has not enough space to copy characters, it will reallocate
+     *          the space.
+     *
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& assign(const std::basic_string_view<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-     *          If string has not enough space to copy characters, it will reallocate the space.
-     * \param   source  The source of string to copy characters.
-     * \param   pos     The position in source string to start to copy.
-     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \brief   Copies given amount of characters of given string returns the amount of copied
+     *          characters. If string has not enough space to copy characters, it will reallocate
+     *          the space.
+     *
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& assign(const StringBase<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
-     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \brief   Copies given amount of characters of given string returns the amount of copied
+     *          characters. If string has not enough space to copy characters, it will reallocate
+     *          the space.
+     *
      * \param   ch      A character to assign.
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& assign(CharType ch);
 
     /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
-     *          and by amount of characters to append.
-     * \param   source  The source of string to append characters.
-     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
+     *          position by amount of characters to append.
+     *
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& append(const CharType * source, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
-     *          and by amount of characters to append.
-     * \param   source  The source of string to append characters.
-     * \param   pos     If specified the valid zero-based position in the given string to append.
-     *                  Otherwise, it append starting from the beginning.
-     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
+     *          position by amount of characters to append.
+     *
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& append(const std::basic_string<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
-     *          and by amount of characters to append.
-     * \param   source  The source of string to append characters.
-     * \param   pos     If specified the valid zero-based position in the given string to append.
-     *                  Otherwise, it append starting from the beginning.
-     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
+     *          position by amount of characters to append.
+     *
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& append(const std::basic_string_view<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
-     *          and by amount of characters to append.
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
+     *          position by amount of characters to append.
      *
-     * \param   source  The source of string to append characters.
-     * \param   pos     If specified the valid zero-based position in the given string to append.
-     *                  Otherwise, it append starting from the beginning.
-     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& append(const StringBase<CharType>& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
-     *          and by amount of characters to append.
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid
+     *          position by amount of characters to append.
+     *
      * \param   ch      A character to append.
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& append(CharType ch);
 
     /**
-     * \brief   Moves data inside string buffer starting at specified position.
-     *          It moves left if 'moveTo' value is negative and moves right if 'moveTo' is positive.
-     *          If 'moveTo' is zero, no change happens.
-     * \param   startPos    The valid zero-based position to start moving string.
-     * \param   moveTo      Specifies number of characters and direction to move string.
-     *                      If negative, moves string to left side. String buffer is not reallocated.
-     *                      If positive, moves string to right.
-     *                      if zero, no change happens.
+     * \brief   Moves data inside string buffer starting at specified position. It moves left if
+     *          'move_to' value is negative moves right if 'move_to' is positive. If 'move_to' is
+     *          zero, no change happens.
+     *
+     * \param   move_to     Specifies number of characters and direction to move string. If
+     *                      negative, moves string to left side. String buffer is not reallocated.
+     *                      If positive, moves string to right. if zero, no change happens.
      * \return  Returns modified string.
      **/
-    StringBase<CharType>& moveTo(NEString::CharPos startPos, int32_t moveTo);
+    StringBase<CharType>& move_to(NEString::CharPos startPos, int32_t move_to);
 
     /**
      * \brief   Inserts given source of character at given valid zero-based position in the string.
-     *          The character can be inserted at any position, including begin of string or
-     *          at the end of string (NEString::END_POS).
-     * \param   source  The character to insert.
-     * \param   atPos   The position in the string to insert.
-     * \param   count   The number of characters to insert. By default, it is one character.
+     *          The character can be inserted at any position, including begin of string or at the
+     *          end of string (NEString::END_POS).
+     *
+     * \param   source      The character to insert.
      * \return  Returns modified string.
      **/
-    inline StringBase<CharType>& insertAt( CharType source, NEString::CharPos atPos, NEString::CharCount count = 1 );
+    inline StringBase<CharType>& insert_at( CharType source, NEString::CharPos atPos, NEString::CharCount count = 1 );
 
     /**
-     * \brief   Inserts given source at given valid zero-based position in the string.
-     *          The character can be inserted at any position, including begin of string or
-     *          at the end of string (NEString::END_POS).
-     * \param   source      The source of character to insert.
-     * \param   atDstPos    The position in the destination string to insert.
-     *                      By default, it is the beginning of source string.
-     * \param   count       If given, the number of characters in the source string to insert.
-     *                      By default it inserts the complete source of string.
+     * \brief   Inserts given source at given valid zero-based position in the string. The character
+     *          can be inserted at any position, including begin of string or at the end of string
+     *          (NEString::END_POS).
      **/
-    inline StringBase<CharType>& insertAt( const CharType * source, NEString::CharPos atDstPos, NEString::CharCount count = NEString::COUNT_ALL );
+    inline StringBase<CharType>& insert_at( const CharType * source, NEString::CharPos atDstPos, NEString::CharCount count = NEString::COUNT_ALL );
 
     /**
-     * \brief   Inserts given source at given valid zero-based position in the string.
-     *          The character can be inserted at any position, including begin of string or
-     *          at the end of string (NEString::END_POS).
-     *
-     * \param   source      The source of character to insert.
-     * \param   atDstPos    The position in the destination string to insert.
-     * \param   atSrcPos    If given, the position in source string to take for inserting.
-     *                      By default, it is the beginning of source string.
-     * \param   count       If given, the number of characters in the source string to insert.
-     *                      By default it inserts the complete source of string.
+     * \brief   Inserts given source at given valid zero-based position in the string. The character
+     *          can be inserted at any position, including begin of string or at the end of string
+     *          (NEString::END_POS).
      **/
-    inline StringBase<CharType>& insertAt(const std::basic_string<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& insert_at(const std::basic_string<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Inserts given source at given valid zero-based position in the string.
-     *          The character can be inserted at any position, including begin of string or
-     *          at the end of string (NEString::END_POS).
-     *
-     * \param   source      The source of character to insert.
-     * \param   atDstPos    The position in the destination string to insert.
-     * \param   atSrcPos    If given, the position in source string to take for inserting.
-     *                      By default, it is the beginning of source string.
-     * \param   count       If given, the number of characters in the source string to insert.
-     *                      By default it inserts the complete source of string.
+     * \brief   Inserts given source at given valid zero-based position in the string. The character
+     *          can be inserted at any position, including begin of string or at the end of string
+     *          (NEString::END_POS).
      **/
-    inline StringBase<CharType>& insertAt(const std::basic_string_view<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& insert_at(const std::basic_string_view<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Inserts given source at given valid zero-based position in the string.
-     *          The character can be inserted at any position, including begin of string or
-     *          at the end of string (NEString::END_POS).
-     *
-     * \param   source      The source of character to insert.
-     * \param   atDstPos    The position in the destination string to insert.
-     * \param   atSrcPos    If given, the position in source string to take for inserting.
-     *                      By default, it is the beginning of source string.
-     * \param   count       If given, the number of characters in the source string to insert.
-     *                      By default it inserts the complete source of string.
+     * \brief   Inserts given source at given valid zero-based position in the string. The character
+     *          can be inserted at any position, including begin of string or at the end of string
+     *          (NEString::END_POS).
      **/
-    inline StringBase<CharType>& insertAt(const StringBase<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline StringBase<CharType>& insert_at(const StringBase<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Searches and replaces given character by another character. The search and replacement starts at given position.
-     *          The method either replaces only first match or all matches.
+     * \brief   Searches replaces given character by another character. The search replacement
+     *          starts at given position. The method either replaces only first match or all
+     *          matches.
      *
-     * \param   chSearch    The character to be searched to replace.
-     * \param   chReplace   The character to set when found 'chSearch'.
-     * \param   startPos    The valid zero-based position to start searching character to replace.
-     *                      By default, it searches at the begin of string.
-     * \param   replaceAll  If true, replaces all matches in the string. Otherwise, replace first match.
+     * \param   chSearch        The character to be searched to replace.
+     * \param   chReplace       The character to set when found 'chSearch'.
+     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
+     *                          first match.
      * \return  Returns modified string.
      **/
     StringBase<CharType>& replace( CharType chSearch, CharType chReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true );
 
     /**
-     * \brief   Searches and replaces given string by another string. The search and replacement starts at given position.
-     *          The method either replaces only first match or all matches.
+     * \brief   Searches replaces given string by another string. The search replacement starts at
+     *          given position. The method either replaces only first match or all matches.
      *
-     * \param   strSearch   The string to be searched to replace.
-     * \param   strReplace  The string to set when found 'strSearch'.
-     * \param   startPos    The valid zero-based position to start searching string to replace.
-     *                      By default, it searches at the begin of string.
-     * \param   count       The amount of characters in the 'strReplace' to use to replace 'strSearch'.
-     * \param   replaceAll  If true, replaces all matches in the string. Otherwise, replace first match.
+     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
+     *                          first match.
      * \return  Returns modified string.
      **/
     StringBase<CharType>& replace( const CharType * strSearch, const CharType * strReplace, NEString::CharPos startPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL, bool replaceAll = true );
+    /**
+     * \brief   Searches replaces given string by another string. The search replacement starts at
+     *          given position. The method either replaces only first match or all matches.
+     *
+     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
+     *                          first match.
+     * \return  Returns modified string.
+     **/
     StringBase<CharType>& replace(const std::basic_string<CharType>& strSearch, const std::basic_string<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
+    /**
+     * \brief   Searches replaces given string by another string. The search replacement starts at
+     *          given position. The method either replaces only first match or all matches.
+     *
+     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
+     *                          first match.
+     * \return  Returns modified string.
+     **/
     StringBase<CharType>& replace(const std::basic_string_view<CharType>& strSearch, const std::basic_string_view<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
+    /**
+     * \brief   Searches replaces given string by another string. The search replacement starts at
+     *          given position. The method either replaces only first match or all matches.
+     *
+     * \param   replaceAll      If true, replaces all matches in the string. Otherwise, replace
+     *                          first match.
+     * \return  Returns modified string.
+     **/
     inline StringBase<CharType>& replace(const StringBase<CharType>& strSearch, const StringBase<CharType>& strReplace, NEString::CharPos startPos = NEString::START_POS, bool replaceAll = true);
 
     /**
-     * \brief   At the given position of the string removes specified amount of characters and replaces by the given string.position after replacing string.
+     * \brief   At the given position of the string removes specified amount of characters replaces
+     *          by the given string.position after replacing string.
      *
-     * \param   startPos    The valid zero-based position to start modifying string.
-     * \param   charsRemove Amount of characters to remove to replace in string.
-     * \param   strReplace  The string to set.
-     * \param   count       The number of characters in the given string to use to replace .
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& replace(NEString::CharPos startPos, NEString::CharCount charsRemove, const CharType* strReplace, NEString::CharCount count = NEString::COUNT_ALL);
+    /**
+     * \brief   At the given position of the string removes specified amount of characters replaces
+     *          by the given string.position after replacing string.
+     *
+     * \return  Returns modified string.
+     **/
     inline StringBase<CharType>& replace(NEString::CharPos startPos, NEString::CharCount charsRemove, const std::basic_string<CharType>& strReplace);
+    /**
+     * \brief   At the given position of the string removes specified amount of characters replaces
+     *          by the given string.position after replacing string.
+     *
+     * \return  Returns modified string.
+     **/
     inline StringBase<CharType>& replace(NEString::CharPos startPos, NEString::CharCount charsRemove, const StringBase<CharType>& strReplace);
 
     /**
-     * \brief   Removes specified amount of characters in string at specified starting position.
-     *          If 'count' is NEString::COUNT_ALL, it will remove all characters until end of the string.
+     * \brief   Removes specified amount of characters in string at specified starting position. If
+     *          'count' is NEString::COUNT_ALL, it will remove all characters until end of the
+     *          string.
      *
-     * \param   startPos    The valid zero-based starting position to remove string.
-     * \param   count       The amount of characters to remove or until end of the string if NEString::COUNT_ALL.
      * \return  Returns modified string.
      **/
     StringBase<CharType>& remove(NEString::CharPos startPos, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
-     * \brief   Starting from the given valid zero-based position searches and removes specified character.
-     *          If 'removedAll' parameter is true, removes all matches in the string. Otherwise, it removes only first match.
+     * \brief   Starting from the given valid zero-based position searches removes specified
+     *          character. If 'removedAll' parameter is true, removes all matches in the string.
+     *          Otherwise, it removes only first match.
      *
-     * \param   chRemove    The character to search and remove.
-     * \param   startPos    The valid zero-based position to start to search character.
-     * \param   removeAll   If true, will remove all matches. Otherwise, removes first match of the character.
+     * \param   chRemove        The character to search and remove.
+     * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
+     *                          the character.
      * \return  Returns modified string.
      **/
     StringBase<CharType>& remove(const CharType chRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true);
 
     /**
-     * \brief   Starting from the given valid zero-based position searches and removes given phrase of string. The search starts at given position.
-     *          If 'removedAll' parameter is true, removes all matches in the string. Otherwise, it removes only first match.
+     * \brief   Starting from the given valid zero-based position searches removes given phrase of
+     *          string. The search starts at given position. If 'removedAll' parameter is true,
+     *          removes all matches in the string. Otherwise, it removes only first match.
      *
-     * \param   strRemove   The string to search and remove.
-     * \param   startPos    The valid zero-based position to start to search character.
-     * \param   removeAll   If true, will remove all matches. Otherwise, removes first match of the character.
+     * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
+     *                          the character.
      * \return  Returns modified string.
      **/
     inline StringBase<CharType>& remove( const CharType * strRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true );
+    /**
+     * \brief   Starting from the given valid zero-based position searches removes given phrase of
+     *          string. The search starts at given position. If 'removedAll' parameter is true,
+     *          removes all matches in the string. Otherwise, it removes only first match.
+     *
+     * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
+     *                          the character.
+     * \return  Returns modified string.
+     **/
     inline StringBase<CharType>& remove(const StringBase<CharType>& strRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true);
+    /**
+     * \brief   Starting from the given valid zero-based position searches removes given phrase of
+     *          string. The search starts at given position. If 'removedAll' parameter is true,
+     *          removes all matches in the string. Otherwise, it removes only first match.
+     *
+     * \param   removeAll       If true, will remove all matches. Otherwise, removes first match of
+     *                          the character.
+     * \return  Returns modified string.
+     **/
     StringBase<CharType>& remove(const std::basic_string<CharType> & strRemove, NEString::CharPos startPos = NEString::START_POS, bool removeAll = true);
 
     /**
-     * \brief   Resizes the string to contain count characters.
-     *          If the current size is less than count, additional characters are appended.
-     *          If the current size is greater than count, the string is reduced to its first count elements.
+     * \brief   Resizes the string to contain count characters. If the current size is less than
+     *          count, additional characters are appended. If the current size is greater than
+     *          count, the string is reduced to its first count elements.
      *
-     * \param   count   The maximum length of string.
-     * \param   chFill  The characters to fill if new size if longer than the current length.
+     * \param   chFill      The characters to fill if new size if longer than the current length.
      **/
     inline StringBase<CharType>& resize(NEString::CharCount count, CharType chFill = static_cast<CharType>('\0'));
 
     /**
-     * \brief   If the length of string is bigger than the 'maxChars', it truncated the string.
-     *          If 'maxChars' is zero, empties the string.
-     *          If the length of the string is smaller than the 'maxChars', nothing happens.
-     * \param   maxChars    The maximum characters in the string.
-     */
+     * \brief   If the length of string is bigger than the 'maxChars', it truncated the string. If
+     *          'maxChars' is zero, empties the string. If the length of the string is smaller than
+     *          the 'maxChars', nothing happens.
+     **/
     inline StringBase<CharType>& truncate(NEString::CharCount maxChars);
 
     /**
-     * \brief   Reserves the space for the string. Unlike 'resize' this operation does not change the current length of the string.
-     * \param   newCapacity     New capacity of the string to set.
-     */
+     * \brief   Reserves the space for the string. Unlike 'resize' this operation does not change
+     *          the current length of the string.
+     **/
     inline StringBase<CharType>& reserve(NEString::CharCount newCapacity);
 
     /**
      * \brief   Returns character at specified valid zero-based position.
      *
-     * \param   atPos   The position to return character value.
-     * \return  Returns character at specified position of string buffer.
-     *          Returns NEString::EndOfString if position is invalid or
-     *          equal to string length.
+     * \return  Returns character at specified position of string buffer. Returns
+     *          NEString::EndOfString if position is invalid or equal to string length.
      **/
-    inline CharType getAt( NEString::CharPos atPos ) const;
+    inline CharType at( NEString::CharPos atPos ) const;
 
     /**
      * \brief   Sets character at specified valid zero-based position.
      *
      * \param   ch      The character to set.
-     * \param   atPos   The position where to set character.
-     *                  If the position is valid, it sets the character at the specified position.
-     *                  If the position is NEString::END_POS, it appends a character at the end of the string.
-     *                  In all other cases, the operation is ignored.
      **/
-    inline StringBase<CharType>& setAt( CharType ch, NEString::CharPos atPos = NEString::END_POS );
+    inline StringBase<CharType>& set_at( CharType ch, NEString::CharPos atPos = NEString::END_POS );
 
     /**
      * \brief   Removes whitespace characters from left side, i.e. from the begin of the string
-     *          and returns the actual modified string.
+     *          returns the actual modified string.
      **/
-    inline StringBase<CharType>& trimLeft();
+    inline StringBase<CharType>& trim_left();
 
     /**
-     * \brief   Copies data into given string without trailing whitespace at the begin of the string.
-     *          The existing string remain unmodified.
-     *
-     * \param[out]  strResult   The destination string to copy result.
+     * \brief   Copies data into given string without trailing whitespace at the begin of the
+     *          string. The existing string remain unmodified.
      **/
-    inline void trimLeft( StringBase<CharType> & strResult ) const;
-    inline void trimLeft(std::basic_string<CharType>& strResult) const;
+    inline void trim_left( StringBase<CharType> & strResult ) const;
+    /**
+     * \brief   Copies data into given string without trailing whitespace at the begin of the
+     *          string. The existing string remain unmodified.
+     **/
+    inline void trim_left(std::basic_string<CharType>& strResult) const;
 
     /**
-     * \brief   Removes whitespace characters from right side, i.e. from end of the string
-     *          and returns the actual modified string.
+     * \brief   Removes whitespace characters from right side, i.e. from end of the string returns
+     *          the actual modified string.
      **/
-    inline StringBase<CharType>& trimRight();
+    inline StringBase<CharType>& trim_right();
 
     /**
      * \brief   Copies data into given string without trailing whitespace at the end of the string.
      *          The existing string remain unmodified.
-     *
-     * \param[out]  strResult   The destination string to copy result.
      **/
-    inline void trimRight( StringBase<CharType> & strResult ) const;
-    inline void trimRight(std::basic_string<CharType>& strResult) const;
-
+    inline void trim_right( StringBase<CharType> & strResult ) const;
     /**
-     * \brief   Removes whitespace characters from left and right sides, i.e. from the begin and end of the string
-     *          and returns the actual modified string.
-     **/
-    StringBase<CharType>& trimAll();
-
-    /**
-     * \brief   Copies data into given string without trailing whitespace at the begin and end of the string.
+     * \brief   Copies data into given string without trailing whitespace at the end of the string.
      *          The existing string remain unmodified.
+     **/
+    inline void trim_right(std::basic_string<CharType>& strResult) const;
+
+    /**
+     * \brief   Removes whitespace characters from left right sides, i.e. from the begin end of the
+     *          string returns the actual modified string.
+     **/
+    StringBase<CharType>& trim_all();
+
+    /**
+     * \brief   Copies data into given string without trailing whitespace at the begin end of the
+     *          string. The existing string remain unmodified.
+     **/
+    inline void trim_all( StringBase<CharType> & strResult ) const;
+    /**
+     * \brief   Copies data into given string without trailing whitespace at the begin end of the
+     *          string. The existing string remain unmodified.
+     **/
+    void trim_all(std::basic_string<CharType>& strResult) const;
+
+    /**
+     * \brief   Converts the string, makes all letters to lower case returns the instance of
+     *          converted string.
+     **/
+    inline StringBase<CharType> & make_lower();
+
+    /**
+     * \brief   Converts the string, makes all letters to upper case returns the instance of
+     *          converted string.
+     **/
+    inline StringBase<CharType> & make_upper();
+
+    /**
+     * \brief   Reads the string starting from specified position until end of line, copies the
+     *          result into the 'strResult' returns the next position where new line begins or
+     *          returns NEString::END_POS if reached end of string.
      *
-     * \param[out]  strResult   The destination string to copy result.
+     * \return  Returns next position where starts non-empty new line or NEString::END_POS if
+     *          reached end of string.
+     * \note    If after reading the line there are still empty new lines. The returned position
+     *          value escapes followed empty new lines.
      **/
-    inline void trimAll( StringBase<CharType> & strResult ) const;
-    void trimAll(std::basic_string<CharType>& strResult) const;
-
+    inline NEString::CharPos read_line(StringBase<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
     /**
-     * \brief   Converts the string, makes all letters to lower case and returns the instance of converted string.
+     * \brief   Reads the string starting from specified position until end of line, copies the
+     *          result into the 'strResult' returns the next position where new line begins or
+     *          returns NEString::END_POS if reached end of string.
+     *
+     * \return  Returns next position where starts non-empty new line or NEString::END_POS if
+     *          reached end of string.
+     * \note    If after reading the line there are still empty new lines. The returned position
+     *          value escapes followed empty new lines.
      **/
-    inline StringBase<CharType> & makeLower();
-
-    /**
-     * \brief   Converts the string, makes all letters to upper case and returns the instance of converted string.
-     **/
-    inline StringBase<CharType> & makeUpper();
-
-    /**
-     * \brief   Reads the string starting from specified position until end of line,
-     *          copies the result into the 'strResult' and returns the next position
-     *          where new line begins or returns NEString::END_POS if reached end of string.
-     * \note    If after reading the line there are still empty new lines.
-     *          The returned position value escapes followed empty new lines.
-     * \param[out]  strResult   On output the string contains a line.
-     * \param[in]   startPos    The valid zero-based position to start copying the line. By default it starts from the begging of string.
-     * \return  Returns next position where starts non-empty new line or NEString::END_POS if reached end of string.
-     **/
-    inline NEString::CharPos readLine(StringBase<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
-    NEString::CharPos readLine(std::basic_string<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
+    NEString::CharPos read_line(std::basic_string<CharType>& strResult, NEString::CharPos startPos = NEString::START_POS) const;
 
     /**
      * \brief   In the existing string removes all characters, which are not alphanumeric.
+     *
      * \return  Returns new length of string after making alphanumeric
      **/
-    inline StringBase<CharType>& makeAlphanumeric();
+    inline StringBase<CharType>& make_alphanumeric();
 
     /**
-     * \brief   Checks and returns true if the string starts with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
+     * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool startsWith(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool starts_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
-     * \brief   Checks and returns true if the string starts with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
+     * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
-     * \brief   Checks and returns true if the string starts with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
+     * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
-     * \brief   Checks and returns true if the string starts with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
-     * \param count             The number of character in the phase. If NEString::COUNT_ALL it compare the complete phase.
+     * \brief   Checks returns true if the string starts with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool startsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline bool starts_with(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
-     * \brief   Checks and returns true if the string ends with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
+     * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool endsWith(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
-     * \brief   Checks and returns true if the string ends with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
+     * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
-     * \brief   Checks and returns true if the string ends with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
+     * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
+    inline bool ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
-     * \brief   Checks and returns true if the string ends with the given phrase.
-     *          Valid only the first 256 characters based on UTF-8 code page.
-     * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases.
-     * \param count             The number of character in the phase. If NEString::COUNT_ALL it compare the complete phase.
+     * \brief   Checks returns true if the string ends with the given phrase. Valid only the first
+     *          256 characters based on UTF-8 code page.
+     *
+     * \param   isCaseSensitive     If false, ignores the upper and lower cases.
      **/
-    inline bool endsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline bool ends_with(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
-     * \brief   Searches string and if found, replace by another.
-     * \param   strOrigin   The string to search.
-     * \param   lenOrigin   The length of string to search or amount of characters to search.
-     * \param   strReplace  The string to replace
-     * \param   lenReplace  The amount of characters to replace
-     * \param   startPos    The starting position to start searching.
-     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could not find specified string.
+     * \brief   Searches string if found, replace by another.
+     *
+     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could
+     *          not find specified string.
      **/
-    inline NEString::CharPos replaceWith( const CharType * strOrigin
+    inline NEString::CharPos replace_with( const CharType * strOrigin
                                         , NEString::CharCount lenOrigin
                                         , const CharType * strReplace
                                         , NEString::CharCount lenReplace
@@ -1092,27 +1382,26 @@ public:
 
     /**
      * \brief   Replaces string in the buffer starting at specified position.
-     * \param   startPos    The position in string buffer to start replacing characters. Should be valid position for reading.
-     * \param   count       The amount characters to replace is string buffer.
-     * \param   strReplace  The string to replace
-     * \param   lenReplace  The amount of characters to replace
-     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could not find specified string.
+     *
+     * \return  Returns next position after replacing string. Returns NEString::INVALID_POS if could
+     *          not find specified string.
      **/
-    inline NEString::CharPos replaceWith( NEString::CharPos startPos
+    inline NEString::CharPos replace_with( NEString::CharPos startPos
                                         , NEString::CharCount count
                                         , const CharType * strReplace
                                         , NEString::CharCount lenReplace);
 
     /**
      * \brief   Splits the given string into multiple parts considering specified delimiter.
-     * \param   delim   The delimiter character that should be searched to split the string.
+     *
+     * \param   delim       The delimiter character that should be searched to split the string.
      * \return  Returns list of strings that are split be specified delimiter.
      **/
     inline std::vector<StringBase<CharType>> split(CharType delim) const;
 
     /**
      * \brief   Splits the given string into multiple parts considering specified delimiter.
-     * \param   delim   The delimiter string that should be searched to split the string.
+     *
      * \return  Returns list of strings that are split be specified delimiter.
      **/
     inline std::vector<StringBase<CharType>> split(const StringBase<CharType> & delim) const;
@@ -1123,99 +1412,96 @@ public:
 protected:
 
     /**
-     * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
-     *              - NEMath::Smaller   if string is less than given string
-     *              - NEMath::Equal     if strings have equal
-     *              - NEMath::Bigger    if string is more than given string.
-     *          The comparing can be done by ignoring case sensitivity.
+     * \brief   Compares the existing string at the specified valid zero-based position with another
+     *          string, returns: - NEMath::Smaller if string is less than given string -
+     *          NEMath::Equal if strings have equal - NEMath::Bigger if string is more than given
+     *          string. The comparing can be done by ignoring case sensitivity.
      *
-     * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
-     * \param   strOther        The string to compare
-     * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
-     * \param   caseSensitive   If true, compares exact match of string. Otherwise, ignores lower and upper cases.
-     * \return  Return:
-     *              NEMath::Smaller if string is less than given string
-     *              NEMath::Equal   if strings have equal
-     *              NEMath::Bigger  if string is more than given string
+     * \param   caseSensitive       If true, compares exact match of string. Otherwise, ignores
+     *                              lower and upper cases.
+     * \return  Return: NEMath::Smaller if string is less than given string NEMath::Equal if strings
+     *          have equal NEMath::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compareString( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true ) const;
+    inline NEMath::Ordering compare_string( NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL, bool caseSensitive = true ) const;
 
     /**
-     * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
-     *              - NEMath::Smaller   if string is less than given string
-     *              - NEMath::Equal     if strings have equal
-     *              - NEMath::Bigger    if string is more than given string.
-     *          The comparing is done by exact match.
+     * \brief   Compares the existing string at the specified valid zero-based position with another
+     *          string, returns: - NEMath::Smaller if string is less than given string -
+     *          NEMath::Equal if strings have equal - NEMath::Bigger if string is more than given
+     *          string. The comparing is done by exact match.
      *
-     * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
-     * \param   strOther        The string to compare
-     * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
-     * \return  Return:
-     *              NEMath::Smaller if string is less than given string
-     *              NEMath::Equal   if strings have equal
-     *              NEMath::Bigger  if string is more than given string
+     * \return  Return: NEMath::Smaller if string is less than given string NEMath::Equal if strings
+     *          have equal NEMath::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compareStringExact(NEString::CharPos startPos, const CharType* strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline NEMath::Ordering compare_string_exact(NEString::CharPos startPos, const CharType* strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
-     * \brief   Compares the existing string at the specified valid zero-based position with another string, and returns:
-     *              - NEMath::Smaller   if string is less than given string
-     *              - NEMath::Equal     if strings have equal
-     *              - NEMath::Bigger    if string is more than given string.
-     *          The comparing is done by ignoring upper / lower case.
+     * \brief   Compares the existing string at the specified valid zero-based position with another
+     *          string, returns: - NEMath::Smaller if string is less than given string -
+     *          NEMath::Equal if strings have equal - NEMath::Bigger if string is more than given
+     *          string. The comparing is done by ignoring upper / lower case.
      *
-     * \param   startPos        The Valid zero-based position in the string buffer to start comparing.
-     * \param   strOther        The string to compare
-     * \param   count           The amount of characters to compare or NEString::COUNT_ALL to compare the complete string.
-     * \return  Return:
-     *              NEMath::Smaller if string is less than given string
-     *              NEMath::Equal   if strings have equal
-     *              NEMath::Bigger  if string is more than given string
+     * \return  Return: NEMath::Smaller if string is less than given string NEMath::Equal if strings
+     *          have equal NEMath::Bigger if string is more than given string
      **/
-    inline NEMath::Ordering compareStringIgnoreCase(NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
+    inline NEMath::Ordering compare_ignore_case(NEString::CharPos startPos, const CharType * strOther, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
      * \brief   Searches the first phrase in string. The comparing is done by exact match.
      *
-     * \param   phrase      The phrase to search.
-     * \param   count       The number of characters in the phrase. The value NEString::COUNT_ALL searches the complete phrase.
-     * \param   startPos    The valid zero-based position in the string to start searching.
-     * \return  If found, returns valid position in the string. If not found, it returns NEString::END_POS.
+     * \return  If found, returns valid position in the string. If not found, it returns
+     *          NEString::END_POS.
      **/
-    inline NEString::CharPos findFirstPhrase(const CharType* phrase, NEString::CharCount count = NEString::COUNT_ALL, NEString::CharPos startPos = NEString::START_POS ) const;
+    inline NEString::CharPos find_first_phrase(const CharType* phrase, NEString::CharCount count = NEString::COUNT_ALL, NEString::CharPos startPos = NEString::START_POS ) const;
 
     /**
-     * \brief   Searches the first phrase in string. The comparing is done by ignoring upper and lower cases.
-     *          It compares upper and lower cases by default locale.
+     * \brief   Searches the first phrase in string. The comparing is done by ignoring upper lower
+     *          cases. It compares upper lower cases by default locale.
      *
-     * \param   phrase      The phrase to search.
-     * \param   startPos    The valid zero-based position in the string to start searching.
-     * \return  If found, returns valid position in the string. If not found, it returns NEString::END_POS.
+     * \return  If found, returns valid position in the string. If not found, it returns
+     *          NEString::END_POS.
      **/
-    inline NEString::CharPos findFirstPhraseIgnoreCase(const CharType* phrase, NEString::CharPos startPos = NEString::START_POS) const;
-    inline NEString::CharPos findFirstPhraseIgnoreCase(const std::basic_string<CharType>& phrase, NEString::CharPos startPos = NEString::START_POS) const;
+    inline NEString::CharPos find_phrase(const CharType* phrase, NEString::CharPos startPos = NEString::START_POS) const;
+    /**
+     * \brief   Searches the first phrase in string. The comparing is done by ignoring upper lower
+     *          cases. It compares upper lower cases by default locale.
+     *
+     * \return  If found, returns valid position in the string. If not found, it returns
+     *          NEString::END_POS.
+     **/
+    inline NEString::CharPos find_phrase(const std::basic_string<CharType>& phrase, NEString::CharPos startPos = NEString::START_POS) const;
 
     /**
-     * \brief   Searches the first match of the entire word in string. The comparing can be done by exact match of ignoring upper and lower cases.
-     *          It compares upper and lower cases by default locale.
+     * \brief   Searches the first match of the entire word in string. The comparing can be done by
+     *          exact match of ignoring upper lower cases. It compares upper lower cases by default
+     *          locale.
      *
-     * \param   word            The word to search.
-     * \param   caseSensitive   If true, it searches by exact match. Otherwise, ignores upper and lower cases.
-     * \param   startPos        The valid zero-based position in the string to start searching.
-     * \return  If found, returns valid position in the string. If not found, it returns NEString::END_POS.
+     * \param   caseSensitive       If true, it searches by exact match. Otherwise, ignores upper
+     *                              and lower cases.
+     * \return  If found, returns valid position in the string. If not found, it returns
+     *          NEString::END_POS.
      **/
-    inline NEString::CharPos findFirstWord(const CharType* word, bool caseSensitive, NEString::CharPos startPos = NEString::START_POS) const;
-    inline NEString::CharPos findFirstWord(const std::basic_string<CharType>& word, bool caseSensitive, NEString::CharPos startPos = NEString::START_POS) const;
+    inline NEString::CharPos find_first_word(const CharType* word, bool caseSensitive, NEString::CharPos startPos = NEString::START_POS) const;
+    /**
+     * \brief   Searches the first match of the entire word in string. The comparing can be done by
+     *          exact match of ignoring upper lower cases. It compares upper lower cases by default
+     *          locale.
+     *
+     * \param   caseSensitive       If true, it searches by exact match. Otherwise, ignores upper
+     *                              and lower cases.
+     * \return  If found, returns valid position in the string. If not found, it returns
+     *          NEString::END_POS.
+     **/
+    inline NEString::CharPos find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, NEString::CharPos startPos = NEString::START_POS) const;
 
     /**
      * \brief   Returns true if specified character is valid for the names. The names may contain
-     *          characters, digits and symbols like '_'.
+     *          characters, digits symbols like '_'.
      *
-     * \param   checkChar   Character to check.
-     * \param   loc         The locale to use when validating.
+     * \param   checkChar       Character to check.
      * \return  Returns true if specified character is valid for the names.
-     */
-    inline bool isValidNameChar(const CharType checkChar, std::locale& loc) const;
+     **/
+    inline bool is_name_char(const CharType checkChar, std::locale& loc) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -1223,14 +1509,10 @@ protected:
 private:
     /**
      * \brief   Compares whether full string starts with the given phrase.
-     * 
-     * \param fullString    The Full string.
-     * \param phrase        The phrase to compare
-     * \param count         Number of characters.
-     * \param locale        Pointer to the locale string. Should be nullptr if ignore locale.
+     *
      * \return  Returns true if 'count' characters in the full string are equal to the phrase.
      **/
-    inline bool _hasPhrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const;
+    inline bool _has_phrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -1283,7 +1565,7 @@ inline StringBase<CharType>::StringBase(const std::basic_string_view<CharType>& 
 
 template<typename CharType>
 inline StringBase<CharType>::StringBase(const CharType* source, NEString::CharCount count)
-    : mData  ( source != nullptr ? source : &EmptyChar, static_cast<uint32_t>(count != NECommon::COUNT_ALL ? count : NEString::getStringLength(source)) )
+    : mData  ( source != nullptr ? source : &EmptyChar, static_cast<uint32_t>(count != NECommon::COUNT_ALL ? count : NEString::string_length(source)) )
 {
 }
 
@@ -1565,7 +1847,7 @@ inline StringBase<CharType>& StringBase<CharType>::operator += (const std::basic
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::operator += (const CharType* src)
 {
-    if (NEString::isEmpty(src) == false)
+    if (NEString::is_empty(src) == false)
         mData += src;
     return (*this);
 }
@@ -1584,13 +1866,13 @@ inline StringBase<CharType>& StringBase<CharType>::operator += (const CharType c
 template<typename CharType>
 inline bool StringBase<CharType>::validate(const CharType* validityList) const
 {
-    if (mData.empty() || NEString::isEmpty<CharType>(validityList))
+    if (mData.empty() || NEString::is_empty<CharType>(validityList))
         return false;
 
     const CharType* src = mData.c_str();
     while (*src != EmptyChar)
     {
-        if (NEString::findFirst<CharType>(*src, validityList) == NEString::INVALID_POS)
+        if (NEString::find_first<CharType>(*src, validityList) == NEString::INVALID_POS)
             break;
 
         ++src;
@@ -1600,7 +1882,7 @@ inline bool StringBase<CharType>::validate(const CharType* validityList) const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isNumeric(bool signIgnore /*= true*/) const
+inline bool StringBase<CharType>::is_numeric(bool signIgnore /*= true*/) const
 {
     bool result = false;
     const CharType* src = mData.c_str();
@@ -1622,7 +1904,7 @@ inline bool StringBase<CharType>::isNumeric(bool signIgnore /*= true*/) const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isAlphanumeric() const
+inline bool StringBase<CharType>::is_alphanumeric() const
 {
     const CharType* src = mData.c_str();
     while (std::isalnum(static_cast<int>(*src)) != 0)
@@ -1632,52 +1914,52 @@ inline bool StringBase<CharType>::isAlphanumeric() const
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isValidNameChar(const CharType checkChar) const
+inline bool StringBase<CharType>::is_name_char(const CharType checkChar) const
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0'};
-    return (std::isalnum(static_cast<int32_t>(checkChar)) != 0) || NEString::isOneOf<CharType>(checkChar, symbols);
+    return (std::isalnum(static_cast<int32_t>(checkChar)) != 0) || NEString::is_one_of<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isValidName() const
+inline bool StringBase<CharType>::is_valid_name() const
 {
     if (mData.empty())
         return false;
 
     const CharType* src = mData.c_str();
-    while (isValidNameChar(*src))
+    while (is_name_char(*src))
         ++src;
 
     return (*src == EmptyChar);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isEmpty() const
+inline bool StringBase<CharType>::is_empty() const
 {
     return mData.empty();
 }
 
 template<typename CharType>
-inline NEString::CharCount StringBase<CharType>::getLength() const
+inline NEString::CharCount StringBase<CharType>::length() const
 {
     return static_cast<NEString::CharCount>(mData.length());
 }
 
 template<typename CharType>
-inline NEString::CharCount StringBase<CharType>::getCapacity() const
+inline NEString::CharCount StringBase<CharType>::capacity() const
 {
     return static_cast<NEString::CharCount>(mData.capacity());
 }
 
 template<typename CharType>
-inline uint32_t StringBase<CharType>::getSpace() const
+inline uint32_t StringBase<CharType>::space() const
 {
     return static_cast<uint32_t>((mData.length() + 1) * sizeof(CharType));
 }
 
 template<typename CharType>
-inline const CharType* StringBase<CharType>::getBuffer(NEString::CharPos startAt /*= NEString::START_POS*/) const
+inline const CharType* StringBase<CharType>::buffer(NEString::CharPos startAt /*= NEString::START_POS*/) const
 {
     NEString::CharCount len = static_cast<NEString::CharCount>(mData.size());
     startAt = (startAt == NEString::END_POS) || (startAt > len) ? len : startAt;
@@ -1685,7 +1967,7 @@ inline const CharType* StringBase<CharType>::getBuffer(NEString::CharPos startAt
 }
 
 template<typename CharType>
-inline CharType* StringBase<CharType>::getBuffer(NEString::CharPos startAt /*= NEString::START_POS*/)
+inline CharType* StringBase<CharType>::buffer(NEString::CharPos startAt /*= NEString::START_POS*/)
 {
     NEString::CharCount len = static_cast<NEString::CharCount>(mData.size());
     startAt = (startAt == NEString::END_POS) || (startAt > len) ? len : startAt;
@@ -1693,37 +1975,37 @@ inline CharType* StringBase<CharType>::getBuffer(NEString::CharPos startAt /*= N
 }
 
 template<typename CharType>
-inline const CharType* StringBase<CharType>::getString() const
+inline const CharType* StringBase<CharType>::as_string() const
 {
     return mData.c_str();
 }
 
 template<typename CharType>
-inline const std::basic_string<CharType>& StringBase<CharType>::getData() const
+inline const std::basic_string<CharType>& StringBase<CharType>::data() const
 {
     return mData;
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isValidPosition(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_valid_position(NEString::CharPos pos) const
 {
     return (pos >= NEString::START_POS) && (pos < static_cast<NEString::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isInvalidPosition(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_invalid_position(NEString::CharPos pos) const
 {
     return (pos < NEString::START_POS) || (pos > static_cast<NEString::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isLastPosition(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_last_position(NEString::CharPos pos) const
 {
     return (pos == NEString::END_POS) || (pos >= static_cast<NEString::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isFirstPosition(NEString::CharPos pos) const
+inline bool StringBase<CharType>::is_first_position(NEString::CharPos pos) const
 {
     return (mData.empty() == false) && (pos == NEString::START_POS);
 }
@@ -1735,7 +2017,7 @@ inline void StringBase<CharType>::clear()
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::freeExtra()
+inline void StringBase<CharType>::free_extra()
 {
     mData.shrink_to_fit();
 }
@@ -1748,11 +2030,11 @@ inline void StringBase<CharType>::release()
 }
 
 template<typename CharType>
-void StringBase<CharType>::findWord(NEString::CharPos& startAt, NEString::CharPos& endAt) const
+void StringBase<CharType>::find_word(NEString::CharPos& startAt, NEString::CharPos& endAt) const
 {
     NEString::CharPos pos = startAt;
 
-    if (isInvalidPosition(pos) || mData.empty())
+    if (is_invalid_position(pos) || mData.empty())
     {
         endAt = NEString::INVALID_POS;
         startAt = NEString::END_POS;
@@ -1769,29 +2051,29 @@ void StringBase<CharType>::findWord(NEString::CharPos& startAt, NEString::CharPo
         endAt = NEString::END_POS;
     }
 
-    const CharType* buffer = getBuffer(pos);
-    while ((*buffer != EmptyChar) && isValidNameChar(*buffer) == false)
-        ++buffer;   // escape invalid chars at the begin
+    const CharType* buf = buffer(pos);
+    while ((*buf!= EmptyChar) && is_name_char(*buf) == false)
+        ++buf;   // escape invalid chars at the begin
 
-    if (*buffer == EmptyChar)
+    if (*buf== EmptyChar)
         return; // reached EOS, do nothing.
 
     if (startAt != NEString::START_POS)
     {
         // Remember the position of starting valid word.
-        startAt = static_cast<NEString::CharPos>(getString() - buffer);
-        while (isValidNameChar(*buffer))
-            ++buffer;   // escape invalid chars at the begin
+        startAt = static_cast<NEString::CharPos>(as_string() - buf);
+        while (is_name_char(*buf))
+            ++buf;   // escape invalid chars at the begin
     }
 
     // the word ends at position.
-    endAt = *buffer != EmptyChar ? static_cast<NEString::CharPos>(getString() - buffer) : NEString::END_POS;
+    endAt = *buf!= EmptyChar ? static_cast<NEString::CharPos>(as_string() - buf) : NEString::END_POS;
 }
 
 template<typename CharType>
-void StringBase<CharType>::getWord(StringBase<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const
+void StringBase<CharType>::word(StringBase<CharType>& word, NEString::CharPos& startAt, NEString::CharPos& endAt) const
 {
-    findWord(startAt, endAt);
+    find_word(startAt, endAt);
     if (startAt != NEString::END_POS)
     {
         ASSERT(endAt != NEString::INVALID_POS);
@@ -1804,17 +2086,17 @@ void StringBase<CharType>::getWord(StringBase<CharType>& word, NEString::CharPos
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::findOneOf( const CharType* chars, NEString::CharPos startPos /*= NEString::START_POS*/) const
+NEString::CharPos StringBase<CharType>::find_one_of( const CharType* chars, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
-    if (isInvalidPosition(startPos) || NEString::isEmpty<CharType>(chars))
+    if (is_invalid_position(startPos) || NEString::is_empty<CharType>(chars))
         return NEString::INVALID_POS;
 
-    const CharType* strBegin = getBuffer(startPos);
+    const CharType* strBegin = buffer(startPos);
     while (*strBegin != EmptyChar)
     {
-        if (NEString::isOneOf(*strBegin, chars))
+        if (NEString::is_one_of(*strBegin, chars))
         {
-            return static_cast<NEString::CharPos>(strBegin - getString());
+            return static_cast<NEString::CharPos>(strBegin - as_string());
         }
 
         ++strBegin;
@@ -1824,14 +2106,14 @@ NEString::CharPos StringBase<CharType>::findOneOf( const CharType* chars, NEStri
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::findFirst( CharType chSearch
+NEString::CharPos StringBase<CharType>::find_first( CharType chSearch
                                                , NEString::CharPos startPos /*= NEString::START_POS*/
                                                , bool caseSensitive /*= true*/) const
 {
-    if (isValidPosition(startPos) == false)
+    if (is_valid_position(startPos) == false)
         return NEString::INVALID_POS;
 
-    const CharType* str = getBuffer(startPos);
+    const CharType* str = buffer(startPos);
     CharType chUpper = caseSensitive ? chSearch : static_cast<CharType>(std::toupper(static_cast<int32_t>(chSearch)));
     CharType chLower = caseSensitive ? chSearch : static_cast<CharType>(std::tolower(static_cast<int32_t>(chSearch)));
    
@@ -1840,65 +2122,65 @@ NEString::CharPos StringBase<CharType>::findFirst( CharType chSearch
         ++str;
     }
 
-    return (*str != EmptyChar ? static_cast<NEString::CharPos>(str - getString()) : NEString::END_POS);
+    return (*str != EmptyChar ? static_cast<NEString::CharPos>(str - as_string()) : NEString::END_POS);
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::findFirst( const CharType* phrase
+NEString::CharPos StringBase<CharType>::find_first( const CharType* phrase
                                                , NEString::CharPos startPos /*= NEString::START_POS*/
                                                , bool caseSensitive   /*= true*/
                                                , bool wholeWord       /*= false*/) const
 {
-    if (isInvalidPosition(startPos) || NEString::isEmpty<CharType>(phrase))
+    if (is_invalid_position(startPos) || NEString::is_empty<CharType>(phrase))
         return NEString::INVALID_POS;
 
     if (caseSensitive && !wholeWord)
     {
-        return findFirstPhrase(phrase, NEString::COUNT_ALL, startPos);
+        return find_first_phrase(phrase, NEString::COUNT_ALL, startPos);
     }
     else if (!wholeWord)
     {
-        return findFirstPhraseIgnoreCase(phrase, startPos);
+        return find_phrase(phrase, startPos);
     }
     else
     {
-        return findFirstWord(phrase, caseSensitive, startPos);
+        return find_first_word(phrase, caseSensitive, startPos);
     }
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::findFirst( const StringBase<CharType> & phrase
+NEString::CharPos StringBase<CharType>::find_first( const StringBase<CharType> & phrase
                                                , NEString::CharPos startPos /*= NEString::START_POS*/
                                                , bool caseSensitive         /*= true*/
                                                , bool wholeWord             /*= false*/) const
 {
-    if (isInvalidPosition(startPos) || NEString::isEmpty<CharType>(phrase))
+    if (is_invalid_position(startPos) || NEString::is_empty<CharType>(phrase))
         return NEString::INVALID_POS;
 
     if (caseSensitive && !wholeWord)
     {
-        return findFirstPhrase(phrase.getString(), phrase.getLength(), startPos);
+        return find_first_phrase(phrase.as_string(), phrase.length(), startPos);
     }
     else if (!wholeWord)
     {
-        return findFirstPhraseIgnoreCase(phrase.mData, startPos);
+        return find_phrase(phrase.mData, startPos);
     }
     else
     {
-        return findFirstWord(phrase.mData, caseSensitive, startPos);
+        return find_first_word(phrase.mData, caseSensitive, startPos);
     }
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::findLast(CharType chSearch, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+NEString::CharPos StringBase<CharType>::find_last(CharType chSearch, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
 {
     if (mData.empty())
         return NEString::INVALID_POS;
 
-    startPos = startPos == NEString::END_POS ? getLength() - 1 : startPos;
+    startPos = startPos == NEString::END_POS ? length() - 1 : startPos;
 
-    const CharType* begin = getString();
-    const CharType* end = getBuffer(startPos);
+    const CharType* begin = as_string();
+    const CharType* end = buffer(startPos);
     if (caseSensitive)
     {
         while ((end >= begin) && (*end != chSearch))
@@ -1922,19 +2204,19 @@ NEString::CharPos StringBase<CharType>::findLast(CharType chSearch, NEString::Ch
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::findLast(const CharType* phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const
+inline NEString::CharPos StringBase<CharType>::find_last(const CharType* phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const
 {
-    if (((startPos != NEString::END_POS) && isInvalidPosition(startPos)) || NEString::isEmpty<CharType>(phrase) || (phraseCount == 0))
+    if (((startPos != NEString::END_POS) && is_invalid_position(startPos)) || NEString::is_empty<CharType>(phrase) || (phraseCount == 0))
         return NEString::INVALID_POS;
 
     NEString::CharPos result{ NEString::END_POS };
-    NEString::CharCount count = phraseCount > 0 ? phraseCount : NEString::getStringLength<CharType>(phrase);
-    NEString::CharCount strLen = getLength();
+    NEString::CharCount count = phraseCount > 0 ? phraseCount : NEString::string_length<CharType>(phrase);
+    NEString::CharCount strLen = length();
 
     startPos = (startPos == NEString::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
     for (NEString::CharPos pos = startPos; pos >= 0; --pos)
     {
-        if ((compareString(pos, phrase, count, caseSensitive) == NEMath::Ordering::Equal))
+        if ((compare_string(pos, phrase, count, caseSensitive) == NEMath::Ordering::Equal))
         {
             result = pos;
             break;
@@ -1945,33 +2227,33 @@ inline NEString::CharPos StringBase<CharType>::findLast(const CharType* phrase, 
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::findLast(const CharType* phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+NEString::CharPos StringBase<CharType>::find_last(const CharType* phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
 {
-    return findLast(phrase, NEString::getStringLength<CharType>(phrase), startPos, caseSensitive);
+    return find_last(phrase, NEString::string_length<CharType>(phrase), startPos, caseSensitive);
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::findLast(const StringBase<CharType> & phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+NEString::CharPos StringBase<CharType>::find_last(const StringBase<CharType> & phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
 {
-    return findLast(phrase, phrase.getLength(), startPos, caseSensitive);
+    return find_last(phrase, phrase.length(), startPos, caseSensitive);
 }
 
 template<typename CharType>
 NEMath::Ordering StringBase<CharType>::compare(const CharType* what, NEString::CharPos startAt /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/, bool caseSensitive /*= true*/) const
 {
     NEMath::Ordering result{ NEMath::Ordering::Smaller };
-    if (isValidPosition(startAt) == false)
+    if (is_valid_position(startAt) == false)
         return result;
 
     if (count == NEString::COUNT_ALL)
     {
-        count = NEString::getStringLength<CharType>(what);
+        count = NEString::string_length<CharType>(what);
     }
 
     NEString::CharPos length = static_cast<NEString::CharPos>(mData.length()) - startAt;
     if ((length == count) && (what != nullptr))
     {
-        const CharType* current = getBuffer(startAt);
+        const CharType* current = buffer(startAt);
         const CharType* other = what;
 
         result = NEMath::Ordering::Equal;
@@ -2055,7 +2337,7 @@ inline StringBase<CharType>& StringBase<CharType>::substring(NEString::CharPos s
 template<typename CharType>
 inline void StringBase<CharType>::substring(StringBase<CharType>& outResult, NEString::CharPos startPos /* = NEString::START_POS */, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
 {
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
         outResult.mData = mData.substr(static_cast<uint32_t>(startPos), count == NEString::COUNT_ALL ? std::basic_string<CharType>::npos : static_cast<uint32_t>(count));
     }
@@ -2078,7 +2360,7 @@ inline NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& o
 {
     outResult.mData.clear();
 
-    if (isInvalidPosition(startPos) || strPhrase.empty())
+    if (is_invalid_position(startPos) || strPhrase.empty())
     {
         return NEString::INVALID_POS;
     }
@@ -2102,7 +2384,7 @@ inline NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& o
 template<typename CharType>
 NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResult, CharType chSymbol, NEString::CharPos startPos /* = NEString::START_POS */) const
 {
-    if (isInvalidPosition(startPos))
+    if (is_invalid_position(startPos))
     {
         return NEString::INVALID_POS;
     }
@@ -2122,7 +2404,7 @@ NEString::CharPos StringBase<CharType>::substring(StringBase<CharType>& outResul
 }
 
 template<typename CharType>
-inline StringBase<CharType> StringBase<CharType>::leftSide(NEString::CharCount charCount) const
+inline StringBase<CharType> StringBase<CharType>::left_side(NEString::CharCount charCount) const
 {
     StringBase<CharType> result;
     StringBase<CharType>::substring(result, NEString::START_POS, charCount);
@@ -2130,11 +2412,11 @@ inline StringBase<CharType> StringBase<CharType>::leftSide(NEString::CharCount c
 }
 
 template<typename CharType>
-inline StringBase<CharType> StringBase<CharType>::rightSide(NEString::CharCount charCount) const
+inline StringBase<CharType> StringBase<CharType>::right_side(NEString::CharCount charCount) const
 {
     StringBase<CharType> result;
 
-    NEString::CharCount len = getLength();
+    NEString::CharCount len = length();
     NEString::CharPos pos = charCount < len ? len - charCount : NEString::START_POS;
     substring(result, pos, NEString::COUNT_ALL);
 
@@ -2146,7 +2428,7 @@ inline StringBase<CharType>& StringBase<CharType>::assign(const CharType* source
 {
     if ( source != nullptr )
     {
-        mData.assign( source, static_cast<uint32_t>(count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>( source ) : count) );
+        mData.assign( source, static_cast<uint32_t>(count == NEString::COUNT_ALL ? NEString::string_length<CharType>( source ) : count) );
     }
     else
     {
@@ -2187,7 +2469,7 @@ inline StringBase<CharType>& StringBase<CharType>::assign( CharType ch )
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::append(const CharType* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(source) : count;
+    count = count == NEString::COUNT_ALL ? NEString::string_length<CharType>(source) : count;
     if (mData.empty())
     {
         mData.assign(source, static_cast<uint32_t>(count));
@@ -2228,47 +2510,47 @@ inline StringBase<CharType>& StringBase<CharType>::append( CharType ch )
 }
 
 template<typename CharType>
-StringBase<CharType>& StringBase<CharType>::moveTo(NEString::CharPos startPos, int32_t moveTo)
+StringBase<CharType>& StringBase<CharType>::move_to(NEString::CharPos startPos, int32_t move_to)
 {
-    if (moveTo < 0)
+    if (move_to < 0)
     {
-        NEString::CharCount count = static_cast<NEString::CharCount>(-1 * moveTo);
-        NEString::CharPos dstPos  = startPos >= count ? startPos + moveTo : NEString::START_POS;
+        NEString::CharCount count = static_cast<NEString::CharCount>(-1 * move_to);
+        NEString::CharPos dstPos  = startPos >= count ? startPos + move_to : NEString::START_POS;
         mData.erase(static_cast<uint32_t>(dstPos), static_cast<uint32_t>(count));
     }
-    else if (moveTo > 0)
+    else if (move_to > 0)
     {
-        mData.insert(static_cast<uint32_t>(startPos), static_cast<uint32_t>(moveTo), '@');
+        mData.insert(static_cast<uint32_t>(startPos), static_cast<uint32_t>(move_to), '@');
     }
 
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insertAt(CharType source, NEString::CharPos atPos, NEString::CharCount count /*= 1*/)
+inline StringBase<CharType>& StringBase<CharType>::insert_at(CharType source, NEString::CharPos atPos, NEString::CharCount count /*= 1*/)
 {
     mData.insert(static_cast<uint32_t>(atPos), static_cast<uint32_t>(count), source);
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insertAt(const CharType* source, NEString::CharPos atPos, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+inline StringBase<CharType>& StringBase<CharType>::insert_at(const CharType* source, NEString::CharPos atPos, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    if (source != nullptr && isValidPosition(atPos))
+    if (source != nullptr && is_valid_position(atPos))
     {
-        mData.insert(static_cast<uint32_t>(atPos), source, count == NEString::COUNT_ALL ? static_cast<uint32_t>(NEString::getStringLength(source)) : static_cast<uint32_t>(count));
+        mData.insert(static_cast<uint32_t>(atPos), source, count == NEString::COUNT_ALL ? static_cast<uint32_t>(NEString::string_length(source)) : static_cast<uint32_t>(count));
     }
 
     return (*this);
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insertAt( const std::basic_string<CharType>& source
+inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_string<CharType>& source
                                                        , NEString::CharPos atDstPos
                                                        , NEString::CharPos atSrcPos /*= NEString::START_POS*/
                                                        , NEString::CharCount count  /*= NEString::COUNT_ALL*/)
 {
-    if (isValidPosition(atDstPos) && (atSrcPos < static_cast<NEString::CharPos>(source.length())))
+    if (is_valid_position(atDstPos) && (atSrcPos < static_cast<NEString::CharPos>(source.length())))
     {
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharPos>(source.length() - static_cast<uint32_t>(atSrcPos)) : count;
         mData.insert(static_cast<uint32_t>(atDstPos), source, static_cast<uint32_t>(atSrcPos), static_cast<uint32_t>(count));
@@ -2278,12 +2560,12 @@ inline StringBase<CharType>& StringBase<CharType>::insertAt( const std::basic_st
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insertAt( const std::basic_string_view<CharType>& source
+inline StringBase<CharType>& StringBase<CharType>::insert_at( const std::basic_string_view<CharType>& source
                                                        , NEString::CharPos atDstPos
                                                        , NEString::CharPos atSrcPos /*= NEString::START_POS*/
                                                        , NEString::CharCount count  /*= NEString::COUNT_ALL*/)
 {
-    if (isValidPosition(atDstPos) && (atSrcPos < static_cast<NEString::CharPos>(source.length())))
+    if (is_valid_position(atDstPos) && (atSrcPos < static_cast<NEString::CharPos>(source.length())))
     {
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharPos>(source.length() - static_cast<uint32_t>(atSrcPos)) : count;
         mData.insert(static_cast<uint32_t>(atDstPos), source, static_cast<uint32_t>(atSrcPos), static_cast<uint32_t>(count));
@@ -2293,18 +2575,18 @@ inline StringBase<CharType>& StringBase<CharType>::insertAt( const std::basic_st
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::insertAt( const StringBase<CharType>& source
+inline StringBase<CharType>& StringBase<CharType>::insert_at( const StringBase<CharType>& source
                                                        , NEString::CharPos atDstPos
                                                        , NEString::CharPos atSrcPos /*= NEString::START_POS*/
                                                        , NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    return insertAt(source.mData, atDstPos, atSrcPos, count);
+    return insert_at(source.mData, atDstPos, atSrcPos, count);
 }
 
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::replace(CharType chSearch, CharType chReplace, NEString::CharPos startPos /*= NEString::START_POS*/, bool replaceAll /*= true*/)
 {
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
         CharType* begin = mData.data();
         CharType* dst   = begin + startPos;
@@ -2331,10 +2613,10 @@ StringBase<CharType>& StringBase<CharType>::replace( const CharType* strSearch
                                                , NEString::CharCount count    /*= NEString::COUNT_ALL*/
                                                , bool replaceAll              /*= true*/)
 {
-    if (isValidPosition(startPos) && (NEString::isEmpty(strSearch) == false))
+    if (is_valid_position(startPos) && (NEString::is_empty(strSearch) == false))
     {
-        NEString::CharPos lenSearch  = NEString::getStringLength<CharType>(strSearch);
-        NEString::CharPos lenReplace = NEString::getStringLength<CharType>(strReplace);
+        NEString::CharPos lenSearch  = NEString::string_length<CharType>(strSearch);
+        NEString::CharPos lenReplace = NEString::string_length<CharType>(strReplace);
         count       = (count == NEString::COUNT_ALL) || (count > static_cast<NEString::CharCount>(lenReplace)) ? lenReplace : count;
         strReplace  = strReplace != nullptr ? strReplace : &EmptyChar;
         uint32_t pos = static_cast<uint32_t>(mData.find(strSearch, static_cast<uint32_t>(startPos)));
@@ -2368,7 +2650,7 @@ inline StringBase<CharType>& StringBase<CharType>::replace( const std::basic_str
                                                       , NEString::CharPos startPos  /*= NEString::START_POS*/
                                                       , bool replaceAll             /*= true*/)
 {
-    if (isValidPosition(startPos) && (strSearch.empty() == false))
+    if (is_valid_position(startPos) && (strSearch.empty() == false))
     {
         NEString::CharPos lenSearch  = static_cast<NEString::CharPos>(strSearch.length());
         NEString::CharPos lenReplace = static_cast<NEString::CharPos>(strReplace.length());
@@ -2413,7 +2695,7 @@ StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<Cha
                                                , NEString::CharPos startPos /*= NEString::START_POS*/
                                                , bool replaceAll /*= true*/)
 {
-    if (isValidPosition(startPos) && (strSearch.empty() == false))
+    if (is_valid_position(startPos) && (strSearch.empty() == false))
     {
         NEString::CharPos lenSearch = static_cast<NEString::CharPos>(strSearch.length());
         NEString::CharPos lenReplace = static_cast<NEString::CharPos>(strReplace.length());
@@ -2445,9 +2727,9 @@ StringBase<CharType>& StringBase<CharType>::replace( const std::basic_string<Cha
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos startPos, NEString::CharCount charsRemove, const CharType* strReplace, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
-        NEString::CharPos lenReplace = NEString::getStringLength<CharType>(strReplace);
+        NEString::CharPos lenReplace = NEString::string_length<CharType>(strReplace);
         mData.replace(static_cast<uint32_t>(startPos), static_cast<uint32_t>(charsRemove), strReplace, (count == NEString::COUNT_ALL) || (count > lenReplace) ? static_cast<uint32_t>(lenReplace) : static_cast<uint32_t>(count));
     }
 
@@ -2463,7 +2745,7 @@ inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos st
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos startPos, NEString::CharCount charsRemove, const std::basic_string<CharType>& strReplace)
 {
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
         mData.replace(static_cast<uint32_t>(startPos), static_cast<uint32_t>(charsRemove), strReplace);
     }
@@ -2474,7 +2756,7 @@ inline StringBase<CharType>& StringBase<CharType>::replace( NEString::CharPos st
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::remove(NEString::CharPos startPos, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
         if (count == NEString::COUNT_ALL)
         {
@@ -2492,7 +2774,7 @@ StringBase<CharType>& StringBase<CharType>::remove(NEString::CharPos startPos, N
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
 {
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
         uint32_t pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(startPos)));
         for ( ; pos != static_cast<uint32_t>(std::basic_string<CharType>::npos); pos = static_cast<uint32_t>(mData.find(chRemove, static_cast<uint32_t>(pos))))
@@ -2511,7 +2793,7 @@ StringBase<CharType>& StringBase<CharType>::remove(const CharType chRemove, NESt
 template<typename CharType>
 inline StringBase<CharType>& StringBase<CharType>::remove( const CharType* strRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
 {
-    if (NEString::isEmpty<CharType>(strRemove) == false)
+    if (NEString::is_empty<CharType>(strRemove) == false)
         remove(std::basic_string<CharType>(strRemove), startPos, removeAll);
 
     return (*this);
@@ -2520,7 +2802,7 @@ inline StringBase<CharType>& StringBase<CharType>::remove( const CharType* strRe
 template<typename CharType>
 StringBase<CharType>& StringBase<CharType>::remove( const std::basic_string<CharType>& strRemove, NEString::CharPos startPos /*= NEString::START_POS*/, bool removeAll /*= true*/)
 {
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
         uint32_t len = static_cast<uint32_t>(strRemove.length());
         uint32_t pos = static_cast<uint32_t>(mData.find(strRemove, static_cast<uint32_t>(startPos)));
@@ -2573,13 +2855,13 @@ inline StringBase<CharType>& StringBase<CharType>::reserve(NEString::CharCount n
 }
 
 template<typename CharType>
-inline CharType StringBase<CharType>::getAt(NEString::CharPos atPos) const
+inline CharType StringBase<CharType>::at(NEString::CharPos atPos) const
 {
-    return (isValidPosition(atPos) ? mData.at(static_cast<uint32_t>(atPos)) : static_cast<CharType>(NEString::EndOfString));
+    return (is_valid_position(atPos) ? mData.at(static_cast<uint32_t>(atPos)) : static_cast<CharType>(NEString::EndOfString));
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::setAt(CharType ch, NEString::CharPos atPos /*= NEString::END_POS*/)
+inline StringBase<CharType>& StringBase<CharType>::set_at(CharType ch, NEString::CharPos atPos /*= NEString::END_POS*/)
 {
     if ((atPos >= NEString::START_POS) && (atPos < static_cast<NEString::CharPos>(mData.size())))
     {
@@ -2594,7 +2876,7 @@ inline StringBase<CharType>& StringBase<CharType>::setAt(CharType ch, NEString::
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trimLeft()
+inline StringBase<CharType>& StringBase<CharType>::trim_left()
 {
     if (mData.empty() == false)
     {
@@ -2617,13 +2899,13 @@ inline StringBase<CharType>& StringBase<CharType>::trimLeft()
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::trimLeft(StringBase<CharType>& strResult) const
+inline void StringBase<CharType>::trim_left(StringBase<CharType>& strResult) const
 {
-    trimLeft(strResult.mData);
+    trim_left(strResult.mData);
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::trimLeft(std::basic_string<CharType>& strResult) const
+inline void StringBase<CharType>::trim_left(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty() == false)
@@ -2639,13 +2921,13 @@ inline void StringBase<CharType>::trimLeft(std::basic_string<CharType>& strResul
 
         if (count != 0)
         {
-            strResult.assign(getBuffer(static_cast<NEString::CharCount>(count)), static_cast<uint32_t>(strResult.length() - count));
+            strResult.assign(buffer(static_cast<NEString::CharCount>(count)), static_cast<uint32_t>(strResult.length() - count));
         }
     }
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trimRight()
+inline StringBase<CharType>& StringBase<CharType>::trim_right()
 {
     if (mData.empty() == false)
     {
@@ -2668,13 +2950,13 @@ inline StringBase<CharType>& StringBase<CharType>::trimRight()
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::trimRight(StringBase<CharType>& strResult) const
+inline void StringBase<CharType>::trim_right(StringBase<CharType>& strResult) const
 {
-    trimRight(strResult.mData);
+    trim_right(strResult.mData);
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::trimRight(std::basic_string<CharType>& strResult) const
+inline void StringBase<CharType>::trim_right(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty() == false)
@@ -2697,7 +2979,7 @@ inline void StringBase<CharType>::trimRight(std::basic_string<CharType>& strResu
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::trimAll()
+inline StringBase<CharType>& StringBase<CharType>::trim_all()
 {
     if (mData.empty() == false)
     {
@@ -2737,13 +3019,13 @@ inline StringBase<CharType>& StringBase<CharType>::trimAll()
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::trimAll(StringBase<CharType>& strResult) const
+inline void StringBase<CharType>::trim_all(StringBase<CharType>& strResult) const
 {
-    trimAll(strResult.mData);
+    trim_all(strResult.mData);
 }
 
 template<typename CharType>
-inline void StringBase<CharType>::trimAll(std::basic_string<CharType>& strResult) const
+inline void StringBase<CharType>::trim_all(std::basic_string<CharType>& strResult) const
 {
     strResult.clear();
     if (mData.empty() == false)
@@ -2778,7 +3060,7 @@ inline void StringBase<CharType>::trimAll(std::basic_string<CharType>& strResult
 }
 
 template<typename CharType>
-inline StringBase<CharType> & StringBase<CharType>::makeLower()
+inline StringBase<CharType> & StringBase<CharType>::make_lower()
 {
     for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
     {
@@ -2789,7 +3071,7 @@ inline StringBase<CharType> & StringBase<CharType>::makeLower()
 }
 
 template<typename CharType>
-inline StringBase<CharType> & StringBase<CharType>::makeUpper()
+inline StringBase<CharType> & StringBase<CharType>::make_upper()
 {
     for (CharType * src = mData.data(); *src != StringBase<CharType>::EmptyChar; ++src)
     {
@@ -2800,19 +3082,19 @@ inline StringBase<CharType> & StringBase<CharType>::makeUpper()
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::readLine(StringBase<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline NEString::CharPos StringBase<CharType>::read_line(StringBase<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
-    return readLine(strResult.mData, startPos);
+    return read_line(strResult.mData, startPos);
 }
 
 template<typename CharType>
-NEString::CharPos StringBase<CharType>::readLine(std::basic_string<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
+NEString::CharPos StringBase<CharType>::read_line(std::basic_string<CharType>& strResult, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
     NEString::CharPos result = NEString::END_POS;
-    if (isValidPosition(startPos))
+    if (is_valid_position(startPos))
     {
-        const CharType* begin = getBuffer(startPos);
-        while (NEString::isEndOfLine<CharType>(*begin) && (*begin != EmptyChar))
+        const CharType* begin = buffer(startPos);
+        while (NEString::is_eol<CharType>(*begin) && (*begin != EmptyChar))
         {
             // escape end of line symbols at the begin.
             ++begin;
@@ -2821,7 +3103,7 @@ NEString::CharPos StringBase<CharType>::readLine(std::basic_string<CharType>& st
         if (*begin != EmptyChar)
         {
             const CharType* str = begin;
-            while ((NEString::isNewLine<CharType>(*str) == false) && (*str != EmptyChar))
+            while ((NEString::is_new_line<CharType>(*str) == false) && (*str != EmptyChar))
             {
                 // move until reach end of line
                 ++str;
@@ -2830,7 +3112,7 @@ NEString::CharPos StringBase<CharType>::readLine(std::basic_string<CharType>& st
             // copy the line
             strResult.assign(begin, static_cast<uint32_t>(str - begin));
 
-            while (NEString::isEndOfLine<CharType>(*str) && (*str != EmptyChar))
+            while (NEString::is_eol<CharType>(*str) && (*str != EmptyChar))
             {
                 // find next line or reach end of string
                 ++str;
@@ -2845,11 +3127,11 @@ NEString::CharPos StringBase<CharType>::readLine(std::basic_string<CharType>& st
 }
 
 template<typename CharType>
-inline StringBase<CharType>& StringBase<CharType>::makeAlphanumeric()
+inline StringBase<CharType>& StringBase<CharType>::make_alphanumeric()
 {
     if (mData.empty() == false)
     {
-        CharType* begin = getBuffer(NEString::START_POS);
+        CharType* begin = buffer(NEString::START_POS);
         CharType* dst = begin;
         for (const CharType* src = begin; *src != static_cast<CharType>(NEString::EndOfString); ++src)
         {
@@ -2869,34 +3151,34 @@ inline StringBase<CharType>& StringBase<CharType>::makeAlphanumeric()
 //////////////////////////////////////////////////////////////////////////
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compareString( NEString::CharPos startPos
+inline NEMath::Ordering StringBase<CharType>::compare_string( NEString::CharPos startPos
                                                          , const CharType * strOther
                                                          , NEString::CharCount count/*= NEString::COUNT_ALL */
                                                          , bool caseSensitive       /*= true                */ ) const
 {
     if (caseSensitive)
     {
-        return compareStringExact(startPos, strOther, count);
+        return compare_string_exact(startPos, strOther, count);
     }
     else
     {
-        return compareStringIgnoreCase(startPos, strOther, count);
+        return compare_ignore_case(startPos, strOther, count);
     }
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compareStringExact( NEString::CharPos startPos
+inline NEMath::Ordering StringBase<CharType>::compare_string_exact( NEString::CharPos startPos
                                                               , const CharType * strOther
                                                               , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
 {
     NEMath::Ordering result = NEMath::Ordering::Smaller;
-    count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strOther) : count;
-    if (isValidPosition(startPos))
+    count = count == NEString::COUNT_ALL ? NEString::string_length<CharType>(strOther) : count;
+    if (is_valid_position(startPos))
     {
-        NEString::CharCount len = static_cast<NEString::CharCount>(getLength() - startPos);
+        NEString::CharCount len = static_cast<NEString::CharCount>(length() - startPos);
         if (count <= len)
         {
-            result = NEMemory::memCompare(getBuffer(startPos), strOther, static_cast<uint32_t>(count));
+            result = NEMemory::mem_compare(buffer(startPos), strOther, static_cast<uint32_t>(count));
         }
     }
 
@@ -2904,27 +3186,27 @@ inline NEMath::Ordering StringBase<CharType>::compareStringExact( NEString::Char
 }
 
 template<typename CharType>
-inline NEMath::Ordering StringBase<CharType>::compareStringIgnoreCase( NEString::CharPos startPos
+inline NEMath::Ordering StringBase<CharType>::compare_ignore_case( NEString::CharPos startPos
                                                                    , const CharType * strOther
                                                                    , NEString::CharCount count/*= NEString::COUNT_ALL */ ) const
 {
     NEMath::Ordering result = NEMath::Ordering::Smaller;
-    count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strOther) : count;
-    if (isValidPosition(startPos))
+    count = count == NEString::COUNT_ALL ? NEString::string_length<CharType>(strOther) : count;
+    if (is_valid_position(startPos))
     {
-        NEString::CharCount len = static_cast<NEString::CharCount>(getLength() - startPos);
+        NEString::CharCount len = static_cast<NEString::CharCount>(length() - startPos);
         if (count <= len)
         {
             CharType chLeft{ '\0' };
             CharType chRight{ '\0' };
 
-            const CharType* leftSide = getBuffer(startPos);
-            const CharType* rightSide = strOther;
+            const CharType* left_side = buffer(startPos);
+            const CharType* right_side = strOther;
 
             while (count-- > 0)
             {
-                chLeft  = static_cast<CharType>(std::tolower(static_cast<int32_t>(*leftSide ++)));
-                chRight = static_cast<CharType>(std::tolower(static_cast<int32_t>(*rightSide ++)));
+                chLeft  = static_cast<CharType>(std::tolower(static_cast<int32_t>(*left_side ++)));
+                chRight = static_cast<CharType>(std::tolower(static_cast<int32_t>(*right_side ++)));
                 if (chLeft != chRight)
                 {
                     break;
@@ -2942,7 +3224,7 @@ inline NEMath::Ordering StringBase<CharType>::compareStringIgnoreCase( NEString:
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::replaceWith( NEString::CharPos   startPos
+inline NEString::CharPos StringBase<CharType>::replace_with( NEString::CharPos   startPos
                                                         , NEString::CharCount count
                                                         , const CharType *    strReplace
                                                         , NEString::CharCount lenReplace )
@@ -2952,8 +3234,8 @@ inline NEString::CharPos StringBase<CharType>::replaceWith( NEString::CharPos   
     {
         int32_t diff = static_cast<int32_t>(lenReplace - count);
         NEString::CharPos endPos = startPos + count;
-        moveTo( endPos, diff );
-        CharType * dst = getBuffer( startPos );
+        move_to( endPos, diff );
+        CharType * dst = buffer( startPos );
         while ( *strReplace != static_cast<CharType>(NEString::EndOfString) )
             *dst ++ = *strReplace ++;
 
@@ -2964,21 +3246,21 @@ inline NEString::CharPos StringBase<CharType>::replaceWith( NEString::CharPos   
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::replaceWith( const CharType * strOrigin
+inline NEString::CharPos StringBase<CharType>::replace_with( const CharType * strOrigin
                                                         , NEString::CharCount lenOrigin
                                                         , const CharType * strReplace
                                                         , NEString::CharCount lenReplace
                                                         , NEString::CharPos startPos )
 {
-    return replaceWith( findFirst( strOrigin, startPos, true ), lenOrigin, strReplace, lenReplace);
+    return replace_with( find_first( strOrigin, startPos, true ), lenOrigin, strReplace, lenReplace);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::findFirstPhrase( const CharType* phrase
+inline NEString::CharPos StringBase<CharType>::find_first_phrase( const CharType* phrase
                                                             , NEString::CharCount count     /* = NEString::COUNT_ALL */
                                                             , NEString::CharPos startPos    /* = NEString::START_POS */) const
 {
-    if (isValidPosition(startPos) && !NEString::isEmpty<CharType>(phrase))
+    if (is_valid_position(startPos) && !NEString::is_empty<CharType>(phrase))
     {
         uint32_t pos = static_cast<uint32_t>(std::basic_string<CharType>::npos);
         
@@ -3000,15 +3282,15 @@ inline NEString::CharPos StringBase<CharType>::findFirstPhrase( const CharType* 
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::findFirstPhraseIgnoreCase(const CharType* phrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline NEString::CharPos StringBase<CharType>::find_phrase(const CharType* phrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
-    return (phrase != nullptr ? findFirstPhraseIgnoreCase(std::basic_string<CharType>(phrase), startPos) : NEString::INVALID_POS);
+    return (phrase != nullptr ? find_phrase(std::basic_string<CharType>(phrase), startPos) : NEString::INVALID_POS);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::findFirstPhraseIgnoreCase(const std::basic_string<CharType>& phrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline NEString::CharPos StringBase<CharType>::find_phrase(const std::basic_string<CharType>& phrase, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
-    if (isInvalidPosition(startPos) || phrase.empty())
+    if (is_invalid_position(startPos) || phrase.empty())
         return NEString::INVALID_POS;
     else if (mData.empty())
         return NEString::END_POS;
@@ -3024,15 +3306,15 @@ inline NEString::CharPos StringBase<CharType>::findFirstPhraseIgnoreCase(const s
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::findFirstWord(const CharType* word, bool caseSensitive, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline NEString::CharPos StringBase<CharType>::find_first_word(const CharType* word, bool caseSensitive, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
-    return (word != nullptr ? findFirstWord(std::basic_string<CharType>(word), caseSensitive, startPos) : NEString::INVALID_POS);
+    return (word != nullptr ? find_first_word(std::basic_string<CharType>(word), caseSensitive, startPos) : NEString::INVALID_POS);
 }
 
 template<typename CharType>
-inline NEString::CharPos StringBase<CharType>::findFirstWord(const std::basic_string<CharType>& word, bool caseSensitive, NEString::CharPos startPos /*= NEString::START_POS*/) const
+inline NEString::CharPos StringBase<CharType>::find_first_word(const std::basic_string<CharType>& word, bool caseSensitive, NEString::CharPos startPos /*= NEString::START_POS*/) const
 {
-    if (isInvalidPosition(startPos) || word.empty())
+    if (is_invalid_position(startPos) || word.empty())
         return NEString::INVALID_POS;
     else if (mData.empty())
         return NEString::END_POS;
@@ -3062,7 +3344,7 @@ inline NEString::CharPos StringBase<CharType>::findFirstWord(const std::basic_st
         CharType chPrev  = it == mData.begin() ? EmptyChar : *(it - 1);
         // One of them must be beginning of the word.
         // Example: search "word" or " word" in sentence "This is a word";
-        bool isBegin = !isValidNameChar(chBegin) || !isValidNameChar(chPrev);
+        bool isBegin = !is_name_char(chBegin) || !is_name_char(chPrev);
 
         // Take last char
         it += static_cast<int32_t>(word.length());
@@ -3071,7 +3353,7 @@ inline NEString::CharPos StringBase<CharType>::findFirstWord(const std::basic_st
         CharType chNext = (it != mData.end()) && ((it + 1) != mData.end()) ? *(it + 1) : EmptyChar;
         // One of them must be end of the word.
         // Example: search "word" or "word!" in sentence "This is a word!";
-        bool isEnd      = !isValidNameChar(chEnd) || !isValidNameChar(chNext);
+        bool isEnd      = !is_name_char(chEnd) || !is_name_char(chNext);
 
         if (isBegin && isEnd)
         {
@@ -3092,11 +3374,11 @@ inline NEString::CharPos StringBase<CharType>::findFirstWord(const std::basic_st
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::isValidNameChar(const CharType checkChar, std::locale& loc) const
+inline bool StringBase<CharType>::is_name_char(const CharType checkChar, std::locale& loc) const
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0' };
-    return std::isalnum(checkChar, loc) || NEString::isOneOf<CharType>(checkChar, symbols);
+    return std::isalnum(checkChar, loc) || NEString::is_one_of<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
@@ -3126,9 +3408,9 @@ template<typename CharType>
 inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const StringBase<CharType> & delimiter) const
 {
     std::vector<StringBase<CharType>> result;
-    if (delimiter.isEmpty() == false)
+    if (delimiter.is_empty() == false)
     {
-        const size_t skip   { static_cast<size_t>(delimiter.getLength()) };
+        const size_t skip   { static_cast<size_t>(delimiter.length()) };
         const size_t len    { mData.length() };
         size_t start        { 0 };
         size_t pos = mData.find(delimiter.mData, start);
@@ -3153,60 +3435,60 @@ inline std::vector<StringBase<CharType>> StringBase<CharType>::split(const Strin
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::startsWith(const StringBase<CharType>& phrase, bool /*isCaseSensitive*/ /*= true*/) const
+inline bool StringBase<CharType>::starts_with(const StringBase<CharType>& phrase, bool /*isCaseSensitive*/ /*= true*/) const
 {
-    return startsWith(phrase.mData);
+    return starts_with(phrase.mData);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::starts_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? startsWith(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? starts_with(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::starts_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? startsWith(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? starts_with(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::startsWith(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
+inline bool StringBase<CharType>::starts_with(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
 {
-    count = count != NEString::COUNT_ALL ? count : NEString::getStringLength<CharType>(phrase);
-    if (NEString::isEmpty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
+    count = count != NEString::COUNT_ALL ? count : NEString::string_length<CharType>(phrase);
+    if (NEString::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
     {
         return false;
     }
     else
     {
-        return _hasPhrase(mData.c_str(), phrase, count, isCaseSensitive ? nullptr : NEString::LOCALE_DEFAULT);
+        return _has_phrase(mData.c_str(), phrase, count, isCaseSensitive ? nullptr : NEString::LOCALE_DEFAULT);
     }
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::endsWith(const StringBase<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::ends_with(const StringBase<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return endsWith(phrase.mData, isCaseSensitive);
+    return ends_with(phrase.mData, isCaseSensitive);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::ends_with(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? endsWith(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? ends_with(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
+inline bool StringBase<CharType>::ends_with(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? endsWith(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? ends_with(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::endsWith(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
+inline bool StringBase<CharType>::ends_with(const CharType* phrase, bool isCaseSensitive /*= true*/, NEString::CharCount count /*= NEString::COUNT_ALL*/) const
 {
-    count = count != NEString::COUNT_ALL ? count : NEString::getStringLength<CharType>(phrase);
-    if (NEString::isEmpty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
+    count = count != NEString::COUNT_ALL ? count : NEString::string_length<CharType>(phrase);
+    if (NEString::is_empty<CharType>(phrase) || (count == 0) || (count > static_cast<NEString::CharCount>(mData.length())))
     {
         return false;
     }
@@ -3214,12 +3496,12 @@ inline bool StringBase<CharType>::endsWith(const CharType* phrase, bool isCaseSe
     {
         NEString::CharCount skip = static_cast<NEString::CharCount>(mData.length() - static_cast<uint32_t>(count));
         ASSERT(skip >= 0);
-        return _hasPhrase(mData.c_str() + skip, phrase, count, isCaseSensitive ? nullptr : NEString::LOCALE_DEFAULT);
+        return _has_phrase(mData.c_str() + skip, phrase, count, isCaseSensitive ? nullptr : NEString::LOCALE_DEFAULT);
     }
 }
 
 template<typename CharType>
-inline bool StringBase<CharType>::_hasPhrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const
+inline bool StringBase<CharType>::_has_phrase(const CharType* fullString, const CharType* phrase, NEString::CharCount count, const char* locale) const
 {
     ASSERT((fullString != nullptr) && (phrase != nullptr));
 
@@ -3324,13 +3606,13 @@ inline OutStream& operator << (OutStream& stream, const StringBase<CT>& output)
 template<typename CT>
 inline std::ostream & operator << ( std::ostream & stream, const StringBase<CT> & output )
 {
-    return (stream << output.getData( ));
+    return (stream << output.data( ));
 }
 
 template<typename CT>
 inline const std::istream & operator >> ( const std::istream & stream, StringBase<CT> & input )
 {
-    return (stream >> input.getData( ));
+    return (stream >> input.data( ));
 }
 
 #endif  // AREG_BASE_STRINGBASE_HPP

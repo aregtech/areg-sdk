@@ -27,12 +27,8 @@
 // ProxyConnectEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event class to send connection established notification
- *          to the Proxy object. The Event is sent from Router Service
- *          to notify Proxy object that connection with Stub is established
- *          or Proxy is disconnected from Stub. When connection is established,
- *          the Event will contain Stub address as server for Proxy and
- *          starting from that point, the Proxy and Stub can start communication.
+ * \brief   Event sent to Proxy to notify connection status with Stub. Connection established or
+ *          lost, contains Stub address for communication.
  **/
 class ProxyConnectEvent   : public ServiceResponseEvent
 {
@@ -51,26 +47,28 @@ class ProxyConnectEvent   : public ServiceResponseEvent
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Initialize Connection Event, which
-     *          is indicating to Proxy specified in address that the connection
-     *          with Stub, specified in address, either is established or lost.
-     * \param   proxy           The address of Proxy to send Connection Event.
-     * \param   server          The address of Stub object. If valid, Proxy can send request events.
-     * \param   connectStatus   Indicates the connection status.
+     * \brief   Initializes Connection Event indicating to Proxy that connection with Stub is
+     *          established or lost.
+     *
+     * \param   proxy               The address of Proxy to send Connection Event.
+     * \param   server              The address of Stub object. If valid, Proxy can send request
+     *                              events.
+     * \param   connectStatus       Indicates the connection status.
      **/
     ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, NEService::ServiceConnectionState connectStatus );
 
     /**
-     * \brief   Copy constructor.
-     * \param   target  The target Proxy address to initialize event.
-     * \param   src     The source of data to copy.
+     * \brief   Clones event data for different target Proxy address.
+     *
+     * \param   target      The target Proxy address to initialize event.
+     * \param   src         The source of data to copy.
      **/
     ProxyConnectEvent(const ProxyAddress & target, const ProxyConnectEvent & src);
 
     /**
-     * \brief   Initialization constructor.
-     *          Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
+     * \brief   Creates event from streaming object and initializes data.
+     *
+     * \param   stream      The streaming object to read data
      **/
     ProxyConnectEvent(const InStream & stream);
 
@@ -84,14 +82,14 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the target address Stub object.
+     * \brief   Returns the target address of Stub object.
      **/
-    inline const StubAddress & getStubAddress() const;
+    inline const StubAddress & stub_address() const;
 
     /**
      * \brief   Returns the current connection status set in proxy connect event.
      **/
-    inline NEService::ServiceConnectionState getConnectionStatus() const;
+    inline NEService::ServiceConnectionState connection_status() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -101,18 +99,20 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
+     * \brief   Reads and initializes event data from streaming object.
+     *
+     * \param   stream      The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const InStream & read_stream( const InStream & stream ) override;
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
+     * \brief   Writes event data to streaming object.
+     *
+     * \param   stream      The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    OutStream & write_stream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -132,6 +132,9 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ProxyConnectEvent() = delete;
     AREG_NOCOPY_NOMOVE( ProxyConnectEvent );
 };
@@ -140,12 +143,12 @@ private:
 // ProxyConnectEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & ProxyConnectEvent::getStubAddress() const
+inline const StubAddress & ProxyConnectEvent::stub_address() const
 {
     return mStubAddress;
 }
 
-inline NEService::ServiceConnectionState ProxyConnectEvent::getConnectionStatus() const
+inline NEService::ServiceConnectionState ProxyConnectEvent::connection_status() const
 {
     return mConnectionStatus;
 }

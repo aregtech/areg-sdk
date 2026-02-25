@@ -30,7 +30,7 @@ DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
-StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage & stream, const Channel & comChannel )
+StreamableEvent * RemoteEventFactory::event_from_stream( const RemoteMessage & stream, const Channel & comChannel )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 
@@ -38,7 +38,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
     Event::EventType eventType;
     stream >> eventType;
 
-    LOG_DBG("Going to create event [ %s ] from remote message object", Event::getString(eventType));
+    LOG_DBG("Going to create event [ %s ] from remote message object", Event::as_string(eventType));
 
     switch ( eventType )
     {
@@ -46,26 +46,26 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
         {
             StubAddress addrStub;
             stream >> addrStub;
-            if ( comChannel.getCookie() == addrStub.getCookie() )
+            if ( comChannel.cookie() == addrStub.cookie() )
             {
-                addrStub.setCookie( NEService::COOKIE_LOCAL );
+                addrStub.set_cookie( NEService::COOKIE_LOCAL );
             }
 
-            const StubBase * stub = StubBase::findStubByAddress(addrStub);
+            const StubBase * stub = StubBase::find_stub(addrStub);
             if ( stub != nullptr )
             {
-                stream.moveToBegin();
-                RemoteRequestEvent * eventRequest = stub->createRemoteRequestEvent(stream);
+                stream.move_to_begin();
+                RemoteRequestEvent * eventRequest = stub->remote_request_event(stream);
                 if ( eventRequest != nullptr )
                 {
-                    Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
-                    eventRequest->setTargetChannel(chTarget);
-                    eventRequest->setSourceChannel(chSource);
+                    Channel chTarget( stub->address().channel() );
+                    Channel chSource( comChannel.source(), chTarget.source(), stream.source() );
+                    eventRequest->set_target_channel(chTarget);
+                    eventRequest->set_source_channel(chSource);
 
                     LOG_DBG("Created Event::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
-                                , StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
-                                , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
+                                , StubAddress::to_path(eventRequest->target_stub()).as_string()
+                                , ProxyAddress::to_path(eventRequest->event_source()).as_string());
                 }
 
                 result = static_cast<StreamableEvent *>(eventRequest);
@@ -77,26 +77,26 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
         {
             StubAddress addrStub;
             stream >> addrStub;
-            if ( comChannel.getCookie() == addrStub.getCookie() )
+            if ( comChannel.cookie() == addrStub.cookie() )
             {
-                addrStub.setCookie( NEService::COOKIE_LOCAL );
+                addrStub.set_cookie( NEService::COOKIE_LOCAL );
             }
 
-            const StubBase * stub = StubBase::findStubByAddress(addrStub);
+            const StubBase * stub = StubBase::find_stub(addrStub);
             if ( stub != nullptr )
             {
-                stream.moveToBegin();
-                RemoteNotifyRequestEvent * eventNotify = stub->createRemoteNotifyRequestEvent(stream);
+                stream.move_to_begin();
+                RemoteNotifyRequestEvent * eventNotify = stub->notify_request_event(stream);
                 if ( eventNotify != nullptr )
                 {
-                    Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
-                    eventNotify->setTargetChannel(chTarget);
-                    eventNotify->setSourceChannel(chSource);
+                    Channel chTarget( stub->address().channel() );
+                    Channel chSource( comChannel.source(), chTarget.source(), stream.source() );
+                    eventNotify->set_target_channel(chTarget);
+                    eventNotify->set_source_channel(chSource);
 
                     LOG_DBG("Created Event::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
-                                , StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
-                                , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
+                                , StubAddress::to_path(eventNotify->target_stub()).as_string()
+                                , ProxyAddress::to_path(eventNotify->event_source()).as_string());
                 }
 
                 result = static_cast<StreamableEvent *>(eventNotify);
@@ -106,29 +106,29 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
 
     case Event::EventType::EventRemoteServiceResponse:
         {
-            ProxyBase::lockProxyResource();
+            ProxyBase::lock_proxy_resource();
             ProxyAddress addrProxy;
             stream >> addrProxy;
-            if ( comChannel.getCookie() == addrProxy.getCookie() )
-                addrProxy.setCookie( NEService::COOKIE_LOCAL );
-            std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress(addrProxy);
+            if ( comChannel.cookie() == addrProxy.cookie() )
+                addrProxy.set_cookie( NEService::COOKIE_LOCAL );
+            std::shared_ptr<ProxyBase> proxy = ProxyBase::find_proxy(addrProxy);
             if ( proxy != nullptr )
             {
-                stream.moveToBegin();
-                RemoteResponseEvent * eventResponse = proxy->createRemoteResponseEvent(stream);
+                stream.move_to_begin();
+                RemoteResponseEvent * eventResponse = proxy->remote_response_event(stream);
                 if ( eventResponse != nullptr )
                 {
-                    Channel chTarget( proxy->getProxyAddress().getChannel() );
-                    eventResponse->setTargetChannel(chTarget);
+                    Channel chTarget( proxy->proxy_address().channel() );
+                    eventResponse->set_target_channel(chTarget);
 
                     LOG_DBG("Created Event::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
-                                , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
+                                , ProxyAddress::to_path(eventResponse->target_proxy()).as_string());
                 }
 
                 result = static_cast<StreamableEvent *>(eventResponse);
             }
 
-            ProxyBase::unlockProxyResource();
+            ProxyBase::unlock_proxy_resource();
         }
         break;
 
@@ -166,31 +166,31 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
         break;
     }
 
-    ASSERT((result == nullptr) || (result->getEventType() == eventType));
+    ASSERT((result == nullptr) || (result->event_type() == eventType));
     return result;
 }
 
-bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
+bool RemoteEventFactory::stream_from_event( RemoteMessage & stream, const StreamableEvent & eventStreamable, const Channel & comChannel )
 {
     bool result = false;
     stream.invalidate();
 
-    switch ( eventStreamable.getEventType() )
+    switch ( eventStreamable.event_type() )
     {
     case Event::EventType::EventRemoteServiceRequest:
         {
             const ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceRequestEvent);
             if ( stubEvent != nullptr )
             {
-                eventStreamable.writeStream(stream);
-                if (stream.isValid())
+                eventStreamable.write_stream(stream);
+                if (stream.is_valid())
                 {
                     result = true;
-                    stream.setSource( comChannel.getCookie() );
-                    stream.setTarget( stubEvent->getTargetStub().getCookie() );
-                    stream.setMessageId( stubEvent->getRequestId() );
-                    stream.setResult( NEMemory::MESSAGE_SUCCESS );
-                    stream.setSequenceNr( stubEvent->getSequenceNumber() );
+                    stream.set_source( comChannel.cookie() );
+                    stream.set_target( stubEvent->target_stub().cookie() );
+                    stream.set_message_id( stubEvent->request_id() );
+                    stream.set_result( NEMemory::MESSAGE_SUCCESS );
+                    stream.set_sequence_nr( stubEvent->sequence_number() );
                 }
             }
             else
@@ -205,15 +205,15 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
             const ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceRequestEvent);
             if ( stubEvent != nullptr )
             {
-                eventStreamable.writeStream(stream);
-                if (stream.isValid())
+                eventStreamable.write_stream(stream);
+                if (stream.is_valid())
                 {
                     result = true;
-                    stream.setSource( comChannel.getCookie() );
-                    stream.setTarget( stubEvent->getTargetStub().getCookie() );
-                    stream.setMessageId( stubEvent->getRequestId() );
-                    stream.setResult( NEMemory::MESSAGE_SUCCESS );
-                    stream.setSequenceNr( stubEvent->getSequenceNumber() );
+                    stream.set_source( comChannel.cookie() );
+                    stream.set_target( stubEvent->target_stub().cookie() );
+                    stream.set_message_id( stubEvent->request_id() );
+                    stream.set_result( NEMemory::MESSAGE_SUCCESS );
+                    stream.set_sequence_nr( stubEvent->sequence_number() );
                 }
             }
             else
@@ -228,15 +228,15 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
             const ServiceResponseEvent * proxyEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceResponseEvent);
             if ( proxyEvent != nullptr )
             {
-                eventStreamable.writeStream(stream);
-                if ( stream.isValid() )
+                eventStreamable.write_stream(stream);
+                if ( stream.is_valid() )
                 {
                     result = true;
-                    stream.setSource( comChannel.getCookie() );
-                    stream.setTarget( proxyEvent->getTargetProxy().getCookie() );
-                    stream.setMessageId( proxyEvent->getResponseId() );
-                    stream.setResult( NEMemory::MESSAGE_SUCCESS );
-                    stream.setSequenceNr( proxyEvent->getSequenceNumber() );
+                    stream.set_source( comChannel.cookie() );
+                    stream.set_target( proxyEvent->target_proxy().cookie() );
+                    stream.set_message_id( proxyEvent->response_id() );
+                    stream.set_result( NEMemory::MESSAGE_SUCCESS );
+                    stream.set_sequence_nr( proxyEvent->sequence_number() );
                 }
             }
             else
@@ -277,7 +277,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
     default:
         {
             LOG_SCOPE( areg_component_RemoteEventFactory_createStreamFromEvent );
-            LOG_ERR( "Unexpected event value [ %d ]", static_cast<int32_t>(eventStreamable.getEventType( )) );
+            LOG_ERR( "Unexpected event value [ %d ]", static_cast<int32_t>(eventStreamable.event_type( )) );
             ASSERT( false );  // unsupported remote streaming events
         }
         break;
@@ -286,7 +286,7 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
     return result;
 }
 
-StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMessage & stream, const Channel & /* comChannel */ )
+StreamableEvent * RemoteEventFactory::request_failed_event( const RemoteMessage & stream, const Channel & /* comChannel */ )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
@@ -294,31 +294,31 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
     Event::EventType eventType;
     stream >> eventType;
 
-    LOG_DBG("Creating request failed event of type [ %s ] from remote message stream", Event::getString(eventType));
+    LOG_DBG("Creating request failed event of type [ %s ] from remote message stream", Event::as_string(eventType));
 
     switch ( eventType )
     {
     case Event::EventType::EventRemoteServiceRequest:
         {
-            stream.moveToBegin();
+            stream.move_to_begin();
             RemoteRequestEvent eventRequest(stream);
-            const ProxyAddress & addrProxy = eventRequest.getEventSource();
-            result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
-                                                                                         , eventRequest.getRequestId()
+            const ProxyAddress & addrProxy = eventRequest.event_source();
+            result = static_cast<StreamableEvent *>( ProxyBase::request_failure_event( addrProxy
+                                                                                         , eventRequest.request_id()
                                                                                          , NEService::ResultType::MessageUndelivered
-                                                                                         , eventRequest.getSequenceNumber()) );
+                                                                                         , eventRequest.sequence_number()) );
         }
         break;
 
     case Event::EventType::EventRemoteNotifyRequest:
         {
-            stream.moveToBegin();
+            stream.move_to_begin();
             RemoteNotifyRequestEvent eventNotify(stream);
-            const ProxyAddress & addrProxy = eventNotify.getEventSource();
-            result = static_cast<StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
-                                                                                         , eventNotify.getRequestId()
+            const ProxyAddress & addrProxy = eventNotify.event_source();
+            result = static_cast<StreamableEvent *>( ProxyBase::request_failure_event( addrProxy
+                                                                                         , eventNotify.request_id()
                                                                                          , NEService::ResultType::MessageUndelivered
-                                                                                         , eventNotify.getSequenceNumber()) );
+                                                                                         , eventNotify.sequence_number()) );
         }
         break;
 

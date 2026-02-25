@@ -96,14 +96,14 @@ namespace
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_osGetInvalidHandle()
+FILEHANDLE File::_os_invalid_handle()
 {
     return static_cast<FILEHANDLE>(nullptr);
 }
 
-void File::_osCloseFile()
+void File::_os_close_file()
 {
-    if ( isOpened( ) )
+    if ( is_opened( ) )
     {
         PosixFile * file = reinterpret_cast<PosixFile *>(mFileHandle);
 
@@ -115,20 +115,20 @@ void File::_osCloseFile()
         delete file;
     }
 
-    mFileHandle = File::_osGetInvalidHandle();
+    mFileHandle = File::_os_invalid_handle();
 }
 
-bool File::_osOpenFile()
+bool File::_os_open_file()
 {
     PosixFile * file = nullptr;
 
-    if (isOpened() == false)
+    if (is_opened() == false)
     {
         std::error_code err;
         file = DEBUG_NEW PosixFile;
-        if ( (mFileName.isEmpty() == false) && (file != nullptr) )
+        if ( (mFileName.is_empty() == false) && (file != nullptr) )
         {
-            mFileMode = normalizeMode(mFileMode);
+            mFileMode = normalize_mode(mFileMode);
             int     flag = 0;
             mode_t  mode = 0;
 
@@ -173,10 +173,10 @@ bool File::_osOpenFile()
                 mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
             }
 
-            String dirName(File::getFileDirectory(mFileName));
+            String dirName(File::file_directory(mFileName));
             if ( (flag & O_CREAT) != 0 )
             {
-                if (std::filesystem::exists(mFileName.getData(), err))
+                if (std::filesystem::exists(mFileName.data(), err))
                 {
                     if (dirName == mFileName)
                     {
@@ -191,7 +191,7 @@ bool File::_osOpenFile()
                 }
                 else
                 {
-                    File::createDirCascaded(dirName);
+                    File::create_dir_cascaded(dirName);
                     if (dirName == mFileName)
                     {
                         flag |= O_DIRECTORY; // set directory option
@@ -203,11 +203,11 @@ bool File::_osOpenFile()
 
             if (mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitTemp))
             {
-                file->fd =  ::mkstemp(mFileName.getBuffer());
+                file->fd =  ::mkstemp(mFileName.buffer());
             }
             else
             {
-                file->fd =  ::open(mFileName.getString(), flag, mode);
+                file->fd =  ::open(mFileName.as_string(), flag, mode);
             }
 
             if (file->fd != POSIX_INVALID_FD)
@@ -216,7 +216,7 @@ bool File::_osOpenFile()
             }
             else
             {
-                AREG_OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.getString(), static_cast<id_type>(errno));
+                AREG_OUTPUT_ERR("Failed to open file [ %s ], errno = [ %p ]", mFileName.as_string(), static_cast<id_type>(errno));
                 delete file;
                 file = nullptr;
             }
@@ -234,7 +234,7 @@ bool File::_osOpenFile()
     return (file != nullptr);
 }
 
-uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
+uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size > 0));
@@ -248,18 +248,18 @@ uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
 #ifdef  _DEBUG
     else if (sizeRead < 0)
     {
-        AREG_OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(errno));
+        AREG_OUTPUT_ERR("Failed read file [ %s ], error code [ %p ].", mFileName.as_string(), static_cast<id_type>(errno));
     }
     else
     {
-        AREG_OUTPUT_DBG("Finished to read file [ %s ]", mFileName.getString());
+        AREG_OUTPUT_DBG("Finished to read file [ %s ]", mFileName.as_string());
     }
 #endif  // !_DEBUG
 
     return result;
 }
 
-uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
+uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size)
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
@@ -267,14 +267,14 @@ uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
     int32_t result = ::write(reinterpret_cast<PosixFile*>(mFileHandle)->fd, buffer, size);
     if (result != static_cast<int32_t>(size))
     {
-        AREG_OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(errno));
+        AREG_OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.as_string(), static_cast<id_type>(errno));
         result = 0;
     }
 
     return result;
 }
 
-uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
     uint32_t result = Cursor::INVALID_CURSOR_POSITION;
@@ -302,19 +302,19 @@ uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) co
     return result;
 }
 
-uint32_t File::_osGetPositionFile() const
+uint32_t File::_os_file_position() const
 {
     ASSERT(mFileHandle != nullptr);
     return static_cast<uint32_t>( lseek(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
 }
 
-bool File::_osTruncateFile()
+bool File::_os_truncate_file()
 {
     ASSERT(mFileHandle != nullptr);
     return (NECommon::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
 }
 
-void File::_osFlushFile()
+void File::_os_flush_file()
 {
     ASSERT(mFileHandle != nullptr);
     fsync(reinterpret_cast<PosixFile*>(mFileHandle)->fd);
@@ -324,7 +324,7 @@ void File::_osFlushFile()
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/)
+uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
@@ -346,7 +346,7 @@ uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const cha
     return static_cast<uint32_t>(strlen(buffer));
 }
 
-uint32_t File::_osGetSpecialDir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder)
+uint32_t File::_os_special_dir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
     buffer[0] = NEString::EndOfString;
@@ -372,7 +372,7 @@ uint32_t File::_osGetSpecialDir(char* buffer, uint32_t /*length*/, const File::S
         ::sprintf(buffer, "%s%c.%s%c%s"
                     , filePath
                     , static_cast<int32_t>(File::PATH_SEPARATOR)
-                    , Process::getInstance().getAppName().getString()
+                    , Process::instance().app_name().as_string()
                     , static_cast<int32_t>(File::PATH_SEPARATOR)
                     , DIR_NAME_APPDATA);
         break;

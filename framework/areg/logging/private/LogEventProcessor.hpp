@@ -46,6 +46,8 @@ class LogEventProcessor
 public:
     /**
      * \brief   Initializes the logging event processor and set the instance of log manager.
+     *
+     * \param   logManager      The log manager instance.
      **/
     LogEventProcessor( LogManager & logManager );
 
@@ -58,10 +60,11 @@ public:
 
     /**
      * \brief   Dispatches and processes the log event.
-     * \param   cmdLog  The log command to process.
-     * \param   stream  The serialized data of the event.
+     *
+     * \param   cmdLog      The log command to process.
+     * \param   stream      The serialized data of the event.
      **/
-    void processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream );
+    void process_log_event( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -72,38 +75,43 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Start the logging.
+     * \brief   Starts logging.
      **/
-    void _loggingStartLogs();
+    void _logging_start_logs();
 
     /**
-     * \brief   Stop logging
+     * \brief   Stops logging.
      **/
-    void _loggingStopLogs();
+    void _logging_stop_logs();
 
     /**
      * \brief   Enables or disables logs.
+     *
+     * \param   logsEnable      True to enable logs, false to disable.
      **/
-    void _loggingSetEnableLogs( bool logsEnable );
+    void _set_logging_enabled( bool logsEnable );
 
     /**
      * \brief   Saves log configuration in the file.
      **/
-    void _loggingSaveScopes();
+    void _logging_save_scopes();
 
     /**
-     * \brief   Logs the message.
+     * \brief   Processes a log message.
+     *
+     * \param   data    The message data.
      **/
-    void _loggingLogMessage( const SharedBuffer & data );
+    void _logging_log_message( const SharedBuffer & data );
 
     /**
      * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
-     *          with priority to change. Each scope entry can be either a single scope
-     *          or scope group. In case of scope group, the scope ID is ignored (should be 0).
-     * \param   stream      The buffer with scope name, scope ID and scope priority.
-     * \param   scopeCount  The number of scopes in the binary buffer.
+     *          with priority to change. Each scope entry can be either a single scope or scope
+     *          group. In case of scope group, the scope ID is ignored (should be 0).
+     *
+     * \param   stream          The buffer with scope name, scope ID and scope priority.
+     * \param   scopeCount      The number of scopes in the binary buffer.
      **/
-    void _changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount );
+    void _change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -117,6 +125,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     LogEventProcessor() = delete;
     AREG_NOCOPY_NOMOVE( LogEventProcessor );
 };

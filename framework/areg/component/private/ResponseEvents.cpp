@@ -34,7 +34,7 @@ ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
                             , Event::EventType eventType
                             , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
-    , mData (respId, Event::isExternal(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
+    , mData (respId, Event::is_external(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
 {
 }
 
@@ -44,7 +44,7 @@ ResponseEvent::ResponseEvent( const EventDataStream & args
                             , uint32_t respId
                             , Event::EventType eventType
                             , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
-                            , const String & name /*= String::getEmptyString()*/ )
+                            , const String & name /*= String::empty_string()*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData (respId, args, name)
 {
@@ -62,16 +62,16 @@ ResponseEvent::ResponseEvent(const InStream & stream)
 {
 }
 
-const InStream & ResponseEvent::readStream(const InStream & stream)
+const InStream & ResponseEvent::read_stream(const InStream & stream)
 {
-    ServiceResponseEvent::readStream(stream);
+    ServiceResponseEvent::read_stream(stream);
     stream >> mData;
     return stream;
 }
 
-OutStream & ResponseEvent::writeStream(OutStream & stream) const
+OutStream & ResponseEvent::write_stream(OutStream & stream) const
 {
-    ServiceResponseEvent::writeStream(stream);
+    ServiceResponseEvent::write_stream(stream);
     stream << mData;
     return stream;
 }
@@ -101,7 +101,7 @@ LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
                                       , NEService::ResultType result
                                       , uint32_t respId
                                       , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
-                                      , const String & name /*= String::getEmptyString()*/ )
+                                      , const String & name /*= String::empty_string()*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::EventType::EventLocalServiceResponse, seqNr, name)
 {
 }
@@ -134,7 +134,7 @@ RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
                                         , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ResponseEvent(proxyTarget, result, respId, Event::EventType::EventRemoteServiceResponse, seqNr)
 {
-    ASSERT(getData().getDataStream().isExternalDataStream());
+    ASSERT(data().data_stream().is_external_stream());
 }
 
 RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
@@ -142,20 +142,20 @@ RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
                                         , NEService::ResultType result
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
-                                        , const String & name /*= String::getEmptyString()*/ )
+                                        , const String & name /*= String::empty_string()*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::EventType::EventRemoteServiceResponse, seqNr, name)
 {
-    ASSERT(getData().getDataStream().isExternalDataStream());
+    ASSERT(data().data_stream().is_external_stream());
 }
 
 RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress& proxyTarget, const RemoteResponseEvent & src )
     : ResponseEvent(proxyTarget, static_cast<const ResponseEvent &>(src))
 {
-    ASSERT(getData().getDataStream().isExternalDataStream());
+    ASSERT(data().data_stream().is_external_stream());
 }
 
 RemoteResponseEvent::RemoteResponseEvent( const InStream & stream )
     : ResponseEvent(stream)
 {
-    ASSERT(getData().getDataStream().isExternalDataStream());
+    ASSERT(data().data_stream().is_external_stream());
 }

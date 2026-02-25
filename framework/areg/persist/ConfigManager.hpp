@@ -125,11 +125,11 @@ public:
      * \brief   Returns true if a property with specified parameters exists for the current module.
      *
      * \param   section     The section of the key. If '*', searches only in the read-only list.
-     * \param   property    The property name to search.
+     * \param   propNme     The property name to search.
      * \param   position    The optional position of the key to search.
      * \return  Returns true if found either a module-specific entry or a global entry.
      **/
-    inline bool exist(const String& section, const String& property, const String& position = String::EmptyString) const;
+    inline bool exist(const String& section, const String& propNme, const String& position = String::EmptyString) const;
 
     /**
      * \brief   Returns a merged list of read-only and writable properties for the specified
@@ -144,14 +144,14 @@ public:
      *          and writable lists.
      *
      * \param   section     The section to search in the list of configuration properties.
-     * \param   property    The property to search in the list of configuration properties.
+     * \param   propNme     The property to search in the list of configuration properties.
      * \param   position    The optional position to search in the list of configuration properties.
      * \param   keyType     The property key type.
      * \return  Returns a valid pointer if a property matching the specified parameters is found;
      *          otherwise returns nullptr.
      **/
     const Property * property( const String& section
-                             , const String& property
+                             , const String& propNme
                              , const String& position
                              , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
@@ -170,16 +170,16 @@ public:
      *          in the writable list only.
      *
      * \param   section     The section to search in the list of configuration properties.
-     * \param   property    The property to search in the list of configuration properties.
+     * \param   propNme     The property to search in the list of configuration properties.
      * \param   position    The optional position to search in the list of configuration properties.
      * \param   keyType     The property key type.
      * \return  Returns a valid pointer if a module property matching the specified parameters is
      *          found; otherwise returns nullptr.
      **/
     const Property * module_property( const String& section
-                                      , const String& property
-                                      , const String& position
-                                      , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
+                                    , const String& propNme
+                                    , const String& position
+                                    , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer to a module-specific property searched by the specified key. The
@@ -197,7 +197,7 @@ public:
      *          Optionally marks the entry as temporary so it is ignored when saving.
      *
      * \param   section         The section to search in the list of configuration properties.
-     * \param   property        The property to search in the list of configuration properties.
+     * \param   propNme         The property to search in the list of configuration properties.
      * \param   position        The optional position to search in the list of configuration
      *                          properties.
      * \param   value           The new value to set in the specified configuration entry.
@@ -205,7 +205,7 @@ public:
      * \param   temporary       If true, the change is not saved to the configuration file.
      **/
     void set_module_property( const String& section
-                            , const String& property
+                            , const String& propNme
                             , const String& position
                             , const String& value
                             , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey
@@ -226,16 +226,16 @@ public:
      *          both read-only and writable lists.
      *
      * \param   section     The section to search in the list of configuration properties.
-     * \param   property    The property to search in the list of configuration properties.
+     * \param   propNme     The property to search in the list of configuration properties.
      * \param   position    The optional position to search in the list of configuration properties.
      * \param   keyType     The property key type.
      * \return  Returns a valid pointer to property value if a property matching the specified
      *          parameters is found; otherwise returns nullptr.
      **/
     inline const PropertyValue * property_value( const String& section
-                                                 , const String& property
-                                                 , const String& position = String::EmptyString
-                                                 , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
+                                               , const String& propNme
+                                               , const String& position = String::EmptyString
+                                               , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
 
     /**
      * \brief   Returns the pointer to the value of a property searched by the specified key in both
@@ -252,14 +252,14 @@ public:
      *          parameters in the writable list only.
      *
      * \param   section     The section to search in the list of configuration properties.
-     * \param   property    The property to search in the list of configuration properties.
+     * \param   propNme     The property to search in the list of configuration properties.
      * \param   position    The optional position to search in the list of configuration properties.
      * \param   keyType     The property key type.
      * \return  Returns a valid pointer if a module property matching the specified parameters is
      *          found; otherwise returns nullptr.
      **/
     inline const PropertyValue * module_property_value( const String& section
-                                                       , const String& property
+                                                       , const String& propNme
                                                        , const String& position = String::EmptyString
                                                        , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey) const;
     /**
@@ -267,7 +267,7 @@ public:
      *          modification. Searched in the writable list only.
      *
      * \param   section     The section to search in the list of configuration properties.
-     * \param   property    The property to search in the list of configuration properties.
+     * \param   propNme     The property to search in the list of configuration properties.
      * \param   position    The optional position to search in the list of configuration properties.
      * \param   keyType     The property key type.
      * \return  Returns a valid pointer if a module property matching the specified parameters is
@@ -275,7 +275,7 @@ public:
      * \note    Allows modification of the returned value.
      **/
     inline PropertyValue * module_property_value( const String& section
-                                                 , const String& property
+                                                 , const String& propNme
                                                  , const String& position = String::EmptyString
                                                  , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
@@ -319,12 +319,12 @@ public:
      * \brief   Removes a configuration entry from the writable list.
      *
      * \param   section     The section to search in the list of configuration properties.
-     * \param   property    The property to search in the list of configuration properties.
+     * \param   propNme     The property to search in the list of configuration properties.
      * \param   position    The optional position to search in the list of configuration properties.
      * \param   keyType     The property key type.
      **/
     void remove_module_property( const String& section
-                             , const String& property
+                             , const String& propNme
                              , const String& position = String::EmptyString
                              , NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
@@ -344,7 +344,7 @@ public:
      * \param   keyType     The property key type.
      * \return  Returns the number of entries removed from the writable list.
      **/
-    int32_t remove_module_properties(const String& section, const String& property, NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
+    int32_t remove_module_properties(const String& section, const String& propNme, NEPersistence::ConfigEntry keyType = NEPersistence::ConfigEntry::AnyKey);
 
     /**
      * \brief   Removes all configuration entries from the writable list matching the specified
@@ -524,7 +524,7 @@ public:
      * \param   newValue        The relative or absolute file path with optional mask to write logs.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    inline void set_log_file_location(const String& newValue, bool is_temporary = false);
+    inline void set_file_location(const String& newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns true if log messages are appended to the existing log file.
@@ -539,13 +539,13 @@ public:
      *                          false, a new file is created.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_log_file_append(bool newValue, bool is_temporary = false);
+    void set_file_append(bool newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the maximum queue size for log messages when there is no connection to the
      *          remote logger.
      **/
-    uint32_t log_remote_queue_size() const;
+    uint32_t remote_queue_size() const;
 
     /**
      * \brief   Sets the maximum queue size for log messages when there is no connection to the
@@ -555,7 +555,7 @@ public:
      *                          immediately without queuing.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_log_remote_queue_size(uint32_t newValue, bool is_temporary = false);
+    void set_remote_queue_size(uint32_t newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the layout format string for log messages when entering a scope.
@@ -568,7 +568,7 @@ public:
      * \param   newValue        The new layout format string.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_log_layout_enter(const String& newValue, bool is_temporary = false);
+    void set_layout_enter(const String& newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the layout format string for log messages.
@@ -581,7 +581,7 @@ public:
      * \param   newValue        The new layout format string.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_log_layout_message(const String& newValue, bool is_temporary = false);
+    void set_layout_message(const String& newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the layout format string for log messages when exiting a scope.
@@ -594,7 +594,7 @@ public:
      * \param   newValue        The new layout format string.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_log_layout_exit(const String& newValue, bool is_temporary = false);
+    void set_layout_exit(const String& newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the list of log scope properties for the module.
@@ -617,7 +617,7 @@ public:
      * \param   search          If true, replaces existing scopes with matching names. If false,
      *                          adds all scopes to the list.
      **/
-    void add_module_log_scopes(const std::vector<Property>& scopeList, bool search);
+    void add_log_scopes(const std::vector<Property>& scopeList, bool search);
 
     /**
      * \brief   Adds a log scope property with a priority value to the module's scope list.
@@ -625,7 +625,7 @@ public:
      * \param   scopeName       The name of the scope to add.
      * \param   prio            The scope priority or priorities separated by logical OR ('|').
      **/
-    void add_module_log_scope(const String& scopeName, const String& prio);
+    void add_log_scope(const String& scopeName, const String& prio);
 
     /**
      * \brief   Adds a log scope property with a numeric priority value to the module's scope list.
@@ -633,7 +633,7 @@ public:
      * \param   scopeName       The name of the scope to add.
      * \param   prio            The numeric scope priority value.
      **/
-    void add_module_log_scope(const String& scopeName, uint32_t prio);
+    void add_log_scope(const String& scopeName, uint32_t prio);
 
     /**
      * \brief   Removes a log scope property by its name.
@@ -710,7 +710,7 @@ public:
      * \param   newValue        If true, enables the connection; if false, disables it.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_remote_service_enable(const String& service, const String& connectType, bool newValue, bool is_temporary = false);
+    void set_service_enable(const String& service, const String& connectType, bool newValue, bool is_temporary = false);
 
     /**
      * \brief   Sets whether the specified remote service connection is enabled.
@@ -720,7 +720,7 @@ public:
      * \param   newValue        If true, enables the connection; if false, disables it.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_remote_service_enable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, bool newValue, bool is_temporary = false);
+    void set_service_enable(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, bool newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the address of the remote service for the specified connection type.
@@ -746,7 +746,7 @@ public:
      * \param   newValue        The new address value.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_remote_service_address(const String& service, const String& connectType, const String& newValue, bool is_temporary = false);
+    void set_service_address(const String& service, const String& connectType, const String& newValue, bool is_temporary = false);
 
     /**
      * \brief   Sets the address of the remote service for the specified connection type.
@@ -756,7 +756,7 @@ public:
      * \param   newValue        The new address value.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_remote_service_address(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, const String& newValue, bool is_temporary = false);
+    void set_service_address(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, const String& newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the port number of the remote service for the specified connection type.
@@ -782,7 +782,7 @@ public:
      * \param   newValue        The new port number value.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_remote_service_port(const String& service, const String& connectType, uint16_t newValue, bool is_temporary = false);
+    void set_service_port(const String& service, const String& connectType, uint16_t newValue, bool is_temporary = false);
 
     /**
      * \brief   Sets the port number of the remote service for the specified connection type.
@@ -792,7 +792,7 @@ public:
      * \param   newValue        The new port number value.
      * \param   is_temporary    If true, the change is not saved to the configuration file.
      **/
-    void set_remote_service_port(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, uint16_t newValue, bool is_temporary = false);
+    void set_service_port(NERemoteService::RemoteServiceKind serviceType, NERemoteService::ConnectionType connectType, uint16_t newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the log database property for the specified position.
@@ -808,7 +808,7 @@ public:
      * \param   newValue            The new value to set.
      * \param   is_temporary        If true, the change is not saved to the configuration file.
      **/
-    void set_log_database_property(const String & whichPosition, const String & newValue, bool is_temporary = false);
+    void set_db_property(const String & whichPosition, const String & newValue, bool is_temporary = false);
 
     /**
      * \brief   Returns the default buffer block size for growing buffers.
@@ -816,7 +816,7 @@ public:
      * \param   whichModule     The module name or '*' for generic settings.
      * \return  Returns the buffer block size in bytes.
      **/
-    uint32_t default_buffer_block_size(const String& whichModule = NEString::EmptyStringA);
+    uint32_t buffer_block_size(const String& whichModule = NEString::EmptyStringA);
 
     /**
      * \brief   Returns the default message queue size for message queues.
@@ -824,7 +824,7 @@ public:
      * \param   whichModule     The module name or '*' for generic settings.
      * \return  Returns the default message queue size.
      **/
-    uint32_t default_message_queue_size(const String& whichModule = NEString::EmptyStringA);
+    uint32_t message_queue_size(const String& whichModule = NEString::EmptyStringA);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -923,9 +923,9 @@ inline bool ConfigManager::is_locked() const
     return mLock.is_locked();
 }
 
-inline bool ConfigManager::exist(const String& section, const String& property, const String& position) const
+inline bool ConfigManager::exist(const String& section, const String& propNme, const String& position) const
 {
-    return exist(PropertyKey(section, mModule, property, position));
+    return exist(PropertyKey(section, mModule, propNme, position));
 }
 
 inline const Property* ConfigManager::property(const PropertyKey& key) const
@@ -944,13 +944,13 @@ inline void ConfigManager::set_module_property(const PropertyKey& key, const Str
 }
 
 inline const PropertyValue * ConfigManager::property_value( const String& section
-                                                            , const String& property
+                                                            , const String& propNme
                                                             , const String& position /*= String::EmptyString*/
                                                             , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
-    const Property* result{ property(section, property, position, keyType)};
+    const Property* result{ property(section, propNme, position, keyType)};
     return (result != nullptr ? &result->value() : nullptr);
 }
 
@@ -965,13 +965,13 @@ inline const PropertyValue* ConfigManager::module_property_value(const PropertyK
 }
 
 inline const PropertyValue * ConfigManager::module_property_value( const String& section
-                                                                  , const String& property
+                                                                  , const String& propNme
                                                                   , const String& position /*= String::EmptyString*/
                                                                   , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/) const
 {
     Lock lock(mLock);
 
-    const Property* result{ module_property(section, property, position, keyType) };
+    const Property* result{ module_property(section, propNme, position, keyType) };
     return (result != nullptr ? &result->value() : nullptr);
 }
 
@@ -981,13 +981,13 @@ inline PropertyValue* ConfigManager::module_property_value(const PropertyKey& ke
 }
 
 inline PropertyValue * ConfigManager::module_property_value( const String& section
-                                                           , const String& property
+                                                           , const String& propNme
                                                            , const String& position /*= String::EmptyString*/
                                                            , NEPersistence::ConfigEntry keyType /*= NEPersistence::ConfigEntry::AnyKey*/)
 {
     Lock lock(mLock);
 
-    const Property* result{ module_property(section, property, position, keyType) };
+    const Property* result{ module_property(section, propNme, position, keyType) };
     return (result != nullptr ? &const_cast<Property *>(result)->value() : nullptr);
 }
 
@@ -995,7 +995,7 @@ inline int32_t ConfigManager::add_module_properties(const NEPersistence::ListPro
 {
     int32_t result{ 0 };
     Lock lock(mLock);
-    const std::vector<Property>& list = propList.getData();
+    const std::vector<Property>& list = propList.data();
     for (const auto& prop : list)
     {
         if (exist(prop.key()) == false)
@@ -1040,12 +1040,12 @@ inline void ConfigManager::set_logging_status(bool newValue, bool is_temporary /
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogStatus;
     const NEPersistence::ConfigKey& key = NEPersistence::log_status();
 
-    set_module_property(key.section, key.property, key.position, String::makeString(newValue), confKey, is_temporary);
+    set_module_property(key.section, key.property, key.position, String::make_string(newValue), confKey, is_temporary);
 }
 
 inline bool ConfigManager::log_enabled(const Identifier& logType) const
 {
-    return log_enabled(logType.getName());
+    return log_enabled(logType.name());
 }
 
 inline void ConfigManager::set_log_enabled(const String& logType, bool newValue, bool is_temporary /*= false*/)
@@ -1054,15 +1054,15 @@ inline void ConfigManager::set_log_enabled(const String& logType, bool newValue,
 
     constexpr NEPersistence::ConfigEntry confKey = NEPersistence::ConfigEntry::LogEnable;
     const NEPersistence::ConfigKey& key = NEPersistence::log_enable();
-    set_module_property(key.section, key.property, logType, String::makeString(newValue), confKey, is_temporary);
+    set_module_property(key.section, key.property, logType, String::make_string(newValue), confKey, is_temporary);
 }
 
 inline void ConfigManager::set_log_enabled(const Identifier& logType, bool newValue, bool is_temporary /*= false*/)
 {
-    set_log_enabled(logType.getName(), newValue, is_temporary);
+    set_log_enabled(logType.name(), newValue, is_temporary);
 }
 
-inline void ConfigManager::set_log_file_location(const String& newValue, bool is_temporary /*= false*/)
+inline void ConfigManager::set_file_location(const String& newValue, bool is_temporary /*= false*/)
 {
     Lock lock(mLock);
 

@@ -36,18 +36,7 @@ class ComponentAddress;
 // ServiceRequestEvent class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       The Service Request Event class is a base class for all
- *              requests to send from Proxy to Stub. This is runtime class
- *              and instance of StubEvent class.
- * 
- * \details     To trigger a function call or starting update notification
- *              Stub object is receiving Service Request event, which is
- *              containing message ID (request or attribute ID), request
- *              type (notification or function call). As well as the source
- *              Proxy object and target Stub should be specified.
- *              Derive this class to define custom request objects and/or
- *              set additional data parameter.
- *
+ * \brief   Base class for all requests sent from Proxy to Stub. Instances of StubEvent.
  **/
 class AREG_API ServiceRequestEvent : public StubEvent
 {
@@ -61,7 +50,9 @@ class AREG_API ServiceRequestEvent : public StubEvent
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Creates Service Event object, set source Proxy address, target Stub Address and event info.
+     * \brief   Creates Service Event object and sets source Proxy address, target Stub Address, and
+     *          event info.
+     *
      * \param   proxyAddress    The source Proxy Address, which sent event.
      * \param   target          The target Stub Address, which should process event
      * \param   reqId           The request message ID to process.
@@ -75,8 +66,9 @@ protected:
                        , Event::EventType eventType );
 
     /**
-     * \brief   Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
+     * \brief   Creates event from streaming object and initializes data.
+     *
+     * \param   stream      The streaming object to read data
      **/
     ServiceRequestEvent(const InStream & stream);
 
@@ -90,35 +82,38 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Return the address of Proxy of event source
+     * \brief   Returns the address of Proxy event source.
      **/
-    inline const ProxyAddress & getEventSource() const;
+    inline const ProxyAddress & event_source() const;
 
     /**
-     * \brief   Sets the address of Proxy of event source
-     * \param   addrProxySource The address of Proxy of source
+     * \brief   Sets the address of Proxy event source.
+     *
+     * \param   addrProxySource     The address of Proxy of source
      **/
-    inline void setEventSource( const ProxyAddress &  addrProxySource );
+    inline void set_event_source( const ProxyAddress &  addrProxySource );
 
     /**
-     * \brief   Returns request message ID stored in service event
+     * \brief   Returns request message ID.
      **/
-    inline uint32_t getRequestId() const;
+    inline uint32_t request_id() const;
 
     /**
-     * \brief   Returns request type to process.
+     * \brief   Returns request type.
      **/
-    inline NEService::RequestType getRequestType() const;
+    inline NEService::RequestType request_type() const;
 
     /**
      * \brief   Returns sequence number set in info.
      **/
-    inline const SequenceNumber & getSequenceNumber() const;
+    inline const SequenceNumber & sequence_number() const;
 
     /**
      * \brief   Sets new sequence number.
+     *
+     * \param   newSeqNr    The new sequence number to set.
      **/
-    inline void setSequenceNumber(const SequenceNumber & newSeqNr);
+    inline void set_sequence_number(const SequenceNumber & newSeqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -128,18 +123,20 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
+     * \brief   Reads and initializes event data from streaming object.
+     *
+     * \param   stream      The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const InStream & read_stream( const InStream & stream ) override;
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
+     * \brief   Writes event data to streaming object.
+     *
+     * \param   stream      The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    OutStream & write_stream( OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -169,6 +166,9 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ServiceRequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( ServiceRequestEvent );
 };
@@ -177,32 +177,32 @@ private:
 // ServiceRequestEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceRequestEvent::getEventSource() const
+inline const ProxyAddress & ServiceRequestEvent::event_source() const
 {
     return mProxySource;
 }
 
-inline void ServiceRequestEvent::setEventSource(const ProxyAddress& addrProxySource)
+inline void ServiceRequestEvent::set_event_source(const ProxyAddress& addrProxySource)
 {
     mProxySource = addrProxySource;
 }
 
-inline uint32_t ServiceRequestEvent::getRequestId() const
+inline uint32_t ServiceRequestEvent::request_id() const
 {
     return mMessageId;
 }
 
-inline NEService::RequestType ServiceRequestEvent::getRequestType() const
+inline NEService::RequestType ServiceRequestEvent::request_type() const
 {
     return mRequestType;
 }
 
-inline const SequenceNumber & ServiceRequestEvent::getSequenceNumber() const
+inline const SequenceNumber & ServiceRequestEvent::sequence_number() const
 {
     return mSequenceNr;
 }
 
-inline void ServiceRequestEvent::setSequenceNumber(const SequenceNumber & newSeqNr )
+inline void ServiceRequestEvent::set_sequence_number(const SequenceNumber & newSeqNr )
 {
     mSequenceNr = newSeqNr;
 }

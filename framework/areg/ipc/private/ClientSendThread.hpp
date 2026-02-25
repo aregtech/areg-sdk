@@ -34,8 +34,7 @@ class ClientConnection;
 // ClientSendThread class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message sender thread. All messages to be sent to remote routing service
- *          are queued in message sender thread. 
+ * \brief   Message sender thread that queues and sends all messages to remote routing service.
  **/
 class ClientSendThread  : public    DispatcherThread
                         , public    SendMessageEventConsumer
@@ -45,11 +44,11 @@ class ClientSendThread  : public    DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes Service handler and client connection objects.
-     * \param   remoteService   The instance of remote service to process messages.
-     * \param   connection      The instance of client connection object to send messages.
-     * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_SEND_MESSAGE_THREAD
-     *                          to have unique thread names.
+     * \brief   Initializes message sender with service handler and client connection.
+     *
+     * \param   remoteService       Remote service handler for processing messages.
+     * \param   connection          Client connection object for sending messages.
+     * \param   namePrefix          Prefix for thread name to ensure uniqueness.
      **/
     ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
     /**
@@ -62,22 +61,22 @@ public:
 /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
-     *          The operations are atomic. The value can be used to display data rate, for example.
+     * \brief   Returns accumulated sent data size and resets counter atomically. Useful for
+     *          displaying data rate.
      **/
-    inline uint32_t extractDataSend() const;
+    inline uint32_t extract_data_send() const;
 
     /**
-     * \brief   Call to enable or disable the received data calculation.
-     *          It as well resets the existing calculated data.
-     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     * \brief   Enables or disables sent data calculation and resets existing calculated data.
+     *
+     * \param   enable      Flag indicating whether data calculation should be enabled.
      **/
-    inline void setEnableCalculateData(bool enable);
+    inline void set_data_rate_enabled(bool enable);
 
     /**
-     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     * \brief   Returns whether data calculation is enabled.
      **/
-    inline bool isCalculateDataEnabled() const;
+    inline bool is_data_rate_enabled() const;
 
 protected:
 /************************************************************************/
@@ -85,39 +84,34 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables event dispatching. Override to perform preparation work.
+     *
+     * \param   is_ready     Flag indicating whether dispatcher is ready for events.
      **/
-    void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Posts and delivers event to target. Override in derived classes to process events.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Returns true.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) override;
 
 private:
 /************************************************************************/
 // SendMessageEventConsumer interface overrides.
 /************************************************************************/
     /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
+     * \brief   Processes send message events dispatched by worker or component thread.
+     *
+     * \param   data    Send message event data to process.
      **/
-    void processEvent( const SendMessageEventData & data ) override;
+    void process_event( const SendMessageEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -146,16 +140,19 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ClientSendThread() = delete;
     AREG_NOCOPY_NOMOVE( ClientSendThread );
 };
 
-inline uint32_t ClientSendThread::extractDataSend() const
+inline uint32_t ClientSendThread::extract_data_send() const
 {
     return static_cast<uint32_t>(mBytesSend.exchange( 0 ));
 }
 
-inline void ClientSendThread::setEnableCalculateData(bool enable)
+inline void ClientSendThread::set_data_rate_enabled(bool enable)
 {
     if (mSaveDataSend != enable)
     {
@@ -164,7 +161,7 @@ inline void ClientSendThread::setEnableCalculateData(bool enable)
     }
 }
 
-inline bool ClientSendThread::isCalculateDataEnabled() const
+inline bool ClientSendThread::is_data_rate_enabled() const
 {
     return mSaveDataSend;
 }

@@ -17,9 +17,9 @@
 
 #include "areg/base/DateTime.hpp"
 
-uint32_t TimerBase::getTickCount()
+uint32_t TimerBase::tick_count()
 {
-    return static_cast<uint32_t>(DateTime::getSystemTickCount());
+    return static_cast<uint32_t>(DateTime::system_tick_count());
 }
 
 TimerBase::TimerBase( const TimerType timerType
@@ -34,28 +34,28 @@ TimerBase::TimerBase( const TimerType timerType
     , mActive       ( false     )
     , mLock         ( false     )
 {
-    createWaitableTimer();
+    create_waitable_timer();
 }
 
 TimerBase::~TimerBase()
 {
-    destroyWaitableTimer();
+    destroy_waitable_timer();
 }
 
-bool TimerBase::createWaitableTimer()
+bool TimerBase::create_waitable_timer()
 {
     Lock lock( mLock );
 
     if ( (mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT) )
     {
-        mHandle = _osCreateWaitableTimer( );
+        mHandle = _os_create( );
     }
 
     return (mHandle != nullptr);
 }
 
 
-void TimerBase::destroyWaitableTimer()
+void TimerBase::destroy_waitable_timer()
 {
     Lock lock( mLock );
 
@@ -63,6 +63,6 @@ void TimerBase::destroyWaitableTimer()
     mHandle = nullptr;
     if ( handle != nullptr )
     {
-        _osDestroyWaitableTimer( handle );
+        _os_destroy( handle );
     }
 }

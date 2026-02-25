@@ -81,7 +81,7 @@ public:
     /**
      * \brief   Returns the only instance of Console object to make outputs.
      **/
-    static Console& getInstance();
+    static Console& instance();
 
     /**
      * \brief   Before calling the method the console input must be enabled.
@@ -139,7 +139,7 @@ public:
      *
      * \return  Returns the string input on console.
      **/
-    String readString() const;
+    String read_string() const;
 
     /**
      * \brief   Call if there is no need anymore to make any message output.
@@ -150,7 +150,7 @@ public:
     /**
      * \brief   Returns true if the Console is initialized and ready to run.
      **/
-    inline bool isReady() const;
+    inline bool is_ready() const;
 
     /**
      * \brief   Enables or disables the console input. It has no effect if the Console
@@ -408,14 +408,14 @@ inline void Console::uninitialize()
     _osRelease( );
 }
 
-inline bool Console::isReady() const
+inline bool Console::is_ready() const
 {
     return mIsReady;
 }
 
 inline bool Console::enableConsoleInput( bool enable )
 {
-    return enable ? (mIsReady && mEnable.setEvent( )) : (mIsReady == false) || (mEnable.resetEvent( ));
+    return enable ? (mIsReady && mEnable.set_event( )) : (mIsReady == false) || (mEnable.reset( ));
 }
 
 inline void Console::outputStr( Console::Coord pos, const String & text ) const

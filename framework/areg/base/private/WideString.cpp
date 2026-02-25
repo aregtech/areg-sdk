@@ -59,7 +59,7 @@ namespace
         DigitType base = static_cast<DigitType>(NEString::Radix::Binary);
         bool isNegative = number < 0;
 
-        number = NEMath::getAbs<DigitType>(number);
+        number = NEMath::abs<DigitType>(number);
         int16_t idx = 0;
         do
         {
@@ -71,7 +71,7 @@ namespace
 
         *dst    = static_cast<wchar_t>(NEString::EndOfString);
         int32_t count = static_cast<int32_t>(dst - buffer);
-        NEString::revertString<wchar_t>(buffer, count);
+        NEString::revert_string<wchar_t>(buffer, count);
         if ( isNegative )
         {
             result = L'-';
@@ -164,7 +164,7 @@ namespace
 
 
 // the static empty string
-const WideString & WideString::getEmptyString()
+const WideString & WideString::empty_string()
 {
     static const WideString _emptyString{ L"" };
     return _emptyString;
@@ -176,13 +176,13 @@ const WideString & WideString::getEmptyString()
 WideString::WideString(const String & source)
     : StringBase<wchar_t>( )
 {
-    assign(source.getString(), source.getLength());
+    assign(source.as_string(), source.length());
 }
 
 WideString::WideString( const InStream & stream )
     : StringBase<wchar_t>( )
 {
-    readStream(stream);
+    read_stream(stream);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,16 +191,16 @@ WideString::WideString( const InStream & stream )
 
 WideString & WideString::operator = (const String & src)
 {
-    assign(src.getString(), src.getLength());
+    assign(src.as_string(), src.length());
     return (*this);
 }
 
 bool WideString::operator == (const String& other) const
 {
     bool result = false;
-    if (getLength() == other.getLength())
+    if (length() == other.length())
     {
-        result = _isEqual(getString(), other.getString());
+        result = _isEqual(as_string(), other.as_string());
     }
 
     return result;
@@ -209,9 +209,9 @@ bool WideString::operator == (const String& other) const
 bool WideString::operator == (const std::string& other) const
 {
     bool result = false;
-    if (getLength() == static_cast<NEString::CharCount>(other.length()))
+    if (length() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = _isEqual(getString(), other.c_str());
+        result = _isEqual(as_string(), other.c_str());
     }
 
     return result;
@@ -220,9 +220,9 @@ bool WideString::operator == (const std::string& other) const
 bool WideString::operator == (const char* other) const
 {
     bool result = false;
-    if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
+    if (length() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = _isEqual(getString(), other);
+        result = _isEqual(as_string(), other);
     }
 
     return result;
@@ -231,9 +231,9 @@ bool WideString::operator == (const char* other) const
 bool WideString::operator != (const char* other) const
 {
     bool result = true;
-    if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
+    if (length() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = _isEqual(getString(), other) == false;
+        result = _isEqual(as_string(), other) == false;
     }
 
     return result;
@@ -242,9 +242,9 @@ bool WideString::operator != (const char* other) const
 bool WideString::operator != (const std::string& other) const
 {
     bool result = true;
-    if (getLength() == static_cast<NEString::CharCount>(other.length()))
+    if (length() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = _isEqual(getString(), other.c_str()) == false;
+        result = _isEqual(as_string(), other.c_str()) == false;
     }
 
     return result;
@@ -253,9 +253,9 @@ bool WideString::operator != (const std::string& other) const
 bool WideString::operator != (const String& other) const
 {
     bool result = true;
-    if (getLength() == other.getLength())
+    if (length() == other.length())
     {
-        result = _isEqual(getString(), other.getString()) == false;
+        result = _isEqual(as_string(), other.as_string()) == false;
     }
 
     return result;
@@ -263,11 +263,11 @@ bool WideString::operator != (const String& other) const
 
 WideString & WideString::operator += (const String & src)
 {
-    append(src.getString(), src.getLength());
+    append(src.as_string(), src.length());
     return (*this);
 }
 
-WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next /*= nullptr*/)
+WideString WideString::substr(const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next /*= nullptr*/)
 {
     WideString result;
     if ( out_next != nullptr )
@@ -275,19 +275,19 @@ WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhra
         *out_next = nullptr;
     }
 
-    if (NEString::isEmpty<wchar_t>(src) == false)
+    if (NEString::is_empty<wchar_t>(src) == false)
     {
-        NEString::CharPos pos = NEString::findFirst<wchar_t>(strPhrase, src, NEString::START_POS, true, out_next);
-        result.assign(src, NEString::isPositionValid(pos) ? pos : NEString::COUNT_ALL);
+        NEString::CharPos pos = NEString::find_first<wchar_t>(strPhrase, src, NEString::START_POS, true, out_next);
+        result.assign(src, NEString::is_position_valid(pos) ? pos : NEString::COUNT_ALL);
     }
 
     return result;
 }
 
-int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
+int32_t WideString::make_int32( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
-    int32_t result  = static_cast<int32_t>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int32_t>(radix) ) : 0);
+    int32_t result  = static_cast<int32_t>(NEString::is_empty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int32_t>(radix) ) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -296,10 +296,10 @@ int32_t WideString::makeInt32( const wchar_t * strDigit, NEString::Radix radix /
     return result;
 }
 
-uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
+uint32_t WideString::make_uint32( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
-    uint32_t result = static_cast<uint32_t>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoul(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
+    uint32_t result = static_cast<uint32_t>(NEString::is_empty<wchar_t>(strDigit) == false ? wcstoul(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -308,10 +308,10 @@ uint32_t WideString::makeUInt32( const wchar_t * strDigit, NEString::Radix radix
     return result;
 }
 
-int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
+int64_t WideString::make_int64( const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
-    int64_t result = static_cast<int64_t>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
+    int64_t result = static_cast<int64_t>(NEString::is_empty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -320,10 +320,10 @@ int64_t WideString::makeInt64( const wchar_t * strDigit, NEString::Radix radix /
     return result;
 }
 
-uint64_t WideString::makeUInt64(const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/)
+uint64_t WideString::make_uint64(const wchar_t * strDigit, NEString::Radix radix /*= NEString::Decimal*/, const wchar_t ** end /*= nullptr*/)
 {
     wchar_t * temp = nullptr;
-    uint64_t result = static_cast<uint64_t>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstoull(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
+    uint64_t result = static_cast<uint64_t>(NEString::is_empty<wchar_t>(strDigit) == false ? wcstoull(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -332,10 +332,10 @@ uint64_t WideString::makeUInt64(const wchar_t * strDigit, NEString::Radix radix 
     return result;
 }
 
-float WideString::makeFloat(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
+float WideString::make_float(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
-    float result = static_cast<float>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstof(strDigit, &temp) : 0);
+    float result = static_cast<float>(NEString::is_empty<wchar_t>(strDigit) == false ? wcstof(strDigit, &temp) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -344,10 +344,10 @@ float WideString::makeFloat(const wchar_t * strDigit, const wchar_t ** end /*= n
     return result;
 }
 
-double WideString::makeDouble(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
+double WideString::make_double(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
 {
     wchar_t * temp = nullptr;
-    double result = static_cast<double>(NEString::isEmpty<wchar_t>(strDigit) == false ? wcstod(strDigit, &temp) : 0);
+    double result = static_cast<double>(NEString::is_empty<wchar_t>(strDigit) == false ? wcstod(strDigit, &temp) : 0);
     if (end != nullptr)
     {
         *end = temp != nullptr ? temp : strDigit;
@@ -356,18 +356,18 @@ double WideString::makeDouble(const wchar_t * strDigit, const wchar_t ** end /*=
     return result;
 }
 
-bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= nullptr*/ )
+bool WideString::make_bool( const wchar_t * strBoolean, const wchar_t ** end /*= nullptr*/ )
 {
     bool result = false;
     int32_t lenSkip = 0;
     int32_t lenTrue = static_cast<int32_t>(NECommon::BOOLEAN_TRUE.length());
     int32_t lenFalse= static_cast<int32_t>(NECommon::BOOLEAN_FALSE.length());
-    if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::Ordering::Equal)
+    if ( NEString::compare_strings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_TRUE.data(), lenTrue, false) == NEMath::Ordering::Equal)
     {
         result = true;
         lenSkip= lenTrue;
     }
-    else if ( NEString::compareStrings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::Ordering::Equal)
+    else if ( NEString::compare_strings<wchar_t, char>(strBoolean, NECommon::BOOLEAN_FALSE.data(), lenFalse, false) == NEMath::Ordering::Equal)
     {
         result = false;
         lenSkip= lenFalse;
@@ -381,7 +381,7 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
     return result;
 }
 
-WideString WideString::makeString(int32_t number, NEString::Radix radix /*= NEString::Decimal */)
+WideString WideString::make_string(int32_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
@@ -415,7 +415,7 @@ WideString WideString::makeString(int32_t number, NEString::Radix radix /*= NESt
     return result;
 }
 
-WideString WideString::makeString(uint32_t number, NEString::Radix radix /*= NEString::Decimal */)
+WideString WideString::make_string(uint32_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
@@ -443,7 +443,7 @@ WideString WideString::makeString(uint32_t number, NEString::Radix radix /*= NES
     return result;
 }
 
-WideString WideString::makeString(int64_t number, NEString::Radix radix /*= NEString::Decimal */)
+WideString WideString::make_string(int64_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
@@ -477,7 +477,7 @@ WideString WideString::makeString(int64_t number, NEString::Radix radix /*= NESt
     return result;
 }
 
-WideString WideString::makeString(uint64_t number, NEString::Radix radix /*= NEString::Decimal */)
+WideString WideString::make_string(uint64_t number, NEString::Radix radix /*= NEString::Decimal */)
 {
     WideString result;
 
@@ -505,26 +505,26 @@ WideString WideString::makeString(uint64_t number, NEString::Radix radix /*= NES
     return result;
 }
 
-WideString WideString::makeString(float number)
+WideString WideString::make_string(float number)
 {
     WideString result;
     _formatDigit<double>( result, L"%f", static_cast<double>(number) );
     return result;
 }
 
-WideString WideString::makeString(double number)
+WideString WideString::make_string(double number)
 {
     WideString result;
     _formatDigit<double>( result, L"%g", number );
     return result;
 }
 
-WideString WideString::makeString( bool value )
+WideString WideString::make_string( bool value )
 {
     return WideString(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
 }
 
-int32_t WideString::formatString( wchar_t * strDst, int32_t count, const wchar_t * format, ... )
+int32_t WideString::format_string( wchar_t * strDst, int32_t count, const wchar_t * format, ... )
 {
     va_list argptr;
     va_start( argptr, format );
@@ -533,7 +533,7 @@ int32_t WideString::formatString( wchar_t * strDst, int32_t count, const wchar_t
     return result;
 }
 
-int32_t WideString::formatStringList( wchar_t * strDst, int32_t count, const wchar_t * format, va_list argptr )
+int32_t WideString::format_string_list( wchar_t * strDst, int32_t count, const wchar_t * format, va_list argptr )
 {
     return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
 }
@@ -543,19 +543,19 @@ WideString & WideString::format(const wchar_t * format, ...)
     va_list argptr;
     va_start(argptr, format);
 
-    formatList(format, argptr);
+    format_list(format, argptr);
     
     va_end(argptr);
 
     return (*this);
 }
 
-WideString & WideString::formatList(const wchar_t * format, va_list argptr)
+WideString & WideString::format_list(const wchar_t * format, va_list argptr)
 {
     clear();
     if (format != nullptr)
     {
-        int32_t count = NEString::requiredBufferSize(format, argptr);
+        int32_t count = NEString::required_buffer_size(format, argptr);
 
         switch ( count )
         {
@@ -588,7 +588,7 @@ WideString& WideString::assign(const char* source, NEString::CharCount count /*=
 {
     mData.clear();
 
-    if (NEString::isEmpty<char>(source) == false)
+    if (NEString::is_empty<char>(source) == false)
     {
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
         mData.resize(static_cast<uint32_t>(count));
@@ -606,7 +606,7 @@ WideString& WideString::assign(const char* source, NEString::CharCount count /*=
 
 WideString& WideString::append(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
 {
-    if (NEString::isEmpty<char>(source) == false)
+    if (NEString::is_empty<char>(source) == false)
     {
         uint32_t len = static_cast<uint32_t>(mData.length());
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
@@ -624,12 +624,12 @@ WideString& WideString::append(const char* source, NEString::CharCount count /*=
     return (*this);
 }
 
-void WideString::readStream(const InStream& stream)
+void WideString::read_stream(const InStream& stream)
 {
     stream.read(*this);
 }
 
-void WideString::writeStream(OutStream& stream) const
+void WideString::write_stream(OutStream& stream) const
 {
     stream.write(*this);
 }

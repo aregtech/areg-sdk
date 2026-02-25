@@ -52,7 +52,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     static_cast<void>(envp);
     int32_t result{ ServiceApplicationBase::RESULT_FAILED_RUN };
     char ** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
-    LogCollector& logger = LogCollector::getInstance();
+    LogCollector& logger = LogCollector::instance();
     logger.parseOptions(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
     result = logger.serviceMain(logger.getCurrentOption(), nullptr);
     NESystemService::deleteArguments(argvTemp, argc);
@@ -62,7 +62,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #else   // _MINGW
 int main(int argc, char* argv[], char* envp[])
 {
-    LogCollector& logger = LogCollector::getInstance();
+    LogCollector& logger = LogCollector::instance();
     logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
     return logger.serviceMain(logger.getCurrentOption(), nullptr);
 }
@@ -72,12 +72,12 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-        LogCollector& logger = LogCollector::getInstance();
-        logger.setState(NESystemService::ServicePhase::Starting);
+        LogCollector& logger = LogCollector::instance();
+        logger.set_state(NESystemService::ServicePhase::Starting);
         char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
         logger.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
         NESystemService::deleteArguments(argvTemp, static_cast<int32_t>(argc));
-        logger.setState(NESystemService::ServicePhase::Stopped);
+        logger.set_state(NESystemService::ServicePhase::Stopped);
     }
     catch (const std::exception& /*ex*/)
     {
@@ -90,19 +90,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch (CtrlCode)
     {
     case SERVICE_CONTROL_STOP:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
+        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServicePause);
+        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
+        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        LogCollector::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
+        LogCollector::instance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

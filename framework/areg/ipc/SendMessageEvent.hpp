@@ -28,10 +28,7 @@
 // SendMessageEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The data to set when sending remote message.
- *          Is used when sending message to remote process to dispatch and handle message.
- *          The remote message with data is created and set before sending message.
- *          The object is used when passing event to message sending threat for further processing.
+ * \brief   Wraps remote message data with command instruction for message sender thread.
  **/
 class AREG_API SendMessageEventData
 {
@@ -51,28 +48,28 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates a message with instruction to stop sending message and exit thread.
+     * \brief   Creates message with exit thread instruction.
      **/
     inline SendMessageEventData();
 
     /**
-     * \brief   Sets the remote message buffer with the instruction to forward message
-     *          to the target for further processing.
-     * \param   remoteMessage   The remote message object to initialize.
-     *                          The message should already contain information and instructions
-     *                          for remote process.
+     * \brief   Initializes with remote message and forward instruction.
+     *
+     * \param   remoteMessage       Remote message to initialize.
      **/
     inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
     /**
-     * \brief   Copies remote message data from given source.
-     * \param   source  The source, which contains remote message.
+     * \brief   Copies remote message data from source.
+     *
+     * \param   source      Source containing remote message.
      **/
     inline SendMessageEventData( const SendMessageEventData & source );
 
     /**
-     * \brief   Moves remote message data from given source.
-     * \param   source  The source, which contains remote message.
+     * \brief   Moves remote message data from source.
+     *
+     * \param   source      Source containing remote message.
      **/
     inline SendMessageEventData( SendMessageEventData && source ) noexcept;
 
@@ -86,36 +83,38 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Empties existing message buffer and copies remote message data from given source.
-     * \param   source  The source, which contains remote message.
+     * \brief   Copies remote message data from source, clearing existing buffer.
+     *
+     * \param   source      Source containing remote message.
      **/
     inline SendMessageEventData & operator = ( const SendMessageEventData & source );
 
     /**
-     * \brief   Empties existing message buffer and moves remote message data from given source.
-     * \param   source  The source, which contains remote message.
+     * \brief   Moves remote message data from source, clearing existing buffer.
+     *
+     * \param   source      Source containing remote message.
      **/
     inline SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
 
     /**
-     * \brief   Returns instance of remote message.
+     * \brief   Returns the remote message instance.
      **/
-    inline const RemoteMessage & getRemoteMessage() const;
+    inline const RemoteMessage & remote_message() const;
 
     /**
-     * \brief   Returns the command instruction to handle messages.
+     * \brief   Returns the command instruction.
      **/
-    inline SendMessageEventData::SendCommand getCommand() const;
+    inline SendMessageEventData::SendCommand command() const;
 
     /**
-     * \brief   Returns true if message is with instruction to forward the message.
+     * \brief   Returns true if message has forward instruction.
      **/
-    inline bool isForwardMessage() const;
+    inline bool is_forward_message() const;
 
     /**
-     * \brief   Returns true if message is with instruction to quit the thread.
+     * \brief   Returns true if message has exit thread instruction.
      **/
-    inline bool isExitThreadMessage() const;
+    inline bool is_exit_message() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -180,22 +179,22 @@ inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventD
     return (*this);
 }
 
-inline const RemoteMessage & SendMessageEventData::getRemoteMessage() const
+inline const RemoteMessage & SendMessageEventData::remote_message() const
 {
     return mRemoteMessage;
 }
 
-inline SendMessageEventData::SendCommand SendMessageEventData::getCommand() const
+inline SendMessageEventData::SendCommand SendMessageEventData::command() const
 {
     return mCmdSendMessage;
 }
 
-inline bool SendMessageEventData::isForwardMessage() const
+inline bool SendMessageEventData::is_forward_message() const
 {
     return (mCmdSendMessage == SendCommand::ForwardMessage);
 }
 
-inline bool SendMessageEventData::isExitThreadMessage() const
+inline bool SendMessageEventData::is_exit_message() const
 {
     return (mCmdSendMessage == SendCommand::ExitThread);
 }

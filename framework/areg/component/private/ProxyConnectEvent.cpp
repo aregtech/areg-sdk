@@ -52,17 +52,17 @@ ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
      stream >> mConnectionStatus;
 }
 
-const InStream & ProxyConnectEvent::readStream(const InStream & stream)
+const InStream & ProxyConnectEvent::read_stream(const InStream & stream)
 {
-    ServiceResponseEvent::readStream(stream);
+    ServiceResponseEvent::read_stream(stream);
     stream >> mStubAddress;
     stream >> mConnectionStatus;
     return stream;
 }
 
-OutStream & ProxyConnectEvent::writeStream(OutStream & stream) const
+OutStream & ProxyConnectEvent::write_stream(OutStream & stream) const
 {
-    ServiceResponseEvent::writeStream(stream);
+    ServiceResponseEvent::write_stream(stream);
     stream << mStubAddress;
     stream << mConnectionStatus;
     return stream;

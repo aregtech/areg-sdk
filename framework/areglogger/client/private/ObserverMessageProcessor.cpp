@@ -40,7 +40,7 @@ void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgR
 {
     ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
     NEService::ServiceConnectionState connection{ NEService::ServiceConnectionState::Unknown };
-    msgReceived.moveToBegin();
+    msgReceived.move_to_begin();
     msgReceived >> cookie;
     msgReceived >> connection;
 
@@ -49,33 +49,33 @@ void ObserverMessageProcessor::notifyServiceConnection(const RemoteMessage& msgR
     switch (connection)
     {
     case NEService::ServiceConnectionState::Connected:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer connected to log collector service.");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "Log observer connected to log collector service.");
         break;
     case NEService::ServiceConnectionState::Pending:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is pending.");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is pending.");
         break;
     case NEService::ServiceConnectionState::ConnectionLost:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is lost.");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is lost.");
         break;
     case NEService::ServiceConnectionState::Disconnected:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer disconnected from log collector service.");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "Log observer disconnected from log collector service.");
         break;
     case NEService::ServiceConnectionState::Failed:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Failed to connect to the log collector service.");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "Failed to connect to the log collector service.");
         break;
     case NEService::ServiceConnectionState::Rejected:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is rejected.");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "The connection to the log collector service is rejected.");
         break;
     case NEService::ServiceConnectionState::Shutdown:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "The log collector service is shutting down.");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "The log collector service is shutting down.");
         break;
     case NEService::ServiceConnectionState::Unknown:
     default:
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Undefined log collector service connection event...");
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "Undefined log collector service connection event...");
         break;
     }
 
-    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, cookie);
+    RemoteMessage msgLog = NELogging::create_log_message(log, NELogging::LogDataType::Local, cookie);
     notifyLogMessage(msgLog);
 }
 
@@ -102,16 +102,16 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
 void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgReceived)
 {
     FuncLogRegisterScopes callback{ nullptr };
-    ITEM_ID cookie{ msgReceived.getSource() };
+    ITEM_ID cookie{ msgReceived.source() };
     ScopeInfo* scopes{ nullptr };
     uint32_t count{ 0 };
-    DateTime now(DateTime::getNow());
+    DateTime now(DateTime::now());
 
     do
     {
         Lock lock(mLoggerClient.mLock);
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
-        mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
+        mLoggerClient.mLogDatabase.log_scopes_deactivate(cookie, now);
         msgReceived >> count;
         scopes = count != 0 ? new ScopeInfo[count] : nullptr;
         if (scopes == nullptr)
@@ -124,16 +124,16 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         {
             LogScope scope(msgReceived);
             ScopeInfo& entry{ scopes[i] };
-            entry.lsId = scope.getScopeId();
-            entry.lsPrio = scope.getPriority();
-            NEMemory::memCopy(entry.lsName, LENGTH_SCOPE, scope.getScopeName().getString(), scope.getScopeName().getLength() + 1);
-            mLoggerClient.mLogDatabase.logScopeActivate(scope.getScopeName(), scope.getScopeId(), scope.getPriority(), cookie, now);
+            entry.lsId = scope.scope_id();
+            entry.lsPrio = scope.priority();
+            NEMemory::mem_copy(entry.lsName, LENGTH_SCOPE, scope.scope_name().as_string(), scope.scope_name().length() + 1);
+            mLoggerClient.mLogDatabase.log_scope_activate(scope.scope_name(), scope.scope_id(), scope.priority(), cookie, now);
         }
 
         NELogging::LogEntry log;
         _initLocalLogMessage(log, NEService::COOKIE_LOGGER, now);
-        log.logMessageLen = String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
-        RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
+        log.logMessageLen = String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "Log observer registered %u scopes of instance %lu.", count, static_cast<uint64_t>(cookie));
+        RemoteMessage msgLog = NELogging::create_log_message(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
         notifyLogMessage(msgLog);
 
         mLoggerClient.mLogDatabase.commit(true);
@@ -158,16 +158,16 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
 void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgReceived)
 {
     FuncLogUpdateScopes callback{ nullptr };
-    ITEM_ID cookie{ msgReceived.getSource() };
+    ITEM_ID cookie{ msgReceived.source() };
     ScopeInfo* scopes{ nullptr };
     uint32_t count{ 0 };
-    DateTime now(DateTime::getNow());
+    DateTime now(DateTime::now());
 
     do
     {
         Lock lock(mLoggerClient.mLock);
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
-        mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
+        mLoggerClient.mLogDatabase.log_scopes_deactivate(cookie, now);
         msgReceived >> count;
         scopes = count != 0 ? new ScopeInfo[count] : nullptr;
         if (scopes == nullptr)
@@ -180,10 +180,10 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgRec
         {
             LogScope scope(msgReceived);
             ScopeInfo& entry{ scopes[i] };
-            entry.lsId = scope.getScopeId();
-            entry.lsPrio = scope.getPriority();
-            NEMemory::memCopy(entry.lsName, LENGTH_SCOPE, scope.getScopeName().getString(), scope.getScopeName().getLength() + 1);
-            mLoggerClient.mLogDatabase.logScopeActivate(scope.getScopeName(), scope.getScopeId(), scope.getPriority(), cookie, now);
+            entry.lsId = scope.scope_id();
+            entry.lsPrio = scope.priority();
+            NEMemory::mem_copy(entry.lsName, LENGTH_SCOPE, scope.scope_name().as_string(), scope.scope_name().length() + 1);
+            mLoggerClient.mLogDatabase.log_scope_activate(scope.scope_name(), scope.scope_id(), scope.priority(), cookie, now);
         }
 
         mLoggerClient.mLogDatabase.commit(true);
@@ -212,15 +212,15 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
     LogRecord msgLog{ };
     const uint8_t* logBuffer{ nullptr };
     uint32_t size{ 0 };
-    DateTime now{ DateTime::getNow() };
+    DateTime now{ DateTime::now() };
 
     do
     {
         Lock lock(mLoggerClient.mLock);
-        const NELogging::LogEntry* msgRemote = reinterpret_cast<const NELogging::LogEntry*>(msgReceived.getBuffer());
+        const NELogging::LogEntry* msgRemote = reinterpret_cast<const NELogging::LogEntry*>(msgReceived.buffer());
         ASSERT(msgRemote != nullptr);
         const_cast<NELogging::LogEntry*>(msgRemote)->logReceived = static_cast<TIME64>(now);
-        if (mLoggerClient.mLogDatabase.logMessage(*msgRemote) == false)
+        if (mLoggerClient.mLogDatabase.log_message(*msgRemote) == false)
         {
             // If log message is not stored, it is not processed
             break;
@@ -250,15 +250,15 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 msgLog.msgScopeId   = static_cast<uint32_t>(msgRemote->logScopeId);
                 msgLog.msgSessionId = static_cast<uint32_t>(msgRemote->logSessionId);
 
-                NEMemory::memCopy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->logMessage , msgRemote->logMessageLen + 1);
-                NEMemory::memCopy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
-                NEMemory::memCopy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen  + 1);
+                NEMemory::mem_copy(msgLog.msgLogText, LENGTH_MESSAGE , msgRemote->log_message , msgRemote->logMessageLen + 1);
+                NEMemory::mem_copy(msgLog.msgThread,  LENGTH_NAME    , msgRemote->logThread  , msgRemote->logThreadLen  + 1);
+                NEMemory::mem_copy(msgLog.msgModule,  LENGTH_NAME    , msgRemote->logModule  , msgRemote->logModuleLen  + 1);
             }
             else if (mLoggerClient.mCallbacks->evtLogMessageEx != nullptr)
             {
                 callbackEx = mLoggerClient.mCallbacks->evtLogMessageEx;
-                logBuffer = msgReceived.getBuffer();
-                size = msgReceived.getSizeUsed();
+                logBuffer = msgReceived.buffer();
+                size = msgReceived.size_used();
             }
         }
     } while (false);
@@ -280,34 +280,34 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
 
     FuncInstancesConnect callback{ nullptr };
     LogInstance* listInstances{ nullptr };
-    int32_t size{ static_cast<int32_t>(listConnected.getSize()) };
+    int32_t size{ static_cast<int32_t>(listConnected.size()) };
     if (size == 0)
         return;
 
     do
     {
         Lock lock(mLoggerClient.mLock);
-        DateTime now(DateTime::getNow());
+        DateTime now(DateTime::now());
 
         if (LogObserverBase::_theLogObserver != nullptr)
         {
             for (int i = 0; i < size; ++i)
             {
                 const NEService::ConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
-                auto added = mLoggerClient.mInstances.addIfUnique(client.ciCookie, client, false);
+                auto added = mLoggerClient.mInstances.add_if_unique(client.ciCookie, client, false);
                 if (added.second)
                 {
-                    mLoggerClient.mLogDatabase.logInstanceConnected(client, now);
+                    mLoggerClient.mLogDatabase.log_instance_connected(client, now);
 
                     NELogging::LogEntry log;
                     _initLocalLogMessage(log, NEService::COOKIE_LOGGER, now);
-                    log.logMessageLen = String::formatString( log.logMessage
+                    log.logMessageLen = String::format_string( log.log_message
                                                             , NELogging::LOG_MESSAGE_IZE
                                                             , "Log observer have got %u-bit %s (%lu) client connection event, ready to receive logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
                                                             , static_cast<uint64_t>(client.ciCookie));
-                    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
+                    RemoteMessage msgLog = NELogging::create_log_message(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
             }
@@ -322,20 +322,20 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
             for (int i = 0; i < size; ++i)
             {
                 const NEService::ConnectedInstance& client{ listConnected[static_cast<uint32_t>(i)] };
-                auto added = mLoggerClient.mInstances.addIfUnique(client.ciCookie, client, false);
+                auto added = mLoggerClient.mInstances.add_if_unique(client.ciCookie, client, false);
                 if (added.second)
                 {
-                    mLoggerClient.mLogDatabase.logInstanceConnected(client, now);
+                    mLoggerClient.mLogDatabase.log_instance_connected(client, now);
 
                     NELogging::LogEntry log;
                     _initLocalLogMessage(log, NEService::COOKIE_LOGGER, now);
-                    log.logMessageLen = String::formatString( log.logMessage
+                    log.logMessageLen = String::format_string( log.log_message
                                                             , NELogging::LOG_MESSAGE_IZE
                                                             , "Log observer have got %u-bit %s (%lu) client connection event, starts receiving logs."
                                                             , static_cast<uint32_t>(client.ciBitness)
                                                             , client.ciInstance.c_str()
                                                             , static_cast<uint64_t>(client.ciCookie));
-                    RemoteMessage msgLog = NELogging::createLogMessage(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
+                    RemoteMessage msgLog = NELogging::create_log_message(log, NELogging::LogDataType::Local, NEService::COOKIE_LOGGER);
                     notifyLogMessage(msgLog);
                 }
 
@@ -346,8 +346,8 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
                     inst.liBitness = static_cast<uint32_t>(client.ciBitness);
                     inst.liCookie = client.ciCookie;
                     inst.liTimestamp = client.ciTimestamp;
-                    NEMemory::memCopy(inst.liName    , LENGTH_NAME    , client.ciInstance.c_str(), static_cast<int32_t>(client.ciInstance.length()) + 1);
-                    NEMemory::memCopy(inst.liLocation, LENGTH_LOCATION, client.ciLocation.c_str(), static_cast<int32_t>(client.ciLocation.length()) + 1);
+                    NEMemory::mem_copy(inst.liName    , LENGTH_NAME    , client.ciInstance.c_str(), static_cast<int32_t>(client.ciInstance.length()) + 1);
+                    NEMemory::mem_copy(inst.liLocation, LENGTH_LOCATION, client.ciLocation.c_str(), static_cast<int32_t>(client.ciLocation.length()) + 1);
                 }
             }
 
@@ -357,7 +357,7 @@ void ObserverMessageProcessor::_clientsConnected(const RemoteMessage& msgReceive
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
+        LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.data());
     }
     else if (callback != nullptr)
     {
@@ -378,7 +378,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
     msgReceived >> listClients;
     FuncInstancesDisconnect callback{ nullptr };
     ITEM_ID* listInstances{ nullptr };
-    int32_t size{ static_cast<int32_t>(listClients.getSize()) };
+    int32_t size{ static_cast<int32_t>(listClients.size()) };
     int32_t count{ 0 };
 
     do
@@ -393,7 +393,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
 
         if (size > 0)
         {
-            DateTime now(DateTime::getNow());
+            DateTime now(DateTime::now());
             listInstances = new ITEM_ID[size];
 
             for (int i = 0; i < size; ++i)
@@ -401,11 +401,11 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
                 const ITEM_ID& client{ listClients[static_cast<uint32_t>(i)] };
                 if (mLoggerClient.mInstances.contains(client))
                 {
-                    const NEService::ConnectedInstance& instance = mLoggerClient.mInstances.getAt(client);
+                    const NEService::ConnectedInstance& instance = mLoggerClient.mInstances.at(client);
                     listDisconnected.add(instance);
-                    if (mLoggerClient.mInstances.removeAt(client))
+                    if (mLoggerClient.mInstances.remove_at(client))
                     {
-                        mLoggerClient.mLogDatabase.logInstanceDisconnected(client, now);
+                        mLoggerClient.mLogDatabase.log_instance_disconnected(client, now);
                     }
 
                     if (listInstances != nullptr)
@@ -423,7 +423,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
+        LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.data());
     }
     else if (callback != nullptr)
     {
@@ -438,9 +438,9 @@ void ObserverMessageProcessor::_clientsDisconnected(const RemoteMessage& msgRece
 
 inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::LogEntry& log, ITEM_ID cookie, TIME64 timestamp /*= 0*/) const
 {
-    Process& process = Process::getInstance();
-    String instance  = process.getName();
-    DateTime now     = DateTime::getNow();
+    Process& process = Process::instance();
+    String instance  = process.name();
+    DateTime now     = DateTime::now();
 
     log.logDataType     = NELogging::LogDataType::Local;
     log.logMsgType      = NELogging::LogMessageType::MessageText;
@@ -456,7 +456,7 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(NELogging::LogEntry& 
     log.logScopeId      = NELogging::LOG_SCOPE_ID_NONE;
     log.logSessionId    = 0u;
     log.logMessageLen   = 0u;
-    log.logMessage[0]   = String::EmptyChar;
+    log.log_message[0]   = String::EmptyChar;
     log.logThreadLen    = 0u;
     log.logThread[0]    = String::EmptyChar;
     log.logModuleLen    = 0u;

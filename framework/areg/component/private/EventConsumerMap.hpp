@@ -48,11 +48,8 @@ class EventConsumer;
 using EventConsumerListBase	= LinkedList<EventConsumer *>;
 
 /**
- * \brief   Event Consumer List is a helper class containing 
- *          Event Consumer objects. It is used in Dispatcher, when 
- *          collecting list of Consumers, which are registered 
- *          to dispatch certain Event Object.
- *          For use, see implementation of EventDispatcherBase class
+ * \brief   Helper class containing Event Consumer objects. Used in Dispatcher when collecting list
+ *          of Consumers registered to dispatch certain Event Object.
  **/
 class EventConsumerList   : public EventConsumerListBase
 {
@@ -61,16 +58,18 @@ class EventConsumerList   : public EventConsumerListBase
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default Constructor. Initializes empty list
+     * \brief   Initializes empty list.
      **/
     EventConsumerList() = default;
     /**
-     * \brief   Copy constructor.
+     * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     EventConsumerList(const EventConsumerList & src) = default;
     /**
-     * \brief   Move constructor.
+     * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     EventConsumerList( EventConsumerList && src ) noexcept = default;
@@ -85,66 +84,68 @@ public:
 public:
     /**
      * \brief   Assigns entries from given source.
-     * \param   src     THe source of event consumer list.
-     */
+     *
+     * \param   src     The source of event consumer list.
+     **/
     inline EventConsumerList & operator = (const EventConsumerList & src ) = default;
 
     /**
      * \brief   Assigns entries from given source.
-     * \param   src     THe source of event consumer list.
-     */
+     *
+     * \param   src     The source of event consumer list.
+     **/
     inline EventConsumerList & operator = ( EventConsumerList && src ) noexcept = default;
 
     /**
-     * \brief   Adds Event Consumer object to the list. Returns true, 
-     *          if Event Consumer object is added to the list. The function does not 
-     *          check whether the Event Consumer already exists in the list or not.
-     *          To check whether there is already Event Consumer in the list
-     *          call existConsumer() method.
-     * \param   whichConsumer   The Event Consumer object to add to the list.
+     * \brief   Adds Event Consumer object to the list. Returns true if successfully added. Does not
+     *          check for duplicates; use exist() to verify.
+     *
+     * \param   whichConsumer       The Event Consumer object to add to the list.
      * \return  Returns true if Event Consumer is added to the list.
      **/
-    bool addConsumer( EventConsumer & whichConsumer );
+    bool add_consumer( EventConsumer & whichConsumer );
 
     /**
-     * \brief   Removes Event Consumer object from the List. The function will 
-     *          search for the Event Consumer object by pointer and remove 
-     *          the first match. The function does not check whether there is still 
-     *          same Event Consumer exist in the list or not.
-     *          To check whether there is already Event Consumer in the list
-     *          call existConsumer() method.
-     * \param   whichConsumer   The Event Consumer object to remove from the list.
+     * \brief   Removes Event Consumer object from the list. Searches by pointer and removes the
+     *          first match. Does not check for further occurrences; use exist() to verify.
+     *
+     * \param   whichConsumer       The Event Consumer object to remove from the list.
      * \return  Returns true if Event Consumer was removed from the list.
      **/
-    bool removeConsumer( EventConsumer & whichConsumer );
+    bool remove_consumer( EventConsumer & whichConsumer );
 
     /**
      * \brief   Removes all Event Consumers from the list.
      **/
-    void removeAllConsumers();
+    void remove_all_consumers();
 
     /**
-     * \brief   Returns true, if the specified Event Consumer already exists in the list.
-     *          The lookup will be done by pointer address value.
-     * \param   whichConsumer   The Event Consumer object to search.
-     * \return  Returns true, if the specified Event Consumer already exists in the list.
+     * \brief   Returns true if the specified Event Consumer exists in the list. Lookup is done by
+     *          pointer address value.
+     *
+     * \param   whichConsumer       The Event Consumer object to search.
+     * \return  Returns true if the specified Event Consumer already exists in the list.
      **/
-    inline bool existConsumer( EventConsumer & whichConsumer ) const;
+    inline bool exist( EventConsumer & whichConsumer ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
+/**
+ * \brief   Helper class for managing maps of event consumer lists.
+ **/
 class ImplEventConsumerMap	: public ResourceMapImpl<RuntimeClassID, EventConsumerList *>
 {
 public:
     /**
-     * \brief	Called when all resources are removed.
-     * \param	Key	        The Key value of resource
-     * \param	Resource	Pointer to resource object
+     * \brief   Called when all resources are removed from the map.
+     *
+     * \param   Key         The key associated with the resource being removed.
+     * \param   Resource    The event consumer list to clean.
      **/
-    void implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource );
+    void impl_clean_resource( RuntimeClassID & Key, EventConsumerList * Resource );
 };
 /**
  * \brief   Event Consumer Map is a helper class containing 
@@ -163,7 +164,7 @@ using EventConsumerMap  = ConcurrentRuntimeResourceMap<EventConsumerList *, Impl
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool EventConsumerList::existConsumer( EventConsumer & whichConsumer ) const
+inline bool EventConsumerList::exist( EventConsumer & whichConsumer ) const
 {
     return EventConsumerListBase::contains( &whichConsumer);
 }

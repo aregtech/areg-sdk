@@ -69,6 +69,9 @@
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
+/**
+ * \brief   Hash map template with integer keys.
+ **/
 class IntegerHashMap  : public HashMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -76,27 +79,28 @@ class IntegerHashMap  : public HashMap<uint32_t, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates an empty Hash Map object where the keys are integers and
-     *          Hash Table size is MAP_DEFAULT_HASH_SIZE
+     * \brief   Creates an empty hash map with default table size.
      **/
     IntegerHashMap() = default;
 
     /**
-     * \brief	Creates Hash Map object where the keys are integers.
-     * \param	hashSize	The size of blocks in hash map to create at once.
-     *                      It cannot be more than MAP_MAX_BLOCK_SIZE
+     * \brief   Creates a hash map with the specified table size.
+     *
+     * \param   hashSize    The initial size of the hash table.
      **/
     IntegerHashMap( uint32_t hashSize );
 
     /**
-     * \brief   Copies hash-map data from given sources.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source to copy.
      **/
     IntegerHashMap( const IntegerHashMap<VALUE> & src ) = default;
 
     /**
-     * \brief   Copies hash-map data from given sources.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source to move.
      **/
     IntegerHashMap( IntegerHashMap<VALUE> && src ) noexcept = default;
 
@@ -117,6 +121,9 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
+/**
+ * \brief   Hash map template with uint32_t ID keys for resource tracking and management.
+ **/
 class IdHashMap: public HashMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -124,27 +131,28 @@ class IdHashMap: public HashMap<id_type, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Creates Hash Map where keys are Item IDs.
-     * \param	hashSize	The size of has map table.
-     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
+     * \brief   Creates a hash map with the specified table size (max MAP_MAX_TABLE_SIZE = 1024).
+     *
+     * \param   hashSize    The size of the hash map table.
      **/
     IdHashMap(uint32_t hashSize);
 
     /**
-     * \brief   Creates an empty Hash Map object where the keys are Item IDs and
-     *          Hash Table size is MAP_DEFAULT_HASH_SIZE
+     * \brief   Creates an empty hash map with default table size.
      **/
     IdHashMap() = default;
 
     /**
-     * \brief   Copies hash map data from given source.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source to copy.
      **/
     IdHashMap( const IdHashMap<VALUE> & src ) = default;
 
     /**
-     * \brief   Moves hash map data from given source.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source to move.
      **/
     IdHashMap( IdHashMap<VALUE> && src ) noexcept = default;
 
@@ -162,6 +170,9 @@ public:
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
+/**
+ * \brief   Hash map template with string keys.
+ **/
 class StringHashMap: public HashMap<String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -169,27 +180,28 @@ class StringHashMap: public HashMap<String, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Creates Hash Map where keys are strings.
-     * \param	hashSize	The size of has map table.
-     *                      It cannot be more than MAP_MAX_TABLE_SIZE.
+     * \brief   Creates a hash map with the specified table size.
+     *
+     * \param   hashSize    The size of the hash map table (max MAP_MAX_TABLE_SIZE).
      **/
     StringHashMap(uint32_t hashSize);
 
     /**
-     * \brief   Creates an empty Hash Map where keys are strings and
-     *          Hash Table size is MAP_DEFAULT_HASH_SIZE.
+     * \brief   Creates an empty hash map with default table size.
      **/
     StringHashMap() = default;
 
     /**
-     * \brief   Copies hash-map values from given source.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source to copy.
      **/
     StringHashMap( const StringHashMap<VALUE> & src ) = default;
 
     /**
-     * \brief   Moves hash-map values from given source.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source to move.
      **/
     StringHashMap( StringHashMap<VALUE> && src ) noexcept = default;
 
@@ -208,6 +220,9 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
+/**
+ * \brief   Hash map template with pointer keys.
+ **/
 class PtrHashMap: public HashMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -215,26 +230,28 @@ class PtrHashMap: public HashMap<void *, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Creates Hash Map where keys are pointers.
-     * \param	hashSize	The size of has map table.
-     *                      It cannot be more than MAP_MAX_TABLE_SIZE (1024)
+     * \brief   Creates a hash map with the specified table size (max MAP_MAX_TABLE_SIZE = 1024).
+     *
+     * \param   hashSize    The size of the hash map table.
      **/
     PtrHashMap(uint32_t hashSize);
 
     /**
-     * \brief   Creates Hash Map where keys are pointers.
+     * \brief   Creates an empty hash map with default table size.
      **/
     PtrHashMap() = default;
 
     /**
-     * \brief   Copies hash map entries from given source.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source to copy.
      **/
     PtrHashMap( const PtrHashMap<VALUE> & src ) = default;
 
     /**
-     * \brief   Moves hash map entries from given source.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source to move.
      **/
     PtrHashMap( PtrHashMap<VALUE> && src ) noexcept = default;
 
@@ -253,6 +270,9 @@ public:
  * \tparam  VALUE       The type of value to store in map
  **/
 template <typename VALUE>
+/**
+ * \brief   Sorted map template with integer keys.
+ **/
 class IntegerMap : public OrderedMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -260,19 +280,22 @@ class IntegerMap : public OrderedMap<uint32_t, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates an empty.
+     * \brief
      **/
     IntegerMap() = default;
 
     /**
-     * \brief   Copies hash-map data from given sources.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source map to copy.
      **/
     IntegerMap(const IntegerMap<VALUE>& src) = default;
 
     /**
-     * \brief   Copies hash-map data from given sources.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source map to move.
+     * \note    Move constructor.
      **/
     IntegerMap(IntegerMap<VALUE>&& src) noexcept = default;
 
@@ -293,6 +316,10 @@ public:
   * \tparam  VALUE       The type of value to store in map
 **/
 template <typename VALUE>
+/**
+ * \brief   Sorted map template for storing values associated with Item IDs, used for resource
+ *          management.
+ **/
 class IdMap : public OrderedMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -300,19 +327,22 @@ class IdMap : public OrderedMap<id_type, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates an empty sorted map where the keys are Item IDs.
+     * \brief
      **/
     IdMap() = default;
 
     /**
-     * \brief   Copies hash map data from given source.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source map to copy.
      **/
     IdMap(const IdMap<VALUE>& src) = default;
 
     /**
-     * \brief   Moves hash map data from given source.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source map to move.
+     * \note    Move constructor.
      **/
     IdMap(IdMap<VALUE>&& src) noexcept = default;
 
@@ -330,6 +360,9 @@ public:
  * \tparam  VALUE       The type of value to store in the map.
  **/
 template <typename VALUE>
+/**
+ * \brief   Sorted map template with string keys.
+ **/
 class StringMap : public OrderedMap<String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -337,19 +370,22 @@ class StringMap : public OrderedMap<String, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates an empty sorted map where keys are strings.
+     * \brief
      **/
     StringMap() = default;
 
     /**
-     * \brief   Copies map values from given source.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source map to copy.
      **/
     StringMap(const StringMap<VALUE>& src) = default;
 
     /**
-     * \brief   Moves map values from given source.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source map to move.
+     * \note    Move constructor.
      **/
     StringMap(StringMap<VALUE>&& src) noexcept = default;
 
@@ -364,6 +400,9 @@ public:
  * \tparam  VALUE       The type of value to store in map.
  **/
 template <typename VALUE>
+/**
+ * \brief   Sorted map template with pointer keys.
+ **/
 class PtrMap: public OrderedMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -371,19 +410,22 @@ class PtrMap: public OrderedMap<void *, VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Creates an empty Sorted Map where keys are pointers.
+     * \brief
      **/
     PtrMap() = default;
 
     /**
-     * \brief   Copies map entries from given source.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source map to copy.
      **/
     PtrMap( const PtrMap<VALUE> & src ) = default;
 
     /**
-     * \brief   Moves map entries from given source.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source map to move.
+     * \note    Move constructor.
      **/
     PtrMap( PtrMap<VALUE> && src ) noexcept = default;
 
@@ -521,7 +563,7 @@ using SortedStringList  = SortedLinkedList<String>;
 // Tokenizer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Class to tokenize a String.
+ * \brief   Tokenizes a string by splitting it on delimiter characters.
  **/
 class AREG_API Tokenizer
 {
@@ -530,28 +572,31 @@ class AREG_API Tokenizer
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates an empty array of string tokens.
+     * \brief   Creates an empty token array.
      **/
     Tokenizer() = default;
     
     /**
-     * \brief   Gets the string and tokenize according delimiters.
-     * \param   str         the String to tokenize
-     * \param   delimiters  one or more delimiter chars that define token boundaries
-     * \param   keepEmpty   if true, two delimiters next to each other specify an empty token
-     *                      if false, the result will only contain nonempty tokens
+     * \brief   Tokenizes the string using the specified delimiters.
+     *
+     * \param   str             The string to tokenize.
+     * \param   delimiters      One or more delimiter characters that define token boundaries.
+     * \param   keepEmpty       If true, consecutive delimiters create empty tokens; if false, only
+     *                          non-empty tokens are included.
      **/
     Tokenizer( const String & str, const String & delimiters, bool keepEmpty = true);
 
     /**
-     * \brief   Copies entries from given source.
-     * \param   src     The source to copy data.
+     * \brief
+     *
+     * \param   src     The source to copy.
      **/
     Tokenizer( const Tokenizer & src );
 
     /**
-     * \brief   Moves entries from given source.
-     * \param   src     The source to move data.
+     * \brief
+     *
+     * \param   src     The source to move.
      **/
     Tokenizer( Tokenizer && src ) noexcept;
 
@@ -563,19 +608,20 @@ public:
 // Operations
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Tokenize string. After operation, the array is filled by string separated by delimiters.
-     * \param   str         the String to tokenize
-     * \param   delimiters  one or more delimiter chars that define token boundaries
-     * \param   keepEmpty   If true, two delimiters next to each other specify an empty token.
-     *                      If false, the result will only contain nonempty tokens.
-     * \return  Returns list of string split by matching delimiter
+     * \brief   Tokenizes the string and populates the array with the resulting tokens.
+     *
+     * \param   str             The string to tokenize.
+     * \param   delimiters      One or more delimiter characters.
+     * \param   keepEmpty       If true, consecutive delimiters create empty tokens; if false, only
+     *                          non-empty tokens are included.
+     * \return  Returns the array of resulting tokens.
      **/
     const StringArray & tokenize( const String & str, const String & delimiters, bool keepEmpty = true);
 
     /**
-     * \brief   Returns list of string split by matching delimiter.
+     * \brief   Returns the array of tokens from the most recent tokenization.
      **/
-    inline const StringArray& getList() const;
+    inline const StringArray& list() const;
 
 private:
 
@@ -639,7 +685,7 @@ PtrHashMap<VALUE>::PtrHashMap( uint32_t hashSize )
 // Tokenizer class inline implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StringArray& Tokenizer::getList() const
+inline const StringArray& Tokenizer::list() const
 {
     return mTokens;
 }

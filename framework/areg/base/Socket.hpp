@@ -44,6 +44,11 @@ class RemoteMessage;
 //////////////////////////////////////////////////////////////////////////
 // Socket class declaration
 //////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Base class for client, server, and accepted socket connections. The object cannot be
+ *          directly instantiated; instantiate a child class instead. Supports TCP/IP connections
+ *          only.
+ **/
 class AREG_API Socket
 {
 //////////////////////////////////////////////////////////////////////////////
@@ -52,28 +57,30 @@ class AREG_API Socket
 protected:
 
     /**
-     * \brief   Default constructor. Creates instance of object
-     *          with invalid socket object. Before sending
-     *          or receiving data, the socket should be created.
+     * \brief   Default constructor. Creates instance with invalid socket. Before sending or
+     *          receiving data, the socket must be created.
      **/
     Socket();
 
     /**
-     * \brief   Initialization constructor. Sets socket descriptor and socket address
+     * \brief   Initializes the object with socket descriptor and socket address.
+     *
      * \param   hSocket         Socket descriptor to set
      * \param   sockAddress     Socket address to set
      **/
     Socket( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress );
 
     /**
-     * \brief   Copy constructor.
-     * \param   source  The source to copy data.
+     * \brief   Copy constructor. Copies the socket state from source.
+     *
+     * \param   source      The source to copy data.
      **/
     Socket( const Socket & source );
 
     /**
-     * \brief   Move constructor.
-     * \param   source  The source to copy data.
+     * \brief   Move constructor. Moves the socket state from source.
+     *
+     * \param   source      The source to move data.
      **/
     Socket( Socket && source ) noexcept;
 
@@ -84,14 +91,16 @@ protected:
     virtual ~Socket();
 
     /**
-     *  \brief	Assigns socket data taken from given source.
-     *  \param	src		The source of socket data.
+     * \brief   Copy assignment operator. Assigns socket data from given source.
+     *
+     * \param   src     The source of socket data.
      **/
     Socket & operator = ( const Socket & src );
 
     /**
-     *  \brief	Moves socket data taken from given source.
-     *  \param	src		The source of socket data.
+     * \brief   Move assignment operator. Moves socket data from given source.
+     *
+     * \param   src     The source of socket data.
      **/
     Socket & operator = ( Socket && src ) noexcept;
 
@@ -104,197 +113,173 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   For client sockets, this method is creating new socket descriptor
-     *          and connects to specified remote host and port number.
-     *          For server sockets, this method is creating new socket descriptor
-     *          and bind socket to specified host name and port number.
-     *          The method should not do anything for accepted sockets.
-     *          If object had before valid socket descriptor, it will be first closed,
-     *          then create new.
-     *
-     *          The method should be overwritten by child classes.
+     * \brief   Creates socket descriptor and connects (client) or binds (server) to specified host
+     *          and port. Closes existing socket first if valid.
      *
      * \param   hostName    The name of host to connect or bind.
      * \param   portNr      The valid port number to connect or bind.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket( const char * hostName, uint16_t portNr ) = 0;
+    virtual bool create_socket( const char * hostName, uint16_t portNr ) = 0;
 
     /**
-     * \brief   For client sockets, this method is creating new socket descriptor
-     *          and connects to host and port number. Both, remote host address
-     *          and port number should be already set.
-     *          For server sockets, this method is creating new socket descriptor
-     *          and bind socket to specified host name and port number. 
-     *          Both, socket IP-address and port number should be already set.
-     *          The method should not do anything for accepted sockets.
-     *          If object had before valid socket descriptor, it will be first closed,
-     *          then create new.
-     *
-     *          The method should be overwritten by child classes.
+     * \brief   Creates socket descriptor and connects (client) or binds (server) using pre-set
+     *          address and port. Closes existing socket first if valid.
      *
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool createSocket() = 0;
+    virtual bool create_socket() = 0;
 
     /**
-     * \brief   Closes existing socket.
-     *          Note:   The call will invalidate socket of object, but the socket 
-     *                  will be closed only if reference count to existing valid 
-     *                  socket reaches zero.
+     * \brief   Closes existing socket. Note: The socket is closed only when reference count reaches
+     *          zero.
      **/
-    virtual void closeSocket();
+    virtual void close_socket();
 
     /**
-     * \brief   If socket is valid, sends data using existing socket connection and returns
-     *          number sent of bytes. And returns negative number if either socket is invalid,
-     *          or failed to send data to remote host.
-     *          Note:   The call is blocking and method will not return until all data are not sent
-     *                  or if data sending fails.
-     * \param   buffer  The buffer of data to send to remote target.
-     * \param   length  The length in bytes of data in buffer to send
-     * \return  Returns number of bytes sent to remote target. 
-     *          Returns negative number if socket is not valid of failed to send.
+     * \brief   Sends data using existing socket connection. Returns number of bytes sent, or
+     *          negative on failure. Call is blocking.
+     *
+     * \param   buffer      The buffer of data to send to remote target.
+     * \param   length      The length in bytes of data in buffer to send
+     * \return  Returns number of bytes sent to remote target. Returns negative number if socket is
+     *          invalid or failed to send.
      **/
-    virtual int32_t sendData( const uint8_t * buffer, int32_t length ) const;
+    virtual int32_t send_data( const uint8_t * buffer, int32_t length ) const;
 
     /**
-     * \brief   If socket is valid, receives data using existing socket connection and returns
-     *          number of received bytes in buffer, which is equal to specified length parameter.
-     *          Returns negative number if either socket is invalid, or failed to receive data from remote host.
-     *          Note:   The call is blocking and method will not return until all data specified in length
-     *                  is not received or if receiving data fails.
-     * \param   buffer  The buffer to fill received data from remote target.
-     * \param   length  The length in bytes of allocated space in buffer.
-     * \return  Returns number of bytes received from remote target. 
-     *          Returns negative number if socket is not valid of failed to receive data.
+     * \brief   Receives data using existing socket connection. Returns number of bytes received, or
+     *          negative on failure. Call is blocking.
+     *
+     * \param[in,out] buffer      The buffer to fill with received data from remote target.
+     * \param   length      The length in bytes of allocated space in buffer.
+     * \return  Returns number of bytes received from remote target. Returns negative number if
+     *          socket is invalid or failed to receive data.
      **/
-    virtual int32_t receiveData( uint8_t * buffer, int32_t length ) const;
+    virtual int32_t receive_data( uint8_t * buffer, int32_t length ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns socket descriptor of object.
-     *          If socket was created, the value is not equal to NESocket::InvalidSocketHandle
+     * \brief   Returns socket descriptor. If socket was created, the value is not equal to
+     *          NESocket::InvalidSocketHandle.
      **/
-    inline SOCKETHANDLE getHandle() const;
+    inline SOCKETHANDLE handle() const;
 
     /**
-     * \brief   Returns true if existing socket descriptor is valid.
-     *          The function is not checking socket descriptor validation.
+     * \brief   Returns true if socket descriptor is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
-     * \brief   Checks and returns socket alive state.
+     * \brief   Returns true if socket is alive and not closed.
+     *
      * \return  Returns true if socket is alive and is not closed.
      **/
-    inline bool isAlive() const;
+    inline bool is_alive() const;
 
     /**
-     * \brief   Checks and returns number of bytes remain to read from socket buffer.
-     *          Returns negative value if socket is invalid.
+     * \brief   Returns number of bytes pending to read from socket buffer, or negative if socket is
+     *          invalid.
+     *
      * \return  Returns number of bytes available to read from socket buffer.
      **/
-    inline int32_t pendingRead() const;
+    inline int32_t pending_read() const;
 
     /**
-     * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
+     * \brief   Sets socket in read-only mode; no send is possible afterwards.
+     *
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableSend() const;
+    inline bool disable_send() const;
 
     /**
-     * \brief   Sets socket in write-only more, i.e. no receive message is possible anymore.
+     * \brief   Sets socket in write-only mode; no receive is possible afterwards.
+     *
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableReceive() const;
+    inline bool disable_receive() const;
 
     /**
-     * \brief   Return Socket Address object.
+     * \brief   Returns the socket address object.
      **/
-    inline const NESocket::SocketAddress & getAddress() const;
+    inline const NESocket::SocketAddress & address() const;
 
     /**
-     * \brief   Sets socket address. The address should be either invalid
-     *          or already resolved with IP-address.
-     * \param   newAddress  The new address to set.
+     * \brief   Sets socket address. Address should be invalid or pre-resolved with IP address.
+     *
+     * \param   newAddress      The new address to set.
      **/
-    inline void setAddress( const NESocket::SocketAddress & newAddress );
+    inline void set_address( const NESocket::SocketAddress & newAddress );
 
     /**
-     * \brief   Sets Socket Address. If hostName is not IP-address, it will 
-     *          try to resolve first then set. The isServer parameter is needed
-     *          to resolve address either for server or for client.
-     *          For accepted sockets this call plays no role, because the
-     *          the address automatically is resolved when accepting connection.
-     * \param   hostName    Host name or IP-address to set. If name is specified,
-     *                      first it will be resolved to get IP-address.
+     * \brief   Sets socket address, resolving hostname to IP if needed. For accepted sockets,
+     *          address is already resolved automatically.
+     *
+     * \param   hostName    Host name or IP-address to set. If name is specified, it will be
+     *                      resolved to IP address.
      * \param   portNr      Valid port number of socket connection.
-     * \param   isServer    Flag, indicating whether name should be resolve for
-     *                      server or for client.
+     * \param   isServer    Flag indicating whether name should be resolved for server or client.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool setAddress( const char * hostName, uint16_t portNr, bool isServer );
+    bool set_address( const char * hostName, uint16_t portNr, bool isServer );
 
     /**
-     * \brief   Returns the packet size in bytes to send data.
+     * \brief   Returns the packet size in bytes for sending data.
      **/
-    inline uint32_t getSendPacketSize() const;
+    inline uint32_t send_packet_size() const;
 
     /**
-     * \brief   Returns the packet size in bytes to receive data.
+     * \brief   Returns the packet size in bytes for receiving data.
      **/
-    inline uint32_t getRecvPacketSize() const;
+    inline uint32_t recv_packet_size() const;
 
 protected:
 /************************************************************************/
 // Socket protected overrides
 /************************************************************************/
 
-    /**
-     * \brief   Called when the lock counter reaches zero.
-     *          By default, when lock counter is zero, the system automatically closes socket.
-     *          Overwrite this method if other action should be taken.
-     * \param   hSocket     The Socket Handle to take close action.
-     *                      In the moment when it is called, the member socket handle is already invalidated.
-     **/
-	void closeSocketHandle( SOCKETHANDLE hSocket );
+ /**
+  * \brief   Called when lock counter reaches zero. By default, closes the socket. Override to
+  *          perform other actions.
+  *
+  * \param   hSocket     The socket handle to close. The member socket handle is already invalidated
+  *                      at this point.
+  **/
+	void close_socket_handle( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   Decreases lock counter and if it is zero, the calls method to close socket.
+     * \brief   Decreases lock counter and closes socket if counter reaches zero.
      **/
-    void decreaseLock();
+    void decrease_lock();
 
     /**
-     * \brief   Sets the socket packet size in bytes to send data. The packet cannot be smaller than NESocket::PACKET_MIN_SIZE
-     *          and bigger than NESocket::PACKET_MAX_SIZE. 
-     * 
-     * \param   sendSize    The size of packet in bytes to set to send data.
-     *                      The function checks and normalizes size in range between 
-     *                      NESocket::PACKET_MIN_SIZE and NESocket::PACKET_MAX_SIZE.
-     * \param   force       If true, it forces to update the packet size. Otherwise, the packet size
-     *                      is updated only if new size is bigger than the actual.
-     * \return  Returns the actual size of packet in bytes to send data. If socket is not valid,
-     *          return NESocket::PACKET_INVALID_SIZE.
+     * \brief   Sets the socket send packet size, constrained within NESocket::PACKET_MIN_SIZE and
+     *          NESocket::PACKET_MAX_SIZE.
+     *
+     * \param   sendSize    The size of packet in bytes to set for sending. The function normalizes
+     *                      size to valid range.
+     * \param   force       If true, forces packet size update. Otherwise, updates only if new size
+     *                      is bigger than actual.
+     * \return  Returns the actual packet size in bytes for sending. Returns
+     *          NESocket::PACKET_INVALID_SIZE if socket is invalid.
      **/
-    uint32_t setSendPacketSize(uint32_t sendSize, bool force = false) const;
+    uint32_t set_send_size(uint32_t sendSize, bool force = false) const;
 
-     /**
-      * \brief   Sets the socket packet size in bytes to receive data. The packet cannot be smaller than NESocket::PACKET_MIN_SIZE
-      *          and bigger than NESocket::PACKET_MAX_SIZE.
-      *
-      * \param   recvSize    The size of packet in bytes to set to receive data.
-      *                      The function checks and normalizes size in range between
-      *                      NESocket::PACKET_MIN_SIZE and NESocket::PACKET_MAX_SIZE.
-      * \param   force       If true, it forces to update the packet size. Otherwise, the packet size
-      *                      is update only if new size is bigger than the actual.
-      * \return  Returns the actual size of packet in bytes to receive data. If socket is not valid,
-      *          return NESocket::PACKET_INVALID_SIZE.
-      **/
-    uint32_t setRecvPacketSize(uint32_t recvSize, bool force = false) const;
+    /**
+     * \brief   Sets the socket receive packet size, constrained within NESocket::PACKET_MIN_SIZE
+     *          and NESocket::PACKET_MAX_SIZE.
+     *
+     * \param   recvSize    The size of packet in bytes to set for receiving. The function
+     *                      normalizes size to valid range.
+     * \param   force       If true, forces packet size update. Otherwise, updates only if new size
+     *                      is bigger than actual.
+     * \return  Returns the actual packet size in bytes for receiving. Returns
+     *          NESocket::PACKET_INVALID_SIZE if socket is invalid.
+     **/
+    uint32_t set_recv_size(uint32_t recvSize, bool force = false) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -336,54 +321,54 @@ protected:
 // Socket class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline SOCKETHANDLE Socket::getHandle() const
+inline SOCKETHANDLE Socket::handle() const
 {
     return (mSocket.get() != nullptr ? *mSocket : NESocket::InvalidSocketHandle);
 }
 
-inline const NESocket::SocketAddress & Socket::getAddress() const
+inline const NESocket::SocketAddress & Socket::address() const
 {
     return mAddress;
 }
 
-inline void Socket::setAddress( const NESocket::SocketAddress & newAddress )
+inline void Socket::set_address( const NESocket::SocketAddress & newAddress )
 {
     mAddress = newAddress;
 }
 
-inline bool Socket::isValid() const
+inline bool Socket::is_valid() const
 {
-    return (mSocket.get() != nullptr) && NESocket::isSocketHandleValid(*mSocket);
+    return (mSocket.get() != nullptr) && NESocket::is_handle_valid(*mSocket);
 }
 
-inline bool Socket::isAlive() const
+inline bool Socket::is_alive() const
 {
-    return (mSocket.get() != nullptr) && NESocket::isSocketAlive(*mSocket);
+    return (mSocket.get() != nullptr) && NESocket::is_socket_alive(*mSocket);
 }
 
-inline int32_t Socket::pendingRead() const
+inline int32_t Socket::pending_read() const
 {
-    return (mSocket.get() != nullptr) && NESocket::pendingRead(*mSocket);
+    return (mSocket.get() != nullptr) && NESocket::pending_read(*mSocket);
 }
 
-inline bool Socket::disableSend() const
+inline bool Socket::disable_send() const
 {
-    return (mSocket.get() != nullptr) && NESocket::disableSend(*mSocket);
+    return (mSocket.get() != nullptr) && NESocket::disable_send(*mSocket);
 }
 
-inline bool Socket::disableReceive() const
+inline bool Socket::disable_receive() const
 {
-    return (mSocket.get() != nullptr) && NESocket::disableReceive(*mSocket);
+    return (mSocket.get() != nullptr) && NESocket::disable_receive(*mSocket);
 }
 
-inline uint32_t Socket::getSendPacketSize() const
+inline uint32_t Socket::send_packet_size() const
 {
-    return (isValid() ? mSendSize : NESocket::PACKET_INVALID_SIZE);
+    return (is_valid() ? mSendSize : NESocket::PACKET_INVALID_SIZE);
 }
 
-uint32_t Socket::getRecvPacketSize() const
+uint32_t Socket::recv_packet_size() const
 {
-    return (isValid() ? mRecvSize : NESocket::PACKET_INVALID_SIZE);
+    return (is_valid() ? mRecvSize : NESocket::PACKET_INVALID_SIZE);
 }
 
 #endif  // AREG_BASE_SOCKET_HPP

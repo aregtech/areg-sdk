@@ -41,11 +41,11 @@ const EventDataStream& EventDataStream::empty_data()
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name /*= String::getEmptyString()*/ )
+EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name /*= String::empty_string()*/ )
     : IOStream      ( )
 
     , mEventDataType(evetDataType)
-    , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
+    , mBufferName   (name.is_empty() == false ? name : DefaultStreamName)
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
@@ -55,11 +55,11 @@ EventDataStream::EventDataStream( const EventDataStream & buffer, const String &
     : IOStream    ( )
 
     , mEventDataType(buffer.mEventDataType)
-    , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
+    , mBufferName   (name.is_empty() == false ? name : DefaultStreamName)
     , mDataBuffer   (buffer.mDataBuffer)
     , mSharedList   (buffer.mSharedList)
 {
-    mDataBuffer.moveToBegin();
+    mDataBuffer.move_to_begin();
 }
 
 EventDataStream::EventDataStream( const EventDataStream & src )
@@ -108,7 +108,7 @@ EventDataStream & EventDataStream::operator = ( const EventDataStream & src )
     {
         mSharedList = src.mSharedList;
         mDataBuffer = src.mDataBuffer;
-        mDataBuffer.moveToBegin();
+        mDataBuffer.move_to_begin();
     }
 
     return (*this);
@@ -120,7 +120,7 @@ EventDataStream & EventDataStream::operator = ( EventDataStream && src ) noexcep
     {
         mSharedList = std::move(src.mSharedList);
         mDataBuffer = std::move(src.mDataBuffer);
-        mDataBuffer.moveToBegin( );
+        mDataBuffer.move_to_begin( );
     }
 
     return (*this);
@@ -137,10 +137,10 @@ uint32_t EventDataStream::read( uint8_t* buffer, uint32_t size ) const
 uint32_t EventDataStream::read( ByteBuffer & buffer ) const
 {
     uint32_t result = 0;
-    if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.isEmpty() == false)
+    if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.is_empty() == false)
     {
-        static_cast<SharedBuffer &>(buffer) = mSharedList.popFirst();
-        result = buffer.getSizeUsed();
+        static_cast<SharedBuffer &>(buffer) = mSharedList.pop_first();
+        result = buffer.size_used();
     }
     else
     {
@@ -160,9 +160,9 @@ uint32_t EventDataStream::read( WideString & wide ) const
     return mDataBuffer.read(wide);
 }
 
-void EventDataStream::resetCursor() const
+void EventDataStream::reset() const
 {
-    mDataBuffer.moveToBegin();
+    mDataBuffer.move_to_begin();
 }
 
 uint32_t EventDataStream::write( const uint8_t* buffer, uint32_t size )
@@ -175,8 +175,8 @@ uint32_t EventDataStream::write( const ByteBuffer & buffer )
     uint32_t result = 0;
     if (mEventDataType == EventDataStream::EventDataKind::Internal)
     {
-        mSharedList.pushLast( static_cast<const SharedBuffer &>(buffer) );
-        result = buffer.getSizeUsed();
+        mSharedList.push_last( static_cast<const SharedBuffer &>(buffer) );
+        result = buffer.size_used();
     }
     else
     {
@@ -200,13 +200,13 @@ void EventDataStream::flush()
 {
 }
 
-uint32_t EventDataStream::getSizeReadable() const
+uint32_t EventDataStream::size_readable() const
 {
     ASSERT(false);
     return 0;
 }
 
-uint32_t EventDataStream::getSizeWritable() const
+uint32_t EventDataStream::size_writable() const
 {
     ASSERT(false);
     return 0;

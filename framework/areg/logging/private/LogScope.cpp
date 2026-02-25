@@ -30,18 +30,18 @@
 #if AREG_LOGS
 
 LogScope::LogScope( const char * scopeName, NELogging::LogPriority priority /*= NELogging::PrioNotset*/ )
-    : mScopeId      ( NELogging::makeScopeId(scopeName)  )
+    : mScopeId      ( NELogging::make_scope_id(scopeName)  )
     , mScopePrio    ( static_cast<uint32_t>(priority) )
     , mScopeName    ( scopeName != nullptr ? scopeName : "" )
     , mIsRegistered ( true )
     , mSessionId    ( 0 )
 {
-    LogManager::registerLogScope( self() );
+    LogManager::register_log_scope( self() );
 }
 
 LogScope::LogScope(const InStream & stream)
-    : mScopeId      ( stream.read32Bits() )
-    , mScopePrio    ( stream.read32Bits() )
+    : mScopeId      ( stream.read32_bits() )
+    , mScopePrio    ( stream.read32_bits() )
     , mScopeName    ( stream )
     , mIsRegistered ( false )
     , mSessionId    ( 0 )
@@ -52,18 +52,18 @@ LogScope::~LogScope()
 {
     if (mIsRegistered)
     {
-        LogManager::unregisterLogScope(self());
+        LogManager::unregister_log_scope(self());
     }
 }
 
-void LogScope::setPriority(const char* newPrio)
+void LogScope::set_priority(const char* newPrio)
 {
-    setPriority(static_cast<uint32_t>(NELogging::stringToLogPrio(newPrio)));
+    set_priority(static_cast<uint32_t>(NELogging::string_to_priority(newPrio)));
 }
 
-void LogScope::setPriority(const String& newPrio)
+void LogScope::set_priority(const String& newPrio)
 {
-    setPriority(static_cast<uint32_t>(NELogging::stringToLogPrio(newPrio)));
+    set_priority(static_cast<uint32_t>(NELogging::string_to_priority(newPrio)));
 }
 
 #else   // AREG_LOGS

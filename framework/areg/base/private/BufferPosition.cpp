@@ -39,9 +39,9 @@ BufferPosition::BufferPosition( ByteBuffer & buffer )
 /**
  * \brief   Returns current position of cursor.
  **/
-uint32_t BufferPosition::getPosition() const
+uint32_t BufferPosition::position() const
 {
-    if ( mBuffer.isValid() )
+    if ( mBuffer.is_valid() )
     {
         return (mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition);
     }
@@ -54,14 +54,14 @@ uint32_t BufferPosition::getPosition() const
 /**
  * \brief   Sets the current position of cursor
  **/
-uint32_t BufferPosition::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
+uint32_t BufferPosition::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const
 {
-    if (mBuffer.isValid() == false)
+    if (mBuffer.is_valid() == false)
     {
         return Cursor::INVALID_CURSOR_POSITION;
     }
 
-    int32_t size{ static_cast<int32_t>(mBuffer.getSizeUsed()) };
+    int32_t size{ static_cast<int32_t>(mBuffer.size_used()) };
     int32_t curPos{ static_cast<int32_t>(mPosition == Cursor::INVALID_CURSOR_POSITION ? 0 : mPosition) };
 
     switch (startAt)

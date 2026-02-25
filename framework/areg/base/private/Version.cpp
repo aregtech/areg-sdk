@@ -23,7 +23,7 @@
 // Version class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const Version & Version::getInvalidVersion()
+const Version & Version::invalid_version()
 {
     static const Version _invalidVersion( 0, 0, 0 );
     return _invalidVersion;
@@ -75,7 +75,7 @@ Version::Version(const char * version)
     , mMinor    (0)
     , mPatch    (0)
 {
-    convFromString( version );
+    conv_from_string( version );
 }
 
 Version::Version(const String & version)
@@ -83,13 +83,13 @@ Version::Version(const String & version)
     , mMinor    (0)
     , mPatch    (0)
 {
-    convFromString(version);
+    conv_from_string(version);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-Version & Version::convFromString( const String & version )
+Version & Version::conv_from_string( const String & version )
 {
     mMajor  = 0;
     mMinor  = 0;
@@ -101,16 +101,16 @@ Version & Version::convFromString( const String & version )
     pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
     version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
 
-    mMajor  = major.toUInt32();
-    mMinor  = minor.toUInt32();
-    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
+    mMajor  = major.to_uint32();
+    mMinor  = minor.to_uint32();
+    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.to_uint32() : 0;
 
     return (*this);
 }
 
-Version & Version::convFromString( const char * version )
+Version & Version::conv_from_string( const char * version )
 {
-	return convFromString( String(version != nullptr ? version : NEString::EmptyStringA) );
+	return conv_from_string( String(version != nullptr ? version : NEString::EmptyStringA) );
 }
 
 Version & Version::operator = ( const Version &src )
@@ -154,13 +154,13 @@ bool Version::operator > ( const Version & version ) const
             );
 }
 
-String Version::convToString() const
+String Version::to_string() const
 {
     constexpr const char * format{ "%d%c%d%c%d" };
 
     char buffer[ 128 ]{ 0 };
-    int32_t len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
+    int32_t len = String::format_string( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
+    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
 }
 
 //////////////////////////////////////////////////////////////////////////

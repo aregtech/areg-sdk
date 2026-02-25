@@ -39,9 +39,8 @@ class RemoteMessage;
 // ServiceEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The base class for service event consumer. It is common for TCP/IP
- *          client and service objects. Each of them should implement only
- *          relevant part. This class contains empty implementations of the methods.
+ * \brief   Base class for service event consumer callbacks triggered on service state and
+ *          connection changes.
  **/
 class AREG_API ServiceEventConsumer
 {
@@ -49,68 +48,74 @@ class AREG_API ServiceEventConsumer
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
+    /**
+     * \brief
+     **/
     ServiceEventConsumer() = default;
     virtual ~ServiceEventConsumer() = default;
 
 public:
 
     /**
-     * \brief   Triggered when Timer is expired.
+     * \brief   Triggered when service reconnect timer expires.
      **/
-    virtual void onServiceReconnectTimerExpired() = 0;
+    virtual void on_reconnect_timer() = 0;
 
     /**
-     * \brief   Called when receive event to start service and connection.
+     * \brief   Triggered to start service and connection.
      **/
-    virtual void onServiceStart() = 0;
+    virtual void on_service_start() = 0;
 
     /**
-     * \brief   Called when receive event to stop service and connection.
+     * \brief   Triggered to stop service and connection.
      **/
-    virtual void onServiceStop() = 0;
+    virtual void on_service_stop() = 0;
 
     /**
-     * \brief   Called when receive event to restart service and connection.
+     * \brief   Triggered to restart service and connection.
      **/
-    virtual void onServiceRestart() = 0;
+    virtual void on_service_restart() = 0;
 
     /**
-     * \brief   Called when receive event the client connection is started.
+     * \brief   Triggered when client connection starts.
      **/
-    virtual void onServiceConnectionStarted() = 0;
+    virtual void on_connection_started() = 0;
 
     /**
-     * \brief   Called when receive event the client connection is stopped.
+     * \brief   Triggered when client connection stops.
      **/
-    virtual void onServiceConnectionStopped() = 0;
+    virtual void on_connection_stopped() = 0;
 
     /**
-     * \brief   Called when receive event the client connection is lost.
+     * \brief   Triggered when client connection is lost.
      **/
-    virtual void onServiceConnectionLost() = 0;
+    virtual void on_connection_lost() = 0;
 
     /**
-     * \brief   Triggered when need to quit the service.
+     * \brief   Triggered to quit the service.
      **/
-    virtual void onServiceExit() = 0;
+    virtual void on_service_exit() = 0;
 
     /**
-     * \brief   Called when received a communication message to dispatch and process.
-     * \param   msgReceived     The received the communication message.
+     * \brief   Triggered to dispatch and process a received communication message.
+     *
+     * \param   msgReceived     The received communication message.
      **/
-    virtual void onServiceMessageReceived(const RemoteMessage& msgReceived) = 0;
+    virtual void on_message_received(const RemoteMessage& msgReceived) = 0;
 
     /**
-     * \brief   Called when need to send a communication message.
-     * \param   msgSend     The communication message sent.
+     * \brief   Triggered to send a communication message.
+     *
+     * \param   msgSend     The communication message to send.
      **/
-    virtual void onServiceMessageSend(const RemoteMessage& msgSend) = 0;
+    virtual void on_message_send(const RemoteMessage& msgSend) = 0;
 
     /**
-     * \brief   Called when need to inform the channel connection.
-     * \param   cookie  The channel connection cookie.
+     * \brief   Triggered to inform of channel connection.
+     *
+     * \param   cookie      Channel connection cookie.
      **/
-    virtual void onChannelConnected(const ITEM_ID & cookie) = 0;
+    virtual void on_channel_connected(const ITEM_ID & cookie) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -151,7 +156,7 @@ private:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void process_timer( Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -173,14 +178,15 @@ private:
 // ServiceClientEventConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Dispatches service client connection event.
+ * \brief   Event consumer dispatching service client connection state changes.
  **/
 class AREG_API ServiceClientConsumer    : public    ServiceClientEventConsumer
 {
 public:
     /**
-     * \brief   Constructs and initializes a Event consumer object
-     * \param   eventConsumer   The instance of event consumer to trigger connection status changed callbacks
+     * \brief   Initializes with service event consumer for connection state callbacks.
+     *
+     * \param   eventConsumer       Event consumer to trigger on connection state changes.
      **/
     ServiceClientConsumer(ServiceEventConsumer& eventConsumer);
 
@@ -194,13 +200,11 @@ protected:
 // ServiceClientEventConsumer interface overrides.
 /************************************************************************/
     /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
+     * \brief   Processes service event dispatched by worker or component thread.
+     *
+     * \param   data    Service event data to process.
      **/
-    void processEvent(const ServiceEventData & data) override;
+    void process_event(const ServiceEventData & data) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -214,6 +218,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief
+     **/
     ServiceClientConsumer() = delete;
     AREG_NOCOPY_NOMOVE(ServiceClientConsumer);
 };
@@ -222,14 +229,15 @@ private:
 // ServiceServerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Dispatches service server connection event.
+ * \brief   Event consumer dispatching service server connection state changes.
  **/
 class AREG_API ServiceServerConsumer : public    ServiceServerEventConsumer
 {
 public:
     /**
-     * \brief   Constructs and initializes a Event consumer object
-     * \param   serviceEventConsumer    The instance of event consumer to trigger connection status changed callbacks.
+     * \brief   Initializes with service event consumer for connection state callbacks.
+     *
+     * \param   serviceEventConsumer    Event consumer to trigger on connection state changes.
      **/
     ServiceServerConsumer(ServiceEventConsumer& serviceEventConsumer);
 
@@ -243,13 +251,11 @@ protected:
 // ServiceServerConsumer interface overrides.
 /************************************************************************/
     /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
+     * \brief   Processes service event dispatched by worker or component thread.
+     *
+     * \param   data    Service event data to process.
      **/
-    void processEvent(const ServiceEventData & data) override;
+    void process_event(const ServiceEventData & data) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -263,6 +269,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief
+     **/
     ServiceServerConsumer() = delete;
     AREG_NOCOPY_NOMOVE(ServiceServerConsumer);
 };

@@ -45,56 +45,56 @@ WorkerThread::WorkerThread( const String & threadName
     , mWorkerThreadConsumer ( threadConsumer )
     , mWatchdog             ( self(), watchdogTimeout )
 {
-    ASSERT(NEString::isEmpty<char>(threadName) == false);
+    ASSERT(NEString::is_empty<char>(threadName) == false);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-bool WorkerThread::postEvent( Event& eventElem )
+bool WorkerThread::post_event( Event& eventElem )
 {
-    return Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
+    return Event::is_custom(eventElem.event_type()) && EventDispatcher::post_event(eventElem);
 }
 
-void WorkerThread::readyForEvents( bool isReady )
+void WorkerThread::ready_for_events( bool is_ready )
 {
-    if ( isReady )
+    if ( is_ready )
     {
-        mWorkerThreadConsumer.registerEventConsumers( self( ), mBindingComponent.getMasterThread( ) );
+        mWorkerThreadConsumer.register_event_consumers( self( ), mBindingComponent.master_thread( ) );
     }
     else
     {
-        mWorkerThreadConsumer.unregisterEventConsumers( self( ) );
+        mWorkerThreadConsumer.unregister_event_consumers( self( ) );
     }
 
-    DispatcherThread::readyForEvents(isReady);
+    DispatcherThread::ready_for_events(is_ready);
 }
 
-DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& whichClass )
+DispatcherThread* WorkerThread::event_consumer_thread( const RuntimeClassID& whichClass )
 {
-    return (hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
+    return (has_registered_consumer(whichClass) ? static_cast<DispatcherThread *>(this) : binding_component().find_event_consumer(whichClass));
 }
 
-bool WorkerThread::dispatchEvent(Event& eventElem)
+bool WorkerThread::dispatch_event(Event& eventElem)
 {
-    mWatchdog.startGuard();
-    bool result = DispatcherThread::dispatchEvent(eventElem);
-    mWatchdog.stopGuard();
+    mWatchdog.start_guard();
+    bool result = DispatcherThread::dispatch_event(eventElem);
+    mWatchdog.stop_guard();
 
     return result;
 }
 
-ComponentThread & WorkerThread::getBindingComponentThread() const
+ComponentThread & WorkerThread::binding_component_thread() const
 {
-    return mBindingComponent.getMasterThread();
+    return mBindingComponent.master_thread();
 }
 
-void WorkerThread::terminateSelf()
+void WorkerThread::terminate_self()
 {
     mHasStarted = false;
-    removeAllEvents();
-    mEventExit.setEvent();
-    Thread::shutdownThread(NECommon::TIMEOUT_10_MS);
+    remove_all_events();
+    mEventExit.set_event();
+    Thread::shutdown_thread(NECommon::TIMEOUT_10_MS);
 
     delete this;
 }

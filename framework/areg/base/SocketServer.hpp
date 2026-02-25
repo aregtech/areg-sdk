@@ -30,52 +30,33 @@ class SocketAccepted;
 // SocketServer class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Server Socket is used to accept connection from remote clients,
- *          send and receive data. Before accepting connections, 
- *          sending or receiving any data, the socket should be created, 
- *          set for listening and wait for incoming connection. 
- *          When connection from client is accepted, the server specifies
- *          unique cookie for accepted client. As soon as connection is
- *          accepted, the server can start to send and receive data.
- *          Connection accepting, sending and receiving data are running
- *          in blocking mode. For this reason, it makes sens to run all these
- *          functionalities in separate threads.
- *          Server socket is using only TCP/IP connection. All other types
- *          and protocols are out of scope of this class and are not considered.
+ * \brief   Server socket for accepting incoming TCP/IP connections, sending and receiving data.
+ *          Supports blocking operations for connection acceptance and data transfer. Assigns unique
+ *          cookies to accepted clients.
  **/
 class AREG_API SocketServer   : public    Socket
 {
 public:
     /**
-     * \brief   Default constructor. Creates instance of object
-     *          with invalid socket object. Before sending
-     *          or receiving data, the socket should be created
-     *          and bound to socket address.
+     * \brief   Creates an instance with an invalid socket. Call create_socket() before accepting
+     *          connections or transferring data.
      **/
     SocketServer() = default;
 
     /**
-     * \brief   Initialization constructor. Creates instance of object
-     *          with invalid socket object. Before sending
-     *          or receiving data, the socket should be created 
-     *          and bound to specified local IP-address and port.
-     *          When instantiated, it will resolved passed host
-     *          name and port number. If succeeded to resolve,
-     *          it will set resolved IP-address and port number
-     *          as socket address. If passed hostName is nullptr,
-     *          it resolve connection for local host.
-     * \param   hostName    Host name or IP-address of server.
-     * \param   portNr      Port number of server.
+     * \brief   Creates an instance and resolves the specified host name and port number. If
+     *          hostName is nullptr, resolves to localhost.
+     *
+     * \param   hostName    Host name or IP address of the server. If nullptr, resolves to
+     *                      localhost.
+     * \param   portNr      Port number of the server.
      **/
     SocketServer( const char * hostName, uint16_t portNr );
 
     /**
-     * \brief   Initialization constructor. Creates instance of object
-     *          with invalid socket object. Before sending
-     *          or receiving data, the socket should be created 
-     *          and bound to host and port.
-     *          Specified remoteAddress will be set as server address.
-     * \param   serverAddress   The address of server socket.
+     * \brief   Creates an instance with the specified server address.
+     *
+     * \param   serverAddress       The address of the server socket.
      **/
     SocketServer( const NESocket::SocketAddress & serverAddress );
 
@@ -93,54 +74,47 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Before listening and accepting connection from clients, 
-     *          call this method to create new socket descriptor and bind 
-     *          socket to specified host name and port number.
-     * \param   hostName    The name of host to bind.
-     * \param   portNr      The valid port number to bind.
+     * \brief   Creates a socket descriptor and binds it to the specified host name and port. Must
+     *          be called before listening for connections.
+     *
+     * \param   hostName    The host name or IP address to bind the socket to.
+     * \param   portNr      The port number to bind the socket to.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const char * hostName, uint16_t portNr ) override;
+    bool create_socket( const char * hostName, uint16_t portNr ) override;
 
     /**
-     * \brief   Before listening and accepting connection from clients, 
-     *          call this method to create new socket descriptor and bind 
-     *          socket to exiting local IP-address and port number.
-     *          Both, socket IP-address and port number should be already set.
+     * \brief   Creates a socket descriptor and binds it to the previously configured host and port.
+     *          Both address and port must be already set.
+     *
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket() override;
+    bool create_socket() override;
 
     /**
-     * \brief   Call to place server socket in a state in which it is listening for an incoming connection.
-     *          To accept connections on server side, firs socket should be created, which is bound to a 
-     *          local address. A backlog for incoming connections is specified with listen, and the length
-     *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
-     * \param   maxQueueSize    The maximum size of pending connection queue. If not positive value (0 or negative),
-     *                          it will be use maximum NESocket::MAXIMUM_LISTEN_QUEUE_SIZE value
+     * \brief   Places the server socket in listening mode. Incoming connections are queued up to
+     *          maxQueueSize.
+     *
+     * \param   maxQueueSize    The maximum number of pending connections to queue. If not positive,
+     *                          uses NESocket::MAXIMUM_LISTEN_QUEUE_SIZE.
+     * \return  Returns true if operation succeeded.
      **/
-    virtual bool listenConnection( int32_t maxQueueSize );
+    virtual bool listen_connection( int32_t maxQueueSize );
 
     /**
-     * \brief   Call to wait for connection event. Function is blocking call until connection
-     *          event is not triggered. Once connection event happens, the function returns
-     *          valid socket handle of connected event. On output out_addrNewAccepted parameter
-     *          changes only if new client connection is accepted. In all other cases, when
-     *          client send data or closes socket, this parameter will not be changed, and
-     *          the method does not distinguish whether client socket is closed or send data.
-     *          The connection event is fired when new client is connected, when client
-     *          is sending data or client closes connection.
-     * \param   out_addrNewAccepted On output, if new connection is accepted, this parameter
-     *                              contain address of new accepted socket. In all other cases,
-     *                              when client sends data or close socket, this parameter
-     *                              remains unchanged.
-     * \param   masterList          The master list of existing connections.
-     * \param   entriesCount        The length of entries in master list.
-     * \return  If function succeeds, the function returns valid socket handle. For new connections,
-     *          out_addrNewAccepted parameter contains address of accepted socket. 
-     *          If function fails, returns invalid socket handle.
+     * \brief   Waits for a connection event (new connection, data from client, or client
+     *          disconnect). This is a blocking call.
+     *
+     * \param[in,out] out_addrNewAccepted     On successful new connection acceptance, contains the
+     *                                        address of the accepted socket. Unchanged if client
+     *                                        sends data or closes.
+     * \param   masterList              Array of existing connection socket handles to monitor.
+     * \param   entriesCount            The number of entries in the master list.
+     * \return  Returns a valid socket handle if successful. If a new connection is accepted,
+     *          out_addrNewAccepted contains the client address. Returns invalid handle if the
+     *          function fails.
      **/
-    virtual SOCKETHANDLE waitConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
+    virtual SOCKETHANDLE wait_connection_event(NESocket::SocketAddress & out_addrNewAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -30,18 +30,9 @@
 // ServerConnectionBase class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Server Socket is used to accept connection from remote clients,
- *          send and receive data. Before accepting connections,
- *          sending or receiving any data, the socket should be created,
- *          set for listening and wait for incoming connection.
- *          When connection from client is accepted, the server specifies
- *          unique cookie for accepted client. As soon as connection is
- *          accepted, the server can start to send and receive data.
- *          Connection accepting, sending and receiving data are running
- *          in blocking mode. For this reason, it makes sens to run all these
- *          functionalities in separate threads.
- *          Server socket is using only TCP/IP connection. All other types
- *          and protocols are out of scope of this class and are not considered.
+ * \brief   TCP/IP server socket for accepting client connections, sending and receiving data in
+ *          blocking mode. Manages multiple accepted connections with unique identifiers (cookies)
+ *          and supports graceful shutdown.
  **/
 class AREG_API ServerConnectionBase
 {
@@ -79,31 +70,23 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates instance of object with invalid socket object.
-     *          Before sending or receiving data, the socket should be created
-     *          and bound to socket address.
+     * \brief   Creates instance with invalid socket. Socket must be created and bound to address
+     *          before use.
      **/
     ServerConnectionBase();
 
     /**
-     * \brief   Creates instance of object with invalid socket object.
-     *          Before sending or receiving data, the socket should be created
-     *          and bound to specified local IP-address and port.
-     *          When instantiated, it will resolved passed host
-     *          name and port number. If succeeded to resolve,
-     *          it will set resolved IP-address and port number
-     *          as socket address. If passed hostName is nullptr,
-     *          it resolve connection for local host.
-     * \param   hostName    Host name or IP-address of server.
+     * \brief   Creates instance and resolves specified host name and port to socket address.
+     *
+     * \param   hostName    Host name or IP-address of server. If nullptr, resolves to localhost.
      * \param   portNr      Port number of server.
      **/
     ServerConnectionBase( const String & hostName, uint16_t portNr );
 
     /**
-     * \brief   Creates instance of object with invalid socket object.
-     *          Before sending or receiving data, the socket should be created
-     *          and bound to host and port. Specified remoteAddress will be set as server address.
-     * \param   serverAddress   The address of server socket.
+     * \brief   Creates instance with specified server socket address.
+     *
+     * \param   serverAddress       The address of server socket.
      **/
     ServerConnectionBase( const NESocket::SocketAddress & serverAddress );
 
@@ -118,183 +101,173 @@ public:
 public:
 
     /**
-     * \brief   Return Socket Address object.
+     * \brief   Returns the socket address object.
      **/
-    inline const NESocket::SocketAddress & getAddress() const;
+    inline const NESocket::SocketAddress & address() const;
 
     /**
-     * \brief   Sets Socket Address. If hostName is not IP-address, it will
-     *          try to resolve first then set. The isServer parameter is needed
-     *          to resolve address either for server or for client.
-     *          For accepted sockets this call plays no role, because the
-     *          the address automatically is resolved when accepting connection.
-     * \param   hostName    Host name or IP-address to set. If name is specified,
-     *                      first it will be resolved to get IP-address.
+     * \brief   Resolves host name and sets socket address. For accepted sockets, address is
+     *          resolved automatically on connection acceptance.
+     *
+     * \param   hostName    Host name or IP-address to set. If name is specified, first it will be
+     *                      resolved to get IP-address.
      * \param   portNr      Valid port number of socket connection.
-     * \return  Returns true if succeeded to resolve and set Socket Address.
+     * \return  Returns true if host name resolution and address setting succeeded.
      **/
-    inline bool setAddress( const String & hostName, uint16_t portNr );
+    inline bool set_address( const String & hostName, uint16_t portNr );
 
     /**
-     * \brief   Sets socket address. The address should be either invalid
-     *          or already resolved with IP-address.
-     * \param   newAddress  The new address to set.
+     * \brief   Sets socket address from a resolved SocketAddress object.
+     *
+     * \param   newAddress      The new address to set.
      **/
-    inline void setAddress( const NESocket::SocketAddress & newAddress );
+    inline void set_address( const NESocket::SocketAddress & newAddress );
 
     /**
-     * \brief   Returns true if existing socket descriptor is valid.
-     *          The function is not checking socket descriptor validation.
+     * \brief   Returns true if socket descriptor is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
-     * \brief   Returns handle of socket.
+     * \brief   Returns the socket handle.
      **/
-    inline SOCKETHANDLE getSocketHandle() const;
+    inline SOCKETHANDLE socket_handle() const;
 
     /**
-     * \brief   Returns true if connection with specified socket is accepted.
+     * \brief   Returns true if the specified socket connection has been accepted.
+     *
      * \param   connection      The socket to check connection acceptance.
      **/
-    inline bool isConnectionAccepted( SOCKETHANDLE connection ) const;
+    inline bool is_connection_accepted( SOCKETHANDLE connection ) const;
 
     /**
-     * \brief   Returns cookie of client connection set by server.
-     *          Cookie is checked when sending or receiving data as
-     *          source or target in Remote Buffer.
-     * \param   clientSocket    Accepted client socket connection
+     * \brief   Returns the unique cookie identifier for an accepted client connection.
+     *
+     * \param   clientSocket    Accepted client socket connection.
      **/
-    inline ITEM_ID getCookie( const SocketAccepted & clientSocket ) const;
+    inline ITEM_ID cookie( const SocketAccepted & clientSocket ) const;
 
     /**
-     * \brief   Returns cookie of client connection set by server.
-     *          Cookie is checked when sending or receiving data as
-     *          source or target in Remote Buffer.
-     * \param   socketHandle    Socket handle of accepted client connection
+     * \brief   Returns the unique cookie identifier for the socket handle of an accepted
+     *          connection.
+     *
+     * \param   socketHandle    Socket handle of accepted client connection.
      **/
-    inline ITEM_ID getCookie( SOCKETHANDLE socketHandle ) const;
+    inline ITEM_ID cookie( SOCKETHANDLE socketHandle ) const;
 
     /**
-     * \brief   Returns accepted socket object, which is matching passed cookie.
-     *          If client cookie is valid, the return accepted socket object is valid.
-     *          Otherwise, it is invalid accepted client socket object.
-     * \param   clientCookie    The client cookie. Should be valid cookie
-     * \return  If there is registered accepted client socket object, which matches client cookie,
-     *          the returned object is valid accepted client object. Otherwise, the object is invalid.
+     * \brief   Returns the accepted socket object matching the specified cookie, or invalid if not
+     *          found.
+     *
+     * \param   clientCookie    The client cookie. Should be valid cookie.
+     * \return  Returns valid SocketAccepted object if cookie matches; otherwise invalid.
      **/
-    inline SocketAccepted getClientByCookie(const ITEM_ID & clientCookie ) const;
+    inline SocketAccepted client_by_cookie(const ITEM_ID & clientCookie ) const;
 
     /**
-     * \brief   Returns accepted socket object, with same unique socket handle.
-     *          If connection was accepted, the returned object is valid.
-     *          Otherwise, it returns invalid accepted client socket object.
-     * \param   clientSocket    The client socket. Should be valid handle
-     * \return  If there is registered accepted client socket object, which matches socket handle,
-     *          the returned object is valid accepted client object. Otherwise, the object is invalid.
+     * \brief   Returns the accepted socket object matching the specified socket handle, or invalid
+     *          if not found.
+     *
+     * \param   clientSocket    The client socket. Should be valid handle.
+     * \return  Returns valid SocketAccepted object if socket handle matches; otherwise invalid.
      **/
-    inline SocketAccepted getClientByHandle( SOCKETHANDLE clientSocket ) const;
+    inline SocketAccepted client_by_handle( SOCKETHANDLE clientSocket ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Before listening and accepting connection from clients,
-     *          call this method to create new socket descriptor and bind
-     *          socket to specified host name and port number.
+     * \brief   Creates socket descriptor and binds it to specified host name and port number.
+     *
      * \param   hostName    The name of host to bind.
      * \param   portNr      The valid port number to bind.
-     * \return  Returns true if operation succeeded.
+     * \return  Returns true if socket creation and binding succeeded.
      **/
-    bool createSocket( const String & hostName, uint16_t portNr );
+    bool create_socket( const String & hostName, uint16_t portNr );
 
     /**
-     * \brief   Before listening and accepting connection from clients,
-     *          call this method to create new socket descriptor and bind
-     *          socket to exiting local IP-address and port number.
-     *          Both, socket IP-address and port number should be already set.
-     * \return  Returns true if operation succeeded.
+     * \brief   Creates socket descriptor and binds it to the existing address. Address must be set
+     *          before calling.
+     *
+     * \return  Returns true if socket creation and binding succeeded.
      **/
-    bool createSocket();
+    bool create_socket();
 
     /**
-     * \brief   Closes existing socket.
-     *          The call will disconnect all accepted connections.
+     * \brief   Closes the socket and disconnects all accepted connections.
      **/
-    void closeSocket();
+    void close_socket();
 
     /**
-     * \brief   Call to place server socket in a state in which it is listening for an incoming connection.
-     *          To accept connections on server side, firs socket should be created, which is bound to a
-     *          local address. A backlog for incoming connections is specified with listen, and the length
-     *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
+     * \brief   Places socket in listening state with specified backlog queue size.
+     *
      * \param   maxQueueSize    The maximum size of the socket queue in the list.
+     * \return  Returns true if listen setup succeeded.
      **/
-    bool serverListen( int32_t maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
+    bool server_listen( int32_t maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
 
     /**
-     * \brief   Call to wait for connection event. Function is blocking call until connection
-     *          event is not triggered. Once connection event happens, the function returns
-     *          valid socket handle of connected event. On output out_addrNewAccepted parameter
-     *          changes only if new client connection is accepted. In all other cases, when
-     *          client send data or closes socket, this parameter will not be changed, and
-     *          the method does not distinguish whether client socket is closed or send data.
-     *          The connection event is fired when new client is connected, when client
-     *          is sending data or client closes connection.
-     * \param   out_addrNewAccepted On output, if new connection is accepted, this parameter
-     *                              contain address of new accepted socket. In all other cases,
-     *                              when client sends data or close socket, this parameter
-     *                              remains unchanged.
-     * \return  If function succeeds, the function returns valid socket handle. For new connections,
-     *          out_addrNewAccepted parameter contains address of accepted socket.
-     *          If function fails, returns invalid socket handle.
+     * \brief   Blocking call that waits for connection event (new connection, data, or closure).
+     *          Returns valid socket handle; address output parameter is updated only for new
+     *          connections.
+     *
+     * \param[in,out] out_addrNewAccepted     On output, if new connection is accepted, this
+     *                                        parameter contain address of new accepted socket. In
+     *                                        all other cases, when client sends data or close
+     *                                        socket, this parameter remains unchanged.
+     * \return  Returns valid socket handle if successful; invalid if failed.
      **/
-    SOCKETHANDLE waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted);
+    SOCKETHANDLE wait_connection(NESocket::SocketAddress & out_addrNewAccepted);
 
     /**
-     * \brief   Call to accept connection. Nothing will happen if connection was already accepted.
-     *          For new connections, on output out_connection parameter will have accepted state.
-     * \param[out]  clientConnection    Connection to accept. If object is valid, on output this will
-     *                                  be in accepted state.
+     * \brief   Accepts pending connection and updates clientConnection object to accepted state.
+     *
+     * \param[in,out] clientConnection    Connection to accept. If object is valid, on output this
+     *                                    will be in accepted state.
+     * \return  Returns true if connection was accepted.
      **/
-    bool acceptConnection( SocketAccepted & clientConnection );
+    bool accept_connection( SocketAccepted & clientConnection );
 
     /**
-     * \brief   Call to close client connection.
+     * \brief   Closes the specified client connection.
+     *
      * \param   clientConnection    The client to close connection.
      **/
-    void closeConnection( SocketAccepted & clientConnection );
+    void close_connection( SocketAccepted & clientConnection );
 
     /**
-     * \brief   Call to close connection by cookie.
+     * \brief   Closes connection identified by cookie.
+     *
      * \param   cookie      The cookie of client set by routing service.
      **/
-    void closeConnection(const ITEM_ID & cookie);
+    void close_connection(const ITEM_ID & cookie);
 
     /**
-     * \brief   Sets socket in the read-only mode, i.e. no send message is possible anymore.
+     * \brief   Sets socket to read-only mode, disabling message sending.
+     *
      * \param   clientConnection    The connected client socket to set in read-only mode.
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableSend( const SocketAccepted & clientConnection );
+    inline bool disable_send( const SocketAccepted & clientConnection );
 
     /**
-     * \brief   Sets socket in the write-only mode, i.e. no receive message is possible anymore.
+     * \brief   Sets socket to write-only mode, disabling message receiving.
+     *
      * \param   clientConnection    The connected client socket to set in write-only mode.
      * \return  Returns true if operation succeeds.
      **/
-    inline bool disableReceive( const SocketAccepted & clientConnection );
+    inline bool disable_receive( const SocketAccepted & clientConnection );
 
     /**
-     * \brief   Sets all sockets in the read-only mode, i.e. no send message is possible anymore.
+     * \brief   Sets all sockets to read-only mode, disabling message sending.
      **/
-    inline void disableSend();
+    inline void disable_send();
 
     /**
-     * \brief   Sets all sockets in the write-only more, i.e. no receive message is possible anymore.
+     * \brief   Sets all sockets to write-only mode, disabling message receiving.
      **/
-    inline void disableReceive();
+    inline void disable_receive();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -347,92 +320,92 @@ private:
 // ServerConnectionBase class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ServerConnectionBase::setAddress(const String & hostName, uint16_t portNr)
+inline bool ServerConnectionBase::set_address(const String & hostName, uint16_t portNr)
 {
     Lock lock(mLock);
-    return mServerSocket.setAddress(hostName, portNr, true);
+    return mServerSocket.set_address(hostName, portNr, true);
 }
 
-inline void ServerConnectionBase::setAddress( const NESocket::SocketAddress & newAddress )
+inline void ServerConnectionBase::set_address( const NESocket::SocketAddress & newAddress )
 {
     Lock lock(mLock);
-    mServerSocket.setAddress(newAddress);
+    mServerSocket.set_address(newAddress);
 }
 
-inline const NESocket::SocketAddress & ServerConnectionBase::getAddress() const
+inline const NESocket::SocketAddress & ServerConnectionBase::address() const
 {
     Lock lock(mLock);
-    return mServerSocket.getAddress();
+    return mServerSocket.address();
 }
 
-inline bool ServerConnectionBase::isValid() const
+inline bool ServerConnectionBase::is_valid() const
 {
     Lock lock(mLock);
-    return mServerSocket.isValid();
+    return mServerSocket.is_valid();
 }
 
-inline SOCKETHANDLE ServerConnectionBase::getSocketHandle() const
+inline SOCKETHANDLE ServerConnectionBase::socket_handle() const
 {
     Lock lock(mLock);
-    return mServerSocket.getHandle();
+    return mServerSocket.handle();
 }
 
-inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection ) const
+inline bool ServerConnectionBase::is_connection_accepted( SOCKETHANDLE connection ) const
 {
     Lock lock(mLock);
     return mAcceptedConnections.contains(connection);
 }
 
-inline ITEM_ID ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
+inline ITEM_ID ServerConnectionBase::cookie(const SocketAccepted & clientSocket) const
 {
-    return getCookie(clientSocket.getHandle());
+    return cookie(clientSocket.handle());
 }
 
-inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
+inline ITEM_ID ServerConnectionBase::cookie(SOCKETHANDLE socketHandle) const
 {
     Lock lock( mLock );
 
     MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
-    return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
+    return (mSocketToCookie.is_valid_position(pos) ? mSocketToCookie.value_at_position(pos) : NEService::COOKIE_UNKNOWN );
 }
 
-inline SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
+inline SocketAccepted ServerConnectionBase::client_by_cookie(const ITEM_ID & clientCookie) const
 {
     Lock lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-    return (mCookieToSocket.isValidPosition(pos) ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : SocketAccepted());
+    return (mCookieToSocket.is_valid_position(pos) ? client_by_handle( mCookieToSocket.value_at_position(pos) ) : SocketAccepted());
 }
 
-inline SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
+inline SocketAccepted ServerConnectionBase::client_by_handle(SOCKETHANDLE clientSocket) const
 {
     Lock lock( mLock );
     MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
-    return (mAcceptedConnections.isValidPosition(pos) ? mAcceptedConnections.getAt(clientSocket) : SocketAccepted());
+    return (mAcceptedConnections.is_valid_position(pos) ? mAcceptedConnections.at(clientSocket) : SocketAccepted());
 }
 
-inline bool ServerConnectionBase::disableSend( const SocketAccepted & clientConnection )
+inline bool ServerConnectionBase::disable_send( const SocketAccepted & clientConnection )
 {
-    return clientConnection.disableSend();
+    return clientConnection.disable_send();
 }
 
-inline bool ServerConnectionBase::disableReceive( const SocketAccepted & clientConnection )
+inline bool ServerConnectionBase::disable_receive( const SocketAccepted & clientConnection )
 {
-    return clientConnection.disableReceive();
+    return clientConnection.disable_receive();
 }
 
-inline void ServerConnectionBase::disableSend()
+inline void ServerConnectionBase::disable_send()
 {
-    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
-        mAcceptedConnections.valueAtPosition( pos ).disableSend( );
+        mAcceptedConnections.value_at_position( pos ).disable_send( );
     }
 }
 
-inline void ServerConnectionBase::disableReceive()
+inline void ServerConnectionBase::disable_receive()
 {
-    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.first_position( ); mAcceptedConnections.is_valid_position( pos ); pos = mAcceptedConnections.next_position( pos ) )
     {
-        mAcceptedConnections.valueAtPosition( pos ).disableReceive( );
+        mAcceptedConnections.value_at_position( pos ).disable_receive( );
     }
 }
 

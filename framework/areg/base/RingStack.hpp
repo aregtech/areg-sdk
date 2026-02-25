@@ -66,6 +66,11 @@ template <typename VALUE> class RingStackBase;
  * \see     RingStack, ConcurrentRingStack.
  **/
 template <typename VALUE>
+/**
+ * \brief   Ring FIFO stack container with configurable capacity and overlap policy. Supports
+ *          synchronized or unsynchronized access depending on the provided synchronization object.
+ *          Capacity may be fixed or dynamically resized based on overlap policy when full.
+ **/
 class RingStackBase
 {
 //////////////////////////////////////////////////////////////////////////
@@ -73,13 +78,13 @@ class RingStackBase
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Ring Stack initialization. Gets instance of synchronization object,
-     *          initial capacity value and the overlapping flag, used when
-     *          ring stack is full and new element should be pushed.
+     * \brief   Initializes ring stack with synchronization object, initial capacity, and overlap
+     *          behavior.
+     *
      * \param   syncObject      Reference to synchronization object.
      * \param   initCapacity    The initial capacity size of ring stack.
-     * \param   onOverlap       Overlapping flag, used when ring stack is full and 
-     *                          it is required to insert new element.
+     * \param   onOverlap       Overlap policy applied when ring stack is full and new element must
+     *                          be inserted.
      **/
     explicit RingStackBase( Lockable & syncObject, uint32_t initCapacity = 0, NECommon::OverlapPolicy onOverlap = NECommon::OverlapPolicy::Stop );
 
@@ -90,16 +95,19 @@ protected:
 
 protected:
     /**
-     * \brief   Creates a Ring Stack object and copies elements from the given source.
-     * \param   syncObject  Reference to synchronization object.
-     * \param   source      The source of Ring Stack elements.
+     * \brief   Creates ring stack and copies elements from source.
+     *
+     * \param   syncObject      Reference to synchronization object.
+     * \param   source          The source ring stack to copy elements from.
      **/
     explicit RingStackBase(Lockable& syncObject, const RingStackBase<VALUE>& source);
 
     /**
-     * \brief   Creates a Ring Stack object and moves elements from the given source.
-     * \param   syncObject  Reference to synchronization object.
-     * \param   source      The source of Ring Stack elements.
+     * \brief   Creates ring stack and moves elements from source.
+     *
+     * \param   syncObject      Reference to synchronization object.
+     * \param   source          The source ring stack to move elements from.
+     * \note    Move overload. Takes ownership of source elements.
      **/
     explicit RingStackBase(Lockable& syncObject, RingStackBase<VALUE> && source) noexcept;
 
@@ -108,38 +116,52 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies ring stack entries from given source.
-     *          If capacity of destination stack is smaller, it will be enlarged.
-     * \param   source  The source of ring stack entries to get entries.
-     * \return  Returns ring stack object
+     * \brief   Copies ring stack entries from source; enlarges destination capacity if needed.
+     *
+     * \param   source      The source ring stack to copy entries from.
+     * \return  Returns reference to this ring stack object.
      **/
     RingStackBase<VALUE> & operator = ( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Moves ring stack entries from given source.
-     *          It as well swaps all entries of source and destination, but
-     *          does not change the overlapping type and synchronization object.
-     * \param   source  The source of ring stack entries to get entries.
-     * \return  Returns ring stack object
+     * \brief   Moves ring stack entries from source; swaps all entries without changing overlap
+     *          policy or synchronization object.
+     *
+     * \param   source      The source ring stack to move entries from.
+     * \return  Returns reference to this ring stack object.
+     * \note    Move overload. Swaps content with source.
      **/
     RingStackBase<VALUE>& operator = (RingStackBase<VALUE> && source) noexcept;
 
     /**
-     * \brief   Compares 2 ring stack object and returns true if they are equal.
+     * \brief   Compares two ring stacks for equality.
+     *
+     * \param   other       The ring stack to compare with.
+     * \return  Returns true if ring stacks are equal; false otherwise.
      **/
     bool operator == (const RingStackBase<VALUE>& other) const;
 
     /**
-     * \brief   Compares 2 ring stack object and returns true if they are not equal.
+     * \brief   Compares two ring stacks for inequality.
+     *
+     * \param   other       The ring stack to compare with.
+     * \return  Returns true if ring stacks are not equal; false otherwise.
      **/
     bool operator != (const RingStackBase<VALUE>& other) const;
 
     /**
-     * \brief   Returns element by its index. The index should not be more than the number of elements in the stack.
-     * \param   index   Zero-based index of the element in the stack.
-     * \return  Returns element by its index.
+     * \brief   Returns const reference to element at given zero-based index.
+     *
+     * \param   index       Zero-based index of element in stack; must be less than size.
+     * \return  Returns const reference to element at index.
      **/
     const VALUE& operator [] (uint32_t index) const;
+    /**
+     * \brief   Returns mutable reference to element at given zero-based index.
+     *
+     * \param   index       Zero-based index of element in stack; must be less than size.
+     * \return  Returns mutable reference to element at index.
+     **/
     VALUE& operator [] (uint32_t index);
 
 /************************************************************************/
@@ -159,6 +181,15 @@ public:
      * \param   input   The Ring Stack object to save initialized values.
      **/
     template<typename V>
+    /**
+     * \brief   Deserializes ring stack elements from input stream; clears existing elements and
+     *          resizes if necessary.
+     *
+     * \param   stream      The input stream to read values from.
+     * \param[out] input       The ring stack to initialize with deserialized values.
+     * \return  Returns const reference to input stream.
+     * \note    VALUE type must support streaming deserialization operator.
+     **/
     friend const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input );
     /**
      * \brief   Writes to the stream Ring Stack values. The values are written into the stream
@@ -170,6 +201,14 @@ public:
      * \param   output  The Stack object to read out values.
      **/
     template<typename V>
+    /**
+     * \brief   Serializes ring stack elements to output stream starting from head position.
+     *
+     * \param[out] stream      The output stream to write values to.
+     * \param   output      The ring stack to serialize.
+     * \return  Returns reference to output stream.
+     * \note    VALUE type must support streaming serialization operator.
+     **/
     friend OutStream & operator << ( OutStream & stream, const RingStackBase<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
@@ -178,167 +217,171 @@ public:
 public:
 
     /**
-     * \brief   Returns number of elements saved in stack.
+     * \brief   Returns number of elements in stack.
+     *
+     * \return  Returns element count.
      **/
-    uint32_t getSize() const;
+    uint32_t size() const;
 
     /**
-     * \brief   Returns true if Ring Stack is empty
+     * \brief   Returns true if ring stack is empty.
+     *
+     * \return  Returns true if stack is empty; false otherwise.
      **/
-    bool isEmpty() const;
+    bool is_empty() const;
 
     /**
-     * \brief   Returns the overlapping type of the Ring Stack
+     * \brief   Returns the overlap policy of the ring stack.
+     *
+     * \return  Returns overlap policy applied when stack is full.
      **/
-    NECommon::OverlapPolicy getOverlap() const;
+    NECommon::OverlapPolicy overlap() const;
 
     /**
-     * \brief   Locks stack that methods can be accessed only from locking thread.
-     *          In case if NolockSyncObject is used, no locking will happen,
-     *          the function will return immediately and thread will continue to run.
-     * \return  Returns true if stack successfully locked
+     * \brief   Locks stack for exclusive access; no-op if using NoLockSyncObject.
+     *
+     * \return  Returns true if successfully locked; false otherwise.
      **/
     bool lock() const;
 
     /**
-     * \brief   If stack previously was locked by thread, it will unlock stack
-     *          In case if NolockSyncObject is used, nothing will happen.
-     * \return  Returns true if stack successfully unlocked
+     * \brief   Unlocks previously locked stack; no-op if using NoLockSyncObject.
+     *
+     * \return  Returns true if successfully unlocked; false otherwise.
      **/
     bool unlock() const;
 
     /**
-     * \brief   Returns capacity value of ring stack
+     * \brief   Returns the capacity of the ring stack.
+     *
+     * \return  Returns capacity.
      **/
     uint32_t capacity() const;
 
     /**
-     * \brief   Returns true if Ring Stack is full. The function returns false if
-     *          the ring stack is of 'resize of overlap' type, because it automatically changes the size.
+     * \brief   Returns true if ring stack is full; always false for resize-on-overlap policy.
+     *
+     * \return  Returns true if stack is full and not auto-resizing; false otherwise.
      **/
-    bool isFull() const;
+    bool is_full() const;
 
     /**
-     * \brief   Returns true if specified zero-based normalized index is valid.
-     *          The index is valid if it is smaller than the number of valid entries in the ring.
-     * \param   index   The index to check.
+     * \brief   Returns true if zero-based index is valid (less than number of elements).
+     *
+     * \param   index       The index to validate.
+     * \return  Returns true if index is valid; false otherwise.
      **/
-    bool isValidIndex(uint32_t index) const;
+    bool is_valid_index(uint32_t index) const;
 
     /**
-     * \brief   Returns element by its index. The index should not be more than the number of elements in the stack.
-     * \param   index   Zero-based index of the element in the stack.
-     * \return  Returns element by its index.
+     * \brief   Returns const reference to element at given zero-based index.
+     *
+     * \param   index       Zero-based index of element in stack; must be less than size.
+     * \return  Returns const reference to element at index.
      **/
-    const VALUE & getAt(uint32_t index) const;
-    VALUE& getAt(uint32_t index);
+    const VALUE & at(uint32_t index) const;
+    /**
+     * \brief   Returns mutable reference to element at given zero-based index.
+     *
+     * \param   index       Zero-based index of element in stack; must be less than size.
+     * \return  Returns mutable reference to element at index.
+     **/
+    VALUE& at(uint32_t index);
 
     /**
-     * \brief   Sets new value at the passed index. The index is zero-based and should be valid.
-     * \param   index   Zero-based index of the entry to set the value.
+     * \brief   Sets new value at given zero-based index.
+     *
+     * \param   index       Zero-based index of element to update; must be valid.
+     * \param   newValue    The new value to set at index.
      **/
-    void setAt(uint32_t index, const VALUE& newValue);
+    void set_at(uint32_t index, const VALUE& newValue);
 
     /**
-     * \brief   Pushes new element at the end of Ring Stack
-     *          If Ring Stack is full, the operation depends on
-     *          overlapping flag:
-     *          1.  If overlap flag is Stop, the element will not be set.
-     *          2.  If overlap flag is Shift, the element will be set at the tail of stack,
-     *              but the size of Ring Stack will not be changed. The element on head of stack 
-     *              will be lost.
-     *          3.  If overlap flag is Resize, it will resize ring stack
-     *              by increasing capacity twice. If capacity was zero, it will set to 2.
-     * \param   newElement  New element to set at the end of Ring Stack.
-     * \return  Returns size of stack.
+     * \brief   Pushes element at end of stack; behavior on full stack depends on overlap policy.
+     *
+     * \param   newElement      New element to add at end of stack.
+     * \return  Returns size of stack after push.
+     * \note    If stack is full: Stop policy prevents insertion, Shift policy overwrites head
+     *          element, Resize policy enlarges capacity (or sets to 2 if zero).
      **/
     uint32_t push( const VALUE& newElement );
 
     /**
-     * \brief   Removes element from head and returns value, decreases number of element by one.
-     *          The stack should not be empty when method is called.
-     * \return  Returns value of remove element.
+     * \brief   Removes and returns element from head of stack; decrements size.
+     *
+     * \return  Returns value of removed element.
+     * \note    Stack must not be empty when called.
      **/
     VALUE pop();
 
     /**
-     * \brief   Removes all elements from Ring stack and makes it empty.
-     *          The capacity of stack remains unchanged. The change capacity value, resize stack.
+     * \brief   Removes all elements from stack; capacity remains unchanged.
      **/
     void clear();
 
     /**
-     * \brief   Clears the ring stack, deletes the list and sets capacity zero.
+     * \brief   Clears stack, frees internal buffer, and resets capacity to zero.
      **/
     void release();
 
     /**
-     * \brief   Removes the extra entries in the ring stack and makes capacity equal to the number of elements in the stack.
+     * \brief   Removes unused capacity; shrinks capacity to equal element count.
      **/
-    void freeExtra();
+    void free_extra();
 
     /**
-     * \brief   Adds elements from given source. The elements will be copied at the end of stack.
-     *          If capacity of stack is small to copy all elements from the source, the results depends on 
-     *          overlapping flag of stack:
-     *          1.  If overlap flag is Stop, the elements will be copied until the stack is not full.
-     *              When stack is full, no more elements will be copied.
-     *          2.  If overlap flag is Shift, the element will be copied until the stack is not full.
-     *              Then the elements will be set by removing head of stack until all elements from given source
-     *              are not copied. The capacity of stack will remain unchanged. If during copying stack is full,
-     *              the elements at head are lost.
-     *          3.  If overlap flag is Resize and if elements in source are bigger than capacity of stack,
-     *              the capacity of stack will be increased that no elements are lost and all elements from source
-     *              are copied. No data will be lost.
-     * \param   source  The source of Ring stack to get elements.
-     * \return  Returns number of elements copied in to the stack. The number of copied elements and elements in stack
-     *          might differ depending on overlapping flag.
+     * \brief   Adds elements from source stack; behavior on full stack depends on overlap policy.
+     *
+     * \param   source      The source ring stack to copy elements from.
+     * \return  Returns number of elements actually copied (may differ from source size depending on
+     *          overlap policy).
+     * \note    If insufficient capacity: Stop policy copies until full then stops, Shift policy
+     *          overwrites head elements as needed, Resize policy enlarges to fit all elements.
      **/
     uint32_t add( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Reserves the space of given capacity entries. If new capacity is not more than the existing,
-     *          the operation is ignored and the stack is not resized. Otherwise, the size of the stack is changed
-     *          and all existing elements are copied.
-     * \param   newCapacity     New capacity to set for Ring Stack.
-     * \return  Returns capacity size of resized ring stack.
+     * \brief   Reserves space for given capacity; enlarges if needed, ignores if new capacity is
+     *          not larger.
+     *
+     * \param   newCapacity     New capacity to set for ring stack.
+     * \return  Returns new capacity after reservation.
+     * \note    If new capacity exceeds current, stack is resized and all elements are preserved.
      **/
     uint32_t reserve( uint32_t newCapacity );
 
     /**
-     * \brief   Copies entries from the given source. The previous entries will be lost and new entries will be set.
-     * \param   source  The source of entries to copy data.
+     * \brief   Copies entries from source; previous entries are replaced.
+     *
+     * \param   source      The source ring stack to copy from.
      **/
     void copy(const RingStackBase<VALUE> & source);
 
     /**
-     * \brief   Moves entries from the given source. The previous entries are swapped with the source.
-     * \param   source  The source of entries to move data.
+     * \brief   Moves entries from source; swaps content with source.
+     *
+     * \param   source      The source ring stack to move from.
+     * \note    Move operation. Exchanges content with source.
      **/
     void move(RingStackBase<VALUE> && source) noexcept;
 
     /**
-     * \brief   Searches element in the stack starting at given position (index).
-     *          The given position should be valid or equal to NECommon::RING_START_POSITION
-     *          to search at the beginning of stack.
-     * \param   elem        The value to search in the stack.
-     * \param   startAt     The starting position to search. It will start to search 
-     *                      from beginning if equal to NECommon::RING_START_POSITION.
-     * \return  If found element, returns valid position (index).
-     *          Otherwise, it returns NECommon::INVALID_INDEX.
+     * \brief   Searches for element in stack starting at given position.
+     *
+     * \param   elem        The element value to search for.
+     * \param   startAt     Starting position index; use NECommon::RING_START_POSITION to search
+     *                      from beginning.
+     * \return  Returns valid index if found; returns NECommon::INVALID_INDEX if not found.
      **/
     uint32_t find(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
 
     /**
-     * \brief   Searches the specified element in the ring stack starting at the mentioned position
-     *          and returns true if the ring-stack contains specified element. The starting position
-     *          is zero-based and should not be more than the number of elements in the ring stack.
-     *          If the starting position is NECommon::RING_START_POSITION, it searches at the begin of
-     *          the ring stack.
-     * \param   elem    The element to search.
-     * \param   startAt The starting position to search. If the starting position is
-     *                  NECommon::RING_START_POSITION it searches from the begin of the ring stack.
-     * \return  Returns true if found an entry in the ring stack. Otherwise, returns false.
+     * \brief   Returns true if ring stack contains specified element starting at given position.
+     *
+     * \param   elem        The element to search for.
+     * \param   startAt     Starting position index; use NECommon::RING_START_POSITION to search
+     *                      from beginning.
+     * \return  Returns true if element found; false otherwise.
      **/
     bool contains(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
 
@@ -387,67 +430,79 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Empties stack without locking object. The capacity of stack remain unchanged. All elements are lost.
+     * \brief   Clears all elements without acquiring lock; capacity unchanged.
      **/
-    void _emptyStack();
+    void _empty_stack();
 
     /**
-     * \brief   Copies entries from the give source `src` to the destination `dst.
-     *          The destination must have enough space (capacity) to copy elements.
-     * \param   dst         The destination to copy elements.
-     * \param   src         The source of elements to copy data.
-     * \param   srcStart    The starting position in the source of stack to copy elements.
-     * \param   srcEnd      The last position in the source of stack to stop copying elements.
-     * \param   srcCount    The number of elements to copy elements.
-     * \param   srcCapacity The capacity of source, used to compute right position in the ring.
+     * \brief   Copies elements from source ring buffer to destination; destination must have
+     *          sufficient capacity.
+     *
+     * \param[out] dst             The destination buffer to copy elements into.
+     * \param   src             The source ring buffer to copy elements from.
+     * \param   srcStart        Starting position index in source ring.
+     * \param   srcEnd          Ending position index in source ring (inclusive).
+     * \param   srcCount        Number of elements to copy.
+     * \param   srcCapacity     Capacity of source ring (used for wraparound calculation).
      **/
-    void _copyElems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity);
+    void _copy_elems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity);
 
     /**
-     * \brief   Converts normalized index, such as zero-based index, into the appropriate internal index in the ring stack.
-     *          For example, the index 0 is equal to the head position.
-     * \param   index   The normalized index to convert.
-     * \return  Returns the internal index of the ring buffer and the index cannot be more than the capacity of the ring stack.
+     * \brief   Converts normalized zero-based index to internal ring buffer index.
+     *
+     * \param   index       Normalized zero-based index to convert.
+     * \return  Returns internal ring buffer index (not exceeding capacity).
+     * \note    Index 0 corresponds to head position.
      **/
-    uint32_t _norm2RingIndex(uint32_t index) const;
+    uint32_t _norm2_ring_index(uint32_t index) const;
 
     /**
-     * \brief   Converts the internal ring stack index into the normalized zero-based index.
-     *          For example, the head position of the ring is equal to normalized index 0.
-     * \param   ring    The internal ring stack index to convert.
-     * \return  Returns normalized zero-based index, which cannot be more than the number of elements in the ring stack.
+     * \brief   Converts internal ring buffer index to normalized zero-based index.
+     *
+     * \param   ring    Internal ring buffer index to convert.
+     * \return  Returns normalized zero-based index (not exceeding element count).
+     * \note    Head position corresponds to normalized index 0.
      **/
-    uint32_t _ring2NormIndex(uint32_t ring) const;
+    uint32_t _ring2_norm_index(uint32_t ring) const;
 
     /**
-     * \brief   Compares 2 ring stack entries in the list and returns `Bigger`, `Equal` or `Smaller` depending on comparing results.
-     * \param   left            The list of elements in the ring stack on the left side.
-     * \param   leftStart       The head position in the left ring stack.
-     * \param   leftCapacity    The capacity of the left ring stack.
-     * \param   leftCount       The number of entries in the left ring stack.
-     * \param   right           The list of elements in the ring stack on the right side.
-     * \param   rightStart      The head position in the right ring stack.
-     * \param   rightCapacity   The capacity of the right ring stack.
-     * \param   rightCount      The number of entries in the right ring stack.
-     * \return  Returns one of the values:
-     *              1. NEMath::Ordering::Equal  -- if 2 lists are equal.
-     *              2. NEMath::Ordering::Bigger -- if `left` stack is bigger than the `right`.
-     *              2. NEMath::Ordering::Smaller-- if `left` stack is smaller than the `right`.
+     * \brief   Compares elements from two ring buffers and returns ordering result.
+     *
+     * \param   left                Left ring buffer elements.
+     * \param   leftStart           Starting position index in left ring.
+     * \param   leftCapacity        Capacity of left ring.
+     * \param   leftCount           Number of elements in left ring.
+     * \param   right               Right ring buffer elements.
+     * \param   rightStart          Starting position index in right ring.
+     * \param   rightCapacity       Capacity of right ring.
+     * \param   rightCount          Number of elements in right ring.
+     * \return  Returns NEMath::Smaller if left < right, NEMath::Equal if equal, NEMath::Bigger if
+     *          left > right.
      **/
-    NEMath::Ordering _compareRings(const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount, const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const;
+    NEMath::Ordering _compare_rings(const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount, const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const;
 
     /**
-     * \brief   Copies the stack from the given source.
-     * \param   source  The source of stack data to copy elements.
+     * \brief   Copies stack data from source.
+     *
+     * \param   source      The source ring stack to copy from.
      **/
-    void _copyStack(const RingStackBase<VALUE>& source);
+    void _copy_stack(const RingStackBase<VALUE>& source);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     RingStackBase() = delete;
+    /**
+     * \brief
+     **/
     RingStackBase( const RingStackBase<VALUE> & /*src*/ ) = delete;
+    /**
+     * \brief
+     **/
     RingStackBase( RingStackBase<VALUE> && /*src*/ ) noexcept = delete;
 };
 
@@ -465,6 +520,10 @@ private:
  *                      possible to convert to type const VALUE&.
  **/
 template <typename VALUE> 
+/**
+ * \brief   Thread-safe FIFO ring stack class template. Data access is synchronized. Use this class
+ *          when elements are accessed by multiple threads.
+ **/
 class ConcurrentRingStack  : public RingStackBase<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -472,26 +531,40 @@ class ConcurrentRingStack  : public RingStackBase<VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialized locking ring stack, sets initial capacity of 
-     *          the stack and sets overlapping flag.
-     * \param   initCapacity    The initial capacity size of ring stack.
-     * \param   onOverlap       Overlapping flag, used when ring stack is full and 
-     *                          pushing new element is required.
+     * \brief   Initializes locking ring stack with initial capacity and overlap policy.
+     *
+     * \param   initCapacity    The initial capacity size of the ring stack.
+     * \param   onOverlap       Overlap policy applied when the ring stack is full and a new element
+     *                          is pushed.
      **/
     explicit ConcurrentRingStack(uint32_t initCapacity = 0, NECommon::OverlapPolicy onOverlap = NECommon::OverlapPolicy::Stop );
 
     /**
-     * \brief   Copy constructor.
-     * \param   source  The source to copy data.
+     * \brief
+     *
+     * \param   source      The source to copy data from.
      **/
     ConcurrentRingStack( const ConcurrentRingStack<VALUE> & source );
+    /**
+     * \brief
+     *
+     * \param   source      The source to copy data from.
+     **/
     ConcurrentRingStack( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Move constructor.
-     * \param   source  The source to move data.
+     * \brief
+     *
+     * \param   source      The source to move data from.
+     * \note    Move overload.
      **/
     ConcurrentRingStack(ConcurrentRingStack<VALUE>&& source) noexcept;
+    /**
+     * \brief
+     *
+     * \param   source      The source to move data from.
+     * \note    Move overload.
+     **/
     ConcurrentRingStack( RingStackBase<VALUE> && source ) noexcept;
 
     /**
@@ -504,31 +577,46 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigning operator. Copies ring stack entries from given source.
-     *          If capacity of destination stack is smaller, it will be enlarged.
-     * \param   source  The source of ring stack entries to get entries.
-     * \return  Returns ring stack object
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
+     *          is enlarged.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
      **/
     ConcurrentRingStack<VALUE> & operator = ( const ConcurrentRingStack<VALUE> & source );
+    /**
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
+     *          is enlarged.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
+     **/
     ConcurrentRingStack<VALUE> & operator = ( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Moves ring stack entries from given source.
-     *          It as well swaps all entries of source and destination, but
-     *          does not change the overlapping type and synchronization object.
-     * \param   source  The source of ring stack entries to get entries.
-     * \return  Returns ring stack object
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
+     *          policy or synchronization.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
      **/
     ConcurrentRingStack<VALUE>& operator = (ConcurrentRingStack<VALUE> && source) noexcept;
+    /**
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
+     *          policy or synchronization.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
+     **/
     ConcurrentRingStack<VALUE>& operator = (RingStackBase<VALUE> && source) noexcept;
 
     /**
-     * \brief   Compares 2 ring stack object and returns true if they are equal.
+     * \brief   Returns true if both ring stacks are equal.
      **/
     bool operator == (const RingStackBase<VALUE>& other) const;
 
     /**
-     * \brief   Compares 2 ring stack object and returns true if they are not equal.
+     * \brief   Returns true if both ring stacks are not equal.
      **/
     bool operator != (const RingStackBase<VALUE>& other) const;
 
@@ -557,30 +645,48 @@ private:
  *                      possible to convert to type const VALUE&.
  **/
 template <typename VALUE> 
+/**
+ * \brief   Non-blocking FIFO ring stack class template. No data access synchronization. Not
+ *          thread-safe. Use this class when elements are accessed by a single thread.
+ **/
 class RingStack    : public RingStackBase<VALUE>
 {
 public:
     /**
-     * \brief   Initializes non-blocking ring stack, sets initial capacity of 
-     *          the stack and sets overlapping flag.
-     * \param   initCapacity    The initial capacity size of ring stack.
-     * \param   onOverlap       Overlapping flag, used when ring stack is full and 
-     *                          pushing new element is required.
+     * \brief   Initializes non-blocking ring stack with initial capacity and overlap policy.
+     *
+     * \param   initCapacity    The initial capacity size of the ring stack.
+     * \param   onOverlap       Overlap policy applied when the ring stack is full and a new element
+     *                          is pushed.
      **/
     RingStack(uint32_t initCapacity = 0, NECommon::OverlapPolicy onOverlap = NECommon::OverlapPolicy::Stop );
 
     /**
-     * \brief   Copy constructor.
-     * \param   source  The source to copy data.
+     * \brief
+     *
+     * \param   source      The source to copy data from.
      **/
     RingStack( const RingStack<VALUE> & source );
+    /**
+     * \brief
+     *
+     * \param   source      The source to copy data from.
+     **/
     RingStack( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Move constructor.
-     * \param   source  The source to move data.
+     * \brief
+     *
+     * \param   source      The source to move data from.
+     * \note    Move overload.
      **/
     RingStack(RingStack<VALUE> && source ) noexcept;
+    /**
+     * \brief
+     *
+     * \param   source      The source to move data from.
+     * \note    Move overload.
+     **/
     RingStack( RingStackBase<VALUE> && source ) noexcept;
 
     /**
@@ -593,31 +699,46 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigning operator. Copies ring stack entries from given source.
-     *          If capacity of destination stack is smaller, it will be enlarged.
-     * \param   source  The source of ring stack entries to get entries.
-     * \return  Returns ring stack object
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
+     *          is enlarged.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
      **/
     RingStack<VALUE> & operator = ( const RingStack<VALUE> & source );
+    /**
+     * \brief   Copies ring stack entries from given source. If destination capacity is smaller, it
+     *          is enlarged.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
+     **/
     RingStack<VALUE> & operator = ( const RingStackBase<VALUE> & source );
 
     /**
-     * \brief   Moves ring stack entries from given source.
-     *          It as well swaps all entries of source and destination, but
-     *          does not change the overlapping type and synchronization object.
-     * \param   source  The source of ring stack entries to get entries.
-     * \return  Returns ring stack object
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
+     *          policy or synchronization.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
      **/
     RingStack<VALUE>& operator = (RingStack<VALUE> && source) noexcept;
+    /**
+     * \brief   Moves ring stack entries from source. Swaps entries but does not change overlap
+     *          policy or synchronization.
+     *
+     * \param   source      The source ring stack.
+     * \return  Reference to this object.
+     **/
     RingStack<VALUE>& operator = (RingStackBase<VALUE> && source) noexcept;
 
     /**
-     * \brief   Compares 2 ring stack object and returns true if they are equal.
+     * \brief   Returns true if both ring stacks are equal.
      **/
     bool operator == (const RingStackBase<VALUE>& other) const;
 
     /**
-     * \brief   Compares 2 ring stack object and returns true if they are not equal.
+     * \brief   Returns true if both ring stacks are not equal.
      **/
     bool operator != (const RingStackBase<VALUE>& other) const;
 
@@ -661,7 +782,7 @@ RingStackBase<VALUE>::RingStackBase(Lockable& syncObject, const RingStackBase<VA
     , mTailPos  ( 0u )
 {
     Lock lock(source.mSyncObj);
-    _copyStack(source);
+    _copy_stack(source);
 }
 
 template <typename VALUE>
@@ -686,7 +807,7 @@ RingStackBase<VALUE>::RingStackBase(Lockable& syncObject, RingStackBase<VALUE> &
 template <typename VALUE>
 RingStackBase<VALUE>::~RingStackBase()
 {
-    _emptyStack();
+    _empty_stack();
     delete[] reinterpret_cast<uint8_t*>(mStackList);
     mStackList = nullptr;
     mCapacity = 0;
@@ -718,7 +839,7 @@ bool RingStackBase<VALUE>::operator == (const RingStackBase<VALUE>& other) const
 
     if (mElemCount == other.mElemCount)
     {
-        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) == NEMath::Ordering::Equal;
+        result = _compare_rings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) == NEMath::Ordering::Equal;
     }
 
     return result;
@@ -736,7 +857,7 @@ bool RingStackBase<VALUE>::operator != (const RingStackBase<VALUE>& other) const
 
     if (mElemCount == other.mElemCount)
     {
-        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) != NEMath::Ordering::Equal;
+        result = _compare_rings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) != NEMath::Ordering::Equal;
     }
 
     return result;
@@ -745,31 +866,31 @@ bool RingStackBase<VALUE>::operator != (const RingStackBase<VALUE>& other) const
 template <typename VALUE>
 const VALUE& RingStackBase<VALUE>::operator [] (uint32_t index) const
 {
-    return getAt(index);
+    return at(index);
 }
 
 template <typename VALUE>
 VALUE& RingStackBase<VALUE>::operator [] (uint32_t index)
 {
-    return getAt(index);
+    return at(index);
 }
 
 template <typename VALUE>
-uint32_t RingStackBase<VALUE>::getSize() const
+uint32_t RingStackBase<VALUE>::size() const
 {
     Lock lock( mSyncObj );
     return mElemCount;
 }
 
 template <typename VALUE>
-bool RingStackBase<VALUE>::isEmpty() const
+bool RingStackBase<VALUE>::is_empty() const
 {
     Lock lock( mSyncObj );
     return (mElemCount == 0);
 }
 
 template <typename VALUE>
-NECommon::OverlapPolicy RingStackBase<VALUE>::getOverlap() const
+NECommon::OverlapPolicy RingStackBase<VALUE>::overlap() const
 {
     return mOnOverlap;
 }
@@ -794,46 +915,46 @@ uint32_t RingStackBase<VALUE>::capacity() const
 }
 
 template <typename VALUE>
-bool RingStackBase<VALUE>::isFull() const
+bool RingStackBase<VALUE>::is_full() const
 {
     Lock lock(mSyncObj);
     return (mOnOverlap != NECommon::OverlapPolicy::Resize) && (mElemCount == mCapacity);
 }
 
 template <typename VALUE>
-bool RingStackBase<VALUE>::isValidIndex(uint32_t index) const
+bool RingStackBase<VALUE>::is_valid_index(uint32_t index) const
 {
     Lock lock(mSyncObj);
     return (index < mElemCount);
 }
 
 template <typename VALUE>
-const VALUE& RingStackBase<VALUE>::getAt(uint32_t index) const
+const VALUE& RingStackBase<VALUE>::at(uint32_t index) const
 {
     Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
     ASSERT(mCapacity != 0);
-    index = _norm2RingIndex(index);
+    index = _norm2_ring_index(index);
     return mStackList[index];
 }
 
 template <typename VALUE>
-VALUE& RingStackBase<VALUE>::getAt(uint32_t index)
+VALUE& RingStackBase<VALUE>::at(uint32_t index)
 {
     Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
     ASSERT(mCapacity != 0);
-    index = _norm2RingIndex(index);
+    index = _norm2_ring_index(index);
     return mStackList[index];
 }
 
 template <typename VALUE>
-void RingStackBase<VALUE>::setAt(uint32_t index, const VALUE& newValue)
+void RingStackBase<VALUE>::set_at(uint32_t index, const VALUE& newValue)
 {
     Lock lock(mSyncObj);
     ASSERT(index < mElemCount);
     ASSERT(mCapacity != 0);
-    index = _norm2RingIndex(index);
+    index = _norm2_ring_index(index);
     mStackList[index] = newValue;
 }
 
@@ -841,21 +962,21 @@ template <typename VALUE>
 void RingStackBase<VALUE>::clear()
 {
     Lock lock(mSyncObj);
-    _emptyStack();
+    _empty_stack();
 }
 
 template<typename VALUE>
 void RingStackBase<VALUE>::release()
 {
     Lock lock(mSyncObj);
-    _emptyStack();
+    _empty_stack();
     delete[] reinterpret_cast<uint8_t*>(mStackList);
     mStackList = nullptr;
     mCapacity = 0;
 }
 
 template<typename VALUE>
-void RingStackBase<VALUE>::freeExtra()
+void RingStackBase<VALUE>::free_extra()
 {
     if (mCapacity == mElemCount)
         return;
@@ -866,8 +987,8 @@ void RingStackBase<VALUE>::freeExtra()
     {
         if (mStackList != nullptr)
         {
-            _copyElems(newList, mStackList, mHeadPos, mTailPos, mElemCount, capacity);
-            _emptyStack();
+            _copy_elems(newList, mStackList, mHeadPos, mTailPos, mElemCount, capacity);
+            _empty_stack();
             delete[] reinterpret_cast<uint8_t*>(mStackList);
         }
 
@@ -881,7 +1002,7 @@ void RingStackBase<VALUE>::freeExtra()
     {
         if (mStackList != nullptr)
         {
-            _emptyStack();
+            _empty_stack();
             delete[] reinterpret_cast<uint8_t*>(mStackList);
             mStackList = nullptr;
         }
@@ -913,7 +1034,7 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
             block = mStackList + mTailPos;
         }
 
-        NEMemory::constructElems<VALUE>(block, 1);
+        NEMemory::construct_elems<VALUE>(block, 1);
         *block = newElement;
         ++mElemCount;
     }
@@ -928,8 +1049,8 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
                 mTailPos = (mTailPos + 1u) % mCapacity;
                 mHeadPos = (mHeadPos + 1u) % mCapacity;
                 VALUE* block = mStackList + mTailPos;
-                NEMemory::destroyElems<VALUE>(block, 1);
-                NEMemory::constructElems<VALUE>(block, 1);
+                NEMemory::destroy_elems<VALUE>(block, 1);
+                NEMemory::construct_elems<VALUE>(block, 1);
                 *block = newElement;
             }
             // else capacity == 0 => nothing to do
@@ -942,7 +1063,7 @@ uint32_t RingStackBase<VALUE>::push( const VALUE& newElement )
                 ASSERT(mCapacity >= mElemCount + 1u);
                 mTailPos = (mTailPos + 1u) % mCapacity;
                 VALUE * block = mStackList + mTailPos;
-                NEMemory::constructElems<VALUE>(block, 1);
+                NEMemory::construct_elems<VALUE>(block, 1);
                 *block = newElement;
                 ++ mElemCount;
             }
@@ -966,7 +1087,7 @@ template <typename VALUE>
 VALUE RingStackBase<VALUE>::pop()
 {
     Lock lock(mSyncObj);
-    ASSERT( isEmpty() == false );
+    ASSERT( is_empty() == false );
     VALUE result{ };
 
     if ( mElemCount != 0u )
@@ -976,7 +1097,7 @@ VALUE RingStackBase<VALUE>::pop()
         ASSERT((mHeadPos != mTailPos) || (mElemCount == 1u));
 
         result = mStackList[mHeadPos];
-        NEMemory::destroyElems<VALUE>( mStackList + mHeadPos, 1 );
+        NEMemory::destroy_elems<VALUE>( mStackList + mHeadPos, 1 );
         mHeadPos = (mHeadPos + 1u) % mCapacity;
         -- mElemCount;
 
@@ -1019,8 +1140,8 @@ uint32_t RingStackBase<VALUE>::reserve(uint32_t newCapacity )
             uint32_t elemCount = mElemCount;
             if (mStackList != nullptr)
             {
-                _copyElems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
-                _emptyStack();
+                _copy_elems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
+                _empty_stack();
                 delete[] reinterpret_cast<uint8_t*>(mStackList);
             }
 
@@ -1042,7 +1163,7 @@ void RingStackBase<VALUE>::copy(const RingStackBase<VALUE>& source)
     {
         Lock lock1(mSyncObj);
         Lock lock2(source.mSyncObj);
-        _copyStack(source);
+        _copy_stack(source);
     }
 }
 
@@ -1071,7 +1192,7 @@ uint32_t RingStackBase<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NECo
     startAt = startAt == NECommon::RING_START_POSITION ? 0u : startAt;
     for (uint32_t i = startAt; i < mElemCount; ++i)
     {
-        if (elem == mStackList[_norm2RingIndex(i)])
+        if (elem == mStackList[_norm2_ring_index(i)])
         {
             result = i;
             break;
@@ -1088,13 +1209,13 @@ bool RingStackBase<VALUE>::contains(const VALUE& elem, uint32_t startAt /*= NECo
 }
 
 template <typename VALUE>
-void RingStackBase<VALUE>::_emptyStack()
+void RingStackBase<VALUE>::_empty_stack()
 {
     // do not delete stack, only remove elements and reset data.
     // keep capacity same
     for (uint32_t i = 0; i < mElemCount; ++ i)
     {
-        NEMemory::destroyElems<VALUE>( mStackList + mHeadPos, 1 );
+        NEMemory::destroy_elems<VALUE>( mStackList + mHeadPos, 1 );
         mHeadPos = (mHeadPos + 1 ) % mCapacity;
     }
 
@@ -1104,7 +1225,7 @@ void RingStackBase<VALUE>::_emptyStack()
 }
 
 template <typename VALUE>
-void RingStackBase<VALUE>::_copyElems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity)
+void RingStackBase<VALUE>::_copy_elems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity)
 {
     ASSERT(srcCapacity >= srcCount);
     ASSERT((dst != nullptr) && (src != nullptr));
@@ -1112,29 +1233,29 @@ void RingStackBase<VALUE>::_copyElems(VALUE* dst, VALUE* src, uint32_t srcStart,
     if (srcCount == 0)
         return;
 
-    NEMemory::constructElems<VALUE>(static_cast<void*>(dst), srcCount);
+    NEMemory::construct_elems<VALUE>(static_cast<void*>(dst), srcCount);
     if (srcEnd >= srcStart)
     {
         ASSERT((srcEnd - srcStart + 1u) == srcCount);
-        NEMemory::copyElems<VALUE>(dst, src + srcStart, srcCount);
+        NEMemory::copy_elems<VALUE>(dst, src + srcStart, srcCount);
     }
     else
     {
         uint32_t elemCopy = srcCapacity - srcStart;
         ASSERT((elemCopy + srcEnd + 1u) == srcCount);
-        NEMemory::copyElems<VALUE>(dst, src + srcStart, elemCopy);
-        NEMemory::copyElems<VALUE>(dst + elemCopy, src, srcEnd + 1);
+        NEMemory::copy_elems<VALUE>(dst, src + srcStart, elemCopy);
+        NEMemory::copy_elems<VALUE>(dst + elemCopy, src, srcEnd + 1);
     }
 }
 
 template <typename VALUE>
-uint32_t RingStackBase<VALUE>::_norm2RingIndex(uint32_t index) const
+uint32_t RingStackBase<VALUE>::_norm2_ring_index(uint32_t index) const
 {
     return (mCapacity != 0 ? ((mHeadPos + index) % mCapacity) : 0u);
 }
 
 template <typename VALUE>
-uint32_t RingStackBase<VALUE>::_ring2NormIndex(uint32_t ring) const
+uint32_t RingStackBase<VALUE>::_ring2_norm_index(uint32_t ring) const
 {
     if (mCapacity == 0)
         return 0u;
@@ -1143,7 +1264,7 @@ uint32_t RingStackBase<VALUE>::_ring2NormIndex(uint32_t ring) const
 }
 
 template <typename VALUE>
-NEMath::Ordering RingStackBase<VALUE>::_compareRings( const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount
+NEMath::Ordering RingStackBase<VALUE>::_compare_rings( const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount
                                                          , const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const
 {
     ASSERT((leftStart < leftCapacity) && (rightStart < rightCapacity));
@@ -1166,9 +1287,9 @@ NEMath::Ordering RingStackBase<VALUE>::_compareRings( const VALUE* left, uint32_
 }
 
 template <typename VALUE>
-void RingStackBase<VALUE>::_copyStack(const RingStackBase<VALUE>& source)
+void RingStackBase<VALUE>::_copy_stack(const RingStackBase<VALUE>& source)
 {
-    _emptyStack();
+    _empty_stack();
     uint32_t srcCapacity{ source.mCapacity };
     VALUE*   newList    { mStackList };
 
@@ -1184,7 +1305,7 @@ void RingStackBase<VALUE>::_copyStack(const RingStackBase<VALUE>& source)
     {
         if (source.mStackList != nullptr)
         {
-            _copyElems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, srcCapacity);
+            _copy_elems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, srcCapacity);
         }
 
         mStackList  = newList;
@@ -1366,7 +1487,7 @@ const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input
     input.clear();
     if ((input.reserve(size)) >= size && (size != 0))
     {
-        NEMemory::constructElems<V>(input.mStackList, size);
+        NEMemory::construct_elems<V>(input.mStackList, size);
         for (uint32_t i = 0; i < size; i++)
         {
             stream >> input.mStackList[i];

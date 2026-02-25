@@ -34,23 +34,23 @@
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
 {
     TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
     if (posixTimer != nullptr)
     {
-        posixTimer->stopTimer();
+        posixTimer->stop_timer();
     }
 }
 
-bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 {
     bool result = false;
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
+    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.handle());
     if (posixTimer != nullptr)
     {
-        Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
-        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_posixWatchdogExpiredRoutine))
+        Watchdog::WATCHDOG_ID watchdog_id = watchdog.watchdog_id();
+        if (posixTimer->start_timer(watchdog, watchdog_id, &WatchdogManager::_posix_watchdog_expired))
         {
             result = true;
         }
@@ -60,38 +60,38 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 }
 
 #ifdef __APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
+void WatchdogManager::_posix_watchdog_expired(TimerPosix* posixTimer)
 {
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    WatchdogManager& watchdogManager = WatchdogManager::instance();
     ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
+    Watchdog::GUARD_ID guardId  = Watchdog::make_guard_id(watchdog_id);
+    Watchdog* watchdog          = watchdogManager.mWatchdogResource.find_resource_object(guardId);
 
     if (watchdog != nullptr)
     {
         uint32_t highValue 	= static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue  	= static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->stopTimer();
-        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
+        posixTimer->stop_timer();
+        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
 }
 #else   // !__APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
+void WatchdogManager::_posix_watchdog_expired(union sigval argSig)
 {
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    WatchdogManager& watchdogManager = WatchdogManager::instance();
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
     ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    Watchdog::WATCHDOG_ID watchdog_id = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->context_id());
+    Watchdog::GUARD_ID guardId  = Watchdog::make_guard_id(watchdog_id);
+    Watchdog* watchdog          = watchdogManager.mWatchdogResource.find_resource_object(guardId);
 
     if (watchdog != nullptr)
     {
         uint32_t highValue 	= static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue  	= static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->stopTimer();
-        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
+        posixTimer->stop_timer();
+        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
 }
 #endif  // __APPLE__

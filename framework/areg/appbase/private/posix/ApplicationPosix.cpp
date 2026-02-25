@@ -30,7 +30,7 @@ namespace
 
     int32_t _getProcIdByName(const char* procName)
     {
-        if (NEString::isEmpty<char>(procName))
+        if (NEString::is_empty<char>(procName))
             return -1;
 
         // macOS implementation using sysctl
@@ -56,7 +56,7 @@ namespace
 
         for (int i = 0; i < count && pid < 0; ++i)
         {
-            if (NEString::compareIgnoreCase<char, char>(procName, procs[i].kp_proc.p_comm) == NEMath::Ordering::Equal)
+            if (NEString::compare_ignore_case<char, char>(procName, procs[i].kp_proc.p_comm) == NEMath::Ordering::Equal)
             {
                 pid = procs[i].kp_proc.p_pid;
             }
@@ -70,7 +70,7 @@ namespace
 
     int32_t _getProcIdByName(const char* procName)
     {
-        if (NEString::isEmpty<char>(procName))
+        if (NEString::is_empty<char>(procName))
             return -1;
 
         // Linux implementation using /proc
@@ -85,22 +85,22 @@ namespace
 
         for (struct dirent* dirEntry = readdir(dir); (pid < 0) && (dirEntry != nullptr); dirEntry = readdir(dir))
         {
-            if (NEString::isNumeric<char>(dirEntry->d_name[0]))
+            if (NEString::is_numeric<char>(dirEntry->d_name[0]))
             {
                 String name;
                 name.format(fmt, dirEntry->d_name);
-                FILE* file = fopen(name.getBuffer(), "r");
+                FILE* file = fopen(name.buffer(), "r");
                 if (file != nullptr)
                 {
                     if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        NEString::CharPos pos = NEString::findLast<char>(File::PATH_SEPARATOR, buffer);
-                        if (NEString::isPositionValid(pos))
+                        NEString::CharPos pos = NEString::find_last<char>(File::PATH_SEPARATOR, buffer);
+                        if (NEString::is_position_valid(pos))
                         {
                             char* procPath = buffer + pos + 1;
-                            if (NEString::compareIgnoreCase<char, char>(procName, procPath) == NEMath::Ordering::Equal)
+                            if (NEString::compare_ignore_case<char, char>(procName, procPath) == NEMath::Ordering::Equal)
                             {
-                                pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
+                                pid = NEString::make_integer<char>(dirEntry->d_name, nullptr);
                             }
                         }
                     }
@@ -132,9 +132,9 @@ namespace
 
 } // namespace
 
-void Application::_osSetupHandlers()
+void Application::_os_setup_handlers()
 {
-    Application & theApp = Application::getInstance();
+    Application & theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if ( theApp.mSetup == false )
@@ -147,9 +147,9 @@ void Application::_osSetupHandlers()
     }
 }
 
-void Application::_osReleaseHandlers()
+void Application::_os_release_handlers()
 {
-    Application& theApp = Application::getInstance();
+    Application& theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
@@ -163,10 +163,10 @@ void Application::_osReleaseHandlers()
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* serviceExecutable)
+bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* serviceExecutable)
 {
-    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
-    ASSERT(NEString::isEmpty<wchar_t>(serviceExecutable) == false);
+    ASSERT(NEString::is_empty<wchar_t>(serviceName) == false);
+    ASSERT(NEString::is_empty<wchar_t>(serviceExecutable) == false);
     String serviceExe(serviceExecutable);
     int32_t pid = _getProcIdByName(serviceExe);
     bool result{ pid > 0 };
@@ -174,7 +174,7 @@ bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t
     {
         constexpr std::string_view fmt { "systemctl start %s" };
         char cmd[512];
-        String::formatString(cmd, 512, fmt.data(), serviceName);
+        String::format_string(cmd, 512, fmt.data(), serviceName);
         result = std::system(cmd);
     }
 

@@ -14,9 +14,9 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-void Application::_osSetupHandlers()
+void Application::_os_setup_handlers()
 {
-    Application & theApp = Application::getInstance();
+    Application & theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if (theApp.mSetup == false)
@@ -25,9 +25,9 @@ void Application::_osSetupHandlers()
     }
 }
 
-void Application::_osReleaseHandlers()
+void Application::_os_release_handlers()
 {
-    Application& theApp = Application::getInstance();
+    Application& theApp = Application::instance();
     Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
@@ -39,9 +39,9 @@ void Application::_osReleaseHandlers()
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
+bool Application::_os_start_local_service(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
-    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
+    ASSERT(NEString::is_empty<wchar_t>(serviceName) == false);
     bool result = false;
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;

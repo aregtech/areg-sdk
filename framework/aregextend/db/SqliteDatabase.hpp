@@ -59,7 +59,7 @@ public:
     /**
      * \brief   Returns the path to the SQLite database file.
      **/
-    inline const String & getPath() const;
+    inline const String & path() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -73,7 +73,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    bool isOperable() const override;
+    bool is_operable() const override;
 
     /**
      * \brief   Connects to the specified database.
@@ -157,7 +157,7 @@ private:
 // SqliteDatabase class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const String& SqliteDatabase::getPath() const
+inline const String& SqliteDatabase::path() const
 {
     return mDbPath;
 }

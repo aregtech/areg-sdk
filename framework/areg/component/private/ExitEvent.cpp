@@ -25,7 +25,7 @@ ExitEvent::ExitEvent()
     mEventPrio = Event::EventPriority::ExitPrio;
 }
 
-ExitEvent & ExitEvent::getExitEvent()
+ExitEvent & ExitEvent::exit_event()
 {
     static ExitEvent  _exitEvent;
     return _exitEvent;

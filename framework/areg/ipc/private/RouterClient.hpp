@@ -34,9 +34,8 @@ class RegistrationConsumer;
 // RouterClient class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The connected client servicing object to handle connections,
- *          to read and send message, to dispatch messages and
- *          communicate with service manager.
+ * \brief   Handles router client connection management, message processing, service
+ *          provider/consumer registration, and event dispatching.
  **/
 class RouterClient  : public    ServiceClientConnectionBase
                     , public    RegistrationProvider
@@ -52,9 +51,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes client servicing object, sets remote service consumer object.
-     * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
-     * \param   registerConsumer    The instance of remote service registration consumer to handle service register notification.
+     * \brief   Initializes router client with connection and registration consumer handlers.
+     *
+     * \param   connectionConsumer      The instance of remote service connection consumer object to
+     *                                  handle service connection notifications.
+     * \param   registerConsumer        The instance of remote service registration consumer to
+     *                                  handle service register notification.
      **/
     RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
     /**
@@ -72,146 +74,153 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Call to start remote service. The host name and port number should be already set.
-     * \return  Returns true if start service is triggered.
+     * \brief   Initiates connection to remote service. Host name and port must be set beforehand.
+     *
+     * \return  Returns true if connection is triggered.
      **/
-    bool connectServiceHost() override;
+    bool connect_service_host() override;
 
     /**
-     * \brief   Call to stop service. No more remote communication should be possible.
+     * \brief   Stops service connection and disables remote communication.
      **/
-    void disconnectServiceHost() override;
+    void disconnect_service_host() override;
 
     /**
-     * \brief   Triggered when need to quit the service.
+     * \brief   Called when service needs to shut down.
      **/
-    void onServiceExit() override;
+    void on_service_exit() override;
 
     /**
-     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     * \brief   Returns true if remote service connection is pending (triggered but not yet
+     *          connected).
      **/
-    bool isServiceHostPending() const override;
+    bool is_host_pending() const override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
+     * \brief   Called when message sending fails.
+     *
+     * \param   msgFailed       The message, which failed to send.
+     * \param   whichTarget     The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
-     * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
+     * \brief   Called when message receiving fails.
+     *
+     * \param   whichSource     Indicates the failed source socket to receive message.
      **/
-    void failedReceiveMessage( Socket & whichSource ) override;
+    void failed_receive_message( Socket & whichSource ) override;
 
     /**
-     * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
-     *          In case of request message processing, the source should receive error notification.
-     * \param   msgUnprocessed  Unprocessed message data.
+     * \brief   Called when message processing fails (target not found). For requests, error
+     *          notification is sent to source.
+     *
+     * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
 
     /**
-     * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
+     * \brief   Called to process a received message from specified source socket.
+     *
+     * \param   msgReceived     Received message to process.
+     * \param   whichSource     The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // RegistrationProvider interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Call to register the remote service provider in the system and connect with service consumers.
-     *          When service provider is registered, the service provider and all waiting service consumers
-     *          receive appropriate connection notifications.
+     * \brief   Registers a service provider (Stub) in the system. Connected consumers receive
+     *          connection notifications.
+     *
      * \param   stubService     The address of service provider to register in the system.
-     * \return  Returns true if succeeded registration.
+     * \return  Returns true if registration succeeded.
      **/
-    bool registerServiceProvider( const StubAddress & stubService ) override;
+    bool register_service_provider( const StubAddress & stubService ) override;
 
     /**
-     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
-     *          All connected service consumers automatically receive disconnect notifications.
+     * \brief   Unregisters a service provider (Stub) from the system. Connected consumers receive
+     *          disconnect notifications.
+     *
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    void unregisterServiceProvider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
+    void unregister_service_provider( const StubAddress & stubService, const NEService::DisconnectReason reason ) override;
 
     /**
-     * \brief   Call to register the remote service consumer in the system and connect to service provider.
-     *          If the service provider is already available, the service consumer and the service provider
-     *          receive a connection notification.
+     * \brief   Registers a service consumer (Proxy) in the system. If provider is available, both
+     *          receive connection notification.
+     *
      * \param   proxyService    The address of the service consumer to register in system.
-     * \return  Returns true if registration process started with success. Otherwise, it returns false.
+     * \return  Returns true if registration process started successfully.
      **/
-    bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
+    bool register_service_consumer( const ProxyAddress & proxyService ) override;
 
     /**
-     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
-     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
+     * \brief   Unregisters a service consumer (Proxy) from the system. Provider receives disconnect
+     *          notification.
+     *
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
+    void unregister_service_consumer( const ProxyAddress & proxyService, const NEService::DisconnectReason reason ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Posts an event for delivery to its target. Base implementation destroys event
+     *          without processing.
+     *
+     * \param   eventElem       Event object to post.
+     * \return  Always returns true in this base class.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) override;
 
 /************************************************************************/
 // RemoteEventConsumer interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Triggered when the Stub receives remote request event to process.
-     * \param   requestEvent        The remote request event to be processed.
+     * \brief   Called when Stub receives a remote request event to process.
+     *
+     * \param   requestEvent    The remote request event to be processed.
      **/
-    void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
+    void process_request_event( RemoteRequestEvent & requestEvent ) override;
 
     /**
-     * \brief   Triggered when the Stub receives remote notification request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          sending attribute update notifications.
-     * \param   requestNotifyEvent  The remote notification request event to be processed.
+     * \brief   Called when Stub receives a remote notification subscription request (start/stop
+     *          attribute updates).
+     *
+     * \param   requestNotifyEvent      The remote notification request event to be processed.
      **/
-    void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
+    void process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
 
     /**
-     * \brief   Triggered when the Stub receives remote response request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          to subscribe on information or response sent by Stub.
-     * \param   responseEvent   The remote response event sent on processed request.
+     * \brief   Called when Stub receives a remote response subscription request.
+     *
+     * \param   responseEvent       The remote response event sent on processed request.
      **/
-    void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
+    void process_response_event( RemoteResponseEvent & responseEvent ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Enables or disables event dispatching thread to receive events. Override for custom
+     *          preparation.
+     *
+     * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
      **/
-    void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -219,7 +228,7 @@ protected:
 private:
 
     /**
-     * \brief   Returns instance of client servicing object.
+     * \brief   Returns reference to this router client object.
      **/
     inline RouterClient & self();
 
@@ -236,6 +245,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     RouterClient() = delete;
     AREG_NOCOPY_NOMOVE( RouterClient );
 };

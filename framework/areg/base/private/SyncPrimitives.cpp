@@ -35,7 +35,7 @@ Lockable::Lockable( SyncObject::SyncKind syncObjectType )
             syncObjectType == SyncObject::SyncKind::SoNolock     );
 }
 
-bool Lockable::tryLock()
+bool Lockable::try_lock()
 {
     return false;
 }
@@ -51,12 +51,12 @@ Mutex::Mutex( bool initLock /* = true */ )
     : Lockable( SyncObject::SyncKind::SoMutex )
     , mOwnerThreadId( 0 )
 {
-    _osCreateMutex( initLock );
+    _os_create_mutex( initLock );
 }
 
 Mutex::~Mutex()
 {
-    _osUnlockMutex( );
+    _os_unlock_mutex( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,13 +71,13 @@ SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
 
     , mAutoReset( autoReset )
 {
-    _osCreateEvent( initLock );
+    _os_create_event( initLock );
 }
 
 SyncEvent::~SyncEvent()
 {
     ASSERT( mSyncObject != nullptr );
-    _osUnlockEvent( mSyncObject );
+    _os_unlock_event( mSyncObject );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,22 +91,22 @@ Semaphore::Semaphore( int32_t maxCount, int32_t initCount /* = 0 */ )
     : Lockable( SyncObject::SyncKind::SoSemaphore )
 
     , mMaxCount( std::max( maxCount, 1 ) )
-    , mCurrCount( NEMath::isInRange<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
+    , mCurrCount( NEMath::is_in_range<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
 {
-    _osCreateSemaphore( );
+    _os_create_semaphore( );
 }
 
 Semaphore::~Semaphore()
 {
     ASSERT( mSyncObject != nullptr );
-    _osReleaseSemaphore( );
+    _os_release_semaphore( );
 }
 
 bool Semaphore::lock( uint32_t timeout /* = NECommon::WAIT_INFINITE */ )
 {
     ASSERT( mSyncObject != nullptr );
     bool result = false;
-    if ( _osLock( timeout ) )
+    if ( _os_lock( timeout ) )
     {
         mCurrCount.fetch_add( 1 );
         result = true;
@@ -119,7 +119,7 @@ bool Semaphore::unlock()
 {
     ASSERT( mSyncObject != nullptr );
     bool result = false;
-    if ( _osUnlock() )
+    if ( _os_unlock() )
     {
         mCurrCount.fetch_add( 1 );
         result = true;
@@ -128,7 +128,7 @@ bool Semaphore::unlock()
     return result;
 }
 
-bool Semaphore::tryLock()
+bool Semaphore::try_lock()
 {
     return false;
 }
@@ -143,13 +143,13 @@ bool Semaphore::tryLock()
 CriticalSection::CriticalSection()
     : Lockable( SyncObject::SyncKind::SoCritical )
 {
-    _osCreateCriticalSection( );
+    _os_create_critical_section( );
 }
 
 CriticalSection::~CriticalSection()
 {
     ASSERT( mSyncObject != nullptr );
-    _osReleaseCriticalSection( );
+    _os_release_critical_section( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -183,13 +183,13 @@ bool SpinLock::lock( uint32_t /*timeout = NECommon::WAIT_INFINITE*/ )
 ResourceLock::ResourceLock( bool initLock /*= false*/ )
     : Lockable( SyncObject::SyncKind::SoReslock )
 {
-    _osCreateResourceLock( initLock );
+    _os_create_resource_lock( initLock );
 }
 
 ResourceLock::~ResourceLock()
 {
     ASSERT( mSyncObject != nullptr );
-    _osReleaseResourceLock( );
+    _os_release_resource_lock( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -208,20 +208,20 @@ NolockSyncObject::NolockSyncObject()
 //////////////////////////////////////////////////////////////////////////
 // SyncTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SyncTimer::SyncTimer( uint32_t msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
+SyncTimer::SyncTimer( uint32_t msTimeout, bool is_periodic /* = false */, bool is_auto_reset /* = true */, bool isSteady /* = true */ )
     : SyncObject  ( SyncObject::SyncKind::SoTimer )
 
     , mTimeout      ( msTimeout )
-    , mIsPeriodic   ( isPeriodic )
-    , mIsAutoReset  ( isAutoReset )
+    , mIsPeriodic   ( is_periodic )
+    , mIsAutoReset  ( is_auto_reset )
 {
-    _osCreateTimer( isSteady );
+    _os_create_timer( isSteady );
 }
 
 SyncTimer::~SyncTimer()
 {
     ASSERT( mSyncObject != nullptr );
-    _osReleaseTime( );
+    _os_release_time( );
     mSyncObject = nullptr;
 }
 
@@ -236,7 +236,7 @@ Lock::Lock(SyncObject &syncObj, bool autoLock /* = true */)
     : mSyncObject(syncObj)
     , mAutoLock  (autoLock)
 {
-    if (mAutoLock && mSyncObject.isValid() )
+    if (mAutoLock && mSyncObject.is_valid() )
     {
         mSyncObject.lock();
     }
@@ -244,7 +244,7 @@ Lock::Lock(SyncObject &syncObj, bool autoLock /* = true */)
 
 Lock::~Lock()
 {
-    if (mAutoLock && mSyncObject.isValid())
+    if (mAutoLock && mSyncObject.is_valid())
     {
         mSyncObject.unlock();
     }
@@ -262,7 +262,7 @@ MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = t
     , mSizeCount    (std::min(count, NECommon::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)
 {
-    NEMemory::memZero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
+    NEMemory::mem_zero(static_cast<void *>(mLockedStates), NECommon::MAXIMUM_WAITING_OBJECTS * sizeof(LockState)  );
     if (autoLock)
     {
         lock(NECommon::WAIT_INFINITE, true);
@@ -314,10 +314,10 @@ bool MultiLock::unlock( int32_t index )
 Wait::Wait()
     : mTimer(nullptr)
 {
-    _osInitTimer();
+    _os_init_timer();
 }
 
 Wait::~Wait()
 {
-    _osReleaseTimer();
+    _os_release_timer();
 }

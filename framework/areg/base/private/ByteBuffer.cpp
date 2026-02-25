@@ -58,17 +58,17 @@ uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
         if (mByteBuffer.use_count() <= 1)
         {
             size = size > ByteBuffer::MAX_BUF_LENGTH ? ByteBuffer::MAX_BUF_LENGTH : size;
-            uint32_t sizeLength{ isValid() ? mByteBuffer->bufHeader.biLength : 0 };
+            uint32_t sizeLength{ is_valid() ? mByteBuffer->bufHeader.biLength : 0 };
 
             // If not enough space
             if (size > sizeLength)
             {
-                uint32_t sizeAlign{ getAlignedSize() };
-                uint32_t sizeBuffer{ getHeaderSize() + size };
+                uint32_t sizeAlign{ aligned_size() };
+                uint32_t sizeBuffer{ header_size() + size };
 
-                sizeBuffer = NEMath::alignSize(sizeBuffer, sizeAlign);
+                sizeBuffer = NEMath::align_size(sizeBuffer, sizeAlign);
                 uint8_t* buffer = DEBUG_NEW uint8_t[sizeBuffer];
-                int32_t copied = static_cast<int32_t>(initBuffer(buffer, sizeBuffer, copy));
+                int32_t copied = static_cast<int32_t>(init_buffer(buffer, sizeBuffer, copy));
                 if (static_cast<uint32_t>(copied) != Cursor::INVALID_CURSOR_POSITION)
                 {
                     NEMemory::RawBuffer * temp = reinterpret_cast<NEMemory::RawBuffer *>(buffer);
@@ -86,17 +86,17 @@ uint32_t ByteBuffer::reserve(uint32_t size, bool copy)
         invalidate();
     }
 
-    return (isValid() ? mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed : 0);
+    return (is_valid() ? mByteBuffer->bufHeader.biLength - mByteBuffer->bufHeader.biUsed : 0);
 }
 
-uint32_t ByteBuffer::initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const
+uint32_t ByteBuffer::init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const
 {
     uint32_t result = Cursor::INVALID_CURSOR_POSITION;
 
     if ( newBuffer != nullptr )
     {
         result                      = 0;
-        uint32_t dataOffset     = getDataOffset();
+        uint32_t dataOffset     = data_offset();
         uint32_t dataLength     = bufLength - dataOffset;
 
         NEMemory::RawBuffer* buffer= new(newBuffer)NEMemory::RawBuffer;
@@ -108,7 +108,7 @@ uint32_t ByteBuffer::initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool ma
         if (makeCopy && (mByteBuffer.get() != nullptr))
         {
             uint8_t* data         = newBuffer + dataOffset;
-            const uint8_t* srcBuf = NEMemory::getBufferDataRead(mByteBuffer.get());
+            const uint8_t* srcBuf = NEMemory::buffer_data_read(mByteBuffer.get());
             uint32_t srcCount       = mByteBuffer->bufHeader.biUsed;
             srcCount                    = std::min(srcCount, dataLength);
             result                      = srcCount;
@@ -125,7 +125,7 @@ uint32_t ByteBuffer::initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool ma
     return result;
 }
 
-uint32_t ByteBuffer::getAlignedSize() const
+uint32_t ByteBuffer::aligned_size() const
 {
     return NEMemory::BLOCK_SIZE;
 }

@@ -55,12 +55,8 @@ class Timer;
 // TimerManagerEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Timer Manager Event Data is a container object.
- *          It contains Timer object and requested action.
- *          The Data object is delivered to Timer Manager and
- *          depending on requested actions, the Timer Manager
- *          is performing action.
- *          For more details, see TimerManager class
+ * \brief   Container for timer manager event data, including a timer object and the requested
+ *          action (start, stop, etc.).
  **/
 class TimerManagerEventData
 {
@@ -69,20 +65,21 @@ class TimerManagerEventData
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor.
-     *          Creates empty data with ignore action.
+     * \brief   Initializes an empty timer manager event data object with the ignore action.
      **/
     inline TimerManagerEventData();
 
     /**
-     * \brief   Initializes data object to start timer.
-     * \param   timer   The Timer object to set in Event Data. Can be nullptr if not used.
+     * \brief   Initializes the timer manager event data to start the given timer.
+     *
+     * \param   timer       The timer object to set; may be null if not used.
      **/
     inline explicit TimerManagerEventData(TimerBase* timer);
 
     /**
-     * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
+     * \brief   Copies the timer manager event data from the source object.
+     *
+     * \param   src     The source timer manager event data to copy.
      **/
     inline TimerManagerEventData(const TimerManagerEventData& src);
 
@@ -96,8 +93,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies Event Data from given source.
-     * \param   src     The source of Event Data to copy
+     * \brief   Copies timer manager event data from the source object.
+     *
+     * \param   src     The source timer manager event data.
+     * \return  A reference to this object.
      **/
     inline TimerManagerEventData& operator = (const TimerManagerEventData& src);
 
@@ -107,9 +106,9 @@ public:
 public:
 
     /**
-     * \brief   Returns the Timer object.
+     * \brief   Returns a pointer to the timer object, or null if not set.
      **/
-    inline TimerBase* getTimer() const;
+    inline TimerBase* timer() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -158,7 +157,7 @@ inline TimerManagerEventData& TimerManagerEventData::operator = (const TimerMana
     return (*this);
 }
 
-inline TimerBase* TimerManagerEventData::getTimer() const
+inline TimerBase* TimerManagerEventData::timer() const
 {
     return mTimer;
 }

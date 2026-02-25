@@ -64,64 +64,77 @@ class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streamin
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
-     * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     * \brief   Initializes the object with the specified or default block size.
+     *
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to NEMemory::BLOCK_SIZE (minimum size)
      **/
     explicit SharedBuffer(uint32_t blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief   Reserves the space in the byte buffer to write data and sets block size.
-     * \param   reserveSize Size in bytes to reserve
-     * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     *
+     * \param   reserveSize     Size in bytes to reserve
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to NEMemory::BLOCK_SIZE (minimum size)
      **/
     SharedBuffer( uint32_t reserveSize, uint32_t blockSize );
 
     /**
-     * \brief	Reserves space and writes given data into byte buffer.
-     * \param	buffer      The data to initialize byte buffer
-     * \param	size        The length in bytes of data
-     * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     * \brief   Reserves space and writes given data into byte buffer.
+     *
+     * \param   buffer          The data to initialize byte buffer
+     * \param   size            The length in bytes of data
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to NEMemory::BLOCK_SIZE (minimum size)
      **/
     SharedBuffer( const uint8_t * buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE );
 
     /**
-     * \brief	Reserves requested space in bytes and writes given data into byte buffer.
-     *          The reserved space should at least the size of the buffer to write.
-     *          If the requested space to reserve is smaller than the size of the buffer,
-     *          it will be increased to the size of the buffer.
-     * \param   reserveSize Number of bytes to reserve in the shared buffer.
-     * \param	buffer      The data to initialize byte buffer
-     * \param	size        The length in bytes of data
-     * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     * \brief   Reserves requested space in bytes and writes given data into byte buffer. The
+     *          reserved space should at least the size of the buffer to write. If the requested
+     *          space to reserve is smaller than the size of the buffer, it will be increased to the
+     *          size of the buffer.
+     *
+     * \param   reserveSize     Number of bytes to reserve in the shared buffer.
+     * \param   buffer          The data to initialize byte buffer
+     * \param   size            The length in bytes of data
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to NEMemory::BLOCK_SIZE (minimum size)
      **/
     SharedBuffer(uint32_t reserveSize, const uint8_t* buffer, uint32_t size, uint32_t blockSize = NEMemory::BLOCK_SIZE);
 
     /**
-     * \brief	Initialization constructor, writes given null-terminated string into byte buffer.
-     *          It will write including EOS character ('\0').
-     *          If given string is null, it will write only end-of-string ('\0') character.
-     * \param	textString  The byte buffer as a null-terminated string
-     * \param   blockSize   The size of minimum block size to increase on resize.
-     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     * \brief   Initializes the object and writes given null-terminated string into byte buffer,
+     *          including the EOS character.
+     *
+     * \param   textString      The byte buffer as a null-terminated string
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to NEMemory::BLOCK_SIZE (minimum size)
      **/
     explicit SharedBuffer( const char * textString, uint32_t blockSize = NEMemory::BLOCK_SIZE );
+    /**
+     * \brief   Initializes the object and writes given null-terminated wide string into byte
+     *          buffer, including the EOS character.
+     *
+     * \param   textString      The byte buffer as a null-terminated string
+     * \param   blockSize       The size of minimum block size to increase on resize. It is aligned
+     *                          to NEMemory::BLOCK_SIZE (minimum size)
+     **/
     explicit SharedBuffer( const wchar_t * textString, uint32_t blockSize = NEMemory::BLOCK_SIZE );
 
     /**
-     * \brief	Copy constructor. It does not copy data from src, it will refer to the same shared
-     *          byte buffer object and will increase reference counter by one to prevent any other
-     *          shared buffer object deleting used data
-     * \param	src	    The source of shared buffer object instance.
+     * \brief   Copy constructor. Does not copy data from source; instead refers to the same shared
+     *          byte buffer object and increases the reference counter by one.
+     *
+     * \param   src     The source of shared buffer object instance.
      **/
     SharedBuffer(const SharedBuffer& src);
 
     /**
-     * \brief	Moves data from given source.
-     * \param	src	    The source of shared buffer to move data.
+     * \brief   Move constructor. Moves data from given source.
+     *
+     * \param   src     The source of shared buffer to move data.
      **/
     SharedBuffer( SharedBuffer && src ) noexcept;
 
@@ -135,31 +148,34 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Compares 2 instances of shared buffer and returns true if they are equal
-     * \param	other	Reference to another shared buffer object instance to compare
-     * \return	Returns true if 2 objects are same or have similar data. 
-     *          If 2 objects are invalid, it will return false.
+     * \brief   Compares 2 instances of shared buffer and returns true if they are equal.
+     *
+     * \param   other       Reference to another shared buffer object instance to compare
+     * \return  Returns true if 2 objects are same or have similar data. If 2 objects are invalid,
+     *          it will return false.
      **/
     inline bool operator == (const SharedBuffer & other) const;
 
     /**
-     * \brief	Compares 2 instances of shared buffer and returns true if they are not equal
-     * \param	other	Reference to another shared buffer object instance to compare
-     * \return	Returns true if 2 objects are having different data or they are invalid. 
+     * \brief   Compares 2 instances of shared buffer and returns true if they are not equal.
+     *
+     * \param   other       Reference to another shared buffer object instance to compare
+     * \return  Returns true if 2 objects are having different data or they are invalid.
      **/
     inline bool operator != (const SharedBuffer & other) const;
 
     /**
-     * \brief	Assigning operator, it does not copy source data, it increases
-     *          byte buffer reference counter by one to prevent other shared
-     *          object instance to delete buffer
-     * \param	src	    Reference to source object
+     * \brief   Copy assignment operator. Does not copy source data; instead increases byte buffer
+     *          reference counter by one.
+     *
+     * \param   src     Reference to source object
      **/
     SharedBuffer & operator = (const SharedBuffer & src);
 
     /**
-     * \brief	Moves shared buffer data from given source.
-     * \param	src	    The source to move data.
+     * \brief   Move assignment operator. Moves shared buffer data from given source.
+     *
+     * \param   src     The source to move data.
      **/
     SharedBuffer & operator = ( SharedBuffer && src ) noexcept;
 
@@ -168,20 +184,20 @@ public:
 /************************************************************************/
 
     /**
-     * \brief	Friend operator declaration to make Shared Buffer streamable.
-     *          Writes the data from streaming object to Shared Buffer
-     * \param	stream	The data streaming object to read data
-     * \param	input	The Shared Buffer object to write data
-     * \return	Reference to Streaming object.
+     * \brief   Extracts data from input stream and writes it to the shared buffer.
+     *
+     * \param   stream      The data streaming object to read data
+     * \param[in,out] input       The Shared Buffer object to write data
+     * \return  Reference to streaming object.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, SharedBuffer & input );
 
     /**
-     * \brief	Friend global operator declaration to make Shared Buffer streamable.
-     *          Writes the data from shared buffer to streaming
-     * \param	stream	The data streaming object to write data
-     * \param	output	The Shared Buffer object to write data
-     * \return	Reference to Streaming object.
+     * \brief   Writes data from shared buffer to output stream.
+     *
+     * \param[in,out] stream      The data streaming object to write data
+     * \param   output      The Shared Buffer object to read data
+     * \return  Reference to streaming object.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const SharedBuffer & output );
 
@@ -191,36 +207,30 @@ public:
 public:
 
     /**
-     * \brief   Returns true if either buffer is invalid, 
-     *          or current position is equal to zero,
-     *          or current position is equal to Cursor::INVALID_CURSOR_POSITION.
-     *          Otherwise, it returns false.
+     * \brief   Returns true if buffer is invalid, current position is zero, or position is
+     *          Cursor::INVALID_CURSOR_POSITION.
      **/
-    inline bool isBeginOfBuffer() const;
+    inline bool is_at_begin() const;
 
     /**
-     * \brief   Returns true the buffer is valid and the current position
-     *          is equal to used size of buffer.
-     *          Otherwise, it returns false.
+     * \brief   Returns true if the buffer is valid and the current position is equal to used size
+     *          of buffer.
      **/
-    inline bool isEndOfBuffer() const;
+    inline bool is_at_end() const;
 
     /**
-     * \brief   Returns the pointer to the data buffer at current position.
-     *          If position is invalid (Cursor::INVALID_CURSOR_POSITION), it will return nullptr
-     *          If it is a start position (Cursor::START_CURSOR_POSITION), it will return pointer to complete buffer
-     *          If it is an end of position, it will return nullptr
-     *          In other cases it will return (GetBuffer() + GetCursorPosition())
+     * \brief   Returns the pointer to the data buffer at current position, or nullptr if position
+     *          is invalid or at end.
      **/
-    const uint8_t* getBufferAtCurrentPosition() const;
+    const uint8_t* current_ptr() const;
 
     /**
      * \brief   Returns the size of block set in the constructor.
      **/
-    inline uint32_t getBlockSize() const;
+    inline uint32_t block_size() const;
 
     /**
-     * \brief   Clones and returns the cloned shared buffer. The existing buffer has no change.
+     * \brief   Creates and returns a copy of the shared buffer with independent data.
      **/
     SharedBuffer clone() const;
 
@@ -232,27 +242,26 @@ public:
 // Cursor overrides
 /************************************************************************/
     /**
-     * \brief	Returns the current position of pointer relative to begin in streaming data.
-     *          The valid position should not be equal to INVALID_CURSOR_POSITION.
-     *          Check current position validation before accessing data in streaming object.
-     * \return	Returns the current position of pointer relative to begin in streaming data.
+     * \brief   Returns the current position of pointer relative to begin in streaming data.
+     *
+     * \return  Returns the current position of pointer relative to begin in streaming data.
      **/
-    uint32_t getPosition() const override;
+    uint32_t position() const override;
 
     /**
-     * \brief	Sets the pointer position and returns current position in streaming data
-     *          The positive value of offset means move pointer forward.
-     *          The negative value of offset means move pointer back.
+     * \brief   Sets the pointer position and returns current position in streaming data. Positive
+     *          offset moves forward; negative moves back.
      *
-     * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
-     * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  Cursor::SeekOrigin::Begin   -- position from the beginning of data
-     *                  Cursor::SeekOrigin::Current -- position from current pointer position
-     *                  Cursor::SeekOrigin::End     -- position from the end of file
-     *
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
+     * \param   offset      The offset in bytes to move. Positive value means moving forward.
+     *                      Negative value means moving back.
+     * \param   startAt     Specifies the starting position of pointer and should have one of
+     *                      values: Cursor::SeekOrigin::Begin -- position from the beginning of data
+     *                      Cursor::SeekOrigin::Current -- position from current pointer position
+     *                      Cursor::SeekOrigin::End -- position from the end of file
+     * \return  If succeeds, returns the current position of pointer in bytes or value
+     *          INVALID_CURSOR_POSITION if fails.
      **/
-    uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const override;
+    uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const override;
 
 /************************************************************************/
 // ByteBuffer interface overrides, not implemented in BufferStreamBase
@@ -261,18 +270,15 @@ public:
     /**
      * \brief   Returns true if buffer is shared between several byte buffer instances.
      **/
-    virtual bool isShared() const final;
+    virtual bool is_shared() const final;
 
     /**
-     * \brief   Returns true if buffer can be shared.
-     *          The Raw Buffer object should return false.
-     *          The Shared Buffer object should return true.
+     * \brief   Returns true if buffer can be shared (always true for SharedBuffer).
      **/
-    virtual bool canShare() const final;
+    virtual bool can_share() const final;
 
     /**
-     * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
-     *          invalidates writing and reading positions.
+     * \brief   Invalidates the buffer, removes reference, and resets reading and writing positions.
      **/
     void invalidate() override;
 
@@ -281,19 +287,19 @@ protected:
 // ByteBuffer protected overrides
 /************************************************************************/
     /**
-     * \brief   Returns the offset value from the beginning of byte buffer, which should be set
+     * \brief   Returns the offset value from the beginning of byte buffer.
      **/
-    uint32_t getDataOffset() const override;
+    uint32_t data_offset() const override;
 
     /**
      * \brief   Returns the size of data byte structure to allocate.
      **/
-    uint32_t getHeaderSize() const override;
+    uint32_t header_size() const override;
 
     /**
      * \brief   Returns the size to align the buffer.
      **/
-    uint32_t getAlignedSize() const final;
+    uint32_t aligned_size() const final;
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -302,7 +308,7 @@ protected:
     /**
      * \brief   Returns the default block size used by Shared Buffer.
      **/
-    static uint32_t getDefaultBlockSize();
+    static uint32_t default_block_size();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -325,7 +331,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns reference to Shared Buffer.
+     * \brief   Returns reference to this Shared Buffer.
      **/
     inline SharedBuffer & self();
 };
@@ -336,26 +342,26 @@ private:
 
 inline bool SharedBuffer::operator == ( const SharedBuffer &other ) const
 {
-    return isEqual(other);
+    return is_equal(other);
 }
 
 inline bool SharedBuffer::operator != ( const SharedBuffer &other ) const
 {
-    return (isEqual(other) == false);
+    return (is_equal(other) == false);
 }
 
-inline bool SharedBuffer::isBeginOfBuffer() const
+inline bool SharedBuffer::is_at_begin() const
 {
-    uint32_t curPos = getPosition();
-    return ((isValid() == false) || (curPos == 0) || (curPos == Cursor::INVALID_CURSOR_POSITION));
+    uint32_t curPos = position();
+    return ((is_valid() == false) || (curPos == 0) || (curPos == Cursor::INVALID_CURSOR_POSITION));
 }
 
-inline bool SharedBuffer::isEndOfBuffer() const
+inline bool SharedBuffer::is_at_end() const
 {
-    return ( isValid() && (getPosition() == getSizeUsed()) );
+    return ( is_valid() && (position() == size_used()) );
 }
 
-inline uint32_t SharedBuffer::getBlockSize() const
+inline uint32_t SharedBuffer::block_size() const
 {
     return mBlockSize;
 }
@@ -369,7 +375,7 @@ inline const InStream & operator >> (const InStream & stream, SharedBuffer & inp
     if ( static_cast<const InStream *>(&stream) != static_cast<const InStream *>(&input) )
     {
         stream.read(input);
-        input.moveToBegin();
+        input.move_to_begin();
     }
 
     return stream;
@@ -380,7 +386,7 @@ inline OutStream & operator << (OutStream & stream, const SharedBuffer & output)
     if ( static_cast<const OutStream *>(&stream) != static_cast<const OutStream *>(&output) )
     {
         stream.write( output );
-        output.moveToBegin();
+        output.move_to_begin();
     }
 
     return stream;

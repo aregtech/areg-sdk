@@ -18,7 +18,7 @@
 SocketServer::SocketServer( const char * hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolveAddress(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, true);
+    mAddress.resolve_address(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, true);
 }
 
 SocketServer::SocketServer( const NESocket::SocketAddress & serverAddress )
@@ -27,34 +27,34 @@ SocketServer::SocketServer( const NESocket::SocketAddress & serverAddress )
     mAddress = serverAddress;
 }
 
-bool SocketServer::createSocket(const char * hostName, uint16_t portNr)
+bool SocketServer::create_socket(const char * hostName, uint16_t portNr)
 {
-    return ( mAddress.resolveAddress(hostName, portNr, true) && createSocket( ) );
+    return ( mAddress.resolve_address(hostName, portNr, true) && create_socket( ) );
 }
 
-bool SocketServer::createSocket()
+bool SocketServer::create_socket()
 {
-    decreaseLock();
-    if ( mAddress.isValid() )
+    decrease_lock();
+    if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::serverSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+    	SOCKETHANDLE hSocket = NESocket::server_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
         if ( hSocket != NESocket::InvalidSocketHandle )
         {
             mSocket = std::make_shared<SOCKETHANDLE>( hSocket );
-            mSendSize = NESocket::getMaxSendSize(hSocket);
-            mRecvSize = NESocket::getMaxReceiveSize(hSocket);
+            mSendSize = NESocket::max_send_size(hSocket);
+            mRecvSize = NESocket::max_receive_size(hSocket);
         }
     }
 
-    return isValid();
+    return is_valid();
 }
 
-bool SocketServer::listenConnection(int32_t maxQueueSize)
+bool SocketServer::listen_connection(int32_t maxQueueSize)
 {
-    return (isValid() ? NESocket::serverListenConnection(*mSocket, maxQueueSize > 0 ? maxQueueSize : NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
+    return (is_valid() ? NESocket::server_listen_connection(*mSocket, maxQueueSize > 0 ? maxQueueSize : NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) : false );
 }
 
-SOCKETHANDLE SocketServer::waitConnectionEvent(NESocket::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
+SOCKETHANDLE SocketServer::wait_connection_event(NESocket::SocketAddress & out_addrAccepted, const SOCKETHANDLE * masterList, int32_t entriesCount)
 {
-    return ( isValid() ? NESocket::serverAcceptConnection(*mSocket, masterList, entriesCount, &out_addrAccepted) : NESocket::InvalidSocketHandle );
+    return ( is_valid() ? NESocket::server_accept_connection(*mSocket, masterList, entriesCount, &out_addrAccepted) : NESocket::InvalidSocketHandle );
 }

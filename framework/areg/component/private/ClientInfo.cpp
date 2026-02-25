@@ -29,7 +29,7 @@
 /**
  * \brief   Invalid client info object
  **/
-const ClientInfo & ClientInfo::getInvalidClientInfo()
+const ClientInfo & ClientInfo::invalid_client_info()
 {
     static const ClientInfo _invalidClientInfo;
     return _invalidClientInfo;
@@ -49,14 +49,14 @@ ClientInfo::ClientInfo( const ProxyAddress & client )
     : mClientAddress( client )
     , mClientState  ( NEService::ServiceConnectionState::Unknown )
 {
-    setConnectionStatus( NEService::ServiceConnectionState::Pending);
+    set_connection_status( NEService::ServiceConnectionState::Pending);
 }
 
 ClientInfo::ClientInfo( ProxyAddress && client ) noexcept
     : mClientAddress( static_cast<ProxyAddress &&>(client) )
     , mClientState  ( NEService::ServiceConnectionState::Unknown )
 {
-    setConnectionStatus( NEService::ServiceConnectionState::Pending );
+    set_connection_status( NEService::ServiceConnectionState::Pending );
 }
 
 ClientInfo::ClientInfo( const ClientInfo & src )
@@ -94,14 +94,14 @@ ClientInfo & ClientInfo::operator = ( ClientInfo && src ) noexcept
 ClientInfo & ClientInfo::operator = ( const ProxyAddress & client )
 {
     mClientAddress  = client;
-    setConnectionStatus(NEService::ServiceConnectionState::Pending);
+    set_connection_status(NEService::ServiceConnectionState::Pending);
     return (*this);
 }
 
 ClientInfo & ClientInfo::operator = ( ProxyAddress && client ) noexcept
 {
     mClientAddress  = std::move(client);
-    setConnectionStatus( NEService::ServiceConnectionState::Pending );
+    set_connection_status( NEService::ServiceConnectionState::Pending );
     return (*this);
 }
 
@@ -123,11 +123,11 @@ bool ClientInfo::operator == (const StubAddress & server) const
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-void ClientInfo::setConnectionStatus( NEService::ServiceConnectionState newConnection )
+void ClientInfo::set_connection_status( NEService::ServiceConnectionState newConnection )
 {
-    if ( mClientAddress.getSource() != NEService::SOURCE_UNKNOWN )
+    if ( mClientAddress.source() != NEService::SOURCE_UNKNOWN )
     {
-        mClientState = mClientAddress.getTarget() != NEService::TARGET_UNKNOWN ? newConnection : NEService::ServiceConnectionState::Pending;
+        mClientState = mClientAddress.target() != NEService::TARGET_UNKNOWN ? newConnection : NEService::ServiceConnectionState::Pending;
     }
     else
     {
@@ -141,10 +141,10 @@ ClientInfo::operator uint32_t () const
     return static_cast<uint32_t>( addrService );
 }
 
-void ClientInfo::setTargetServer(const StubAddress & addrStub)
+void ClientInfo::set_target_server(const StubAddress & addrStub)
 {
-    if ( mClientAddress.getSource() != NEService::SOURCE_UNKNOWN )
+    if ( mClientAddress.source() != NEService::SOURCE_UNKNOWN )
     {
-        mClientAddress.setTarget( addrStub.getSource() );
+        mClientAddress.set_target( addrStub.source() );
     }
 }

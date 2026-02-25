@@ -68,7 +68,7 @@
 static String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
 {
     String result;
-    if ( NEString::isEmpty<char>(fileName) == false )
+    if ( NEString::is_empty<char>(fileName) == false )
     {
         fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
         String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
@@ -88,29 +88,29 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_osGetInvalidHandle()
+FILEHANDLE File::_os_invalid_handle()
 {
     return static_cast<FILEHANDLE>(INVALID_HANDLE_VALUE);
 }
 
-void File::_osCloseFile()
+void File::_os_close_file()
 {
-    if ( isOpened( ) )
+    if ( is_opened( ) )
     {
         ::CloseHandle(static_cast<HANDLE>(mFileHandle));
     }
 
-    mFileHandle = File::_osGetInvalidHandle();
+    mFileHandle = File::_os_invalid_handle();
 }
 
-bool File::_osOpenFile()
+bool File::_os_open_file()
 {
-    bool result{ isOpened( ) };
+    bool result{ is_opened( ) };
     if ( result == false)
     {
-        if (mFileName.isEmpty() == false )
+        if (mFileName.is_empty() == false )
         {
-            mFileMode = normalizeMode(mFileMode);
+            mFileMode = normalize_mode(mFileMode);
             unsigned long access    = 0;
             unsigned long shared    = 0;
             unsigned long creation  = 0;
@@ -145,18 +145,18 @@ bool File::_osOpenFile()
             
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
             {
-                File::createDirCascaded( File::getFileDirectory(mFileName) );
+                File::create_dir_cascaded( File::file_directory(mFileName) );
             }
 
-            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr));
-            result = isOpened();
+            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.as_string(), access, shared, nullptr, creation, attributes, nullptr));
+            result = is_opened();
         }
     }
 
     return result;
 }
 
-uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
+uint32_t File::_os_read_file(uint8_t* buffer, uint32_t size) const
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size > 0));
@@ -172,7 +172,7 @@ uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
+uint32_t File::_os_write_file(const uint8_t* buffer, uint32_t size)
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
@@ -183,7 +183,7 @@ uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
     return static_cast<uint32_t>(sizeWrite);
 }
 
-uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t File::_os_set_position(int32_t offset, Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
 
@@ -212,13 +212,13 @@ uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) co
     return static_cast<uint32_t>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod)));
 }
 
-uint32_t File::_osGetPositionFile() const
+uint32_t File::_os_file_position() const
 {
     ASSERT(mFileHandle != nullptr);
     return static_cast<uint32_t>( SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT) );
 }
 
-bool File::_osTruncateFile()
+bool File::_os_truncate_file()
 {
     bool result{ false };
     if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != Cursor::INVALID_CURSOR_POSITION)
@@ -229,7 +229,7 @@ bool File::_osTruncateFile()
     return result;
 }
 
-void File::_osFlushFile()
+void File::_os_flush_file()
 {
     ASSERT(mFileHandle != nullptr);
     ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));
@@ -239,7 +239,7 @@ void File::_osFlushFile()
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t unique)
+uint32_t File::_os_temp_name(char* buffer, const char* folder, const char* prefix, uint32_t unique)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
@@ -255,7 +255,7 @@ uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const cha
  * \return  If function succeeds, the return value is full path of special folder.
  *          Otherwise, it returns empty string.
  **/
-uint32_t File::_osGetSpecialDir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder)
+uint32_t File::_os_special_dir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
     buffer[0] = NEString::EndOfString;

@@ -33,11 +33,9 @@ class LogScope;
 // LogMessage class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Message Log class is an extension of Message Log structure.
- *          It is initializing structure of logging message and set values.
- *          The structure can be serialized in the streaming object.
- *          Different types of constructor allow to initialize message log
- *          structure with certain log types and priorities.
+ * \brief   Encapsulates a logging message with type, priority, scope information, and text.
+ *          Serializable for IPC and remote logging. Supports multiple construction patterns for
+ *          different message types (enter/exit scope, debug/info/error messages).
  **/
 class LogMessage  : public NELogging::LogEntry
 {
@@ -52,59 +50,56 @@ class LogMessage  : public NELogging::LogEntry
 public:
 
     /**
-     * \brief   Initializes message log structure and sets the logging type value.
-     * \param   msgType     The type of message to initialize
+     * \brief   Initializes a log message with the specified type.
+     *
+     * \param   msgType     The log message type to set.
      **/
     inline explicit LogMessage( NELogging::LogMessageType msgType );
 
     /**
-     * \brief   Initializes message log structure, sets the logging type value,
-     *          scope ID, message priority and message text, if the string is not empty.
-     * \param   msgType     The log message type to set in the message structure.
-     * \param   scopeId     The ID of messaging log scope.
-     * \param   sessionId   The ID of session, which is used to differentiate messages of the same scope.
-     * \param   scopeStamp  The timestamp of the scope message, which is used to log message. This parameter is used to set duration.
-     *                      The duration is ignored and set to 0 if the scopeStamp is 0.
-     * \param   msgPrio     The priority of message to log.
-     * \param   message     The text message to log.
+     * \brief   Initializes a log message with type, scope info, priority, and text.
+     *
+     * \param   msgType         The log message type.
+     * \param   scopeId         The scope ID.
+     * \param   sessionId       The session ID to differentiate messages in the same scope.
+     * \param   scopeStamp      The scope timestamp for duration calculation; ignored if zero.
+     * \param   msgPrio         The message priority.
+     * \param   message         The message text.
      **/
     inline LogMessage(NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const String & message );
 
     /**
-     * \brief   Initializes message log structure, sets the logging type value,
-     *          scope ID, message priority and message text, if the string is not empty.
-     * \param   msgType     The log message type to set in message structure
-     * \param   scopeId     The ID of messaging log scope.
-     * \param   sessionId   The ID of session, which is used to differentiate messages of the same scope.
-     * \param   scopeStamp  The timestamp of the scope message, which is used to log message. This parameter is used to set duration.
-     *                      The duration is ignored and set to 0 if the scopeStamp is 0.
-     * \param   msgPrio     The priority of message to log.
-     * \param   message     The text message to log.
-     * \param   msgLen      The length of the message to log.
+     * \brief   Initializes a log message from a raw string and length.
+     *
+     * \param   msgType         The log message type.
+     * \param   scopeId         The scope ID.
+     * \param   sessionId       The session ID to differentiate messages in the same scope.
+     * \param   scopeStamp      The scope timestamp for duration calculation; ignored if zero.
+     * \param   msgPrio         The message priority.
+     * \param   message         The message text as a C string.
+     * \param   msgLen          The length of the message string.
      **/
     inline LogMessage( NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const char * message, uint32_t msgLen );
 
     /**
-     * \brief   Initializes message log structure for scope enter or exit event.
-     *          The event depends on logging type value
-     * \param   msgType     The log message type to set in message structure.
-     *                      It is either to enter or exit scope.
-     * \param   sessionId   The ID of session, which is used to differentiate messages of the same scope.
-     * \param   scopeStamp  The timestamp of the scope message, which is used to log message. This parameter is used to set duration.
-     *                      The duration is ignored and set to 0 if the scopeStamp is 0.
-     * \param   logScope    The log scope object with scope name and ID to set.
+     * \brief   Initializes a scope enter/exit message from a LogScope.
+     *
+     * \param   msgType         The log message type (enter or exit).
+     * \param   sessionId       The session ID to differentiate messages in the same scope.
+     * \param   scopeStamp      The scope timestamp for duration calculation; ignored if zero.
+     * \param   logScope        The LogScope containing name and ID.
      **/
     LogMessage( NELogging::LogMessageType msgType, uint32_t sessionid, TIME64 scopeStamp, const LogScope & logScope );
 
     /**
-     * \brief   Copies logging message data from given source.
-     * \param   source  The source of data to copy.
+     * \brief   Copy constructor.
+     *
+     * \param   source      The source log message to copy.
      **/
     inline LogMessage( const LogMessage & source ) = default;
 
     /**
-     * \brief   Initialization constructor.
-     *          Initializes log message data from stream.
+     * \brief   Initializes a log message by deserializing from a stream.
      **/
     inline LogMessage( const InStream & stream );
 
@@ -121,94 +116,87 @@ public:
 public:
 
     /**
-     * \brief   Returns instance of Log message structure
+     * \brief   Returns the underlying log entry structure.
      **/
-    inline const NELogging::LogEntry & getLogData() const;
+    inline const NELogging::LogEntry & log_data() const;
 
     /**
-     * \brief   Returns log type value
+     * \brief   Returns the log message type.
      **/
-    inline NELogging::LogMessageType getMessageType() const;
+    inline NELogging::LogMessageType message_type() const;
 
     /**
-     * \brief   Return the ID of thread where the message was initialized.
+     * \brief   Returns the ID of the thread that created the message.
      **/
-    inline id_type getThreadId() const;
+    inline id_type thread_id() const;
 
     /**
-     * \brief   Returns the ID of log scope.
+     * \brief   Returns the scope ID.
      **/
-    inline uint32_t getScopeId() const;
+    inline uint32_t scope_id() const;
 
     /**
-     * \brief   Returns the time-stamp of created message log.
+     * \brief   Returns the message creation timestamp.
      **/
-    inline const DateTime getTimestamp() const;
+    inline const DateTime timestamp() const;
 
     /**
-     * \brief   Returns the time-stamp when the message log was received.
+     * \brief   Returns the message reception timestamp.
      **/
-    inline const DateTime getTimeReceived() const;
+    inline const DateTime time_received() const;
 
     /**
-     * \brief   Returns the duration in microseconds since scope message object was instantiated.
-     */
-    inline uint32_t getDuration() const;
+     * \brief   Returns the scope duration in microseconds since creation.
+     **/
+    inline uint32_t duration() const;
 
     /**
-     * \brief   Returns message log module ID. By default, it is process ID.
-     *          The module ID is an unique identifier set by system.
+     * \brief   Returns the module ID (typically the process ID or network identifier).
      **/
-    inline const ITEM_ID & getModuleId() const;
+    inline const ITEM_ID & module_id() const;
 
     /**
-     * \brief   Set the module ID. The module ID can be any value
-     *          which is unique within certain system.
-     *          For example, within one host PC, this can be unique
-     *          process ID. Within Network, this can be identifier
-     *          value, unique in Network.
-     *          The Module ID is used to differentiate same scopes
-     *          in different processes / machines.
+     * \brief   Sets the module ID for differentiating scopes across processes or machines.
      **/
-    inline void setModuleId( const ITEM_ID & moduleId );
+    inline void set_module_id( const ITEM_ID & moduleId );
 
     /**
-     * \brief   Returns the cookie value set by Log Collector service.
-     *          If equal NEService::COOKIE_LOCAL, the log messages should not be sent to remote host.
-     *          If equal NEService::COOKIE_ANY, the log message should be queued to wait to complete remote logging service setup.
-     *          If equal or more than NEService::COOKIE_REMOTE_SERVICE, the log message can be forwarded to remote host.
+     * \brief   Returns the log cookie status controlling remote logging behavior.
      **/
-    inline const ITEM_ID & getCookie() const;
+    inline const ITEM_ID & cookie() const;
 
     /**
-     * \brief   Sets the cookie value set by Log Collector service.
+     * \brief   Sets the log cookie status.
      **/
-    inline void setCookie(const ITEM_ID& newCookie);
+    inline void set_cookie(const ITEM_ID& newCookie);
 
     /**
-     * \brief   Returns the priority ob message log
+     * \brief   Returns the message priority level.
      **/
-    inline NELogging::LogPriority getMessagePrio() const;
+    inline NELogging::LogPriority message_prio() const;
 
     /**
-     * \brief   Sets the priority of message log
+     * \brief   Sets the message priority level.
      **/
-    inline void setMessagePrio( NELogging::LogPriority msgPrio );
+    inline void set_message_prio( NELogging::LogPriority msgPrio );
 
     /**
-     * \brief   Returns message text, if there is any.
+     * \brief   Returns the message text, if any.
      **/
-    inline const char * getMessage() const;
+    inline const char * message() const;
 
     /**
-     * \brief   Sets message text in log
+     * \brief   Sets the message text.
      **/
-    void setMessage( const char * message, int32_t msgLen );
+    void set_message( const char * message, int32_t msgLen );
 #endif  // AREG_LOGS
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Default constructor is deleted.
+     **/
     LogMessage() = delete;
     AREG_NOMOVE( LogMessage );
 };
@@ -224,7 +212,7 @@ inline LogMessage::LogMessage( NELogging::LogMessageType msgType )
 }
 
 inline LogMessage::LogMessage( NELogging::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, NELogging::LogPriority msgPrio, const String & message )
-    : NELogging::LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
+    : NELogging::LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.as_string(), static_cast<uint32_t>(message.length()) )
 {
 }
 
@@ -239,72 +227,72 @@ inline LogMessage::LogMessage( const InStream & stream )
     stream >> static_cast<NELogging::LogEntry &>(*this);
 }
 
-inline const NELogging::LogEntry & LogMessage::getLogData() const
+inline const NELogging::LogEntry & LogMessage::log_data() const
 {
     return static_cast<const NELogging::LogEntry &>(*this);
 }
 
-inline NELogging::LogMessageType LogMessage::getMessageType() const
+inline NELogging::LogMessageType LogMessage::message_type() const
 {
     return this->logMsgType;
 }
 
-inline id_type LogMessage::getThreadId() const
+inline id_type LogMessage::thread_id() const
 {
     return static_cast<id_type>(this->logThreadId);
 }
 
-inline uint32_t LogMessage::getScopeId() const
+inline uint32_t LogMessage::scope_id() const
 {
     return this->logScopeId;
 }
 
-inline const DateTime LogMessage::getTimestamp() const
+inline const DateTime LogMessage::timestamp() const
 {
     return static_cast<DateTime>(this->logTimestamp);
 }
 
-inline const DateTime LogMessage::getTimeReceived() const
+inline const DateTime LogMessage::time_received() const
 {
     return static_cast<DateTime>(this->logReceived);
 }
 
-inline uint32_t LogMessage::getDuration() const
+inline uint32_t LogMessage::duration() const
 {
     return static_cast<uint32_t>(this->logDuration);
 }
 
-inline const ITEM_ID & LogMessage::getModuleId() const
+inline const ITEM_ID & LogMessage::module_id() const
 {
     return this->logModuleId;
 }
 
-inline void LogMessage::setModuleId(const ITEM_ID & moduleId)
+inline void LogMessage::set_module_id(const ITEM_ID & moduleId)
 {
     this->logModuleId = moduleId;
 }
 
-inline NELogging::LogPriority LogMessage::getMessagePrio() const
+inline NELogging::LogPriority LogMessage::message_prio() const
 {
     return this->logMessagePrio;
 }
 
-inline void LogMessage::setMessagePrio(const NELogging::LogPriority msgPrio)
+inline void LogMessage::set_message_prio(const NELogging::LogPriority msgPrio)
 {
     this->logMessagePrio = msgPrio;
 }
 
-inline const char * LogMessage::getMessage() const
+inline const char * LogMessage::message() const
 {
-    return this->logMessage;
+    return this->log_message;
 }
 
-inline const ITEM_ID & LogMessage::getCookie() const
+inline const ITEM_ID & LogMessage::cookie() const
 {
     return this->logCookie;
 }
 
-inline void LogMessage::setCookie(const ITEM_ID & newCookie)
+inline void LogMessage::set_cookie(const ITEM_ID & newCookie)
 {
     this->logCookie = newCookie;
 }

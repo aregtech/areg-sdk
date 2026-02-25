@@ -26,7 +26,7 @@
 // ServiceEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The service event data. Used when a service state is changed.
+ * \brief   Wraps service state change event with command instruction and optional message data.
  **/
 class AREG_API ServiceEventData
 {
@@ -51,33 +51,37 @@ public:
     };
 
     /**
-     * \brief   Converts ServiceEventData:ServiceCommand values to string.
+     * \brief   Converts ServiceCommand enum to string representation.
      **/
-    static inline const char * getString( ServiceEventData::ServiceCommand cmdService );
+    static inline const char * as_string( ServiceEventData::ServiceCommand cmdService );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes service event data, sets command.
-     * \param   cmdService  The command to set in event data.
+     * \brief   Initializes with service command.
+     *
+     * \param   cmdService      Command to set in event data.
      **/
     explicit inline ServiceEventData( ServiceEventData::ServiceCommand cmdService );
     /**
-     * \brief   Initializes service event data, sets command and message data buffer.
-     * \param   cmdService  The command to set in event data.
-     * \param   msgService  The message data buffer to initialize.
+     * \brief   Initializes with service command and message data.
+     *
+     * \param   cmdService      Command to set in event data.
+     * \param   msgService      Message data buffer to initialize.
      **/
     inline ServiceEventData(ServiceEventData::ServiceCommand cmdService, const RemoteMessage& msgService);
     /**
-     * \brief   Copies the event data from given source.
-     * \param   source  The source to copy data.
+     * \brief   Copies event data from source.
+     *
+     * \param   source      Source to copy.
      **/
     ServiceEventData( const ServiceEventData & source ) = default;
     /**
-     * \brief   Moves the event data from given source.
-     * \param   source  The source to move data.
+     * \brief   Moves event data from source.
+     *
+     * \param   source      Source to move.
      **/
     ServiceEventData( ServiceEventData && source ) noexcept = default;
     /**
@@ -90,26 +94,28 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies event data from given source.
-     * \param   source      The source to copy data.
+     * \brief   Copies event data from source.
+     *
+     * \param   source      Source to copy.
      **/
     ServiceEventData & operator = ( const ServiceEventData & source ) = default;
 
     /**
-     * \brief   Moves event data from given source.
-     * \param   source      The source to move data.
+     * \brief   Moves event data from source.
+     *
+     * \param   source      Source to move.
      **/
     ServiceEventData & operator = ( ServiceEventData && source ) noexcept = default;
 
     /**
-     * \brief   Returns command saved in event data.
+     * \brief   Returns the command saved in event data.
      **/
-    inline ServiceEventData::ServiceCommand getCommand() const;
+    inline ServiceEventData::ServiceCommand command() const;
 
     /**
-     * \brief   Returns message data buffer object saved in event data.
+     * \brief   Returns the message data buffer saved in event data.
      **/
-    inline const RemoteMessage & getMessage() const;
+    inline const RemoteMessage & message() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -129,6 +135,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ServiceEventData();
 };
 
@@ -159,17 +168,17 @@ inline ServiceEventData::ServiceEventData(ServiceEventData::ServiceCommand cmdSe
 {
 }
 
-inline ServiceEventData::ServiceCommand ServiceEventData::getCommand() const
+inline ServiceEventData::ServiceCommand ServiceEventData::command() const
 {
     return mServiceCommand;
 }
 
-inline const RemoteMessage& ServiceEventData::getMessage() const
+inline const RemoteMessage& ServiceEventData::message() const
 {
     return mMessageData;
 }
 
-inline const char * ServiceEventData::getString( ServiceEventData::ServiceCommand cmdService )
+inline const char * ServiceEventData::as_string( ServiceEventData::ServiceCommand cmdService )
 {
     switch ( cmdService )
     {

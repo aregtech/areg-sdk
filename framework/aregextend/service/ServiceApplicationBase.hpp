@@ -125,13 +125,13 @@ public:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::RemoteServiceKind getServiceType() const = 0;
+    virtual NERemoteService::RemoteServiceKind service_type() const = 0;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    virtual NERemoteService::ConnectionType getConnectionType() const = 0;
+    virtual NERemoteService::ConnectionType connection_type() const = 0;
 
 /************************************************************************/
 // SystemServiceBase overrides
@@ -214,7 +214,7 @@ public:
     /**
      * \brief   Sets the state of message router service.
      **/
-    bool setState( NESystemService::ServicePhase newState ) override;
+    bool set_state( NESystemService::ServicePhase newState ) override;
 
     /**
      * \brief   Run application as a background process without input or output on console.
@@ -240,25 +240,25 @@ protected:
      * \brief   Called by configuration manager before the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    void prepareSaveConfiguration(ConfigManager& config) override;
+    void prepare_save_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    void postSaveConfiguration(ConfigManager& config) override;
+    void post_save_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager before the configuration is loaded from the file.
      * \param   config  The instance of configuration manager.
      **/
-    void prepareReadConfiguration(ConfigManager& config) override;
+    void prepare_read_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    void postReadConfiguration(ConfigManager& config) override;
+    void post_read_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -267,7 +267,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.

@@ -28,11 +28,9 @@
  //////////////////////////////////////////////////////////////////////////
  // Process class declaration
  //////////////////////////////////////////////////////////////////////////
- /**
- * \brief   Process class contain basic functionality of process.
- *          It is a singleton object within process and contains
- *          such methods like getting process name, process path and
- *          extension. The path name does not contain path terminated char.
+/**
+ * \brief   Singleton providing process information such as name, path, executable extension, and
+ *          environment details.
  **/
 
 class AREG_API Process
@@ -64,27 +62,25 @@ public:
     };
 
     /**
-     * \brief   Converts and returns the string value of Process::Bitness;
+     * \brief   Returns the string representation of Process::Bitness value.
      **/
-    static inline const char * getString( Process::Bitness  val );
+    static inline const char * as_string( Process::Bitness  val );
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns the instance of process object
+     * \brief   Returns the singleton instance of the Process object.
      **/
-    static Process & getInstance();
+    static Process & instance();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor, protected
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Default constructor. Protected.
-     *          To get instance of object, call static method GetProcess()
-     *          The object is singleton.
+     * \brief   Protected constructor. The object is a singleton; use instance() to obtain it.
      **/
     Process();
 
@@ -99,74 +95,72 @@ private:
 public:
 
     /**
-     * \brief   Return application name of current process.
-     *          The name does not contain files extension.
+     * \brief   Returns the application name without file extension.
      **/
-    inline const String & getAppName() const;
+    inline const String & app_name() const;
     /**
-     * \brief   Returns the name of current process. 
-     *          The name may contain file extension as well.
+     * \brief   Returns the name of the current process, including file extension if applicable.
      **/
-    inline const String & getName() const;
+    inline const String & name() const;
 
     /**
-     * \brief   Returns the extension of current process.
+     * \brief   Returns the file extension of the current process executable.
      **/
-    inline const String & getExtension() const;
+    inline const String & extension() const;
 
     /**
-     * \brief   Returns the path of current process.
-     *          The path does not contain path-separation
-     *          character '\\' at the end.
+     * \brief   Returns the path to the current process, without trailing path-separator character.
      **/
-    inline const String & getPath() const;
+    inline const String & path() const;
 
     /**
-     * \brief   Returns the full path of current process,
-     *          including file name and file extension.
+     * \brief   Returns the full path including filename and extension.
      **/
-    inline const String & getFullPath() const;
+    inline const String & full_path() const;
 
     /**
-     * \brief   Return the ID of current process.
+     * \brief   Returns the ID of the current process.
      **/
-    inline id_type getId() const;
+    inline id_type id() const;
 
     /**
-     * \brief   Returns process environment. It is either 32- or 64-bits.
+     * \brief   Returns the process environment bitness: 32-bit or 64-bit.
      **/
-    inline Process::Bitness getEnvironment() const;
-
-    uint32_t getBitness() const;
+    inline Process::Bitness environment() const;
 
     /**
-     * \brief   returns the value of the environment variable var, 
-     *          or an empty string if:
-     *              -   No such environment variable exists or it is empty.
-     *              -   There is a reason that it should not be used 
-     *                  (e.g. elevated privileges in Linux).
-     * \param   var   The environment variable to return value.
+     * \brief   Returns the process environment bitness: 32-bit or 64-bit.
      **/
-    String getSafeEnvVariable( const char * var ) const;
+    uint32_t bitness() const;
+
+    /**
+     * \brief   Returns the environment variable value or an empty string if the variable does not
+     *          exist, is empty, or should not be used (e.g., due to elevated privileges).
+     *
+     * \param   var     The environment variable name.
+     **/
+    String safe_env_variable( const char * var ) const;
 
 private:
 
     /**
-     * \brief   When the method is called, the full path is passed as parameter.
-     * \param   fullPath    The full path to executable.
+     * \brief   Initializes process paths from the given full executable path.
+     *
+     * \param   fullPath    The full path to the executable.
      **/
-    void _initPaths( const char * fullPath );
+    void _init_paths( const char * fullPath );
 
     /**
-     * \brief	OS specific initialization of process internal data.
-     */
-    void _osInitilize();
+     * \brief   OS-specific initialization of process internal data.
+     **/
+    void _os_initilize();
 
     /**
-     * \brief   Returns the value of environment variable or empty strig.
-     * \param   var     The environment variable to return value.
+     * \brief   Returns the environment variable value or an empty string if not found.
+     *
+     * \param   var     The environment variable name.
      **/
-    String _osGetEnvVariable( const char * var ) const;
+    String _os_env_variable( const char * var ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -220,42 +214,42 @@ private:
 // Process class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & Process::getAppName() const
+inline const String & Process::app_name() const
 {
     return mAppName;
 }
 
-inline const String & Process::getName() const
+inline const String & Process::name() const
 {
     return mProcessName;
 }
 
-inline const String & Process::getExtension() const
+inline const String & Process::extension() const
 {
     return mProcessExt;
 }
 
-inline const String & Process::getPath() const
+inline const String & Process::path() const
 {
     return mProcessPath;
 }
 
-inline const String & Process::getFullPath() const
+inline const String & Process::full_path() const
 {
     return mProcessFullPath;
 }
 
-inline id_type Process::getId() const
+inline id_type Process::id() const
 {
     return mProcessId;
 }
 
-inline Process::Bitness Process::getEnvironment() const
+inline Process::Bitness Process::environment() const
 {
     return mProcEnv;
 }
 
-inline const char * Process::getString( Process::Bitness  val )
+inline const char * Process::as_string( Process::Bitness  val )
 {
     switch (val)
     {

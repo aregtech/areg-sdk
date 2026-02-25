@@ -39,12 +39,12 @@ Tokenizer::Tokenizer( Tokenizer && src ) noexcept
 const StringArray& Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
 {
     NEString::CharPos lastPos   = 0;
-    NEString::CharCount length  = str.getLength();
+    NEString::CharCount length  = str.length();
     // empty self
     mTokens.clear();
     while (lastPos <= length)
     {
-        NEString::CharPos pos = str.findOneOf(delimiters, lastPos);
+        NEString::CharPos pos = str.find_one_of(delimiters, lastPos);
         if (pos < 0)
            pos = length;
 

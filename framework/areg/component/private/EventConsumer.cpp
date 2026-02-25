@@ -22,11 +22,11 @@
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-void EventConsumer::consumerRegistered( bool /* isRegistered */ )
+void EventConsumer::consumer_registered( bool /* isRegistered */ )
 {
 }
 
-bool EventConsumer::preprocessEvent( Event & /* eventElem */ )
+bool EventConsumer::preprocess_event( Event & /* eventElem */ )
 {
     return true;
 }

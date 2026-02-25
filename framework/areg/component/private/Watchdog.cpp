@@ -21,51 +21,51 @@
 
 #include <atomic>
 
-Watchdog::GUARD_ID Watchdog::_generateId()
+Watchdog::GUARD_ID Watchdog::_generate_id()
 {
     static std::atomic<Watchdog::GUARD_ID> _id{ 0 };
     return (++_id);
 }
 
 Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
-    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-    , mGuardId          (_generateId())
+    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          (_generate_id())
     , mSequence         (0u)
     , mComponentThread  (thread)
 {
 }
 
 Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= NECommon::WATCHDOG_IGNORE*/)
-    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-    , mGuardId          (_generateId())
+    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.name(), msTimeout, TimerBase::ONE_TIME)
+    , mGuardId          (_generate_id())
     , mSequence         (0u)
-    , mComponentThread  (thread.getBindingComponentThread())
+    , mComponentThread  (thread.binding_component_thread())
 {
 }
 
 Watchdog::~Watchdog()
 {
-    WatchdogManager::stopTimer(*this);
+    WatchdogManager::stop_timer(*this);
 }
 
-void Watchdog::startGuard()
+void Watchdog::start_guard()
 {
     if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
         ++mSequence;
-        mActive = WatchdogManager::startTimer(*this);
+        mActive = WatchdogManager::start_timer(*this);
     }
 }
 
-void Watchdog::stopGuard()
+void Watchdog::stop_guard()
 {
     if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)
     {
         Lock lock(mLock);
         ASSERT(mHandle != nullptr);
         mActive = false;
-        WatchdogManager::stopTimer(*this);
+        WatchdogManager::stop_timer(*this);
     }
 }

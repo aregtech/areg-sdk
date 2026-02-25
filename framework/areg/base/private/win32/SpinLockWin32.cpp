@@ -31,7 +31,7 @@
 
 
 SpinLockWin32::SpinLockWin32()
-    : mSpinLock     ( )
+    : m_spin_lock     ( )
     , mOwnerThread  ( 0 )
     , mLockCount    ( 0 )
 {
@@ -44,13 +44,13 @@ SpinLockWin32::~SpinLockWin32()
 
 bool SpinLockWin32::lock()
 {
-    id_type currThread = Thread::getCurrentThreadId( );
+    id_type currThread = Thread::current_thread_id( );
 
     if ( mOwnerThread != currThread )
     {
-        while ( mSpinLock.test_and_set( std::memory_order_acquire ) )
+        while ( m_spin_lock.test_and_set( std::memory_order_acquire ) )
         {
-            while ( mSpinLock.test( std::memory_order_relaxed ) )
+            while ( m_spin_lock.test( std::memory_order_relaxed ) )
             {
                 std::this_thread::yield();  // _YIELD_PROCESSOR(); // spin
             }
@@ -72,14 +72,14 @@ bool SpinLockWin32::unlock()
 {
     bool result = false;
 
-    id_type currThread = Thread::getCurrentThreadId( );
+    id_type currThread = Thread::current_thread_id( );
     if ( mOwnerThread == currThread )
     {
         ASSERT( mLockCount != 0 );
         if ( -- mLockCount == 0 )
         {
             mOwnerThread = 0;
-            mSpinLock.clear( std::memory_order_release );   // release lock
+            m_spin_lock.clear( std::memory_order_release );   // release lock
         }
 
         result = true;
@@ -88,14 +88,14 @@ bool SpinLockWin32::unlock()
     return result;
 }
 
-bool SpinLockWin32::tryLock()
+bool SpinLockWin32::try_lock()
 {
     bool result = true;
-    id_type currThread = Thread::getCurrentThreadId( );
+    id_type currThread = Thread::current_thread_id( );
     if ( mOwnerThread !=  currThread )
     {
         result = false;
-        if ( mSpinLock.test_and_set( std::memory_order_acquire ) == false )
+        if ( m_spin_lock.test_and_set( std::memory_order_acquire ) == false )
         {
             ASSERT( mLockCount == 0 );
             mLockCount  = 1;

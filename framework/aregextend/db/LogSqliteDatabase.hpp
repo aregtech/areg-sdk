@@ -141,7 +141,7 @@ public:
      * \brief   Returns true if SqliteDatabase engine is opened and operable.
      *          Otherwise, returns false.
      **/
-    bool isOperable() const override;
+    bool is_operable() const override;
 
     /**
      * \brief   Connects to the specified database.
@@ -189,14 +189,14 @@ public:
      * \brief   Returns true if the database and the log tables are initialized,
      *          and ready to log messages.
      **/
-    bool areTablesInitialized() const override;
+    bool are_tables_initialized() const override;
 
     /**
      * \brief   Called when logging message should be saved in the database.
      * \param   message     The structure of the message to log.
      * \return  Returns true if succeeded to save the log in the database.
      **/
-    bool logMessage(const NELogging::LogEntry & message) override;
+    bool log_message(const NELogging::LogEntry & message) override;
 
     /**
      * \brief   Called when need to log information about log source instance.
@@ -204,7 +204,7 @@ public:
      * \param   timestamp   The timestamp to register when the instance is logged.
      * \return  Returns true if succeeded to save the log instance in the database.
      **/
-    bool logInstanceConnected(const NEService::ConnectedInstance & instance, const DateTime & timestamp) override;
+    bool log_instance_connected(const NEService::ConnectedInstance & instance, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when an instance of log source is disconnected.
@@ -213,7 +213,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    bool logInstanceDisconnected(const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool log_instance_disconnected(const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -222,7 +222,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    bool logScopeActivate(const NELogging::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool log_scope_activate(const NELogging::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the scope in the database.
@@ -233,7 +233,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns true if succeeded to save the log scope in the database.
      **/
-    bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool log_scope_activate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Called when need to log the information of the list of scopes in the database.
@@ -242,7 +242,7 @@ public:
      * \param   timestamp   The timestamp to register when the scope is logged.
      * \return  Returns the number of scope entries saved in the database.
      **/
-    uint32_t logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
+    uint32_t log_scopes_activate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) override;
 
     /**
      * \brief   Call to deactivate all scopes related with the specified cookie ID.
@@ -250,7 +250,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    bool logScopesDeactivate(const ITEM_ID & cookie, const DateTime & timestamp) override;
+    bool log_scopes_deactivate(const ITEM_ID & cookie, const DateTime & timestamp) override;
 
     /**
      * \brief   Call to deactivate a single scope related with the specified cookie ID.
@@ -259,7 +259,7 @@ public:
      * \param   timestamp   The deactivation timestamp to set.
      * \return  Returns true if operation succeeded.
      **/
-    bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) override;
+    bool log_scope_deactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) override;
 
     /**
      * \brief   Rolls back the database changes and returns true if succeeded.
@@ -611,7 +611,7 @@ inline void LogSqliteDatabase::setDatabaseLoggingEnabled(bool enable)
 
 inline const String& LogSqliteDatabase::getDatabasePath() const
 {
-    return mDatabase.getPath();
+    return mDatabase.path();
 }
 
 inline const String& LogSqliteDatabase::getInitialDatabasePath() const

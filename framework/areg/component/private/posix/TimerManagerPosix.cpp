@@ -35,58 +35,58 @@
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef __APPLE__
-void TimerManager::_posixTimerExpiredRoutine( TimerPosix* posixTimer )
+void TimerManager::_posix_timer_expired( TimerPosix* posixTimer )
 {
-    TimerManager & timerManager = TimerManager::getInstance( );
+    TimerManager & timerManager = TimerManager::instance( );
     ASSERT( posixTimer != nullptr );
-    Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+    Timer * timer = timerManager.mTimerResource.find_resource_object( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
-    if ( (timer != nullptr) && (posixTimer->isValid( )) )
+    if ( (timer != nullptr) && (posixTimer->is_valid( )) )
     {
         uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->timerExpired( );
-        timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
+        posixTimer->timer_expired( );
+        timerManager._process_expired_timer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }
 }
 #else   // !__APPLE__
-void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
+void TimerManager::_posix_timer_expired( union sigval argSig )
 {
-    TimerManager & timerManager = TimerManager::getInstance( );
+    TimerManager & timerManager = TimerManager::instance( );
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
     ASSERT( posixTimer != nullptr );
-    Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+    Timer * timer = timerManager.mTimerResource.find_resource_object( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
-    if ( (timer != nullptr) && (posixTimer->isValid( )) )
+    if ( (timer != nullptr) && (posixTimer->is_valid( )) )
     {
         uint32_t highValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_sec);
         uint32_t lowValue = static_cast<uint32_t>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->timerExpired( );
-        timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
+        posixTimer->timer_expired( );
+        timerManager._process_expired_timer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
     }
 }
 #endif  // __APPLE__
 
-void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
+void TimerManager::_os_timer_stop( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
     {
-        posixTimer->stopTimer();
+        posixTimer->stop_timer();
     }
 }
 
-bool TimerManager::_osSystemTimerStart( Timer & timer )
+bool TimerManager::_os_timer_start( Timer & timer )
 {
     bool result{ false };
-    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());
+    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.handle());
     ASSERT(posixTimer != nullptr);
 
     struct timespec startTime;
     ::clock_gettime( CLOCK_REALTIME, &startTime );
-    timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
+    timer.timer_starting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    if (posixTimer->startTimer(timer, 0, &TimerManager::_posixTimerExpiredRoutine))
+    if (posixTimer->start_timer(timer, 0, &TimerManager::_posix_timer_expired))
     {
         result = true;
     }

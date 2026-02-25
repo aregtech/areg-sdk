@@ -48,7 +48,7 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 {
 }
 
-void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
+void ServiceManagerEventProcessor::process_service_event(   ServiceManagerEventData::ServiceManagerCommand cmdService
                                                         , const InStream& stream
                                                         , ConnectionProvider& connectProvider
                                                         , RegistrationProvider& registerProvider )
@@ -58,34 +58,34 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
         {
             mServerList.clear( );
-            connectProvider.disconnectServiceHost( );
-            mServiceManager.removeAllEvents( );
-            mServiceManager.triggerExit( );
+            connectProvider.disconnect_service_host( );
+            mServiceManager.remove_all_events( );
+            mServiceManager.trigger_exit( );
         }
         break;
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
         {
-            for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
+            for ( auto mapPos = mServerList.first_position( ); mServerList.is_valid_position( mapPos ); mapPos = mServerList.next_position( mapPos ) )
             {
                 ServerInfo si;
                 ClientList clientList;
 
-                mServerList.getAtPosition( mapPos, si, clientList );
-                for ( auto listPos = clientList.firstPosition( ); clientList.isValidPosition( listPos ); listPos = clientList.nextPosition( listPos ) )
+                mServerList.at_position( mapPos, si, clientList );
+                for ( auto listPos = clientList.first_position( ); clientList.is_valid_position( listPos ); listPos = clientList.next_position( listPos ) )
                 {
-                    const ClientInfo & client = clientList.valueAtPosition( listPos );
-                    if ( client.isConnected( ) )
+                    const ClientInfo & client = clientList.value_at_position( listPos );
+                    if ( client.is_connected( ) )
                     {
-                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::ServiceConnectionState::Disconnected );
+                        _send_disconnected( client.address(), si.address( ), NEService::ServiceConnectionState::Disconnected );
                     }
                 }
             }
 
             mServerList.clear( );
-            connectProvider.disconnectServiceHost( );
-            mServiceManager.removeEvents( false );
-            mServiceManager.pulseExit( );
+            connectProvider.disconnect_service_host( );
+            mServiceManager.remove_events( false );
+            mServiceManager.pulse_exit( );
         }
         break;
 
@@ -95,8 +95,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             Channel       channel;
             stream >> addrProxy;
             stream >> channel;
-            addrProxy.setChannel( channel );
-            _registerClient( addrProxy, registerProvider);
+            addrProxy.set_channel( channel );
+            _register_client( addrProxy, registerProvider);
         }
         break;
 
@@ -108,8 +108,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             stream >> addrProxy;
             stream >> channel;
             stream >> reason;
-            addrProxy.setChannel( channel );
-            _unregisterClient( addrProxy, reason, registerProvider);
+            addrProxy.set_channel( channel );
+            _unregister_client( addrProxy, reason, registerProvider);
         }
         break;
 
@@ -119,8 +119,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             Channel       channel;
             stream >> addrstub;
             stream >> channel;
-            addrstub.setChannel( channel );
-            _registerServer( addrstub, registerProvider);
+            addrstub.set_channel( channel );
+            _register_server( addrstub, registerProvider);
         }
         break;
 
@@ -132,8 +132,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             stream >> addrstub;
             stream >> channel;
             stream >> reason;
-            addrstub.setChannel( channel );
-            _unregisterServer( addrstub, reason, registerProvider);
+            addrstub.set_channel( channel );
+            _unregister_server( addrstub, reason, registerProvider);
         }
         break;
 
@@ -144,7 +144,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             stream >> service;
             stream >> connectTypes;
 
-            connectProvider.setupServiceConnectionData(service, connectTypes);
+            connectProvider.setup_connection_data(service, connectTypes);
         }
         break;
 
@@ -155,9 +155,9 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             stream >> service;
             stream >> connectTypes;
 
-            if (connectProvider.setupServiceConnectionData(service, connectTypes))
+            if (connectProvider.setup_connection_data(service, connectTypes))
             {
-                connectProvider.connectServiceHost();
+                connectProvider.connect_service_host();
             }
         }
         break;
@@ -169,38 +169,38 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             stream >> ipAddress;
             stream >> portNr;
 
-            connectProvider.applyServiceConnectionData( ipAddress, portNr );
-            if (connectProvider.isServiceHostSetup( ) )
+            connectProvider.apply_connection_data( ipAddress, portNr );
+            if (connectProvider.is_host_setup( ) )
             {
-                connectProvider.connectServiceHost( );
+                connectProvider.connect_service_host( );
             }
         }
         break;
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
         {
-            connectProvider.disconnectServiceHost( );
+            connectProvider.disconnect_service_host( );
         }
         break;
 
     case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
         {
-            for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+            for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )
             {
-                const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                const ClientList & clientList = mServerList.valueAtPosition( posMap );
+                const StubAddress & server = mServerList.key_at_position( posMap ).address( );
+                const ClientList & clientList = mServerList.value_at_position( posMap );
 
-                if ( server.isServicePublic( ) && server.isLocalAddress( ) && server.isValid( ) )
+                if ( server.is_service_public( ) && server.is_local_address( ) && server.is_valid( ) )
                 {
-                    registerProvider.registerServiceProvider( server );
+                    registerProvider.register_service_provider( server );
                 }
 
-                for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
                 {
-                    const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
-                    if ( proxy.isServicePublic( ) && (proxy.isTargetLocal( ) == false) && proxy.isValid( ) )
+                    const ProxyAddress & proxy = clientList.value_at_position( pos ).address( );
+                    if ( proxy.is_service_public( ) && (proxy.is_target_local( ) == false) && proxy.is_valid( ) )
                     {
-                        registerProvider.registerServiceConsumer( proxy );
+                        registerProvider.register_service_consumer( proxy );
                     }
                 }
             }
@@ -215,20 +215,20 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             // elements from the existing list and it may invalidate position object.
             ArrayList<StubAddress> stubList;
             ArrayList<ProxyAddress> proxyList;
-            for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+            for ( ServerList::MAPPOS posMap = mServerList.first_position( ); mServerList.is_valid_position( posMap ); posMap = mServerList.next_position( posMap ) )
             {
-                const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                const ClientList & clientList = mServerList.valueAtPosition( posMap );
+                const StubAddress & server = mServerList.key_at_position( posMap ).address( );
+                const ClientList & clientList = mServerList.value_at_position( posMap );
 
-                if ( server.isServicePublic( ) && server.isRemoteAddress( ) && server.isValid( ) )
+                if ( server.is_service_public( ) && server.is_remote_address( ) && server.is_valid( ) )
                 {
                     stubList.add( server );
                 }
 
-                for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
                 {
-                    const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
-                    if ( proxy.isServicePublic( ) && proxy.isRemoteAddress( ) && proxy.isValid( ) )
+                    const ProxyAddress & proxy = clientList.value_at_position( pos ).address( );
+                    if ( proxy.is_service_public( ) && proxy.is_remote_address( ) && proxy.is_valid( ) )
                     {
                         proxyList.add( proxy );
                     }
@@ -241,14 +241,14 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                 reason = NEService::DisconnectReason::ServiceLost;
             }
 
-            for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
+            for ( uint32_t i = 0; i < stubList.size( ); ++i )
             {
-                _unregisterServer( stubList[ i ], reason, registerProvider);
+                _unregister_server( stubList[ i ], reason, registerProvider);
             }
 
-            for ( uint32_t i = 0; i < proxyList.getSize( ); ++i )
+            for ( uint32_t i = 0; i < proxyList.size( ); ++i )
             {
-                _unregisterClient( proxyList[ i ], reason, registerProvider);
+                _unregister_client( proxyList[ i ], reason, registerProvider);
             }
         }
         break;
@@ -257,9 +257,9 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         {
             String threadName;
             stream >> threadName;
-            if ( _terminateComponentThread( threadName ) )
+            if ( _terminate_component_thread( threadName ) )
             {
-                ServiceManager::_requestCreateThread( threadName );
+                ServiceManager::_request_create_thread( threadName );
             }
         }
         break;
@@ -268,7 +268,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         {
             String threadName;
             stream >> threadName;
-            _startComponentThread( threadName );
+            _start_component_thread( threadName );
         }
         break;
 
@@ -278,233 +278,233 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     }
 }
 
-void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_register_server( const StubAddress & whichServer, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
 
-    if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
+    if ( whichServer.is_local_address( ) && whichServer.is_service_public( ) )
     {
-        registerProvider.registerServiceProvider( whichServer );
+        registerProvider.register_service_provider( whichServer );
     }
 
     ClientList clientList;
 
 #if AREG_LOGS
-    const ServerInfo & server = mServerList.registerServer( whichServer, clientList );
+    const ServerInfo & server = mServerList.register_server( whichServer, clientList );
     LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( server.getConnectionStatus( ) )
-               , clientList.getSize( ) );
+               , StubAddress::to_path( server.address( ) ).as_string( )
+               , NEService::as_string( server.connection_status( ) )
+               , clientList.size( ) );
 #else   // !AREG_LOGS
-    mServerList.registerServer( whichServer, clientList );
+    mServerList.register_server( whichServer, clientList );
 #endif  // !AREG_LOGS
 
-    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+    for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
     {
-        const ClientInfo & client{ clientList.valueAtPosition( pos ) };
-        if ( client.isConnected( ) )
+        const ClientInfo & client{ clientList.value_at_position( pos ) };
+        if ( client.is_connected( ) )
         {
-            _sendClientConnectedEvent( client.getAddress( ), whichServer );
+            _send_connected( client.address( ), whichServer );
         }
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregister_server( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
-    if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
+    if ( whichServer.is_local_address( ) && whichServer.is_service_public( ) )
     {
-        registerProvider.unregisterServiceProvider( whichServer, reason );
+        registerProvider.unregister_service_provider( whichServer, reason );
     }
 
     ClientList clientList;
 
 #if AREG_LOGS
-    ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
+    ServerInfo server( mServerList.unregister_server( whichServer, clientList ) );
     LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( reason )
-               , NEService::getString( server.getConnectionStatus( ) )
-               , clientList.getSize( ) );
+               , StubAddress::to_path( server.address( ) ).as_string( )
+               , NEService::as_string( reason )
+               , NEService::as_string( server.connection_status( ) )
+               , clientList.size( ) );
 
 #else   // AREG_LOGS
 
-    static_cast<void>(mServerList.unregisterServer( whichServer, clientList ));
+    static_cast<void>(mServerList.unregister_server( whichServer, clientList ));
 
 #endif  // AREG_LOGS
 
-    NEService::ServiceConnectionState status = NEService::serviceConnection( reason );
-    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+    NEService::ServiceConnectionState status = NEService::service_connection( reason );
+    for ( ClientList::LISTPOS pos = clientList.first_position( ); clientList.is_valid_position( pos ); pos = clientList.next_position( pos ) )
     {
-        const ClientInfo & client{ clientList.valueAtPosition( pos ) };
-        if ( client.isConnected( ) )
+        const ClientInfo & client{ clientList.value_at_position( pos ) };
+        if ( client.is_connected( ) )
         {
-            _sendClientDisconnectEvent( client.getAddress( ), whichServer, status );
+            _send_disconnected( client.address( ), whichServer, status );
         }
     }
 }
 
-void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_register_client( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
 
-    if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
+    if ( whichClient.is_local_address( ) && whichClient.is_service_public( ) )
     {
-        registerProvider.registerServiceConsumer( whichClient );
+        registerProvider.register_service_consumer( whichClient );
     }
 
     ClientInfo client;
-    const ServerInfo & server = mServerList.registerClient( whichClient, client );
+    const ServerInfo & server = mServerList.register_client( whichClient, client );
 
     LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
-               , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( client.getConnectionStatus( ) ) );
+               , ProxyAddress::to_path( client.address( ) ).as_string( )
+               , StubAddress::to_path( server.address( ) ).as_string( )
+               , NEService::as_string( client.connection_status( ) ) );
 
-    if ( client.isConnected( ) )
+    if ( client.is_connected( ) )
     {
-        _sendClientConnectedEvent( client.getAddress(), server.getAddress( ) );
+        _send_connected( client.address(), server.address( ) );
     }
     else
     {
-        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::to_path( client.address( ) ).as_string( ) );
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregister_client( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 
-    if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
+    if ( whichClient.is_local_address( ) && whichClient.is_service_public( ) )
     {
-        registerProvider.unregisterServiceConsumer( whichClient, reason );
+        registerProvider.unregister_service_consumer( whichClient, reason );
     }
 
     ClientInfo client;
 
-    ServerInfo server = mServerList.unregisterClient( whichClient, client );
+    ServerInfo server = mServerList.unregister_client( whichClient, client );
     LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
-               , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( client.getConnectionStatus( ) ) );
+               , ProxyAddress::to_path( client.address( ) ).as_string( )
+               , StubAddress::to_path( server.address( ) ).as_string( )
+               , NEService::as_string( client.connection_status( ) ) );
 
     // Unregister client first, then send event that client does not receive notification
-    if ( client.isConnected( ) )
+    if ( client.is_connected( ) )
     {
-        _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), NEService::serviceConnection( reason ) );
+        _send_disconnected( client.address(), server.address( ), NEService::service_connection( reason ) );
     }
     else
     {
-        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::to_path( client.address( ) ).as_string( ) );
     }
 }
 
-void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const
+void ServiceManagerEventProcessor::_send_connected( const ProxyAddress & client, const StubAddress & server ) const
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
-    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
+    if ( server.is_local_address( ) && server.source( ) != NEService::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
-                   , StubAddress::convAddressToPath( server ).getString( )
-                   , ProxyAddress::convAddressToPath( client ).getString( ) );
+                   , StubAddress::to_path( server ).as_string( )
+                   , ProxyAddress::to_path( client ).as_string( ) );
 
         StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
         if ( clientConnect != nullptr )
         {
-            server.deliverServiceEvent( *clientConnect );
+            server.deliver_service_event( *clientConnect );
         }
     }
 
-    if ( client.isLocalAddress( ) && client.getSource( ) != NEService::SOURCE_UNKNOWN )
+    if ( client.is_local_address( ) && client.source( ) != NEService::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
-                   , ProxyAddress::convAddressToPath( client ).getString( )
-                   , StubAddress::convAddressToPath( server ).getString( ) );
+                   , ProxyAddress::to_path( client ).as_string( )
+                   , StubAddress::to_path( server ).as_string( ) );
 
         ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
         if ( proxyConnect != nullptr )
         {
-            client.deliverServiceEvent( *proxyConnect );
+            client.deliver_service_event( *proxyConnect );
         }
     }
 }
 
-void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
+void ServiceManagerEventProcessor::_send_disconnected( const ProxyAddress & client
                                                              , const StubAddress & server
                                                              , const NEService::ServiceConnectionState status ) const
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
 
-    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
+    if ( server.is_local_address( ) && server.source( ) != NEService::SOURCE_UNKNOWN )
     {
         LOG_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
-                   , StubAddress::convAddressToPath( server ).getString( )
-                   , ProxyAddress::convAddressToPath( client ).getString( ) );
+                   , StubAddress::to_path( server ).as_string( )
+                   , ProxyAddress::to_path( client ).as_string( ) );
 
         StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
         if ( clientConnect != nullptr )
         {
-            server.deliverServiceEvent( *clientConnect );
+            server.deliver_service_event( *clientConnect );
         }
     }
 
-    if ( client.isLocalAddress( ) )
+    if ( client.is_local_address( ) )
     {
         LOG_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
-                   , ProxyAddress::convAddressToPath( client ).getString( )
-                   , StubAddress::convAddressToPath( server ).getString( ) );
+                   , ProxyAddress::to_path( client ).as_string( )
+                   , StubAddress::to_path( server ).as_string( ) );
 
         ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
         if ( proxyConnect != nullptr )
         {
-            client.deliverServiceEvent( *proxyConnect );
+            client.deliver_service_event( *proxyConnect );
         }
     }
 }
 
-bool ServiceManagerEventProcessor::_terminateComponentThread( const String & threadName )
+bool ServiceManagerEventProcessor::_terminate_component_thread( const String & threadName )
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
 
     bool result{ false };
 
-    Thread * thread = Thread::findThreadByName( threadName );
+    Thread * thread = Thread::find_by_name( threadName );
     ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
     if ( compThread != nullptr )
     {
-        LOG_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );
+        LOG_WARN( "Terminating component thread [ %s ]", compThread->name( ).as_string( ) );
         result = true;
-        compThread->terminateSelf( );
+        compThread->terminate_self( );
     }
     else
     {
-        LOG_INFO( "Was not able to find component thread [ %s ] to terminate", threadName.getString( ) );
+        LOG_INFO( "Was not able to find component thread [ %s ] to terminate", threadName.as_string( ) );
     }
 
     return result;
 }
 
-void ServiceManagerEventProcessor::_startComponentThread( const String & threadName )
+void ServiceManagerEventProcessor::_start_component_thread( const String & threadName )
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
-    const NERegistry::ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
-    Thread * thread = Thread::findThreadByName( threadName );
-    if ( entry.isValid( ) && (thread == nullptr) )
+    const NERegistry::ComponentThreadEntry & entry = ComponentLoader::find_thread_entry( threadName );
+    Thread * thread = Thread::find_by_name( threadName );
+    if ( entry.is_valid( ) && (thread == nullptr) )
     {
         ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
-        if ( (compThread != nullptr) && compThread->createThread( NECommon::WAIT_INFINITE ) )
+        if ( (compThread != nullptr) && compThread->create_thread( NECommon::WAIT_INFINITE ) )
         {
-            LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );
+            LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.as_string( ) );
         }
         else
         {
-            LOG_WARN( "Failed to create and start component thread [ %s ]", threadName.getString( ) );
+            LOG_WARN( "Failed to create and start component thread [ %s ]", threadName.as_string( ) );
         }
     }
     else
     {
-        LOG_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.getString( ) );
+        LOG_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.as_string( ) );
     }
 }

@@ -36,14 +36,14 @@ ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, Re
 {
 }
 
-bool ServerReceiveThread::runDispatcher()
+bool ServerReceiveThread::run_dispatcher()
 {
     LOG_SCOPE( areg_aregextend_service_ServerReceiveThread_runDispatcher );
-    LOG_DBG("Starting dispatcher [ %s ]", getName().getString());
+    LOG_DBG("Starting dispatcher [ %s ]", name().as_string());
 
-    readyForEvents(true);
+    ready_for_events(true);
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
-    if ( mConnection.serverListen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
+    if ( mConnection.server_listen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
         MultiLock multiLock(syncObjects, 2, false);
@@ -57,14 +57,14 @@ bool ServerReceiveThread::runDispatcher()
             {
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
                 NESocket::SocketAddress addrAccepted;
-                SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
+                SOCKETHANDLE hSocket = mConnection.wait_connection(addrAccepted);
 
-                if (mConnection.isValid() == false)
+                if (mConnection.is_valid() == false)
                 {
                     LOG_WARN("The server socket is not valid anymore, should quit receive thread!");
-                    if (NESocket::isSocketHandleValid(hSocket))
+                    if (NESocket::is_handle_valid(hSocket))
                     {
-                        NESocket::socketClose(hSocket);
+                        NESocket::socket_close(hSocket);
                     }
 
                     whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
@@ -83,13 +83,13 @@ bool ServerReceiveThread::runDispatcher()
                     retryCount = 0;
 
                     SocketAccepted clientSocket;
-                    if (mConnection.isConnectionAccepted(hSocket) )
+                    if (mConnection.is_connection_accepted(hSocket) )
                     {
-                        clientSocket = mConnection.getClientByHandle( hSocket );
+                        clientSocket = mConnection.client_by_handle( hSocket );
                         LOG_DBG("Received connection event of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
-                                            , clientSocket.getAddress().getHostAddress().getString()
-                                            , clientSocket.getAddress().getHostPort());
+                                            , clientSocket.address().host_address().as_string()
+                                            , clientSocket.address().host_port());
                     }
                     else
                     {
@@ -98,37 +98,37 @@ bool ServerReceiveThread::runDispatcher()
                         {
                             LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
-                                            , addrAccepted.getHostAddress().getString()
-                                            , addrAccepted.getHostPort());
+                                            , addrAccepted.host_address().as_string()
+                                            , addrAccepted.host_port());
                             
-                            mConnection.acceptConnection(clientSocket);
+                            mConnection.accept_connection(clientSocket);
                         }
-                        else if ( clientSocket.isAlive() )
+                        else if ( clientSocket.is_alive() )
                         {
                             LOG_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
-                                            , addrAccepted.getHostAddress().getString()
-                                            , addrAccepted.getHostPort());
+                                            , addrAccepted.host_address().as_string()
+                                            , addrAccepted.host_port());
                             
                             mConnection.rejectConnection(clientSocket);
-                            clientSocket.closeSocket();
+                            clientSocket.close_socket();
                             continue;
                         }
                         else
                         {
                             LOG_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
                                         , hSocket
-                                        , addrAccepted.getHostAddress( ).getString( )
-                                        , addrAccepted.getHostPort( ) );
-                            mConnection.closeConnection( clientSocket );
+                                        , addrAccepted.host_address( ).as_string( )
+                                        , addrAccepted.host_port( ) );
+                            mConnection.close_connection( clientSocket );
                             continue;
                         }
                     }
 
 #if AREG_LOGS
-                    const NESocket::SocketAddress& addSocket = clientSocket.getAddress();
+                    const NESocket::SocketAddress& addSocket = clientSocket.address();
 #endif // AREG_LOGS
-                    int32_t sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
+                    int32_t sizeReceived = mConnection.receive_message(msgReceived, clientSocket);
                     if (sizeReceived > 0 )
                     {
                         if (mSaveDataReceive)
@@ -137,21 +137,21 @@ bool ServerReceiveThread::runDispatcher()
                         }
 
                         LOG_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
-                                    , static_cast<id_type>(msgReceived.getMessageId())
-                                    , static_cast<id_type>(msgReceived.getSource())
-                                    , addSocket.getHostAddress().getString()
-                                    , addSocket.getHostPort());
+                                    , static_cast<id_type>(msgReceived.message_id())
+                                    , static_cast<id_type>(msgReceived.source())
+                                    , addSocket.host_address().as_string()
+                                    , addSocket.host_port());
 
-                        mRemoteService.processReceivedMessage(msgReceived, clientSocket);
+                        mRemoteService.process_received_message(msgReceived, clientSocket);
                     }
                     else
                     {
                         LOG_DBG("Failed to receive message from client socket [ %s : %d ], socket [ %u ]. Going to close connection"
-                                        , addSocket.getHostAddress().getString()
-                                        , addSocket.getHostPort()
-                                        , clientSocket.getHandle());
+                                        , addSocket.host_address().as_string()
+                                        , addSocket.host_port()
+                                        , clientSocket.handle());
 
-                        mRemoteService.failedReceiveMessage(clientSocket);
+                        mRemoteService.failed_receive_message(clientSocket);
                     }
 
                     msgReceived.invalidate();
@@ -159,16 +159,16 @@ bool ServerReceiveThread::runDispatcher()
             }
             else
             {
-                Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-                whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
+                Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pick_event() : nullptr;
+                whichEvent = is_exit_event(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
             }
 
         } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
     }
 
-    readyForEvents(false);
-    removeAllEvents();
+    ready_for_events(false);
+    remove_all_events();
 
-    LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
+    LOG_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.as_string());
     return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
 }

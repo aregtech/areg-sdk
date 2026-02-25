@@ -75,6 +75,10 @@ template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class MapContainer   = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
          , class Deleter        = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+/**
+ * \brief   Hash map container for managing registered resources with optional synchronization.
+ *          Resources are accessed by unique keys and should remain valid until unregistered.
+ **/
 class ResourceMapBase   : protected MapContainer
                         , protected Deleter
 {
@@ -83,7 +87,9 @@ class ResourceMapBase   : protected MapContainer
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default Constructor
+     * \brief   Initializes the resource map with a synchronization object for thread safety.
+     *
+     * \param   syncObject      The synchronization object to control concurrent access.
      **/
     explicit ResourceMapBase( Lockable & syncObject );
 
@@ -98,125 +104,111 @@ protected:
 public:
 
     /**
-     * \brief	Returns the size of Resource Map
+     * \brief   Returns the number of resources in the map.
      **/
-    inline uint32_t getSize() const;
+    inline uint32_t size() const;
 
     /**
-     * \brief   Returns true if resource map is empty.
+     * \brief   Returns true if the resource map is empty.
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
-     * \brief	Checks whether Resource Map contains entry with specified unique Key or not.
-     * 
-     * \param	Key	    The unique Key of Resource that was registered.
-     * \return	Returns true if Resource map has registered and object with specified unique key.
-     *          Otherwise, returns false
+     * \brief   Checks whether a resource with the specified key is registered.
+     *
+     * \param   Key     The unique key of the resource to check.
+     * \return  Returns true if the resource is registered with the specified key.
      **/
-    inline bool existResource(const RESOURCE_KEY& Key) const;
+    inline bool exist(const RESOURCE_KEY& Key) const;
 
     /**
-     * \brief	Locks the Resource Map, grants ownership to locking thread
-     *          and blocks any other thread to access resource map data.
+     * \brief   Locks the resource map to block other threads from accessing it.
      **/
     inline void lock() const;
 
     /**
-     * \brief	Unlocks previously locked Resource Map, so that other threads
-     *          can have access to resource map data.
+     * \brief   Unlocks the resource map to allow other threads to access it.
      **/
     inline void unlock() const;
 
     /**
-     * \brief	Tries to lock Resource Map. If succeeds, calling thread gets resource
-     *          locking ownership and any other threads are blocked and cannot access
-     *          Resource Map data. Otherwise the calling thread is not blocked and
-     *          does not get the ownership. Check return value to figure out whether
-     *          calling have got resource ownership or not.
-     * \return	Returns true if calling thread locked resource and have got the ownership.
-     *          Otherwise,  returns false, but does not block thread execution.
+     * \brief   Attempts to lock the resource map without blocking. Returns immediately whether the
+     *          lock was successful.
+     *
+     * \return  Returns true if the lock was successfully acquired; false otherwise without
+     *          blocking.
      **/
-    inline bool tryLock() const;
+    inline bool try_lock() const;
 
     /**
-     * \brief	Registers resource object in the resource list of the map.
-     * \param	Key	        The unique Key of Resource object.
-     * \param	Resource	The pointer to Resource object, which should remain
-     *                      valid until it is unregistered.
+     * \brief   Registers a resource object under the given key.
+     *
+     * \param   Key         The unique key for the resource.
+     * \param   Resource    The resource object pointer, which must remain valid until unregistered.
      **/
-    inline void registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
+    inline void register_resource_object( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
 
     /**
-     * \brief	Unregisters resource from the resource list of the map.
-     * \param	Key	    The unique Key of resource that was previously registered.
-     * \return	If succeeded, returns pointer to unregistered resource.
-     *          Otherwise, returns nullptr.
+     * \brief   Unregisters the resource for the given key and returns the resource object pointer.
+     *
+     * \param   Key     The unique key of the resource to unregister.
+     * \return  Returns the resource object pointer if found; nullptr otherwise.
      **/
-    inline RESOURCE_OBJECT unregisterResourceObject(const RESOURCE_KEY & Key);
+    inline RESOURCE_OBJECT unregister_resource_object(const RESOURCE_KEY & Key);
 
     /**
-     * \brief	Search Resource object in Resource Map by the given unique Key
-     *          and if found, returns valid pointer to registered resource object.
-     * \param	Key	    The unique Key of resource.
-     * \return	Returns valid pointer to the resource object if found a resource
-     *          registered with the unique key. Otherwise, returns nullptr.
+     * \brief   Searches for a resource object by the given key.
+     *
+     * \param   Key     The unique key of the resource to find.
+     * \return  Returns a pointer to the resource object if found; nullptr otherwise.
      **/
-    inline RESOURCE_OBJECT findResourceObject( const RESOURCE_KEY & Key ) const;
+    inline RESOURCE_OBJECT find_resource_object( const RESOURCE_KEY & Key ) const;
 
     /**
-     * \brief	Removes given Resource object from Resource Map and returns true 
-     *          if operation succeeded. The function searches every entry in the map
-     *          to find and remove the object from the map. To remove resource
-     *          faster, unregister the resource with the unique key.
-     * \param	Resource	The resource object to lookup and remove.
-     * \return	If found and removed any such resource, returns true.
-     *          Otherwise returns false.
+     * \brief   Removes the given resource object from the map by searching all entries.
+     *
+     * \param   Resource    The resource object to remove.
+     * \return  Returns true if the resource was found and removed.
      **/
-    inline bool removeResourceObject( RESOURCE_OBJECT Resource );
+    inline bool remove_resource_object( RESOURCE_OBJECT Resource );
 
     /**
-     * \brief	Removes all registered resources one-by-one.
-     *          For every removed resource calls cleanResourceEntry() function
-     *          if any additional job should be performed (for example, delete resources)
+     * \brief   Removes all registered resources and calls clean_resource_entry for each one.
      **/
-    inline void removeAllResources();
+    inline void remove_all_resources();
 
     /**
-     * \brief   Removes first element of Resource map and returns true if successfully removed.
-     *          On output firstElement contains Resource Key and Object pair.
-     * \param[out]  firstElement    On output, this will contain Key and Object pair 
-     *                              of first element in resource map.
-     * \return  Returns true if successfully removed first element.
+     * \brief   Removes the first element from the resource map and returns it.
+     *
+     * \param[out] firstElement    On output, contains the key and object pair of the removed first
+     *                             element.
+     * \return  Returns true if an element was successfully removed.
      **/
-    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement );
+    inline bool remove_first_element( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement );
 
     /**
-     * \brief   Returns resource object of first object and the associated unique key in the map.
-     * \param[out]  firstKey    On output, this parameter contains a resource valid key
-     *                          if the resource is not empty.
-     * \return  Returns pointer of stored Resource Object.
+     * \brief   Returns the resource object of the first entry and retrieves its associated key.
+     *
+     * \param[out] firstKey    On output, contains the key of the first resource if the map is not
+     *                         empty.
+     * \return  Returns a pointer to the first resource object.
      **/
-    inline RESOURCE_OBJECT resourceFirstKey( RESOURCE_KEY & firstKey ) const;
+    inline RESOURCE_OBJECT resource_first_key( RESOURCE_KEY & firstKey ) const;
 
     /**
-     * \brief	Returns resource object of next element stored after specified unique Key.
-     *          On input, the parameter 'nextKey' should be valid resource key.
-     *          On output, this parameter points to the next element in the resource map.
-     *          To get first element key, call resourceFirstKey() method. Check return value
-     *          to know whether there are more elements in the map or not.
-     * 
-     * \param[in,out]   nextKey     On input, this Key should be valid and point to the valid resource. 
-     *                              On output, this parameter contain the key of the next element in the map.
-     * \return	Returns valid pointer to the next registered resource object. Returns nullptr if
-     *          reached end of the resource map.
+     * \brief   Returns the resource object of the next entry after the specified key and updates
+     *          the key parameter.
+     *
+     * \param[in,out] nextKey     On input, must be a valid key in the map. On output, contains the
+     *                            key of the next element.
+     * \return  Returns a pointer to the next resource object; nullptr if at the end.
      **/
-    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & nextKey ) const;
+    inline RESOURCE_OBJECT resource_next_key( RESOURCE_KEY & nextKey ) const;
 
     /**
-     * \brief   Returns the vector object where the data are stored.
+     * \brief   Returns a const reference to the underlying unordered map data structure.
      **/
-    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& getData() const;
+    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& data() const;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,14 +216,12 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Called when all resources are removed.
-     *          This function is called from removeAllResources() for every single
-     *          resource being unregistered. Override this function if any additional
-     *          work should be performed after unregistering resource.
-     * \param[in,out]   Key         The Key value of resource
-     * \param[in,out]   Resource    Pointer to resource object
+     * \brief   Called when removing all resources. Override to perform cleanup for each resource.
+     *
+     * \param[in,out] Key         The key of the resource being removed.
+     * \param[in,out] Resource    The resource object being removed.
      **/
-    inline void cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
+    inline void clean_resource_entry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -246,10 +236,25 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ResourceMapBase() = delete;
+    /**
+     * \brief
+     **/
     ResourceMapBase( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/) = delete;
+    /**
+     * \brief
+     **/
     ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/ ) = delete;
+    /**
+     * \brief
+     **/
     ResourceMapBase( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
+    /**
+     * \brief
+     **/
     ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
 };
 
@@ -270,6 +275,9 @@ private:
  * \see    ConcurrentResourceMap, ResourceMap
  **/
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+/**
+ * \brief   Thread-safe resource map with blocking synchronization for multi-threaded access.
+ **/
 class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -277,7 +285,7 @@ class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_O
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief
      **/
     ConcurrentResourceMap();
     /**
@@ -317,6 +325,9 @@ private:
  * \see    ConcurrentResourceMap
  **/
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+/**
+ * \brief   Non-thread-safe resource map for single-threaded use.
+ **/
 class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -324,7 +335,7 @@ class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapCo
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief
      **/
     ResourceMap();
     /**
@@ -365,29 +376,29 @@ ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::ResourceM
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::register_resource_object(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
 {
     Lock lock(mSyncObj);
-    MapContainer::setAt(Key, Resource);
+    MapContainer::set_at(Key, Resource);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::unregisterResourceObject(const RESOURCE_KEY & Key)
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::unregister_resource_object(const RESOURCE_KEY & Key)
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    MapContainer::removeAt(Key, result);
+    MapContainer::remove_at(Key, result);
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::findResourceObject(const RESOURCE_KEY & Key) const
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::find_resource_object(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    if (MapContainer::isEmpty())
+    if (MapContainer::is_empty())
         return result;
 
     MapContainer::find(Key, result);
@@ -395,7 +406,7 @@ inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContain
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::existResource(const RESOURCE_KEY & Key) const
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::exist(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSyncObj);
     return MapContainer::contains(Key);
@@ -414,36 +425,36 @@ inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::tryLock() const
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::try_lock() const
 {
-    return mSyncObj.tryLock( );
+    return mSyncObj.try_lock( );
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::getSize() const
-{
-    Lock lock(mSyncObj);
-    return MapContainer::getSize();
-}
-
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::isEmpty() const
+inline uint32_t ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::size() const
 {
     Lock lock(mSyncObj);
-    return MapContainer::isEmpty();
+    return MapContainer::size();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::removeResourceObject( RESOURCE_OBJECT Resource )
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::is_empty() const
+{
+    Lock lock(mSyncObj);
+    return MapContainer::is_empty();
+}
+
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::remove_resource_object( RESOURCE_OBJECT Resource )
 {
     Lock lock(mSyncObj);
 
     bool result{ false };
-    for ( auto pos = MapContainer::firstPosition(); pos != nullptr; pos = MapContainer::nextPosition(pos))
+    for ( auto pos = MapContainer::first_position(); pos != nullptr; pos = MapContainer::next_position(pos))
     {
-        if ( Resource == MapContainer::valueAtPosition(pos) )
+        if ( Resource == MapContainer::value_at_position(pos) )
         {
-            MapContainer::removePosition(pos);
+            MapContainer::remove_position(pos);
             result = true;
             break;
         }
@@ -453,76 +464,76 @@ inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::removeAllResources()
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::remove_all_resources()
 {
     Lock lock(mSyncObj);
 
-    for ( auto pos = MapContainer::firstPosition(); MapContainer::isValidPosition(pos); pos = MapContainer::nextPosition(pos))
+    for ( auto pos = MapContainer::first_position(); MapContainer::is_valid_position(pos); pos = MapContainer::next_position(pos))
     {
         RESOURCE_KEY Key;
         RESOURCE_OBJECT Value{ nullptr };
-        MapContainer::getAtPosition(pos, Key, Value);
-        cleanResourceEntry(Key, Value);
+        MapContainer::at_position(pos, Key, Value);
+        clean_resource_entry(Key, Value);
     }
 
     MapContainer::clear();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
+inline bool ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::remove_first_element(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & firstElement )
 {
     Lock lock(mSyncObj);
     bool result{ false };
-    typename MapContainer::MAPPOS pos  = MapContainer::firstPosition();
-    if (MapContainer::isValidPosition(pos))
+    typename MapContainer::MAPPOS pos  = MapContainer::first_position();
+    if (MapContainer::is_valid_position(pos))
     {
         result = true;
-        MapContainer::removePosition(pos, firstElement.first, firstElement.second);
+        MapContainer::remove_position(pos, firstElement.first, firstElement.second);
     }
 
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resourceFirstKey( RESOURCE_KEY & firstKey ) const
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resource_first_key( RESOURCE_KEY & firstKey ) const
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    typename MapContainer::MAPPOS pos = MapContainer::firstPosition();
-    if (MapContainer::isValidPosition(pos))
+    typename MapContainer::MAPPOS pos = MapContainer::first_position();
+    if (MapContainer::is_valid_position(pos))
     {
-        MapContainer::getAtPosition(pos, firstKey, result);
+        MapContainer::at_position(pos, firstKey, result);
     }
 
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resourceNextKey( RESOURCE_KEY & nextKey ) const
+inline RESOURCE_OBJECT ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::resource_next_key( RESOURCE_KEY & nextKey ) const
 {
     Lock lock(mSyncObj);
 
     RESOURCE_OBJECT result{ nullptr };
-    typename MapContainer::MAPPOS pos = MapContainer::isEmpty() ? MapContainer::invalidPosition() : MapContainer::find(nextKey);
-    if (MapContainer::isValidPosition(pos))
+    typename MapContainer::MAPPOS pos = MapContainer::is_empty() ? MapContainer::invalid_position() : MapContainer::find(nextKey);
+    if (MapContainer::is_valid_position(pos))
     {
-        MapContainer::nextEntry(pos, nextKey, result);
+        MapContainer::next_entry(pos, nextKey, result);
     }
 
     return result;
 }
 
 template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::getData() const
+inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::data() const
 {
-    return MapContainer::getData();
+    return MapContainer::data();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
+inline void ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>::clean_resource_entry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
 {
-    Deleter::implCleanResource(Key, Resource);
+    Deleter::impl_clean_resource(Key, Resource);
 }
 
 //////////////////////////////////////////////////////////////////////////

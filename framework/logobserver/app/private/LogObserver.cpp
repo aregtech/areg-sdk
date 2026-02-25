@@ -87,7 +87,7 @@ const OptionParser::OptionSetup LogObserver::ValidOptions[ ]
     , { "-x", "--stop"      , static_cast<int32_t>(LoggerOption::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
-LogObserver & LogObserver::getInstance()
+LogObserver & LogObserver::instance()
 {
     static LogObserver _instance;
     return _instance;
@@ -100,7 +100,7 @@ Console::CallBack LogObserver::getOptionCheckCallback() const
 
 void LogObserver::_runConsoleInputExtended()
 {
-    Console & console = Console::getInstance( );
+    Console & console = Console::instance( );
     LogObserver::_outputTitle( );
 
     console.enableConsoleInput(true);
@@ -113,17 +113,17 @@ void LogObserver::_runConsoleInputExtended()
     console.uninitialize( );
 }
 
-void LogObserver::callbackObserverConfigured(bool /* isEnabled */, const char* /* address */, uint16_t /* port */)
+void LogObserver::callbackObserverConfigured(bool /* is_enabled */, const char* /* address */, uint16_t /* port */)
 {
 }
 
-void LogObserver::callbackDatabaseConfigured(bool /* isEnabled */, const char* /* dbName */, const char* /* dbLocation */, const char* /* user */ )
+void LogObserver::callbackDatabaseConfigured(bool /* is_enabled */, const char* /* dbName */, const char* /* dbLocation */, const char* /* user */ )
 {
 }
 
-void LogObserver::callbackServiceConnected(bool isConnected, const char* address, uint16_t port)
+void LogObserver::callbackServiceConnected(bool is_connected, const char* address, uint16_t port)
 {
-    if (isConnected)
+    if (is_connected)
     {
         _logConnect.lcAddress = address;
         _logConnect.lcPort = port;
@@ -136,7 +136,7 @@ void LogObserver::callbackServiceConnected(bool isConnected, const char* address
     }
 }
 
-void LogObserver::callbackObserverStarted(bool /* isStarted */)
+void LogObserver::callbackObserverStarted(bool /* is_started */)
 {
 }
 
@@ -161,7 +161,7 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
     {
         const LogInstance& inst{ instances[i] };
         bool contains{ false };
-        for (uint32_t j = 0; j < _listInstances.getSize(); ++j)
+        for (uint32_t j = 0; j < _listInstances.size(); ++j)
         {
             if (_listInstances[j].liCookie == inst.liCookie)
             {
@@ -172,7 +172,7 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
 
         if (contains == false)
         {
-            TIME64 now{ DateTime::getNow() };
+            TIME64 now{ DateTime::now() };
             NELogging::LogEntry log{ };
             log.logDataType     = NELogging::LogDataType::Local;
             log.logMsgType      = NELogging::LogMessageType::MessageText;
@@ -187,14 +187,14 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
             log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
-            log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+            log.logMessageLen   = static_cast<uint32_t>(String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "CONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
             log.logThreadLen    = 0;
             log.logThread[0]    = String::EmptyChar;
             log.logModuleId     = 0;
-            log.logModuleLen    = static_cast<uint32_t>(NEString::copyString(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
+            log.logModuleLen    = static_cast<uint32_t>(NEString::copy_string(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
 
             _listInstances.add(inst);
-            NELogging::logAnyMessage(log);
+            NELogging::log_any_message(log);
 
             ASSERT(_mapScopes.contains(inst.liCookie) == false);
             ::logObserverRequestScopes(inst.liCookie);
@@ -207,12 +207,12 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
     for (uint32_t i = 0; i < count; ++i)
     {
         const ITEM_ID& cookie = instances[i];
-        for (uint32_t j = 0; j < _listInstances.getSize(); ++j)
+        for (uint32_t j = 0; j < _listInstances.size(); ++j)
         {
             const LogInstance& inst{ _listInstances[j] };
             if (inst.liCookie == cookie)
             {
-                TIME64 now{ DateTime::getNow() };
+                TIME64 now{ DateTime::now() };
                 NELogging::LogEntry log{ };
                 log.logDataType     = NELogging::LogDataType::Local;
                 log.logMsgType      = NELogging::LogMessageType::MessageText;
@@ -227,16 +227,16 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
                 log.logDuration     = 0u;
                 log.logScopeId      = 0u;
                 log.logSessionId    = 0u;
-                log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
+                log.logMessageLen   = static_cast<uint32_t>(String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "DISCONNECTED the x%u instance %s with cookie %llu", inst.liBitness, inst.liName, inst.liCookie));
                 log.logThreadLen    = 0;
                 log.logThread[0]    = String::EmptyChar;
                 log.logModuleId     = 0;
-                log.logModuleLen    = static_cast<uint32_t>(NEString::copyString(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
+                log.logModuleLen    = static_cast<uint32_t>(NEString::copy_string(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
 
-                _listInstances.removeAt(j, 1);
-                _mapScopes.removeAt(cookie);
+                _listInstances.remove_at(j, 1);
+                _mapScopes.remove_at(cookie);
 
-                NELogging::logAnyMessage(log);
+                NELogging::log_any_message(log);
                 break;
             }
         }
@@ -245,7 +245,7 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
 
 void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count)
 {
-    for (uint32_t i = 0; i < _listInstances.getSize(); ++i)
+    for (uint32_t i = 0; i < _listInstances.size(); ++i)
     {
         const LogInstance& inst{ _listInstances[i] };
         if (cookie == inst.liCookie)
@@ -259,26 +259,26 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uin
             log.logCookie       = inst.liCookie;
             log.logModuleId     = 0u;
             log.logThreadId     = 0u;
-            log.logTimestamp    = static_cast<TIME64>(DateTime::getNow());
+            log.logTimestamp    = static_cast<TIME64>(DateTime::now());
             log.logReceived     = log.logTimestamp;
             log.logDuration     = 0u;
             log.logScopeId      = 0u;
             log.logSessionId    = 0u;
-            log.logMessageLen   = static_cast<uint32_t>(String::formatString(log.logMessage, NELogging::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
+            log.logMessageLen   = static_cast<uint32_t>(String::format_string(log.log_message, NELogging::LOG_MESSAGE_IZE, "Registered %u scopes for instance %s with cookie %llu", count, inst.liName, inst.liCookie));
             log.logThreadLen    = 0;
             log.logThread[0]    = String::EmptyChar;
             log.logModuleId     = 0;
-            log.logModuleLen    = static_cast<uint32_t>(NEString::copyString(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
+            log.logModuleLen    = static_cast<uint32_t>(NEString::copy_string(log.logModule, NELogging::LOG_NAMES_SIZE, inst.liName));
 
-            _mapScopes.setAt(cookie, ListScopes());
-            ListScopes& scopeList{ _mapScopes.getAt(cookie) };
+            _mapScopes.set_at(cookie, ListScopes());
+            ListScopes& scopeList{ _mapScopes.at(cookie) };
             scopeList.resize(count);
             for (uint32_t j = 0; j < count; ++j)
             {
                 scopeList[j] = scopes[j];
             }
 
-            NELogging::logAnyMessage(log);
+            NELogging::log_any_message(log);
             break;
         }
     }
@@ -288,7 +288,7 @@ void LogObserver::callbackLogUpdateScopes(ITEM_ID /* cookie */, const ScopeInfo*
 {
 }
 
-void LogObserver::callbackLogMessage(const LogEntry* /* logMessage */)
+void LogObserver::callbackLogMessage(const LogEntry* /* log_message */)
 {
 }
 
@@ -302,7 +302,7 @@ void LogObserver::callbackLogMessageEx(const uint8_t* logBuffer, uint32_t /*size
     {
         ASSERT(size >= sizeof(NELogging::LogEntry));
         const NELogging::LogEntry & log{ reinterpret_cast<const NELogging::LogEntry &>(*logBuffer)};
-        NELogging::logAnyMessage(log);
+        NELogging::log_any_message(log);
     }
 }
 
@@ -324,7 +324,7 @@ void LogObserver::logMain( int32_t argc, char ** argv )
         , &LogObserver::callbackLogMessageEx
     };
 
-    Application::setWorkingDirectory(nullptr);
+    Application::set_working_directory(nullptr);
     String fileConfig(NEApplication::DEFAULT_CONFIG_FILE);
     OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
@@ -332,19 +332,19 @@ void LogObserver::logMain( int32_t argc, char ** argv )
         uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
         if (pos != NECommon::INVALID_POSITION)
         {
-            String filePath{ parser.getOptions().getAt(pos).inString[0] };
-            if (File::existFile(filePath))
+            String filePath{ parser.getOptions().at(pos).inString[0] };
+            if (File::has_file(filePath))
             {
                 fileConfig = filePath;
             }
         }
     }
 
-    ::logObserverInitialize(&evts, fileConfig.getString());
+    ::logObserverInitialize(&evts, fileConfig.as_string());
 
     _runConsoleInputExtended();
 
-    Application::signalAppQuit();
+    Application::signal_app_quit();
     ::logObserverDisconnectLogger();
     ::logObserverRelease();
 }
@@ -356,12 +356,12 @@ bool LogObserver::_checkCommand(const String& cmd)
     bool hasError {false};
 
     LogObserver::_cleanHelp();
-    Console& console = Console::getInstance();
+    Console& console = Console::instance();
 
     if ( parser.parseOptionLine( cmd ) )
     {
         const OptionParser::InputOptionList & opts = parser.getOptions( );
-        for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
+        for ( uint32_t i = 0; i < opts.size( ); ++ i )
         {
             bool processed{ false };
             const LogObserver::ObserverStatus* status{ nullptr };
@@ -452,7 +452,7 @@ bool LogObserver::_checkCommand(const String& cmd)
     {
         if ( hasError )
         {
-            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data(), cmd.getString());
+            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data(), cmd.as_string());
         }
 
         console.clearLine( NESystemService::COORD_USER_INPUT );
@@ -471,7 +471,7 @@ bool LogObserver::_checkCommand(const String& cmd)
 
 void LogObserver::_outputTitle()
 {
-    Console & console = Console::getInstance( );
+    Console & console = Console::instance( );
     console.lockConsole();
     console.outputTxt( NESystemService::COORD_TITLE, LogObserver::APP_TITLE );
     console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR );
@@ -480,7 +480,7 @@ void LogObserver::_outputTitle()
 
 void LogObserver::_outputInfo( const String & info )
 {
-    Console & console = Console::getInstance( );
+    Console & console = Console::instance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
     console.lockConsole( );
 
@@ -494,7 +494,7 @@ void LogObserver::_outputInfo( const String & info )
 void LogObserver::_cleanHelp()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    Console& console = Console::instance();
     console.lockConsole();
 
     console.clearLine(NESystemService::COORD_USER_INPUT);
@@ -525,15 +525,15 @@ bool LogObserver::_processSaveConfig(const OptionParser::InputOption& optSave)
                 listTargets.add(NEService::TARGET_ALL);
                 break;
             }
-            else if (elem.isNumeric())
+            else if (elem.is_numeric())
             {
-                listTargets.add(elem.toUInt64());
+                listTargets.add(elem.to_uint64());
             }
         }
     }
 
     bool result{ true };
-    for (const auto& target : listTargets.getData())
+    for (const auto& target : listTargets.data())
     {
         result &= ::logObserverRequestSaveConfig(target);
     }
@@ -544,7 +544,7 @@ bool LogObserver::_processSaveConfig(const OptionParser::InputOption& optSave)
 bool LogObserver::_processPrintHelp()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    Console& console = Console::instance();
     console.lockConsole();
     for (const auto& text : _msgHelp)
     {
@@ -558,15 +558,15 @@ bool LogObserver::_processPrintHelp()
 
 bool LogObserver::_processInfoInstances()
 {
-    static constexpr std::string_view _table{ "   Nr. |  Inst. ID  |  Bits |  Scopes  |  Name " };
+    static constexpr std::string_view _table{ "   Nr. |  Inst. ID  |  Bits |  Scopes  |  name " };
     static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  |  %s " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
 
-    Console& console = Console::getInstance();
+    Console& console = Console::instance();
     Console::Coord coord{ NESystemService::COORD_INFO_MSG };
     console.lockConsole();
 
-    if (_listInstances.isEmpty())
+    if (_listInstances.is_empty())
     {
         console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
@@ -581,12 +581,12 @@ bool LogObserver::_processInfoInstances()
         ++coord.posY;
         console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
-        for (uint32_t i = 0; i < _listInstances.getSize(); ++ i)
+        for (uint32_t i = 0; i < _listInstances.size(); ++ i)
         {
             const LogInstance& instance{ _listInstances[i] };
             uint32_t id{ static_cast<uint32_t>(instance.liCookie) };
             auto pos = _mapScopes.find(instance.liCookie);
-            uint32_t scopes{ pos != _mapScopes.invalidPosition() ? _mapScopes.valueAtPosition(pos).getSize() : 0u };
+            uint32_t scopes{ pos != _mapScopes.invalid_position() ? _mapScopes.value_at_position(pos).size() : 0u };
             console.outputMsg(coord, _formt.data(), (i + 1), id, static_cast<uint32_t>(instance.liBitness), scopes, instance.liName);
             ++coord.posY;
         }
@@ -619,7 +619,7 @@ bool LogObserver::_processUpdateScopes(const OptionParser::InputOption& optScope
         }
     }
 
-    if (scope.isEmpty() == false)
+    if (scope.is_empty() == false)
     {
         result = LogObserver::_sendScopeUpdateMessage(scope);
     }
@@ -679,14 +679,14 @@ bool LogObserver::_processQueryScopes(const OptionParser::InputOption& optScope)
                 listTargets.add(NEService::TARGET_ALL);
                 break;
             }
-            else if (elem.isNumeric())
+            else if (elem.is_numeric())
             {
-                listTargets.add(elem.toUInt64());
+                listTargets.add(elem.to_uint64());
             }
         }
     }
 
-    for (const auto& target : listTargets.getData())
+    for (const auto& target : listTargets.data())
     {
         result &= ::logObserverRequestScopes(target);
     }
@@ -698,7 +698,7 @@ String LogObserver::_normalizeScopeProperty(const String & scope)
 {
     const NEPersistence::ConfigKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::ConfigEntry::LogScope)] };
     String result;
-    if (scope.startsWith(propKey.property))
+    if (scope.starts_with(propKey.property))
     {
         result.append(propKey.section)
               .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
@@ -710,8 +710,8 @@ String LogObserver::_normalizeScopeProperty(const String & scope)
     {
         String prop(propKey.property);
         prop += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
-        NEString::CharPos pos = scope.findFirst(prop);
-        if ( scope.isValidPosition(pos))
+        NEString::CharPos pos = scope.find_first(prop);
+        if ( scope.is_valid_position(pos))
         {
             result.append(propKey.section)
                   .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
@@ -720,14 +720,14 @@ String LogObserver::_normalizeScopeProperty(const String & scope)
         else
         {
             result = scope;
-            pos = result.findLast(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
-            if (result.isValidPosition(pos))
+            pos = result.find_last(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
+            if (result.is_valid_position(pos))
             {
-                result.insertAt(prop, pos + static_cast<NEString::CharCount>(NEPersistence::SYNTAX_OBJECT_SEPARATOR.length()));
+                result.insert_at(prop, pos + static_cast<NEString::CharCount>(NEPersistence::SYNTAX_OBJECT_SEPARATOR.length()));
             }
             else
             {
-                result.insertAt(prop, NEString::START_POS);
+                result.insert_at(prop, NEString::START_POS);
             }
 
             result = _normalizeScopeProperty(result);
@@ -741,21 +741,21 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
 {
     bool result{ false };
 
-    if (scope.isEmpty() == false)
+    if (scope.is_empty() == false)
     {
         Property prop(LogObserver::_normalizeScopeProperty(scope));
-        if (prop.isValid() && prop.getPropertyType() == NEPersistence::ConfigEntry::LogScope)
+        if (prop.is_valid() && prop.type() == NEPersistence::ConfigEntry::LogScope)
         {
-            const PropertyKey& key{ prop.getKey() };
-            ITEM_ID target{ key.isAllModules() ? NEService::TARGET_ALL : key.getModule().toUInt32() };
+            const PropertyKey& key{ prop.key() };
+            ITEM_ID target{ key.is_all_modules() ? NEService::TARGET_ALL : key.module().to_uint32() };
             if (target >= NEService::TARGET_ALL)
             {
-                String scopeName{ key.getPosition() };
-                uint32_t scopePrio{ prop.getValue().getIndetifier(NEApplication::LogScopePriorityIndentifiers) };
+                String scopeName{ key.position() };
+                uint32_t scopePrio{ prop.value().identifier(NEApplication::LogScopePriorityIndentifiers) };
                 ScopeInfo logScope;
-                logScope.lsId   = NELogging::makeScopeIdEx(scopeName.getString());
+                logScope.lsId   = NELogging::make_scope_id_ex(scopeName.as_string());
                 logScope.lsPrio = scopePrio;
-                NEString::copyString<char>(logScope.lsName, LENGTH_SCOPE, scopeName.getString(), scopeName.getLength());
+                NEString::copy_string<char>(logScope.lsName, LENGTH_SCOPE, scopeName.as_string(), scopeName.length());
                 result = ::logObserverRequestChangeScopePrio(target, &logScope, 1);
             }
         }
@@ -767,10 +767,10 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
 inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable */)
 {
     constexpr NEPersistence::ConfigEntry prioConfKey{ NEPersistence::ConfigEntry::LogScope };
-    const NEPersistence::ConfigKey& keyPrio{ NEPersistence::getLogScope() };
+    const NEPersistence::ConfigKey& keyPrio{ NEPersistence::log_scope() };
     uint32_t prios = static_cast<uint32_t>(NELogging::LogPriority::PrioNotset);
-    const String prio{ NELogging::makePrioString(prios) };
+    const String prio{ NELogging::make_prio_string(prios) };
 
-    config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
-    config.setLogEnabled(NELogging::LogTarget::Remote, false, true);
+    config.set_module_property(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
+    config.set_log_enabled(NELogging::LogTarget::Remote, false, true);
 }

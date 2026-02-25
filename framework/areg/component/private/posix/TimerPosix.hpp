@@ -54,7 +54,7 @@ typedef void (*FuncPosixTimerRoutine)( union sigval );
 // TimerPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   POSIX specific timer object used by timer manager.
+ * \brief   POSIX-specific timer implementation for handling timer callbacks and state management.
  **/
 class TimerPosix
 {
@@ -70,15 +70,13 @@ class TimerPosix
 public:
 
     /**
-     * \brief   Initializes the POSIX timer object. Sets context, timeout and period.
-     * \param   context         The timer context to set. If this value is nullptr, the timer is invalid
-     *                          and it will never start.
-     * \param   timerRoutine    The pointer to timer routine to trigger when expired. If this value
-     *                          is nullptr, the timer is not started.
-     * \param   msTimeout       Timeout in milliseconds when the timer should expire.
-     * \param   period          The period count. The timer can be trigger either only on (value is 1),
-     *                          or until period is not expired (value is any number),
-     *                          or endless until it is not stopped (value TIMER_PERIOD_ENDLESS).
+     * \brief   Creates and initializes the POSIX timer object.
+     *
+     * \param   context         The timer context; if null, the timer is invalid.
+     * \param   timerRoutine    The callback function to execute on timer expiration.
+     * \param   msTimeout       The timeout in milliseconds.
+     * \param   period          The number of times to trigger; 1 for single shot, >1 for limited
+     *                          repetitions, TIMER_PERIOD_ENDLESS for continuous.
      **/
     TimerPosix();
 
@@ -94,84 +92,81 @@ public:
 
 #ifndef __APPLE__
     /**
-     * \brief   Returns POSIX timer ID.
+     * \brief   Returns the POSIX timer identifier.
      **/
-    inline timer_t getTimerId() const;
+    inline timer_t timer_id() const;
 #endif  // !__APPLE__
 
     /**
-     * \brief   Returns POSIX timer context pointer.
+     * \brief   Returns the timer context pointer.
      **/
-    inline void * getContext() const;
+    inline void * context() const;
 
     /**
-     * \brief   Returns POSIX timer context ID.
+     * \brief   Returns the timer context identifier.
      **/
-    inline id_type getContextId() const;
+    inline id_type context_id() const;
 
     /**
-     * \brief   Returns timeout due date and time when timer expired or should expire next.
+     * \brief   Returns the due date and time for the next timer expiration.
      **/
-    inline const timespec & getDueTime() const;
+    inline const timespec & due_time() const;
 
 
     /**
-     * \brief   Returns true if timer is valid, i.e. the timer ID and context are valid.
+     * \brief   Returns true if the timer is valid (has valid ID and context).
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
-     * \brief   Creates, but do not start timer.
-     *          This call will create a time to handle in a separate thread.
-     * \param   funcTimer   The callback function to trigger when timer expires.
-     * \return  Returns true if succeeded to created timer.
+     * \brief   Creates the timer without starting it.
+     *
+     * \param   funcTimer       The callback function to execute on timer expiration.
+     * \return  Returns true if timer creation succeeded; false otherwise.
      **/
-    bool createTimer( FuncPosixTimerRoutine funcTimer );
+    bool create_timer( FuncPosixTimerRoutine funcTimer );
 
     /**
-     * \brief   Creates and starts timer with timeout and period count values specified in
-     *          the give Timer object. If the specified timeout or period values in
-     *          the Timer object are zero, the timer is created, but not started.
-     *          This function creates a timer to handle in a separate thread.
-     * \param   context     The timer object that contains timeout and period information.
-     * \param   contextId   The timer context ID to set.
-     * \param   funcTimer   The callback function to trigger when timer expires.
-     * \return  Returns true if timer is created and started with success.
+     * \brief   Creates and starts the timer with the timeout and period from the given context.
+     *
+     * \param   context         The timer object containing timeout and period values.
+     * \param   contextId       The context identifier to associate with the timer.
+     * \param   funcTimer       The callback function to execute on timer expiration.
+     * \return  Returns true if timer creation and start succeeded; false otherwise.
      **/
-    bool startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
+    bool start_timer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
 
     /**
-     * \brief   Restarts the timer if the timeout and the period values are not zero.
-     *          The timer should be initialized before calling this method.
-     * \return  Returns true if timer is restarted with success.
+     * \brief   Restarts the timer if timeout and period are not zero.
+     *
+     * \return  Returns true if timer restart succeeded; false otherwise.
      **/
-    bool restartTimer();
+    bool restart_timer();
 
     /**
-     * \brief   Stops timer, resets timeout and period values.
+     * \brief   Stops the timer and resets timeout and period values.
      **/
-    bool stopTimer();
+    bool stop_timer();
 
     /**
-     * \brief   Pause timer. So that, when it is restarted it will use same timeout and remaining period count.
+     * \brief   Pauses the timer while preserving timeout and remaining period.
      **/
-    bool pauseTimer();
+    bool pause_timer();
 
     /**
      * \brief   Destroys and invalidates the timer.
      **/
-    void destroyTimer();
+    void destroy_timer();
 
     /**
-     * \brief   Called by timer manager when timer is expired. Returns true if timer 
-     *          can continue running. Returns false if timer should be stopped.
-     *          The timer can run if it is periodic and the period count is greater 
-     *          than zero. The timer is stopped if period count is zero.
-     * \param   timeoutMs   The timeout in milliseconds when timer expired.
-     * \return  Returns true if timer can continue running. Returns false if timer 
-     *          should be stopped.
+     * \brief   Called by the timer manager when the timer expires; returns true if timer can
+     *          continue running.
+     *
+     * \param   timeoutMs       The timeout in milliseconds when timer expired.
+     * \return  Returns true if timer is periodic and period count is greater than zero; false if
+     *          timer should stop.
      **/
-    void timerExpired();
+    void timer_expired();
 
 //////////////////////////////////////////////////////////////////////////
 // Internal private methods.
@@ -179,33 +174,34 @@ public:
 private:
 
     /**
-     * \brief   Creates and initializes the timer that is handled in a separate thread.
-     * \param   funcTimer   The callback function to trigger when timer expires.
-     * \return  Returns true if succeeded to create timer.
+     * \brief   Internal method to create and initialize the timer.
+     *
+     * \param   funcTimer       The callback function to execute on timer expiration.
+     * \return  Returns true if timer creation succeeded; false otherwise.
      **/
-    inline bool _createTimer( FuncPosixTimerRoutine funcTimer );
+    inline bool _create_timer( FuncPosixTimerRoutine funcTimer );
 
     /**
-     * \brief	Initializes and starts the timer.
-     * \return	Returns true if timer succeeded to start.
+     * \brief   Internal method to start the timer.
+     *
+     * \return  Returns true if timer start succeeded; false otherwise.
      **/
-    inline bool _startTimer();
+    inline bool _start_timer();
 
     /**
-     * \brief   Stops the timer.
+     * \brief   Internal method to stop the timer.
      **/
-    inline void _stopTimer();
+    inline void _stop_timer();
 
     /**
-     * \brief   Destroys the timer.
+     * \brief   Internal method to destroy the timer.
      **/
-    inline void _destroyTimer();
+    inline void _destroy_timer();
 
     /**
-     * \brief   Returns true if timer is started. The timer considered started if
-     *          due time is not zero.
+     * \brief   Returns true if the timer is currently started (due time is not zero).
      **/
-    inline bool _isStarted() const;
+    inline bool _is_started() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -265,32 +261,32 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef __APPLE__
-inline timer_t TimerPosix::getTimerId() const
+inline timer_t TimerPosix::timer_id() const
 {
 	SpinAutolockPosix lock(mLock);
     return mTimerId;
 }
 #endif  // !__APPLE__
 
-inline void * TimerPosix::getContext() const
+inline void * TimerPosix::context() const
 {
 	SpinAutolockPosix lock(mLock);
     return mContext;
 }
 
-inline id_type TimerPosix::getContextId() const
+inline id_type TimerPosix::context_id() const
 {
     SpinAutolockPosix lock(mLock);
     return mContextId;
 }
 
-inline const timespec & TimerPosix::getDueTime() const
+inline const timespec & TimerPosix::due_time() const
 {
 	SpinAutolockPosix lock(mLock);
     return mDueTime;
 }
 
-inline bool TimerPosix::isValid() const
+inline bool TimerPosix::is_valid() const
 {
 	SpinAutolockPosix lock(mLock);
 #ifdef __APPLE__
@@ -300,7 +296,7 @@ inline bool TimerPosix::isValid() const
 #endif  // __APPLE__
 }
 
-inline bool TimerPosix::_isStarted() const
+inline bool TimerPosix::_is_started() const
 {
     return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
 }

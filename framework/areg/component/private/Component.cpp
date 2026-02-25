@@ -40,21 +40,21 @@ Component::MapComponentResource& Component::resource_map()
     return _mapResource;
 }
 
-Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, ComponentThread & componentThread )
+Component* Component::load_component(const NERegistry::ComponentEntry &entry, ComponentThread & componentThread )
 {
     ASSERT(entry.mFuncCreate != nullptr);
 
     Component* component = entry.mFuncCreate(entry, componentThread);
     if (component != nullptr)
     {
-        const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
-        for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++ i)
+        const NERegistry::WorkerThreadList& wThreads = entry.worker_threads();
+        for (uint32_t i = 0; i < wThreads.mListWorkers.size(); ++ i)
         {
             const NERegistry::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
-            WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
+            WorkerThreadConsumer* consumer = static_cast<Component *>(component)->worker_thread_consumer(wtEntry.mConsumerName.as_string(), wtEntry.mThreadName.buffer());
             if (consumer != nullptr)
             {
-                WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
+                WorkerThread * wThread = component->create_worker_thread( wtEntry.mThreadName.as_string()
                                                                       , *consumer
                                                                       , componentThread
                                                                       , wtEntry.mWatchdogTimeout
@@ -63,7 +63,7 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
 
                 if (wThread != nullptr)
                 {
-                    component->notifyWorkerThreadStarted(*consumer, *wThread);
+                    component->notify_thread_started(*consumer, *wThread);
                 }
             }
         }
@@ -72,48 +72,48 @@ Component* Component::loadComponent(const NERegistry::ComponentEntry &entry, Com
     return component;
 }
 
-void Component::unloadComponent( Component& comItem, const NERegistry::ComponentEntry& entry )
+void Component::unload_component( Component& comItem, const NERegistry::ComponentEntry& entry )
 {
     ASSERT(entry.mFuncDelete != nullptr);
 
-    const NERegistry::WorkerThreadList& wThreads = entry.getWorkerThreads();
-    for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++i)
+    const NERegistry::WorkerThreadList& wThreads = entry.worker_threads();
+    for (uint32_t i = 0; i < wThreads.mListWorkers.size(); ++i)
     {
-        comItem.deleteWorkerThread(wThreads.mListWorkers[i].mThreadName.getString());
+        comItem.delete_worker_thread(wThreads.mListWorkers[i].mThreadName.as_string());
     }
 
     entry.mFuncDelete(comItem, entry);
 }
 
-Component* Component::findComponentByName( const String & roleName )
+Component* Component::find_by_name( const String & roleName )
 {
-    ASSERT(roleName.isEmpty() == false);
+    ASSERT(roleName.is_empty() == false);
     
-    return Component::resource_map().findResourceObject(NEMath::crc32Calculate(roleName.getString()));
+    return Component::resource_map().find_resource_object(NEMath::crc32_calculate(roleName.as_string()));
 }
 
-Component * Component::findComponentByNumber(uint32_t magicNum)
+Component * Component::find_by_number(uint32_t magicNum)
 {
     ASSERT(magicNum != NEMath::CHECKSUM_IGNORE);
 
-    return Component::resource_map().findResourceObject(magicNum);
+    return Component::resource_map().find_resource_object(magicNum);
 }
 
-Component* Component::findComponentByAddress( const ComponentAddress& comAddress )
+Component* Component::find_by_address( const ComponentAddress& comAddress )
 {
-    Component* result = Component::resource_map().findResourceObject( static_cast<uint32_t>(comAddress.getRoleName()) );
-    return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);
+    Component* result = Component::resource_map().find_resource_object( static_cast<uint32_t>(comAddress.role_name()) );
+    return (result != nullptr && result->address() == comAddress ? result : nullptr);
 }
 
-bool Component::existComponent( const String & roleName )
+bool Component::exist( const String & roleName )
 {
-    ASSERT(roleName.isEmpty() == false);
-    return Component::resource_map().existResource(NEMath::crc32Calculate(roleName.getString()));
+    ASSERT(roleName.is_empty() == false);
+    return Component::resource_map().exist(NEMath::crc32_calculate(roleName.as_string()));
 }
 
-ComponentThread& Component::_getCurrentComponentThread()
+ComponentThread& Component::_current_component_thread()
 {
-    ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
+    ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::current_dispatcher_thread()), ComponentThread);
     ASSERT(result != nullptr);
     return *result;
 }
@@ -125,57 +125,57 @@ Component::Component( const String & roleName, ComponentThread & ownerThread )
     : RuntimeObject ( )
 
     , mComponentInfo( ownerThread, roleName )
-    , mMagicNum     ( Component::_magicNumber(self()) )
+    , mMagicNum     ( Component::_magic_number(self()) )
     , mServerList   ( )
 {
-    Component::resource_map().registerResourceObject(mMagicNum, this);
+    Component::resource_map().register_resource_object(mMagicNum, this);
 }
 
 Component::Component( const NERegistry::ComponentEntry & regEntry, ComponentThread & ownerThread )
     : RuntimeObject ( )
 
     , mComponentInfo( ownerThread, regEntry.mRoleName)
-    , mMagicNum     ( Component::_magicNumber(self()) )
+    , mMagicNum     ( Component::_magic_number(self()) )
     , mServerList   ( )
 {
-    Component::resource_map().registerResourceObject(mMagicNum, this);
+    Component::resource_map().register_resource_object(mMagicNum, this);
 }
 
 Component::Component( const String & roleName )
     : RuntimeObject           ( )
 
-    , mComponentInfo    (_getCurrentComponentThread(), roleName)
-    , mMagicNum         ( Component::_magicNumber(self()) )
+    , mComponentInfo    (_current_component_thread(), roleName)
+    , mMagicNum         ( Component::_magic_number(self()) )
     , mServerList       ( )
 {
-    Component::resource_map().registerResourceObject(mMagicNum, this);
+    Component::resource_map().register_resource_object(mMagicNum, this);
 }
 
 
 Component::~Component()
 {
-    Component::resource_map().unregisterResourceObject(mMagicNum);
+    Component::resource_map().unregister_resource_object(mMagicNum);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-WorkerThread* Component::createWorkerThread(  const String & threadName
+WorkerThread* Component::create_worker_thread(  const String & threadName
                                             , WorkerThreadConsumer& consumer
                                             , ComponentThread & /* ownerThread */
                                             , uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE */
                                             , uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT */
                                             , uint32_t maxQeueue        /* = NECommon::IGNORE_VALUE */)
 {
-    WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
+    WorkerThread* workThread = mComponentInfo.find_worker_thread(threadName);
     if (workThread == nullptr)
     {
         workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
         if (workThread != nullptr)
         {
-            if (workThread->createThread(NECommon::WAIT_INFINITE))
+            if (workThread->create_thread(NECommon::WAIT_INFINITE))
             {
-                mComponentInfo.registerWorkerThread(*workThread);
+                mComponentInfo.register_worker_thread(*workThread);
             }
             else
             {
@@ -188,81 +188,81 @@ WorkerThread* Component::createWorkerThread(  const String & threadName
     return workThread;
 }
 
-void Component::deleteWorkerThread( const String & threadName )
+void Component::delete_worker_thread( const String & threadName )
 {
-    WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
+    WorkerThread* workThread = mComponentInfo.find_worker_thread(threadName);
     if (workThread != nullptr)
     {
-        workThread->shutdownThread(NECommon::WAIT_INFINITE);
-        mComponentInfo.unregisterWorkerThread(*workThread);
+        workThread->shutdown_thread(NECommon::WAIT_INFINITE);
+        mComponentInfo.unregister_worker_thread(*workThread);
         delete workThread;
     }
 }
 
-void Component::startupComponent( ComponentThread& /* comThread */ )
+void Component::startup_component( ComponentThread& /* comThread */ )
 {
-    for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
+    for (ListServers::LISTPOS pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
     {
-        StubBase * stub = mServerList.valueAtPosition(pos);
+        StubBase * stub = mServerList.value_at_position(pos);
         ASSERT( stub != nullptr );
-        stub->startupServiceInterface(self());
-        ServiceManager::requestRegisterServer(stub->getAddress());
+        stub->startup_service_interface(self());
+        ServiceManager::request_register_server(stub->address());
     }
 }
 
-void Component::shutdownComponent( ComponentThread& /* comThread */ )
+void Component::shutdown_component( ComponentThread& /* comThread */ )
 {
-    _shutdownServices();
+    _shutdown_services();
 
     ThreadAddress addrThread;
-    WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+    WorkerThread * workerThread = mComponentInfo.first_worker_thread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
-        workerThread = mComponentInfo.getNextWorkerThread(addrThread);
+        workerThread->shutdown_thread( NECommon::WAIT_INFINITE );
+        workerThread = mComponentInfo.next_worker_thread(addrThread);
     }
 }
 
-void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
+void Component::notify_component_shutdown( ComponentThread& /*comThread */ )
 {
     ThreadAddress addrThread;
-    WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+    WorkerThread * workerThread = mComponentInfo.first_worker_thread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
-        workerThread = mComponentInfo.getNextWorkerThread(addrThread);
+        workerThread->shutdown_thread( NECommon::WAIT_INFINITE );
+        workerThread = mComponentInfo.next_worker_thread(addrThread);
     }
 }
 
-void Component::terminateSelf()
+void Component::terminate_self()
 {
-    _shutdownServices();
+    _shutdown_services();
 
     ThreadAddress threadAddress;
 
-    while (mComponentInfo.hasWorkerThreads())
+    while (mComponentInfo.has_worker_threads())
     {
-        WorkerThread* workThread = mComponentInfo.removeFirstWorkerThread(threadAddress);
+        WorkerThread* workThread = mComponentInfo.remove_worker_thread(threadAddress);
         ASSERT(workThread != nullptr);
-        workThread->terminateSelf();
+        workThread->terminate_self();
     }
 
     delete this;
 }
 
-void Component::registerServerItem( StubBase& server )
+void Component::register_server_item( StubBase& server )
 {
-    mServerList.pushLast(&server);
+    mServerList.push_last(&server);
 }
 
-StubBase* Component::findServerByName( const String & serviceName )
+StubBase* Component::find_server( const String & serviceName )
 {
     StubBase* result = nullptr;
-    for (ListServers::LISTPOS  pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
+    for (ListServers::LISTPOS  pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
     {
-        StubBase* stub = mServerList.valueAtPosition(pos);
+        StubBase* stub = mServerList.value_at_position(pos);
         ASSERT(stub != nullptr);
-        if (stub->getAddress().getServiceName() == serviceName)
+        if (stub->address().service_name() == serviceName)
         {
             result = stub;
             break;
@@ -272,45 +272,45 @@ StubBase* Component::findServerByName( const String & serviceName )
     return result;
 }
 
-void Component::waitComponentCompletion( uint32_t waitTimeout )
+void Component::wait_component_completion( uint32_t waitTimeout )
 {
     ThreadAddress addrThread;
-    WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+    WorkerThread * workerThread = mComponentInfo.first_worker_thread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->shutdownThread(waitTimeout);
-        workerThread = mComponentInfo.getNextWorkerThread(addrThread);
+        workerThread->shutdown_thread(waitTimeout);
+        workerThread = mComponentInfo.next_worker_thread(addrThread);
     }
 }
 
-WorkerThreadConsumer* Component::workerThreadConsumer( const String & /* consumerName */, const String & /* workerThreadName */)
+WorkerThreadConsumer* Component::worker_thread_consumer( const String & /* consumerName */, const String & /* workerThreadName */)
 {
     return nullptr;
 }
 
-void Component::notifyWorkerThreadStarted(WorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
+void Component::notify_thread_started(WorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
 {
 }
 
-uint32_t Component::_magicNumber(Component & comp)
+uint32_t Component::_magic_number(Component & comp)
 {
     uint32_t result = NEMath::CHECKSUM_IGNORE;
-    if ( comp.getAddress().isValid() )
+    if ( comp.address().is_valid() )
     {
-        result = NEMath::crc32Calculate(comp.getRoleName().getString());
+        result = NEMath::crc32_calculate(comp.role_name().as_string());
     }
 
     return result;
 }
 
-inline void Component::_shutdownServices()
+inline void Component::_shutdown_services()
 {
-    for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
+    for (ListServers::LISTPOS pos = mServerList.first_position(); mServerList.is_valid_position(pos); pos = mServerList.next_position(pos))
     {
-        StubBase* stub = mServerList.valueAtPosition(pos);
+        StubBase* stub = mServerList.value_at_position(pos);
         ASSERT(stub != nullptr);
 
-        stub->shutdownServiceInterface(self());
-        ServiceManager::requestUnregisterServer(stub->getAddress(), NEService::DisconnectReason::ProviderDisconnected);
+        stub->shutdown_service_interface(self());
+        ServiceManager::request_unregister_server(stub->address(), NEService::DisconnectReason::ProviderDisconnected);
     }
 }

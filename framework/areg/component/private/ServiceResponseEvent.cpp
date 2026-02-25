@@ -31,7 +31,7 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
 }
 
 ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
-    : ProxyEvent    (target, src.getEventType())
+    : ProxyEvent    (target, src.event_type())
     , mResponseId   (src.mResponseId)
     , mResult       (src.mResult)
     , mSequenceNr   (src.mSequenceNr)
@@ -50,23 +50,23 @@ ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
 }
 
 
-ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const ProxyAddress & target ) const
+ServiceResponseEvent* ServiceResponseEvent::clone_for_target( const ProxyAddress & target ) const
 {
     return DEBUG_NEW ServiceResponseEvent(target, *this);
 }
 
-const InStream & ServiceResponseEvent::readStream( const InStream & stream )
+const InStream & ServiceResponseEvent::read_stream( const InStream & stream )
 {
-    ProxyEvent::readStream(stream);
+    ProxyEvent::read_stream(stream);
     stream >> mResponseId;
     stream >> mResult;
     stream >> mSequenceNr;
     return stream;
 }
 
-OutStream & ServiceResponseEvent::writeStream( OutStream & stream ) const
+OutStream & ServiceResponseEvent::write_stream( OutStream & stream ) const
 {
-    ProxyEvent::writeStream(stream);
+    ProxyEvent::write_stream(stream);
     stream << mResponseId;
     stream << mResult;
     stream << mSequenceNr;

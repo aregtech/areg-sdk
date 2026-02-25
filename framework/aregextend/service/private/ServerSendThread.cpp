@@ -33,51 +33,51 @@ ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerCo
 {
 }
 
-void ServerSendThread::readyForEvents( bool isReady )
+void ServerSendThread::ready_for_events( bool is_ready )
 {
-    if ( isReady )
+    if ( is_ready )
     {
-        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        DispatcherThread::readyForEvents( true );
+        SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::ready_for_events( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::ready_for_events( false );
+        SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
         mConnection.closeAllConnections( );
-        mConnection.disableSend( );
+        mConnection.disable_send( );
     }
 }
 
-void ServerSendThread::processEvent( const SendMessageEventData & data )
+void ServerSendThread::process_event( const SendMessageEventData & data )
 {
     LOG_SCOPE( areg_aregextend_service_ServerSendThread_processEvent );
-    if (data.isForwardMessage())
+    if (data.is_forward_message())
     {
-        const RemoteMessage & msgSend = data.getRemoteMessage( );
-        ASSERT( msgSend.isValid( ) );
+        const RemoteMessage & msgSend = data.remote_message( );
+        ASSERT( msgSend.is_valid( ) );
 
-        const ITEM_ID & target{ msgSend.getTarget() };
-        SocketAccepted client{ mConnection.getClientByCookie(target) };
+        const ITEM_ID & target{ msgSend.target() };
+        SocketAccepted client{ mConnection.client_by_cookie(target) };
 
         LOG_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
-                    , NEService::getString(static_cast<NEService::FuncIdRange>(msgSend.getMessageId()))
-                    , static_cast<uint32_t>(msgSend.getMessageId())
-                    , client.getAddress().getHostAddress().getString()
-                    , client.getAddress().getHostPort()
-                    , ((uint32_t)(client.getHandle()))
-                    , static_cast<uint32_t>(msgSend.getSource())
-                    , static_cast<uint32_t>(msgSend.getTarget()));
+                    , NEService::as_string(static_cast<NEService::FuncIdRange>(msgSend.message_id()))
+                    , static_cast<uint32_t>(msgSend.message_id())
+                    , client.address().host_address().as_string()
+                    , client.address().host_port()
+                    , ((uint32_t)(client.handle()))
+                    , static_cast<uint32_t>(msgSend.source())
+                    , static_cast<uint32_t>(msgSend.target()));
 
         int32_t sentBytes = 0;
-        if ((client.isAlive() == false) || ((sentBytes = mConnection.sendMessage(msgSend, client)) <= 0))
+        if ((client.is_alive() == false) || ((sentBytes = mConnection.send_message(msgSend, client)) <= 0))
         {
             LOG_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
-                        , msgSend.getMessageId()
-                        , static_cast<uint32_t>(msgSend.getTarget())
-                        , client.isAlive() ? "ALIVE" : "DEAD");
+                        , msgSend.message_id()
+                        , static_cast<uint32_t>(msgSend.target())
+                        , client.is_alive() ? "ALIVE" : "DEAD");
 
-            mRemoteService.failedSendMessage(msgSend, client);
+            mRemoteService.failed_send_message(msgSend, client);
         }
         else
         {
@@ -86,19 +86,19 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
                 mBytesSend += static_cast<uint32_t>(sentBytes);
             }
 
-            LOG_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
+            LOG_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.message_id(), static_cast<id_type>(msgSend.target()));
         }
     }
-    else if (data.isExitThreadMessage() )
+    else if (data.is_exit_message() )
     {
         LOG_DBG("Going to quite send message thread");
         mConnection.closeAllConnections( );
-        mConnection.closeSocket( );
-        triggerExit( );
+        mConnection.close_socket( );
+        trigger_exit( );
     }
 }
 
-bool ServerSendThread::postEvent(Event & eventElem)
+bool ServerSendThread::post_event(Event & eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
 }

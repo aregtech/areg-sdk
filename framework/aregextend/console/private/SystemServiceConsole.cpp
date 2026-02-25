@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
-    , StubBase          ( self( ), NEService::getEmptyInterface( ) )
+    , StubBase          ( self( ), NEService::empty_interface( ) )
     , TimerConsumer   ( )
 
     , mDataRateHelper   ( dataRate )
@@ -36,11 +36,11 @@ SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NEReg
 {
 }
 
-void SystemServiceConsole::startupServiceInterface( Component & holder )
+void SystemServiceConsole::startup_service_interface( Component & holder )
 {
-    StubBase::startupServiceInterface( holder );
+    StubBase::startup_service_interface( holder );
 
-    Console & console = Console::getInstance( );
+    Console & console = Console::instance( );
     console.lockConsole( );
 
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
@@ -50,7 +50,7 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
         console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
     }
 
-    mTimer.startTimer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
+    mTimer.start_timer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
 
     console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
     console.enableConsoleInput( true );
@@ -58,20 +58,20 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
     console.unlockConsole( );
 }
 
-void SystemServiceConsole::shutdownServiceInterface( Component & holder )
+void SystemServiceConsole::shutdown_service_interface( Component & holder )
 {
-    mTimer.stopTimer( );
-    StubBase::shutdownServiceInterface( holder );
+    mTimer.stop_timer( );
+    StubBase::shutdown_service_interface( holder );
 }
 
 #ifdef DEBUG
-void SystemServiceConsole::processTimer( Timer & timer )
+void SystemServiceConsole::process_timer( Timer & timer )
 #else   // DEBUG
-void SystemServiceConsole::processTimer(Timer & /*timer*/)
+void SystemServiceConsole::process_timer(Timer & /*timer*/)
 #endif  // DEBUG
 {
     ASSERT( &timer == &mTimer );
-    if ( mTimer.isActive( ) )
+    if ( mTimer.is_active( ) )
     {
         _outputDataRate( );
     }
@@ -80,25 +80,25 @@ void SystemServiceConsole::processTimer(Timer & /*timer*/)
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
 //////////////////////////////////////////////////////////////////////////
-void SystemServiceConsole::sendNotification( uint32_t /* msgId */ )
+void SystemServiceConsole::send_notification( uint32_t /* msgId */ )
 {
 }
 
-void SystemServiceConsole::errorRequest( uint32_t /* msgId */, bool /* msgCancel */ )
+void SystemServiceConsole::error_request( uint32_t /* msgId */, bool /* msgCancel */ )
 {
 }
 
-void SystemServiceConsole::processRequestEvent( ServiceRequestEvent & /* eventElem */ )
+void SystemServiceConsole::process_request_event( ServiceRequestEvent & /* eventElem */ )
 {
 }
 
-void SystemServiceConsole::processAttributeEvent( ServiceRequestEvent & /* eventElem */ )
+void SystemServiceConsole::process_attribute_event( ServiceRequestEvent & /* eventElem */ )
 {
 }
 
 inline void SystemServiceConsole::_outputDataRate()
 {
-    Console& console = Console::getInstance();
+    Console& console = Console::instance();
     console.lockConsole( );
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
     {

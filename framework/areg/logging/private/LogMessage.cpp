@@ -26,17 +26,17 @@
 
 #if AREG_LOGS
 LogMessage::LogMessage(NELogging::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const LogScope & logScope )
-    : NELogging::LogEntry( msgType, logScope.getScopeId(), sessionId, scopeStamp, NELogging::LogPriority::PrioScope, logScope.getScopeName().getString(), static_cast<uint32_t>(logScope.getScopeName( ).getLength()) )
+    : NELogging::LogEntry( msgType, logScope.scope_id(), sessionId, scopeStamp, NELogging::LogPriority::PrioScope, logScope.scope_name().as_string(), static_cast<uint32_t>(logScope.scope_name( ).length()) )
 {
     // AAvetyan: check that the message type is either ScopeEnter or ScopeExit
     ASSERT( ((static_cast<uint8_t>(NELogging::LogMessageType::ScopeEnter) & static_cast<uint8_t>(msgType)) != 0) || 
             ((static_cast<uint8_t>(NELogging::LogMessageType::ScopeExit)  & static_cast<uint8_t>(msgType)) != 0) );
 }
 
-void LogMessage::setMessage(const char * message, int32_t msgLen )
+void LogMessage::set_message(const char * message, int32_t msgLen )
 {
-    uint32_t len = NEMemory::memCopy(this->logMessage, NELogging::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
-    this->logMessage[len] = String::EmptyChar;
+    uint32_t len = NEMemory::mem_copy(this->log_message, NELogging::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
+    this->log_message[len] = String::EmptyChar;
 }
 
 #else   // AREG_LOGS

@@ -37,7 +37,7 @@
 // ComponentInfo class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const String & roleName )
-    : mComponentAddress ( ownerThread.getAddress(), roleName)
+    : mComponentAddress ( ownerThread.address(), roleName)
     , mMasterThread     ( ownerThread )
     , mWorkerThreadMap  ( )
 {
@@ -46,12 +46,12 @@ ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const String & roleN
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& whichClass ) const
+DispatcherThread * ComponentInfo::find_event_consumer( const RuntimeClassID& whichClass ) const
 {
     DispatcherThread * result = nullptr;
 
     // firs check master thread.
-    if (mMasterThread.hasRegisteredConsumer(whichClass))
+    if (mMasterThread.has_registered_consumer(whichClass))
     {
         result = static_cast<DispatcherThread *>(&mMasterThread);
     }
@@ -61,13 +61,13 @@ DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& which
         mWorkerThreadMap.lock();
 
         ThreadAddress Key;
-        DispatcherThread * dispThread = static_cast<DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
+        DispatcherThread * dispThread = static_cast<DispatcherThread *>(mWorkerThreadMap.resource_first_key(Key));
         while (result == nullptr && dispThread != nullptr)
         {
-            if (dispThread->hasRegisteredConsumer(whichClass))
+            if (dispThread->has_registered_consumer(whichClass))
                 result = dispThread;
             else
-                dispThread = mWorkerThreadMap.resourceNextKey(Key);
+                dispThread = mWorkerThreadMap.resource_next_key(Key);
         }
 
         mWorkerThreadMap.unlock();
@@ -75,22 +75,22 @@ DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& which
     return result;
 }
 
-void ComponentInfo::registerWorkerThread( WorkerThread& workerThread )
+void ComponentInfo::register_worker_thread( WorkerThread& workerThread )
 {
-    mWorkerThreadMap.registerResourceObject(workerThread.getAddress(), &workerThread);
+    mWorkerThreadMap.register_resource_object(workerThread.address(), &workerThread);
 }
 
-bool ComponentInfo::unregisterWorkerThread( WorkerThread& workerThread )
+bool ComponentInfo::unregister_worker_thread( WorkerThread& workerThread )
 {
-    return (mWorkerThreadMap.unregisterResourceObject(workerThread.getAddress()) == &workerThread);
+    return (mWorkerThreadMap.unregister_resource_object(workerThread.address()) == &workerThread);
 }
 
-bool ComponentInfo::isWorkerThreadRegistered( WorkerThread& workerThread ) const
+bool ComponentInfo::is_worker_registered( WorkerThread& workerThread ) const
 {
-    return isWorkerThreadAddress(workerThread.getAddress());
+    return is_worker_thread(workerThread.address());
 }
 
-bool ComponentInfo::isMasterThreadAddress( const ThreadAddress& threadAddress ) const
+bool ComponentInfo::is_master_thread( const ThreadAddress& threadAddress ) const
 {
-    return (threadAddress == mMasterThread.getAddress());
+    return (threadAddress == mMasterThread.address());
 }

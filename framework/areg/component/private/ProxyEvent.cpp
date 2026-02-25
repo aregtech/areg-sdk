@@ -48,17 +48,17 @@ ProxyEvent::ProxyEvent( const InStream & stream )
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Methods
 //////////////////////////////////////////////////////////////////////////
-void ProxyEvent::deliverEvent()
+void ProxyEvent::deliver_event()
 {
     if ( mTargetThread == nullptr )
     {
-        Thread * thread = Thread::findThreadByName(mTargetProxyAddress.getThread());
-        registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
+        Thread * thread = Thread::find_by_name(mTargetProxyAddress.thread());
+        register_for_thread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
     }
 
     if ( mTargetThread != nullptr )
     {
-        StreamableEvent::deliverEvent();
+        StreamableEvent::deliver_event();
     }
     else
     {
@@ -66,16 +66,16 @@ void ProxyEvent::deliverEvent()
     }
 }
 
-const InStream & ProxyEvent::readStream( const InStream & stream )
+const InStream & ProxyEvent::read_stream( const InStream & stream )
 {
-    StreamableEvent::readStream(stream);
+    StreamableEvent::read_stream(stream);
     stream >> mTargetProxyAddress;
     return stream;
 }
 
-OutStream & ProxyEvent::writeStream( OutStream & stream ) const
+OutStream & ProxyEvent::write_stream( OutStream & stream ) const
 {
-    StreamableEvent::writeStream(stream);
+    StreamableEvent::write_stream(stream);
     stream << mTargetProxyAddress;
     return stream;
 }
@@ -96,17 +96,17 @@ ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
 //////////////////////////////////////////////////////////////////////////
 // ProxyEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eventResponse)
+inline void ProxyEventConsumer::_local_response(ResponseEvent & eventResponse)
 {
-    switch (eventResponse.getDataType() )
+    switch (eventResponse.data_type() )
     {
     case NEService::MessageDataType::RequestData:      // fall through
     case NEService::MessageDataType::ResponseData:
-        processResponseEvent(eventResponse);
+        process_response_event(eventResponse);
         break;
 
     case NEService::MessageDataType::AttributeData:
-        processAttributeEvent(eventResponse);
+        process_attribute_event(eventResponse);
         break;
 
     case NEService::MessageDataType::ServiceData:      // fall through
@@ -119,11 +119,11 @@ inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & event
     }
 }
 
-inline void ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
+inline void ProxyEventConsumer::_local_connect( ProxyConnectEvent & eventConnect )
 {
-    if ( eventConnect.getResponseId() == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
+    if ( eventConnect.response_id() == static_cast<uint32_t>(NEService::FuncIdRange::ResponseServiceProviderConnection) )
     {
-        serviceConnectionUpdated( eventConnect.getStubAddress(), eventConnect.getTargetProxy().getChannel(), eventConnect.getConnectionStatus() );
+        service_connection_updated( eventConnect.stub_address(), eventConnect.target_proxy().channel(), eventConnect.connection_status() );
     }
     else
     {
@@ -131,36 +131,36 @@ inline void ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & e
     }
 }
 
-void ProxyEventConsumer::startEventProcessing( Event & eventElem )
+void ProxyEventConsumer::start_event_processing( Event & eventElem )
 {
     ProxyEvent * proxyEvent = AREG_RUNTIME_CAST(&eventElem, ProxyEvent);
     if ( proxyEvent != nullptr )
     {
-        const ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
+        const ProxyAddress & addrProxy = proxyEvent->target_proxy();
         if ( static_cast<const ServiceAddress &>(addrProxy) == static_cast<const ServiceAddress &>(mProxyAddress) )
         {
             ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, ProxyConnectEvent);
             if ( eventConnect != nullptr )
             {
-                _localProcessConnectEvent(*eventConnect);
+                _local_connect(*eventConnect);
             }
-            else if ( addrProxy.getChannel() == mProxyAddress.getChannel() )
+            else if ( addrProxy.channel() == mProxyAddress.channel() )
             {
                 ResponseEvent * eventResponse = AREG_RUNTIME_CAST(&eventElem, ResponseEvent);
                 if ( eventResponse != nullptr )
                 {
-                    _localProcessResponseEvent(*eventResponse);
+                    _local_response(*eventResponse);
                 }
                 else
                 {
                     ServiceResponseEvent* eventServiceResponse = AREG_RUNTIME_CAST(&eventElem, ServiceResponseEvent);
                     if ( eventServiceResponse != nullptr )
                     {
-                        processResponseEvent(*eventServiceResponse);
+                        process_response_event(*eventServiceResponse);
                     }
                     else
                     {
-                            processProxyEvent(*proxyEvent);
+                            process_proxy_event(*proxyEvent);
                     }
                 }
             }
@@ -172,6 +172,6 @@ void ProxyEventConsumer::startEventProcessing( Event & eventElem )
     }
     else
     {
-        processGenericEvent(eventElem);
+        process_generic_event(eventElem);
     }
 }

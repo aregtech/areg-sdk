@@ -45,7 +45,7 @@ namespace
     }
 
     //!< Write lines to the file
-    void writeLines(FileBase & file)
+    void write_lines(FileBase & file)
     {
         printSeparator();
         if (!file.isValid())
@@ -55,9 +55,9 @@ namespace
         }
 
         std::cout << "Writing text to file [" << file.getName() << "] ..." << std::endl;
-        file.writeLine("!!!Hello World!!!");
-        file.writeLine("This is some text.");
-        file.writeLine("And this one is another part of text.");
+        file.write_line("!!!Hello World!!!");
+        file.write_line("This is some text.");
+        file.write_line("And this one is another part of text.");
     }
 
     //!< Dump file content to console
@@ -113,7 +113,7 @@ int main()
     File lineFile;
     if (lineFile.open("../../../../temp/%appname%.txt", mode))
     {
-        writeLines(lineFile);
+        write_lines(lineFile);
         dumpText(lineFile);
     }
 

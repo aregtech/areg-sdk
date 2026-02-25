@@ -32,7 +32,7 @@
  //  Windows OS specific methods
  //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void WatchdogManager::_os_timer_stop(TIMERHANDLE handle)
 {
 
     if (handle != nullptr)
@@ -41,21 +41,21 @@ void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool WatchdogManager::_os_timer_start(Watchdog& watchdog)
 {
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = 0;
-    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(watchdog.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
-    dueTime *= static_cast<int64_t>(-1);
+    int64_t due_time = static_cast<int64_t>(static_cast<TIME64>(watchdog.timeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    due_time *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger{ };
-    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::loDword(dueTime));
-    timeTrigger.HighPart = static_cast<LONG >(NEMath::hiDword(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::lo_dword(due_time));
+    timeTrigger.HighPart = static_cast<LONG >(NEMath::hi_dword(due_time));
 
-    return (::SetWaitableTimer(   watchdog.getHandle()
+    return (::SetWaitableTimer(   watchdog.handle()
                                 , &timeTrigger
                                 , period
-                                , (PTIMERAPCROUTINE)(&WatchdogManager::_windowsWatchdogExpiredRoutine)
-                                , reinterpret_cast<void*>(watchdog.makeWatchdogId(watchdog.getId(), watchdog.getSequence())), FALSE) == TRUE);
+                                , (PTIMERAPCROUTINE)(&WatchdogManager::_windows_watchdog_expired)
+                                , reinterpret_cast<void*>(watchdog.make_watchdog_id(watchdog.id(), watchdog.sequence())), FALSE) == TRUE);
 }
 
 /**
@@ -64,16 +64,16 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
+void WatchdogManager::_windows_watchdog_expired(void* argPtr, unsigned long lowValue, unsigned long highValue)
 {
     ASSERT(argPtr != nullptr);
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
-    Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<Watchdog::WATCHDOG_ID>(argPtr);
-    Watchdog::GUARD_ID guardId = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    WatchdogManager& watchdogManager = WatchdogManager::instance();
+    Watchdog::WATCHDOG_ID watchdog_id = reinterpret_cast<Watchdog::WATCHDOG_ID>(argPtr);
+    Watchdog::GUARD_ID guardId = Watchdog::make_guard_id(watchdog_id);
+    Watchdog* watchdog = watchdogManager.mWatchdogResource.find_resource_object(guardId);
     if (watchdog != nullptr)
     {
-        watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);
+        watchdogManager._process_expired_timer(watchdog, watchdog_id, highValue, lowValue);
     }
 }
 

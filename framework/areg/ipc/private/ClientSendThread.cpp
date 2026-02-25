@@ -34,31 +34,31 @@ ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientCo
 {
 }
 
-void ClientSendThread::readyForEvents( bool isReady )
+void ClientSendThread::ready_for_events( bool is_ready )
 {
     LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
-    if ( isReady )
+    if ( is_ready )
     {
-        LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
-        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        DispatcherThread::readyForEvents( true );
+        LOG_DBG( "Starting client service dispatcher thread [ %s ]", name( ).as_string( ) );
+        SendMessageEvent::add_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::ready_for_events( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        mConnection.closeSocket( );
-        LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
+        DispatcherThread::ready_for_events( false );
+        SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        mConnection.close_socket( );
+        LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", name( ).as_string( ) );
     }
 }
 
-void ClientSendThread::processEvent( const SendMessageEventData & data )
+void ClientSendThread::process_event( const SendMessageEventData & data )
 {
-    if ( data.isForwardMessage() )
+    if ( data.is_forward_message() )
     {
-        const RemoteMessage & msg = data.getRemoteMessage( );
-        int32_t sizeSend = mConnection.sendMessage( msg );
+        const RemoteMessage & msg = data.remote_message( );
+        int32_t sizeSend = mConnection.send_message( msg );
         if ( sizeSend > 0 )
         {
             if (mSaveDataSend)
@@ -68,17 +68,17 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
         }
         else
         {
-            mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
+            mRemoteService.failed_send_message( msg, mConnection.socket( ) );
         }
     }
-    else if (data.isExitThreadMessage() )
+    else if (data.is_exit_message() )
     {
-        mConnection.closeSocket( );
-        triggerExit( );
+        mConnection.close_socket( );
+        trigger_exit( );
     }
 }
 
-bool ClientSendThread::postEvent(Event & eventElem)
+bool ClientSendThread::post_event(Event & eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::post_event(eventElem);
 }

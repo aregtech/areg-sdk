@@ -45,11 +45,10 @@ class SyncLockAndWaitPosix;
 // SyncLockAndWaitPosix class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   LockAndWait object that makes locking of single and multiple objects and waits until
- *          one or all objects are signaled. The waiting criteria depends on the flag.
- *          There is a limitation of waiting objects at once, and the maximum numbers are
- *          equal to NECommon::MAXIMUM_WAITING_OBJECTS.
- *          Use static methods for waiting functionalities. The internal methods are hidden.
+ * \brief   POSIX-based synchronization object for locking and waiting on single or multiple
+ *          waitable objects. Supports waiting criteria based on flags, with a maximum of
+ *          NECommon::MAXIMUM_WAITING_OBJECTS. Use static methods for waiting; internal methods are
+ *          hidden.
  **/
 class SyncLockAndWaitPosix
 {
@@ -66,41 +65,43 @@ class SyncLockAndWaitPosix
 // ImplResourceListMap class declaration
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   The helper class of resource list map that contains helper functions implementation.
+     * \brief   Helper implementation of resource list map providing customizable operations for
+     *          WaitablePosix and SyncLockAndWaitPosix types.
      **/
     class ImplResourceListMap : public ResourceListMapImpl<WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
     {
     public:
         /**
-         * \brief   Called when all resources are removed.
-         *          This function is called from RemoveAllResources() for every single
-         *          resource being unregistered.
-         * \param   Key     The Key value of resource.
+         * \brief   Called when removing all resources. Implement to perform cleanup on the list.
+         *
+         * \param   Key     The key associated with the resource list (unused).
          * \param   List    The list of resource objects.
          **/
-        inline void implCleanResourceList( WaitablePosix * & /* Key */, ListLockAndWait & List )
+        inline void impl_clean_list( WaitablePosix * & /* Key */, ListLockAndWait & List )
         {
         	List.clear();
         }
 
         /**
-         * \brief   Called when need to add resource object to the list.
+         * \brief   Called when adding a resource to the list.
+         *
          * \param   List        The list of resource objects.
-         * \param   Resource    The resource object to add to the list.
+         * \param   Resource    The resource object to add.
          **/
-        inline void implAddResource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource )
+        inline void impl_add_resource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource )
         {
-        	List.pushLast(Resource);
+        	List.push_last(Resource);
         }
 
         /**
-         * \brief   Called when need to remove resource object from the list.
+         * \brief   Called when removing a resource from the list.
+         *
          * \param   List        The list of resource objects.
-         * \param   Resource    The resource object to remove from the list.
+         * \param   Resource    The resource object to remove.
          **/
-        inline bool implRemoveResource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource )
+        inline bool impl_remove_resource( ListLockAndWait & List, SyncLockAndWaitPosix * Resource )
         {
-        	return List.removeEntry( Resource );
+        	return List.remove_entry( Resource );
         }
     };
 
@@ -170,98 +171,90 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Call to lock the synchronization object of wait until it is released by other thread.
-     *          If waitable is signaled, the function immediately returns. If waitable is not signaled,
-     *          the function block thread until either waitable is signaled or timeout expires. In case
-     *          of some waitable such as Mutex, this call takes the ownership. in case of Synchronization Events
-     *          this may reset signaled state or leave in signaled state, depending on Synchronization Event types.
-     *          For more details see the description of each waitable object.
-     * \param   syncWait    The waitable object to check the signaled state.
-     * \param   msTimeout   The timeout in milliseconds to wait until waitable is signaled.
-     *                      If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
-     *                      Any other value indicates timeout to wait.
-     * \return  It returns one of following values:
-     *              - NESyncTypesIX::SyncSignal::First if waitable was signaled;
-     *              - NESyncTypesIX::SyncSignal::Timeout if waiting timeout is expired;
-     *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
-     *              - NESyncTypesIX::SyncSignal::FirstError if error happened. For example, the waitable is invalidated.
+     * \brief   Locks the synchronization object or waits until it is released. Returns immediately
+     *          if already signaled.
+     *
+     * \param   syncWait        The waitable object to check the signaled state.
+     * \param   msTimeout       Timeout in milliseconds. NECommon::WAIT_INFINITE to wait
+     *                          indefinitely.
+     * \return  Returns one of: SyncSignal::First (signaled), SyncSignal::Timeout (expired),
+     *          SyncSignal::Interrupted (interrupted), or SyncSignal::FirstError (error).
      **/
-    static int32_t waitForSingleObject( WaitablePosix & syncWait, uint32_t msTimeout = NECommon::WAIT_INFINITE );
+    static int32_t wait_single( WaitablePosix & syncWait, uint32_t msTimeout = NECommon::WAIT_INFINITE );
 
     /**
-     * \brief   Call to lock and wait the list of synchronization objects until one or all objects are signaled.
-     *          The waiting criteria depends on waitable signal state, waitAll parameter and timeout.
-     *          There can be maximum NECommon::MAXIMUM_WAITING_OBJECTS in the list to wait. This limitation is synchronized
-     *          with Microsoft limitation. In practice, normally there are very few events in the list.
-     *          In case of some waitable such as Mutex, this call takes the ownership. in case of Synchronization Events
-     *          this may reset signaled state or leave in signaled state, depending on Synchronization Event types.
-     *          For more details see the description of each waitable object.
-     * \param   listWaitables   The list of waitables to check the signaled state. There should be no more than 
-     *                          NECommon::MAXIMUM_WAITING_OBJECTS entries in the list.
-     * \param   count           The number of waitables in the list. There should be no more than 
-     *                          NECommon::MAXIMUM_WAITING_OBJECTS entries.
-     * \param   waitAll         If true, the call is locks the thread until all waitables in the list are signaled.
-     *                          If false, any waitable in signaled state unlocks the thread.
-     * \param   msTimeout       The timeout in milliseconds to wait until waitable is signaled.
-     *                          If NECommon::WAIT_INFINITE, it will wait until event is signaled or failed.
-     *                          Any other value indicates timeout to wait.
-     * \return  It returns one of following values:
-     *              - NESyncTypesIX::SyncSignal::First + N if 'waitAll' flag is false and waitable was signaled, where 'N' is the index of waitable in the list.
-     *              - NESyncTypesIX::SyncSignal::All if 'waitAll' flag is true and all waitables are signaled.
-     *              - NESyncTypesIX::SyncSignal::Timeout if waiting timeout is expired;
-     *              - NESyncTypesIX::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
-     *              - NESyncTypesIX::SyncSignal::FirstError + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
+     * \brief   Locks and waits for a list of synchronization objects until one or all are signaled.
+     *          Maximum NECommon::MAXIMUM_WAITING_OBJECTS entries.
+     *
+     * \param   listWaitables       The list of waitables to check the signaled state. No more than
+     *                              NECommon::MAXIMUM_WAITING_OBJECTS entries.
+     * \param   count               The number of waitables in the list. No more than
+     *                              NECommon::MAXIMUM_WAITING_OBJECTS.
+     * \param   waitAll             If true, waits for all waitables to be signaled. If false, any
+     *                              signaled waitable unlocks.
+     * \param   msTimeout           Timeout in milliseconds. NECommon::WAIT_INFINITE to wait
+     *                              indefinitely.
+     * \return  Returns: SyncSignal::First + N (if waitAll=false and object N is signaled),
+     *          SyncSignal::All (if waitAll=true and all signaled), SyncSignal::Timeout (expired),
+     *          SyncSignal::Interrupted (interrupted), or SyncSignal::FirstError + N (error on
+     *          object N).
      **/
-    static int32_t waitForMultipleObjects( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = NECommon::WAIT_INFINITE);
+    static int32_t wait_multiple( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = NECommon::WAIT_INFINITE);
 
     /**
-     * \brief   Called by waitable object to indicate that it is in signaled state.
+     * \brief   Called by waitable object to indicate it is in signaled state.
+     *
      * \param   syncWaitable    The waitable object that is in signaled state.
-     * \return  Returns the number of threads that are notified.
-     *          In case of Mutex this should be one. In case of Synchronization Event there can be multiple threads.
-     *          For more details see description of each waitable object
+     * \return  Returns the number of threads notified.
      **/
-    static int32_t eventSignaled( WaitablePosix & syncWaitable );
+    static int32_t event_signaled( WaitablePosix & syncWaitable );
 
     /**
-     * \brief   Called by waitable object to indicate wait failure. For example, when waitable object is invalidated.
-     *          This call unlocks all threads that wait for event and the waiting return indicates error.
-     * \param   syncWaitable    The waitable object that should indicate error.
+     * \brief   Called by waitable object to indicate failure (e.g., invalidation). Unlocks all
+     *          waiting threads with error.
+     *
+     * \param   syncWaitable    The waitable object that failed.
      **/
-    static void eventFailed( WaitablePosix & syncWaitable );
+    static void event_failed( WaitablePosix & syncWaitable );
 
     /**
-     * \brief   Call to remove waitable object from the waiting list.
+     * \brief   Removes waitable object from the waiting list.
+     *
      * \param   syncWaitable    The waitable object to remove from the list.
      **/
-    static void eventRemove( WaitablePosix & syncWaitable );
+    static void event_remove( WaitablePosix & syncWaitable );
 
     /**
-     * \brief   Checks whether the waitable is registered or not.
+     * \brief   Checks whether the waitable is registered in the waiting list.
+     *
      * \param   syncWaitable    Waitable to check the registration.
      * \return  Returns true if waitable is registered.
      **/
-    static bool isWaitableRegistered( WaitablePosix & syncWaitable );
+    static bool is_waitable_registered( WaitablePosix & syncWaitable );
 
     /**
-     * \brief   Notifies the asynchronous execution within a locked thread. This call breaks waiting process of thread
-     *          that can be locked again when finished processing asynchronous execution.
-     * \param   threadId    The ID of the thread that is going to break waiting.
-     * \return  Returns true if operation succeeded. The operation can fail if thread is not locked.
+     * \brief   Breaks waiting in a locked thread to process asynchronous execution. Thread can lock
+     *          again after finishing.
+     *
+     * \param   threadId    The ID of the thread to interrupt.
+     * \return  Returns true if operation succeeded; false if thread is not locked.
      **/
-    static bool notifyAsyncSignal( id_type threadId );
+    static bool notify_async_signal( id_type threadId );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Initializes WaitAndLock object, sets flags and checks signaled sate of waitables.
-     * \param   listWaitables   The list of waitables. The maximum number of entries should be NECommon::MAXIMUM_WAITING_OBJECTS
-     * \param   count           The number of waitables in the list. The maximum number of entries should be NECommon::MAXIMUM_WAITING_OBJECTS.
-     * \param   matchCondition  The signaled state matching criteria. Either it should have exact match, i.e. wait all events to be signaled,
-     *                          or it should wait for any event to be in signaled state.
-     * \param   msTimeout       Initializes the timeout in milliseconds to wait.
+     * \brief   Initializes the object, sets flags, and checks signaled state of waitables.
+     *
+     * \param   listWaitables       The list of waitables. Maximum NECommon::MAXIMUM_WAITING_OBJECTS
+     *                              entries.
+     * \param   count               The number of waitables in the list. Maximum
+     *                              NECommon::MAXIMUM_WAITING_OBJECTS.
+     * \param   matchCondition      Specifies wait criteria: exact match (all signaled) or any one
+     *                              signaled.
+     * \param   msTimeout           Timeout in milliseconds to wait.
      **/
     SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, NESyncTypesIX::WaitCondition matchCondition, uint32_t msTimeout );
 
@@ -275,84 +268,89 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns static list of waitables, where keys are id_type and values are waitables.
+     * \brief   Returns static map of waitables keyed by id_type.
      **/
-    static SyncLockAndWaitPosix::MapWaitIDResource& _mapWaitResourceIds();
+    static SyncLockAndWaitPosix::MapWaitIDResource& _map_wait_ids();
 
     /**
-     * \brief   Returns the static instance of synchronization resource map.
-     */
-    static SyncResourceMapIX& _mapSyncResources();
+     * \brief   Returns static instance of synchronization resource map.
+     **/
+    static SyncResourceMapIX& _map_sync_resources();
 
     /**
-     * \brief   Returns true if no event in the list is fired.
+     * \brief   Returns true if no event in the list has fired.
      **/
-    inline bool _noEventFired() const;
+    inline bool _no_event_fired() const;
 
     /**
      * \brief   Initializes internal POSIX objects. Returns true if initialization succeeded.
      **/
-    inline bool _initPosixSyncObjects();
+    inline bool _init_sync_objects();
 
     /**
      * \brief   Releases internal POSIX objects to free resources.
      **/
-    inline void _releasePosixSyncObjects();
+    inline void _release_sync_objects();
 
     /**
-     * \brief   Returns true if object is valid. The LockAndWait object is valid if internal POSIX objects are
-     *          initialized and the waiting list not empty.
+     * \brief   Returns true if object is valid (POSIX objects initialized and waiting list not
+     *          empty).
      **/
-    inline bool _isValid() const;
+    inline bool _is_valid() const;
 
     /**
-     * \brief   Locks the WaitAndLock object, waits for event fired criteria.
-     *          This may block the calling thread.
+     * \brief   Locks the object and waits for event fired criteria. May block the calling thread.
+     *
      * \return  Returns true if locking succeeded.
      **/
     inline bool _lock();
 
     /**
-     * \brief   Unlocks WaitAndLock object.
+     * \brief   Unlocks the object.
      **/
     inline void _unlock();
 
     /**
-     * \brief   Called to wait for condition variable. Either it waits with infinite wait flag or with timeout.
-     * \return  Returns POSIX error code. If 0, the waiting method succeeded.
+     * \brief   Waits for condition variable with infinite or timeout-based wait.
+     *
+     * \return  Returns POSIX error code; 0 indicates success.
      **/
-    inline int32_t _waitCondition();
+    inline int32_t _wait_condition();
 
     /**
      * \brief   Returns the index of registered waitable in the list.
-     * \param   syncWaitable   The instance of waitable object to lookup in the list.
+     *
+     * \param   syncWaitable    The instance of waitable object to lookup in the list.
      **/
-    inline int32_t _getWaitableIndex( const WaitablePosix & syncWaitable ) const;
+    inline int32_t _waitable_index( const WaitablePosix & syncWaitable ) const;
 
     /**
-     * \brief   Called to notify the event has been fired.
-     * \return  Returns true if succeeded to notify.
+     * \brief   Notifies that an event has fired.
+     *
+     * \return  Returns true if notification succeeded.
      **/
-    inline bool _notifyEvent();
+    inline bool _notify_event();
 
     /**
-     * \brief   Checks whether the waiting list is empty.
+     * \brief   Returns true if waiting list is empty.
      **/
-    inline bool _isEmpty() const;
+    inline bool _is_empty() const;
 
     /**
-     * \brief   Checks whether the waitable event is fired or not.
-     * \param   syncObject The waitable object to check.
-     * \return  Returns one of event fired state.
+     * \brief   Checks whether the waitable event has fired.
+     *
+     * \param   syncObject      The waitable object to check.
+     * \return  Returns one of event fired state values.
      **/
-    int32_t _checkEventFired( WaitablePosix & syncObject );
+    int32_t _check_event_fired( WaitablePosix & syncObject );
 
     /**
-     * \brief   Called to notify threads to take fired event ownership.
-     * \param   firedEvent  The index of fired event in the list that notifies the threads to take ownership.
+     * \brief   Notifies threads to take ownership of a fired event.
+     *
+     * \param   firedEvent      The index of fired event in the list.
      * \return  Returns true if threads are notified or took ownership.
      **/
-    bool _requestOwnership( int32_t firedEvent );
+    bool _request_ownership( int32_t firedEvent );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -419,6 +417,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     SyncLockAndWaitPosix() = delete;
     AREG_NOCOPY_NOMOVE( SyncLockAndWaitPosix );
 };

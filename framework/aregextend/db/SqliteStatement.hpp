@@ -125,7 +125,7 @@ public:
      * \brief   Checks if the statement is prepared and ready for execution.
      * \return  True if the statement is prepared, false otherwise.
      */
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
      * \brief   Returns the current row position in the result set.
@@ -193,7 +193,7 @@ public:
      * \param   index  The 0-based column index.
      * \return  The 64-bit integer value of the column.
      */
-    int64_t getInt64(int32_t index) const;
+    int64_t int64(int32_t index) const;
     uint64_t getUint64(int32_t index) const;
 
     /**
@@ -201,8 +201,8 @@ public:
      * \param   index  The 0-based column index.
      * \return  The double value of the column.
      */
-    double getDouble(int32_t index) const;
-    float getFloat(int32_t index) const;
+    double as_double(int32_t index) const;
+    float as_float(int32_t index) const;
 
     /**
      * \brief   Retrieves the text value of the specified column in the current row.
@@ -313,7 +313,7 @@ protected:
     AREG_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
 };
 
-inline bool SqliteStatement::isValid() const
+inline bool SqliteStatement::is_valid() const
 {
     return (mStatement != nullptr);
 }

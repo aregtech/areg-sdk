@@ -58,7 +58,7 @@ SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
     }
     else
     {
-        mDbPath = dbPath.isEmpty() ? String::getEmptyString() : File::normalizePath(dbPath);
+        mDbPath = dbPath.is_empty() ? String::empty_string() : File::normalize_path(dbPath);
     }
 }
 
@@ -71,20 +71,20 @@ inline bool SqliteDatabase::_open(const String& dbPath)
 {
     bool result{ true };
     _close();
-    mDbPath = dbPath.isEmpty() == false ? File::normalizePath(dbPath) : mDbPath;
-    if (mDbPath.isEmpty())
+    mDbPath = dbPath.is_empty() == false ? File::normalize_path(dbPath) : mDbPath;
+    if (mDbPath.is_empty())
     {
         ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
         return false;
     }
 
-    String folder = File::getFileDirectory(mDbPath);
-    if ((folder.isEmpty() == false) && (File::existDir(folder) == false))
+    String folder = File::file_directory(mDbPath);
+    if ((folder.is_empty() == false) && (File::has_dir(folder) == false))
     {
-        File::createDirCascaded(folder);
+        File::create_dir_cascaded(folder);
     }
 
-    if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)))
+    if (SQLITE_OK != ::sqlite3_open(mDbPath.as_string(), _sqlite(&mDbObject)))
     {
         _close();
         result = false;
@@ -102,7 +102,7 @@ inline void SqliteDatabase::_close()
     }
 }
 
-bool SqliteDatabase::isOperable() const
+bool SqliteDatabase::is_operable() const
 {
     return (mDbObject != nullptr);
 }
@@ -122,7 +122,7 @@ bool SqliteDatabase::execute(const String& sql)
     bool result{ false };
     if (mDbObject != nullptr)
     {
-        result = SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sql.getString(), nullptr, nullptr, nullptr);
+        result = SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sql.as_string(), nullptr, nullptr, nullptr);
     }
 
     return result;

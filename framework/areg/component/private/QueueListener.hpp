@@ -33,10 +33,8 @@ class Event;
 // QueueListener class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Event Queue Listener interface. The listener should be assigned
- *          in the Event Queue object and the signalEvent() function is 
- *          triggered every time when new event item is pushed in the queue
- *          or when queue is empty.
+ * \brief   Interface for objects that listen to queue state changes and receive notifications when
+ *          events are added or the queue becomes empty.
  **/
 class AREG_API QueueListener
 {
@@ -45,7 +43,7 @@ class AREG_API QueueListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected default constructor.
+     * \brief
      **/
     QueueListener() = default;
     virtual ~QueueListener() = default;
@@ -58,13 +56,13 @@ public:
 // QueueListener interface overrides
 /************************************************************************/
     /**
-     * \brief	Triggered from Event Queue object every time when new event
-     *          element is pushed into queue or when queue is empty.
-     *          Override method to provide queuing logic.
-     * \param	eventCount	The number of event elements currently in the queue.
-     *                      If zero, queue is empty, dispatcher can be suspended.
+     * \brief   Triggered whenever an event is pushed into the queue or the queue becomes empty.
+     *          Override to implement notification logic.
+     *
+     * \param   eventCount      The number of events in the queue. Zero means the queue is empty and
+     *                          the dispatcher can be suspended.
      **/
-    virtual void signalEvent(uint32_t eventCount ) = 0;
+    virtual void signal_event(uint32_t eventCount ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.

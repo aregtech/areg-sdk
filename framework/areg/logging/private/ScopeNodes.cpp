@@ -34,7 +34,7 @@ ScopeLeaf::ScopeLeaf()
 }
 
 ScopeLeaf::ScopeLeaf( const ScopeNodeBase & base )
-    : ScopeNodeBase( ScopeNodeBase::NodeType::Leaf, base.getNodeName(), base.getPriority() )
+    : ScopeNodeBase( ScopeNodeBase::NodeType::Leaf, base.node_name(), base.priority() )
 {
 }
 
@@ -48,16 +48,16 @@ ScopeLeaf::ScopeLeaf( ScopeLeaf && src ) noexcept
 {
 }
 
-String ScopeLeaf::makeScopePath( const String & prefix ) const
+String ScopeLeaf::make_scope_path( const String & prefix ) const
 {
     String result{ prefix };
     result += mNodeName;
     return result;
 }
 
-uint32_t ScopeLeaf::updateConfigNode(ConfigManager& config, const String & parentPath ) const
+uint32_t ScopeLeaf::update_config_node(ConfigManager& config, const String & parentPath ) const
 {
-    config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
+    config.add_log_scope(make_config_string(parentPath), mPrioStates);
     return 1;
 }
 
@@ -73,7 +73,7 @@ ScopeNode::ScopeNode()
 }
 
 ScopeNode::ScopeNode( const ScopeNodeBase & base )
-    : ScopeNodeBase ( ScopeNodeBase::NodeType::Node, base.getNodeName( ), base.getPriority() )
+    : ScopeNodeBase ( ScopeNodeBase::NodeType::Node, base.node_name( ), base.priority() )
     , mChildNodes   ( true )
     , mChildLeafs   ( true )
 {
@@ -124,105 +124,105 @@ ScopeNode & ScopeNode::operator=( ScopeNode && src ) noexcept
     return (*this);
 }
 
-const ScopeNodeBase & ScopeNode::makeChildNode( String & scopePath, uint32_t prioStates ) const
+const ScopeNodeBase & ScopeNode::make_child_node( String & scopePath, uint32_t prioStates ) const
 {
-    if ( scopePath.isEmpty( ) )
+    if ( scopePath.is_empty( ) )
     {
-        return ScopeNodeBase::makeChildNode( scopePath, prioStates );
+        return ScopeNodeBase::make_child_node( scopePath, prioStates );
     }
     else
     {
-        String nodeName = ScopeNodeBase::extractNodeName( scopePath );
-        if ( scopePath.isEmpty( ) )
+        String nodeName = ScopeNodeBase::extract_node_name( scopePath );
+        if ( scopePath.is_empty( ) )
         {
             static ScopeLeaf _leaf;
-            _leaf.setNodeName(nodeName);
-            _leaf.setPriority(prioStates);
+            _leaf.set_node_name(nodeName);
+            _leaf.set_priority(prioStates);
             return _leaf;
         }
         else
         {
             static ScopeNode _node;
-            _node.setNodeName(nodeName);
-            _node.setPriority(prioStates);
+            _node.set_node_name(nodeName);
+            _node.set_priority(prioStates);
             return _node;
         }
     }
 }
 
-std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( const ScopeNodeBase & child )
+std::pair<ScopeNodeBase &, bool>  ScopeNode::add_child_node( const ScopeNodeBase & child )
 {
-    ScopeNodeBase * scope = &(ScopeNodeBase::invalidNode());
+    ScopeNodeBase * scope = &(ScopeNodeBase::invalid_node());
     bool newEntry{ false };
 
-    if ( child.isLeaf( ) )
+    if ( child.is_leaf( ) )
     {
-        auto atPos = mChildLeafs.addIfUnique( ScopeLeaf( child ), false );
-        const ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(atPos.first) };
+        auto atPos = mChildLeafs.add_if_unique( ScopeLeaf( child ), false );
+        const ScopeNodeBase& leaf{ mChildLeafs.value_at_position(atPos.first) };
         scope = const_cast<ScopeNodeBase *>(&leaf);
         newEntry = atPos.second;
     }
-    else if (child.isNode( ))
+    else if (child.is_node( ))
     {
-        auto atPos = mChildNodes.addIfUnique( ScopeNode( child ), false );
-        const ScopeNodeBase& node{ mChildNodes.valueAtPosition(atPos.first) };
+        auto atPos = mChildNodes.add_if_unique( ScopeNode( child ), false );
+        const ScopeNodeBase& node{ mChildNodes.value_at_position(atPos.first) };
         scope = const_cast<ScopeNodeBase*>(&node);
-        scope->addPriority(child.getPriority());
+        scope->add_priority(child.priority());
         newEntry = atPos.second;
     }
 
-    if ( scope->isValid() )
+    if ( scope->is_valid() )
     {
-        mPrioStates |= child.getPriority( );
+        mPrioStates |= child.priority( );
     }
 
     return std::pair<ScopeNodeBase &, bool>{*scope, newEntry};
 }
 
-std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( String & scopePath, uint32_t prioStates )
+std::pair<ScopeNodeBase &, bool>  ScopeNode::add_child_node( String & scopePath, uint32_t prioStates )
 {
-    const ScopeNodeBase & node = makeChildNode( scopePath, prioStates );
-    return addChildNode( node );
+    const ScopeNodeBase & node = make_child_node( scopePath, prioStates );
+    return add_child_node( node );
 }
 
-String ScopeNode::makeScopePath( const String & prefix ) const
+String ScopeNode::make_scope_path( const String & prefix ) const
 {
-    ASSERT(mNodeName.isEmpty() == false);
-    ASSERT(isValid());
+    ASSERT(mNodeName.is_empty() == false);
+    ASSERT(is_valid());
     char scope[NELogging::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::formatString(scope, NELogging::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), NELogOptions::SYNTAX_SCOPE_SEPARATOR));
+    uint32_t len = static_cast<uint32_t>(String::format_string(scope, NELogging::LOG_MESSAGE_IZE, "%s%s%c", prefix.as_string(), mNodeName.as_string(), NELogOptions::SYNTAX_SCOPE_SEPARATOR));
 
     return String(scope, len);
 }
 
-uint32_t ScopeNode::groupChildNodes() 
+uint32_t ScopeNode::group_child_nodes() 
 {
     uint32_t result{ 0 };
-    uint32_t sameLeafs{ mChildLeafs.getSize( ) };
-    uint32_t sameNodes{ mChildNodes.getSize() };
+    uint32_t sameLeafs{ mChildLeafs.size( ) };
+    uint32_t sameNodes{ mChildNodes.size() };
     uint32_t prioNode{ mPrioStates };
 
     mGrouping = static_cast<uint32_t>(ScopeNodeBase::Grouping::None);
 
     if ( sameNodes > 0 )
     {
-        for ( NodeList::LISTPOS pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
+        for ( NodeList::LISTPOS pos = mChildNodes.first_position( ); mChildNodes.is_valid_position( pos ); pos = mChildNodes.next_position( pos ) )
         {
-            const ScopeNode & node{ mChildNodes.valueAtPosition( pos ) };
-            if ( (node.getPriority( ) != prioNode) || (node.childNodeCount( ) != 0) )
+            const ScopeNode & node{ mChildNodes.value_at_position( pos ) };
+            if ( (node.priority( ) != prioNode) || (node.child_node_count( ) != 0) )
             {
                 -- sameNodes;
                 break;
             }
         }
 
-        if ( sameNodes == mChildNodes.getSize( ) )
+        if ( sameNodes == mChildNodes.size( ) )
         {
             mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Nodes);
-            result += mChildNodes.getSize( );
+            result += mChildNodes.size( );
             mChildNodes.clear( );
 
-            result += removePriorityNodesRecursive( prioNode );
+            result += remove_priority_nodes( prioNode );
         }
         else
         {
@@ -232,10 +232,10 @@ uint32_t ScopeNode::groupChildNodes()
 
     if ( sameLeafs > 0 )
     {
-        for ( LeafList::LISTPOS pos = mChildLeafs.firstPosition( ); mChildLeafs.isValidPosition( pos ); pos = mChildLeafs.nextPosition( pos ) )
+        for ( LeafList::LISTPOS pos = mChildLeafs.first_position( ); mChildLeafs.is_valid_position( pos ); pos = mChildLeafs.next_position( pos ) )
         {
-            const ScopeLeaf & leaf{ mChildLeafs.valueAtPosition( pos ) };
-            uint32_t prio = leaf.getPriority( );
+            const ScopeLeaf & leaf{ mChildLeafs.value_at_position( pos ) };
+            uint32_t prio = leaf.priority( );
             if (prio != prioNode )
             {
                 -- sameLeafs;
@@ -243,118 +243,118 @@ uint32_t ScopeNode::groupChildNodes()
             }
         }
 
-        if (sameLeafs == mChildLeafs.getSize( ))
+        if (sameLeafs == mChildLeafs.size( ))
         {
             mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Leaves);
-            result += mChildLeafs.getSize( );
+            result += mChildLeafs.size( );
             mChildLeafs.clear( );
-            result += removePriorityNodesRecursive( prioNode );
+            result += remove_priority_nodes( prioNode );
         }
     }
 
     return result;
 }
 
-uint32_t ScopeNode::updateConfigNode( ConfigManager & config, const String & parentPath ) const
+uint32_t ScopeNode::update_config_node( ConfigManager & config, const String & parentPath ) const
 {
     uint32_t result{ 0 };
-    String thisScope = makeScopePath( parentPath );
+    String thisScope = make_scope_path( parentPath );
     if ( (mGrouping & static_cast<uint32_t>(ScopeNodeBase::Grouping::All)) != 0 )
     {
-        config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
+        config.add_log_scope(make_config_string(parentPath), mPrioStates);
         result = 1;
     }
 
-    for ( auto pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
+    for ( auto pos = mChildNodes.first_position( ); mChildNodes.is_valid_position( pos ); pos = mChildNodes.next_position( pos ) )
     {
-        const ScopeNode & node = mChildNodes.valueAtPosition( pos );
-        result += node.updateConfigNode( config, thisScope );
+        const ScopeNode & node = mChildNodes.value_at_position( pos );
+        result += node.update_config_node( config, thisScope );
     }
 
-    for ( auto pos = mChildLeafs.firstPosition( ); mChildLeafs.isValidPosition( pos ); pos = mChildLeafs.nextPosition( pos ) )
+    for ( auto pos = mChildLeafs.first_position( ); mChildLeafs.is_valid_position( pos ); pos = mChildLeafs.next_position( pos ) )
     {
-        const ScopeLeaf & leaf = mChildLeafs.valueAtPosition( pos );
-        result += leaf.updateConfigNode( config, thisScope );
+        const ScopeLeaf & leaf = mChildLeafs.value_at_position( pos );
+        result += leaf.update_config_node( config, thisScope );
     }
 
     return result;
 }
 
-uint32_t ScopeNode::groupRecursive()
+uint32_t ScopeNode::group_recursive()
 {
     uint32_t result{ 0 };
-    for ( auto pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
+    for ( auto pos = mChildNodes.first_position( ); mChildNodes.is_valid_position( pos ); pos = mChildNodes.next_position( pos ) )
     {
-        const ScopeNode& node{ mChildNodes.valueAtPosition(pos) };
-        result += const_cast<ScopeNode &>(node).groupRecursive( );
+        const ScopeNode& node{ mChildNodes.value_at_position(pos) };
+        result += const_cast<ScopeNode &>(node).group_recursive( );
     }
 
-    result += groupChildNodes( );
+    result += group_child_nodes( );
     return result;
 }
 
-String ScopeNode::makeConfigString( const String & parent ) const
+String ScopeNode::make_config_string( const String & parent ) const
 {
     char scope[NELogging::LOG_MESSAGE_IZE];
-    uint32_t len = static_cast<uint32_t>(String::formatString(    scope, NELogging::LOG_MESSAGE_IZE
+    uint32_t len = static_cast<uint32_t>(String::format_string(    scope, NELogging::LOG_MESSAGE_IZE
                                                                 , "%s%s%c%c"
-                                                                , parent.getString()
-                                                                , mNodeName.getString()
+                                                                , parent.as_string()
+                                                                , mNodeName.as_string()
                                                                 , NELogOptions::SYNTAX_SCOPE_SEPARATOR
                                                                 , NELogOptions::SYNTAX_SCOPE_GROUP));
     return String(scope, len);
 }
 
-uint32_t ScopeNode::removePriorityNodesRecursive( uint32_t prioRemove )
+uint32_t ScopeNode::remove_priority_nodes( uint32_t prioRemove )
 {
     uint32_t result{ 0 };
 
-    if ( mChildLeafs.getSize( ) != 0 )
+    if ( mChildLeafs.size( ) != 0 )
     {
-        LeafList::LISTPOS pos = mChildLeafs.firstPosition( );
-        while ( mChildLeafs.isValidPosition( pos ) )
+        LeafList::LISTPOS pos = mChildLeafs.first_position( );
+        while ( mChildLeafs.is_valid_position( pos ) )
         {
-            const ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(pos) };
-            if ( leaf.getPriority( ) == prioRemove )
+            const ScopeNodeBase& leaf{ mChildLeafs.value_at_position(pos) };
+            if ( leaf.priority( ) == prioRemove )
             {
-                pos = mChildLeafs.removeAt( pos );
+                pos = mChildLeafs.remove_at( pos );
                 ++ result;
             }
             else
             {
-                pos = mChildLeafs.nextPosition( pos );
+                pos = mChildLeafs.next_position( pos );
             }
         }
 
-        if ( mChildLeafs.isEmpty( ) )
+        if ( mChildLeafs.is_empty( ) )
         {
             mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Leaves);
         }
     }
 
-    if ( mChildNodes.getSize( ) != 0 )
+    if ( mChildNodes.size( ) != 0 )
     {
-        NodeList::LISTPOS pos = mChildNodes.firstPosition( );
-        while ( mChildNodes.isValidPosition( pos ) )
+        NodeList::LISTPOS pos = mChildNodes.first_position( );
+        while ( mChildNodes.is_valid_position( pos ) )
         {
-            const ScopeNodeBase& node{ mChildNodes.valueAtPosition(pos) };
-            if ( mChildNodes.valueAtPosition( pos ).getPriority( ) == prioRemove )
+            const ScopeNodeBase& node{ mChildNodes.value_at_position(pos) };
+            if ( mChildNodes.value_at_position( pos ).priority( ) == prioRemove )
             {
-                result += const_cast<ScopeNodeBase &>(node).removePriorityNodesRecursive( prioRemove );
-                if (node.isEmpty() )
+                result += const_cast<ScopeNodeBase &>(node).remove_priority_nodes( prioRemove );
+                if (node.is_empty() )
                 {
-                    pos = mChildNodes.removeAt( pos );
+                    pos = mChildNodes.remove_at( pos );
                     ++ result;
                 }
             }
             else
             {
-                const_cast<ScopeNodeBase&>(node).removePriorityNodesRecursive( prioRemove );
-                pos = mChildNodes.nextPosition( pos );
+                const_cast<ScopeNodeBase&>(node).remove_priority_nodes( prioRemove );
+                pos = mChildNodes.next_position( pos );
             }
         }
 
-        if ( mChildNodes.isEmpty( ) )
+        if ( mChildNodes.is_empty( ) )
         {
             mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Nodes);
         }
@@ -363,9 +363,9 @@ uint32_t ScopeNode::removePriorityNodesRecursive( uint32_t prioRemove )
     return result;
 }
 
-bool ScopeNode::isEmpty() const
+bool ScopeNode::is_empty() const
 {
-    return mChildLeafs.isEmpty() && mChildNodes.isEmpty();
+    return mChildLeafs.is_empty() && mChildNodes.is_empty();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -373,42 +373,42 @@ bool ScopeNode::isEmpty() const
 //////////////////////////////////////////////////////////////////////////
 
 ScopeRoot::ScopeRoot()
-    : ScopeNode     ( ScopeNodeBase::NodeType::Root, Process::getInstance().getAppName(), static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) )
+    : ScopeNode     ( ScopeNodeBase::NodeType::Root, Process::instance().app_name(), static_cast<uint32_t>(NELogging::LogPriority::PrioNotset) )
 {
 }
 
-String ScopeRoot::makeScopePath( const String & /*prefix*/ ) const
+String ScopeRoot::make_scope_path( const String & /*prefix*/ ) const
 {
     return String::EmptyString;
 }
 
-uint32_t ScopeRoot::updateConfigNode( ConfigManager & config, const String & /*parentPath*/ ) const
+uint32_t ScopeRoot::update_config_node( ConfigManager & config, const String & /*parentPath*/ ) const
 {
     uint32_t result{ 0 };
 
-    String thisScope( makeScopePath(String::EmptyString) );
-    for ( auto pos = mChildLeafs.firstPosition( ); mChildLeafs.isValidPosition( pos ); pos = mChildLeafs.nextPosition( pos ) )
+    String thisScope( make_scope_path(String::EmptyString) );
+    for ( auto pos = mChildLeafs.first_position( ); mChildLeafs.is_valid_position( pos ); pos = mChildLeafs.next_position( pos ) )
     {
-        const ScopeLeaf & leaf = mChildLeafs.valueAtPosition( pos );
-        result += leaf.updateConfigNode(config, thisScope);
+        const ScopeLeaf & leaf = mChildLeafs.value_at_position( pos );
+        result += leaf.update_config_node(config, thisScope);
     }
 
-    for ( auto pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
+    for ( auto pos = mChildNodes.first_position( ); mChildNodes.is_valid_position( pos ); pos = mChildNodes.next_position( pos ) )
     {
-        const ScopeNode & node = mChildNodes.valueAtPosition( pos );
-        result += node.updateConfigNode(config, thisScope);
+        const ScopeNode & node = mChildNodes.value_at_position( pos );
+        result += node.update_config_node(config, thisScope);
     }
 
     if ( result == 0 )
     {
-        config.addModuleLogScope(makeConfigString(thisScope), mPrioStates);
+        config.add_log_scope(make_config_string(thisScope), mPrioStates);
         result = 1;
     }
 
     return result;
 }
 
-String ScopeRoot::makeConfigString(const String& parent) const
+String ScopeRoot::make_config_string(const String& parent) const
 {
     return (parent + NELogOptions::SYNTAX_SCOPE_GROUP);
 }

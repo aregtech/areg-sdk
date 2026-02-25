@@ -38,7 +38,7 @@ MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* =
     , mPosixMutexAttr   ( )
     , mMutexAttrValid   ( false )
 {
-    _initPosixMutex( true );
+    _init_posix_mutex( true );
     if (initLocked)
     {
         ::pthread_mutex_lock( &mPosixMutex );
@@ -53,7 +53,7 @@ MutexPosix::MutexPosix( NESyncTypesIX::SyncKind syncType, bool isRecursive, cons
     , mPosixMutexAttr   ( )
     , mMutexAttrValid   ( false )
 {
-    _initPosixMutex( isRecursive );
+    _init_posix_mutex( isRecursive );
 }
 
 MutexPosix::~MutexPosix()
@@ -72,7 +72,7 @@ MutexPosix::~MutexPosix()
     mMutexAttrValid = false;
 }
 
-inline void MutexPosix::_initPosixMutex( bool isRecursive )
+inline void MutexPosix::_init_posix_mutex( bool isRecursive )
 {
     if ( NECommon::RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
@@ -111,7 +111,7 @@ bool MutexPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
         else
         {
             timespec deadline;
-            NESyncTypesIX::timeoutFromNow(deadline, msTimeout);
+            NESyncTypesIX::timeout_from_now(deadline, msTimeout);
 #ifdef __APPLE__
             // macOS doesn't have pthread_mutex_timedlock
             // Use exponential backoff to reduce CPU usage while maintaining responsiveness
@@ -151,7 +151,7 @@ bool MutexPosix::lock( uint32_t msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
     return result;
 }
 
-bool MutexPosix::tryLock() const
+bool MutexPosix::try_lock() const
 {
     return (NECommon::RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
 }
@@ -161,12 +161,12 @@ void MutexPosix::unlock() const
     pthread_mutex_unlock( &mPosixMutex );
 }
 
-bool MutexPosix::isValid() const
+bool MutexPosix::is_valid() const
 {
     return (mMutexValid && mMutexAttrValid);
 }
 
-void MutexPosix::freeResources()
+void MutexPosix::free_resources()
 {
     pthread_mutex_unlock( &mPosixMutex );
 }

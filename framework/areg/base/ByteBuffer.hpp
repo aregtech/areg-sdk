@@ -31,7 +31,7 @@
 // ByteBuffer pure virtual class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Binary (Byte) buffer bases class as a container of binary data.
+ * \brief   Base class for binary (byte) buffer containers.
  **/
 class AREG_API ByteBuffer
 {
@@ -63,12 +63,16 @@ protected:
     ByteBuffer();
 
     /**
-     * \brief   Initializes byte-buffer from given source
+     * \brief   Initializes the byte buffer from a source raw buffer.
+     *
+     * \param   byteBuffer      The source raw buffer to initialize from.
      **/
     ByteBuffer( NEMemory::RawBuffer & byteBuffer );
 
     /**
-     * \brief   Moves byte-buffer from given source
+     * \brief   Moves a byte buffer from the source.
+     *
+     * \param   src     The source byte buffer to move from.
      **/
     ByteBuffer( ByteBuffer && src ) noexcept;
 
@@ -86,39 +90,27 @@ public:
 // ByteBuffer overrides
 /************************************************************************/
     /**
-     * \brief   Returns true if buffer is shared between several byte buffer instances.
+     * \brief   Returns true if this buffer is shared between multiple instances.
      **/
-    virtual bool isShared() const = 0;
+    virtual bool is_shared() const = 0;
 
     /**
-     * \brief   Returns true if buffer can be shared.
-     *          The Raw Buffer object should return false.
-     *          The Shared Buffer object should return true.
+     * \brief   Returns true if this buffer supports sharing between instances.
      **/
-    virtual bool canShare() const = 0;
+    virtual bool can_share() const = 0;
 
     /**
-     * \brief   Invalidates the buffer. Removes reference, assigns to invalid buffer,
-     *          invalidates writing and reading positions.
+     * \brief   Invalidates the buffer and resets all positions.
      **/
     virtual void invalidate();
 
     /**
-     * \brief	Reserves space for byte buffer structure, if needed, 
-     *          copies existing data and the size of buffer available to write.
-     *          1.  If requested reserved space is more than the length of data buffer, 
-     *              the size of data buffer is increased.
-     *          2.  If total data buffer spaces is more than ByteBuffer::MAX_BUF_LENGTH,
-     *              reserves the maximum ByteBuffer::MAX_BUF_LENGTH.
-     *          3.  If size is zero, calls RemoveReference() to free all space.
-     *          4.  If buffer is shared (i.e. reference count is more than 1)
-     *              the operation is ignored and function returns total remaining space
-     *              to write data. Because if data is shared between different instances
-     *              of byte-buffer, the size of buffer should not be changed.
+     * \brief   Reserves space in the byte buffer, optionally copying existing data.
      *
-     * \param	size	The size in bytes to reserve
-     * \param	copy    If true and the existing buffer is valid, it will copy data
-     * \return	Returns the size available to use (i.e. remaining space).
+     * \param   size    The size in bytes to reserve. If zero, frees all space. If the buffer is
+     *                  shared, the operation is ignored.
+     * \param   copy    If true and the buffer is valid, existing data is copied to the new buffer.
+     * \return  Returns the total remaining space available for writing.
      **/
     virtual uint32_t reserve(uint32_t size, bool copy);
 
@@ -127,54 +119,51 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns pointer to the byte buffer.
+     * \brief   Returns a read-only pointer to the underlying raw buffer.
      **/
-    inline const NEMemory::RawBuffer * getByteBuffer()  const;
+    inline const NEMemory::RawBuffer * byte_buffer()  const;
 
     /**
-     * \brief   Returns true if buffer is either empty or is invalid.
+     * \brief   Returns true if the buffer is empty or invalid.
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
-     * \brief   Returns the use
+     * \brief   Returns the number of bytes currently used in the buffer.
      **/
-    inline uint32_t getSizeUsed() const;
+    inline uint32_t size_used() const;
     
     /**
-     * \brief	Sets the used size value in byte buffer object.
-     *          It should not be more than the length of buffer.
-     * \param	newSize	The new size in bytes to set in byte buffer object.
+     * \brief   Sets the number of bytes marked as used in the buffer.
+     *
+     * \param   newSize     The new size in bytes. Must not exceed the buffer length.
      **/
-    inline void setSizeUsed(uint32_t newSize);
+    inline void set_size_used(uint32_t newSize);
 
     /**
-     * \brief   Returns the constant pointer to the data buffer of byte buffer
+     * \brief   Returns a read-only pointer to the data buffer.
      **/
-    inline const uint8_t * getBuffer() const;
+    inline const uint8_t * buffer() const;
 
     /**
-     * \brief   Returns pointer to the data buffer of byte buffer
+     * \brief   Returns a pointer to the data buffer.
      **/
-    inline uint8_t * getBuffer();
+    inline uint8_t * buffer();
 
     /**
-     * \brief   Checks whether the buffer is valid or not.
-     *          No read / write should be performed on invalid buffer.
+     * \brief   Returns true if the buffer is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
     
     /**
-     * \brief   Returns the size in byte of byte buffer
-     *          If empty, returns zero
+     * \brief   Returns the total size of the buffer in bytes.
      **/
-    inline uint32_t getSizeAvailable() const;
+    inline uint32_t size_available() const;
 
     /**
-     * \brief   Returns type of byte buffer. 
-     *          If valid, it should be either internal or external (for RPC)
+     * \brief   Returns the type of buffer (internal or external RPC buffer).
      **/
-    inline NEMemory::BufferType getType() const;
+    inline NEMemory::BufferType type() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected internal members
@@ -182,58 +171,50 @@ public:
 protected:
 
     /**
-     * \brief   Returns pointer to the byte buffer.
+     * \brief   Returns a pointer to the underlying raw buffer.
      **/
-    inline NEMemory::RawBuffer * getByteBuffer();
+    inline NEMemory::RawBuffer * byte_buffer();
 
     /**
-     * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 
-     *          there is no data to read. Can be only used to manipulate with cursor.
+     * \brief   Returns a read-only pointer to the end of used space in the buffer.
      **/
-    inline const uint8_t * getEndOfBuffer() const;
+    inline const uint8_t * end_of_buffer() const;
 
     /**
-     * \brief   Returns end-of-buffer, i.e. end of used space. So that, if length of buffer is
-     *          bigger than used space, there can be still data written. 
+     * \brief   Returns a pointer to the end of used space in the buffer.
      **/
-    inline uint8_t * getEndOfBuffer();
+    inline uint8_t * end_of_buffer();
 
 /************************************************************************/
 // ByteBuffer protected overrides
 /************************************************************************/
 
     /**
-     * \brief	Initialize passed buffer making it as byte buffer and
-     *          returns the current writing position in initialized byte buffer.
-     *          If needed, it will copy existing binary data to passed buffer.
-     *          The function is called from child classes when new byte buffer
-     *          is created and the existing data should be passed to new buffer.
-     * \param	newBuffer	The buffer to initialize. If nullptr, the buffer object. 
-     * \param	bufLength	The length of entire buffer, i.e. length of complete byte buffer.
-     * \param	makeCopy	If 'true' it will make copy of existing buffer
-     * \return	Returns the current writing position in initialized buffer.
-     *          If buffer is invalid, it will return INVALID_CURSOR_POSITION.
-     *          If no data is copied, it will return position at the beginning of buffer.
-     *          If data is copied, will return the position of written data.
+     * \brief   Initializes a buffer and optionally copies existing data.
+     *
+     * \param[out] newBuffer       The buffer to initialize; if nullptr, the internal buffer is
+     *                             used.
+     * \param   bufLength       The total length of the buffer.
+     * \param   makeCopy        If true, copies existing data to the new buffer.
+     * \return  Returns the current writing position in the initialized buffer; returns
+     *          INVALID_CURSOR_POSITION if the buffer is invalid.
      **/
-    virtual uint32_t initBuffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const;
+    virtual uint32_t init_buffer(uint8_t * newBuffer, uint32_t bufLength, bool makeCopy) const;
 
     /**
-     * \brief   Returns the size to align the buffer.
+     * \brief   Returns the aligned size for buffer allocation.
      **/
-    virtual uint32_t getAlignedSize() const;
+    virtual uint32_t aligned_size() const;
 
     /**
-     * \brief   Returns the offset value from the beginning of byte buffer, which should be set
+     * \brief   Returns the offset of the data from the beginning of the buffer.
      **/
-    virtual uint32_t getDataOffset() const = 0;
+    virtual uint32_t data_offset() const = 0;
 
     /**
-     * \brief   Returns the size of data byte structure (header and one byte).
-     *          This is a minimum size of byte buffer to reserve when initializing buffer.
-     *          The size can differ for shared and remote message.
+     * \brief   Returns the size of the buffer header structure.
      **/
-    virtual uint32_t getHeaderSize() const = 0;
+    virtual uint32_t header_size() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -263,67 +244,67 @@ private:
 // ByteBuffer class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEMemory::RawBuffer * ByteBuffer::getByteBuffer() const
+inline const NEMemory::RawBuffer * ByteBuffer::byte_buffer() const
 {
     return mByteBuffer.get();
 }
 
-inline NEMemory::RawBuffer * ByteBuffer::getByteBuffer()
+inline NEMemory::RawBuffer * ByteBuffer::byte_buffer()
 {
     return mByteBuffer.get( );
 }
 
-inline bool ByteBuffer::isEmpty() const
+inline bool ByteBuffer::is_empty() const
 {
-    return (isValid() == false) || (mByteBuffer->bufHeader.biUsed == 0);
+    return (is_valid() == false) || (mByteBuffer->bufHeader.biUsed == 0);
 }
 
-inline uint32_t ByteBuffer::getSizeUsed() const
+inline uint32_t ByteBuffer::size_used() const
 {
-    return (isValid() ? mByteBuffer->bufHeader.biUsed : 0);
+    return (is_valid() ? mByteBuffer->bufHeader.biUsed : 0);
 }
 
-inline const uint8_t* ByteBuffer::getBuffer() const
+inline const uint8_t* ByteBuffer::buffer() const
 {
-    return NEMemory::getBufferDataRead(mByteBuffer.get());
+    return NEMemory::buffer_data_read(mByteBuffer.get());
 }
 
-inline uint8_t* ByteBuffer::getBuffer()
+inline uint8_t* ByteBuffer::buffer()
 {
-    return NEMemory::getBufferDataWrite(mByteBuffer.get());
+    return NEMemory::buffer_data_write(mByteBuffer.get());
 }
 
-inline bool ByteBuffer::isValid() const
+inline bool ByteBuffer::is_valid() const
 {
     return (mByteBuffer.get() != nullptr);
 }
 
-inline uint32_t ByteBuffer::getSizeAvailable() const
+inline uint32_t ByteBuffer::size_available() const
 {
-    return (isValid() ? mByteBuffer->bufHeader.biLength : 0);
+    return (is_valid() ? mByteBuffer->bufHeader.biLength : 0);
 }
 
-inline NEMemory::BufferType ByteBuffer::getType() const
+inline NEMemory::BufferType ByteBuffer::type() const
 {
-    return (isValid() ? mByteBuffer->bufHeader.biBufType : NEMemory::BufferType::Unknown);
+    return (is_valid() ? mByteBuffer->bufHeader.biBufType : NEMemory::BufferType::Unknown);
 }
 
-inline void ByteBuffer::setSizeUsed(uint32_t newSize)
+inline void ByteBuffer::set_size_used(uint32_t newSize)
 {
-    if (isValid() && newSize <= getSizeAvailable())
+    if (is_valid() && newSize <= size_available())
     {
         mByteBuffer->bufHeader.biUsed = newSize;
     }
 }
 
-inline const uint8_t * ByteBuffer::getEndOfBuffer() const
+inline const uint8_t * ByteBuffer::end_of_buffer() const
 {
-    return (isValid() ? NEMemory::getBufferDataRead(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
+    return (is_valid() ? NEMemory::buffer_data_read(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);    
 }
 
-inline uint8_t * ByteBuffer::getEndOfBuffer()
+inline uint8_t * ByteBuffer::end_of_buffer()
 {
-    return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
+    return (is_valid() ? NEMemory::buffer_data_write(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }
 
 #endif  // AREG_BASE_BYTEBUFFER_HPP

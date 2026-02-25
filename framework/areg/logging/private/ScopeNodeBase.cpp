@@ -24,7 +24,7 @@
 
 #if AREG_LOGS
 
-ScopeNodeBase & ScopeNodeBase::invalidNode()
+ScopeNodeBase & ScopeNodeBase::invalid_node()
 {
     static ScopeNodeBase _invalid;
     return _invalid;
@@ -70,11 +70,11 @@ ScopeNodeBase::ScopeNodeBase( ScopeNodeBase && src ) noexcept
 {
 }
 
-String ScopeNodeBase::extractNodeName( String & scopeName )
+String ScopeNodeBase::extract_node_name( String & scopeName )
 {
     String result(scopeName);
     NEString::CharPos startPos = NEString::START_POS;
-    const char * str = scopeName.getString( );
+    const char * str = scopeName.as_string( );
 
     // move position forward if a node starts with '_', which should
     // be included in the node name.
@@ -83,8 +83,8 @@ String ScopeNodeBase::extractNodeName( String & scopeName )
         ++ startPos;
     }
 
-    NEString::CharPos pos = scopeName.findFirst(NELogOptions::SYNTAX_SCOPE_SEPARATOR, startPos );
-    if ( NEString::isPositionValid(pos) )
+    NEString::CharPos pos = scopeName.find_first(NELogOptions::SYNTAX_SCOPE_SEPARATOR, startPos );
+    if ( NEString::is_position_valid(pos) )
     {
         result.substring( 0, pos );
         scopeName.substring( pos + 1 );
@@ -143,61 +143,61 @@ bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
     return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
 }
 
-const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & scopePath, uint32_t /* prioStates */ ) const
+const ScopeNodeBase & ScopeNodeBase::make_child_node( String & scopePath, uint32_t /* prioStates */ ) const
 {
     static ScopeNodeBase _invalidNode;
     scopePath = String::EmptyString;
     return _invalidNode;
 }
 
-std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( const ScopeNodeBase & /* child */ )
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::add_child_node( const ScopeNodeBase & /* child */ )
 {
-    return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
+    return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalid_node( ), false};
 }
 
-std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & /* scopePath */, uint32_t /* prioStates */ )
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::add_child_node( String & /* scopePath */, uint32_t /* prioStates */ )
 {
-    return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
+    return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalid_node( ), false};
 }
 
-String ScopeNodeBase::makeScopePath( const String & prefix ) const
+String ScopeNodeBase::make_scope_path( const String & prefix ) const
 {
     return prefix;
 }
 
-uint32_t ScopeNodeBase::groupChildNodes()
+uint32_t ScopeNodeBase::group_child_nodes()
 {
     return 0;
 }
 
-uint32_t ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const String& /*parentPath*/) const
+uint32_t ScopeNodeBase::update_config_node(ConfigManager& /*config*/, const String& /*parentPath*/) const
 {
     return 0;
 }
 
-uint32_t ScopeNodeBase::addChildRecursive( String & scopePath, uint32_t prioStates )
+uint32_t ScopeNodeBase::add_child_recursive( String & scopePath, uint32_t prioStates )
 {
-    std::pair<ScopeNodeBase &, bool> node = addChildNode( scopePath, prioStates );
-    return (node.first.isValid() ? (1 + node.first.addChildRecursive(scopePath, prioStates)) : 0);
+    std::pair<ScopeNodeBase &, bool> node = add_child_node( scopePath, prioStates );
+    return (node.first.is_valid() ? (1 + node.first.add_child_recursive(scopePath, prioStates)) : 0);
 }
 
-uint32_t ScopeNodeBase::addChildRecursive( const LogScope & logScope )
+uint32_t ScopeNodeBase::add_child_recursive( const LogScope & logScope )
 {
-    String scopeName( logScope.getScopeName( ) );
-    return addChildRecursive( scopeName, logScope.getPriority( ) );
+    String scopeName( logScope.scope_name( ) );
+    return add_child_recursive( scopeName, logScope.priority( ) );
 }
 
-uint32_t ScopeNodeBase::groupRecursive()
+uint32_t ScopeNodeBase::group_recursive()
 {
     return 0;
 }
 
-String ScopeNodeBase::makeConfigString( const String & parent ) const
+String ScopeNodeBase::make_config_string( const String & parent ) const
 {
-    if (isValid())
+    if (is_valid())
     {
         char scope[NELogging::LOG_MESSAGE_IZE];
-        uint32_t len = static_cast<uint32_t>(String::formatString(scope, NELogging::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
+        uint32_t len = static_cast<uint32_t>(String::format_string(scope, NELogging::LOG_MESSAGE_IZE, "%s%s", parent.as_string(), mNodeName.as_string()));
         return String(scope, len);
     }
     else
@@ -206,12 +206,12 @@ String ScopeNodeBase::makeConfigString( const String & parent ) const
     }
 }
 
-uint32_t ScopeNodeBase::removePriorityNodesRecursive( uint32_t /* prioRemove */ )
+uint32_t ScopeNodeBase::remove_priority_nodes( uint32_t /* prioRemove */ )
 {
     return 0;
 }
 
-bool ScopeNodeBase::isEmpty() const
+bool ScopeNodeBase::is_empty() const
 {
     return true;
 }

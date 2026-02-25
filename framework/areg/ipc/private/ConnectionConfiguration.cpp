@@ -29,79 +29,79 @@ ConnectionConfiguration::ConnectionConfiguration(const String& service, const St
 }
 
 ConnectionConfiguration::ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType)
-    : mServiceName  (Identifier::convToString(static_cast<uint32_t>(service), NEApplication::RemoteServiceIdentifiers, static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown)))
-    , mConnectType  (Identifier::convToString(static_cast<uint32_t>(connectType), NEApplication::ConnectionIdentifiers, static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined)))
+    : mServiceName  (Identifier::to_string(static_cast<uint32_t>(service), NEApplication::RemoteServiceIdentifiers, static_cast<uint32_t>(NERemoteService::RemoteServiceKind::Unknown)))
+    , mConnectType  (Identifier::to_string(static_cast<uint32_t>(connectType), NEApplication::ConnectionIdentifiers, static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined)))
 {
 }
 
-String ConnectionConfiguration::getConnectionAddress() const
+String ConnectionConfiguration::connection_address() const
 {
-    return Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
+    return Application::config_manager().remote_service_address(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionAddress(const String& address)
+void ConnectionConfiguration::set_connection_address(const String& address)
 {
-    Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
+    Application::config_manager().set_service_address(mServiceName, mConnectType, address);
 }
 
-void ConnectionConfiguration::setConnectionData(const String& address, uint16_t portNr)
+void ConnectionConfiguration::set_connection_data(const String& address, uint16_t portNr)
 {
-    Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
-    Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+    Application::config_manager().set_service_address(mServiceName, mConnectType, address);
+    Application::config_manager().set_service_port(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::isConfigured() const
+bool ConnectionConfiguration::is_configured() const
 {
-    return Application::isConfigured();
+    return Application::is_configured();
 }
 
-bool ConnectionConfiguration::getConnectionEnableFlag() const
+bool ConnectionConfiguration::connection_enable_flag() const
 {
-    return Application::getConfigManager().getRemoteServiceEnable(mServiceName, mConnectType);
+    return Application::config_manager().remote_service_enable(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionEnableFlag(bool isEnabled)
+void ConnectionConfiguration::set_connection_enable(bool is_enabled)
 {
-    Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
+    Application::config_manager().set_service_enable(mServiceName, mConnectType, is_enabled);
 }
 
-uint16_t ConnectionConfiguration::getConnectionPort() const
+uint16_t ConnectionConfiguration::connection_port() const
 {
-    return Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
+    return Application::config_manager().remote_service_port(mServiceName, mConnectType);
 }
 
-void ConnectionConfiguration::setConnectionPort(uint16_t portNr)
+void ConnectionConfiguration::set_connection_port(uint16_t portNr)
 {
-    Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+    Application::config_manager().set_service_port(mServiceName, mConnectType, portNr);
 }
 
-bool ConnectionConfiguration::getConnectionIpAddress( uint8_t & field0
-                                                    , uint8_t & field1
-                                                    , uint8_t & field2
-                                                    , uint8_t & field3 )
+bool ConnectionConfiguration::connection_ip_address( uint8_t & field0
+                                                   , uint8_t & field1
+                                                   , uint8_t & field2
+                                                   , uint8_t & field3 )
 {
     bool result = false;
     field0 = field1 = field2 = field3 = 0u;
 
-    String addr{ getConnectionAddress() };
-    if ( addr.isEmpty() == false )
+    String addr{ connection_address() };
+    if ( addr.is_empty() == false )
     {
-        const char * buffer = addr.getString( );
+        const char * buffer = addr.as_string( );
         const char * next   = nullptr;
 
-        uint32_t f0 = String::makeUInt32(buffer, NEString::Radix::Decimal, &next);
+        uint32_t f0 = String::make_uint32(buffer, NEString::Radix::Decimal, &next);
         if ( (buffer != next) && (f0 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
         {
             buffer = next + 1;
-            uint32_t f1 = String::makeUInt32( buffer, NEString::Radix::Decimal, &next );
+            uint32_t f1 = String::make_uint32( buffer, NEString::Radix::Decimal, &next );
             if ( (buffer != next) && (f1 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
             {
                 buffer = next + 1;
-                uint32_t f2 = String::makeUInt32( buffer, NEString::Radix::Decimal, &next );
+                uint32_t f2 = String::make_uint32( buffer, NEString::Radix::Decimal, &next );
                 if ( (buffer != next) && (f2 <= 0xFFu) && (*next == NESocket::IP_SEPARATOR) )
                 {
                     buffer = next + 1;
-                    uint32_t f3 = String::makeUInt32( buffer, NEString::Radix::Decimal, &next );
+                    uint32_t f3 = String::make_uint32( buffer, NEString::Radix::Decimal, &next );
                     if ( (buffer != next) && (f3 <= 0xFFu) )
                     {
                         field0 = static_cast<uint8_t>(f0);

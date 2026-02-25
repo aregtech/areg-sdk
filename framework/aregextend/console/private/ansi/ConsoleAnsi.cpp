@@ -102,7 +102,7 @@ void Console::_osRelease()
 void Console::_osOutputText(Console::Coord pos, const String& text) const
 {
     Lock lock(mLock);
-    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
+    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.as_string());
 }
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
@@ -114,7 +114,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
 void Console::_osOutputText(const String& text) const
 {
     Lock lock(mLock);
-    printf("%s", text.getString());
+    printf("%s", text.as_string());
 }
 
 void Console::_osOutputText(const std::string_view& text) const
@@ -177,8 +177,8 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
     #endif // defined(_POSIX) || defined(POSIX)
 #endif // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 
-    NEString::trimAll<char>(buffer);
-    return ( NEString::isEmpty(buffer) == false );
+    NEString::trim_all<char>(buffer);
+    return ( NEString::is_empty(buffer) == false );
 }
 
 void Console::_osRefreshScreen() const

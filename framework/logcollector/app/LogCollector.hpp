@@ -82,7 +82,7 @@ public:
     /**
      * \brief   Returns singleton instance of the LogCollector.
      **/
-    static LogCollector& getInstance();
+    static LogCollector& instance();
 
     /**
      * \brief   Outputs the specified message on the console.
@@ -205,13 +205,13 @@ protected:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::RemoteServiceKind getServiceType() const override;
+    NERemoteService::RemoteServiceKind service_type() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::ConnectionType getConnectionType() const override;
+    NERemoteService::ConnectionType connection_type() const override;
 
 /************************************************************************/
 // ConfigListener protected overrides
@@ -221,7 +221,7 @@ protected:
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    void postReadConfiguration(ConfigManager& config) override;
+    void post_read_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -230,7 +230,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+    void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

@@ -29,8 +29,7 @@ class Channel;
 // ConnectionConsumer interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The remote service connection consumer interface with callbacks, which are
- *          triggered when connection state update is requested.
+ * \brief   Interface for remote service connection state callbacks.
  **/
 class AREG_API ConnectionConsumer
 {
@@ -39,7 +38,7 @@ class AREG_API ConnectionConsumer
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default destructor
+     * \brief
      **/
     ConnectionConsumer() = default;
 
@@ -55,23 +54,25 @@ public:
 
     /**
      * \brief   Triggered when remote service connection and communication channel is established.
-     * \param   channel     The connection and communication channel of remote service.
+     *
+     * \param   channel     The established communication channel.
      **/
-    virtual void connectedRemoteServiceChannel(const Channel& channel) = 0;
+    virtual void on_service_channel_connected(const Channel& channel) = 0;
 
     /**
-     * \brief   Triggered when disconnected remote service connection and communication channel.
-     * \param   channel     The connection and communication channel of remote service.
+     * \brief   Triggered when remote service connection is disconnected.
+     *
+     * \param   channel     The disconnected communication channel.
      **/
-    virtual void disconnectedRemoteServiceChannel(const Channel& channel) = 0;
+    virtual void on_service_channel_disconnected(const Channel& channel) = 0;
 
     /**
-     * \brief   Triggered when remote service connection and communication channel is lost.
-     *          The connection is considered lost if it not possible to read or
-     *          receive data, and it was not stopped by API call.
-     * \param   channel     The connection and communication channel of remote service.
+     * \brief   Triggered when remote service connection is unexpectedly lost (not stopped by API
+     *          call).
+     *
+     * \param   channel     The lost communication channel.
      **/
-    virtual void lostRemoteServiceChannel(const Channel& channel) = 0;
+    virtual void on_service_channel_lost(const Channel& channel) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

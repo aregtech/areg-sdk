@@ -67,7 +67,9 @@ class LogLayout
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initializes the layout type
+     * \brief   Initializes the layout type.
+     *
+     * \param   layout      The layout type token.
      **/
     LogLayout( NELogOptions::LayoutToken layout );
 
@@ -86,21 +88,24 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
-     * \note    Every layout object should overwrite this message to make layout specific outputs.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
+     * \note    Every layout object should override this message to make layout specific outputs.
      **/
-    virtual void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const = 0;
+    virtual void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns the layout type
+     * \brief   Returns the layout type.
      **/
-    inline NELogOptions::LayoutToken getLayoutType() const;
+    inline NELogOptions::LayoutToken layout_type() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -115,6 +120,9 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Layout type. Cannot be modified.
+     **/
     LogLayout() = delete;
     AREG_NOCOPY_NOMOVE( LogLayout );
 };
@@ -132,19 +140,21 @@ class TickCountLayout   : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Creates a layout with default type value.
      **/
     TickCountLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     TickCountLayout( const TickCountLayout & src );
 
     /**
-     * \brief   Copies data from given source.
-     * \param   src     The source of data to copy.
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
      **/
     TickCountLayout( TickCountLayout && src ) noexcept;
 
@@ -159,12 +169,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline TickCountLayout & operator = ( const TickCountLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline TickCountLayout & operator = ( TickCountLayout && src ) noexcept;
@@ -178,18 +190,20 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // DayTimeLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout formats and outputs day-time data in streaming object
+ * \brief   This layout formats and outputs day-time data in streaming object.
  **/
 class DayTimeLayout    : public    LogLayout
 {
@@ -198,18 +212,20 @@ class DayTimeLayout    : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     DayTimeLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     DayTimeLayout( const DayTimeLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     DayTimeLayout( DayTimeLayout && src ) noexcept;
@@ -225,12 +241,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline DayTimeLayout & operator = ( const DayTimeLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline DayTimeLayout & operator = ( DayTimeLayout && src ) noexcept;
@@ -244,18 +262,21 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ModuleIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs formated information of running module data.
+ * \brief   This layout outputs formatted information of running module data.
  **/
 class ModuleIdLayout    : public    LogLayout
 {
@@ -264,19 +285,21 @@ class ModuleIdLayout    : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     ModuleIdLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     ModuleIdLayout( const ModuleIdLayout & src );
 
     /**
-     * \brief   Copies data from given source.
-     * \param   src     The source of data to copy.
+     * \brief   Moves data from given source.
+     *
+     * \param   src     The source of data to move.
      **/
     ModuleIdLayout( ModuleIdLayout && src ) noexcept;
 
@@ -291,12 +314,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline ModuleIdLayout & operator = ( const ModuleIdLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline ModuleIdLayout & operator = ( ModuleIdLayout && src ) noexcept;
@@ -310,11 +335,14 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -330,18 +358,20 @@ class MessageLayout       : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     MessageLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     MessageLayout( const MessageLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     MessageLayout( MessageLayout && src ) noexcept;
@@ -357,12 +387,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline MessageLayout & operator = ( const MessageLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline MessageLayout & operator = ( MessageLayout && src ) noexcept;
@@ -376,11 +408,14 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -396,18 +431,20 @@ class EndOfLineLayout   : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     EndOfLineLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     EndOfLineLayout( const EndOfLineLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     EndOfLineLayout( EndOfLineLayout && src ) noexcept;
@@ -423,12 +460,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline EndOfLineLayout & operator = ( const EndOfLineLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline EndOfLineLayout & operator = ( EndOfLineLayout && src ) noexcept;
@@ -442,11 +481,14 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -462,18 +504,20 @@ class PriorityLayout    : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     PriorityLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     PriorityLayout( const PriorityLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     PriorityLayout( PriorityLayout && src ) noexcept;
@@ -489,12 +533,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline PriorityLayout & operator = ( const PriorityLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline PriorityLayout  & operator = ( PriorityLayout && src ) noexcept;
@@ -508,11 +554,14 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -528,18 +577,20 @@ class ScopeIdLayout : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     ScopeIdLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     ScopeIdLayout( const ScopeIdLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     ScopeIdLayout( ScopeIdLayout && src ) noexcept;
@@ -555,12 +606,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline ScopeIdLayout & operator = ( const ScopeIdLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline ScopeIdLayout & operator = ( ScopeIdLayout && src ) noexcept;
@@ -574,11 +627,14 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -594,18 +650,20 @@ class ThreadIdLayout      : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     ThreadIdLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     ThreadIdLayout( const ThreadIdLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     ThreadIdLayout( ThreadIdLayout && src ) noexcept;
@@ -621,12 +679,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline ThreadIdLayout & operator = ( const ThreadIdLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline ThreadIdLayout & operator = ( ThreadIdLayout && src ) noexcept;
@@ -640,11 +700,14 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -660,18 +723,20 @@ class ModuleNameLayout      : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Creates a layout with default type value.
      **/
     ModuleNameLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     ModuleNameLayout( const ModuleNameLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     ModuleNameLayout( ModuleNameLayout && src ) noexcept;
@@ -687,12 +752,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline ModuleNameLayout & operator = ( const ModuleNameLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline ModuleNameLayout & operator = ( ModuleNameLayout && src ) noexcept;
@@ -706,18 +773,20 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout output the name of thread in output logging message.
+ * \brief   This layout outputs the name of the thread in output logging message.
  **/
 class ThreadNameLayout    : public    LogLayout
 {
@@ -726,18 +795,20 @@ class ThreadNameLayout    : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Creates a layout with default type value.
      **/
     ThreadNameLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     ThreadNameLayout( const ThreadNameLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     ThreadNameLayout( ThreadNameLayout && src ) noexcept;
@@ -753,12 +824,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline ThreadNameLayout & operator = ( const ThreadNameLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline ThreadNameLayout & operator = ( ThreadNameLayout && src ) noexcept;
@@ -772,11 +845,13 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -792,18 +867,20 @@ class ScopeNameLayout    : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value
+     * \brief   Sets layout type value.
      **/
     ScopeNameLayout();
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     ScopeNameLayout( const ScopeNameLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     ScopeNameLayout( ScopeNameLayout && src ) noexcept;
@@ -819,12 +896,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline ScopeNameLayout& operator = ( const ScopeNameLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline ScopeNameLayout & operator = ( ScopeNameLayout && src ) noexcept;
@@ -838,18 +917,22 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // AnyTextLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs any text message as it is without formating in the streaming object.
+ * \brief   This layout outputs any text message as it is without formatting in the streaming
+ *          object.
  **/
 class AnyTextLayout    : public    LogLayout
 {
@@ -858,30 +941,35 @@ class AnyTextLayout    : public    LogLayout
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Sets layout type value.
+     * \brief   Creates a layout with default type value.
      **/
     AnyTextLayout();
 
     /**
-     * \brief   Sets layout type value and the text to output in the stream.
-     * \param   anyMessage  A text to write in stream.
+     * \brief   Creates a layout with type value and text to output in the stream.
+     *
+     * \param   anyMessage      A text to write in stream.
      **/
     explicit AnyTextLayout( const String & anyMessage );
 
     /**
-     * \brief   Sets layout type value and the text to output in the stream.
-     * \param   anyMessage  A text to write in stream.
+     * \brief   Creates a layout with type value and text to output in the stream.
+     *
+     * \param   anyMessage      A text to write in stream.
+     * \note    Overload with C-string parameter.
      **/
     explicit AnyTextLayout( const char * anyMessage );
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     AnyTextLayout( const AnyTextLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     AnyTextLayout( AnyTextLayout && src ) noexcept;
@@ -897,12 +985,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline AnyTextLayout & operator = ( const AnyTextLayout & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline AnyTextLayout & operator = ( AnyTextLayout && src ) noexcept;
@@ -916,11 +1006,13 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Outputs formatted text of given message to the streaming object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -951,12 +1043,14 @@ public:
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     CookieIdLayout( const CookieIdLayout& src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     CookieIdLayout(CookieIdLayout&& src ) noexcept;
@@ -972,12 +1066,14 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     inline CookieIdLayout & operator = ( const CookieIdLayout& src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     inline CookieIdLayout & operator = ( CookieIdLayout&& src ) noexcept;
@@ -991,11 +1087,14 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
+     * \brief   Makes layout-specific formatted text output of given message to the streaming
+     *          object.
+     *
+     * \param   msgLog      The log message data structure that contains information to output
+     *                      message.
+     * \param   stream      The streaming object, where the text message should be written.
      **/
-    void logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
+    void log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1006,7 +1105,7 @@ public:
 // LogLayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogOptions::LayoutToken LogLayout::getLayoutType() const
+inline NELogOptions::LayoutToken LogLayout::layout_type() const
 {
     return mLayout;
 }

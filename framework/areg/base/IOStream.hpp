@@ -111,8 +111,7 @@ class ByteBuffer;
 // InStream class declaration: to read data from
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This class is an interface and implementations of basic functions
- *          to support read from the data stream.
+ * \brief   Interface and base implementation for reading data from input streams.
  **/
 class AREG_API InStream
 {
@@ -121,7 +120,7 @@ class AREG_API InStream
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected constructor
+     * \brief   Protected constructor.
      **/
     InStream() = default;
 
@@ -138,24 +137,24 @@ public:
 // InStream interface data read overrides
 /************************************************************************/
     /**
-     * \brief   Reads and returns 8-bit value from buffer
+     * \brief   Reads and returns an 8-bit value from the stream.
      **/
-    virtual uint8_t read8Bits() const;
+    virtual uint8_t read8_bits() const;
 
     /**
-     * \brief   Reads and returns 16-bit value from buffer
+     * \brief   Reads and returns a 16-bit value from the stream.
      **/
-    virtual uint16_t read16Bits() const;
+    virtual uint16_t read16_bits() const;
 
     /**
-     * \brief   Reads and returns 32-bit value from buffer
+     * \brief   Reads and returns a 32-bit value from the stream.
      **/
-    virtual uint32_t read32Bits() const;
+    virtual uint32_t read32_bits() const;
 
     /**
-     * \brief   Reads and returns 64-bit value from buffer
+     * \brief   Reads and returns a 64-bit value from the stream.
      **/
-    virtual uint64_t read64Bits() const;
+    virtual uint64_t read64_bits() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -166,50 +165,49 @@ public:
 /************************************************************************/
 
     /**
-     * \brief	Reads data from input stream object, copies into given buffer and
-     *          returns the size in bytes of copied data.
-     * \param	buffer	The pointer to buffer to copy data.
-     * \param	size	The size in bytes of available buffer.
-     * \return	Returns the size in bytes of copied data.
+     * \brief   Reads data from stream into buffer. Returns the number of bytes read.
+     *
+     * \param[out] buffer      Buffer to receive the data.
+     * \param   size        Maximum number of bytes to read.
+     * \return  The number of bytes read.
      **/
     virtual uint32_t read( uint8_t * buffer, uint32_t size ) const = 0;
 
     /**
-     * \brief   Reads data from input stream object, copies into given Byte Buffer object
-     *          and returns the size in bytes of copied data.
-     * \param   buffer  The instance of Byte Buffer object to copy data.
-     * \return	Returns the size in bytes of copied data.
+     * \brief   Reads data from stream into a ByteBuffer. Returns the number of bytes read.
+     *
+     * \param[out] buffer      ByteBuffer to receive the data.
+     * \return  The number of bytes read.
      **/
     virtual uint32_t read( ByteBuffer & buffer ) const = 0;
 
     /**
-     * \brief   Reads string data from input stream object, copies into given string object
-     *          and returns the size in bytes of copied data.
-     * \param   ascii   The instance of ASCII string object to copy data.
-     * \return  Returns the size in bytes of copied string data.
+     * \brief   Reads string data from stream into a String. Returns the number of bytes read.
+     *
+     * \param[out] ascii       String to receive the data.
+     * \return  The number of bytes read.
      **/
     virtual uint32_t read( String & ascii ) const = 0;
 
     /**
-     * \brief   Reads string data from input stream object, copies into given wide-string object
-     *          and returns the size in bytes of copied data.
-     * \param   wide    The instance of wide-string object to copy data.
-     * \return  Returns the size in bytes of copied string data.
+     * \brief   Reads wide-string data from stream into a WideString. Returns the number of bytes
+     *          read.
+     *
+     * \param[out] wide    WideString to receive the data.
+     * \return  The number of bytes read.
      **/
     virtual uint32_t read( WideString & wide ) const = 0;
 
     /**
-     * \brief   Resets cursor position and moves to the begin of data.
+     * \brief   Resets the cursor to the beginning of the stream.
      **/
-    virtual void resetCursor() const = 0;
+    virtual void reset() const = 0;
 
 protected:
     /**
-     * \brief	Returns size in bytes of available data that can read, 
-     *          i.e. remaining readable size. The returns value is less or equal to
-     *          the size of streamable buffer.
+     * \brief   Returns the number of bytes available to read.
      **/
-    virtual uint32_t getSizeReadable() const = 0;
+    virtual uint32_t size_readable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -223,8 +221,7 @@ private:
 // OutStream class declaration: to write data to
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This class is an interface and implementations of basic functions
- *          to support write to the data stream.
+ * \brief   Interface and base implementation for writing data to output streams.
  **/
 class AREG_API OutStream
 {
@@ -233,7 +230,7 @@ class AREG_API OutStream
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected constructor
+     * \brief   Protected constructor.
      **/
     OutStream() = default;
 
@@ -250,32 +247,36 @@ public:
 // OutStream interface data write overrides
 /************************************************************************/
     /**
-     * \brief   Writes given 8-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit   The 8-bit value to write into the stream.
+     * \brief   Writes an 8-bit value to the stream. Returns true if successful.
+     *
+     * \param   value8Bit       The 8-bit value to write.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool write8Bits( uint8_t value8Bit );
+    virtual bool write8_bits( uint8_t value8Bit );
 
     /**
-     * \brief   Writes given 16-bit value into the stream and returns true if operation succeeded.
-     * \param   value16Bit  The 16-bit value to write into the stream.
+     * \brief   Writes a 16-bit value to the stream. Returns true if successful.
+     *
+     * \param   value16Bit      The 16-bit value to write.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool write16Bits( uint16_t value16Bit );
+    virtual bool write16_bits( uint16_t value16Bit );
 
     /**
-     * \brief   Writes given 32-bit value into the stream and returns true if operation succeeded.
-     * \param   value32Bit  The 32-bit value to write into the stream.
+     * \brief   Writes a 32-bit value to the stream. Returns true if successful.
+     *
+     * \param   value32Bit      The 32-bit value to write.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool write32Bits( uint32_t value32Bit );
+    virtual bool write32_bits( uint32_t value32Bit );
 
     /**
-     * \brief   Writes given 64-bit value into the stream and returns true if operation succeeded.
-     * \param   value64Bit  The 64-bit value to write into the stream.
+     * \brief   Writes a 64-bit value to the stream. Returns true if successful.
+     *
+     * \param   value64Bit      The 64-bit value to write.
      * \return  Returns true if operation succeeded.
      **/
-    virtual bool write64Bits( uint64_t value64Bit );
+    virtual bool write64_bits( uint64_t value64Bit );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -285,50 +286,49 @@ public:
 // OutStream interface overrides
 /************************************************************************/
 
-     /**
-      * \brief	Writes data to output stream object from given buffer and 
-      *         returns the size in bytes of written data.
-      * \param	buffer	The pointer to buffer as a data source.
-      * \param	size	The size in bytes of data buffer.
-      * \return	Returns the size in bytes of written data.
-      **/
+    /**
+     * \brief   Writes data from buffer to stream. Returns the number of bytes written.
+     *
+     * \param   buffer      Pointer to the data buffer.
+     * \param   size        Number of bytes in the buffer.
+     * \return  The number of bytes written.
+     **/
     virtual uint32_t write( const uint8_t * buffer, uint32_t size ) = 0;
 
-     /**
-      * \brief	Writes data to output stream object from given byte-buffer object and
-      *         returns the size in bytes of written data.
-      * \param	buffer	The instance of byte-buffer object as a data source.
-      * \return	Returns the size in bytes of written data.
-      **/
+    /**
+     * \brief   Writes data from a ByteBuffer to stream. Returns the number of bytes written.
+     *
+     * \param   buffer      The ByteBuffer to write.
+     * \return  The number of bytes written.
+     **/
     virtual uint32_t write( const ByteBuffer & buffer ) = 0;
 
-     /**
-      * \brief	Writes data to output stream object from given ASCII-string object and
-      *         returns the size in bytes of written data.
-      * \param	ascii	The instance of ASCII-string object as a data source.
-      * \return	Returns the size in bytes of written data.
-      **/
+    /**
+     * \brief   Writes a String to stream. Returns the number of bytes written.
+     *
+     * \param   ascii       The ASCII string to write.
+     * \return  The number of bytes written.
+     **/
     virtual uint32_t write( const String & ascii )  = 0;
 
     /**
-     * \brief	Writes data to output stream object from given wide-string object and
-     *         returns the size in bytes of written data.
-     * \param	wide 	The instance of wide-string object as a data source.
-     * \return	Returns the size in bytes of written data.
+     * \brief   Writes a WideString to stream. Returns the number of bytes written.
+     *
+     * \param   wide    The wide string to write.
+     * \return  The number of bytes written.
      **/
     virtual uint32_t write( const WideString & wide ) = 0;
 
     /**
-     * \brief	Flushes cached data to output stream object.
+     * \brief   Flushes cached data to the output stream.
      **/
     virtual void flush() = 0;
 
 protected:
     /**
-     * \brief	Returns the size in bytes of available space in the stream to write data, 
-     *          i.e. remaining writable size.
+     * \brief   Returns the available space in bytes remaining to write.
      **/
-    virtual uint32_t getSizeWritable() const = 0;
+    virtual uint32_t size_writable() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -341,14 +341,14 @@ private:
 // IOStream class declaration: to read / write data
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Input and Output streaming interface. 
+ * \brief   Input and output streaming interface.
  **/
 class AREG_API IOStream  : public InStream
                            , public OutStream
 {
 protected:
     /**
-     * \brief   Protected constructor
+     * \brief
      **/
     IOStream() = default;
 
@@ -376,12 +376,12 @@ public:
     AREG_DECLARE_STREAMABLE(double);         //!< Declare primitive type double as streamable
 
     /**
-     * \brief   Writes an ASCII string to the stream
+     * \brief   Writes an ASCII string to the stream.
      **/
     friend inline OutStream & operator << (OutStream & stream, const char * output);
 
     /**
-     * \brief   Writes an wide string to the stream
+     * \brief   Writes a wide string to the stream.
      **/
     friend inline OutStream & operator << (OutStream & stream, const wchar_t * output);
 
@@ -389,14 +389,23 @@ public:
      * \brief   Writes STL string into the stream.
      **/
     template<typename CharType>
+    /**
+     * \brief   Writes an STL string to the stream.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::basic_string<CharType>& output);
     template<typename CharType>
+    /**
+     * \brief   Writes an STL string_view to the stream.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::basic_string_view<CharType>& output);
 
     /**
      * \brief   Writes STL string into the stream.
      **/
     template<typename CharType>
+    /**
+     * \brief   Reads an STL string from the stream.
+     **/
     friend inline const InStream& operator >> (const InStream& stream, std::basic_string<CharType>& input);
 
     /**
@@ -404,8 +413,14 @@ public:
      *          Each element in the container must be streamable.
      **/
     template<typename ElemType>
+    /**
+     * \brief   Writes an std::deque to the stream. Each element must be streamable.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::deque<ElemType>& output);
     template<typename ElemType>
+    /**
+     * \brief   Reads an std::deque from the stream. Each element must be streamable.
+     **/
     friend inline const InStream& operator >> (const InStream& stream, std::deque<ElemType>& input);
 
     /**
@@ -413,8 +428,14 @@ public:
      *          Each element in the container must be streamable.
      **/
     template<typename ElemType>
+    /**
+     * \brief   Writes an std::list to the stream. Each element must be streamable.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::list<ElemType>& output);
     template<typename ElemType>
+    /**
+     * \brief   Reads an std::list from the stream. Each element must be streamable.
+     **/
     friend inline const InStream& operator >> (const InStream& stream, std::list<ElemType>& input);
 
     /**
@@ -422,8 +443,14 @@ public:
      *          Each element in the container must be streamable. 
      **/
     template<typename ElemType>
+    /**
+     * \brief   Writes an std::vector to the stream. Each element must be streamable.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::vector<ElemType>& output);
     template<typename ElemType>
+    /**
+     * \brief   Reads an std::vector from the stream. Each element must be streamable.
+     **/
     friend inline const InStream& operator >> (const InStream& stream, std::vector<ElemType>& input);
 
     /**
@@ -431,8 +458,14 @@ public:
      *          Each element in the container must be streamable.
      **/
     template<typename Key, typename Value>
+    /**
+     * \brief   Writes an std::pair to the stream. Each element must be streamable.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::pair<Key, Value>& output);
     template<typename Key, typename Value>
+    /**
+     * \brief   Reads an std::pair from the stream. Each element must be streamable.
+     **/
     friend inline const InStream& operator >> (const InStream& stream, std::pair<Key, Value>& input);
 
     /**
@@ -440,8 +473,14 @@ public:
      *          Each element in the container must be streamable.
      **/
     template<typename Key, typename Value>
+    /**
+     * \brief   Writes an std::map to the stream. Each element must be streamable.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::map<Key, Value>& output);
     template<typename Key, typename Value>
+    /**
+     * \brief   Reads an std::map from the stream. Each element must be streamable.
+     **/
     friend inline const InStream& operator >> (const InStream& stream, std::map<Key, Value>& input);
 
     /**
@@ -449,8 +488,14 @@ public:
      *          Each element in the container must be streamable.
      **/
     template<typename Key, typename Value>
+    /**
+     * \brief   Writes an std::unordered_map to the stream. Each element must be streamable.
+     **/
     friend inline OutStream& operator << (OutStream& stream, const std::unordered_map<Key, Value>& output);
     template<typename Key, typename Value>
+    /**
+     * \brief   Reads an std::unordered_map from the stream. Each element must be streamable.
+     **/
     friend inline const InStream& operator >> (const InStream& stream, std::unordered_map<Key, Value>& input);
 
 

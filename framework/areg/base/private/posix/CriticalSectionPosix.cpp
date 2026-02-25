@@ -29,37 +29,37 @@
 CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
     : SyncObjectPosix   ( NESyncTypesIX::SyncKind::SoSpinLock, "CriticalSection" )
 
-    , mSpinLock             ( )
+    , m_spin_lock             ( )
 {
     if (initLock)
     {
-        mSpinLock.lock();
+        m_spin_lock.lock();
     }
 }
 
 bool CriticalSectionPosix::lock() const
 {
-    return mSpinLock.lock();
+    return m_spin_lock.lock();
 }
 
 void CriticalSectionPosix::unlock() const
 {
-    mSpinLock.unlock();
+    m_spin_lock.unlock();
 }
 
-bool CriticalSectionPosix::tryLock() const
+bool CriticalSectionPosix::try_lock() const
 {
-    return mSpinLock.tryLock();
+    return m_spin_lock.try_lock();
 }
 
-bool CriticalSectionPosix::isValid() const
+bool CriticalSectionPosix::is_valid() const
 {
-    return mSpinLock.isValid();
+    return m_spin_lock.is_valid();
 }
 
-void CriticalSectionPosix::freeResources()
+void CriticalSectionPosix::free_resources()
 {
-    mSpinLock.freeResources();
+    m_spin_lock.free_resources();
 }
 
 #endif  //  defined(_POSIX) || defined(POSIX)

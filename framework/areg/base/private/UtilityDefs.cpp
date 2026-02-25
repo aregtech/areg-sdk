@@ -116,7 +116,7 @@ namespace NEUtilities
 // NEUtilities namespace global functions
 /************************************************************************/
 
-AREG_API_IMPL time_t NEUtilities::convToSeconds(const CalendarTime & sysTime)
+AREG_API_IMPL time_t NEUtilities::to_seconds(const CalendarTime & sysTime)
 {
     const int32_t year{ sysTime.stYear - 1900 };
     return    static_cast<time_t>(sysTime.stSecond)
@@ -129,7 +129,7 @@ AREG_API_IMPL time_t NEUtilities::convToSeconds(const CalendarTime & sysTime)
             + static_cast<time_t>(static_cast<TIME64>((year + 299) / 400     ) * NEUtilities::DAY_TO_SECS);
 }
 
-AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const TIME64 & lhs, const TIME64 & rhs )
+AREG_API_IMPL NEMath::Ordering NEUtilities::compare_times( const TIME64 & lhs, const TIME64 & rhs )
 {
     NEMath::Int64Parts lhsLi, rshLi;
     lhsLi.quadPart  = lhs;
@@ -138,7 +138,7 @@ AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const TIME64 & lhs, co
     return NEUtilities::_compareLargeIntegers(lhsLi, rshLi);
 }
 
-AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)
+AREG_API_IMPL void NEUtilities::conv_microsecs(const TIME64& time, time_t& secs, uint16_t& milli, uint16_t& micro)
 {
     secs = static_cast<time_t>(time / NEUtilities::SEC_TO_MICROSECS);
     TIME64 rest = time % NEUtilities::SEC_TO_MICROSECS;
@@ -146,7 +146,7 @@ AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& time, time_t& secs, 
     micro = static_cast<uint16_t>(rest % NEUtilities::MILLISEC_TO_MICROSECS);
 }
 
-AREG_API_IMPL void NEUtilities::convToTm(const CalendarTime & sysTime, struct tm & time)
+AREG_API_IMPL void NEUtilities::to_tm(const CalendarTime & sysTime, struct tm & time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -163,21 +163,21 @@ AREG_API_IMPL void NEUtilities::convToTm(const CalendarTime & sysTime, struct tm
     else
     {
         ASSERT( false );
-        NEMemory::zeroElement<tm>(time);
+        NEMemory::zero_element<tm>(time);
     }
 }
 
-AREG_API_IMPL void NEUtilities::makeTmLocal( struct tm & utcTime )
+AREG_API_IMPL void NEUtilities::make_tm_local( struct tm & utcTime )
 {
     _osMakeTmLocal(utcTime);
 }
 
-AREG_API_IMPL void NEUtilities::convToTm(const TIME64& timeMicro, tm& time)
+AREG_API_IMPL void NEUtilities::to_tm(const TIME64& timeMicro, tm& time)
 {
     _osConvToTm(timeMicro, time);
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, CalendarTime & sysTime)
+AREG_API_IMPL void NEUtilities::to_system_time(const struct tm & time, CalendarTime & sysTime)
 {
     sysTime.stSecond    = static_cast<int32_t>(time.tm_sec);
     sysTime.stMinute    = static_cast<int32_t>(time.tm_min);
@@ -189,10 +189,10 @@ AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & time, Calenda
     sysTime.stDayOfYear = static_cast<int32_t>(time.tm_yday +    1);
 }
 
-AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const NEUtilities::CalendarTime & lhs, const NEUtilities::CalendarTime & rhs )
+AREG_API_IMPL NEMath::Ordering NEUtilities::compare_times( const NEUtilities::CalendarTime & lhs, const NEUtilities::CalendarTime & rhs )
 {
-    TIME64 lhsTm{ NEUtilities::convToTime(lhs) };
-    TIME64 rshTm{ NEUtilities::convToTime(rhs) };
+    TIME64 lhsTm{ NEUtilities::to_time(lhs) };
+    TIME64 rshTm{ NEUtilities::to_time(rhs) };
     if (lhsTm > rshTm)
     {
         return NEMath::Ordering::Bigger;
@@ -207,40 +207,40 @@ AREG_API_IMPL NEMath::Ordering NEUtilities::compareTimes( const NEUtilities::Cal
     }
 }
 
-AREG_API_IMPL String NEUtilities::createComponentItemName( const String & componentName, const String & itemName )
+AREG_API_IMPL String NEUtilities::create_component_item_name( const String & componentName, const String & itemName )
 {
     String result( componentName );
-    if ((componentName.isEmpty() == false) && (itemName.isEmpty() == false))
+    if ((componentName.is_empty() == false) && (itemName.is_empty() == false))
     {
         result += NECommon::COMPONENT_ITEM_SEPARATOR;
         result += itemName;
 
-        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
+        if (result.length() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
         {
             result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
         }
     }
     else
     {
-        result    = String::getEmptyString();
+        result    = String::empty_string();
     }
 
     return result;
 }
 
-AREG_API_IMPL String NEUtilities::generateName( const char* prefix )
+AREG_API_IMPL String NEUtilities::generate_name( const char* prefix )
 {
     char buffer[NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE];
-    NEUtilities::generateName(prefix, buffer, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+    NEUtilities::generate_name(prefix, buffer, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
     return String(buffer);
 }
 
-AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int32_t length)
+AREG_API_IMPL const char * NEUtilities::generate_name(const char * prefix, char * out_buffer, int32_t length)
 {
-    return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
+    return NEUtilities::generate_name(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
 }
 
-AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int32_t length, const char * specChar)
+AREG_API_IMPL const char * NEUtilities::generate_name(const char * prefix, char * out_buffer, int32_t length, const char * specChar)
 {
     constexpr char const strFormat[]{ "%s%s%08x%s%08x" };
 
@@ -252,7 +252,7 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
         auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
         time.quadPart = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
 
-        String::formatString( out_buffer, length, strFormat
+        String::format_string( out_buffer, length, strFormat
                             , prefix != nullptr ? prefix : NEUtilities::DEFAULT_GENERATED_NAME.data()
                             , spec
                             , time.u.highPart
@@ -263,44 +263,44 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
     return out_buffer;
 }
 
-AREG_API_IMPL uint32_t NEUtilities::generateUniqueId()
+AREG_API_IMPL uint32_t NEUtilities::generate_unique_id()
 {
     static std::atomic_uint _id(0u);
     return ++ _id;
 }
 
-AREG_API_IMPL uint64_t NEUtilities::getTickCount()
+AREG_API_IMPL uint64_t NEUtilities::tick_count()
 {
     return _osGetTickCount();
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const CalendarTime & utcTime, CalendarTime & localTime )
+AREG_API_IMPL bool NEUtilities::to_local_time( const CalendarTime & utcTime, CalendarTime & localTime )
 {
-    TIME64 quad = NEUtilities::convToTime(utcTime);
-    return NEUtilities::convToLocalTime(quad, localTime);
+    TIME64 quad = NEUtilities::to_time(utcTime);
+    return NEUtilities::to_local_time(quad, localTime);
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & utcTime, CalendarTime & localTime )
+AREG_API_IMPL bool NEUtilities::to_local_time( const TIME64 & utcTime, CalendarTime & localTime )
 {
     return _osConvToLocalTime(utcTime, localTime);
 }
 
-AREG_API_IMPL bool NEUtilities::convToLocalTm(const TIME64 & utcTime, tm& localTm)
+AREG_API_IMPL bool NEUtilities::to_local_tm(const TIME64 & utcTime, tm& localTm)
 {
     return _osConvToLocalTm(utcTime, localTm);
 }
 
-AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::CalendarTime & sysTime, bool localTime )
+AREG_API_IMPL void NEUtilities::system_time_now( NEUtilities::CalendarTime & sysTime, bool localTime )
 {
     _osSystemTimeNow( sysTime, localTime );
 }
 
-AREG_API_IMPL TIME64 NEUtilities::systemTimeNow()
+AREG_API_IMPL TIME64 NEUtilities::system_time_now()
 {
     return _osSystemTimeNow();
 }
 
-AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::CalendarTime & sysTime )
+AREG_API_IMPL TIME64 NEUtilities::to_time( const NEUtilities::CalendarTime & sysTime )
 {
     const int32_t year{ sysTime.stYear - 1900 };
 
@@ -316,7 +316,7 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::CalendarTime & 
             + static_cast<TIME64>((year + 299) / 400     ) * NEUtilities::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL TIME64 NEUtilities::convToTime(const tm& time)
+AREG_API_IMPL TIME64 NEUtilities::to_time(const tm& time)
 {
     return    static_cast<TIME64>(time.tm_sec               ) * NEUtilities::SEC_TO_MICROSECS
             + static_cast<TIME64>(time.tm_min               ) * NEUtilities::MIN_TO_MICROSECS
@@ -328,12 +328,12 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime(const tm& time)
             + static_cast<TIME64>((time.tm_year + 299) / 400) * NEUtilities::DAY_TO_MICROSECS;
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & timeValue, NEUtilities::CalendarTime & sysTime )
+AREG_API_IMPL void NEUtilities::to_system_time( const TIME64 & timeValue, NEUtilities::CalendarTime & sysTime )
 {
     _osConvToSystemTime(timeValue, sysTime);
 }
 
-AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDataSize( uint64_t dataSize )
+AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::conv_data_size( uint64_t dataSize )
 {
     NEUtilities::DataLiteral result{ static_cast<double>(dataSize), NECommon::STR_ONE_BYTE};
     if ( dataSize >= NECommon::ONE_MEGABYTE )
@@ -350,7 +350,7 @@ AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDataSize( uint64_t dataS
     return result;
 }
 
-AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDuration( uint64_t timeDuration )
+AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::conv_duration( uint64_t timeDuration )
 {
     NEUtilities::DataLiteral result{ static_cast<double>(timeDuration), NECommon::STR_1_NS_SHORT };
     if ( timeDuration >= NECommon::DURATION_1_SEC )

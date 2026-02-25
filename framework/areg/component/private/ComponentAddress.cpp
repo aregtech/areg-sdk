@@ -43,9 +43,9 @@ namespace
 /**
  * \brief   The address of invalid component
  **/
-const ComponentAddress & ComponentAddress::getInvalidComponentAddress()
+const ComponentAddress & ComponentAddress::invalid_component_address()
 {
-    static const ComponentAddress _invalidComponentAddress(ThreadAddress::getInvalidThreadAddress(), String(INVALID_COMPONENT_NAME));
+    static const ComponentAddress _invalidComponentAddress(ThreadAddress::invalid_thread_address(), String(INVALID_COMPONENT_NAME));
     return _invalidComponentAddress;
 }
 
@@ -54,7 +54,7 @@ const ComponentAddress & ComponentAddress::getInvalidComponentAddress()
 //////////////////////////////////////////////////////////////////////////
 ComponentAddress::ComponentAddress()
     : mRoleName     ( INVALID_COMPONENT_NAME )
-    , mThreadAddress( ThreadAddress::getInvalidThreadAddress() )
+    , mThreadAddress( ThreadAddress::invalid_thread_address() )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }
@@ -67,36 +67,36 @@ ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress )
 }
 
 ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress, const String & roleName )
-    : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
+    : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
     , mThreadAddress( threadAddress )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
 ComponentAddress::ComponentAddress( const String & roleName )
-    : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( DispatcherThread::getCurrentDispatcherThread().getAddress() )
+    : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
+    , mThreadAddress( DispatcherThread::current_dispatcher_thread().address() )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    Component* comp = Component::findComponentByName(roleName);
+    Component* comp = Component::find_by_name(roleName);
     if (comp != nullptr)
     {
-        mThreadAddress = comp->getAddress( ).getThreadAddress( );
+        mThreadAddress = comp->address( ).thread_address( );
     }
 
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
 ComponentAddress::ComponentAddress( const String & roleName, const String & nameThread )
-    : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( nameThread.isEmpty() != false ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : ThreadAddress::getInvalidThreadAddress())
+    : mRoleName     ( roleName.is_empty() ? INVALID_COMPONENT_NAME : roleName)
+    , mThreadAddress( nameThread.is_empty() != false ? DispatcherThread::dispatcher_thread(nameThread).address() : ThreadAddress::invalid_thread_address())
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
 ComponentAddress::ComponentAddress( const ComponentAddress & src )
@@ -118,46 +118,46 @@ ComponentAddress::ComponentAddress( const InStream & stream )
     , mThreadAddress( stream )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
-    mMagicNum   = ComponentAddress::_magicNumber(*this);
+    mMagicNum   = ComponentAddress::_magic_number(*this);
 }
 
-bool ComponentAddress::isValid() const
+bool ComponentAddress::is_valid() const
 {
-    return (mMagicNum != NEMath::CHECKSUM_IGNORE) && mThreadAddress.isValid();
+    return (mMagicNum != NEMath::CHECKSUM_IGNORE) && mThreadAddress.is_valid();
 }
 
-String ComponentAddress::convToString() const
+String ComponentAddress::to_string() const
 {
     String result;
 
     result.append(mRoleName)
           .append(NECommon::COMPONENT_PATH_SEPARATOR)
-          .append(ThreadAddress::convAddressToPath(mThreadAddress));
+          .append(ThreadAddress::to_path(mThreadAddress));
 
     return result;
 }
 
-void ComponentAddress::convFromString(const char * pathComponent, const char** out_nextPart /*= nullptr*/)
+void ComponentAddress::conv_from_string(const char * pathComponent, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathComponent;
 
-    mRoleName       = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mThreadAddress  = ThreadAddress::convPathToAddress(strSource, &strSource);
-    mMagicNum       = ComponentAddress::_magicNumber(*this);
+    mRoleName       = String::substr(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource);
+    mThreadAddress  = ThreadAddress::from_path(strSource, &strSource);
+    mMagicNum       = ComponentAddress::_magic_number(*this);
 
     if (out_nextPart != nullptr)
         *out_nextPart = strSource;
 }
 
-uint32_t ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
+uint32_t ComponentAddress::_magic_number(const ComponentAddress & addrComp)
 {
     uint32_t result = NEMath::CHECKSUM_IGNORE;
-    if (addrComp.mThreadAddress.isValid() && (addrComp.mRoleName.isEmpty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
+    if (addrComp.mThreadAddress.is_valid() && (addrComp.mRoleName.is_empty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
     {
-        result = NEMath::crc32Init();
-        result = NEMath::crc32Start(result, addrComp.mThreadAddress.getThreadName().getString());
-        result = NEMath::crc32Start(result, addrComp.mRoleName.getString());
-        result = NEMath::crc32Finish(result);
+        result = NEMath::crc32_init();
+        result = NEMath::crc32_start(result, addrComp.mThreadAddress.thread_name().as_string());
+        result = NEMath::crc32_start(result, addrComp.mRoleName.as_string());
+        result = NEMath::crc32_finish(result);
     }
 
     return result;
@@ -166,14 +166,14 @@ uint32_t ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
-String ComponentAddress::convAddressToPath( const ComponentAddress& componentAddress )
+String ComponentAddress::to_path( const ComponentAddress& componentAddress )
 {
-    return componentAddress.convToString();
+    return componentAddress.to_string();
 }
 
-ComponentAddress ComponentAddress::convPathToAddress( const char* componentPath, const char** out_nextPart /*= nullptr*/ )
+ComponentAddress ComponentAddress::from_path( const char* componentPath, const char** out_nextPart /*= nullptr*/ )
 {
     ComponentAddress result;
-    result.convFromString(componentPath, out_nextPart);
+    result.conv_from_string(componentPath, out_nextPart);
     return result;
 }

@@ -23,12 +23,10 @@
  //////////////////////////////////////////////////////////////////////////
  // Cursor class declaration
  //////////////////////////////////////////////////////////////////////////
- /**
-  * \brief   This is bases class to support cursor positioning when read / write.
-  *          The class contains defined constants as cursor position and basic operations
-  *          Shared and Raw Buffer, File object and Ring Buffers have different logics 
-  *          of cursor position, and they should provide on logic.
-  **/
+/**
+ * \brief   Base class for cursor positioning during read/write operations. Supports different
+ *          cursor positioning logic for shared buffers, raw buffers, files, and ring buffers.
+ **/
 class AREG_API Cursor
 {
 //////////////////////////////////////////////////////////////////////////
@@ -65,7 +63,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected constructor
+     * \brief
      **/
     Cursor() = default;
     /**
@@ -81,50 +79,44 @@ public:
 // Cursor overrides
 /************************************************************************/
     /**
-     * \brief	Returns the current position of pointer relative to begin in streaming data.
-     *          The valid position should not be equal to INVALID_CURSOR_POSITION.
-     *          Check current position validation before accessing data in streaming object.
-     * \return	Returns the current position of pointer relative to begin in streaming data.
+     * \brief   Returns the current position relative to the beginning of streaming data. Use
+     *          is_position_valid() to check validity before accessing data.
+     *
+     * \return  Returns the current cursor position in bytes.
      **/
-    virtual uint32_t getPosition() const = 0;
+    virtual uint32_t position() const = 0;
 
     /**
-     * \brief	Sets the pointer position and returns current position in streaming data
-     *          The positive value of offset means move pointer forward.
-     *          The negative value of offset means move pointer back.
+     * \brief   Moves the cursor position by the specified offset relative to the starting origin.
      *
-     * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
-     * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  Cursor::SeekOrigin::Begin   -- position from the beginning of data
-     *                  Cursor::SeekOrigin::Current -- position from current pointer position
-     *                  Cursor::SeekOrigin::End     -- position from the end of file
-     *
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
+     * \param   offset      The offset in bytes to move. Positive moves forward; negative moves
+     *                      backward.
+     * \param   startAt     The starting position: Begin (start of data), Current (current
+     *                      position), or End (end of data).
+     * \return  Returns the new cursor position in bytes; INVALID_CURSOR_POSITION if the operation
+     *          fails.
      **/
-    virtual uint32_t setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const = 0;
+    virtual uint32_t set_position( int32_t offset, Cursor::SeekOrigin startAt ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Move cursor position to the begin and returns 'true' if succeeded.
-     *          Operation fails if moving position returns INVALID_CURSOR_POSITION
+     * \brief   Moves cursor to the beginning of data.
      **/
-    inline bool moveToBegin() const;
+    inline bool move_to_begin() const;
 
     /**
-     * \brief   Move cursor position to the end and returns 'true' if succeeded.
-     *          Operation fails if moving position returns INVALID_CURSOR_POSITION
+     * \brief   Moves cursor to the end of data.
      **/
-    inline bool moveToEnd() const;
+    inline bool move_to_end() const;
 
 protected:
     /**
-     * \brief	Checks and returns whether current position of pointer is valid or not.
-     *          The valid position must not be equal to INVALID_CURSOR_POSITION
+     * \brief   Returns true if the current cursor position is valid (not INVALID_CURSOR_POSITION).
      **/
-    inline bool isPositionValid() const;
+    inline bool is_position_valid() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Disabled methods
@@ -137,19 +129,19 @@ private:
 // Cursor pure virtual class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool Cursor::isPositionValid() const
+inline bool Cursor::is_position_valid() const
 {
-    return (getPosition() != Cursor::INVALID_CURSOR_POSITION);
+    return (position() != Cursor::INVALID_CURSOR_POSITION);
 }
 
-inline bool Cursor::moveToBegin() const
+inline bool Cursor::move_to_begin() const
 {
-    return (setPosition(0, Cursor::SeekOrigin::Begin) != Cursor::INVALID_CURSOR_POSITION);
+    return (set_position(0, Cursor::SeekOrigin::Begin) != Cursor::INVALID_CURSOR_POSITION);
 }
 
-inline bool Cursor::moveToEnd() const
+inline bool Cursor::move_to_end() const
 {
-    return (setPosition(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
+    return (set_position(0, Cursor::SeekOrigin::End)   != Cursor::INVALID_CURSOR_POSITION);
 }
 
 #endif  // AREG_BASE_CURSOR_HPP

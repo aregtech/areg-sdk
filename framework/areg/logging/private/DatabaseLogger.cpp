@@ -44,18 +44,18 @@ DatabaseLogger::~DatabaseLogger()
     }
 }
 
-bool DatabaseLogger::openLogger()
+bool DatabaseLogger::open_logger()
 {
     Lock lock(mLock);
     bool result{ false };
 
     String dbFile;
-    if (isValid())
+    if (is_valid())
     {
-        if (mLogConfiguration.isDatabaseLoggingEnabled())
+        if (mLogConfiguration.is_db_logging_enabled())
         {
-            String fileName(mLogConfiguration.getDatabaseFullPath());
-            dbFile = File::normalizePath(fileName.getString());
+            String fileName(mLogConfiguration.database_full_path());
+            dbFile = File::normalize_path(fileName.as_string());
 
             if (mDatabase->connect(dbFile, false))
             {
@@ -67,46 +67,46 @@ bool DatabaseLogger::openLogger()
     return result;
 }
 
-void DatabaseLogger::closeLogger()
+void DatabaseLogger::close_logger()
 {
     Lock lock(mLock);
-    if (isValid())
+    if (is_valid())
     {
         mDatabase->disconnect();
     }
 }
 
-void DatabaseLogger::logMessage(const NELogging::LogEntry& logMessage)
+void DatabaseLogger::log_message(const NELogging::LogEntry& log_message)
 {
     Lock lock(mLock);
-    if (isValid())
+    if (is_valid())
     {
-        mDatabase->logMessage(logMessage);
+        mDatabase->log_message(log_message);
     }
 }
 
-bool DatabaseLogger::isLoggerOpened() const
+bool DatabaseLogger::is_logger_opened() const
 {
     return false;
 }
 
-void DatabaseLogger::flushLogs()
+void DatabaseLogger::flush_logs()
 {
     Lock lock(mLock);
 
-    if (isValid())
+    if (is_valid())
     {
         mDatabase->commit(true);
     }
 }
 
-bool DatabaseLogger::createLayouts()
+bool DatabaseLogger::create_layouts()
 {
     // no need to crate layouts for log DB
     return true;
 }
 
-void DatabaseLogger::releaseLayouts()
+void DatabaseLogger::release_layouts()
 {
 }
 

@@ -38,17 +38,17 @@
 #define AREG_DECLARE_EVENT_REGISTRATION(EventClass)                                                                     \
 public:                                                                                                                 \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
-    static bool addListener(EventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());       \
+    static bool add_listener(EventConsumer& eventConsumer, const String & whichThread = String::empty_string());       \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
-    static bool addListener(EventConsumer& eventConsumer, id_type whichThread);                                         \
+    static bool add_listener(EventConsumer& eventConsumer, id_type whichThread);                                         \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
-    static bool addListener(EventConsumer& eventConsumer, DispatcherThread & dispThread);                               \
+    static bool add_listener(EventConsumer& eventConsumer, DispatcherThread & dispThread);                               \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
-    static bool removeListener(EventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());    \
+    static bool remove_listener(EventConsumer& eventConsumer, const String & whichThread = String::empty_string());    \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
-    static bool removeListener(EventConsumer& eventConsumer, id_type whichThread);                                      \
+    static bool remove_listener(EventConsumer& eventConsumer, id_type whichThread);                                      \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
-    static bool removeListener(EventConsumer& eventConsumer, DispatcherThread & dispThread);
+    static bool remove_listener(EventConsumer& eventConsumer, DispatcherThread & dispThread);
 
 /**
  * \brief   MACRO, implements static functions to add and remove
@@ -56,18 +56,18 @@ public:                                                                         
  *          Do not use them directly, instead use AREG_IMPLEMENT_RUNTIME_EVENT
  **/
 #define AREG_IMPLEMENT_EVENT_REGISTRATION(EventClass)                                                                  \
-    bool EventClass::addListener(EventConsumer& eventConsumer, const String & whichThread)                            \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
-    bool EventClass::addListener(EventConsumer& eventConsumer, id_type whichThread)                                   \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
-    bool EventClass::addListener(EventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
-    {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }                       \
-    bool EventClass::removeListener(EventConsumer& eventConsumer, const String& whichThread)                          \
-    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
-    bool EventClass::removeListener(EventConsumer& eventConsumer, id_type whichThread)                                \
-    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
-    bool EventClass::removeListener(EventConsumer& eventConsumer, DispatcherThread & dispThread)                      \
-    {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, dispThread);     }
+    bool EventClass::add_listener(EventConsumer& eventConsumer, const String & whichThread)                            \
+    {   return Event::add_listener(EventClass::_class_id(), eventConsumer, whichThread);       }                       \
+    bool EventClass::add_listener(EventConsumer& eventConsumer, id_type whichThread)                                   \
+    {   return Event::add_listener(EventClass::_class_id(), eventConsumer, whichThread);       }                       \
+    bool EventClass::add_listener(EventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
+    {   return Event::add_listener(EventClass::_class_id(), eventConsumer, dispThread);        }                       \
+    bool EventClass::remove_listener(EventConsumer& eventConsumer, const String& whichThread)                          \
+    {   return Event::remove_listener(EventClass::_class_id(), eventConsumer, whichThread);    }                       \
+    bool EventClass::remove_listener(EventConsumer& eventConsumer, id_type whichThread)                                \
+    {   return Event::remove_listener(EventClass::_class_id(), eventConsumer, whichThread);    }                       \
+    bool EventClass::remove_listener(EventConsumer& eventConsumer, DispatcherThread & dispThread)                      \
+    {   return Event::remove_listener(EventClass::_class_id(), eventConsumer, dispThread);     }
 
 
 /**
@@ -107,25 +107,9 @@ class Thread;
 // Event class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A generic Base Event class. All events are instances of Event
- *          class. Use unique custom or specific Event classes.
- *
- *          The events are forwarded to be processed in dispatcher thread
- *          and depending on even type, they are queued either in internal
- *          or external queue. The events are created dynamically in the heap
- *          to remain valid as long until they are processed. After processing
- *          the events are automatically destroyed.
- *
- *          Before sending Event to the target dispatcher thread, the thread
- *          should have registered event consumer object which processes
- *          the events. The event consumers are registered and unregistered in
- *          the dispatcher thread by calling addListener() and removeListener()
- *          methods. User AREG_DECLARE_RUNTIME_EVENT() and AREG_IMPLEMENT_RUNTIME_EVENT()
- *          macros to have appropriate method definition in the event object.
- *
- *          In addition, the system contains several predefined event objects,
- *          which are used by the system.
- *
+ * \brief   Base class for all events in the system. Events are forwarded to dispatcher threads for
+ *          processing. Event consumers must be registered before sending events. Events are
+ *          dynamically allocated and automatically destroyed after processing.
  **/
 class AREG_API Event   : public RuntimeObject
 {
@@ -176,9 +160,12 @@ public:
     };
 
     /**
-     * \return Returns string value of Event::EventType
+     * \brief   Converts an event type to its string representation.
+     *
+     * \param   eventType       The event type to convert.
+     * \return  String representation of the event type.
      **/
-    static inline const char* getString(Event::EventType eventType);
+    static inline const char* as_string(Event::EventType eventType);
 
     /**
      * \brief   Event::EventPriority
@@ -221,87 +208,82 @@ public:
 public:
 
     /**
-     * \brief	Static method to add the listener to specified thread,
-     *          i.e. registers consumer for specified event class.
-     * \param	classId	        Runtime ID of event class.
-     * \param	eventConsumer	Consumer to register.
-     * \param	whichThread	    The registered thread name to add the
-     *                          event consumer. If this is nullptr or empty,
-     *                          it will use current thread for registering consumer.
-     * \return	Returns true if successfully registered.
-     *          Returns false, if failed or specified thread already had specified
-     *          consumer registered for specified event class type.
+     * \brief   Registers an event consumer for a specific event class in the specified thread.
+     *
+     * \param   classId             The runtime class ID of the event.
+     * \param   eventConsumer       The consumer to register.
+     * \param   whichThread         The thread name. If null or empty, uses the current thread.
+     * \return  True if registration succeeded; false if failed or consumer already registered.
      **/
-    static bool addListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread);
+    static bool add_listener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread);
 
     /**
-     * \brief	Static method to add the listener to specified thread,
-     *          i.e. registers consumer for specified event class.
-     * \param	classId	        Runtime ID of event class.
-     * \param	eventConsumer	Consumer to register.
-     * \param	whichThread	    The valid registered thread ID to add listener.
-     * \return	Returns true if successfully registered.
-     *          Returns false, if failed or specified thread already had specified
-     *          consumer registered for specified event class type.
+     * \brief   Registers an event consumer for a specific event class in the specified thread by
+     *          ID.
+     *
+     * \param   classId             The runtime class ID of the event.
+     * \param   eventConsumer       The consumer to register.
+     * \param   whichThread         The thread ID.
+     * \return  True if registration succeeded; false if failed or consumer already registered.
      **/
-    static bool addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
+    static bool add_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
 
     /**
-     * \brief	Static method to add the listener to specified thread,
-     *          i.e. registers consumer for specified event class.
-     * \param	classId	        Runtime ID of event class.
-     * \param	eventConsumer	Consumer to register.
-     * \param	dispThread	    The dispatcher thread, which dispatches messages
-     * \return	Returns true if successfully registered.
-     *          Returns false, if failed or specified thread already had specified
-     *          consumer registered for specified event class type.
+     * \brief   Registers an event consumer for a specific event class in the specified dispatcher
+     *          thread.
+     *
+     * \param   classId             The runtime class ID of the event.
+     * \param   eventConsumer       The consumer to register.
+     * \param   dispThread          The dispatcher thread.
+     * \return  True if registration succeeded; false if failed or consumer already registered.
      **/
-    static bool addListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool add_listener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
     /**
-     * \brief	Static method to remove listener from specified thread,
-     *          i.e. unregister consumer in specified thread.
-     * \param	classId	        Runtime ID of event class.
-     * \param	eventConsumer	Consumer to unregister.
-     * \param	whichThread	    Thread name to unregister. If this is nullptr or empty,
-     *                          it will use current thread to unregister consumer.
-     * \return	Returns true if successfully unregistered.
+     * \brief   Unregisters an event consumer for a specific event class from the specified thread.
+     *
+     * \param   classId             The runtime class ID of the event.
+     * \param   eventConsumer       The consumer to unregister.
+     * \param   whichThread         The thread name. If null or empty, uses the current thread.
+     * \return  True if unregistration succeeded; false otherwise.
      **/
-    static bool removeListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread);
+    static bool remove_listener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread);
 
     /**
-     * \brief	Static method to remove listener from specified thread,
-     *          i.e. unregister consumer in specified thread.
-     * \param	classId	        Runtime ID of event class.
-     * \param	eventConsumer	Consumer to unregister.
-     * \param	whichThread	    The valid registered thread ID to remove listener.
-     * \return	Returns true if successfully unregistered.
+     * \brief   Unregisters an event consumer for a specific event class from the specified thread
+     *          by ID.
+     *
+     * \param   classId             The runtime class ID of the event.
+     * \param   eventConsumer       The consumer to unregister.
+     * \param   whichThread         The thread ID.
+     * \return  True if unregistration succeeded; false otherwise.
      **/
-    static bool removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
+    static bool remove_listener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
 
     /**
-     * \brief	Static method to remove listener from specified thread,
-     *          i.e. unregister consumer in specified thread.
-     * \param	classId	        Runtime ID of event class.
-     * \param	eventConsumer	Consumer to unregister.
-     * \param	dispThread	    The dispatcher thread, which dispatches messages
-     * \return	Returns true if successfully unregistered.
+     * \brief   Unregisters an event consumer for a specific event class from the specified
+     *          dispatcher thread.
+     *
+     * \param   classId             The runtime class ID of the event.
+     * \param   eventConsumer       The consumer to unregister.
+     * \param   dispThread          The dispatcher thread.
+     * \return  True if unregistration succeeded; false otherwise.
      **/
-    static bool removeListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool remove_listener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default constructor.
+     * \brief   Default constructor. Creates an uninitialized event.
      **/
     Event();
 
     /**
-     * \brief   Initialization constructor.
-     *          Creates event object of specified type.
-     * \param   eventType   The type of Event.
+     * \brief   Creates an event of the specified type.
+     *
+     * \param   eventType       The type of event to create.
      **/
     Event( Event::EventType eventType );
 
@@ -319,45 +301,41 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Call to destroy Event object.
-     *          Overwrite if there is any special action should be performed
-     *          before destroying event object.
+     * \brief   Destroys the event. Override this method to perform cleanup before destruction.
      **/
     void destroy() override;
 
     /**
-     * \brief	Dispatch event itself. Overwrite function if needed.
-     * \param	consumer	Registered event consumer
+     * \brief   Dispatches this event to the specified consumer. Override to implement custom
+     *          dispatch logic.
+     *
+     * \param   consumer    The event consumer to dispatch to.
      **/
-    virtual void dispatchSelf( EventConsumer * consumer );
+    virtual void dispatch_self( EventConsumer * consumer );
 
     /**
-     * \brief   Delivers the event to target thread. If target thread
-     *          is nullptr, it delivers to current thread.
+     * \brief   Delivers this event to its target thread. If target thread is null, delivers to
+     *          current thread.
      **/
-    virtual void deliverEvent();
+    virtual void deliver_event();
 
     /**
-     * \brief	Adds the listener to target thread, i.e. registers
-     *          consumer for the event. It uses runtime information
-     *          as an event identifier. If target thread is not
-     *          specified, it will register consumer in current thread.
-     * \param	eventConsumer	Event consumer to add
-     * \return	Returns true if could register consumer in target thread.
-     *          Returns false if failed or target thread already had consumer
-     *          registered for current event class.
+     * \brief   Registers a consumer for this event in the target thread. If target thread is not
+     *          set, registers in current thread.
+     *
+     * \param   eventConsumer       The consumer to register.
+     * \return  True if registration succeeded; false if failed or consumer already registered.
      **/
-    virtual bool addEventListener( EventConsumer & eventConsumer );
+    virtual bool add_event_listener( EventConsumer & eventConsumer );
 
     /**
-     * \brief	Removes listener from target thread, i.e. unregisters consumer
-     *          from target thread. If target thread is nullptr it will unregister
-     *          consumer in current thread.
-     * \param	eventConsumer	The consumer object to unregister for current
-     *                          event class.
-     * \return	Returns true if successfully unregistered consumer.
+     * \brief   Unregisters a consumer from this event in the target thread. If target thread is
+     *          null, unregisters from current thread.
+     *
+     * \param   eventConsumer       The consumer to unregister.
+     * \return  True if unregistration succeeded; false otherwise.
      **/
-    virtual bool removeEventListener( EventConsumer & eventConsumer );
+    virtual bool remove_event_listener( EventConsumer & eventConsumer );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -365,151 +343,148 @@ public:
 public:
 
     /**
-     * \brief   Registers event for specified thread, i.e. sets target thread.
-     *          By specified thread ID it will search dispatching thread and
-     *          will set target thread object.
-     * \param   whichThread     The ID of target thread. If this parameter is null
-     *                          it will get current thread as an event target.
-     * \return  Returns true if dispatching thread found in system, the thread is
-     *          running and ready to dispatch events.
+     * \brief   Registers this event with the specified thread by ID. If zero, uses current thread.
+     *
+     * \param   whichThread     The thread ID. Zero means current thread.
+     * \return  True if the thread exists, is running, and ready; false otherwise.
      **/
-    bool registerForThread( id_type whichThread = 0);
+    bool register_for_thread( id_type whichThread = 0);
 
     /**
-     * \brief	Searches dispatcher thread by given name and sets as an event
-     *          target thread.
-     * \param	whichThread	    The unique name of event dispatcher thread.
-     * \return  Returns true if dispatching thread found in system, the thread is
-     *          running and ready to dispatch events.
+     * \brief   Registers this event with the thread of the specified name.
+     *
+     * \param   whichThread     The name of the dispatcher thread.
+     * \return  True if the thread exists, is running, and ready; false otherwise.
      **/
-    bool registerForThread( const char* whichThread );
+    bool register_for_thread( const char* whichThread );
 
     /**
-     * \brief	Set or re-set target thread. If target thread is nullptr,
-     *          all events will be forwarded to current thread.
-     * \param	dispatchThread	Target Dispatcher thread
-     * \return	Returns true if target thread is not nullptr and ready
-     *          to dispatch events.
+     * \brief   Sets the target dispatcher thread for this event. If null, events are delivered to
+     *          current thread.
+     *
+     * \param   dispatchThread      The target dispatcher thread. Null means current thread.
+     * \return  True if the thread is not null and ready; false otherwise.
      **/
-    bool registerForThread( DispatcherThread * dispatchThread );
+    bool register_for_thread( DispatcherThread * dispatchThread );
 
     /**
-     * \brief   Returns true if the target thread has a consumer
-     *          registered for event. It uses runtime information
-     *          as an event identifier.
+     * \brief   Returns true if the target thread has a consumer registered for this event.
      **/
-    bool isEventRegistered() const;
+    bool is_event_registered() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Returns the type of Event.
-     *          For more information see description of Event::EventType
-     * \see Event::EventType
+     * \brief   Returns the type of this event.
      **/
-    inline Event::EventType getEventType() const;
+    inline Event::EventType event_type() const;
     /**
-     * \brief   Sets the type of Event.
-     *          For more information see description of Event::EventType
-     * \param   eventType   The type of Event.
-     * \see Event::EventType
+     * \brief   Sets the type of this event.
+     *
+     * \param   eventType       The event type to set.
      **/
-    inline void setEventType( Event::EventType eventType );
+    inline void set_event_type( Event::EventType eventType );
 
     /**
-     * \brief   Returns the priority of the event.
+     * \brief   Returns the priority of this event.
      **/
-    inline EventPriority getEventPriority() const;
+    inline EventPriority event_priority() const;
 
     /**
-     * \brief   Sets new priority of the event.
+     * \brief   Sets the priority of this event.
+     *
+     * \param   eventPrio       The priority to set.
      **/
-    inline void setEventPriority(EventPriority eventPrio);
+    inline void set_event_priority(EventPriority eventPrio);
 
     /**
-     * \brief   Returns pointer of Event Consumer object.
-     *          If nullptr, no Event Consumer is set and the Event cannot be processed.
+     * \brief   Returns the consumer registered to process this event, or null if none is set.
      **/
-    inline EventConsumer * getEventConsumer();
+    inline EventConsumer * event_consumer();
     /**
-     * \brief   Sets the Event Consumer object.
-     * \param   consumer    The Event Consumer object, which should process event
+     * \brief   Sets the consumer to process this event.
+     *
+     * \param   consumer    The consumer to set.
      **/
-    inline void setEventConsumer( EventConsumer * consumer );
+    inline void set_event_consumer( EventConsumer * consumer );
 
     /**
-     * \brief   Checks whether the given event type is internal or not.
-     * \param   eventType   The event type to check.
+     * \brief   Returns true if the event type is internal.
+     *
+     * \param   eventType       The event type to check.
      **/
-    inline static bool isInternal( Event::EventType eventType );
+    inline static bool is_internal( Event::EventType eventType );
 
     /**
-     * \brief   Checks whether the given event type is external or not.
-     * \param   eventType   The event type to check.
+     * \brief   Returns true if the event type is external.
+     *
+     * \param   eventType       The event type to check.
      **/
-    inline static bool isExternal( Event::EventType eventType );
+    inline static bool is_external( Event::EventType eventType );
 
     /**
-     * \brief   Checks whether the given event type is local or not.
-     * \param   eventType   The event type to check.
+     * \brief   Returns true if the event type is local.
+     *
+     * \param   eventType       The event type to check.
      **/
-    inline static bool isLocal( Event::EventType eventType );
+    inline static bool is_local( Event::EventType eventType );
 
     /**
-     * \brief   Checks whether the given event type is remote or not.
-     * \param   eventType   The event type to check.
+     * \brief   Returns true if the event type is remote.
+     *
+     * \param   eventType       The event type to check.
      **/
-    inline static bool isRemote( Event::EventType eventType );
+    inline static bool is_remote( Event::EventType eventType );
 
     /**
-     * \brief   Checks whether the given event type is developer custom or system predefined.
-     * \param   eventType   The event type to check.
+     * \brief   Returns true if the event type is developer custom, false if system predefined.
+     *
+     * \param   eventType       The event type to check.
      **/
-    inline static bool isCustom( Event::EventType eventType );
+    inline static bool is_custom( Event::EventType eventType );
 
     /**
-     * \brief   Returns true, if event is internal, i.e. should be queued in internal event queue
+     * \brief   Returns true if this event is internal (queued in internal queue).
      **/
-    inline bool isInternal() const;
+    inline bool is_internal() const;
 
     /**
-     * \brief   Returns true, if event is external, i.e. should be queued in external event queue
+     * \brief   Returns true if this event is external (queued in external queue).
      **/
-    inline bool isExternal() const;
+    inline bool is_external() const;
 
     /**
-     * \brief   Returns true, if event is local, i.e. cannot be processed in other process
+     * \brief   Returns true if this event is local (cannot be processed in other processes).
      **/
-    inline bool isLocal() const;
+    inline bool is_local() const;
 
     /**
-     * \brief   Returns true, if event is remote, i.e. can be processed local and in other process
+     * \brief   Returns true if this event is remote (can be processed locally or in other
+     *          processes).
      **/
-    inline bool isRemote() const;
+    inline bool is_remote() const;
 
     /**
-     * \brief   Returns true, if event is developer custom to communicate with worker thread or system predefined.
+     * \brief   Returns true if this is a developer custom event, false if system predefined.
      **/
-    inline bool isCustom() const;
+    inline bool is_custom() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Returns reference to dispatcher of target or current thread.
-     *          If target thread is unknown, this will return dispatcher of
-     *          current thread.
+     * \brief   Returns the dispatcher of the target thread, or current thread if target is unknown.
      **/
-    EventDispatcher & getDispatcher() const;
+    EventDispatcher & dispatcher() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns reference to event object
+     * \brief
      **/
     inline Event & self();
 
@@ -547,87 +522,87 @@ AREG_IMPLEMENT_STREAMABLE(Event::EventType)
 // Event class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline Event::EventType Event::getEventType() const
+inline Event::EventType Event::event_type() const
 {
     return mEventType;
 }
 
-inline void Event::setEventType( Event::EventType eventType )
+inline void Event::set_event_type( Event::EventType eventType )
 {
     mEventType = eventType;
 }
 
-inline EventConsumer * Event::getEventConsumer()
+inline EventConsumer * Event::event_consumer()
 {
     return mConsumer;
 }
 
-inline void Event::setEventConsumer( EventConsumer * consumer )
+inline void Event::set_event_consumer( EventConsumer * consumer )
 {
     mConsumer = consumer;
 }
 
-inline bool Event::isInternal( Event::EventType eventType )
+inline bool Event::is_internal( Event::EventType eventType )
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventInternal)) != 0;
 }
 
-inline bool Event::isExternal( Event::EventType eventType )
+inline bool Event::is_external( Event::EventType eventType )
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventExternal)) != 0;
 }
 
-inline bool Event::isLocal( Event::EventType eventType )
+inline bool Event::is_local( Event::EventType eventType )
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventLocal)) != 0;
 }
 
-inline bool Event::isRemote( Event::EventType eventType )
+inline bool Event::is_remote( Event::EventType eventType )
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventRemote)) != 0;
 }
 
-inline bool Event::isCustom( Event::EventType eventType )
+inline bool Event::is_custom( Event::EventType eventType )
 {
     return (static_cast<uint32_t>(eventType) & static_cast<uint32_t>(Event::EventType::EventCustom)) != 0;
 }
 
-inline bool Event::isInternal() const
+inline bool Event::is_internal() const
 {
-    return Event::isInternal(mEventType);
+    return Event::is_internal(mEventType);
 }
 
-inline bool Event::isExternal() const
+inline bool Event::is_external() const
 {
-    return Event::isExternal( mEventType );
+    return Event::is_external( mEventType );
 }
 
-inline bool Event::isLocal() const
+inline bool Event::is_local() const
 {
-    return Event::isLocal( mEventType );
+    return Event::is_local( mEventType );
 }
 
-inline bool Event::isRemote() const
+inline bool Event::is_remote() const
 {
-    return Event::isRemote( mEventType );
+    return Event::is_remote( mEventType );
 }
 
-inline bool Event::isCustom() const
+inline bool Event::is_custom() const
 {
-    return Event::isCustom( mEventType );
+    return Event::is_custom( mEventType );
 }
 
-inline Event::EventPriority Event::getEventPriority() const
+inline Event::EventPriority Event::event_priority() const
 {
     return mEventPrio;
 }
 
-inline void Event::setEventPriority(Event::EventPriority eventPrio)
+inline void Event::set_event_priority(Event::EventPriority eventPrio)
 {
     mEventPrio = eventPrio;
 }
 
-inline const char* Event::getString(Event::EventType eventType)
+inline const char* Event::as_string(Event::EventType eventType)
 {
 
     switch ( eventType )

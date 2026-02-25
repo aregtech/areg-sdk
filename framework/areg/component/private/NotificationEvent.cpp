@@ -89,14 +89,14 @@ AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::sendEvent( const NotificationEventData& data, NotificationConsumer* caller /*= nullptr*/ )
+void NotificationEvent::send_event( const NotificationEventData& data, NotificationConsumer* caller /*= nullptr*/ )
 {
     NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
     if (eventElem != nullptr)
     {
         if (caller != nullptr)
-            eventElem->setEventConsumer(static_cast<EventConsumer *>(caller));
-        static_cast<Event *>(eventElem)->deliverEvent();
+            eventElem->set_event_consumer(static_cast<EventConsumer *>(caller));
+        static_cast<Event *>(eventElem)->deliver_event();
     }
 }
 
@@ -107,18 +107,18 @@ NotificationEvent::NotificationEvent( const NotificationEventData& data )
     : Event (Event::EventType::EventNotifyClient)
     , mData (data)
 {
-    setTargetThread();
+    set_target_thread();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationEvent::setTargetThread()
+void NotificationEvent::set_target_thread()
 {
-    const ProxyBase * proxy = mData.getProxy();
-    DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();
-    ASSERT(dispThread.isValid());
-    registerForThread(&dispThread);
+    const ProxyBase * proxy = mData.proxy();
+    DispatcherThread& dispThread = proxy != nullptr ? proxy->proxy_dispatcher_thread() : DispatcherThread::current_dispatcher_thread();
+    ASSERT(dispThread.is_valid());
+    register_for_thread(&dispThread);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,11 +128,11 @@ void NotificationEvent::setTargetThread()
 //////////////////////////////////////////////////////////////////////////
 // NotificationConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationConsumer::startEventProcessing( Event& eventElem )
+void NotificationConsumer::start_event_processing( Event& eventElem )
 {
     NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
     if (eventNotify != nullptr)
     {
-        processNotificationEvent(*eventNotify);
+        process_notification_event(*eventNotify);
     }
 }

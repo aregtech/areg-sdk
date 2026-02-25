@@ -30,9 +30,8 @@ class Socket;
 // RemoteMessageHandler interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The interface of object to handler remote servicing.
- *          It contains callbacks, which are triggered either then succeeded to send data
- *          or an error occurred when running.
+ * \brief   Interface for handling remote service operations with callbacks for send/receive success
+ *          and failure.
  **/
 class AREG_API RemoteMessageHandler
 {
@@ -41,7 +40,7 @@ class AREG_API RemoteMessageHandler
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default constructor
+     * \brief
      **/
     RemoteMessageHandler() = default;
 
@@ -56,31 +55,35 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
+     * \brief   Triggered when message send fails.
+     *
+     * \param   msgFailed       The message that failed to send.
+     * \param   whichTarget     The target socket.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) = 0;
+    virtual void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) = 0;
 
     /**
-     * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
+     * \brief   Triggered when message receive fails.
+     *
+     * \param   whichSource     The source socket from which receive failed.
      **/
-    virtual void failedReceiveMessage( Socket & whichSource ) = 0;
+    virtual void failed_receive_message( Socket & whichSource ) = 0;
 
     /**
-     * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
-     *          In case of request message processing, the source should receive error notification.
-     * \param   msgUnprocessed  Unprocessed message data.
+     * \brief   Triggered when message processing fails because target is not found. For request
+     *          messages, source receives error notification.
+     *
+     * \param   msgUnprocessed      The unprocessed message.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) = 0;
+    virtual void failed_process_message( const RemoteMessage & msgUnprocessed ) = 0;
 
     /**
-     * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
+     * \brief   Triggered to process a received message.
+     *
+     * \param   msgReceived     The received message to process.
+     * \param   whichSource     The source socket from which message was received.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) = 0;
+    virtual void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

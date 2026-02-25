@@ -35,23 +35,23 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize()
+void Process::_os_initilize()
 {
     mProcessId      = ::GetCurrentProcessId();
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
 
     TCHAR fullPath[File::MAXIMUM_PATH];
-    NEMemory::memZero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
+    NEMemory::mem_zero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
 
     if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {
         String temp(fullPath);
-        _initPaths(temp.getString());
+        _init_paths(temp.as_string());
     }
 }
 
 
-String Process::_osGetEnvVariable( const char* var ) const
+String Process::_os_env_variable( const char* var ) const
 {
     String result;
     uint32_t length = var != nullptr ? static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0)) : 0;

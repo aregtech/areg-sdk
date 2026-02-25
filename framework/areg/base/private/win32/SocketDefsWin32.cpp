@@ -104,7 +104,7 @@ namespace NESocket
                 if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxSendSize(hSocket));
+                    blockMaxSize = static_cast<int32_t>(NESocket::max_send_size(hSocket));
                 }
                 else
                 {
@@ -146,7 +146,7 @@ namespace NESocket
                 if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxReceiveSize(hSocket));
+                    blockMaxSize = static_cast<int32_t>(NESocket::max_receive_size(hSocket));
                 }
                 else
                 {

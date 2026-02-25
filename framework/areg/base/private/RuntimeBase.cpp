@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Hidden static calls.
 //////////////////////////////////////////////////////////////////////////
-inline const RuntimeClassID & RuntimeBase::_getClassId()
+inline const RuntimeClassID & RuntimeBase::_class_id()
 {
     static const RuntimeClassID _classId("RuntimeBase");
     return _classId;
@@ -36,37 +36,37 @@ inline const RuntimeClassID & RuntimeBase::_getClassId()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-const RuntimeClassID & RuntimeBase::getRuntimeClassId() const
+const RuntimeClassID & RuntimeBase::runtime_class_id() const
 {
-    return _getClassId();
+    return _class_id();
 }
 
-const String & RuntimeBase::getRuntimeClassName() const
+const String & RuntimeBase::runtime_class_name() const
 {
-    return RuntimeBase::_getClassId().getName();
+    return RuntimeBase::_class_id().name();
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const char * className ) const
+bool RuntimeBase::is_runtime_instance( const char * className ) const
 {
-    return (RuntimeBase::_getClassId() == className);
+    return (RuntimeBase::_class_id() == className);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const String & className ) const
+bool RuntimeBase::is_runtime_instance( const String & className ) const
 {
-    return (RuntimeBase::_getClassId() == className);
+    return (RuntimeBase::_class_id() == className);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const
+bool RuntimeBase::is_runtime_instance( const RuntimeClassID & classId ) const
 {
-    return (RuntimeBase::_getClassId() == classId);
+    return (RuntimeBase::_class_id() == classId);
 }
 
-bool RuntimeBase::isInstanceOfRuntimeClass(uint32_t classMagic) const
+bool RuntimeBase::is_runtime_instance(uint32_t classMagic) const
 {
-    return (RuntimeBase::_getClassId().getMagic() == classMagic);
+    return (RuntimeBase::_class_id().magic() == classMagic);
 }
 
-uint32_t RuntimeBase::getRuntimeClassNumber() const
+uint32_t RuntimeBase::runtime_class_number() const
 {
-    return RuntimeBase::_getClassId().getMagic();
+    return RuntimeBase::_class_id().magic();
 }

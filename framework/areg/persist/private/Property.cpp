@@ -88,7 +88,7 @@ Property::Property( const std::string_view& section
 {
 }
 
-Property::Property(const Property::Entry & newProperty, const String & comment /*= String::getEmptyString*/, bool is_temporary /* = false*/)
+Property::Property(const Property::Entry & newProperty, const String & comment /*= String::empty_string*/, bool is_temporary /* = false*/)
     : mIsTemporary  ( is_temporary )
     , mComment      ( comment )
     , mProperty     ( newProperty )
@@ -209,7 +209,7 @@ void Property::set_comment(const String & comment)
 
 void Property::add_comment(const String & comment)
 {
-    if (comment.startsWith(NEPersistence::SYNTAX_COMMENT))
+    if (comment.starts_with(NEPersistence::SYNTAX_COMMENT))
     {
         mComment += comment;
     }
@@ -250,15 +250,15 @@ bool Property::parse(const String & strProperties)
 {
     bool result{ false };
     String data;
-    if ( strProperties.getLength() > 1)
+    if ( strProperties.length() > 1)
     {
-        NEString::CharPos pos = strProperties.findFirst(NEPersistence::SYNTAX_COMMENT.data());
+        NEString::CharPos pos = strProperties.find_first(NEPersistence::SYNTAX_COMMENT.data());
 
-        if (strProperties.isValidPosition(pos))
+        if (strProperties.is_valid_position(pos))
         {
             if (pos != NEString::START_POS)
             {
-                add_comment(strProperties.getBuffer(pos));
+                add_comment(strProperties.buffer(pos));
                 strProperties.substring(data, 0, pos);
             }
         }
@@ -267,10 +267,10 @@ bool Property::parse(const String & strProperties)
             data = strProperties;
         }
 
-        if (data.isEmpty() == false )
+        if (data.is_empty() == false )
         {
             const char* value{ nullptr };
-            const String key{ String::getSubstring(data.as_string(), NEPersistence::SYNTAX_EQUAL.data(), &value) };
+            const String key{ String::substr(data.as_string(), NEPersistence::SYNTAX_EQUAL.data(), &value) };
 
             mProperty.mValue.first.parse_key(key);
             mProperty.mValue.second.parse_value(value);
@@ -297,7 +297,7 @@ String Property::to_string() const
     String key  (mProperty.mValue.first.to_string());
     String value(mProperty.mValue.second.to_string());
 
-    if ( !key.isEmpty() && !value.isEmpty() )
+    if ( !key.is_empty() && !value.is_empty() )
     {
         key.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
            .append(NEPersistence::SYNTAX_EQUAL)
@@ -305,9 +305,9 @@ String Property::to_string() const
            .append(value);
     }
 
-    if ( mComment.isEmpty() == false )
+    if ( mComment.is_empty() == false )
     {
-        if (mComment.isValidPosition(mComment.findFirst(NEPersistence::SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
+        if (mComment.is_valid_position(mComment.find_first(NEPersistence::SYNTAX_LINEEND.data())) || (mComment.length() >= 64))
         {
             result.append(mComment).append(NEPersistence::SYNTAX_LINEEND).append(key);
         }

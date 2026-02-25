@@ -34,31 +34,31 @@ TimerEvent::TimerEvent( const TimerEventData & data )
 {
     if (mData.mTimer != nullptr)
     {
-        mData.mTimer->_queueTimer();
+        mData.mTimer->_queue_timer();
     }
 }
 
 TimerEvent::TimerEvent( Timer &timer )
     : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
 {
-    timer._queueTimer();
+    timer._queue_timer();
 }
 
 TimerEvent::TimerEvent(Timer & timer, DispatcherThread & target)
     : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
 {
-    ASSERT(target.isRunning());
+    ASSERT(target.is_running());
 
-    setEventConsumer(static_cast<EventConsumer *>(&timer.getConsumer()));
-    registerForThread(&target);
-    timer._queueTimer();
+    set_event_consumer(static_cast<EventConsumer *>(&timer.consumer()));
+    register_for_thread(&target);
+    timer._queue_timer();
 }
 
 TimerEvent::~TimerEvent()
 {
     if (mData.mTimer != nullptr)
     {
-        mData.mTimer->_unqueueTimer();
+        mData.mTimer->_unqueue_timer();
         mData.mTimer = nullptr;
     }
 }
@@ -66,20 +66,20 @@ TimerEvent::~TimerEvent()
 //////////////////////////////////////////////////////////////////////////
 // TimerEvent class, static methods
 //////////////////////////////////////////////////////////////////////////
-bool TimerEvent::sendEvent( Timer & timer, id_type dispatchThreadId )
+bool TimerEvent::send_event( Timer & timer, id_type dispatchThreadId )
 {
-    return TimerEvent::sendEvent(timer, DispatcherThread::getDispatcherThread(dispatchThreadId));
+    return TimerEvent::send_event(timer, DispatcherThread::dispatcher_thread(dispatchThreadId));
 }
 
-bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
+bool TimerEvent::send_event(Timer & timer, DispatcherThread & dispatchThread)
 {
     bool result{ false };
-    if ( dispatchThread.isRunning() )
+    if ( dispatchThread.is_running() )
     {
         TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
         if (timerEvent != nullptr)
         {
-            static_cast<Event *>(timerEvent)->deliverEvent();
+            static_cast<Event *>(timerEvent)->deliver_event();
             result = true;
         }
     }

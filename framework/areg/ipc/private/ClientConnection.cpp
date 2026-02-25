@@ -41,20 +41,20 @@ ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress
 }
 
 
-bool ClientConnection::createSocket(const String & hostName, uint16_t portNr)
+bool ClientConnection::create_socket(const String & hostName, uint16_t portNr)
 {
-    setCookie( mClientSocket.createSocket(hostName, portNr) ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
-    return mClientSocket.isValid();
+    set_cookie( mClientSocket.create_socket(hostName, portNr) ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
+    return mClientSocket.is_valid();
 }
 
-bool ClientConnection::createSocket()
+bool ClientConnection::create_socket()
 {
-    setCookie( mClientSocket.createSocket() ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
-    return mClientSocket.isValid();
+    set_cookie( mClientSocket.create_socket() ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
+    return mClientSocket.is_valid();
 }
 
-void ClientConnection::closeSocket()
+void ClientConnection::close_socket()
 {
-    setCookie(NEService::COOKIE_UNKNOWN);
-    mClientSocket.closeSocket();
+    set_cookie(NEService::COOKIE_UNKNOWN);
+    mClientSocket.close_socket();
 }

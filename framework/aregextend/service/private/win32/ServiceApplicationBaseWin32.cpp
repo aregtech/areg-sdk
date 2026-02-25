@@ -37,11 +37,11 @@ extern VOID WINAPI _win32ServiceMain(DWORD argc, LPTSTR * argv);
 extern VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 
 #ifdef UNICODE
-    #define     getServiceName          getServiceNameW
+    #define     service_name          getServiceNameW
     #define     getServiceDisplayName   getServiceDisplayNameW
     #define     getServiceDescription   getServiceDescriptionW
 #else   // UNICODE
-    #define     getServiceName          getServiceNameA
+    #define     service_name          getServiceNameA
     #define     getServiceDisplayName   getServiceDisplayNameA
     #define     getServiceDescription   getServiceDescriptionA
 #endif  // UNICODE
@@ -81,7 +81,7 @@ void ServiceApplicationBase::_osFreeResources()
 
 bool ServiceApplicationBase::_osInitializeService()
 {
-    NEMemory::zeroElement<SERVICE_STATUS>(_serviceStatus);
+    NEMemory::zero_element<SERVICE_STATUS>(_serviceStatus);
     _serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
     _serviceStatus.dwCurrentState = SERVICE_STOPPED;
     _serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
@@ -102,7 +102,7 @@ bool ServiceApplicationBase::_osOpenService()
 
     if ((mSeMHandle != nullptr) && (mSvcHandle == nullptr))
     {
-        mSvcHandle = reinterpret_cast<void*>(::OpenService(reinterpret_cast<SC_HANDLE>(mSeMHandle), getServiceName(), SERVICE_ALL_ACCESS));
+        mSvcHandle = reinterpret_cast<void*>(::OpenService(reinterpret_cast<SC_HANDLE>(mSeMHandle), service_name(), SERVICE_ALL_ACCESS));
     }
 
     return (mSvcHandle != nullptr);
@@ -132,8 +132,8 @@ bool ServiceApplicationBase::_osCreateService()
             DWORD startType = SERVICE_AUTO_START;
 #endif  // defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
 
-            mSvcHandle = reinterpret_cast<void*>(::CreateService( reinterpret_cast<SC_HANDLE>(mSeMHandle), getServiceName(), getServiceDisplayName(), SERVICE_ALL_ACCESS
-                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.getString()
+            mSvcHandle = reinterpret_cast<void*>(::CreateService( reinterpret_cast<SC_HANDLE>(mSeMHandle), service_name(), getServiceDisplayName(), SERVICE_ALL_ACCESS
+                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.as_string()
                                                                 , nullptr, nullptr, nullptr, nullptr, nullptr));
             if (mSvcHandle != nullptr)
             {
@@ -200,7 +200,7 @@ bool ServiceApplicationBase::_osRegisterService()
 {
     if (mSystemServiceOption == NESystemService::ServiceOption::CMD_Service)
     {
-        _statusHandle = ::RegisterServiceCtrlHandler(getServiceName(), &::_win32ServiceCtrlHandler);
+        _statusHandle = ::RegisterServiceCtrlHandler(service_name(), &::_win32ServiceCtrlHandler);
     }
 
     return (_statusHandle != nullptr);
@@ -272,7 +272,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
 
 int32_t ServiceApplicationBase::_osStartServiceDispatcher()
 {
-    _serviceTable[0].lpServiceName = getServiceName();
+    _serviceTable[0].lpServiceName = service_name();
     _serviceTable[0].lpServiceProc = &::_win32ServiceMain;
     _serviceTable[1].lpServiceName = nullptr;
     _serviceTable[1].lpServiceProc = nullptr;

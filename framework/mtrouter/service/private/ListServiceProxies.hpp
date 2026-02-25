@@ -97,13 +97,13 @@ public:
      * \brief   Returns existing service proxy entry. If specified proxy address
      *          is not registered, returns invalid entry, which proxy address is invalid.
      **/
-    const ServiceProxy & getService( const ProxyAddress & addrProxy ) const;
+    const ServiceProxy & service( const ProxyAddress & addrProxy ) const;
     
     /**
      * \brief   Returns existing service proxy entry. Returns nullptr, if specified proxy address
      *          is not registered.
      **/
-    ServiceProxy * getService( const ProxyAddress & addrProxy );
+    ServiceProxy * service( const ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers existing proxy service entry or creates new if
@@ -196,7 +196,7 @@ private:
 
 inline bool ListServiceProxies::isServiceRegistered( const ProxyAddress & addrProxy ) const
 {
-    return ListServiceProxiesBase::isValidPosition(_findProxy(addrProxy));
+    return ListServiceProxiesBase::is_valid_position(_findProxy(addrProxy));
 }
 
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_LISTSERVICEPROXIES_HPP

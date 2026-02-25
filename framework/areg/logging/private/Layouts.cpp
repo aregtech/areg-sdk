@@ -52,7 +52,7 @@ TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
 {
 }
 
-void TickCountLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
+void TickCountLayout::log_message( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
 {
 #ifdef _BIT64
     constexpr char fmt[]{ "%llu" };
@@ -61,7 +61,7 @@ void TickCountLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStr
 #endif  // _BIT64
 
     char buffer[128];
-    uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>( DateTime::getProcessTickCount() )));
+    uint32_t len = static_cast<uint32_t>(String::format_string(buffer, 128, fmt, static_cast<id_type>( DateTime::process_tick_count() )));
     stream.write(reinterpret_cast<const uint8_t *>(buffer), len);
 }
 
@@ -85,13 +85,13 @@ DayTimeLayout::DayTimeLayout( DayTimeLayout && /*src*/ ) noexcept
 {
 }
 
-void DayTimeLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void DayTimeLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
     if ( msgLog.logTimestamp != 0 )
     {
         String timestamp;
-        DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, NEUtilities::TIME_FORMAT_ISO8601_OUTPUT);
-        stream.write( reinterpret_cast<const uint8_t *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
+        DateTime::format_time(DateTime(msgLog.logTimestamp), timestamp, NEUtilities::TIME_FORMAT_ISO8601_OUTPUT);
+        stream.write( reinterpret_cast<const uint8_t *>(timestamp.as_string()), static_cast<uint32_t>(timestamp.length()));
     }
 }
 
@@ -114,20 +114,20 @@ ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
 {
 }
 
-void ModuleIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ModuleIdLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
-    static const ITEM_ID _moduleId{ Process::getInstance().getId() };
+    static const ITEM_ID _moduleId{ Process::instance().id() };
 #ifdef _BIT64
-    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), NEString::Radix::Hexadecimal) };
+    static const String  _moduleName{ String::make_string(static_cast<uint64_t>(_moduleId), NEString::Radix::Hexadecimal) };
 #else   // _BIT32
-    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), NEString::Radix::Hexadecimal) };
+    static const String  _moduleName{ String::make_string(static_cast<uint32_t>(_moduleId), NEString::Radix::Hexadecimal) };
 #endif  // _BIT64
 
     if (msgLog.logModuleId != 0)
     {
         if (msgLog.logModuleId == _moduleId)
         {
-            stream.write(reinterpret_cast<const uint8_t*>(_moduleName.getBuffer()), static_cast<uint32_t>(_moduleName.getLength()));
+            stream.write(reinterpret_cast<const uint8_t*>(_moduleName.buffer()), static_cast<uint32_t>(_moduleName.length()));
         }
         else
         {
@@ -137,7 +137,7 @@ void ModuleIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream &
             constexpr char fmt[]{ "0x%X" };
 #endif  // _BIT64
             char buffer[128];
-            uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
+            uint32_t len = static_cast<uint32_t>(String::format_string(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
             stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
         }
     }
@@ -162,10 +162,10 @@ MessageLayout::MessageLayout( MessageLayout && /*src*/ ) noexcept
 {
 }
 
-void MessageLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void MessageLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
-    uint32_t count{ static_cast<uint32_t>(NEString::getStringLength<char>(msgLog.logMessage)) };
-    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), count);
+    uint32_t count{ static_cast<uint32_t>(NEString::string_length<char>(msgLog.log_message)) };
+    stream.write(reinterpret_cast<const uint8_t *>(msgLog.log_message), count);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ EndOfLineLayout::EndOfLineLayout( EndOfLineLayout && /*src*/ ) noexcept
 {
 }
 
-void EndOfLineLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
+void EndOfLineLayout::log_message( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
 {
     stream.write(reinterpret_cast<const uint8_t*>(&NEString::EndOfLine), 1);
 }
@@ -211,10 +211,10 @@ PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
 {
 }
 
-void PriorityLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void PriorityLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
-    const String& prio{ NELogging::logPrioToString(msgLog.logMessagePrio) };
-    stream.write(reinterpret_cast<const uint8_t *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
+    const String& prio{ NELogging::priority_to_string(msgLog.logMessagePrio) };
+    stream.write(reinterpret_cast<const uint8_t *>(prio.as_string()), static_cast<uint32_t>(prio.length()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -236,12 +236,12 @@ ScopeIdLayout::ScopeIdLayout( ScopeIdLayout && /*src*/ ) noexcept
 {
 }
 
-void ScopeIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ScopeIdLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
     if ( msgLog.logScopeId != 0 )
     {
         char buffer[128];
-        uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, "%u", msgLog.logScopeId));
+        uint32_t len = static_cast<uint32_t>(String::format_string(buffer, 128, "%u", msgLog.logScopeId));
         stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
 }
@@ -265,7 +265,7 @@ ThreadIdLayout::ThreadIdLayout( ThreadIdLayout && /*src*/ ) noexcept
 {
 }
 
-void ThreadIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ThreadIdLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
     if ( msgLog.logThreadId != 0 )
     {
@@ -276,7 +276,7 @@ void ThreadIdLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream &
 #endif  // _BIT64
 
         char buffer[128];
-        uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
+        uint32_t len = static_cast<uint32_t>(String::format_string(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
         stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
 }
@@ -300,19 +300,19 @@ ModuleNameLayout::ModuleNameLayout( ModuleNameLayout && /*src*/ ) noexcept
 {
 }
 
-void ModuleNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ModuleNameLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
     if (msgLog.logDataType == NELogging::LogDataType::Local)
     {
-        static const String& _module{ Process::getInstance().getAppName() };
-        stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
+        static const String& _module{ Process::instance().app_name() };
+        stream.write(reinterpret_cast<const uint8_t*>(_module.as_string()), static_cast<uint32_t>(_module.length()));
     }
     else
     {
         if (msgLog.logCookie == NEService::COOKIE_LOCAL)
         {
-            static const String& _module{ Process::getInstance().getAppName() };
-            stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
+            static const String& _module{ Process::instance().app_name() };
+            stream.write(reinterpret_cast<const uint8_t*>(_module.as_string()), static_cast<uint32_t>(_module.length()));
         }
         else if ((msgLog.logCookie != NEService::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
         {
@@ -345,16 +345,16 @@ ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
 {
 }
 
-void ThreadNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ThreadNameLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
     const char* name{ nullptr };
     uint32_t len{ 0 };
 
     if (msgLog.logDataType == NELogging::LogDataType::Local)
     {
-        const String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
-        name = thread.getString();
-        len  = static_cast<uint32_t>(thread.getLength());
+        const String& thread{ Thread::thread_name(static_cast<id_type>(msgLog.logThreadId)) };
+        name = thread.as_string();
+        len  = static_cast<uint32_t>(thread.length());
     }
     else
     {
@@ -392,9 +392,9 @@ ScopeNameLayout::ScopeNameLayout( ScopeNameLayout && /*src*/ ) noexcept
 {
 }
 
-void ScopeNameLayout::logMessage( const NELogging::LogEntry & msgLog, OutStream & stream ) const
+void ScopeNameLayout::log_message( const NELogging::LogEntry & msgLog, OutStream & stream ) const
 {
-    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), msgLog.logMessageLen);
+    stream.write(reinterpret_cast<const uint8_t *>(msgLog.log_message), msgLog.logMessageLen);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -431,9 +431,9 @@ AnyTextLayout::AnyTextLayout(const char * anyMessage)
 {
 }
 
-void AnyTextLayout::logMessage( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
+void AnyTextLayout::log_message( const NELogging::LogEntry & /*msgLog*/, OutStream & stream ) const
 {
-    stream.write( reinterpret_cast<const uint8_t *>(mTextMessage.getString()), static_cast<uint32_t>(mTextMessage.getLength()) );
+    stream.write( reinterpret_cast<const uint8_t *>(mTextMessage.as_string()), static_cast<uint32_t>(mTextMessage.length()) );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -455,7 +455,7 @@ CookieIdLayout::CookieIdLayout(CookieIdLayout&& /* src */) noexcept
 {
 }
 
-void CookieIdLayout::logMessage(const NELogging::LogEntry& msgLog, OutStream& stream) const
+void CookieIdLayout::log_message(const NELogging::LogEntry& msgLog, OutStream& stream) const
 {
 #ifdef _BIT64
     constexpr char fmt[]{ "%03llu" };
@@ -464,7 +464,7 @@ void CookieIdLayout::logMessage(const NELogging::LogEntry& msgLog, OutStream& st
 #endif  // _BIT64
 
     char buffer[128];
-    uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
+    uint32_t len = static_cast<uint32_t>(String::format_string(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
     stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
 }
 

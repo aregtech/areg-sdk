@@ -43,7 +43,7 @@ void SystemServiceBase::resetDefaultOptions()
 {
     mSystemServiceOption = NESystemService::DEFAULT_OPTION;
     mFileConfig = NEApplication::DEFAULT_CONFIG_FILE;
-    mCommunication.enableCalculateDataRate(NESystemService::DEFAULT_VERBOSE);
+    mCommunication.enable_data_rate(NESystemService::DEFAULT_VERBOSE);
 }
 
 bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount )
@@ -103,7 +103,7 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
 {
     bool result{ true };
 
-    for (uint32_t i = 0; i < opts.getSize(); ++i)
+    for (uint32_t i = 0; i < opts.size(); ++i)
     {
         const OptionParser::InputOption& opt = opts[i];
         result &= dispatchOption(opt);
@@ -130,7 +130,7 @@ bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
     case NESystemService::ServiceOption::CMD_Load:
     {
         String filePath(opt.inString[0]);
-        result = File::existFile(filePath);
+        result = File::has_file(filePath);
         if (result)
         {
             mFileConfig = filePath;
@@ -139,7 +139,7 @@ bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
     break;
 
     case NESystemService::ServiceOption::CMD_Verbose:
-        mCommunication.enableCalculateDataRate(true);
+        mCommunication.enable_data_rate(true);
         setCurrentOption(NESystemService::ServiceOption::CMD_Console);
         result = true;
         break;
@@ -171,8 +171,8 @@ int32_t SystemServiceBase::serviceMain(NESystemService::ServiceOption optStartup
     if (serviceInitialize(optStartup, argument, nullptr))
     {
         LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);
-        LOG_DBG( "Starting log collector service, the current option [ %s ]", NESystemService::getString(optStartup) );
-        setState(NESystemService::ServicePhase::Starting);
+        LOG_DBG( "Starting log collector service, the current option [ %s ]", NESystemService::as_string(optStartup) );
+        set_state(NESystemService::ServicePhase::Starting);
 
         if (registerService())
         {
@@ -201,7 +201,7 @@ int32_t SystemServiceBase::serviceMain(NESystemService::ServiceOption optStartup
         }
         else
         {
-            LOG_DBG("Unexpected option [ %s ]", NESystemService::getString(mSystemServiceOption));
+            LOG_DBG("Unexpected option [ %s ]", NESystemService::as_string(mSystemServiceOption));
         }
 
         serviceStop();
@@ -213,14 +213,14 @@ int32_t SystemServiceBase::serviceMain(NESystemService::ServiceOption optStartup
     }
 
     serviceRelease();
-    setState(NESystemService::ServicePhase::Stopped);
+    set_state(NESystemService::ServicePhase::Stopped);
 
     return result;
 }
 
 void SystemServiceBase::sendMessageToTarget(const RemoteMessage& message)
 {
-    mCommunication.sendMessage(message);
+    mCommunication.send_message(message);
 }
 
 void SystemServiceBase::controlService(SystemServiceBase::ServiceControl control)

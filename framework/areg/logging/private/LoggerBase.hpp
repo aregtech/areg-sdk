@@ -61,11 +61,11 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected constructor.
-     *          Initializes the logger and sets the provided log configuration object,
-     *          which supplies methods for accessing property values.
-     * \param   logConfig   An instance of the log configuration object containing
-     *                      settings for initialization and message output.
+     * \brief   Protected constructor. Initializes the logger and sets the provided log
+     *          configuration object, which supplies methods for accessing property values.
+     *
+     * \param   logConfig       An instance of the log configuration object containing settings for
+     *                          initialization and message output.
      **/
     explicit LoggerBase(LogConfiguration& logConfig);
 
@@ -84,75 +84,75 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Initializes and opens the logger. If this method returns true,
-     *          the log manager will start forwarding messages for logging.
-     *          If it returns false, the log manager assumes the logger is not
-     *          initialized and will not send messages for logging.
-     *          The logger must be opened before any messages can be logged.
+     * \brief   Initializes and opens the logger. If this method returns true, the log manager will
+     *          start forwarding messages for logging. If it returns false, the log manager assumes
+     *          the logger is not initialized and will not send messages for logging. The logger
+     *          must be opened before any messages can be logged.
+     *
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    virtual bool openLogger() = 0;
+    virtual bool open_logger() = 0;
 
     /**
-     * \brief   Called to close logger and stop logging.
+     * \brief   Closes the logger and stops logging.
      **/
-    virtual void closeLogger() = 0;
+    virtual void close_logger() = 0;
 
     /**
-     * \brief   Called when message should be logged.
-     *          Every logger should implement method to process logger specific logging.
+     * \brief   Called when message should be logged. Every logger should implement method to
+     *          process logger specific logging.
+     *
+     * \param   log_message     The logging message to process.
      **/
-    virtual void logMessage( const NELogging::LogEntry & logMessage ) = 0;
+    virtual void log_message( const NELogging::LogEntry & log_message ) = 0;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    virtual bool isLoggerOpened() const = 0;
+    virtual bool is_logger_opened() const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Called when logger object(s) should be reopened.
-     *          If method returns true, the log manager forwards messages to logger object(s).
+     * \brief   Closes and reopens the logger. Returns true if the logger was successfully reopened.
      **/
-    inline bool reopenLogger();
+    inline bool reopen_logger();
 
     /**
-     * \brief   Return instance of log configuration object.
+     * \brief   Returns the log configuration object.
      **/
-    inline const LogConfiguration & getLogConfiguration() const;
+    inline const LogConfiguration & log_configuration() const;
 
     /**
-     * \return  Returns the layout object to print messages.
+     * \brief   Returns the layout object to format and output messages.
      **/
-    inline const LayoutManager & getLayoutMessage() const;
+    inline const LayoutManager & layout_message() const;
 
     /**
-     * \return  Returns the layout object to print "enter scope" message.
+     * \brief   Returns the layout object to format "enter scope" messages.
      **/
-    inline const LayoutManager & getLayoutEnterScope() const;
+    inline const LayoutManager & layout_enter_scope() const;
 
     /**
-     * \return  Returns the layout object to output "exit scope" message.
+     * \brief   Returns the layout object to format "exit scope" messages.
      **/
-    inline const LayoutManager & getLayoutExitScope() const;
+    inline const LayoutManager & layout_exit_scope() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Creates message layout objects. Returns true if succeeded.
-     *          Overwrite method to change layouts.
+     * \brief   Creates message layout objects and returns true if succeeded.
      **/
-    virtual bool createLayouts();
+    virtual bool create_layouts();
 
     /**
-     * \brief   Release previously crated layouts
+     * \brief   Releases previously created layouts.
      **/
-    virtual void releaseLayouts();
+    virtual void release_layouts();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -181,6 +181,9 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     LoggerBase() = delete;
     AREG_NOCOPY_NOMOVE( LoggerBase );
 };
@@ -188,28 +191,28 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline bool LoggerBase::reopenLogger()
+inline bool LoggerBase::reopen_logger()
 {
-    closeLogger();
-    return openLogger();
+    close_logger();
+    return open_logger();
 }
 
-inline const LogConfiguration & LoggerBase::getLogConfiguration() const
+inline const LogConfiguration & LoggerBase::log_configuration() const
 {
     return mLogConfiguration;
 }
 
-inline const LayoutManager & LoggerBase::getLayoutMessage() const
+inline const LayoutManager & LoggerBase::layout_message() const
 {
     return mLayoutsMessage;
 }
 
-inline const LayoutManager & LoggerBase::getLayoutEnterScope() const
+inline const LayoutManager & LoggerBase::layout_enter_scope() const
 {
     return mLayoutsScopeEnter;
 }
 
-inline const LayoutManager & LoggerBase::getLayoutExitScope() const
+inline const LayoutManager & LoggerBase::layout_exit_scope() const
 {
     return mLayoutsScopeExit;
 }

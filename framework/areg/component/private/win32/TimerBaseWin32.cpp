@@ -24,21 +24,21 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-TIMERHANDLE TimerBase::_osCreateWaitableTimer()
+TIMERHANDLE TimerBase::_os_create()
 {
     TCHAR * name{ nullptr };
     TCHAR convertName[MAX_PATH];
 
-    if ( mName.isEmpty( ) == false )
+    if ( mName.is_empty( ) == false )
     {
-        NEString::copyString<TCHAR, char>( convertName, MAX_PATH, mName.getString( ), mName.getLength( ) );
+        NEString::copy_string<TCHAR, char>( convertName, MAX_PATH, mName.as_string( ), mName.length( ) );
         name = convertName;
     }
 
     return static_cast<TIMERHANDLE>(::CreateWaitableTimer( nullptr, FALSE, name ));
 }
 
-void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )
+void TimerBase::_os_destroy( TIMERHANDLE handle )
 {
     ::CancelWaitableTimer( static_cast<HANDLE>(handle) );
     ::CloseHandle( static_cast<HANDLE>(handle) );

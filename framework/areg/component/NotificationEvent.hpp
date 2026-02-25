@@ -52,17 +52,8 @@ class ProxyBase;
 // NotificationEventData class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Notification Event data to send to forward from Proxy to
- *              its clients. Contains main basic information to trigger
- *              appropriate response and update function calls.
- * 
- * \details     The Notification Event Data object contains basic information
- *              to trigger appropriate response, update or request failure
- *              function calls. It contains notification message ID,
- *              call sequence number, result type and Proxy information.
- *              This data is a part of Notification Event. Extend
- *              only if there is a need.
- *
+ * \brief   Notification event data sent from Proxy to its clients. Contains information needed to
+ *          trigger response and update function calls.
  **/
 class AREG_API NotificationEventData
 {
@@ -72,25 +63,27 @@ class AREG_API NotificationEventData
 public:
 
     /**
-     * \brief	Constructor. Creates and sets Notification event data
-     * \param	proxy	    The pointer of Proxy object which triggered
-     *                      notification message
-     * \param	notifyType	The result flag of notification event. 
-     *                      See details in NEService::ResultType
-     * \param	notifyId	The call ID, usually response ID or attribute ID.
-     *                      If request fails, also request ID.
-     * \param	seqNr	    The call sequence number.
+     * \brief   Creates and sets Notification event data.
+     *
+     * \param   proxy           The pointer of Proxy object which triggered notification message
+     * \param   notifyType      The result flag of notification event. See details in
+     *                          NEService::ResultType
+     * \param   notifyId        The call ID, usually response ID or attribute ID. If request fails,
+     *                          also request ID.
+     * \param   seqNr           The call sequence number.
      **/
     NotificationEventData( const ProxyBase & proxy, NEService::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     NotificationEventData( const NotificationEventData & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     NotificationEventData( NotificationEventData && src ) noexcept;
@@ -102,12 +95,14 @@ public:
 
     /**
      * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     NotificationEventData & operator = ( const NotificationEventData & src );
 
     /**
      * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     NotificationEventData & operator = ( NotificationEventData && src ) noexcept;
@@ -117,41 +112,49 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns Proxy pointer if any was set or returns null.
+     * \brief   Returns Proxy pointer if set; nullptr otherwise.
      **/
-    inline const ProxyBase * getProxy() const;
+    inline const ProxyBase * proxy() const;
     /**
-     * \brief   Sets the proxy object
+     * \brief   Sets the proxy object.
+     *
+     * \param   proxy       The Proxy object to set.
      **/
-    inline void setProxy(const ProxyBase & proxy);
+    inline void set_proxy(const ProxyBase & proxy);
 
     /**
      * \brief   Returns the result of notification type.
      **/
-    inline NEService::ResultType getNotifyType() const;
+    inline NEService::ResultType notify_type() const;
 
     /**
-     * \brief   Sets the result of notification
+     * \brief   Sets the result of notification.
+     *
+     * \param   notifyType      The notification result to set.
      **/
-    inline void setNotifyType(NEService::ResultType notifyType);
+    inline void set_notify_type(NEService::ResultType notifyType);
 
     /**
      * \brief   Returns notification message ID.
      **/
-    inline uint32_t getNotifyId() const;
+    inline uint32_t notify_id() const;
     /**
-     * \brief   Sets notification message ID
+     * \brief   Sets notification message ID.
+     *
+     * \param   notifyId    The notification message ID to set.
      **/
-    inline void setNotifyId( uint32_t notifyId );
+    inline void set_notify_id( uint32_t notifyId );
 
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline const SequenceNumber & getSequenceNr() const;
+    inline const SequenceNumber & sequence_nr() const;
     /**
      * \brief   Sets sequence number of a caller.
+     *
+     * \param   seqNr       The sequence number to set.
      **/
-    inline void setSequenceNr(const SequenceNumber & seqNr );
+    inline void set_sequence_nr(const SequenceNumber & seqNr );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -178,6 +181,9 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     NotificationEventData() = delete;
 };
 
@@ -186,20 +192,8 @@ private:
 // NotificationEvent class declaration, used to send notifications
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Notification Event is an internal Event created by
- *          Proxy to notify its clients. This class is a base class
- *          for all proxy notifications. Every Service Interface has
- *          own Notification Event type to provide uniqueness.
- * 
- *          Notification events are created when a proxy notifies response
- *          of request, broadcast or data update that clients receive. 
- *          The notification events are queued in the internal queue of 
- *          the dispatcher and are processed immediately after external 
- *          event processing is finished. All Proxy clients are instances
- *          of NotificationConsumer
- *
- *          The state-machines as well use internal notification events
- *          when generate event to trigger in state-machine.
+ * \brief   Base class for notification events sent by a proxy to notify clients of attribute
+ *          updates, broadcasts, and responses. Internal use only.
  **/
 class AREG_API NotificationEvent   : public Event
 {
@@ -213,13 +207,13 @@ class AREG_API NotificationEvent   : public Event
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Creates and sends Notification Event for
-     *          specified notification consumer, and 
-     *          containing specified notification data
-     * \param	data	Notification Data to forward.
-     * \param	caller  The Notification Consumer, which should be notified.
+     * \brief   Creates and sends a notification event to the specified consumer with the given
+     *          notification data.
+     *
+     * \param   data        The notification data to forward.
+     * \param   caller      The notification consumer to notify, or null to broadcast.
      **/
-    static void sendEvent(const NotificationEventData & data, NotificationConsumer * caller = nullptr);
+    static void send_event(const NotificationEventData & data, NotificationConsumer * caller = nullptr);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -227,9 +221,9 @@ public:
 protected:
 
     /**
-     * \brief	Initialization constructor.
-     *          Sets notification event data.
-     * \param	data	The Notification Event Data to set
+     * \brief   Initializes the notification event with the given data.
+     *
+     * \param   data    The notification event data to set.
      **/
     explicit NotificationEvent( const NotificationEventData & data );
 
@@ -243,25 +237,24 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns Notification Event object for read only.
+     * \brief   Returns a read-only reference to the notification event data.
      **/
-    inline const NotificationEventData & getData() const;
+    inline const NotificationEventData & data() const;
 
 protected:
     /**
-     * \brief   Returns Notification Event object for update.
-     *          Protected.
+     * \brief   Returns a modifiable reference to the notification event data. Protected.
      **/
-    inline NotificationEventData & getData();
+    inline NotificationEventData & data();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden functions
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Sets current thread as a event target thread.
+     * \brief   Sets the current thread as the target thread for event delivery.
      **/
-    void setTargetThread();
+    void set_target_thread();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -276,6 +269,9 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     NotificationEvent() = delete;
     AREG_NOCOPY_NOMOVE( NotificationEvent );
 };
@@ -284,10 +280,8 @@ private:
 // NotificationConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Notification Event consumer is an object that receives
- *          notification messages. All Client objects are instances of 
- *          Notification Event Consumer to be able to receive and process
- *          notifications from proxies.
+ * \brief   Base class for all client objects that consume and process notification events from
+ *          proxies.
  **/
 class AREG_API NotificationConsumer  : public EventConsumer
 {
@@ -296,7 +290,7 @@ class AREG_API NotificationConsumer  : public EventConsumer
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Default constructor.
+     * \brief
      **/
     NotificationConsumer() = default;
 
@@ -314,13 +308,12 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Notification event processing function.
-     *          Should be overwritten by every client object.
-     *          Function is triggered by dispatcher when notification
-     *          event is going to be processed.
-     * \param   eventElem   The notification event object to process.
+     * \brief   Processes a notification event. Override to handle attribute updates, broadcasts,
+     *          and response notifications.
+     *
+     * \param   eventElem       The notification event object to process.
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem ) = 0;
+    virtual void process_notification_event( NotificationEvent & eventElem ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -331,11 +324,12 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Override method derived from EventConsumer.
-     *          This function is filtering out notification events
-     *          and triggers notification event processing function.
+     * \brief   Filters notification events and delegates to process_notification_event().
+     *          Automatically triggered by the dispatcher.
+     *
+     * \param   eventElem       The event being processed.
      **/
-    void startEventProcessing( Event & eventElem ) override;
+    void start_event_processing( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls
@@ -352,42 +346,42 @@ private:
 // class NotificationEventData inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyBase* NotificationEventData::getProxy() const
+inline const ProxyBase* NotificationEventData::proxy() const
 {
     return mProxy;
 }
 
-inline void NotificationEventData::setProxy( const ProxyBase & proxy )
+inline void NotificationEventData::set_proxy( const ProxyBase & proxy )
 {
     mProxy = &proxy;
 }
 
-inline NEService::ResultType NotificationEventData::getNotifyType() const
+inline NEService::ResultType NotificationEventData::notify_type() const
 {
     return mNotifyType;
 }
 
-inline void NotificationEventData::setNotifyType( NEService::ResultType notifyType )
+inline void NotificationEventData::set_notify_type( NEService::ResultType notifyType )
 {
     mNotifyType = notifyType;
 }
 
-inline uint32_t NotificationEventData::getNotifyId() const
+inline uint32_t NotificationEventData::notify_id() const
 {
     return mNotifyId;
 }
 
-inline void NotificationEventData::setNotifyId( uint32_t notifyId )
+inline void NotificationEventData::set_notify_id( uint32_t notifyId )
 {
     mNotifyId = notifyId;
 }
 
-inline const SequenceNumber & NotificationEventData::getSequenceNr() const
+inline const SequenceNumber & NotificationEventData::sequence_nr() const
 {
     return mSequenceNr;
 }
 
-inline void NotificationEventData::setSequenceNr(const SequenceNumber & seqNr )
+inline void NotificationEventData::set_sequence_nr(const SequenceNumber & seqNr )
 {
     mSequenceNr = seqNr;
 }
@@ -395,12 +389,12 @@ inline void NotificationEventData::setSequenceNr(const SequenceNumber & seqNr )
 //////////////////////////////////////////////////////////////////////////
 // class NotificationEvent inline function implementation
 //////////////////////////////////////////////////////////////////////////
-inline const NotificationEventData & NotificationEvent::getData() const
+inline const NotificationEventData & NotificationEvent::data() const
 {
     return mData;
 }
 
-inline NotificationEventData & NotificationEvent::getData()
+inline NotificationEventData & NotificationEvent::data()
 {
     return mData;
 }

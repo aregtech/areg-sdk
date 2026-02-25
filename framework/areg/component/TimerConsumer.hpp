@@ -46,9 +46,8 @@ class DispatcherThread;
 // TimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   TimerConsumer class is receiving timer processing
- *          message when timer is expired. Inherit and override
- *          pure virtual function to process Timer.
+ * \brief   Base class for objects that consume and process timer events. Inherit and override
+ *          process_timer() to handle timer expiration.
  **/
 class AREG_API TimerConsumer : public  TimerEventConsumerBase
 {
@@ -57,7 +56,7 @@ class AREG_API TimerConsumer : public  TimerEventConsumerBase
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Constructor
+     * \brief
      **/
     TimerConsumer() = default;
     /**
@@ -74,28 +73,30 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered when Timer is expired. 
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
+     * \brief   Triggered when a timer expires. Override to process the expired timer.
+     *
+     * \param   timer       The timer object that has expired.
      **/
-    virtual void processTimer( Timer & timer ) = 0;
+    virtual void process_timer( Timer & timer ) = 0;
 
     /**
-     * \brief   Automatically triggered when event is dispatched by thread.
-     * \param   data    The Timer Event Data object containing Timer object.
+     * \brief   Automatically triggered when a timer event is dispatched. Extracts the timer and
+     *          delegates to process_timer().
+     *
+     * \param   data    The timer event data containing the timer object.
      **/
-    void processEvent( const TimerEventData & data) override;
+    void process_event( const TimerEventData & data) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden overrides
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief	Triggered when dispatcher starts to dispatch Timer Event.
-     * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
+     * \brief   Triggered by the dispatcher when starting to process a timer event.
+     *
+     * \param   eventElem       The timer event being processed. Ignored if not a TimerEvent.
      **/
-    void startEventProcessing( Event & eventElem) override;
+    void start_event_processing( Event & eventElem) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

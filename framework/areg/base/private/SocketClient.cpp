@@ -17,7 +17,7 @@
 SocketClient::SocketClient( const char * hostName, uint16_t portNr )
     : Socket  ( )
 {
-    mAddress.resolveAddress(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, false);
+    mAddress.resolve_address(hostName != nullptr ? hostName : NESocket::LocalHost, portNr, false);
 }
 
 SocketClient::SocketClient(const NESocket::SocketAddress & remoteAddress)
@@ -26,25 +26,25 @@ SocketClient::SocketClient(const NESocket::SocketAddress & remoteAddress)
     mAddress = remoteAddress;
 }
 
-bool SocketClient::createSocket(const char * hostName, uint16_t portNr)
+bool SocketClient::create_socket(const char * hostName, uint16_t portNr)
 {
-    return ( mAddress.resolveAddress(hostName, portNr, false) && createSocket());
+    return ( mAddress.resolve_address(hostName, portNr, false) && create_socket());
 }
 
-bool SocketClient::createSocket()
+bool SocketClient::create_socket()
 {
-    decreaseLock();
+    decrease_lock();
 
-    if ( mAddress.isValid() )
+    if ( mAddress.is_valid() )
     {
-    	SOCKETHANDLE hSocket = NESocket::clientSocketConnect(static_cast<const char *>(mAddress.getHostAddress()), mAddress.getHostPort());
+    	SOCKETHANDLE hSocket = NESocket::client_socket_connect(static_cast<const char *>(mAddress.host_address()), mAddress.host_port());
         if ( hSocket != NESocket::InvalidSocketHandle )
         {
         	mSocket = std::make_shared<SOCKETHANDLE>(hSocket);
-            mSendSize = NESocket::getMaxSendSize(hSocket);
-            mRecvSize = NESocket::getMaxReceiveSize(hSocket);
+            mSendSize = NESocket::max_send_size(hSocket);
+            mRecvSize = NESocket::max_receive_size(hSocket);
         }
     }
 
-    return isValid();
+    return is_valid();
 }

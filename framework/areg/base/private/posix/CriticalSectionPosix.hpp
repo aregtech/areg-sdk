@@ -31,10 +31,8 @@
 // CriticalSectionPosix class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   POSIX Critical Section is a wrapper of POSIX spin lock, since
- *          it is specified as the  fastest locking / synchronization object.
- *          The Critical Section can be used only for the communication between threads.
- *          The Critical Section can be owned only by one thread at a time.
+ * \brief   POSIX critical section wrapper for POSIX spin-lock. Provides synchronization for
+ *          inter-thread communication.
  **/
 class CriticalSectionPosix   : protected SyncObjectPosix
 {
@@ -44,8 +42,9 @@ class CriticalSectionPosix   : protected SyncObjectPosix
 public:
 
     /**
-     * \brief   Creates Critical Section object and initializes POSIX spin lock.
-     * \param   initLock    If true, the critical section (spin lock) is initially locked.
+     * \brief   Creates and initializes the critical section with optional initial lock state.
+     *
+     * \param   initLock    If true, the critical section is initially locked.
      **/
     explicit CriticalSectionPosix( bool initLock = false );
 
@@ -60,26 +59,25 @@ public:
 public:
 
     /**
-     * \brief   Locks the critical section and prevents other threads to
-     *          access shared data until the locking thread does not release
-     *          the critical section.
-     * \return  Returns true if operation succeeded.
+     * \brief   Acquires the critical section, preventing other threads from accessing the protected
+     *          shared data.
+     *
+     * \return  Returns true if the operation succeeded.
      **/
     bool lock() const;
 
     /**
-     * \brief   Unlocks critical section so that, one of waiting threads is released
-     *          to own critical section.
+     * \brief   Releases the critical section, allowing waiting threads to acquire it.
      **/
     void unlock() const;
 
     /**
-     * \brief   Tests whether the critical section can be locked or not.
-     *          It is locked if returned value is 'true'.
-     * \return  Returns true if calling thread have got the ownership.
-     *          Returns false if calling thread could not get the ownership.
+     * \brief   Attempts to acquire the critical section without blocking.
+     *
+     * \return  Returns true if the calling thread acquired ownership; false if another thread owns
+     *          it.
      **/
-    bool tryLock() const;
+    bool try_lock() const;
 
 protected:
 /************************************************************************/
@@ -87,15 +85,14 @@ protected:
 /************************************************************************/
     
     /**
-     * \brief   Returns true if synchronization object is valid.
+     * \brief   Returns true if the synchronization object is valid.
      **/
-    bool isValid() const override;
+    bool is_valid() const override;
 
     /**
-     * \brief   Triggered when synchronization object is going to be deleted.
-     *          This should free all resources.
+     * \brief   Releases all critical section resources before deletion.
      **/
-    void freeResources() override;
+    void free_resources() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -104,7 +101,7 @@ private:
     /**
      * \brief   The Critical Section object, which has implementation of recursive spin lock.
      **/
-    mutable SpinLockPosix  mSpinLock;
+    mutable SpinLockPosix  m_spin_lock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

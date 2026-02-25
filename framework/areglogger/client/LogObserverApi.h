@@ -185,38 +185,38 @@ enum ObserverState
  * \brief   The callback of the event triggered when initializing and configuring the observer.
  *          The callback indicates the IP address and port number of the log collector service set
  *          in the configuration file.
- * \param   isEnabled       The flag, indicating whether the logging service is enabled or not.
+ * \param   is_enabled       The flag, indicating whether the logging service is enabled or not.
  * \param   address         The null-terminated string of the IP address of the log collector service set in the configuration file.
  * \param   port            The IP port number of the log collector service set in the configuration file.
  **/
-typedef void (*FuncObserverConfigured)(bool /*isEnabled*/, const char* /*address*/, uint16_t /*port*/);
+typedef void (*FuncObserverConfigured)(bool /*is_enabled*/, const char* /*address*/, uint16_t /*port*/);
 
 /**
  * \brief   The callback of the event triggered when initializing and configuring the observer.
  *          The callback indicates the supported database, the database location or URI and
  *          the database user name.
- * \param   isEnabled       The flag, indicating whether the logging in the database is enabler or not.
+ * \param   is_enabled       The flag, indicating whether the logging in the database is enabler or not.
  * \param   dbName          The name of the  supported database.
  * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
  * \param   dbUser          The database user to use when log in. If null or empty, the database may not require the user name.
  **/
-typedef void (*FuncLogDbConfigured)(bool /*isEnabled*/, const char* /*dbName*/, const char* /*dbLocation*/, const char* /*dbUser*/);
+typedef void (*FuncLogDbConfigured)(bool /*is_enabled*/, const char* /*dbName*/, const char* /*dbLocation*/, const char* /*dbUser*/);
 
 /**
  * \brief   The callback of the event triggered when the observer connects or disconnects from the log collector service.
- * \param   isConnected     Flag, indicating whether observer is connected or disconnected.
+ * \param   is_connected     Flag, indicating whether observer is connected or disconnected.
  * \param   address         The IP address of the log collector service to connect or disconnect.
  * \param   port            The IP port number of the log collector service to connect or disconnect.
  **/
-typedef void (*FuncServiceConnected)(bool /*isConnected*/, const char * /*address*/, uint16_t /*port*/);
+typedef void (*FuncServiceConnected)(bool /*is_connected*/, const char * /*address*/, uint16_t /*port*/);
 
 /**
  * \brief   The callback of the event trigger when starting or pausing the log observer.
  *          If the log observer is paused, on start it continues to write logs in the same file.
  *          If the log observer is stopped (disconnected is called), on start it creates new file.
- * \param   isStarted       The flag indicating whether the lob observer is started or paused.
+ * \param   is_started       The flag indicating whether the lob observer is started or paused.
  **/
-typedef void (*FuncObserverStarted)(bool /*isStarted*/);
+typedef void (*FuncObserverStarted)(bool /*is_started*/);
 
 /**
  * \brief   The callback of the event triggered when the logging database is created.
@@ -261,9 +261,9 @@ typedef void (*FuncLogUpdateScopes)(ITEM_ID /*cookie*/, const ScopeInfo* /*scope
 
 /**
  * \brief   The callback of the event triggered when receive message to log.
- * \param   logMessage  The structure of the message to log.
+ * \param   log_message  The structure of the message to log.
  **/
-typedef void (*FuncLogMessage)(const LogRecord * /*logMessage*/);
+typedef void (*FuncLogMessage)(const LogRecord * /*log_message*/);
 
 /**
  * \brief   The callback of the event triggered when receive remote message to log.

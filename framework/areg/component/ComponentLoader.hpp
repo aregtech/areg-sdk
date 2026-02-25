@@ -104,7 +104,7 @@
  **/
 #define END_REGISTER_THREAD(thread_name)                                                                    \
             /*  End registering component thread, add to model                      */                      \
-            areg_model_.addThread(thrEntry);                                                                    \
+            areg_model_.add_thread(thrEntry);                                                                    \
         }
 
  /**
@@ -118,7 +118,7 @@
  *          when component thread starts running.
  *
  * \param   component_name  The name of component. Should be unique in application
- *                          This is same as Role Name of component.
+ *                          This is same as Role name of component.
  * \param   funcCreate      Pointer to global (or static) function of type
  *                          NERegistry::FuncCreateComponent,
  *                          to instantiate component object. Called by component thread.
@@ -133,7 +133,7 @@
                                                         , (component_name)                                  \
                                                         , funcCreate                                        \
                                                         , funcDelete );                                     \
-                comEntry.setData( data );
+                comEntry.set_data( data );
 
 /**
  * \brief   Register Component within every Component Thread scope.
@@ -146,7 +146,7 @@
  *          when component thread starts running.
  *
  * \param   component_name  The name of component. Should be unique in application
- *                          This is same as Role Name of component.
+ *                          This is same as Role name of component.
  **/
 #define BEGIN_REGISTER_COMPONENT(component_name, component_class)                                           \
             {                                                                                               \
@@ -158,7 +158,7 @@
 
 #define END_REGISTER_COMPONENT(comp_name)                                                                   \
                 /*  Add and register component entry in component thread            */                      \
-                thrEntry.addComponent(comEntry);                                                            \
+                thrEntry.add_component(comEntry);                                                            \
             }
 
 /**
@@ -178,7 +178,7 @@
  **/
 #define REGISTER_IMPLEMENT_SERVICE(svc_name, svc_version)                                                   \
                 /*  Register implemented service in component                       */                      \
-                comEntry.addSupportedService( NERegistry::ServiceEntry((svc_name), (svc_version)) );
+                comEntry.add_supported_service( NERegistry::ServiceEntry((svc_name), (svc_version)) );
 
 /**
  * \brief   Registers optional worker thread for the component.
@@ -199,7 +199,7 @@
  **/
 #define REGISTER_WORKER_THREAD_EX2(worker_thread_name, consumer_name, timeout, stackSizeKb)                 \
                 /*  Register component worker thread                                */                      \
-                comEntry.addWorkerThread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName            \
+                comEntry.add_worker_thread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName            \
                                             , (worker_thread_name)                                          \
                                             , comEntry.mRoleName                                            \
                                             , (consumer_name)                                               \
@@ -236,7 +236,7 @@
  **/
 #define REGISTER_DEPENDENCY(depend_role_name)                                                               \
                 /*  Register dependency. Server component                           */                      \
-                comEntry.addDependencyService(NERegistry::DependencyEntry(depend_role_name));
+                comEntry.add_dependency_service(NERegistry::DependencyEntry(depend_role_name));
 
 
 /**
@@ -288,10 +288,8 @@ class Thread;
 // ModelDataCreator class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Model creator. A class, which is calling model data creator
- *          function to create model and set in Component Loader class.
- *          The object does not have member functions or variables, 
- *          it is created only to load model and plays no additional role.
+ * \brief   Helper class that loads a component model and registers it with the component loader.
+ *          Not persistent after model loading.
  **/
 class AREG_API ModelDataCreator
 {
@@ -312,19 +310,19 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor.
-     *          Creates object and loads components, which should be created
-     *          by calling specified function and by passing modelName.
-     * \param   funtCreateModelData The pointer to function, which creates model
-     * \param   modelName           The name of component model to create.
+     * \brief   Loads a component model by calling the specified creation function with the given
+     *          model name.
+     *
+     * \param   funtCreateModelData     Function pointer to create the model data.
+     * \param   modelName               The unique name of the component model to create.
      **/
     ModelDataCreator( ModelDataCreator::FuncInitLoaderItem funtCreateModelData, const char * modelName );
 
     /**
-     * \brief   Initialization constructor.
-     *          Adds mode data to model loader. The mode should be already
-     *          designed and the unique name should be set.
-     * \param   newModel    The new model to add to model loader
+     * \brief   Registers a pre-designed model with the component loader. The model must have a
+     *          unique name already assigned.
+     *
+     * \param   newModel    The model to register.
      **/
     explicit ModelDataCreator( const NERegistry::Model & newModel );
     
@@ -337,6 +335,9 @@ public:
 // Forbidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ModelDataCreator( ) = delete;
     AREG_NOCOPY_NOMOVE( ModelDataCreator );
 };
@@ -345,19 +346,9 @@ private:
 // ComponentLoader class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       By registering application model items, component loader
- *              contains all required information to instantiate all objects.
- *              Every component should have its Load and Unload methods
- *              to instantiate component and start worker thread.
- *              Starting and Stopping worker thread should be done
- *              within component Load and Unload function, which will
- *              receive component registration entry containing all required
- *              information (component role name, worker thread name).
- *              To start instantiate model items, call loadComponentModel()
- *              static method of component loader. Do this on application
- *              startup. To destroy model items ans stop application, call
- *              unloadComponentModel() method of component loader.
- *              Details see bellow.
+ * \brief   Singleton responsible for registering, loading, and unloading component models.
+ *          Instantiates components, starts worker threads, and manages the complete lifecycle of
+ *          model items based on registered configuration.
  **/
 class AREG_API ComponentLoader
 {
@@ -389,141 +380,127 @@ private:
 public:
 
     /**
-     * \brief   Returns Component Loader object, which is a singleton object
-     *          and instantiated one per process.
+     * \brief   Returns the singleton ComponentLoader instance.
      **/
-    static ComponentLoader & getInstance();
+    static ComponentLoader & instance();
 
     /**
-     * \brief   Call to start instantiating registered objects in the specified model.
-     *          If specified modelName is empty, the function will load all Models,
-     *          which are not loaded. If name is specified, it will search in Model list
-     *          model with specified name and if found, it will load Model.
-     *          The function returns true, if Model is either already loaded or 
-     *          loading Model completed with success.
-     *          The function returns false, if there is no Model with specified name
-     *          or failed loading mode.
-     * \param   modelName   The name of model to load. If empty, it will load all
-     *                      models, which are not loaded yet.
-     * \return  Returns true if model is loaded with success.
+     * \brief   Starts instantiating registered objects in the specified model.
+     *
+     * \param   modelName       The name of the model to load; if empty, loads all unloaded models.
+     * \return  Returns true if the model is loaded or was already loaded; false if not found or
+     *          loading failed.
      **/
-    static bool loadComponentModel( const String & modelName );
+    static bool load_component_model( const String & modelName );
 
     /**
-     * \brief   Call to shutdown and destroy instantiated objects of mode, and make cleanups.
-     *          This method blocks calling thread if 'waitComplete' is set to true.
-     *          The caller waits until all jobs are complete and threads exit.
-     *          Otherwise, it triggers exit and immediately returns.
-     * \param   waitComplete    If true, waits for Component Loader to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and
-     *                          returns.
-     * \param   modelName       The name of model to unload. If empty, it will unloaded
-     *                          all previously loaded models.
+     * \brief   Shuts down and destroys instantiated objects in the specified model.
+     *
+     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
+     *                          threads. Otherwise, triggers exit and returns immediately.
+     * \param   modelName       The name of the model to unload; if empty, unloads all loaded
+     *                          models.
      **/
-    static void unloadComponentModel( bool waitComplete, const String & modelName );
+    static void unload_component_model( bool waitComplete, const String & modelName );
 
     /**
-     * \brief   The calling thread is blocked until Component Loader did not
-     *          complete the jobs and exit threads. This should be called if previously
-     *          it was requested to stop the Watchdog Manager without waiting for completion.
+     * \brief   Blocks the calling thread until Component Loader completes jobs and exits.
      **/
-    static void waitModelUnload(const String & modelName);
+    static void wait_model_unload(const String & modelName);
 
     /**
-     * \brief   This call unloads components of specified mode and remove model
-     *          from model list. If nullptr is passed, all components and models are removed
-     * \param   modelName   The name of model to unload and remove. If nullptr, it will unloaded
-     *                      all previously loaded models and all models will be removed.
+     * \brief   Unloads components and removes the model from the registry.
+     *
+     * \param   modelName       The name of the model to remove; if nullptr, removes all models.
      **/
-    static void removeComponentModel( const String & modelName );
+    static void remove_component_model( const String & modelName );
 
     /**
-     * \brief   Adds new model to the model list. The name of the new model, names of threads and
-     *          services should be unique in the entire system. Otherwise, the model is not added.
-     * \param   newModel    The new model to add to the list.
-     * \return  Returns true, if succeeded to add new model to the list. 
-     *          Returns false, if there is already a model, thread or service with the same name
-     *          registered in the system.
+     * \brief   Adds a new model with globally unique names for the model, threads, and services.
+     *
+     * \param   newModel    The model to add; all names must be globally unique.
+     * \return  Returns true if successfully added; false if a duplicate name exists.
      **/
-    static bool addModelUnique( const NERegistry::Model & newModel );
+    static bool add_model_unique( const NERegistry::Model & newModel );
 
     /**
-     * \brief   Searches a model by name in the registered model list.
-     * \param   modelName   The name of the model to search.
-     * \return  Returns instance of the model. If found, the model is valid. Otherwise, it is invalid model.
-     *          Check the validity of the model by calling isValid() method.
+     * \brief   Searches for a model by name in the registered list.
+     *
+     * \param   modelName       The name of the model to search.
+     * \return  Returns the model if found (check validity with is_valid()); otherwise returns an
+     *          invalid model.
      **/
-    static const NERegistry::Model & findModel( const String & modelName );
+    static const NERegistry::Model & find_model( const String & modelName );
 
     /**
-     * \brief   In the model list searches thread entry and returns the list of
-     *          registered components entries. If the thread name is valid, it 
-     *          returns at least one component in the list. Otherwise, returns
-     *          invalid component list.
-     * \param   threadName  The valid component thread name.
-     * \return  If the thread name is valid, it returns list of registered components.
-     *          Otherwise, returns invalid list.
+     * \brief   Returns the list of component entries for a registered thread.
+     *
+     * \param   threadName      The name of the component thread.
+     * \return  Returns the component list if the thread exists; otherwise returns an invalid list.
      **/
-    static const NERegistry::ComponentList & findComponentList( const String & threadName );
+    static const NERegistry::ComponentList & find_component_list( const String & threadName );
 
     /**
-     * \brief   Returns registered component entry object of
-     *          specified thread name and having specified role name
-     * \param   roleName    The role name of registered component to lookup
-     * \param   threadName  The name of registered thread.
+     * \brief   Returns a component entry with the specified role name in the given thread.
+     *
+     * \param   roleName        The role name of the component to find.
+     * \param   threadName      The name of the thread containing the component.
      **/
-    static const NERegistry::ComponentEntry & findComponentEntry(const String & roleName, const String & threadName);
+    static const NERegistry::ComponentEntry & find_component_entry(const String & roleName, const String & threadName);
 
     /**
-     * \brief   Returns registered component entry object having specified role name.
-     *          The component is searched in the complete Model list.
-     * \param   roleName    The role name of registered component to lookup
+     * \brief   Returns a component entry with the specified role name from the complete model list.
+     *
+     * \param   roleName    The role name of the component to find.
      **/
-    static const NERegistry::ComponentEntry & findComponentEntry(const String & roleName);
+    static const NERegistry::ComponentEntry & find_component_entry(const String & roleName);
 
     /**
-     * \brief   Returns registered component thread entry object having specified thread name.
-     *          The component thread entry is searched in the complete Model list.
-     * \param   threadName  The name of the component thread name to search.
+     * \brief   Returns a component thread entry with the specified thread name.
+     *
+     * \param   threadName      The name of the thread to find.
      **/
-    static const NERegistry::ComponentThreadEntry & findThreadEntry( const String & threadName );
+    static const NERegistry::ComponentThreadEntry & find_thread_entry( const String & threadName );
 
     /**
-     * \brief   Returns true, if Model with specified name is already registered and loaded.
-     * \param   modelName   The name of model to check. The name must be unique.
-     * \return  Returns true, if Model with specified name is already loaded.
+     * \brief   Returns true if a model with the specified name is loaded.
+     *
+     * \param   modelName       The unique name of the model to check.
+     * \return  Returns true if the model is loaded; false otherwise.
      **/
-    static bool isModelLoaded( const String & modelName );
+    static bool is_model_loaded( const String & modelName );
 
     /**
-     * \brief   Returns true, if the model with specified name is already registered.
-     * \param   modelName   The unique name of model to search in registered list.
-     * \return  Returns true, if the Model with specified name is already exist in the list.
+     * \brief   Returns true if a model with the specified name is registered.
+     *
+     * \param   modelName       The unique name of the model to check.
+     * \return  Returns true if the model exists in the registry; false otherwise.
      **/
-    static bool existModel( const String & modelName );
+    static bool exist( const String & modelName );
 
     /**
-     * \brief   Searches in the list the component by given name. If found, sets component data.
-     *          Returns true if found component and the data was successfully set.
-     * \param   roleName    The name of component to search in the list.
-     * \param   compData    The data to set in component which is passed to create method.
-     * \note    You should manually free memory if the data was manually allocated in the memory
+     * \brief   Sets component data for a component by role name.
+     *
+     * \param   roleName    The role name of the component.
+     * \param   compData    The data to associate with the component.
+     * \note    Manually free memory if the data was manually allocated.
      **/
-    static bool setComponentData( const String & roleName, std::any compData );
+    static bool set_component_data( const String & roleName, std::any compData );
 
     /**
-     * \brief   Searches in the list the component by given name. If found, resets component data.
-     *          Returns true if found component and the data was successfully reset.
-     * \param   roleName    The name of component to search in the list.
+     * \brief   Resets component data for a component by role name.
+     *
+     * \param   roleName    The role name of the component.
+     * \return  Returns true if the component was found and data was reset; false otherwise.
      **/
-    static bool resetComponentData(const String& roleName);
+    static bool reset(const String& roleName);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Hidden constructor to avoid duplicate instance, instantiates object in static method.
+     * \brief
      **/
     ComponentLoader();
 
@@ -538,144 +515,116 @@ private:
 protected:
 
     /**
-     * \brief   Loads all models, which are not loaded yet.
-     * \return  Returns number of models that was loaded.
+     * \brief   Loads all registered but unloaded models.
+     *
+     * \return  Returns the number of models loaded.
      **/
-    int32_t loadAllModels();
+    int32_t load_all_models();
 
     /**
-     * \brief   Loads threads and components of specified model.
-     *          It will start registered threads, which will load registered components.
-     *          If modelName is empty, it will load all Models.
-     *          If modelName is not empty, it will search for Model with
-     *          specified name and will start registered threads.
-     *          Function returns when all threads are started with success.
-     * \param   modelName   The name of Model to load. If empty string, loads all models,
-     *                      which are not loaded yet.
-     * \return  Returns number of models that was loaded.
+     * \brief   Loads the specified model and starts its threads and components.
+     *
+     * \param   modelName       The name of the model to load; if empty, loads all unloaded models.
+     * \return  Returns the number of models loaded.
      **/
-    int32_t loadModel( const String & modelName);
+    int32_t load_model( const String & modelName);
 
     /**
-     * \brief   Loads specified Model. It will start all registered in Model threads,
-     *          and start all components. Function returns when all threads are started with success.
-     * \param   whichModel  The Model object to load.
-     * \return  Returns true if specified mode is loaded with success.
+     * \brief   Loads the specified model and starts its threads and components.
+     *
+     * \param   whichModel      The model object to load.
+     * \return  Returns true if the model loaded successfully; false otherwise.
      **/
-    bool loadModel( NERegistry::Model & whichModel ) const;
+    bool load_model( NERegistry::Model & whichModel ) const;
     /**
-     * \brief   Unloads Model with specified name, deletes components and stops threads.
-     *          If modelName is not empty, it will unload
-     *          model with specified name.
-     *          If modelName is empty, it will unload all models.
-     *          This method blocks calling thread if 'waitComplete' is set to true.
-     *          The caller waits until all jobs are complete and threads exit.
-     *          Otherwise, it triggers exit and immediately returns.
-     * \param   waitComplete    If true, waits for Component Loader to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and
-     *                          returns.
-     * \param   modelName       The name of model to unload. If empty string, it will unload all models
+     * \brief   Unloads the specified model, deletes components, and stops threads.
+     *
+     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
+     *                          threads. Otherwise, triggers exit and returns immediately.
+     * \param   modelName       The name of the model to unload; if empty, unloads all loaded
+     *                          models.
      **/
-    void unloadModel( bool waitComplete, const String & modelName );
+    void unload_model( bool waitComplete, const String & modelName );
 
     /**
-     * \brief   Unloads specified Model, deletes components and stops threads.
-     *          This method blocks calling thread if 'waitComplete' is set to true.
-     *          The caller waits until all jobs are complete and threads exit.
-     *          Otherwise, it triggers exit and immediately returns.
-     * \param   waitComplete    If true, waits for Component Loader to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and
-     *                          returns.
-     * \param   whichModel      The Model object, which should be unloaded.
+     * \brief   Unloads the specified model, deletes components, and stops threads.
+     *
+     * \param   waitComplete    If true, waits for Component Loader to complete jobs and exit
+     *                          threads. Otherwise, triggers exit and returns immediately.
+     * \param   whichModel      The model object to unload.
      **/
-    void unloadModel( bool waitComplete, NERegistry::Model & whichModel ) const;
+    void unload_model( bool waitComplete, NERegistry::Model & whichModel ) const;
 
     /**
-     * \brief   Call to wait the component threads defined in the model to complete the job
-     *          and exit. The specified model should already unloaded to wait for completion.
-     *          This method blocks calling thread until all jobs are complete and threads exit.
-     * \param   modelName       The name of the model to wait. If empty, it waits for completion
-     *                          of all model components.
+     * \brief   Blocks until component threads of the specified model complete and exit.
+     *
+     * \param   modelName       The name of the model; if empty, waits for all model threads.
      **/
-    void waitModelThreads(const String & modelName);
+    void wait_model_threads(const String & modelName);
 
     /**
-     * \brief   Call to wait the component threads defined in the model to complete the job
-     *          and exit. The specified model should already unloaded to wait for completion.
-     *          This method blocks calling thread until all jobs are complete and threads exit.
-     * \param   whichModel      The Model object, which component threads should be completed.
+     * \brief   Blocks until component threads of the specified model complete and exit.
+     *
+     * \param   whichModel      The model object whose threads should complete.
      **/
-    void waitModelThreads(NERegistry::Model & whichModel);
+    void wait_model_threads(NERegistry::Model & whichModel);
 
     /**
-     * \brief   Searches in registries model by name. If found, returns valid pointer. Otherwise, returns null.
-     * \param   modelName   The name of model to search. All models should be unique within one process context.
-     * \return  If found model, returns valid pointer. Otherwise, returns null.
+     * \brief   Searches for a model by name and returns a pointer if found.
+     *
+     * \param   modelName       The name of the model to search; must be globally unique.
+     * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const NERegistry::Model * findModelByName( const String & modelName ) const;
+    const NERegistry::Model * find_model_named( const String & modelName ) const;
 
     /**
-     * \brief   Searches in registries thread entry by name. The threads should have unique names within process context.
-     *          If found, returns valid pointer to thread entry. Otherwise, returns null.
-     * \param   threadName  The name of thread to search in system.
-     * \return  Returns valid pointer if found thread entry registered with specified name. Otherwise, returns null.
+     * \brief   Searches for a thread entry by name and returns a pointer if found.
+     *
+     * \param   threadName      The name of the thread to search.
+     * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const NERegistry::ComponentThreadEntry * findThreadEntryByName( const String & threadName ) const;
+    const NERegistry::ComponentThreadEntry * find_thread_named( const String & threadName ) const;
 
     /**
-     * \brief   Searches in registries component entry by role name. The role names should have unique within process context.
-     *          If found, returns valid pointer to component entry. Otherwise, returns null.
-     * \param   roleName    The role name of component to search in system.
-     * \return  Returns valid pointer if found component entry registered with specified role name. Otherwise, returns null.
+     * \brief   Searches for a component entry by role name and returns a pointer if found.
+     *
+     * \param   roleName    The role name of the component to search.
+     * \return  Returns a valid pointer if found; nullptr otherwise.
      **/
-    const NERegistry::ComponentEntry * findComponentEntryByName( const String & roleName ) const;
+    const NERegistry::ComponentEntry * find_component_named( const String & roleName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Triggers exit events to shut down threads, specified in Thread List.
-     *          This automatically deletes all registered components
-     *          and stops registered worker threads.
-     * \param   threadList  The list of registered threads with unique names, 
-     *                          which found in the system.
+     * \brief   Triggers exit events for threads, stopping components and worker threads.
+     *
+     * \param   threadList      The list of threads to stop.
      **/
-    void _exitThreads( const ThreadList & threadList ) const;
+    void _exit_threads( const ThreadList & threadList ) const;
 
     /**
-     * \brief   The call of this function will blocks current thread and
-     *          the function returns when all threads in the list complete jobs and exit.
-     *          The call of this function does not close the thread objects.
-     * \param   threadList  The list of registered threads with unique names,
-     *                          which found in the system.
+     * \brief   Blocks until all threads in the list complete and exit.
+     *
+     * \param   threadList      The list of threads to wait for.
      **/
-    void _waitThreads( const ThreadList & threadList ) const;
+    void _wait_threads( const ThreadList & threadList ) const;
 
     /**
-     * \brief   The call of this function closes all threads in the list.
-     * \param   threadList  The list of registered threads with unique names,
-     *                          which found in the system.
+     * \brief   Closes all threads in the list.
+     *
+     * \param   threadList      The list of threads to close.
      **/
-    void _shutdownThreads( const ThreadList & threadList ) const;
+    void _shutdown_threads( const ThreadList & threadList ) const;
 
     /**
-     * \brief   Adds new Model object to the list.  All models should have
-     *          unique names, all registered threads in the model should
-     *          have unique names and all registered components in threads
-     *          should have unique role names. Before adding new Model,
-     *          the function will check names. If all registered names
-     *          are valid, the new Model will be added and the function
-     *          will return true. Otherwise, function returns false.
-     * \param   newModel    The new Model to add to the list.
-     *                      The Model should have unique name, all registered
-     *                      threads should have unique names and all components
-     *                      should have unique role names. Otherwise, new Model
-     *                      will not be added to the model.
-     * \return  Returns true, if new Model was added to the Model List.
-     *          Otherwise, it returns false.
+     * \brief   Adds a new model with globally unique names for the model, threads, and components.
+     *
+     * \param   newModel    The model to add; all names must be globally unique.
+     * \return  Returns true if successfully added; false if a duplicate name exists.
      **/
-    bool addModel( const NERegistry::Model & newModel );
+    bool add_model( const NERegistry::Model & newModel );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

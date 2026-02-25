@@ -72,10 +72,14 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes the network logging client object to forward logs to the log collector service.
-     * \param   logConfig       The log configuration object, which contains information about log state.
-     * \param   scopeController The scope controller object, which contains and controls the scopes in application.
-     * \param   dispatchThread  The dispatcher thread to dispatch events and messages.
+     * \brief   Initializes the network logging client object to forward logs to the log collector
+     *          service.
+     *
+     * \param   logConfig           The log configuration object, which contains information about
+     *                              log state.
+     * \param   scopeController     The scope controller object, which contains and controls the
+     *                              scopes in application.
+     * \param   dispatchThread      The dispatcher thread to dispatch events and messages.
      **/
     NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread);
 
@@ -94,30 +98,32 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Initializes and opens the logger. If this method returns true,
-     *          the log manager will start forwarding messages for logging.
-     *          If it returns false, the log manager assumes the logger is not
-     *          initialized and will not send messages for logging.
-     *          The logger must be opened before any messages can be logged.
+     * \brief   Initializes and opens the logger. If this method returns true, the log manager will
+     *          start forwarding messages for logging. If it returns false, the log manager assumes
+     *          the logger is not initialized and will not send messages for logging. The logger
+     *          must be opened before any messages can be logged.
+     *
      * \return  Returns true if the logger was successfully initialized and opened.
      **/
-    bool openLogger() override;
+    bool open_logger() override;
 
     /**
-     * \brief   Called to close logger and stop logging.
+     * \brief   Closes the logger and stops logging.
      **/
-    void closeLogger() override;
+    void close_logger() override;
 
     /**
-     * \brief   Called when message should be logged.
-     *          Every logger should implement method to process logger specific logging.
+     * \brief   Called when message should be logged. Every logger should implement method to
+     *          process logger specific logging.
+     *
+     * \param   log_message     The logging message to process.
      **/
-    void logMessage( const NELogging::LogEntry & logMessage ) override;
+    void log_message( const NELogging::LogEntry & log_message ) override;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
      **/
-    bool isLoggerOpened() const override;
+    bool is_logger_opened() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -130,54 +136,62 @@ private:
 
     /**
      * \brief   Triggered when remote service connection and communication channel is established.
+     *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void connectedRemoteServiceChannel(const Channel& channel) override;
+    void on_service_channel_connected(const Channel& channel) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
+     *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void disconnectedRemoteServiceChannel(const Channel& channel) override;
+    void on_service_channel_disconnected(const Channel& channel) override;
 
     /**
-     * \brief   Triggered when remote service connection and communication channel is lost.
-     *          The connection is considered lost if it not possible to read or
-     *          receive data, and it was not stopped by API call.
+     * \brief   Triggered when remote service connection and communication channel is lost. The
+     *          connection is considered lost if it not possible to read or receive data, and it was
+     *          not stopped by API call.
+     *
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void lostRemoteServiceChannel(const Channel& channel) override;
+    void on_service_channel_lost(const Channel& channel) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
-     * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
+     * \brief   Triggered when failed to send message.
+     *
+     * \param   msgFailed       The message, which failed to send.
+     * \param   whichTarget     The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
-     * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
+     * \brief   Triggered when failed to receive message.
+     *
+     * \param   whichSource     Indicates the failed source socket to receive message.
      **/
-    void failedReceiveMessage( Socket & whichSource ) override;
+    void failed_receive_message( Socket & whichSource ) override;
 
     /**
-     * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
-     *          In case of request message processing, the source should receive error notification.
-     * \param   msgUnprocessed  Unprocessed message data.
+     * \brief   Triggered when failed to process message, i.e. the target for message processing was
+     *          not found. In case of request message processing, the source should receive error
+     *          notification.
+     *
+     * \param   msgUnprocessed      Unprocessed message data.
      **/
-    void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+    void failed_process_message( const RemoteMessage & msgUnprocessed ) override;
 
     /**
-     * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
+     * \brief   Triggered when need to process received message.
+     *
+     * \param   msgReceived     Received message to process.
+     * \param   whichSource     The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -188,6 +202,9 @@ private:
 /************************************************************************/
 
     //!< Wrapper of 'this' pointer.
+    /**
+     * \brief
+     **/
     inline NetTcpLogger& self();
 
 //////////////////////////////////////////////////////////////////////////
@@ -205,6 +222,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     NetTcpLogger() = delete;
     AREG_NOCOPY_NOMOVE(NetTcpLogger);
 };

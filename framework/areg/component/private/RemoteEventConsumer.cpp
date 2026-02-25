@@ -17,28 +17,28 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 
-void RemoteEventConsumer::startEventProcessing(Event & eventElem)
+void RemoteEventConsumer::start_event_processing(Event & eventElem)
 {
-    if ( Event::isRemote(eventElem.getEventType()) )
+    if ( Event::is_remote(eventElem.event_type()) )
     {
         RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
         if ( requestEvent != nullptr )
         {
-            processRemoteRequestEvent(*requestEvent);
+            process_request_event(*requestEvent);
         }
         else
         {
             RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
             if ( responseEvent != nullptr )
             {
-                processRemoteResponseEvent(*responseEvent);
+                process_response_event(*responseEvent);
             }
             else
             {
                 RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
                 if (requestNotifyEvent != nullptr)
                 {
-                    processRemoteNotifyRequestEvent(*requestNotifyEvent);
+                    process_notify_request(*requestNotifyEvent);
                 }
             }
         }

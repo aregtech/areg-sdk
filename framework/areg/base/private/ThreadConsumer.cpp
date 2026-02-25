@@ -19,17 +19,17 @@
 // ThreadConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool ThreadConsumer::onThreadRegistered(Thread * /*threadObj*/)
+bool ThreadConsumer::on_thread_registered(Thread * /*threadObj*/)
 {
     return true;
 }
 
-void ThreadConsumer::onThreadUnregistering()
+void ThreadConsumer::on_thread_unregistering()
 {
 
 }
 
-int32_t ThreadConsumer::onThreadExit()
+int32_t ThreadConsumer::on_thread_exit()
 {
     return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
 }

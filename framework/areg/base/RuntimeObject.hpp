@@ -70,21 +70,21 @@
 #define AREG_DECLARE_RUNTIME(ClassName)                                                                 \
 public:                                                                                                 \
     /** \brief   Returns RuntimeClassID object                      **/                                 \
-    static const RuntimeClassID & _getClassId();                                                        \
+    static const RuntimeClassID & _class_id();                                                        \
     /** \brief   Returns the Runtime Class Identifier object        **/                                 \
-    virtual const RuntimeClassID & getRuntimeClassId() const override;                                  \
+    virtual const RuntimeClassID & runtime_class_id() const override;                                  \
     /** \brief   Returns the class name (Identifier name)           **/                                 \
-    virtual const String& getRuntimeClassName() const override;                                         \
+    virtual const String& runtime_class_name() const override;                                         \
     /** \brief   Returns the calculated number of runtime class.    **/                                 \
-    virtual uint32_t getRuntimeClassNumber() const override;                                        \
+    virtual uint32_t runtime_class_number() const override;                                        \
     /** \brief   Checks class instance by Class Identifier.         **/                                 \
     /**          Checking is done hierarchically.                   **/                                 \
-    virtual bool isInstanceOfRuntimeClass(const RuntimeClassID & classId) const override;               \
+    virtual bool is_runtime_instance(const RuntimeClassID & classId) const override;               \
     /** \brief   Checks class instance by given name.               **/                                 \
-    virtual bool isInstanceOfRuntimeClass(const char * className) const override;                       \
-    virtual bool isInstanceOfRuntimeClass(const String & className) const override;                     \
+    virtual bool is_runtime_instance(const char * className) const override;                       \
+    virtual bool is_runtime_instance(const String & className) const override;                     \
     /** \brief   Checks class instance by magic number.             **/                                 \
-    virtual bool isInstanceOfRuntimeClass( uint32_t classMagic ) const override;                    \
+    virtual bool is_runtime_instance( uint32_t classMagic ) const override;                    \
 
 
 /**
@@ -97,23 +97,23 @@ public:                                                                         
 // AREG_IMPLEMENT_RUNTIME macro definition
 //////////////////////////////////////////////////////////////////////////
 #define AREG_IMPLEMENT_RUNTIME(ClassName, BaseClassName)                                                        \
-const RuntimeClassID & ClassName::_getClassId()                                                                 \
+const RuntimeClassID & ClassName::_class_id()                                                                 \
 {   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
-const RuntimeClassID & ClassName::getRuntimeClassId() const                                                     \
-{   return ClassName::_getClassId();                                                                        }   \
-const String& ClassName::getRuntimeClassName() const                                                            \
-{   return ClassName::_getClassId().getName();                                                              }   \
-uint32_t ClassName::getRuntimeClassNumber() const                                                           \
-{   return ClassName::_getClassId().getMagic();                                                             }   \
-/* All 4 isInstanceOfRuntimeClass overloads: check own ID, then delegate to base. */                            \
-bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                                \
-{   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
-bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                                        \
-{   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
-bool ClassName::isInstanceOfRuntimeClass( const String & className ) const                                      \
-{   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
-bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const                                       \
-{   return ((classMagic == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(classMagic));   }
+const RuntimeClassID & ClassName::runtime_class_id() const                                                     \
+{   return ClassName::_class_id();                                                                        }   \
+const String& ClassName::runtime_class_name() const                                                            \
+{   return ClassName::_class_id().name();                                                              }   \
+uint32_t ClassName::runtime_class_number() const                                                           \
+{   return ClassName::_class_id().magic();                                                             }   \
+/* All 4 is_runtime_instance overloads: check own ID, then delegate to base. */                            \
+bool ClassName::is_runtime_instance( const RuntimeClassID & classId ) const                                \
+{   return ((ClassName::_class_id() == classId) || BaseClassName::is_runtime_instance(classId));     }   \
+bool ClassName::is_runtime_instance( const char * className ) const                                        \
+{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime_instance(className)); }   \
+bool ClassName::is_runtime_instance( const String & className ) const                                      \
+{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime_instance(className)); }   \
+bool ClassName::is_runtime_instance( uint32_t classMagic ) const                                       \
+{   return ((classMagic == ClassName::_class_id()) || BaseClassName::is_runtime_instance(classMagic));   }
 
 /**
  * \brief   Use MACRO in source code of class template and specify the base class. 
@@ -129,28 +129,28 @@ bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const           
 //////////////////////////////////////////////////////////////////////////
 #define AREG_IMPLEMENT_RUNTIME_TEMPLATE(Template, ClassName, BaseClassName, ClassIdType)                        \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID & ClassName::_getClassId()                                                        \
+Template const RuntimeClassID & ClassName::_class_id()                                                        \
 {   static const RuntimeClassID _classId(#ClassName); return _classId;                                      }   \
 /** Return class identifier object **/                                                                          \
-Template const RuntimeClassID& ClassName::getRuntimeClassId() const                                             \
-{   return ClassName::_getClassId();                                                                        }   \
+Template const RuntimeClassID& ClassName::runtime_class_id() const                                             \
+{   return ClassName::_class_id();                                                                        }   \
 /** Return class name **/                                                                                       \
-Template const String & ClassName::getRuntimeClassName() const                                                  \
-{   return ClassName::_getClassId().getName();                                                              }   \
+Template const String & ClassName::runtime_class_name() const                                                  \
+{   return ClassName::_class_id().name();                                                              }   \
 /** Return class number **/                                                                                     \
-Template uint32_t ClassName::getRuntimeClassNumber() const                                                  \
-{   return ClassName::_getClassId().getMagic();                                                             }   \
+Template uint32_t ClassName::runtime_class_number() const                                                  \
+{   return ClassName::_class_id().magic();                                                             }   \
 /** Check class instance by Class Identifier **/                                                                \
-Template bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const                       \
-{   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
+Template bool ClassName::is_runtime_instance( const RuntimeClassID & classId ) const                       \
+{   return ((ClassName::_class_id() == classId) || BaseClassName::is_runtime_instance(classId));     }   \
 /** Check class instance by name**/                                                                             \
-Template bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                               \
-{   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
-Template bool ClassName::isInstanceOfRuntimeClass( const String & className ) const                             \
-{   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
+Template bool ClassName::is_runtime_instance( const char * className ) const                               \
+{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime_instance(className)); }   \
+Template bool ClassName::is_runtime_instance( const String & className ) const                             \
+{   return ((className == ClassName::_class_id()) || BaseClassName::is_runtime_instance(className)); }   \
 /** Check class instance by number **/                                                                          \
-Template bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const                              \
-{   return ((classMagic == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(classMagic));   }
+Template bool ClassName::is_runtime_instance( uint32_t classMagic ) const                              \
+{   return ((classMagic == ClassName::_class_id()) || BaseClassName::is_runtime_instance(classMagic));   }
 
 /**
  * \brief   Use this MACRO to make exact object casting of instance of constant object during runtime.
@@ -162,7 +162,7 @@ Template bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const  
 /**
  * \brief   Runtime const cast using ClassID lookup (fast path, used in Release and Debug).
  **/
-#define AREG_RUNTIME_CONST_CAST(ptr, ClassName)     static_cast<const ClassName *>(::RuntimeCast(static_cast<const RuntimeObject *>(ptr), ClassName::_getClassId()))
+#define AREG_RUNTIME_CONST_CAST(ptr, ClassName)     static_cast<const ClassName *>(::runtime_cast(static_cast<const RuntimeObject *>(ptr), ClassName::_class_id()))
 
 /**
  * \brief   Runtime cast. Returns non-const pointer if the object is an instance of ClassName.
@@ -170,7 +170,7 @@ Template bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const  
 #define AREG_RUNTIME_CAST(ptr, ClassName)            const_cast<ClassName *>(AREG_RUNTIME_CONST_CAST(ptr, ClassName))
 
 // Kept for reference: string-based exact cast (slower, uses class name string lookup).
-// #define AREG_RUNTIME_CONST_EXACT_CAST(ptr, ClassName)  static_cast<const ClassName *>(::RuntimeCast(static_cast<const RuntimeObject *>(ptr), #ClassName))
+// #define AREG_RUNTIME_CONST_EXACT_CAST(ptr, ClassName)  static_cast<const ClassName *>(::runtime_cast(static_cast<const RuntimeObject *>(ptr), #ClassName))
 
 /************************************************************************/
 // Runtime object MACRO definition. End
@@ -180,8 +180,8 @@ Template bool ClassName::isInstanceOfRuntimeClass( uint32_t classMagic ) const  
 // RuntimeObject class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Runtime class object is a base class for all Runtime classes,
- *          which contain class name used in Runtime operation.
+ * \brief   Base class for all runtime classes. Contains class name information used in runtime
+ *          operations and provides runtime type casting capabilities.
  **/
 class AREG_API RuntimeObject    : private   RuntimeBase   // Base Runtime class, declared as private
 {
@@ -190,7 +190,7 @@ class AREG_API RuntimeObject    : private   RuntimeBase   // Base Runtime class,
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Constructor
+     * \brief
      **/
     RuntimeObject() = default;
 
@@ -215,7 +215,7 @@ public:
 // RuntimeObject interface overrides
 /************************************************************************/
     /**
-     * \brief   Destroys created (cloned) object
+     * \brief   Destroys created (cloned) object.
      **/
     virtual void destroy();
 
@@ -225,7 +225,8 @@ public:
 public:
 
     /**
-     * \brief   Operator to get integer value of object, mainly used in map
+     * \brief   Converts object to integer value for use in maps.
+     *
      * \return  Integer value of object.
      **/
     explicit operator uint32_t () const;
@@ -234,52 +235,56 @@ public:
  * new operator
  ************************************************************************/
     /**
-     * \brief   Overloaded new() operator
+     * \brief   Overloaded memory allocation operator.
+     *
      * \param   size    The size of the memory block to allocate
-     * \return  Valid pointer to a memory block of size 'size' or nullptr in case of error.
+     * \return  Valid pointer to memory block or nullptr on error.
      **/
     void * operator new( size_t size );
 
     /**
-     * \brief   Overloaded array new operator
+     * \brief   Overloaded array memory allocation operator.
+     *
      * \param   size    The size of the memory block to allocate
-     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
+     * \return  Pointer to memory block or nullptr on error.
      **/
     void * operator new [ ] ( size_t size );
 
     /**
-     * \brief   Overloaded placement new
+     * \brief   Placement new operator. Constructs object at given memory location.
+     *
      * \param   ptr     Pointer to the memory block where the object is located
-     * \return  Pointer to the memory block where the object is located, same as 'ptr'
+     * \return  Same pointer as input.
      **/
     void * operator new( size_t /*size*/, void * ptr );
 
     /**
-     * \brief   Overloaded placement new
-     * \param   ptr     Pointer to the memory block where the object is located
-     * \return  Pointer to the memory block where the object is located, same as 'ptr'
+     * \brief   Placement array new operator. Constructs array at given memory location.
+     *
+     * \param   ptr     Pointer to the memory block where the array is located
+     * \return  Same pointer as input.
      **/
     void * operator new [ ] ( size_t /*size*/, void *ptr );
 
     /**
-     * \brief   Overloaded placement new. Stores block type, file name and line number information
-     *          Used in debugging version. In other versions, only allocates memory without
-     *          containing other information.
+     * \brief   Debug placement new. Stores file name and line number information (ignored in
+     *          non-debug builds).
+     *
      * \param   size    The size of the memory block to allocate
-     * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
-     * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
-     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
+     * \param   file    Source code file name, normally __FILE__. Ignored in non-debug build.
+     * \param   line    Source code line number, normally __LINE__. Ignored in non-debug build.
+     * \return  Pointer to memory block or nullptr on error.
      **/
     void * operator new( size_t size, int32_t /*block*/, const char * file, int32_t line );
 
     /**
-     * \brief   Overloaded placement new. Stores block type, file name and line number information
-     *          Used in debugging version. In other versions, only allocates memory without
-     *          containing other information.
+     * \brief   Debug placement array new. Stores file name and line number information (ignored in
+     *          non-debug builds).
+     *
      * \param   size    The size of the memory block to allocate
-     * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
-     * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
-     * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
+     * \param   file    Source code file name, normally __FILE__. Ignored in non-debug build.
+     * \param   line    Source code line number, normally __LINE__. Ignored in non-debug build.
+     * \return  Pointer to memory block or nullptr on error.
      **/
     void * operator new [ ] ( size_t size, int32_t /*block*/, const char * file, int32_t line );
 
@@ -287,39 +292,45 @@ public:
  * delete operators
  ************************************************************************/
     /**
-     * \brief   Overloaded delete() operator
-     * \param   ptr   pointer to the memory block to delete
+     * \brief   Overloaded memory deallocation operator.
+     *
+     * \param   ptr     Pointer to the memory block to delete
      **/
     void operator delete( void * ptr );
 
     /**
-     * \brief   Overloaded delete() operator
+     * \brief   Overloaded memory deallocation operator with size hint.
+     *
      * \param   ptr     Pointer to the memory block to delete
-     * \param   size    Not used.
+     * \param   size    Not used; included for standard compatibility.
      **/
     void operator delete( void * ptr, size_t size );
 
     /**
-     * \brief	Overloaded delete() operator
-     * \param	ptr	Pointer to the memory block to delete
+     * \brief   Debug delete operator matching debug new signature.
+     *
+     * \param   ptr     Pointer to the memory block to delete
      **/
     void operator delete( void * ptr, int32_t, const char *, int32_t );
 
     /**
-     * \brief   Overloaded array delete operator
+     * \brief   Overloaded array memory deallocation operator.
+     *
      * \param   ptr     Pointer to the memory block to delete
      **/
     void operator delete [ ] ( void* ptr );
 
     /**
-     * \brief   Overloaded array delete operator
+     * \brief   Overloaded array memory deallocation operator with size hint.
+     *
      * \param   ptr     Pointer to the memory block to delete
      **/
     void operator delete [ ] (void* ptr, size_t /*size*/);
 
     /**
-     * \brief	Overloaded delete [] operator
-     * \param	ptr	Pointer to the memory block to delete
+     * \brief   Debug array delete operator matching debug array new signature.
+     *
+     * \param   ptr     Pointer to the memory block to delete
      **/
     void operator delete [ ] ( void * ptr, int32_t, const char *, int32_t );
 
@@ -328,79 +339,82 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Makes casting of pointer of object during runtime 
-     *          by given class identifier. If class is an instance
-     *          of given class identifier, it returns valid pointer.
-     *          Otherwise, it returns nullptr.
-     * \param	classId     Class identifier to make casting
-     * \return	Returns valid pointer, if class is an instance of passed
-     *          class identifier. Otherwise return nullptr.
+     * \brief   Casts pointer to given class identifier at runtime. Returns valid pointer if object
+     *          is instance of class; nullptr otherwise.
+     *
+     * \param   classId     Class identifier to cast to
+     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
      **/
-    inline const RuntimeObject* runtimeCast(const RuntimeClassID & classId) const;
+    inline const RuntimeObject* runtime_cast(const RuntimeClassID & classId) const;
 
     /**
-     * \brief	Makes casting of pointer of object during runtime 
-     *          by given class name. If class is an instance
-     *          of given class name, it returns valid pointer.
-     *          Otherwise, it returns nullptr.
-     * \param	className   Class name to make casting
-     * \return	Returns valid pointer, if class is an instance of passed
-     *          class name. Otherwise return nullptr.
+     * \brief   Casts pointer to given class name at runtime. Returns valid pointer if object is
+     *          instance of class; nullptr otherwise.
+     *
+     * \param   className       Class name to cast to
+     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
      **/
-    inline const RuntimeObject* runtimeCast(const char * className) const;
-    inline const RuntimeObject* runtimeCast(const String & className) const;
+    inline const RuntimeObject* runtime_cast(const char * className) const;
+    /**
+     * \brief   Casts pointer to given class name at runtime. Returns valid pointer if object is
+     *          instance of class; nullptr otherwise.
+     *
+     * \param   className       Class name to cast to
+     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
+     **/
+    inline const RuntimeObject* runtime_cast(const String & className) const;
 
     /**
-     * \brief	Makes casting of pointer of object during runtime 
-     *          by given class number. If class numbers have same 
-     *          magic numbers, it returns valid pointer.
-     *          Otherwise, it returns nullptr.
-     * \param	classNumber The magic number of the class to compare
-     * \return	Returns valid pointer, if class is an instance of passed
-     *          magic number of the class. Otherwise return nullptr.
+     * \brief   Casts pointer using class magic number at runtime. Returns valid pointer if class
+     *          numbers match; nullptr otherwise.
+     *
+     * \param   classNumber     Magic number of the class to compare
+     * \return  Returns valid pointer if class magic numbers match; nullptr otherwise.
      **/
-    inline const RuntimeObject* runtimeCast(uint32_t classNumber) const;
+    inline const RuntimeObject* runtime_cast(uint32_t classNumber) const;
 
 /************************************************************************/
 // friend global operations
 /************************************************************************/
 
     /**
-     * \brief	Makes casting of constant pointer of object during runtime 
-     *          by given class identifier. If class is an instance
-     *          of given class identifier, it returns valid pointer.
-     *          Otherwise, it returns nullptr.
-     * \param   ptr         Constant Pointer of object to cast
-     * \param	classId     Class identifier to make casting
-     * \return	Returns valid pointer, if class is an instance of passed
-     *          class identifier. Otherwise return nullptr.
+     * \brief   Casts constant pointer to given class identifier at runtime. Returns valid pointer
+     *          if object is instance of class; nullptr otherwise.
+     *
+     * \param   ptr         Constant pointer of object to cast
+     * \param   classId     Class identifier to cast to
+     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
      **/
-    friend inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const RuntimeClassID & classId);
+    friend inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const RuntimeClassID & classId);
 
     /**
-     * \brief	Makes casting of constant pointer of object during runtime 
-     *          by given class name. If class is an instance
-     *          of given class name, it returns valid pointer.
-     *          Otherwise, it returns nullptr.
-     * \param   ptr         Constant Pointer of object to cast
-     * \param	className   Class name to make casting
-     * \return	Returns valid pointer, if class is an instance of passed
-     *          class name. Otherwise return nullptr.
+     * \brief   Casts constant pointer to given class name at runtime. Returns valid pointer if
+     *          object is instance of class; nullptr otherwise.
+     *
+     * \param   ptr             Constant pointer of object to cast
+     * \param   className       Class name to cast to
+     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
      **/
-    friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const char* className);
-    friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className);
+    friend inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const char* className);
+    /**
+     * \brief   Casts constant pointer to given class name at runtime. Returns valid pointer if
+     *          object is instance of class; nullptr otherwise.
+     *
+     * \param   ptr             Constant pointer of object to cast
+     * \param   className       Class name to cast to
+     * \return  Returns valid pointer if cast succeeds; nullptr otherwise.
+     **/
+    friend inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const String & className);
 
     /**
-     * \brief	Makes casting of constant pointer of object during runtime
-     *          by given class number (magic number). If class has same magic,
-     *          number, it returns valid pointer.
-     *          Otherwise, it returns nullptr.
-     * \param   ptr         Constant Pointer of object to cast
-     * \param	classNumber Class number (magic number) to compare.
-     * \return	Returns valid pointer, if class has same magic number. 
-     *          Otherwise return nullptr.
+     * \brief   Casts constant pointer using class magic number at runtime. Returns valid pointer if
+     *          class numbers match; nullptr otherwise.
+     *
+     * \param   ptr             Constant pointer of object to cast
+     * \param   classNumber     Magic number of the class to compare
+     * \return  Returns valid pointer if class magic numbers match; nullptr otherwise.
      **/
-    friend const RuntimeObject* RuntimeCast( const RuntimeObject* ptr, uint32_t classNumber );
+    friend const RuntimeObject* runtime_cast( const RuntimeObject* ptr, uint32_t classNumber );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods
@@ -413,44 +427,44 @@ private:
 // RuntimeObject class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const RuntimeObject* RuntimeObject::runtimeCast( const RuntimeClassID & classId ) const
+inline const RuntimeObject* RuntimeObject::runtime_cast( const RuntimeClassID & classId ) const
 {
-    return (isInstanceOfRuntimeClass( classId ) ? this : nullptr);
+    return (is_runtime_instance( classId ) ? this : nullptr);
 }
 
-inline const RuntimeObject* RuntimeObject::runtimeCast( const char* className ) const
+inline const RuntimeObject* RuntimeObject::runtime_cast( const char* className ) const
 {
-    return (isInstanceOfRuntimeClass( className ) ? this : nullptr);
+    return (is_runtime_instance( className ) ? this : nullptr);
 }
 
-inline const RuntimeObject* RuntimeObject::runtimeCast(const String & className) const
+inline const RuntimeObject* RuntimeObject::runtime_cast(const String & className) const
 {
-    return (isInstanceOfRuntimeClass(className) ? this : nullptr);
+    return (is_runtime_instance(className) ? this : nullptr);
 }
 
-inline const RuntimeObject* RuntimeObject::runtimeCast( uint32_t classNumber ) const
+inline const RuntimeObject* RuntimeObject::runtime_cast( uint32_t classNumber ) const
 {
-    return (isInstanceOfRuntimeClass( classNumber ) ? this : nullptr);
+    return (is_runtime_instance( classNumber ) ? this : nullptr);
 }
 
-inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const RuntimeClassID & classId)
+inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const RuntimeClassID & classId)
 {
-    return (ptr != nullptr ? ptr->runtimeCast(classId) : nullptr);
+    return (ptr != nullptr ? ptr->runtime_cast(classId) : nullptr);
 }
 
-inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const char * className)
+inline const RuntimeObject* runtime_cast(const RuntimeObject * ptr, const char * className)
 {
-    return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
+    return (ptr != nullptr ? ptr->runtime_cast(className) : nullptr);
 }
 
-inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className)
+inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, const String & className)
 {
-    return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
+    return (ptr != nullptr ? ptr->runtime_cast(className) : nullptr);
 }
 
-inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, uint32_t classNumber)
+inline const RuntimeObject* runtime_cast(const RuntimeObject* ptr, uint32_t classNumber)
 {
-    return (ptr != nullptr ? ptr->runtimeCast(classNumber) : nullptr);
+    return (ptr != nullptr ? ptr->runtime_cast(classNumber) : nullptr);
 }
 
 #endif  // AREG_BASE_RUNTIMEOBJECT_HPP

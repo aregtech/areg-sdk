@@ -38,39 +38,39 @@ EventQueue::EventQueue( QueueListener & eventListener, SortedEventStack & eventQ
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, methods
 //////////////////////////////////////////////////////////////////////////
-void EventQueue::pushEvent( Event& evendElem, Event** removedEvent )
+void EventQueue::push_event( Event& evendElem, Event** removedEvent )
 {
-    mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
+    mEventListener.signal_event( mEventQueue.push_event(&evendElem, removedEvent) );
 }
 
-Event* EventQueue::popEvent()
+Event* EventQueue::pop_event()
 {
     Event* result{ nullptr };
-    uint32_t size = mEventQueue.popEvent(&result);
+    uint32_t size = mEventQueue.pop_event(&result);
     if (size == 0)
     {
-        mEventListener.signalEvent(0);
+        mEventListener.signal_event(0);
     }
 
     return result;
 }
 
-void EventQueue::removeAllEvents()
+void EventQueue::remove_all_events()
 {
-    mEventQueue.deleteAllEvents();
-    mEventListener.signalEvent(0);
+    mEventQueue.delete_all_events();
+    mEventListener.signal_event(0);
 }
 
-void EventQueue::removeEvents( bool keepSpecials /*= false*/ )
+void EventQueue::remove_events( bool keepSpecials /*= false*/ )
 {
-    uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
-    mEventListener.signalEvent(remain);
+    uint32_t remain = mEventQueue.delete_lower_priority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
+    mEventListener.signal_event(remain);
 }
 
-void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
+void EventQueue::remove_events( const RuntimeClassID & eventClassId )
 {
-    uint32_t remain = mEventQueue.deleteAllMatchClass(eventClassId);
-    mEventListener.signalEvent(remain);
+    uint32_t remain = mEventQueue.delete_matching_class(eventClassId);
+    mEventListener.signal_event(remain);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ ExternalEventQueue::ExternalEventQueue( QueueListener & eventListener, uint32_t 
 
 ExternalEventQueue::~ExternalEventQueue()
 {
-    mStack.deleteAllEvents();
+    mStack.delete_all_events();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,10 +100,10 @@ InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
 
 InternalEventQueue::~InternalEventQueue()
 {
-    mStack.deleteAllEvents();
+    mStack.delete_all_events();
 }
 
-void InternalEventQueue::signalEvent(uint32_t /* eventCount */)
+void InternalEventQueue::signal_event(uint32_t /* eventCount */)
 {
 }
 

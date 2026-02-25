@@ -145,7 +145,7 @@ public:
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool send_message(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -156,25 +156,25 @@ public:
      * \brief   Each time querying the bytes sent via network connection returns
      *          the value after last query.
      **/
-    inline uint32_t queryBytesSent();
+    inline uint32_t query_bytes_sent();
 
     /**
      * \brief   Each time querying the bytes received via network connection returns
      *          the value after last query.
      **/
-    inline uint32_t queryBytesReceived();
+    inline uint32_t query_bytes_received();
 
     /**
      * \brief   Enable or disable the data rate calculation.
      * \param   enable  If true, the data rate calculation is enabled.
      *                  Otherwise, it is disabled.
      **/
-    inline void enableCalculateDataRate(bool enable);
+    inline void enable_data_rate(bool enable);
 
     /**
      * \brief   Returns enable or disable the data rate calculation flag.
      **/
-    inline bool isCalculateDataRateEnabled() const;
+    inline bool is_data_rate_enabled() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -210,20 +210,20 @@ public:
      * \param   msgFailed   The message, which failed to send.
      * \param   whichTarget The target socket to send message.
      **/
-    void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+    void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
      * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    void failedReceiveMessage( Socket & whichSource ) override;
+    void failed_receive_message( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
      * \param   whichSource The source socket, which received message.
      **/
-    void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+    void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // ConnectionConsumer
@@ -233,13 +233,13 @@ public:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void connectedRemoteServiceChannel(const Channel& channel) override = 0;
+    virtual void on_service_channel_connected(const Channel& channel) override = 0;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void disconnectedRemoteServiceChannel(const Channel& channel) override = 0;
+    virtual void on_service_channel_disconnected(const Channel& channel) override = 0;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -247,7 +247,7 @@ public:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void lostRemoteServiceChannel(const Channel& channel) override = 0;
+    virtual void on_service_channel_lost(const Channel& channel) override = 0;
 
 /************************************************************************/
 // ConnectionProvider interface overrides
@@ -262,7 +262,7 @@ public:
      * \param   connectTypes    The bitwise set of connections.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    bool setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
+    bool setup_connection_data(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -271,13 +271,13 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    void applyServiceConnectionData( const String & hostName, uint16_t portNr ) override;
+    void apply_connection_data( const String & hostName, uint16_t portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    bool connectServiceHost() override;
+    bool connect_service_host() override;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -285,27 +285,27 @@ public:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    bool reconnectServiceHost() override;
+    bool reconnect_service_host() override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    void disconnectServiceHost() override;
+    void disconnect_service_host() override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    bool isServiceHostConnected() const override;
+    bool is_host_connected() const override;
 
     /**
      * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
      **/
-    bool isServiceHostPending() const override;
+    bool is_host_pending() const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    bool isServiceHostSetup() const override;
+    bool is_host_setup() const override;
 
     /**
      * \brief   Creates the service connect request message, sets the message target and the source.
@@ -314,7 +314,7 @@ public:
      * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
+    RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -322,7 +322,7 @@ public:
      * \param   target  The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
-    RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
 // ServiceEventConsumer overrides
@@ -331,33 +331,33 @@ public:
     /**
      * \brief   Triggered when Timer is expired.
      **/
-    void onServiceReconnectTimerExpired() override;
+    void on_reconnect_timer() override;
 
     /**
      * \brief   Called when need to start the network server connection service. 
      **/
-    void onServiceStart() override;
+    void on_service_start() override;
 
     /**
      * \brief   Called when need to stop the network server connection service. 
      **/
-    void onServiceStop() override;
+    void on_service_stop() override;
 
     /**
      * \brief   Called when need to restart the network server connection service. 
      **/
-    void onServiceRestart() override;
+    void on_service_restart() override;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    void onServiceExit() override;
+    void on_service_exit() override;
 
     /**
      * \brief   Called when need to inform the channel connection.
      * \param   cookie  The channel connection cookie.
      **/
-    void onChannelConnected(const ITEM_ID & cookie) override;
+    void on_channel_connected(const ITEM_ID & cookie) override;
 
 /************************************************************************/
 // ConnectionHandler interface overrides
@@ -399,7 +399,7 @@ public:
      * \brief   Called to start connection procedure to accept client connections.
      * \return  Returns true if could start connection.
      **/
-    bool startConnection();
+    bool start_connection();
 
     /**
      * \brief   Call to restart the connection. Returns true if succeeded to reconnect.
@@ -409,7 +409,7 @@ public:
     /**
      * \brief   Called to stop connection. All clients are automatically disconnected.
      **/
-    void stopConnection();
+    void stop_connection();
 
     /**
      * \brief   Starts the message sending thread and returns true if succeeded.
@@ -427,7 +427,7 @@ public:
      * \param   eventPrio   The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommand(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
+    inline bool send_command(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Call to send the event to process.
@@ -441,7 +441,7 @@ public:
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
      * \param   eventPrio   The priority of set to the event.
      **/
-    inline void disconnectService( Event::EventPriority eventPrio );
+    inline void disconnect_service( Event::EventPriority eventPrio );
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -450,9 +450,9 @@ public:
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
      *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
      **/
-    void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) override;
 
 /************************************************************************/
 // EventRouter interface overrides
@@ -467,7 +467,7 @@ public:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -518,34 +518,34 @@ inline ServiceCommunicationBase & ServiceCommunicationBase::self()
 
 inline bool ServiceCommunicationBase::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const
 {
-    return mWhiteList.contains(addrClient.getHostAddress());
+    return mWhiteList.contains(addrClient.host_address());
 }
 
 inline bool ServiceCommunicationBase::isAddressInBlackList(const NESocket::SocketAddress & addrClient) const
 {
-    return mBlackList.contains(addrClient.getHostAddress());
+    return mBlackList.contains(addrClient.host_address());
 }
 
 inline void ServiceCommunicationBase::addWhiteList(const NESocket::SocketAddress & addrClient)
 {
-    mBlackList.removeElem( addrClient.getHostAddress( ) );
-    mWhiteList.addIfUnique( addrClient.getHostAddress( ) );
+    mBlackList.remove_elem( addrClient.host_address( ) );
+    mWhiteList.add_if_unique( addrClient.host_address( ) );
 }
 
 inline void ServiceCommunicationBase::addBlackList(const NESocket::SocketAddress & addrClient)
 {
-    mWhiteList.removeElem( addrClient.getHostAddress( ) );
-    mBlackList.addIfUnique( addrClient.getHostAddress( ) );
+    mWhiteList.remove_elem( addrClient.host_address( ) );
+    mBlackList.add_if_unique( addrClient.host_address( ) );
 }
 
 inline void ServiceCommunicationBase::removeWhiteList(const NESocket::SocketAddress & addrClient)
 {
-    mWhiteList.removeElem( addrClient.getHostAddress(), 0);
+    mWhiteList.remove_elem( addrClient.host_address(), 0);
 }
 
 inline void ServiceCommunicationBase::removeBlackList(const NESocket::SocketAddress & addrClient)
 {
-    mBlackList.removeElem( addrClient.getHostAddress(), 0);
+    mBlackList.remove_elem( addrClient.host_address(), 0);
 }
 
 inline const NEService::MapInstances & ServiceCommunicationBase::getInstances() const
@@ -555,13 +555,13 @@ inline const NEService::MapInstances & ServiceCommunicationBase::getInstances() 
 
 inline void ServiceCommunicationBase::waitToComplete( )
 {
-    completionWait( NECommon::WAIT_INFINITE );
-    shutdownThread( NECommon::DO_NOT_WAIT );
+    completion_wait( NECommon::WAIT_INFINITE );
+    shutdown_thread( NECommon::DO_NOT_WAIT );
 }
 
-inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    return ServiceServerEvent::sendEvent( ServiceEventData( cmd )
+    return ServiceServerEvent::send_event( ServiceEventData( cmd )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<DispatcherThread &>(self( ))
                                           , eventPrio );
@@ -571,15 +571,15 @@ inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData
                                                                 , const RemoteMessage & msg
                                                                 , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
+    return ServiceServerEvent::send_event( ServiceEventData( cmd, msg )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<DispatcherThread &>(self( ))
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendMessage( const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::send_message( const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    return SendMessageEvent::sendEvent( SendMessageEventData( data )
+    return SendMessageEvent::send_event( SendMessageEventData( data )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                         , static_cast<DispatcherThread &>(mThreadSend)
                                         , eventPrio );
@@ -590,29 +590,29 @@ inline DataRateHelper& ServiceCommunicationBase::getDataRateHelper() const
     return const_cast<DataRateHelper &>(mDataRateHelper);
 }
 
-inline uint32_t ServiceCommunicationBase::queryBytesSent()
+inline uint32_t ServiceCommunicationBase::query_bytes_sent()
 {
-    return mDataRateHelper.queryBytesSent();
+    return mDataRateHelper.query_bytes_sent();
 }
 
-inline uint32_t ServiceCommunicationBase::queryBytesReceived()
+inline uint32_t ServiceCommunicationBase::query_bytes_received()
 {
-    return mDataRateHelper.queryBytesReceived();
+    return mDataRateHelper.query_bytes_received();
 }
 
-inline void ServiceCommunicationBase::enableCalculateDataRate(bool enable)
+inline void ServiceCommunicationBase::enable_data_rate(bool enable)
 {
     mDataRateHelper.setVerbose(enable);
 }
 
-inline bool ServiceCommunicationBase::isCalculateDataRateEnabled() const
+inline bool ServiceCommunicationBase::is_data_rate_enabled() const
 {
     return mDataRateHelper.isVerbose();
 }
 
-inline void ServiceCommunicationBase::disconnectService( Event::EventPriority eventPrio )
+inline void ServiceCommunicationBase::disconnect_service( Event::EventPriority eventPrio )
 {
-    SendMessageEvent::sendEvent( SendMessageEventData( )
+    SendMessageEvent::send_event( SendMessageEventData( )
                                  , static_cast<SendMessageEventConsumer &>(mThreadSend)
                                  , static_cast<DispatcherThread &>(mThreadSend)
                                  , eventPrio );

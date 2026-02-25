@@ -30,27 +30,16 @@ class RuntimeClassID;
 #endif  // _MSC_VER
 
 /**
- * \brief   Sorted stack to store events by priority.
- *          Each time when event is pushed, it checks the priority
- *          of the event then inserts in stack, so that the events
- *          are sorted by the priority.
- *          In the stack the priorities are sorted in the following way:
- *          | Critical | High | Normal | Low |
- * 
- *              -   The "Critical" priority events are placed at the begin to be processed as soon as possible.
- *                  This priority is reserved for developers.
- *              -   The "Hight" priority events are placed before normal events, since they have some priorities.
- *                  For example, the connection events have high priority so that they are processed before normal events.
- *              -   The "Normal" priority events are usual events, which are processed in FIFO stack.
- *              -   The "Low" priority events are placed at the end to be processed only when the thread completed all jobs.
- * 
- *          The "Exit" events have reserved "Exit" priority. This priority is only for internal use and should not be used
- *          by other developers. The "Exit" events should be immediately processed and they are not removed from the 
- *          stack until they are not processed by thread dispatcher.
+ * \brief   A priority queue for events. Events are sorted by priority: Critical (processed first) >
+ *          High > Normal > Low > Exit. Exit events are processed immediately and are not removed
+ *          until handled.
  **/
 class SortedEventStack  : protected ConcurrentStack<Event *>
 {
     //!< The maximum size of the event queue stack
+    /**
+     * \brief
+     **/
     static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };
     //< The minimum size of the event queue stack
     static constexpr uint32_t   MIN_QUEUE_SIZE  { 32 };
@@ -58,6 +47,9 @@ class SortedEventStack  : protected ConcurrentStack<Event *>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief
+     **/
     SortedEventStack( uint32_t maxQueue );
 
     ~SortedEventStack();
@@ -67,119 +59,133 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Deletes all events from the stack, except "Exit" event if present.
+     * \brief   Deletes all events from the stack, except Exit events.
      **/
-    void deleteAllEvents();
+    void delete_all_events();
 
     /**
-     * \brief   Deletes all events with priorities lower than the specified, except "Exit" event.
-     * \param   eventPrio   The priority to check. Set Event::EventPriority::IgnorePrio
-     *                      to remove all events. Only "Exit" events are untouched if they are present.
-     * \return  Returns number of elements in the stack. Returns zero if empty.
+     * \brief   Deletes all events with priorities lower than the specified priority, except Exit
+     *          events.
+     *
+     * \param   eventPrio       The priority threshold. Events with lower priority are deleted. Use
+     *                          Event::EventPriority::IgnorePrio to remove all events except Exit
+     *                          events.
+     * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t deleteAllLowerPriority(Event::EventPriority eventPrio);
+    uint32_t delete_lower_priority(Event::EventPriority eventPrio);
 
     /**
-     * \brief   Deletes all events, except those that are with the specified class ID, except "Exit" event.
-     * \param   eventClassId    The class ID of the event to ignore to delete.
-     * \return  Returns number of elements in the stack. Returns zero if empty.
+     * \brief   Deletes all events except those with the specified class ID and Exit events.
+     *
+     * \param   eventClassId    The class ID of events to keep.
+     * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t deleteAllExceptClass(const RuntimeClassID& eventClassId);
+    uint32_t delete_except_class(const RuntimeClassID& eventClassId);
 
     /**
-     * \brief   Deletes all events with the specified priority, except "Exit" event, which should be processed.
-     * \param   eventPrio   The priority of events to delete.
-     * \return  Returns number of elements in the stack. Returns zero if empty.
+     * \brief   Deletes all events with the specified priority, except Exit events.
+     *
+     * \param   eventPrio       The priority of events to delete.
+     * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t deleteAllMatchPriority(Event::EventPriority eventPrio);
+    uint32_t delete_matching_priority(Event::EventPriority eventPrio);
 
     /**
-     * \brief   Deletes all events, which match the specified class ID.
-     * \param   eventClassId    The class ID of the event to delete.
-     * \return  Returns number of elements in the stack. Returns zero if empty.
+     * \brief   Deletes all events with the specified class ID.
+     *
+     * \param   eventClassId    The class ID of events to delete.
+     * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t deleteAllMatchClass(const RuntimeClassID& eventClassId);
+    uint32_t delete_matching_class(const RuntimeClassID& eventClassId);
 
     /**
-     * \brief   Pushes the event in the stack considering the priority, so that the events
-     *          with the higher priority can be processed earlier.
-     * \param[in]   newEvent        The pointer to the event with the priority.
-     * \param[out]  removedEvent    The address of pointer to receive the removed event.
-     * \return  Returns the number of elements in the stack.
+     * \brief   Pushes an event onto the stack in priority order.
+     *
+     * \param   newEvent        The event to push. Higher-priority events are inserted before
+     *                          lower-priority ones.
+     * \param[out] removedEvent    On output, contains a pointer to any event removed (due to stack
+     *                             overflow).
+     * \return  Returns the number of events in the stack.
      **/
-    uint32_t pushEvent(Event * newEvent, Event** removedEvent);
+    uint32_t push_event(Event * newEvent, Event** removedEvent);
 
     /**
-     * \brief   Pops the event from the FIFO stack.
-     * \param[out]  stackEvent  The address of the pointer to point on event object.
-     *                          This parameter must not be nullptr, but it may point to the nullptr object.
-     * \return  Returns the number of elements in the stack.
+     * \brief   Pops the first event from the stack (FIFO order).
+     *
+     * \param[out] stackEvent      On output, contains a pointer to the popped event (may be nullptr
+     *                             if stack is empty). Must not be nullptr itself.
+     * \return  Returns the number of remaining events in the stack.
      **/
-    uint32_t popEvent(Event** stackEvent);
+    uint32_t pop_event(Event** stackEvent);
 
     /**
      * \brief   Returns the maximum size of the stack.
      **/
-    inline constexpr uint32_t getMaxSize() const;
+    inline constexpr uint32_t max_size() const;
 
     /**
      * \brief   Returns true if the stack is empty.
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
-     * \brief   Returns the number of elements in the stack.
+     * \brief   Returns the number of events in the stack.
      **/
-    inline uint32_t getCount() const;
+    inline uint32_t count() const;
 
     /**
-     * \brief   Locks the stack, so that the all other threads cannot access.
-     * \return  Returns true, if succeeded to lock the stack.
+     * \brief   Locks the stack to prevent access from other threads.
+     *
+     * \return  Returns true if the stack was successfully locked; false otherwise.
      **/
-    inline bool lockStack();
+    inline bool lock_stack();
 
     /**
-     * \brief   Unlocks the stack, so that all other threads cann access.
+     * \brief   Unlocks the stack to allow access from other threads.
      **/
-    inline void unlockStack();
+    inline void unlock_stack();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Inserts the event at the end of the stack. No priority is considered.
-     *          For example, the events with low priority are inserted at the end of the stack.
+     * \brief   Inserts an event at the end of the stack without considering priority.
+     *
+     * \param   newEvent    The event to insert. Used for low-priority events.
      **/
-    inline void _insertAtEnd(Event * newEvent);
+    inline void _insert_at_end(Event * newEvent);
 
     /**
-     * \brief   Inserts the event object at the end of the event elements list of specified priority.
-     *          The function compares the priority of the events and inserts the element
-     *          at the end of the list with events of the specified priority.
-     *          The search is started at the end.
-     * \param   newEvent    The event object to insert.
-     * \param   eventPrio   The priority of event to search in the stack.
+     * \brief   Inserts an event at the end of all events with the specified priority.
+     *
+     * \param   newEvent        The event to insert.
+     * \param   eventPrio       The priority of events after which to insert.
      **/
-    inline void _insertAfterPrio(Event * newEvent, Event::EventPriority eventPrio);
+    inline void _insert_after_prio(Event * newEvent, Event::EventPriority eventPrio);
 
     /**
-     * \brief   Inserts the event object before the elements of specified are queued.
-     *          The function compares the priority of the events and inserts the element
-     *          at the position before the events of specified priority start.
-     *          The search is started at the begin.
-     * \param   newEvent    The event object to insert.
-     * \param   eventPrio   The priority of event to search in the stack.
+     * \brief   Inserts an event before all events with the specified priority.
+     *
+     * \param   newEvent        The event to insert.
+     * \param   eventPrio       The priority of events before which to insert.
      **/
-    inline void _insertBeforePrio(Event * newEvent, Event::EventPriority eventPrio);
+    inline void _insert_before_prio(Event * newEvent, Event::EventPriority eventPrio);
 
     /**
-     * \brief   Inserts the event element at the very begin of the stack, so that it is
-     *          processed as soon as possible.
+     * \brief   Inserts an event at the very beginning of the stack for immediate processing.
+     *
+     * \param   newEvent    The event to insert.
      **/
-    inline void _insertAtBegin(Event * newEvent);
+    inline void _insert_at_begin(Event * newEvent);
 
-    inline static constexpr uint32_t _calcQueueSize(uint32_t requestedSize);
+    /**
+     * \brief   Calculates the appropriate queue size based on the requested size.
+     *
+     * \param   requestedSize       The requested queue size.
+     * \return  Returns the calculated queue size.
+     **/
+    inline static constexpr uint32_t _calc_queue_size(uint32_t requestedSize);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -204,28 +210,28 @@ private:
 // SortedEventStack class inline implementation.
 //////////////////////////////////////////////////////////////////////////
 
-inline bool SortedEventStack::isEmpty() const
+inline bool SortedEventStack::is_empty() const
 {
     Lock lock(mSyncObject);
     return mValueList.empty();
 }
 
-inline uint32_t SortedEventStack::getCount() const
+inline uint32_t SortedEventStack::count() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline bool SortedEventStack::lockStack()
+inline bool SortedEventStack::lock_stack()
 {
     return lock();
 }
 
-inline void SortedEventStack::unlockStack()
+inline void SortedEventStack::unlock_stack()
 {
     unlock();
 }
 
-inline constexpr uint32_t SortedEventStack::getMaxSize() const
+inline constexpr uint32_t SortedEventStack::max_size() const
 {
     return mMaxQueueSize;
 }

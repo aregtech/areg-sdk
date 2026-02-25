@@ -78,7 +78,7 @@ public:
     /**
      * \brief   Returns singleton instance of multi-cast router (MCR).
      **/
-    static MultitargetRouter & getInstance();
+    static MultitargetRouter & instance();
 
     /**
      * \brief   Outputs the specified message on the console.
@@ -196,13 +196,13 @@ protected:
      * \brief   Returns the type of the remote service.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::RemoteServiceKind getServiceType() const override;
+    NERemoteService::RemoteServiceKind service_type() const override;
 
     /**
      * \brief   Returns the type of the connection of the remote services.
      *          Valid only for Areg SDK services.
      **/
-    NERemoteService::ConnectionType getConnectionType() const override;
+    NERemoteService::ConnectionType connection_type() const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

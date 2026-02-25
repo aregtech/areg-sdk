@@ -35,7 +35,7 @@ WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCou
 {
 }
 
-bool WaitableSemaphorePosix::releaseSemaphore()
+bool WaitableSemaphorePosix::release_semaphore()
 {
     bool sendSignal = false;
 
@@ -51,19 +51,19 @@ bool WaitableSemaphorePosix::releaseSemaphore()
 
     if (sendSignal)
     {
-        SyncLockAndWaitPosix::eventSignaled(*this);
+        SyncLockAndWaitPosix::event_signaled(*this);
     }
 
     return sendSignal;
 }
 
-bool WaitableSemaphorePosix::checkSignaled(pthread_t /*contextThread*/) const
+bool WaitableSemaphorePosix::check_signaled(pthread_t /*contextThread*/) const
 {
     ObjectLockPosix lock(*this);
     return (mCurCount > 0);
 }
 
-bool WaitableSemaphorePosix::notifyRequestOwnership(pthread_t ownerThread)
+bool WaitableSemaphorePosix::notify_request_ownership(pthread_t ownerThread)
 {
     ObjectLockPosix lock(*this);
     bool result = false;
@@ -74,19 +74,19 @@ bool WaitableSemaphorePosix::notifyRequestOwnership(pthread_t ownerThread)
         result = true;
 
         AREG_OUTPUT_DBG("Waitable Semaphore [ %s ] has given ownership to thread [ %p ], there are still [ %d ] locks available"
-                        , getName().getString( )
+                        , name().as_string( )
                         , reinterpret_cast<id_type>(ownerThread), mCurCount);
     }
 
     return result;
 }
 
-bool WaitableSemaphorePosix::checkCanSignalMultipleThreads() const
+bool WaitableSemaphorePosix::can_signal_threads() const
 {
     return true;
 }
 
-void WaitableSemaphorePosix::notifyReleasedThreads(int32_t /* numThreads */)
+void WaitableSemaphorePosix::notify_released_threads(int32_t /* numThreads */)
 {
 }
 

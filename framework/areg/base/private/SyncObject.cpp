@@ -36,7 +36,7 @@ SyncObject::SyncObject(SyncObject::SyncKind syncObjectType)
 
 SyncObject::~SyncObject()
 {
-    _osDestroySyncObject();
+    _os_destroy();
 }
 
 //////////////////////////////////////////////////////////////////////////

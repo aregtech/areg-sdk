@@ -23,8 +23,7 @@
 #include "areg/component/ServiceRequestEvent.hpp"
 
 /**
- * \brief   An event sent by Service Manager to Stub to notify client Proxy connection status.
- *          Triggered by system and delivered to Sub to handle when need to change connection status.
+ * \brief   Event sent by Service Manager to Stub to notify client Proxy connection status.
  **/
 class StubConnectEvent  : public    ServiceRequestEvent
 {
@@ -38,22 +37,25 @@ class StubConnectEvent  : public    ServiceRequestEvent
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Constructor. Creates Event to set the address of Sub and connection status.
-     * \param   stubTarget      The target Stub address
-     * \param   connectStatus   The connection status of Stub
+     * \brief   Creates Event to set the address of Stub and connection status.
+     *
+     * \param   stubTarget          The target Stub address
+     * \param   connectStatus       The connection status of Stub
      **/
     StubConnectEvent( const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus );
 
     /**
-     * \brief   Constructor. Creates event to trigger request to set Proxy connection.
-     * \param   proxyClient     The client Proxy address, which requests to establish connection
-     * \param   stubTarget      The target Stub address, which receives request
-     * \param   connectStatus   The connection status to notify.
+     * \brief   Creates event to trigger request to set Proxy connection.
+     *
+     * \param   proxyClient         The client Proxy address, which requests to establish connection
+     * \param   stubTarget          The target Stub address, which receives request
+     * \param   connectStatus       The connection status to notify.
      **/
     StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::ServiceConnectionState connectStatus );
 
     /**
-     * \brief   Constructor. Reads data from streaming object.
+     * \brief   Reads data from streaming object.
+     *
      * \param   stream      The instance of streaming object, which contains information.
      **/
     StubConnectEvent( const InStream & stream );
@@ -72,7 +74,7 @@ public:
     /**
      * \brief   Returns current connection status of client Proxy.
      **/
-    inline NEService::ServiceConnectionState getConnectionStatus() const;
+    inline NEService::ServiceConnectionState connection_status() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -82,18 +84,20 @@ protected:
 // StreamableEvent overrides
 /************************************************************************/
     /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
+     * \brief   Reads and initializes event data from streaming object.
+     *
+     * \param   stream      The streaming object to read out event data
      * \return  Returns streaming object to read out data.
      **/
-    const InStream & readStream( const InStream & stream ) override;
+    const InStream & read_stream( const InStream & stream ) override;
 
     /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
+     * \brief   Writes event data to streaming object.
+     *
+     * \param   stream      The streaming object to write event data.
      * \return  Returns streaming object to write event data.
      **/
-    OutStream & writeStream( OutStream & stream ) const override;
+    OutStream & write_stream( OutStream & stream ) const override;
 
 private:
     /**
@@ -105,6 +109,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     StubConnectEvent() = delete;
     AREG_NOCOPY_NOMOVE( StubConnectEvent );
 };
@@ -113,7 +120,7 @@ private:
 // StubConnectEvent class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NEService::ServiceConnectionState StubConnectEvent::getConnectionStatus() const
+inline NEService::ServiceConnectionState StubConnectEvent::connection_status() const
 {
     return mConnectionStatus;
 }

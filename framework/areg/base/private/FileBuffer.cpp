@@ -49,7 +49,7 @@ FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= n
     : FileBase      ( )
 
     , mSharedBuffer (sharedBuffer)
-    , mIsOpened     ( sharedBuffer.isValid() )
+    , mIsOpened     ( sharedBuffer.is_valid() )
 {
     mFileMode = static_cast<uint32_t>(FileBase::OpenMode::Attach) | static_cast<uint32_t>(FileBase::OpenMode::Read);
     mFileName = name;
@@ -59,27 +59,27 @@ FileBuffer::FileBuffer(const SharedBuffer & sharedBuffer, const char* name /*= n
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void FileBuffer::_setName(const char* name)
+inline void FileBuffer::_set_name(const char* name)
 {
     mFileName = name;
-    FileBase::normalizeName(mFileName);
+    FileBase::normalize_name(mFileName);
 }
 
 bool FileBuffer::open()
 {
-    if ((isOpened() == false) && (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid)))
+    if ((is_opened() == false) && (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid)))
     {
-        mFileMode = normalizeMode(mFileMode);
-        if (isAttachMode() == false)
+        mFileMode = normalize_mode(mFileMode);
+        if (is_attach_mode() == false)
         {
-            mSharedBuffer.reserve(mSharedBuffer.getBlockSize(), false);
+            mSharedBuffer.reserve(mSharedBuffer.block_size(), false);
         }
         else
         {
-            ASSERT(isValid());
+            ASSERT(is_valid());
         }
 
-        mIsOpened   = isValid();
+        mIsOpened   = is_valid();
     }
 
     return mIsOpened;
@@ -88,9 +88,9 @@ bool FileBuffer::open()
 bool FileBuffer::open(const String& fileName, uint32_t mode)
 {
     bool result = false;
-    if (isOpened() == false)
+    if (is_opened() == false)
     {
-        if (isValid() == false)
+        if (is_valid() == false)
         {
             mode &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
         }
@@ -98,7 +98,7 @@ bool FileBuffer::open(const String& fileName, uint32_t mode)
         mFileMode = mode != static_cast<uint32_t>(FileBase::OpenMode::Invalid) ? mode : mFileMode;
         if (mFileMode != static_cast<uint32_t>(FileBase::OpenMode::Invalid))
         {
-            _setName(fileName);
+            _set_name(fileName);
             result = open();
         }
     }
@@ -118,7 +118,7 @@ void FileBuffer::close()
 uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const
 {
     uint32_t result = 0;
-    if (isOpened() && canRead())
+    if (is_opened() && can_read())
     {
         result = mSharedBuffer.read(buffer, size);
     }
@@ -126,16 +126,16 @@ uint32_t FileBuffer::read(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t FileBuffer::getSizeReadable() const
+uint32_t FileBuffer::size_readable() const
 {
-    return (isOpened() ? mSharedBuffer.getSizeReadable() : 0);
+    return (is_opened() ? mSharedBuffer.size_readable() : 0);
 }
 
 uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size)
 {
     uint32_t result = 0;
 
-    if (isOpened() && canWrite())
+    if (is_opened() && can_write())
     {
         result = mSharedBuffer.write(buffer, size);
     }
@@ -143,43 +143,43 @@ uint32_t FileBuffer::write(const uint8_t* buffer, uint32_t size)
     return result;
 }
 
-uint32_t FileBuffer::getSizeWritable() const
+uint32_t FileBuffer::size_writable() const
 {
-    return (isOpened() ? mSharedBuffer.getSizeWritable() : 0);
+    return (is_opened() ? mSharedBuffer.size_writable() : 0);
 }
 
 bool FileBuffer::remove()
 {
     mSharedBuffer.invalidate();
 
-    mFileName   = String::getEmptyString();
+    mFileName   = String::empty_string();
     mFileMode   = static_cast<uint32_t>(FileBase::OpenMode::Invalid);
     mIsOpened   = false;
 
     return true;
 }
 
-uint32_t FileBuffer::getLength() const
+uint32_t FileBuffer::length() const
 {
-    return (isOpened() ? mSharedBuffer.getSizeUsed() : NEMemory::INVALID_SIZE);
+    return (is_opened() ? mSharedBuffer.size_used() : NEMemory::INVALID_SIZE);
 }
 
-bool FileBuffer::isOpened() const
+bool FileBuffer::is_opened() const
 {
     return mIsOpened;
 }
 
 uint32_t FileBuffer::reserve(uint32_t newSize)
 {
-    return (isOpened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
+    return (is_opened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate()
 {
     bool result = false;
-    if (isOpened() && canWrite())
+    if (is_opened() && can_write())
     {
-        if (isAttachMode() == false)
+        if (is_attach_mode() == false)
         {
             mSharedBuffer.invalidate();
             result = true;
@@ -189,19 +189,19 @@ bool FileBuffer::truncate()
     return result;
 }
 
-uint32_t FileBuffer::setPosition( int32_t offset, Cursor::SeekOrigin startAt ) const
+uint32_t FileBuffer::set_position( int32_t offset, Cursor::SeekOrigin startAt ) const
 {
-    return (isOpened() ? mSharedBuffer.setPosition(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
+    return (is_opened() ? mSharedBuffer.set_position(offset, startAt) : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t FileBuffer::getPosition() const
+uint32_t FileBuffer::position() const
 {
-    return (isOpened() ? mSharedBuffer.getPosition() : Cursor::INVALID_CURSOR_POSITION);
+    return (is_opened() ? mSharedBuffer.position() : Cursor::INVALID_CURSOR_POSITION);
 }
 
-uint32_t FileBuffer::normalizeMode( uint32_t mode ) const
+uint32_t FileBuffer::normalize_mode( uint32_t mode ) const
 {
-    if (mSharedBuffer.isShared())
+    if (mSharedBuffer.is_shared())
     {
         mode |= static_cast<uint32_t>(FileBase::OpenMode::Attach);
     }
@@ -210,12 +210,12 @@ uint32_t FileBuffer::normalizeMode( uint32_t mode ) const
         mode &= ~static_cast<uint32_t>(FileBase::OpenMode::Attach);
     }
 
-    return FileBase::normalizeMode(mode);
+    return FileBase::normalize_mode(mode);
 }
 
-uint32_t FileBuffer::insertAt( const uint8_t* buffer, uint32_t size, uint32_t atPos )
+uint32_t FileBuffer::insert_at( const uint8_t* buffer, uint32_t size, uint32_t atPos )
 {
-    return (isOpened() && canWrite() ? mSharedBuffer.insertAt(buffer, size, atPos) : 0);
+    return (is_opened() && can_write() ? mSharedBuffer.insert_at(buffer, size, atPos) : 0);
 }
 
 uint32_t FileBuffer::read(ByteBuffer & buffer) const

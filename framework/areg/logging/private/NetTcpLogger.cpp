@@ -47,25 +47,25 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
 {
 }
 
-bool NetTcpLogger::openLogger()
+bool NetTcpLogger::open_logger()
 {
     Lock lock( mLock );
     bool result{ false };
 
-    if (mClientConnection.isValid() == false)
+    if (mClientConnection.is_valid() == false)
     {
         mIsEnabled = false;
-        if (mLogConfiguration.isRemoteLoggingEnabled())
+        if (mLogConfiguration.is_remote_logging_enabled())
         {
-            registerForServiceClientCommands();
-            mRingStack.reserve(mLogConfiguration.getStackSize());
+            register_client_commands();
+            mRingStack.reserve(mLogConfiguration.stack_size());
 
-            String host{ mLogConfiguration.getRemoteTcpAddress()};
-            uint16_t port{ mLogConfiguration.getRemoteTcpPort() };
+            String host{ mLogConfiguration.remote_tcp_address()};
+            uint16_t port{ mLogConfiguration.remote_tcp_port() };
             mIsEnabled = true;
-            applyServiceConnectionData(host, port);
+            apply_connection_data(host, port);
             mLock.unlock();
-            result = connectServiceHost();
+            result = connect_service_host();
         }
         else
         {
@@ -74,99 +74,99 @@ bool NetTcpLogger::openLogger()
     }
     else
     {
-        result = isConnectState();
+        result = is_connect_state();
     }
 
     return result;
 }
 
-void NetTcpLogger::closeLogger()
+void NetTcpLogger::close_logger()
 {
     mRingStack.release();
-    onServiceExit();
-    unregisterForServiceClientCommands();
+    on_service_exit();
+    unregister_client_commands();
 }
 
-void NetTcpLogger::logMessage(const NELogging::LogEntry& logMessage)
+void NetTcpLogger::log_message(const NELogging::LogEntry& log_message)
 {
     if (mIsEnabled)
     {
-        if (mChannel.isValid() && isConnectState())
+        if (mChannel.is_valid() && is_connect_state())
         {
-            sendMessage(NELogging::createLogMessage(logMessage, NELogging::LogDataType::Remote, mChannel.getCookie()), Event::EventPriority::NormalPrio);
+            send_message(NELogging::create_log_message(log_message, NELogging::LogDataType::Remote, mChannel.cookie()), Event::EventPriority::NormalPrio);
         }
         else if (mRingStack.capacity() != 0)
         {
-            mRingStack.push(NELogging::createLogMessage(logMessage, NELogging::LogDataType::Remote, mChannel.getCookie()));
+            mRingStack.push(NELogging::create_log_message(log_message, NELogging::LogDataType::Remote, mChannel.cookie()));
         }
     }
 }
 
-bool NetTcpLogger::isLoggerOpened() const
+bool NetTcpLogger::is_logger_opened() const
 {
     Lock lock( mLock );
-    return isConnectedState();
+    return is_connected_state();
 }
 
-void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
+void NetTcpLogger::on_service_channel_connected(const Channel & channel)
 {
-    ASSERT(channel.isValid());
-    ASSERT(channel.getCookie() >= NEService::COOKIE_REMOTE_SERVICE);
-    ASSERT(mChannel.isValid());
+    ASSERT(channel.is_valid());
+    ASSERT(channel.cookie() >= NEService::COOKIE_REMOTE_SERVICE);
+    ASSERT(mChannel.is_valid());
 
     mIsEnabled = true;
-    const ITEM_ID& cookie = channel.getCookie();
-    while (mRingStack.isEmpty() == false)
+    const ITEM_ID& cookie = channel.cookie();
+    while (mRingStack.is_empty() == false)
     {
         RemoteMessage msgLog{ mRingStack.pop() };
-        msgLog.setSource(cookie);
-        reinterpret_cast<NELogging::LogEntry*>(msgLog.getBuffer())->logCookie = cookie;
-        sendMessage(msgLog, Event::EventPriority::NormalPrio);
+        msgLog.set_source(cookie);
+        reinterpret_cast<NELogging::LogEntry*>(msgLog.buffer())->logCookie = cookie;
+        send_message(msgLog, Event::EventPriority::NormalPrio);
     }
 }
 
-void NetTcpLogger::disconnectedRemoteServiceChannel(const Channel & /* channel */)
+void NetTcpLogger::on_service_channel_disconnected(const Channel & /* channel */)
 {
-    ASSERT(mChannel.isValid() == false);
+    ASSERT(mChannel.is_valid() == false);
     mIsEnabled = false;
-    mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
+    mClientConnection.set_cookie(NEService::COOKIE_UNKNOWN);
 }
 
-void NetTcpLogger::lostRemoteServiceChannel(const Channel & /* channel */)
+void NetTcpLogger::on_service_channel_lost(const Channel & /* channel */)
 {
-    ASSERT(mChannel.isValid() == false);
-    mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
+    ASSERT(mChannel.is_valid() == false);
+    mClientConnection.set_cookie(NEService::COOKIE_UNKNOWN);
 }
 
-void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /* whichTarget */)
+void NetTcpLogger::failed_send_message(const RemoteMessage & msgFailed, Socket & /* whichTarget */)
 {
     ASSERT(mIsEnabled);
-    if (mLogConfiguration.getStackSize() > 0)
+    if (mLogConfiguration.stack_size() > 0)
     {
         mRingStack.push(msgFailed);
     }
 
-    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+    send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
-void NetTcpLogger::failedReceiveMessage(Socket & /* whichSource */)
+void NetTcpLogger::failed_receive_message(Socket & /* whichSource */)
 {
-    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+    send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
-void NetTcpLogger::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
+void NetTcpLogger::failed_process_message(const RemoteMessage & /* msgUnprocessed */)
 {
 }
 
-void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
+void NetTcpLogger::process_received_message(const RemoteMessage & msgReceived, Socket & whichSource)
 {
-    if (msgReceived.isValid() && whichSource.isValid())
+    if (msgReceived.is_valid() && whichSource.is_valid())
     {
-        NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>(msgReceived.getMessageId());
+        NEService::FuncIdRange msgId = static_cast<NEService::FuncIdRange>(msgReceived.message_id());
         switch (msgId)
         {
         case NEService::FuncIdRange::SystemServiceNotifyConnection:
-            serviceConnectionEvent(msgReceived);
+            service_connection_event(msgReceived);
             break;
 
         case NEService::FuncIdRange::ServiceLogUpdateScopes:
@@ -177,29 +177,29 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
                 for ( uint32_t i = 0; i < scopeCount; ++ i)
                 {
                     msgReceived >> scopeInfo;
-                    LogManager::updateScopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
+                    LogManager::update_scopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
                 }
 
                 if (scopeCount != 0)
                 {
-                    const NELogging::ScopeList& scopes{ static_cast<const NELogging::ScopeList&>(mScopeController.getScopeList()) };
-                    sendMessage(NELogging::messageScopesUpdated(mChannel.getCookie(), NEService::COOKIE_LOGGER, scopes));
+                    const NELogging::ScopeList& scopes{ static_cast<const NELogging::ScopeList&>(mScopeController.scope_list()) };
+                    send_message(NELogging::message_scopes_updated(mChannel.cookie(), NEService::COOKIE_LOGGER, scopes));
                 }
             }
             break;
 
         case NEService::FuncIdRange::ServiceLogQueryScopes:
             {
-                const NELogging::ScopeList & scopes{ static_cast<const NELogging::ScopeList &>(mScopeController.getScopeList()) };
-                const ITEM_ID & targetId{ msgReceived.getSource() };
-                sendMessage(NELogging::messageRegisterScopes(mChannel.getCookie(), targetId, scopes));
+                const NELogging::ScopeList & scopes{ static_cast<const NELogging::ScopeList &>(mScopeController.scope_list()) };
+                const ITEM_ID & targetId{ msgReceived.source() };
+                send_message(NELogging::message_register_scopes(mChannel.cookie(), targetId, scopes));
             }
             break;
 
         case NEService::FuncIdRange::ServiceSaveLogConfiguration:
-            if (LogManager::saveLogConfig())
+            if (LogManager::save_log_config())
             {
-                sendMessage(NELogging::messageConfigurationSaved());
+                send_message(NELogging::message_configuration_saved());
             }
             break;
 

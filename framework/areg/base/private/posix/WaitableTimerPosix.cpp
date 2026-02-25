@@ -32,23 +32,23 @@
 #endif
 
 #ifndef __APPLE__
-void WaitableTimerPosix::_posixTimerRoutine(union sigval si)
+void WaitableTimerPosix::_posix_timer_routine(union sigval si)
 {
     WaitableTimerPosix *timer = reinterpret_cast<WaitableTimerPosix *>(si.sival_ptr);
 
     AREG_OUTPUT_DBG("Fired waitable timer [ %p ], processing in thread [ %p ]", timer, reinterpret_cast<id_type>(pthread_self()));
     if ( timer != nullptr )
     {
-        timer->_timerExpired();
+        timer->_timer_expired();
     }
 }
 #endif
 
 
-WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
+WaitableTimerPosix::WaitableTimerPosix(bool is_auto_reset /*= false*/, const char * name /*= nullptr*/)
     : WaitablePosix  ( NESyncTypesIX::SyncKind::SoWaitTimer, false, name )
 
-    , mResetInfo        ( isAutoReset ? NESyncTypesIX::ResetMode::Automatic : NESyncTypesIX::ResetMode::Manual )
+    , mResetInfo        ( is_auto_reset ? NESyncTypesIX::ResetMode::Automatic : NESyncTypesIX::ResetMode::Manual )
 #ifdef __APPLE__
     , mTimerSource      ( nullptr )
     , mTimerQueue       ( nullptr )
@@ -65,10 +65,10 @@ WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char 
     mTimerQueue = dispatch_queue_create("areg.waitable.timer", DISPATCH_QUEUE_SERIAL);
 #else   // !__APPLE__
     struct sigevent sigEvent;
-    NEMemory::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
+    NEMemory::mem_zero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
     sigEvent.sigev_notify           = SIGEV_THREAD;
     sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
-    sigEvent.sigev_notify_function  = &WaitableTimerPosix::_posixTimerRoutine;
+    sigEvent.sigev_notify_function  = &WaitableTimerPosix::_posix_timer_routine;
     sigEvent.sigev_notify_attributes= nullptr;
 
     if (NECommon::RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
@@ -80,15 +80,15 @@ WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char 
 
 WaitableTimerPosix::~WaitableTimerPosix()
 {
-    _resetTimer();
+    _reset_timer();
 }
 
-bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
+bool WaitableTimerPosix::set_timer(uint32_t msTimeout, bool is_periodic)
 {
     bool result = false;
     ObjectLockPosix lock(*this);
 
-    _stopTimer();
+    _stop_timer();
 
 #ifdef __APPLE__
     if ((mTimerQueue != nullptr) && (msTimeout != 0))
@@ -101,17 +101,17 @@ bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
 
             dispatch_source_set_timer(mTimerSource,
                                       dispatch_time(DISPATCH_TIME_NOW, interval_ns),
-                                      isPeriodic ? interval_ns : DISPATCH_TIME_FOREVER,
+                                      is_periodic ? interval_ns : DISPATCH_TIME_FOREVER,
                                       leeway_ns);
 
             dispatch_source_set_event_handler(mTimerSource, ^{
-                this->_timerExpired();
+                this->_timer_expired();
             });
 
-            NESyncTypesIX::convTimeout(mDueTime, msTimeout);
+            NESyncTypesIX::conv_timeout(mDueTime, msTimeout);
             mTimeout    = msTimeout;
             mIsSignaled = false;
-            mThreadId   = Thread::getCurrentThreadId();
+            mThreadId   = Thread::current_thread_id();
             result      = true;
 
             dispatch_resume(mTimerSource);
@@ -121,9 +121,9 @@ bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
     if ((mTimerId != static_cast<timer_t>(0)) && (msTimeout != 0))
     {
         struct itimerspec interval;
-        NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-        NESyncTypesIX::convTimeout(interval.it_value, msTimeout);
-        if ( isPeriodic )
+        NEMemory::mem_zero(static_cast<void *>(&interval), sizeof(struct itimerspec));
+        NESyncTypesIX::conv_timeout(interval.it_value, msTimeout);
+        if ( is_periodic )
         {
             interval.it_interval.tv_sec = interval.it_value.tv_sec;
             interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
@@ -133,12 +133,12 @@ bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
         mDueTime.tv_nsec= interval.it_value.tv_nsec;
         mTimeout        = msTimeout;
         mIsSignaled     = false;
-        mThreadId       = Thread::getCurrentThreadId();
+        mThreadId       = Thread::current_thread_id();
         result          = true;
         if ( NECommon::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
         {
             result = false;
-            _resetTimer();
+            _reset_timer();
         }
     }
 #endif  // __APPLE__
@@ -146,7 +146,7 @@ bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
     return result;
 }
 
-bool WaitableTimerPosix::stopTimer()
+bool WaitableTimerPosix::stop_timer()
 {
     bool sendSignal = false;
     do 
@@ -154,14 +154,14 @@ bool WaitableTimerPosix::stopTimer()
         ObjectLockPosix lock(*this);
 
         sendSignal = (mIsSignaled == false);
-        _stopTimer();
+        _stop_timer();
         mIsSignaled = true;
 
     } while (false);
 
     if (sendSignal)
     {
-        SyncLockAndWaitPosix::eventSignaled(*this);
+        SyncLockAndWaitPosix::event_signaled(*this);
     }
 
     return true;
@@ -169,7 +169,7 @@ bool WaitableTimerPosix::stopTimer()
 
 
 
-bool WaitableTimerPosix::cancelTimer()
+bool WaitableTimerPosix::cancel_timer()
 {
     bool sendSignal = false;
     do 
@@ -177,26 +177,26 @@ bool WaitableTimerPosix::cancelTimer()
         ObjectLockPosix lock(*this);
 
         sendSignal = (mIsSignaled == false);
-        _resetTimer();
+        _reset_timer();
         mIsSignaled = true;
 
     } while (false);
 
     if (sendSignal)
     {
-        SyncLockAndWaitPosix::eventSignaled(*this);
+        SyncLockAndWaitPosix::event_signaled(*this);
     }
 
     return true;
 }
 
-bool WaitableTimerPosix::checkSignaled(pthread_t /*contextThread*/) const
+bool WaitableTimerPosix::check_signaled(pthread_t /*contextThread*/) const
 {
     ObjectLockPosix lock(*this);
     return mIsSignaled;
 }
 
-bool WaitableTimerPosix::isValid() const
+bool WaitableTimerPosix::is_valid() const
 {
     ObjectLockPosix lock(*this);
 #ifdef __APPLE__
@@ -206,29 +206,29 @@ bool WaitableTimerPosix::isValid() const
 #endif  // __APPLE__
 }
 
-bool WaitableTimerPosix::notifyRequestOwnership(pthread_t /* ownerThread */ )
+bool WaitableTimerPosix::notify_request_ownership(pthread_t /* ownerThread */ )
 {
     return true;
 }
 
-bool WaitableTimerPosix::checkCanSignalMultipleThreads() const
+bool WaitableTimerPosix::can_signal_threads() const
 {
     return true;
 }
 
-void WaitableTimerPosix::notifyReleasedThreads(int32_t /* numThreads */)
+void WaitableTimerPosix::notify_released_threads(int32_t /* numThreads */)
 {
     ObjectLockPosix lock(*this);
     if (mResetInfo == NESyncTypesIX::ResetMode::Automatic)
     {
-        AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
+        AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", name().as_string( ));
         mIsSignaled = false;
     }
 }
 
-inline void WaitableTimerPosix::_resetTimer()
+inline void WaitableTimerPosix::_reset_timer()
 {
-    _stopTimer();
+    _stop_timer();
 #ifdef __APPLE__
     if (mTimerQueue != nullptr)
     {
@@ -245,7 +245,7 @@ inline void WaitableTimerPosix::_resetTimer()
     mThreadId   = 0;
 }
 
-inline void WaitableTimerPosix::_stopTimer()
+inline void WaitableTimerPosix::_stop_timer()
 {
 #ifdef __APPLE__
     if (mTimerSource != nullptr)
@@ -262,7 +262,7 @@ inline void WaitableTimerPosix::_stopTimer()
         mDueTime.tv_sec = 0;
         mDueTime.tv_nsec= 0;
         itimerspec cancelSpec;
-        NEMemory::memZero(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
+        NEMemory::mem_zero(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
         ::timer_settime(mTimerId, 0, &cancelSpec, nullptr);
     }
 #endif  // __APPLE__
@@ -272,7 +272,7 @@ inline void WaitableTimerPosix::_stopTimer()
     mThreadId   = 0;
 }
 
-inline void WaitableTimerPosix::_timerExpired()
+inline void WaitableTimerPosix::_timer_expired()
 {
     bool sendSignal = false;
 
@@ -287,12 +287,12 @@ inline void WaitableTimerPosix::_timerExpired()
 #endif  // __APPLE__
         {
             ++ mFiredCount;
-            NESyncTypesIX::convTimeout(mDueTime, mTimeout);
+            NESyncTypesIX::conv_timeout(mDueTime, mTimeout);
 
             mIsSignaled = true;
             sendSignal  = true;
 
-            AREG_OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", getName().getString( ), mFiredCount, mTimeout);
+            AREG_OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", name().as_string( ), mFiredCount, mTimeout);
         }
 #ifdef DEBUG
         else
@@ -305,8 +305,8 @@ inline void WaitableTimerPosix::_timerExpired()
 
     if (sendSignal)
     {
-        SyncLockAndWaitPosix::eventSignaled(*this);
-        SyncLockAndWaitPosix::notifyAsyncSignal(mThreadId);
+        SyncLockAndWaitPosix::event_signaled(*this);
+        SyncLockAndWaitPosix::notify_async_signal(mThreadId);
     }
 }
 

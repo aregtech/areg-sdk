@@ -38,8 +38,8 @@ class InStream;
 // ServiceManagerEventProcessor class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Service Manager event processor helper class, which receives the event
- *          passed to Service Manager and processes it.
+ * \brief   Processes service manager events including server/client registration, connection
+ *          status, and thread management.
  **/
 class ServiceManagerEventProcessor
 {
@@ -48,7 +48,9 @@ class ServiceManagerEventProcessor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes the object, receives the instance of Service Manager.
+     * \brief   Initializes with a service manager instance.
+     *
+     * \param   serviceManager      The service manager instance.
      **/
     ServiceManagerEventProcessor( ServiceManager & serviceManager );
     ~ServiceManagerEventProcessor() = default;
@@ -59,21 +61,22 @@ public:
 public:
 
     /**
-     * \brief   Called to process Service Manager event.
-     * \param   cmdService          The command of Service Manager event to process.
-     * \param   stream              The streaming object to de-serialize data of objects.
-     * \param   connectProvider     The instance of service connection provider to forward connection requests.
-     * \param   registerProvider    The instance of service register provider to forward register requests
+     * \brief   Processes a service manager event.
+     *
+     * \param   cmdService          The service manager command to process.
+     * \param   stream              The stream to deserialize data from.
+     * \param   connectProvider     The connection provider to forward connection requests.
+     * \param   registerProvider    The registration provider to forward register requests.
      **/
-    void processServiceEvent( ServiceManagerEventData::ServiceManagerCommand cmdService
+    void process_service_event( ServiceManagerEventData::ServiceManagerCommand cmdService
                             , const InStream & stream
                             , ConnectionProvider& connectProvider
                             , RegistrationProvider & registerProvider );
 
     /**
-     * \brief   Returns the list of registered service providers that contain the list of service consumers.
+     * \brief   Returns the list of registered service providers.
      **/
-    inline const ServerList& getRegisteredServiceList() const;
+    inline const ServerList& registered_service_list() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -81,76 +84,70 @@ public:
 private:
 
     /**
-     * \brief   The function is called when it is requested to register the service provider.
-     *          For example, when the service is created and need to be registered.
-     *          The function generates event to send the service connection status notification.
-     * \param   whichServer         The address of service provider that is registering in the system.
-     * \param   registerProvider    The service connection object to notify remote application
-     *                              about public service connection status.
+     * \brief   Registers a service provider and sends connection notification.
+     *
+     * \param   whichServer         The server address to register.
+     * \param   registerProvider    The provider to send notification.
      **/
-    void _registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider );
+    void _register_server( const StubAddress & whichServer, RegistrationProvider& registerProvider );
 
     /**
-      * \brief   The function is called when it is requested to unregister the service provider.
-      *          For example, when service shuts down or connection is lost.
-      *          The function generates event to send the service connection status notification.
-     * \param   whichServer         The address of service provider that is registering in the system.
-     * \param   reason              The reason to unregister or disconnect the service provider.
-     * \param   registerProvider    The service connection object to notify remote application
-      *                             about public service connection status.
+     * \brief   Unregisters a service provider and sends disconnection notification.
+     *
+     * \param   whichServer         The server address to unregister.
+     * \param   reason              The disconnect reason.
+     * \param   registerProvider    The provider to send notification.
      **/
-    void _unregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider);
-
-     /**
-      * \brief   The function is called when it is requested to register the service consumer.
-      *          For example, when the service consumer is created and need to be registered.
-      *          The function generates event to send the service connection status notification.
-      * \param   whichClient        The address of service consumer that is registering in the system.
-      * \param   registerProvider   The service connection object to notify remote application
-      *                             about public service connection status.
-      **/
-    void _registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider);
+    void _unregister_server( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
-     * \brief   The function is called when it is requested to unregister the service consumer.
-     *          For example, when the service consumer is created and need to be registered.
-     *          The function generates event to send the service connection status notification.
-     * \param   whichClient         The address of service consumer that is registering in the system.
-     * \param   reason              The reason to unregister or disconnect the service consumer.
-     * \param   registerProvider    The service connection object to notify remote application
-     *                              about public service connection status.
+     * \brief   Registers a service consumer and sends connection notification.
+     *
+     * \param   whichClient         The client address to register.
+     * \param   registerProvider    The provider to send notification.
      **/
-    void _unregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _register_client( const ProxyAddress & whichClient, RegistrationProvider& registerProvider);
 
     /**
-     * \brief   Creates and sends predefined service consumer connected notification.
-     * \param   client      The address of service consumer to send the event.
-     * \param   server      The address of service provider that connected.
+     * \brief   Unregisters a service consumer and sends disconnection notification.
+     *
+     * \param   whichClient         The client address to unregister.
+     * \param   reason              The disconnect reason.
+     * \param   registerProvider    The provider to send notification.
      **/
-    void _sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const;
+    void _unregister_client( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
-     * \brief   Creates and sends predefined service consumer disconnected notification.
-     * \param   client      The address of service consumer to send the event.
-     * \param   server      The address of service provider that disconnected.
+     * \brief   Sends client connected notification event.
+     *
+     * \param   client      The client address.
+     * \param   server      The server address.
+     **/
+    void _send_connected( const ProxyAddress & client, const StubAddress & server ) const;
+
+    /**
+     * \brief   Sends client disconnected notification event.
+     *
+     * \param   client      The client address.
+     * \param   server      The server address.
      * \param   status      The service connection status.
      **/
-    void _sendClientDisconnectEvent( const ProxyAddress & client, const StubAddress & server, const NEService::ServiceConnectionState status ) const;
+    void _send_disconnected( const ProxyAddress & client, const StubAddress & server, const NEService::ServiceConnectionState status ) const;
 
     /**
-     * \brief   Terminates the component thread. No guarantee that all resources are cleanup.
-     *          After processing this method the thread is not operable anymore.
-     * \param   threadName  The name of component thread to terminate.
+     * \brief   Terminates the component thread. Returns true if successful.
+     *
+     * \param   threadName      The thread name to terminate.
+     * \return  Returns true if thread was terminated.
      **/
-    bool _terminateComponentThread( const String & threadName );
+    bool _terminate_component_thread( const String & threadName );
 
     /**
-     * \brief   Creates new instance of the component thread after it was terminated.
-     *          All components, services providers and consumers, and worker threads related with the
-     *          component thread are restarted again.
-     * \param   threadName  The name of the thread to re-start.
-     */
-    void _startComponentThread( const String & threadName );
+     * \brief   Restarts component thread and all related components and workers.
+     *
+     * \param   threadName      The thread name to restart.
+     **/
+    void _start_component_thread( const String & threadName );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -169,6 +166,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Deleted default constructor.
+     **/
     ServiceManagerEventProcessor() = delete;
     AREG_NOCOPY_NOMOVE( ServiceManagerEventProcessor );
 };
@@ -177,7 +177,7 @@ private:
 // ServiceManagerEventProcessor inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const ServerList & ServiceManagerEventProcessor::getRegisteredServiceList() const
+inline const ServerList & ServiceManagerEventProcessor::registered_service_list() const
 {
     return mServerList;
 }

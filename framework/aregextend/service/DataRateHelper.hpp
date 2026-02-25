@@ -93,13 +93,13 @@ public:
      * \brief   Return the size in bytes of data sent since last query.
      *          If verbose flag is false, returns zero.
      **/
-    inline uint32_t queryBytesSent() const;
+    inline uint32_t query_bytes_sent() const;
 
     /**
      * \brief   Return the size in bytes of data received since last query.
      *          If verbose flag is false, returns zero.
      **/
-    inline uint32_t queryBytesReceived() const;
+    inline uint32_t query_bytes_received() const;
 
     /**
      * \brief   Return the size of data sent since last query with literal.
@@ -135,24 +135,24 @@ private:
 // DataRateHelper class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t DataRateHelper::queryBytesSent() const
+inline uint32_t DataRateHelper::query_bytes_sent() const
 {
-    return mSendThread.extractDataSend();
+    return mSendThread.extract_data_send();
 }
 
-inline uint32_t DataRateHelper::queryBytesReceived() const
+inline uint32_t DataRateHelper::query_bytes_received() const
 {
-    return mReceiveThread.extractDataReceive();
+    return mReceiveThread.extract_data_receive();
 }
 
 inline DataRateHelper::DataRate DataRateHelper::queryBytesSentWithLiterals() const
 {
-    return DataRateHelper::DataRateHelper::convertDataRateLiterals(queryBytesSent());
+    return DataRateHelper::DataRateHelper::convertDataRateLiterals(query_bytes_sent());
 }
 
 inline DataRateHelper::DataRate DataRateHelper::queryBytesReceivedWithLiterals() const
 {
-    return DataRateHelper::DataRateHelper::convertDataRateLiterals(queryBytesReceived());
+    return DataRateHelper::DataRateHelper::convertDataRateLiterals(query_bytes_received());
 }
 
 #endif  // AREG_AREGEXTEND_SERVICE_DATARATEHELPER_HPP

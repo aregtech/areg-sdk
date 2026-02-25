@@ -79,227 +79,227 @@ StubBase::StubBase( Component & masterComp, const NEService::InterfaceData & siD
 
     , mComponent            (masterComp)
     , mInterface            (siData)
-    , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName())
+    , mAddress              (siData, masterComp.address().role_name(), masterComp.address().thread_address().thread_name())
     , mConnectionStatus     ( NEService::ServiceConnectionState::Disconnected )
     , mListListener         ( )
-    , mCurrListener         (mListListener.invalidPosition())
+    , mCurrListener         (mListListener.invalid_position())
     , mSessionId            (0)
     , mMapSessions          ( )
 {
-    map_providers().registerResourceObject(mAddress, this);
-    masterComp.registerServerItem(self());
+    map_providers().register_resource_object(mAddress, this);
+    masterComp.register_server_item(self());
 }
 
 StubBase::~StubBase()
 {
-    map_providers().unregisterResourceObject(mAddress);
+    map_providers().unregister_resource_object(mAddress);
 }
 
-bool StubBase::isBusy( uint32_t requestId ) const
+bool StubBase::is_busy( uint32_t requestId ) const
 {
     bool result = false;
     StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY));
-    for ( ; (result == false) && mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos))
+    for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos))
     {
-        result = mListListener.valueAtPosition(pos).mSequenceNr != 0;
+        result = mListListener.value_at_position(pos).mSequenceNr != 0;
     }
 
     return result;
 }
 
-SessionID StubBase::unblockCurrentRequest()
+SessionID StubBase::unblock_current_request()
 {
     SessionID result = StubBase::INVALID_SESSION_ID;
     StubBase::Listener listener;
-    if (mListListener.isValidPosition(mCurrListener) )
+    if (mListListener.is_valid_position(mCurrListener) )
     {
-        mListListener.removeAt(mCurrListener, listener);
+        mListListener.remove_at(mCurrListener, listener);
         result = ++ mSessionId;
-        mMapSessions.setAt(result, listener);
-        mCurrListener   = mListListener.invalidPosition();
+        mMapSessions.set_at(result, listener);
+        mCurrListener   = mListListener.invalid_position();
     }
 
     return result;
 }
 
-bool StubBase::prepareResponse( SessionID sessionId )
+bool StubBase::prepare_response( SessionID sessionId )
 {
     bool result{ false };
     StubBase::Listener listener;
-    if (mMapSessions.removeAt(sessionId, listener))
+    if (mMapSessions.remove_at(sessionId, listener))
     {
-        mListListener.pushFirst(listener);
+        mListListener.push_first(listener);
         result = true;
     }
 
     return result;
 }
 
-void StubBase::prepareRequest( Listener & listener, const SequenceNumber & seqNr, uint32_t responseId )
+void StubBase::prepare_request( Listener & listener, const SequenceNumber & seqNr, uint32_t responseId )
 {
     listener.mMessageId = responseId;
-    listener.mSequenceNr= mListListener.isInvalidPosition(mListListener.find(listener)) ? seqNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr));
-    mListListener.pushFirst(listener);
-    mCurrListener = mListListener.firstPosition();
+    listener.mSequenceNr= mListListener.is_invalid_position(mListListener.find(listener)) ? seqNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr));
+    mListListener.push_first(listener);
+    mCurrListener = mListListener.first_position();
 }
 
-uint32_t StubBase::findListeners( uint32_t requestId, StubListenerList & out_listners ) const
+uint32_t StubBase::find_listeners( uint32_t requestId, StubListenerList & out_listners ) const
 {
     StubBase::Listener listener(requestId, NEService::SEQUENCE_NUMBER_ANY);
     StubListenerList::LISTPOS pos = mListListener.find(listener);
-    while (mListListener.isValidPosition(pos))
+    while (mListListener.is_valid_position(pos))
     {
-        out_listners.pushLast(mListListener[pos]);
+        out_listners.push_last(mListListener[pos]);
         pos = mListListener.find(listener, pos);
     }
 
-    return out_listners.getSize();
+    return out_listners.size();
 }
 
-void StubBase::clearAllListeners( const ProxyAddress & whichProxy, IntegerArray & removedIDs )
+void StubBase::clear_all_listeners( const ProxyAddress & whichProxy, IntegerArray & removedIDs )
 {
-    StubListenerList::LISTPOS pos = mListListener.firstPosition();
-    while ( mListListener.isValidPosition(pos))
+    StubListenerList::LISTPOS pos = mListListener.first_position();
+    while ( mListListener.is_valid_position(pos))
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
-            removedIDs.add(mListListener.valueAtPosition(pos).mMessageId);
-            pos = mListListener.removeAt(pos);
+            removedIDs.add(mListListener.value_at_position(pos).mMessageId);
+            pos = mListListener.remove_at(pos);
         }
         else
         {
-            pos = mListListener.nextPosition(pos);
+            pos = mListListener.next_position(pos);
         }
     }
 }
 
-void StubBase::clearAllListeners( const ProxyAddress & whichProxy )
+void StubBase::clear_all_listeners( const ProxyAddress & whichProxy )
 {
-    StubListenerList::LISTPOS pos = mListListener.firstPosition();
-    while ( mListListener.isValidPosition(pos) )
+    StubListenerList::LISTPOS pos = mListListener.first_position();
+    while ( mListListener.is_valid_position(pos) )
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
-            pos = mListListener.removeAt(pos);
+            pos = mListListener.remove_at(pos);
         }
         else
         {
-            pos = mListListener.nextPosition(pos);
+            pos = mListListener.next_position(pos);
         }
     }
 }
 
-void StubBase::sendResponseNotification( const StubListenerList & whichListeners, const ServiceResponseEvent& masterEvent )
+void StubBase::send_response_notification( const StubListenerList & whichListeners, const ServiceResponseEvent& masterEvent )
 {
-    for(StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos) )
+    for(StubListenerList::LISTPOS pos = whichListeners.first_position(); whichListeners.is_valid_position(pos); pos = whichListeners.next_position(pos) )
     {
         const StubBase::Listener& listener = whichListeners[pos];
-        ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
+        ServiceResponseEvent* eventResp = masterEvent.clone_for_target(listener.mProxy);
         if (eventResp != nullptr)
         {
             if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
             {
-                eventResp->setSequenceNumber(listener.mSequenceNr);
+                eventResp->set_sequence_number(listener.mSequenceNr);
                 if (listener.mSequenceNr != 0)
-                    mListListener.removeEntry(listener);
+                    mListListener.remove_entry(listener);
             }
             else
             {
-                eventResp->setSequenceNumber(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
-                StubBase::Listener removed(masterEvent.getResponseId(), 0, listener.mProxy);
-                mListListener.removeEntry(removed);
+                eventResp->set_sequence_number(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
+                StubBase::Listener removed(masterEvent.response_id(), 0, listener.mProxy);
+                mListListener.remove_entry(removed);
             }
 
-            sendServiceResponse(*eventResp);
+            send_service_response(*eventResp);
         }
     }
 }
 
-void StubBase::sendErrorNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent )
+void StubBase::send_error_notification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent )
 {
-    for(StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos))
+    for(StubListenerList::LISTPOS pos = whichListeners.first_position(); whichListeners.is_valid_position(pos); pos = whichListeners.next_position(pos))
     {
         const StubBase::Listener& listener = whichListeners[pos];
-        ServiceResponseEvent* eventError = masterEvent.cloneForTarget(listener.mProxy);
+        ServiceResponseEvent* eventError = masterEvent.clone_for_target(listener.mProxy);
         if (eventError != nullptr)
         {
             if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
             {
-                eventError->setSequenceNumber(listener.mSequenceNr);
+                eventError->set_sequence_number(listener.mSequenceNr);
                 if (listener.mSequenceNr != 0)
-                    mListListener.removeEntry(listener);
+                    mListListener.remove_entry(listener);
             }
             else
             {
-                eventError->setSequenceNumber(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
+                eventError->set_sequence_number(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
             }
 
-            sendServiceResponse(*eventError);
+            send_service_response(*eventError);
         }
     }
 }
 
-void StubBase::sendUpdateNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const
+void StubBase::send_update_notification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const
 {
-    for (StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos))
+    for (StubListenerList::LISTPOS pos = whichListeners.first_position(); whichListeners.is_valid_position(pos); pos = whichListeners.next_position(pos))
     {
         const StubBase::Listener& listener = whichListeners[pos];
-        ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
+        ServiceResponseEvent* eventResp = masterEvent.clone_for_target(listener.mProxy);
         if ( eventResp != nullptr )
         {
-            sendServiceResponse( *eventResp );
+            send_service_response( *eventResp );
         }
     }
 }
 
-void StubBase::sendServiceResponse( ServiceResponseEvent & eventElem ) const
+void StubBase::send_service_response( ServiceResponseEvent & eventElem ) const
 {
-    eventElem.getTargetProxy().deliverServiceEvent(eventElem);
+    eventElem.target_proxy().deliver_service_event(eventElem);
 }
 
-void StubBase::cancelCurrentRequest()
+void StubBase::cancel_current_request()
 {
-    mCurrListener   = mListListener.invalidPosition();
+    mCurrListener   = mListListener.invalid_position();
 }
 
-ComponentThread & StubBase::getComponentThread() const
+ComponentThread & StubBase::component_thread() const
 {
-    return mComponent.getMasterThread();
+    return mComponent.master_thread();
 }
 
-StubBase* StubBase::findStubByAddress( const StubAddress& address )
+StubBase* StubBase::find_stub( const StubAddress& address )
 {
-    return map_providers().findResourceObject(address);
+    return map_providers().find_resource_object(address);
 }
 
-void StubBase::startupServiceInterface( Component&  holder )
+void StubBase::startup_service_interface( Component&  holder )
 {
     LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
-    LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", getServiceRole( ).getString( ), getServiceName( ).getString( ) );
+    LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", service_role( ).as_string( ), service_name( ).as_string( ) );
 
-    StubConnectEvent::addListener( static_cast<StubEventConsumer &>(self()), holder.getMasterThread() );
+    StubConnectEvent::add_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
-void StubBase::shutdownServiceInterface( Component & holder )
+void StubBase::shutdown_service_interface( Component & holder )
 {
     LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
-    LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );
-    StubConnectEvent::removeListener( static_cast<StubEventConsumer &>(self()), holder.getMasterThread() );
+    LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", service_role().as_string(), service_name().as_string() );
+    StubConnectEvent::remove_listener( static_cast<StubEventConsumer &>(self()), holder.master_thread() );
 }
 
-void StubBase::errorAllRequests()
+void StubBase::error_all_requests()
 {
     LOG_SCOPE( areg_component_StubBase_errorAllRequests );
-    LOG_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", getServiceRole().getString(), getServiceName().getString() );
+    LOG_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", service_role().as_string(), service_name().as_string() );
 
     uint32_t i;
 
-    const uint32_t numOfAttr= getNumberOfAttributes();
-    const uint32_t numOfResp= getNumberOfResponses();
-    const uint32_t numOfReqs= getNumberOfRequests();
-    const uint32_t* attrIds = getAttributeIds();
-    const uint32_t* respIds = getResponseIds();
-    const uint32_t* reqIds  = getRequestIds();
+    const uint32_t numOfAttr= number_of_attributes();
+    const uint32_t numOfResp= number_of_responses();
+    const uint32_t numOfReqs= number_of_requests();
+    const uint32_t* attrIds = attribute_ids();
+    const uint32_t* respIds = response_ids();
+    const uint32_t* reqIds  = request_ids();
 
     ASSERT(attrIds != nullptr || numOfAttr == 0);
     ASSERT(respIds != nullptr || numOfResp == 0);
@@ -307,120 +307,120 @@ void StubBase::errorAllRequests()
 
     for (i = 0; i < numOfAttr; ++i)
     {
-        errorRequest(attrIds[i], false);
+        error_request(attrIds[i], false);
     }
 
     for (i = 0; i < numOfResp; ++i)
     {
-        errorRequest(respIds[i], false);
+        error_request(respIds[i], false);
     }
 
     for (i = 0; i < numOfReqs; ++i)
     {
-        errorRequest(reqIds[i], false);
+        error_request(reqIds[i], false);
     }
 }
 
-void StubBase::cancelAllRequests()
+void StubBase::cancel_all_requests()
 {
-    const uint32_t numOfReqs= getNumberOfRequests();
-    const uint32_t* reqIds  = getRequestIds();
+    const uint32_t numOfReqs= number_of_requests();
+    const uint32_t* reqIds  = request_ids();
     for ( uint32_t i = 0; i < numOfReqs; ++ i )
     {
-        errorRequest( reqIds[i], true );
+        error_request( reqIds[i], true );
     }
 }
 
-void StubBase::invalidateAttribute( uint32_t attrId )
+void StubBase::invalidate_attribute( uint32_t attrId )
 {
-    if ( NEService::isAttributeId(attrId) )
-        errorRequest(attrId, false);
+    if ( NEService::is_attribute_id(attrId) )
+        error_request(attrId, false);
 }
 
-void StubBase::sendUpdateEvent( uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
+void StubBase::send_update_event( uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
 {
     LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
     StubBase::StubListenerList listeners;
-    if (findListeners(msgId, listeners) > 0)
+    if (find_listeners(msgId, listeners) > 0)
     {
-        const ProxyAddress & proxy = listeners.firstEntry( ).mProxy;
-        LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::convAddressToPath( proxy).getString(), msgId);
+        const ProxyAddress & proxy = listeners.first_entry( ).mProxy;
+        LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::to_path( proxy).as_string(), msgId);
 
-        ResponseEvent* eventElem = createResponseEvent(proxy, msgId, result, data);
+        ResponseEvent* eventElem = create_response_event(proxy, msgId, result, data);
         if (eventElem != nullptr)
         {
-            sendUpdateNotification(listeners, *eventElem);
+            send_update_notification(listeners, *eventElem);
             eventElem->destroy();
         }
     }
 }
 
-void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
+void StubBase::send_notify_once( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, NEService::ResultType result ) const
 {
-    ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
+    ResponseEvent * eventElem = create_response_event( target, msgId, result, data );
     if ( eventElem != nullptr )
     {
-        sendServiceResponse( *eventElem );
+        send_service_response( *eventElem );
     }
 }
 
-void StubBase::sendResponseEvent( uint32_t respId, const EventDataStream & data )
+void StubBase::send_response_event( uint32_t respId, const EventDataStream & data )
 {
     StubBase::StubListenerList listeners;
-    if (findListeners(respId, listeners) > 0)
+    if (find_listeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, NEService::ResultType::RequestOK, data);
+        ResponseEvent* eventElem = create_response_event(listeners.first_entry().mProxy, respId, NEService::ResultType::RequestOK, data);
         if (eventElem != nullptr)
         {
-            sendResponseNotification(listeners, *eventElem);
+            send_response_notification(listeners, *eventElem);
             eventElem->destroy();
         }
     }
 }
 
-void StubBase::sendBusyRespone( const Listener & whichListener )
+void StubBase::send_busy_respone( const Listener & whichListener )
 {
     LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-    ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::ResultType::RequestBusy, EventDataStream::empty_data());
+    ResponseEvent* eventElem = create_response_event(whichListener.mProxy, whichListener.mMessageId, NEService::ResultType::RequestBusy, EventDataStream::empty_data());
     if (eventElem != nullptr)
     {
         LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
                     , whichListener.mMessageId
-                    , whichListener.mProxy.getTarget()
-                    , whichListener.mProxy.getSource()
+                    , whichListener.mProxy.target()
+                    , whichListener.mProxy.source()
                     , whichListener.mSequenceNr);
 
-        eventElem->setSequenceNumber(whichListener.mSequenceNr);
-        sendServiceResponse(*eventElem);
+        eventElem->set_sequence_number(whichListener.mSequenceNr);
+        send_service_response(*eventElem);
     }
 }
 
-bool StubBase::canExecuteRequest( Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr )
+bool StubBase::can_execute_request( Listener & whichListener, uint32_t whichResponse, const SequenceNumber & seqNr )
 {
     bool result = false;
-    if (isBusy(whichResponse))
+    if (is_busy(whichResponse))
     {
         whichListener.mSequenceNr   = seqNr;
-        sendBusyRespone(whichListener);
+        send_busy_respone(whichListener);
     }
     else
     {
-        prepareRequest(whichListener, seqNr, whichResponse);
+        prepare_request(whichListener, seqNr, whichResponse);
         result = true;
     }
 
     return result;
 }
 
-bool StubBase::existNotificationListener( uint32_t msgId, const ProxyAddress & notifySource ) const
+bool StubBase::exist( uint32_t msgId, const ProxyAddress & notifySource ) const
 {
     bool result = false;
-    if ( notifySource.isValid() )
+    if ( notifySource.is_valid() )
     {
-        StubListenerList::LISTPOS pos = mListListener.firstPosition();
-        for ( ; (result == false) && mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
+        StubListenerList::LISTPOS pos = mListListener.first_position();
+        for ( ; (result == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
-            const StubBase::Listener & listener = mListListener.valueAtPosition(pos);
+            const StubBase::Listener & listener = mListListener.value_at_position(pos);
             result = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                      (msgId == listener.mMessageId) &&
                      (notifySource == listener.mProxy);
@@ -430,18 +430,18 @@ bool StubBase::existNotificationListener( uint32_t msgId, const ProxyAddress & n
     return result;
 }
 
-bool StubBase::addNotificationListener(uint32_t msgId, const ProxyAddress & notifySource)
+bool StubBase::add_notification_listener(uint32_t msgId, const ProxyAddress & notifySource)
 {
     LOG_SCOPE(areg_component_StubBase_addNotificationListener);
 
     bool result { false };
-    if (notifySource.isValid())
+    if (notifySource.is_valid())
     {
         bool hasEntry{ false };
-        auto pos = mListListener.firstPosition();
-        for ( ; (hasEntry == false) && mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
+        auto pos = mListListener.first_position();
+        for ( ; (hasEntry == false) && mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
         {
-            const StubBase::Listener & listener = mListListener.valueAtPosition(pos);
+            const StubBase::Listener & listener = mListListener.value_at_position(pos);
             hasEntry = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                        (msgId == listener.mMessageId) &&
                        (notifySource == listener.mProxy);
@@ -451,9 +451,9 @@ bool StubBase::addNotificationListener(uint32_t msgId, const ProxyAddress & noti
         {
             LOG_DBG("For the message [ %u ] new listener [ %s ] is added"
                         , msgId
-                        , ProxyAddress::convAddressToPath(notifySource).getString());
+                        , ProxyAddress::to_path(notifySource).as_string());
 
-            mListListener.pushLast(StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource));
+            mListListener.push_last(StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource));
             result = true;
         }
 #if AREG_LOGS
@@ -461,7 +461,7 @@ bool StubBase::addNotificationListener(uint32_t msgId, const ProxyAddress & noti
         {
             LOG_WARN("For the message [ %u ] there is already registered client [ %s ]"
                        , msgId
-                       , ProxyAddress::convAddressToPath(notifySource).getString());
+                       , ProxyAddress::to_path(notifySource).as_string());
         }
 #endif  // AREG_LOGS
     }
@@ -469,97 +469,97 @@ bool StubBase::addNotificationListener(uint32_t msgId, const ProxyAddress & noti
     return result;
 }
 
-void StubBase::removeNotificationListener( uint32_t msgId, const ProxyAddress & notifySource )
+void StubBase::remove_notification_listener( uint32_t msgId, const ProxyAddress & notifySource )
 {
-    for (StubListenerList::LISTPOS pos = mListListener.firstPosition(); mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
+    for (StubListenerList::LISTPOS pos = mListListener.first_position(); mListListener.is_valid_position(pos); pos = mListListener.next_position(pos) )
     {
-        const StubBase::Listener & listener = mListListener.valueAtPosition(pos);
+        const StubBase::Listener & listener = mListListener.value_at_position(pos);
         if ( NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr && msgId == listener.mMessageId && notifySource == listener.mProxy )
         {
-            mListListener.removeAt(pos);
+            mListListener.remove_at(pos);
             break;
         }
     }
 }
 
-bool StubBase::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status )
+bool StubBase::client_connected(const ProxyAddress & client, NEService::ServiceConnectionState status )
 {
     bool result{ false };
     if (mAddress == client)
     {
         LOG_SCOPE(areg_component_StubBase_clientConnected);
         LOG_DBG("Service consumer [ %s ] connection event with status [ %s ]"
-                  , ProxyAddress::convAddressToPath(client).getString()
-                  , NEService::getString(status));
+                  , ProxyAddress::to_path(client).as_string()
+                  , NEService::as_string(status));
 
         result = true;
-        if (NEService::isServiceDisconnected(status))
+        if (NEService::is_service_disconnected(status))
         {
-            clearAllListeners(client);
+            clear_all_listeners(client);
         }
     }
 
     return result;
 }
 
-void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status )
+void StubBase::process_connect_event( const ProxyAddress & proxyAddress, NEService::ServiceConnectionState status )
 {
-    clientConnected( proxyAddress, status );
+    client_connected( proxyAddress, status );
 }
 
-void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::ServiceConnectionState status )
+void StubBase::process_registered_event(const StubAddress & stubTarget, NEService::ServiceConnectionState status )
 {
-    if ( NEService::isServiceConnected( status) )
+    if ( NEService::is_service_connected( status) )
     {
-        ASSERT( stubTarget.isValid() );
+        ASSERT( stubTarget.is_valid() );
         map_providers().lock();
-        map_providers().unregisterResourceObject(mAddress);
+        map_providers().unregister_resource_object(mAddress);
 
         mAddress = stubTarget;
         
-        map_providers().registerResourceObject(mAddress, this);
+        map_providers().register_resource_object(mAddress, this);
         map_providers().unlock();
     }
 
     mConnectionStatus = status;
 }
 
-const Version & StubBase::getImplVersion() const
+const Version & StubBase::impl_version() const
 {
     return mInterface.idVersion;
 }
 
-uint32_t StubBase::getNumberOfRequests() const
+uint32_t StubBase::number_of_requests() const
 {
     return mInterface.idRequestCount;
 }
 
-uint32_t StubBase::getNumberOfResponses() const
+uint32_t StubBase::number_of_responses() const
 {
     return mInterface.idResponseCount;
 }
 
-uint32_t StubBase::getNumberOfAttributes() const
+uint32_t StubBase::number_of_attributes() const
 {
     return mInterface.idAttributeCount;
 }
 
-const uint32_t * StubBase::getRequestIds() const
+const uint32_t * StubBase::request_ids() const
 {
     return mInterface.idRequestList;
 }
 
-const uint32_t * StubBase::getResponseIds() const
+const uint32_t * StubBase::response_ids() const
 {
     return mInterface.idResponseList;
 }
 
-const uint32_t * StubBase::getAttributeIds() const
+const uint32_t * StubBase::attribute_ids() const
 {
     return mInterface.idAttributeList;
 }
 
-ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */
+ResponseEvent * StubBase::create_response_event( const ProxyAddress &     /* proxy */
                                              , uint32_t             /* msgId */
                                              , NEService::ResultType   /* result */
                                              , const EventDataStream &  /* data */ ) const
@@ -567,20 +567,20 @@ ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy
     return nullptr;
 }
 
-RemoteRequestEvent * StubBase::createRemoteRequestEvent( const InStream & /* stream */ ) const
+RemoteRequestEvent * StubBase::remote_request_event( const InStream & /* stream */ ) const
 {
     return nullptr;
 }
 
-RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const InStream & /* stream */ ) const
+RemoteNotifyRequestEvent * StubBase::notify_request_event( const InStream & /* stream */ ) const
 {
     return nullptr;
 }
 
-void StubBase::processStubEvent( StubEvent & /* eventElem */ )
+void StubBase::process_stub_event( StubEvent & /* eventElem */ )
 {
 }
 
-void StubBase::processGenericEvent(Event & /* eventElem */)
+void StubBase::process_generic_event(Event & /* eventElem */)
 {
 }

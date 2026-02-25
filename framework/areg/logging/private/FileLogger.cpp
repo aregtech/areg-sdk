@@ -26,21 +26,21 @@ FileLogger::FileLogger( LogConfiguration & logConfig)
 {
 }
 
-bool FileLogger::openLogger()
+bool FileLogger::open_logger()
 {
-    if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
+    if ( (mLogFile.is_opened() == false) && mLogConfiguration.is_file_logging_enabled())
     {
-        String fileName(mLogConfiguration.getLogFile() );
-        if ( fileName.isEmpty() == false )
+        String fileName(mLogConfiguration.log_file() );
+        if ( fileName.is_empty() == false )
         {
-            bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
+            bool newFile      = static_cast<bool>(mLogConfiguration.append_data()) == false;
             uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write) | 
                                 static_cast<uint32_t>(File::OpenMode::Read) |
                                 static_cast<uint32_t>(File::OpenMode::ShareRead) |
                                 static_cast<uint32_t>(File::OpenMode::ShareWrite) |
                                 static_cast<uint32_t>(File::OpenMode::Text);
 
-            if (File::existFile(fileName))
+            if (File::has_file(fileName))
             {
                 mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
             }
@@ -49,62 +49,62 @@ bool FileLogger::openLogger()
                 mode |= static_cast<uint32_t>(File::OpenMode::Create);
             }
 
-            if ( mLogFile.open( fileName, mode) && createLayouts() )
+            if ( mLogFile.open( fileName, mode) && create_layouts() )
             {
                     
-                Process & curProcess = Process::getInstance();
+                Process & curProcess = Process::instance();
                 NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::formatString( logMsgHello.logMessage
+                String::format_string( logMsgHello.log_message
                                     , NELogging::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                    , Process::getString(curProcess.getEnvironment())
-                                    , curProcess.getFullPath().getString()
+                                    , Process::as_string(curProcess.environment())
+                                    , curProcess.full_path().as_string()
                                     , logMsgHello.logModuleId);
 
-                logMessage(logMsgHello);
+                log_message(logMsgHello);
             }
         }
     }
 
-    return mLogFile.isOpened();
+    return mLogFile.is_opened();
 }
 
-void FileLogger::closeLogger()
+void FileLogger::close_logger()
 {
-    if ( mLogFile.isOpened() )
+    if ( mLogFile.is_opened() )
     {
-        Process & curProcess = Process::getInstance();
+        Process & curProcess = Process::instance();
         NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::formatString(logMsgGoodbye.logMessage
+        String::format_string(logMsgGoodbye.log_message
                             , NELogging::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
-                            , Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath().getString()
+                            , Process::as_string(curProcess.environment())
+                            , curProcess.full_path().as_string()
                             , logMsgGoodbye.logModuleId);
 
-        logMessage(logMsgGoodbye);
+        log_message(logMsgGoodbye);
     }
 
-    releaseLayouts();
+    release_layouts();
     mLogFile.close();
 }
 
-void FileLogger::logMessage( const NELogging::LogEntry & logMessage )
+void FileLogger::log_message( const NELogging::LogEntry & log_message )
 {
-    if (mLogFile.isOpened())
+    if (mLogFile.is_opened())
     {
-        switch (logMessage.logMsgType)
+        switch (log_message.logMsgType)
         {
         case NELogging::LogMessageType::MessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(mLogFile));
+            layout_message().log_message(log_message, static_cast<OutStream&>(mLogFile));
             break;
 
         case NELogging::LogMessageType::ScopeEnter:
-            getLayoutEnterScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
+            layout_enter_scope().log_message( log_message, static_cast<OutStream &>(mLogFile) );
             break;
 
         case NELogging::LogMessageType::ScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
+            layout_exit_scope().log_message( log_message, static_cast<OutStream &>(mLogFile) );
             break;
 
         case NELogging::LogMessageType::Undefined: // fall through
@@ -115,12 +115,12 @@ void FileLogger::logMessage( const NELogging::LogEntry & logMessage )
     }
 }
 
-bool FileLogger::isLoggerOpened() const
+bool FileLogger::is_logger_opened() const
 {
-    return mLogFile.isOpened();
+    return mLogFile.is_opened();
 }
 
-void FileLogger::flushLogs()
+void FileLogger::flush_logs()
 {
     mLogFile.flush();
 }

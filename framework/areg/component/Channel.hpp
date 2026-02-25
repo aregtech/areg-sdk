@@ -28,10 +28,8 @@
 // Channel class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Channel class, which provides connection of services.
- *          Every connection, independent whether it is local or remote,
- *          has a communication channel. Each registered service gets associated
- *          channel given by system and contains information of communication source and target.
+ * \brief   Represents a communication channel between services; contains source and target
+ *          identifiers and a system-assigned cookie.
  **/
 class AREG_API Channel
 {
@@ -40,9 +38,9 @@ class AREG_API Channel
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Defines invalid channel object.
+     * \brief   Returns a predefined invalid channel object.
      **/
-    static const Channel & getInvalidChannel();                //!< Invalid channel
+    static const Channel & invalid_channel();                //!< Invalid channel
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -50,27 +48,30 @@ public:
 public:
 
     /**
-     * \brief   Default constructor
+     * \brief
      **/
     Channel();
 
     /**
-     * \brief   Constructor. Sets channel data, which are the communication source and target IDs, and the cookie set by system.
-     * \param   source  The channel communication source ID set by system.
-     * \param   target  The channel communication target ID set by system.
-     * \param   cookie  The ID assigned by system.
+     * \brief   Initializes the channel with source and target identifiers and an optional cookie.
+     *
+     * \param   source      The channel communication source ID.
+     * \param   target      The channel communication target ID.
+     * \param   cookie      The system-assigned ID.
      **/
     explicit Channel( const ITEM_ID & source, const ITEM_ID & target = NEService::TARGET_UNKNOWN, const ITEM_ID & cookie = NEService::COOKIE_UNKNOWN );
 
     /**
-     * \brief   Copy constructor.
-     * \param   source  The source of data to copy.
+     * \brief   Copies values from the given source.
+     *
+     * \param   source      The source of data to copy.
      **/
     Channel( const Channel & source );
 
     /**
-     * \brief   Move constructor.
-     * \param   source  The source of data to move.
+     * \brief   Moves values from the given source.
+     *
+     * \param   source      The source of data to move.
      **/
     Channel( Channel && source ) noexcept;
 
@@ -84,33 +85,35 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies channel data from given source
-     * \param   source  The source of data to copy.
+     * \brief   Copies channel data from the given source.
+     *
+     * \param   source      The source of data to copy.
      **/
     Channel & operator = ( const Channel & source );
 
     /**
-     * \brief   Moves channel data from given source
-     * \param   source  The source of data to move.
+     * \brief   Moves channel data from the given source.
+     *
+     * \param   source      The source of data to move.
      **/
     Channel & operator = ( Channel && source ) noexcept;
 
     /**
-     * \brief   Checks equality of 2 channels and returns true if they are equal.
-     *          Channels are equal if source, target and cookies are equal.
-     * \param   other   The Channel object to compare
+     * \brief   Returns true if both channels have identical source, target, and cookie identifiers.
+     *
+     * \param   other       The channel object to compare.
      **/
     inline bool operator == ( const Channel & other ) const;
 
     /**
-     * \brief   Checks inequality of 2 channels and returns true if they are not equal.
-     *          Channels are not equal if source, target or cookies are not equal.
-     * \param   other   The Channel object to compare
+     * \brief   Returns true if the channels differ in source, target, or cookie identifiers.
+     *
+     * \param   other       The channel object to compare.
      **/
     inline bool operator != ( const Channel & other ) const;
 
     /**
-     * \brief   Converts channel object to 32-bit unsigned integer value.
+     * \brief   Converts the channel to its ITEM_ID representation.
      **/
     inline explicit operator const ITEM_ID & () const;
 
@@ -119,16 +122,18 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Streaming operator. Reads from stream and initialize connection channel data.
-     * \param   stream  The streaming object to read data.
-     * \param   input   Connection channel to initialize.
+     * \brief   Reads channel data from stream.
+     *
+     * \param   stream      The stream object to read from.
+     * \param[out] input       The channel to initialize with data from the stream.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, Channel & input );
 
     /**
-     * \brief   Streaming operator. Writes connection channel data into stream.
-     * \param   stream  The streaming object to write data.
-     * \param   output  Connection channel to stream.
+     * \brief   Writes channel data to stream.
+     *
+     * \param[out] stream      The stream object to write to.
+     * \param   output      The channel to write.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const Channel & output);
 
@@ -138,59 +143,63 @@ public:
 public:
 
     /**
-     * \brief   Returns the source ID of channel.
+     * \brief   Returns the source identifier of the channel.
      **/
-    inline const ITEM_ID & getSource() const;
+    inline const ITEM_ID & source() const;
 
     /**
-     * \brief   Sets the source ID of channel.
-     * \param   source  The new source ID to set in channel
+     * \brief   Sets the source identifier of the channel.
+     *
+     * \param   source      The new source identifier.
      **/
-    inline void setSource(const ITEM_ID & source );
+    inline void set_source(const ITEM_ID & source );
 
     /**
-     * \brief   Returns the target ID of channel.
+     * \brief   Returns the target identifier of the channel.
      **/
-    inline const ITEM_ID & getTarget() const;
+    inline const ITEM_ID & target() const;
     /**
-     * \brief   Sets the source ID of channel.
-     * \param   target  The new target ID to set in channel
+     * \brief   Sets the target identifier of the channel.
+     *
+     * \param   target      The new target identifier.
      **/
 
-    inline void setTarget(const ITEM_ID & target );
+    inline void set_target(const ITEM_ID & target );
 
     /**
-     * \brief   Returns the cookie ID of channel.
+     * \brief   Returns the cookie identifier of the channel.
      **/
-    inline const ITEM_ID & getCookie() const;
+    inline const ITEM_ID & cookie() const;
 
     /**
-     * \brief   Sets the source ID of channel.
-     * \param   cookie  The new cookie ID to set in channel
+     * \brief   Sets the cookie identifier of the channel.
+     *
+     * \param   cookie      The new cookie identifier.
      **/
-    inline void setCookie(const ITEM_ID & cookie );
+    inline void set_cookie(const ITEM_ID & cookie );
 
     /**
-     * \brief   Returns true, if channel data is valid.
+     * \brief   Returns true if the channel data is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
-     * \brief   Invalidates channel.
+     * \brief   Invalidates the channel.
      **/
     inline void invalidate();
 
 public:
     /**
-     * \brief   Converts channel data to string
+     * \brief   Converts the channel data to a string representation.
      **/
-    String convToString() const;
+    String to_string() const;
 
     /**
-     * \brief   Creates channel data from string
-     * \param   channel     Null-terminated string, which contains channel data.
+     * \brief   Initializes the channel from a string representation.
+     *
+     * \param   channel     The string containing channel data.
      **/
-    const Channel & convFromString( const String & channel );
+    const Channel & conv_from_string( const String & channel );
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -215,32 +224,32 @@ private:
 // Channel class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & Channel::getSource() const
+inline const ITEM_ID & Channel::source() const
 {
     return mSource;
 }
 
-inline void Channel::setSource(const ITEM_ID & source)
+inline void Channel::set_source(const ITEM_ID & source)
 {
     mSource = source;
 }
 
-inline const ITEM_ID & Channel::getTarget() const
+inline const ITEM_ID & Channel::target() const
 {
     return mTarget;
 }
 
-inline void Channel::setTarget(const ITEM_ID & target)
+inline void Channel::set_target(const ITEM_ID & target)
 {
     mTarget = target;
 }
 
-inline const ITEM_ID & Channel::getCookie() const
+inline const ITEM_ID & Channel::cookie() const
 {
     return mCookie;
 }
 
-inline void Channel::setCookie(const ITEM_ID & cookie)
+inline void Channel::set_cookie(const ITEM_ID & cookie)
 {
     mCookie = cookie;
 }
@@ -260,7 +269,7 @@ inline Channel::operator const ITEM_ID & () const
     return mSource;
 }
 
-inline bool Channel::isValid() const
+inline bool Channel::is_valid() const
 {
     return (mCookie != NEService::COOKIE_UNKNOWN);
 }

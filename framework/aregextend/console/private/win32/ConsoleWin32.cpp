@@ -114,7 +114,7 @@ void Console::_osOutputText(Console::Coord pos, const String& text) const
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY)});
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
+    WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
@@ -134,7 +134,7 @@ void Console::_osOutputText(const String& text) const
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
+    WriteConsoleA(hStdOut, text.as_string(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
 void Console::_osOutputText(const std::string_view& text) const
@@ -153,7 +153,7 @@ Console::Coord Console::_osGetCursorPosition() const
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    NEMemory::memZero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    NEMemory::mem_zero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     GetConsoleScreenBufferInfo(hStdOut, &bufferInfo);
     const COORD& coord = reinterpret_cast<const COORD&>(bufferInfo.dwCursorPosition);
 

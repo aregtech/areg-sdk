@@ -31,7 +31,7 @@
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize()
+void Process::_os_initilize()
 {
     mProcessId = ::getpid( );
     mProcessHandle = static_cast<void *>(&mProcessId);
@@ -84,11 +84,11 @@ void Process::_osInitilize()
     }
 #endif  // __APPLE__
 
-    _initPaths( buffer );
+    _init_paths( buffer );
 }
 
 
-String Process::_osGetEnvVariable( const char* var ) const
+String Process::_os_env_variable( const char* var ) const
 {
     return String(var != nullptr ? ::getenv(var) : String::EmptyString);
 }

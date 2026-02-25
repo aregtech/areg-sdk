@@ -41,10 +41,8 @@ class ConfigListener;
 // Application class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This class is a singleton object in each process that is instantiated
- *          when process starts. It is used to initialize, setup and release
- *          system and resources. Use static methods to enable / disable tracing,
- *          service and communication manager of the system.
+ * \brief   Singleton for application lifecycle management, system service initialization,
+ *          configuration loading, and component model management.
  **/
 class AREG_API Application
 {
@@ -65,40 +63,24 @@ class AREG_API Application
 public:
 
     /**
-     * \brief   Call to initialize application and start main services. If necessary, point the service config file path.
-     *          The system ignores requests to start service if it is already running.
+     * \brief   Initializes application and starts specified system services. The system ignores
+     *          requests to start a service if it is already running.
      *
-     * \param   startTracing    If true, application starts Tracing.
-     * \param   startServicing  If true, application starts Service Manager. This parameter is ignored if 'startRouting' is true.
-     * \param   startRouting    If true, application starts multi-cast router client and Service Manager (if not started).
-     * \param   startTimer      If true, application starts timer manager. If Service Managers, Timer Manager automatically starts.
-     * \param   startWatchdog   If true, application starts watchdog manager, so that it can track the component threads.
-     * \param   configFile      If nullptr or empty, configures Tracing from specified file. Default location is 
-     *                          './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE)
-     * \param   configListener  A pointer to the configuration listener. If the pointer is valid, the listener is notified
-     *                          before and after loading configuration, as well as if loading configuration fails and the 
-     *                          default configuration is set.
-     *                          By default, the pointer to listener is null, so that no notification is triggered.
-     *                          
-     * \see     release, loadModel
-     *
-     * \example     Initialize Application
-     *
-     *          // This starts all services and configuration reads from default configuration files:
-     *          Application::initApplication();
-     *
-     *          // In this example, start all services and configuration files from user home folder:
-     *          Application::initApplication(true, true, true, true, true, "%user%/areg.init");
-     *
-     *          // In this example, start all services, even if Service Manager marked 'false', because
-     *          // routing requires to start Service Manager first. Read configuration files from default location:
-     *          Application::initApplication(true, false);
-     *
-     *          // In this example start no service, only make configuration of system, read configuration files from
-     *          // user home folder.The services can start later:
-     *          Application::initApplication(false, false, false, false, false, "%user%/areg.init");
+     * \param   startTracing        If true, starts the tracing service.
+     * \param   startServicing      If true, starts the Service Manager. Ignored if startRouting is
+     *                              true.
+     * \param   startRouting        If true, starts the message routing client and Service Manager
+     *                              (if not already started).
+     * \param   startTimer          If true, starts the timer manager. Automatically started if
+     *                              Service Manager is running.
+     * \param   startWatchdog       If true, starts the watchdog manager to monitor component
+     *                              threads.
+     * \param   configFile          Path to configuration file. If nullptr or empty, uses default
+     *                              location './config/areg.init'.
+     * \param   configListener      Optional listener notified before and after configuration
+     *                              loading, or on failure. Null by default.
      **/
-    static void initApplication(  bool startTracing   = true
+    static void init_application(  bool startTracing   = true
                                 , bool startServicing = true
                                 , bool startRouting   = true
                                 , bool startTimer     = true
@@ -107,288 +89,336 @@ public:
                                 , ConfigListener * configListener = nullptr);
 
     /**
-     * \brief   Call to stop all components, unload models, stop services and release resources.
+     * \brief   Stops all components, unloads models, stops services, and releases resources.
+      *
+      * \see     release_application, load_model
+      *
+      * \example     Initialize Application
+      *
+      *          // This starts all services and reads configuration from default location:
+      *          Application::init_application();
+      *
+      *          // Start all services, read configuration from user home folder:
+      *          Application::init_application(true, true, true, true, true, "%user%/areg.init");
+      *
+      *          // Start all services; startRouting forces Service Manager to start even if
+      *          // startServicing is false. Read config from default location:
+      *          Application::init_application(true, false);
+      *
+      *          // Start no services, only configure the system from a custom config file.
+      *          // Services can be started later:
+      *          Application::init_application(false, false, false, false, false, "%user%/areg.init");
      **/
-    static void releaseApplication();
+    static void release_application();
 
     /**
-     * \brief   Call to load and start particular registered model in the system.
-     *          If mode name is nullptr or empty, all registered models are started.
-     * \param   modelName   The unique name of model to load. If nullptr, all models will be loaded.
-     * \return  Returns true could load specified model.
+     * \brief   Loads and starts a registered model. If modelName is nullptr or empty, loads all
+     *          registered models.
      *
-     * \example     Start Model
-     *          // In this example the system starts services and starts all models:
-     *          Application::initialize();
-     *          Application::loadModel();
+     * \param   modelName       Unique name of the model to load, or nullptr to load all models.
+     * \return  Returns true if the specified model was loaded successfully.
+      *
+      * \example     Start Model
+      *          // Start all services and all registered models:
+      *          Application::init_application();
+      *          Application::load_model();
      **/
-    static bool loadModel( const char * modelName = nullptr );
+    static bool load_model( const char * modelName = nullptr );
 
     /**
-     * \brief   Stops and unloads specified model. If model name nullptr or empty, all models are stopped and unloaded.
-     *          The services like Service Manager, Tracing, Routing and Timer Manager are not stopped.
-     * \param   modelName   The unique name of model to stop. Or nullptr if all models should be unloaded and stopped.
-     * 
-     * \example     Start and Stop all models
-     *          // This example starts all services, loads all models. 1 second later stops and unloads all models,
-     *          // stop all services, release all resources:
-     *          Application::initialize();
-     *          Application::loadModel();
-     *          Thread::sleep(1000);
-     *          Application::unloadModel();
-     *          Application::release();
+     * \brief   Stops and unloads a model. If modelName is nullptr or empty, unloads all models.
+     *          Service Manager, Tracing, Routing, and Timer Manager are not stopped.
+     *
+     * \param   modelName       Unique name of the model to unload, or nullptr to unload all models.
+      *
+      * \example     Start and Stop all models
+      *          // Start all services, load all models, sleep 1 s, then unload and release:
+      *          Application::init_application();
+      *          Application::load_model();
+      *          Thread::sleep(1000);
+      *          Application::unload_model();
+      *          Application::release_application();
      **/
-    static void unloadModel( const char * modelName = nullptr );
+    static void unload_model( const char * modelName = nullptr );
 
     /**
-     * \brief   Checks whether specified model is already loaded and running or not.
-     *          The model name should not be nullptr or empty.
-     * \param   modelName   The unique name of model in application.
-     *\return   Returns true is model is loaded. Otherwise, returns false.
+     * \brief   Returns true if the specified model is loaded and running.
+     *
+     * \param   modelName       Unique name of the model to check. Must not be nullptr or empty.
+     * \return  Returns true if the model is loaded; false otherwise.
      **/
-    static bool isModelLoaded( const char * modelName );
+    static bool is_model_loaded( const char * modelName );
 
     /**
-     * \brief   Searches model by name.
-     * \param   modelName   The name of model to search.
-     * \return  If found, returns valid model. Otherwise, returns invalid model.
-     *          The invalid model has empty name.
+     * \brief   Searches for a model by name.
+     *
+     * \param   modelName       Name of the model to search for.
+     * \return  Returns the model if found; otherwise returns an invalid model with an empty name.
      **/
-    static const NERegistry::Model & findModel( const char * modelName );
+    static const NERegistry::Model & find_model( const char * modelName );
 
     /**
-     * \brief   Sets up the current working directory.
-     * \param   dirPath     The absolute or relative path to the folder to set
-     *                      as a working directory. If nullptr or empty, the
-     *                      working directory is the folder of executable.
+     * \brief   Sets the current working directory.
+     *
+     * \param   dirPath     Absolute or relative path to the folder to set as working directory. If
+     *                      nullptr or empty, uses the folder of the executable.
      **/
-    static void setWorkingDirectory( const char * dirPath = nullptr );
+    static void set_working_directory( const char * dirPath = nullptr );
 
     /**
-     * \brief   Call to start logging.
-     * param    force       If true, forces load default configuration file (NEApplication::DEFAULT_CONFIG_FILE)
-      *                     or use logging default settings.
-     * \return  Returns true if succeeded to start logging. Start logging may fail if
-     *          it was not configured or configuration failed.
+     * \brief   Starts logging. If force is true, loads the default configuration file or uses
+     *          logging defaults.
+     *
+     * \param   force       If true, forces loading the default configuration file
+     *                      (NEApplication::DEFAULT_CONFIG_FILE) or uses logging default settings.
+     * \return  Returns true if logging started successfully; false if not configured or
+     *          configuration failed.
      **/
-    static bool startLogging( bool force = false );
+    static bool start_logging( bool force = false );
 
     /**
-     * \brief   Call to stop tracing.
+     * \brief   Stops logging.
      **/
-    static void stopLogging();
+    static void stop_logging();
 
     /**
-     * \brief   Call to start Service Manager thread. This will not trigger Router Service client connection.
-     * \return  Returns true if succeeded to start Router thread or it is running.
+     * \brief   Starts the Service Manager thread. Does not trigger Router Service client
+     *          connection.
+     *
+     * \return  Returns true if Service Manager started successfully or is already running.
      **/
-    static bool startServiceManager();
+    static bool start_service_manager();
 
     /**
-     * \brief   Call to stop Service Manager. When stops, it automatically stops Routing Service connection.
+     * \brief   Stops the Service Manager. Automatically stops the Routing Service connection.
      **/
-    static void stopServiceManager();
+    static void stop_service_manager();
 
     /**
-     * \brief   Call to start timer manager, so that the components can trigger timers.
-     * \return  Returns true if timer manager is running.
+     * \brief   Starts the timer manager, enabling components to trigger timers.
+     *
+     * \return  Returns true if the timer manager is running.
      **/
-    static bool startTimerManager();
+    static bool start_timer_manager();
 
     /**
-     * \brief   Call to stop timer manager.
+     * \brief   Stops the timer manager.
      **/
-    static void stopTimerManager();
+    static void stop_timer_manager();
 
     /**
-     * \brief   Call to start timer manager, so that the components can trigger timers.
-     * \return  Returns true if timer manager is running.
+     * \brief   Starts the watchdog manager, enabling components to monitor thread health.
+     *
+     * \return  Returns true if the watchdog manager is running.
      **/
-    static bool startWatchdogManager();
+    static bool start_watchdog_manager();
 
     /**
-     * \brief   Call to stop timer manager.
+     * \brief   Stops the watchdog manager.
      **/
-    static void stopWatchdogManager();
+    static void stop_watchdog_manager();
 
     /**
-     * \brief   Returns true, if Message Router client is started.
+     * \brief   Returns true if the Service Manager is started.
+     *
+     * \return  Returns true if the Service Manager is started; false otherwise.
      **/
-    static bool isServiceManagerStarted();
+    static bool is_service_manager_started();
 
     /**
-     * \brief   Configure message routing service.
-     * \return  Returns true if could configure the message routing.
+     * \brief   Configures the message routing service.
+     *
+     * \return  Returns true if message routing was configured successfully.
      **/
-    static bool configMessageRouting();
+    static bool config_message_routing();
 
     /**
-     * \brief   Call to start Message Router client. If Service Manager is not started yet, it starts
-     *          Service Manager first.
-     * \param   connectTypes    The bitwise set of connections to establish.
-     *                          At the moment, only TCP/IP is possible.
-     * \return  Returns true if Message Router client successfully started.
+     * \brief   Starts the Message Router client. Starts the Service Manager first if not already
+     *          running.
+     *
+     * \param   connectTypes    Bitwise set of connection types to establish. Currently only TCP/IP
+     *                          is supported.
+     * \return  Returns true if the Message Router client started successfully.
      **/
-    static bool startMessageRouting(uint32_t connectTypes);
+    static bool start_message_routing(uint32_t connectTypes);
 
     /**
-     * \brief   Call to start Message Router client. If Service Manager is not started yet, it starts
-     *          Service Manager first.
-     *          The call overwrites IP-Address and port number set via configuration file.
-     * \param   ipAddress   Should be valid IP-Address of remote Router Service.
-     * \param   portNr      Should be valid Port Number of remote Router Service.
-     * \return  Returns true if Message Router client successfully started.
+     * \brief   Starts the Message Router client with specified remote server address and port.
+     *          Starts the Service Manager first if not already running. Overwrites IP address and
+     *          port from configuration file.
+     *
+     * \param   ipAddress       Valid IP address of the remote Router Service.
+     * \param   portNr          Valid port number of the remote Router Service.
+     * \return  Returns true if the Message Router client started successfully.
+     * \note    Move overload. Overwrites configuration file settings.
      **/
-    static bool startMessageRouting( const char * ipAddress, uint16_t portNr );
+    static bool start_message_routing( const char * ipAddress, uint16_t portNr );
 
     /**
-     * \brief   Stops Message Router client.
+     * \brief   Stops the Message Router client.
      **/
-    static void stopMessageRouting();
+    static void stop_message_routing();
 
     /**
-     * \brief   Returns true, if Message Router client is configured
+     * \brief   Returns true if the Message Router client is configured.
+     *
+     * \return  Returns true if the Message Router client is configured; false otherwise.
      **/
-    static bool isMessageRoutingConfigured();
+    static bool is_message_routing_configured();
 
     /**
-     * \brief   Call to start routing service on local machine.
-     *          To succeed call, the user must have appropriate access rights.
-     * \return  Returns true if Message Routing Service successfully started as service.
+     * \brief   Starts the routing service on the local machine. Requires appropriate access rights.
+     *
+     * \return  Returns true if the Message Routing Service started successfully.
      **/
-    static bool startRouterService();
+    static bool start_router_service();
 
     /**
-     * \brief   Call to start routing service on local machine.
-     *          To succeed call, the user must have appropriate access rights.
-     * \return  Returns true if Message Routing Service successfully started as service.
+     * \brief   Starts the logging service on the local machine. Requires appropriate access rights.
+     *
+     * \return  Returns true if the logging service started successfully.
      **/
-    static bool startLoggingService();
+    static bool start_logging_service();
 
     /**
-     * \brief   Returns true if application successfully connected to Message Routing Service,
-     *          and can register or request remote servicing.
+     * \brief   Returns true if the application is connected to the Message Routing Service and can
+     *          register or request remote services.
+     *
+     * \return  Returns true if connected to the Message Routing Service; false otherwise.
      **/
-    static bool isRouterConnected();
+    static bool is_router_connected();
 
 
     /**
-     * \brief   Returns true if application successfully triggered connection to Message Routing Service,
-     *          but the connection is not established yet and not ready to communicate.
+     * \brief   Returns true if the application has triggered connection to the Message Routing
+     *          Service but the connection is not yet established.
+     *
+     * \return  Returns true if connection is pending; false otherwise.
      **/
-    static bool isRouterConnectionPending();
+    static bool is_router_connection_pending();
 
     /**
-     * \brief   Returns true if an element exists in the application storage
-     * \param   elemName    The name of element stored in application storage.
+     * \brief   Returns true if an element with the given name exists in application storage.
+     *
+     * \param   elemName    Name of the element to check in application storage.
+     * \return  Returns true if the element exists; false otherwise.
      **/
-    static bool isElementStored( const String & elemName );
+    static bool is_element_stored( const String & elemName );
 
     /**
-     * \brief   Saves element in application storage. If storage already has element save with specified
-     *          name, the function returns stored element. Otherwise, returns NEMemroy::InvalidElement.
-     * \param   elemName    The name of element to save.
-     * \param   elem        The element to save in storage.
-     * \return  If storage already has an element saved with same name, it returns previously save element.
-     *          Otherwise, it returns NEMemory::InvalidElement.
+     * \brief   Saves an element in application storage.
+     *
+     * \param   elemName    Name of the element to save.
+     * \param   elem        Element to save in storage.
+     * \return  Returns the previously saved element if an element with the same name exists;
+     *          otherwise returns NEMemory::InvalidElement.
      **/
-    static NEMemory::Primitive storeElement( const String & elemName, NEMemory::Primitive elem );
+    static NEMemory::Primitive store_element( const String & elemName, NEMemory::Primitive elem );
 
     /**
-     * \brief   Returns stored element, which has given name. If element does not exist, returns NEMemory::InvalidElement.
-     * \param   elemName    The name of element to search in storage.
+     * \brief   Returns the stored element with the given name.
+     *
+     * \param   elemName    Name of the element to retrieve from storage.
+     * \return  Returns the stored element if found; otherwise returns NEMemory::InvalidElement.
      **/
-    static NEMemory::Primitive getStoredElement( const String & elemName );
+    static NEMemory::Primitive stored_element( const String & elemName );
 
     /**
-     * \brief   Locks the calling thread until either application quit signal is set, or waiting timeout is expired.
-     * \param   waitTimeout The waiting timeout for application quit signal.
-     *                      If NECommon::WAIT_INFINITE, waits until signal is set.
-     * \return  Returns true, if application quit event signal is set. If timeout expired, returns false.
+     * \brief   Blocks the calling thread until the application quit signal is set or the waiting
+     *          timeout expires.
+     *
+     * \param   waitTimeout     Timeout in milliseconds to wait for the application quit signal.
+     *                          NECommon::WAIT_INFINITE waits indefinitely.
+     * \return  Returns true if the application quit signal was set; false if the timeout expired.
      **/
-    static bool waitAppQuit( uint32_t waitTimeout = NECommon::WAIT_INFINITE);
+    static bool wait_app_quit( uint32_t waitTimeout = NECommon::WAIT_INFINITE);
 
     /**
-     * \brief   Sets application quit signal event. So that, the waiting signal thread can be released
-     *          to make further clean-ups and exit application.
+     * \brief   Sets the application quit signal event, allowing waiting threads to release and
+     *          perform cleanup.
      **/
-    static void signalAppQuit();
+    static void signal_app_quit();
 
     /**
-     * \brief   Returns true if the Service Manager of application runs.
+     * \brief   Returns true if the Service Manager is running.
+     *
+     * \return  Returns true if the Service Manager is running; false otherwise.
      **/
-    static bool isServicingReady();
+    static bool is_servicing_ready();
 
     /**
-     * \brief   Call to query the amount of send and receive data size in bytes.
-     *          The call extracts the send and receive sizes, and resets them to zero.
-     *          On output 'sizeSend' and 'sizeReceive' parameters contain the size
-     *          since the last call of the method.
-     *          If need to measure the total amount of data, accumulate calls.
-     *          If need to measure the data rate per second, call this method each second.
-     * 
-     * \param[out]  sizeSend    On output this parameter contains the size of data in bytes
-     *                          sent since the last call of the method.
-     * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
-     *                          received since the last call of the method.
+     * \brief   Queries the amount of sent and received data in bytes since the last call, and
+     *          resets counters.
+     *
+     * \param[out] sizeSend        On output, contains the size of data in bytes sent since the last
+     *                             call.
+     * \param[out] sizeReceive     On output, contains the size of data in bytes received since the
+     *                             last call.
+     * \note    Accumulate calls to measure total data. Call each second to measure data rate.
      **/
-    static void queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive );
+    static void query_communication_data( uint32_t & sizeSend, uint32_t & sizeReceive );
 
     /**
      * \brief   Returns the name of the executable process.
+     *
+     * \return  The name of the executable process.
      **/
-    static const String & getApplicationName();
+    static const String & application_name();
 
     /**
-     * \brief   Returns the name of system host.
+     * \brief   Returns the name of the system host.
+     *
+     * \return  The name of the system host.
      **/
-    static const String & getMachineName();
+    static const String & machine_name();
 
     /**
-     * \brief   Returns the instance of application configuration initializer object
-     *          to read or write configuration properties
+     * \brief   Returns the application configuration manager instance for reading or writing
+     *          configuration properties.
+     *
+     * \return  Reference to the ConfigManager instance.
      **/
-    static ConfigManager& getConfigManager();
+    static ConfigManager& config_manager();
 
     /**
-     * \brief   Loads the configuration from the given file.
-     * \param   fileName    The relative or absolute path to the file to read configurations.
-     *                      If nullptr, loads configuration from default file './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE).
-     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered before and after
-     *                      reading configuration from file. If listener is null or loading configuration failed, no notification is triggered.
-     * \return  Returns true if succeeded to load configuration.
-     *          If fails, loads default configuration and returns false.
+     * \brief   Loads configuration from the specified file.
+     *
+     * \param   fileName    Relative or absolute path to the configuration file. If nullptr, loads
+     *                      from default './config/areg.init'.
+     * \param   listener    Optional listener notified before and after loading, or on failure. No
+     *                      notifications if nullptr.
+     * \return  Returns true if configuration was loaded successfully; false if loading failed
+     *          (default configuration is loaded).
      **/
-    static bool loadConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
+    static bool load_configuration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
     /**
-     * \brief   Saves current configuration in the given file.
-     *          Note that only writable configuration properties are saved.
-     *          The read-only part (global configuration) remains untouched.
-     * \param   fileName    The relative or absolute path to the file to write configurations.
-     *                      If nullptr, saves configuration in the same file that was read.
-     *                      If default configuration was loaded, saves all configuration in the
-     *                      default file './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE).
-     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered before and after
-     *                      saving configuration to file. If listener is null or saving configuration failed, no notification is triggered.
-     * \return  Returns true if succeeded to save configuration.
-     *          Otherwise, returns false.
+     * \brief   Saves current configuration to the specified file. Only writable properties are
+     *          saved; the read-only global configuration is unchanged.
+     *
+     * \param   fileName    Relative or absolute path to the configuration file. If nullptr, saves
+     *                      to the previously loaded file or default './config/areg.init'.
+     * \param   listener    Optional listener notified before and after saving, or on failure. No
+     *                      notifications if nullptr.
+     * \return  Returns true if configuration was saved successfully; false otherwise.
      **/
-    static bool saveConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
+    static bool save_configuration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
     /**
-     * \brief   Loads default configuration properties defined in NEApplication::DefaultReadonlyProperties
-     *          and in the NEApplication::DefaultLogScopesConfig. This will discard the previous configuration
-     *          if the application was already configured.
-     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered if default
-     *                      configuration is set. If listener is null, no notification is triggered.
+     * \brief   Loads default configuration from NEApplication::DefaultReadonlyProperties and
+     *          NEApplication::DefaultLogScopesConfig. Discards previous configuration.
+     *
+     * \param   listener    Optional listener notified when default configuration is set. No
+     *                      notifications if nullptr.
      **/
-    static void setupDefaultConfiguration(ConfigListener * listener = nullptr);
+    static void setup_default_configuration(ConfigListener * listener = nullptr);
 
     /**
      * \brief   Returns true if the application is already configured.
+     *
+     * \return  Returns true if configured; false otherwise.
      **/
-    static bool isConfigured();
+    static bool is_configured();
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -435,7 +465,8 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Default constructor. Hidden. The object cannot be instantiated.
+     * \brief
+     * \note    Default constructor. Hidden; the object cannot be instantiated.
      **/
     Application();
     /**
@@ -444,39 +475,41 @@ private:
     ~Application() = default;
 
     /**
-     * \brief   Returns instance of singleton Application object.
+     * \brief   Returns a reference to the singleton Application instance.
+     *
+     * \return  Reference to the singleton Application instance.
      **/
-    static inline Application & getInstance();
+    static inline Application & instance();
 
     /**
-     * \brief   Sets new state of application. The state can be changed in following sequence:
-     *          AppStateUndefined => AppStateInitializing => AppStateReady => AppStateReleasing => AppStateUndefined
-     * \param   newState    The new sate of application to set.
-     * \return  Returns true if succeeded to change the application state.
+     * \brief   Sets the application state. Allowed transitions: AppStateUndefined =>
+     *          AppStateInitializing => AppStateReady => AppStateReleasing => AppStateUndefined.
+     *
+     * \param   newState    The new application state to set.
+     * \return  Returns true if the application state was changed successfully.
      **/
-    static bool _setAppState(NEApplication::AppState newState);
+    static bool _set_app_state(NEApplication::AppState newState);
 
     /**
-     * \brief   The OS specific implementation of start a service.
-     *          If service is not running, the application should have enough access rights
-     *          to start a service. Nothing happens if the service is running.
-     * \param   serviceName         The name of the service to check and if needed to start.
-     * \param   serviceExecutable   The name of the service executable to check.
-     * \return  Returns true, if service is running. Otherwise, returns false.
+     * \brief   OS-specific implementation to start a local service. Does nothing if the service is
+     *          already running. Requires appropriate access rights.
+     *
+     * \param   serviceName             Name of the service to start.
+     * \param   serviceExecutable       Name of the service executable to verify.
+     * \return  Returns true if the service is running; false otherwise.
      **/
-    static bool _osStartLocalService( const wchar_t * serviceName, const wchar_t * serviceExecutable );
+    static bool _os_start_local_service( const wchar_t * serviceName, const wchar_t * serviceExecutable );
 
     /**
-     * \brief   OS specific implementation to make setups.
-     *          In Linux it sets up signal handlers.
-     *          In Windows it sets up time period.
+     * \brief   OS-specific initialization. On Linux, sets up signal handlers; on Windows, sets up
+     *          time period.
      **/
-    static void _osSetupHandlers();
+    static void _os_setup_handlers();
 
     /**
-     * \brief   OS specific implementation to release resources.
+     * \brief   OS-specific cleanup to release resources.
      **/
-    static void _osReleaseHandlers();
+    static void _os_release_handlers();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods.
@@ -489,7 +522,7 @@ private:
 // Application class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline Application & Application::getInstance()
+inline Application & Application::instance()
 {
     return Application::_theApplication;
 }

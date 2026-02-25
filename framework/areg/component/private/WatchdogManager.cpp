@@ -32,42 +32,42 @@ DEF_LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 // Static functions
 //////////////////////////////////////////////////////////////////////////
 
-WatchdogManager& WatchdogManager::getInstance()
+WatchdogManager& WatchdogManager::instance()
 {
     static WatchdogManager	_theWatchdogManager;
     return _theWatchdogManager;
 }
 
-bool WatchdogManager::startWatchdogManager()
+bool WatchdogManager::start_watchdog_manager()
 {
-    return getInstance().startTimerManagerThread();
+    return instance().start_manager_thread();
 }
 
-void WatchdogManager::stopWatchdogManager(bool waitComplete)
+void WatchdogManager::stop_watchdog_manager(bool waitComplete)
 {
-    return getInstance().stopTimerManagerThread(waitComplete);
+    return instance().stop_manager_thread(waitComplete);
 }
 
-void WatchdogManager::waitWatchdogManager()
+void WatchdogManager::wait_watchdog_manager()
 {
-    return getInstance().waitCompletion();
+    return instance().wait_completion();
 }
 
-bool WatchdogManager::isWatchdogManagerStarted()
+bool WatchdogManager::is_manager_started()
 {
-    return getInstance().isReady();
+    return instance().is_ready();
 }
 
-bool WatchdogManager::startTimer(Watchdog& watchdog)
+bool WatchdogManager::start_timer(Watchdog& watchdog)
 {
     bool result = false;
-    ASSERT(watchdog.getHandle() != nullptr);
-    WatchdogManager& watchdogManager = getInstance();
+    ASSERT(watchdog.handle() != nullptr);
+    WatchdogManager& watchdogManager = instance();
 
-    if (watchdogManager.isWatchdogManagerStarted())
+    if (watchdogManager.is_manager_started())
     {
-        watchdogManager._registerWatchdog(watchdog);
-        result = TimerManagerEvent::sendEvent( TimerManagerEventData(&watchdog)
+        watchdogManager._register_watchdog(watchdog);
+        result = TimerManagerEvent::send_event( TimerManagerEventData(&watchdog)
                                              , static_cast<TimerManagerEventConsumer&>(watchdogManager)
                                              , static_cast<DispatcherThread&>(watchdogManager));
     }
@@ -75,10 +75,10 @@ bool WatchdogManager::startTimer(Watchdog& watchdog)
     return result;
 }
 
-void WatchdogManager::stopTimer(Watchdog& watchdog)
+void WatchdogManager::stop_timer(Watchdog& watchdog)
 {
-    getInstance()._unregisterWatchdog(watchdog);
-    WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
+    instance()._unregister_watchdog(watchdog);
+    WatchdogManager::_os_timer_stop(watchdog.handle());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,74 +94,74 @@ WatchdogManager::WatchdogManager()
 
 WatchdogManager::~WatchdogManager()
 {
-    _removeAllWatchdogs();
+    _remove_all_watchdogs();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-inline void WatchdogManager::_registerWatchdog(Watchdog & watchdog)
+inline void WatchdogManager::_register_watchdog(Watchdog & watchdog)
 {
-    mWatchdogResource.registerResourceObject(watchdog.getId(), &watchdog);
+    mWatchdogResource.register_resource_object(watchdog.id(), &watchdog);
 }
 
-inline void WatchdogManager::_unregisterWatchdog(Watchdog& watchdog)
+inline void WatchdogManager::_unregister_watchdog(Watchdog& watchdog)
 {
-    mWatchdogResource.unregisterResourceObject(watchdog.getId());
-    WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
+    mWatchdogResource.unregister_resource_object(watchdog.id());
+    WatchdogManager::_os_timer_stop(watchdog.handle());
 }
 
-void WatchdogManager::_removeAllWatchdogs()
+void WatchdogManager::_remove_all_watchdogs()
 {
     mWatchdogResource.lock();
 
     std::pair< Watchdog::GUARD_ID, Watchdog*> elem;
-    while (mWatchdogResource.isEmpty() == false)
+    while (mWatchdogResource.is_empty() == false)
     {
-        mWatchdogResource.removeResourceFirstElement(elem);
+        mWatchdogResource.remove_first_element(elem);
         ASSERT(elem.second != nullptr);
-        WatchdogManager::_osSystemTimerStop(elem.second->getHandle());
+        WatchdogManager::_os_timer_stop(elem.second->handle());
     }
 
     mWatchdogResource.unlock();
 }
 
-void WatchdogManager::processEvent(const TimerManagerEventData & data)
+void WatchdogManager::process_event(const TimerManagerEventData & data)
 {
-    Watchdog* watchdog = static_cast<Watchdog*>(data.getTimer());
+    Watchdog* watchdog = static_cast<Watchdog*>(data.timer());
     ASSERT(watchdog != nullptr);
-    if (mWatchdogResource.existResource(watchdog->getId()))
+    if (mWatchdogResource.exist(watchdog->id()))
     {
-        WatchdogManager::_osSystemTimerStart(*watchdog);
+        WatchdogManager::_os_timer_start(*watchdog);
     }
 }
 
-void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
+void WatchdogManager::_process_expired_timer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdog_id, uint32_t /* hiBytes */, uint32_t /* loBytes */)
 {
     LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 
     mWatchdogResource.lock();
 
-    Watchdog::SEQUENCE_ID sequence  = Watchdog::makeSequenceId(watchdogId);
-    if ((watchdog != nullptr) && (watchdog->getSequence() == sequence))
+    Watchdog::SEQUENCE_ID sequence  = Watchdog::make_sequence_id(watchdog_id);
+    if ((watchdog != nullptr) && (watchdog->sequence() == sequence))
     {
         LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]"
-                        , watchdog->getName().getString()
-                        , watchdog->getComponentThread().getName().getString());
+                        , watchdog->name().as_string()
+                        , watchdog->component_thread().name().as_string());
 
-        ServiceManager::requestRecreateThread(watchdog->getComponentThread());
+        ServiceManager::request_recreate_thread(watchdog->component_thread());
     }
 
     mWatchdogResource.unlock();
 }
 
-void WatchdogManager::readyForEvents(bool isReady)
+void WatchdogManager::ready_for_events(bool is_ready)
 {
-    if (isReady == false)
+    if (is_ready == false)
     {
-        _removeAllWatchdogs();
+        _remove_all_watchdogs();
     }
 
-    TimerManagerBase::readyForEvents(isReady);
+    TimerManagerBase::ready_for_events(is_ready);
 }

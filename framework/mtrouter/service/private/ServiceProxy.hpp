@@ -148,17 +148,17 @@ public:
     /**
      * \brief   Returns true if a remote proxy object is valid, i.e. the proxy address is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
      * \brief   Returns true if a remote proxy object status is connected
      **/
-    inline bool isConnected() const;
+    inline bool is_connected() const;
 
     /**
      * \brief   Returns true if a remote proxy object status is waiting
      **/
-    inline bool isWaiting() const;
+    inline bool is_waiting() const;
 
     /**
      * \brief   Returns true the service connection status value
@@ -168,7 +168,7 @@ public:
     /**
      * \brief   Returns the address of remote proxy
      **/
-    inline const ProxyAddress & getServiceAddress() const;
+    inline const ProxyAddress & service_address() const;
 
     /**
      * \brief   Called when the remote service stub of proxy is available.
@@ -221,7 +221,7 @@ private:
 // ServiceProxy class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceProxy::getServiceAddress() const
+inline const ProxyAddress & ServiceProxy::service_address() const
 {
     return mProxyAddress;
 }
@@ -231,17 +231,17 @@ inline NEService::ServiceConnectionState ServiceProxy::getServiceStatus() const
     return mConnectStatus;
 }
 
-inline bool ServiceProxy::isValid() const
+inline bool ServiceProxy::is_valid() const
 {
-    return mProxyAddress.isValid();
+    return mProxyAddress.is_valid();
 }
 
-inline bool ServiceProxy::isConnected() const
+inline bool ServiceProxy::is_connected() const
 {
     return ( mConnectStatus == NEService::ServiceConnectionState::Connected );
 }
 
-inline bool ServiceProxy::isWaiting() const
+inline bool ServiceProxy::is_waiting() const
 {
     return ( mConnectStatus == NEService::ServiceConnectionState::Pending );
 }

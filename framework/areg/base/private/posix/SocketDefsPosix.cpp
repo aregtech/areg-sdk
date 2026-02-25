@@ -79,7 +79,7 @@ namespace NESocket
                 {
                     // try again with other package size
                     checkSize = true;
-                    blockMaxSize = NESocket::getMaxSendSize(hSocket);
+                    blockMaxSize = NESocket::max_send_size(hSocket);
                 }
                 else
                 {

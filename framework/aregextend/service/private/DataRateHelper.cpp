@@ -27,19 +27,19 @@ DataRateHelper::DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread
     : mSendThread   (sendThread)
     , mReceiveThread(receiveThread)
 {
-    mSendThread.setEnableCalculateData(verbose);
-    mReceiveThread.setEnableCalculateData(verbose);
+    mSendThread.set_data_rate_enabled(verbose);
+    mReceiveThread.set_data_rate_enabled(verbose);
 }
 
 void DataRateHelper::setVerbose(bool verbose)
 {
-    mSendThread.setEnableCalculateData(verbose);
-    mReceiveThread.setEnableCalculateData(verbose);
+    mSendThread.set_data_rate_enabled(verbose);
+    mReceiveThread.set_data_rate_enabled(verbose);
 }
 
 bool DataRateHelper::isVerbose() const
 {
-    return mSendThread.isCalculateDataEnabled() && mReceiveThread.isCalculateDataEnabled();
+    return mSendThread.is_data_rate_enabled() && mReceiveThread.is_data_rate_enabled();
 }
 
 DataRateHelper::DataRate DataRateHelper::convertDataRateLiterals(uint32_t sizeBytes)

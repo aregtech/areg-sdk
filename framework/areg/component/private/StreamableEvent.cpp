@@ -41,12 +41,12 @@ StreamableEvent::StreamableEvent( const InStream & stream )
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-const InStream & StreamableEvent::readStream( const InStream & stream )
+const InStream & StreamableEvent::read_stream( const InStream & stream )
 {
     return (stream >> Event::mEventType);
 }
 
-OutStream & StreamableEvent::writeStream( OutStream & stream ) const
+OutStream & StreamableEvent::write_stream( OutStream & stream ) const
 {
     return (stream << Event::mEventType);
 }

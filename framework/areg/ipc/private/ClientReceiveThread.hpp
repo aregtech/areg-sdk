@@ -33,9 +33,8 @@ class ClientConnection;
 // ClientConnection class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message receiver thread from remote routing service.
- *          All received messages are passed to receiver thread for further dispatching
- *          and distribution between components and services.
+ * \brief   Message receiver thread from remote routing service that dispatches received messages to
+ *          components.
  **/
 class ClientReceiveThread    : public    DispatcherThread
 {
@@ -44,11 +43,11 @@ class ClientReceiveThread    : public    DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes Service handler and client connection objects.
-     * \param   remoteService   The instance of remote service to process messages.
-     * \param   connection      The instance of client connection object to read messages.
-     * \param   namePrefix      The prefix to add to the NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD
-     *                          to have unique thread names.
+     * \brief   Initializes message receiver with service handler and client connection.
+     *
+     * \param   remoteService       Remote service handler for processing messages.
+     * \param   connection          Client connection object for reading messages.
+     * \param   namePrefix          Prefix for thread name to ensure uniqueness.
      **/
     ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);
 
@@ -62,22 +61,22 @@ public:
 /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulative value of received data size and rests the existing value to zero.
-     *          The operations are atomic. The value can be used to display data rate, for example.
+     * \brief   Returns accumulated received data size and resets counter atomically. Useful for
+     *          displaying data rate.
      **/
-    inline uint32_t extractDataReceive() const;
+    inline uint32_t extract_data_receive() const;
 
     /**
-     * \brief   Call to enable or disable the received data calculation.
-     *          It as well resets the existing calculated data.
-     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     * \brief   Enables or disables received data calculation and resets existing calculated data.
+     *
+     * \param   enable      Flag indicating whether data calculation should be enabled.
      **/
-    inline void setEnableCalculateData(bool enable);
+    inline void set_data_rate_enabled(bool enable);
 
     /**
-     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     * \brief   Returns whether data calculation is enabled.
      **/
-    inline bool isCalculateDataEnabled() const;
+    inline bool is_data_rate_enabled() const;
 
 protected:
 /************************************************************************/
@@ -85,13 +84,11 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running.
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Runs main dispatching loop. Picks and dispatches events. Override to change logic.
+     *
+     * \return  Returns true if exit event is signaled.
      **/
-    bool runDispatcher() override;
+    bool run_dispatcher() override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -120,16 +117,19 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ClientReceiveThread() = delete;
     AREG_NOCOPY_NOMOVE( ClientReceiveThread );
 };
 
-inline uint32_t ClientReceiveThread::extractDataReceive() const
+inline uint32_t ClientReceiveThread::extract_data_receive() const
 {
     return static_cast<uint32_t>(mBytesReceive.exchange(0));
 }
 
-inline void ClientReceiveThread::setEnableCalculateData(bool enable)
+inline void ClientReceiveThread::set_data_rate_enabled(bool enable)
 {
     if (mSaveDataReceive != enable)
     {
@@ -138,7 +138,7 @@ inline void ClientReceiveThread::setEnableCalculateData(bool enable)
     }
 }
 
-inline bool ClientReceiveThread::isCalculateDataEnabled() const
+inline bool ClientReceiveThread::is_data_rate_enabled() const
 {
     return mSaveDataReceive;
 }

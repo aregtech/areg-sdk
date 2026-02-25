@@ -61,23 +61,23 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
 {
 }
 
-bool RouterClient::connectServiceHost()
+bool RouterClient::connect_service_host()
 {
     bool result{ true };
-    if (isRunning() == false)
+    if (is_running() == false)
     {
-        if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
+        if (create_thread(NECommon::WAIT_INFINITE) && wait_start(NECommon::WAIT_INFINITE))
         {
-            result = ServiceClientConnectionBase::connectServiceHost();
+            result = ServiceClientConnectionBase::connect_service_host();
         }
         else
         {
-            shutdownThread(NECommon::WAIT_INFINITE);
+            shutdown_thread(NECommon::WAIT_INFINITE);
         }
     }
-    else if (mClientConnection.isValid() == false)
+    else if (mClientConnection.is_valid() == false)
     {
-        result = ServiceClientConnectionBase::connectServiceHost();
+        result = ServiceClientConnectionBase::connect_service_host();
     }
     else
     {
@@ -87,122 +87,122 @@ bool RouterClient::connectServiceHost()
     return result;
 }
 
-void RouterClient::disconnectServiceHost()
+void RouterClient::disconnect_service_host()
 {
-    if (isRunning())
+    if (is_running())
     {
-        ServiceClientConnectionBase::disconnectServiceHost();
-        completionWait(NECommon::WAIT_INFINITE);
-        shutdownThread(NECommon::DO_NOT_WAIT);
+        ServiceClientConnectionBase::disconnect_service_host();
+        completion_wait(NECommon::WAIT_INFINITE);
+        shutdown_thread(NECommon::DO_NOT_WAIT);
     }
 }
 
-void RouterClient::onServiceExit()
+void RouterClient::on_service_exit()
 {
-    ServiceClientConnectionBase::onServiceExit();
-    triggerExit();
+    ServiceClientConnectionBase::on_service_exit();
+    trigger_exit();
 }
 
-bool RouterClient::isServiceHostPending() const
+bool RouterClient::is_host_pending() const
 {
     Lock lock(mLock);
-    return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting)));
+    return (is_running() && ((mClientConnection.is_valid() == false) || (connection_state() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting)));
 }
 
-bool RouterClient::registerServiceProvider( const StubAddress & stubService )
+bool RouterClient::register_service_provider( const StubAddress & stubService )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceProvider);
     Lock lock( mLock );
     bool result{ false };
-    if ( isConnectionStarted() )
+    if ( is_connection_started() )
     {
         LOG_DBG("Queuing to send register [ %s ] service message by connection [ %d ]"
-                   , StubAddress::convAddressToPath(stubService).getString()
-                   , mClientConnection.getCookie());
+                   , StubAddress::to_path(stubService).as_string()
+                   , mClientConnection.cookie());
 
-        result = sendMessage(NERemoteService::createRouterRegisterService(stubService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio );
+        result = send_message(NERemoteService::router_register_service(stubService, mClientConnection.cookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio );
     }
 
     return result;
 }
 
-void RouterClient::unregisterServiceProvider(const StubAddress & stubService, const NEService::DisconnectReason reason )
+void RouterClient::unregister_service_provider(const StubAddress & stubService, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceProvider);
 
     Lock lock( mLock );
-    if ( isConnectionStarted() )
+    if ( is_connection_started() )
     {
         LOG_DBG("Queuing to send unregister [ %s ] service message by connection [ %d ]"
-                   , StubAddress::convAddressToPath(stubService).getString()
-                   , mClientConnection.getCookie());
+                   , StubAddress::to_path(stubService).as_string()
+                   , mClientConnection.cookie());
 
-        sendMessage(NERemoteService::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
+        send_message(NERemoteService::router_unregister_service(stubService, reason, mClientConnection.cookie(), NEService::COOKIE_ROUTER) );
     }
 }
 
-bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
+bool RouterClient::register_service_consumer(const ProxyAddress & proxyService)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceConsumer );
     Lock lock( mLock );
     bool result { false };
-    if ( isConnectionStarted() )
+    if ( is_connection_started() )
     {
         LOG_DBG("Queuing to send register [ %s ] service client message by connection [ %d ]"
-                   , ProxyAddress::convAddressToPath(proxyService).getString()
-                   , mClientConnection.getCookie());
+                   , ProxyAddress::to_path(proxyService).as_string()
+                   , mClientConnection.cookie());
 
-        result = sendMessage(NERemoteService::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio);
+        result = send_message(NERemoteService::router_register_client(proxyService, mClientConnection.cookie(), NEService::COOKIE_ROUTER), Event::EventPriority::HighPrio);
     }
 
     return result;
 }
 
-void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, const NEService::DisconnectReason reason )
+void RouterClient::unregister_service_consumer(const ProxyAddress & proxyService, const NEService::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 
     Lock lock( mLock );
-    if ( isConnectionStarted() )
+    if ( is_connection_started() )
     {
         LOG_DBG("Queuing to send unregister [ %s ] service client message by connection [ %d ]"
-                   , ProxyAddress::convAddressToPath(proxyService).getString()
-                   , mClientConnection.getCookie());
+                   , ProxyAddress::to_path(proxyService).as_string()
+                   , mClientConnection.cookie());
 
-        sendMessage(NERemoteService::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
+        send_message(NERemoteService::router_unregister_client(proxyService, reason, mClientConnection.cookie(), NEService::COOKIE_ROUTER) );
     }
 }
 
-void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
+void RouterClient::failed_send_message(const RemoteMessage & msgFailed, Socket & whichTarget )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedSendMessage);
 
-    if (Application::isServicingReady())
+    if (Application::is_servicing_ready())
     {
-        uint32_t msgId{ msgFailed.getMessageId() };
-        if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
+        uint32_t msgId{ msgFailed.message_id() };
+        if ( NEService::is_executable_id(msgId) || NEService::is_connect_id(msgId) )
         {
             LOG_WARN("Failed to send message [ %u ] to target [ %llu ], source is [ %llu ], the target socket [ %u ] is [ %s : %s ]"
                        , msgId
-                       , msgFailed.getTarget()
-                       , msgFailed.getSource()
-                       , static_cast<uint32_t>(whichTarget.getHandle())
-                       , whichTarget.isValid() ? "VALID" : "INVALID"
-                       , whichTarget.isAlive() ? "ALIVE" : "DEAD");
+                       , msgFailed.target()
+                       , msgFailed.source()
+                       , static_cast<uint32_t>(whichTarget.handle())
+                       , whichTarget.is_valid() ? "VALID" : "INVALID"
+                       , whichTarget.is_alive() ? "ALIVE" : "DEAD");
 
-            msgFailed.moveToBegin();
-            StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
+            msgFailed.move_to_begin();
+            StreamableEvent * eventError = RemoteEventFactory::request_failed_event(msgFailed, mChannel);
             if ( eventError != nullptr )
             {
-                LOG_DBG("Replying with failure event [ %s ]", eventError->getRuntimeClassName().getString());
-                eventError->deliverEvent();
+                LOG_DBG("Replying with failure event [ %s ]", eventError->runtime_class_name().as_string());
+                eventError->deliver_event();
             }
 
-            if ( whichTarget.isValid() && (whichTarget.isAlive() == false))
+            if ( whichTarget.is_valid() && (whichTarget.is_alive() == false))
             {
                 LOG_DBG("Trying to reconnect");
-                cancelConnection( );
-                sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio );
+                cancel_connection( );
+                send_command( ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio );
             }
         }
         else
@@ -216,20 +216,20 @@ void RouterClient::failedSendMessage(const RemoteMessage & msgFailed, Socket & w
     }
 }
 
-void RouterClient::failedReceiveMessage( Socket & whichSource )
+void RouterClient::failed_receive_message( Socket & whichSource )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedReceiveMessage);
 
-    if (Application::isServicingReady())
+    if (Application::is_servicing_ready())
     {
-        if (whichSource.isValid())
+        if (whichSource.is_valid())
         {
             LOG_WARN("Failed to receive message from socket [ %lu ], which [ %s : %s ], going to reconnect"
-                       , static_cast<uint32_t>(whichSource.getHandle())
-                       , whichSource.isValid() ? "VALID" : "INVALID"
-                       , whichSource.isAlive() ? "ALIVE" : "DEAD");
-            cancelConnection();
-            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio);
+                       , static_cast<uint32_t>(whichSource.handle())
+                       , whichSource.is_valid() ? "VALID" : "INVALID"
+                       , whichSource.is_alive() ? "ALIVE" : "DEAD");
+            cancel_connection();
+            send_command(ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio);
         }
         else
         {
@@ -242,28 +242,28 @@ void RouterClient::failedReceiveMessage( Socket & whichSource )
     }
 }
 
-void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
+void RouterClient::failed_process_message( const RemoteMessage & msgUnprocessed )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedProcessMessage);
 
-    if (Application::isServicingReady())
+    if (Application::is_servicing_ready())
     {
-        uint32_t msgId{ msgUnprocessed.getMessageId() };
-        if ( NEService::isExecutableId(msgId) )
+        uint32_t msgId{ msgUnprocessed.message_id() };
+        if ( NEService::is_executable_id(msgId) )
         {
             LOG_DBG("The message [ %u ] for target [ %llu ] and from source [ %llu ] is unprocessed, replying with failed message"
                       , msgId
-                      , msgUnprocessed.getTarget()
-                      , msgUnprocessed.getSource());
+                      , msgUnprocessed.target()
+                      , msgUnprocessed.source());
 
-            msgUnprocessed.moveToBegin();
-            StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
+            msgUnprocessed.move_to_begin();
+            StreamableEvent * eventError = RemoteEventFactory::request_failed_event(msgUnprocessed, mChannel);
             if ( eventError != nullptr )
             {
                 RemoteMessage data;
-                if ( RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
+                if ( RemoteEventFactory::stream_from_event( data, *eventError, mChannel) )
                 {
-                    sendMessage(data);
+                    send_message(data);
                 }
             }
         }
@@ -278,27 +278,27 @@ void RouterClient::failedProcessMessage( const RemoteMessage & msgUnprocessed )
     }
 }
 
-void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource )
+void RouterClient::process_received_message( const RemoteMessage & msgReceived, Socket & whichSource )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
-    if ( msgReceived.isValid() && whichSource.isValid() )
+    if ( msgReceived.is_valid() && whichSource.is_valid() )
     {
-        NEService::FuncIdRange msgId{ static_cast<NEService::FuncIdRange>(msgReceived.getMessageId()) };
-        NEMemory::MessageResult result{ static_cast<NEMemory::MessageResult>(msgReceived.getResult()) };
-        LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, NEMemory::getString(result));
+        NEService::FuncIdRange msgId{ static_cast<NEService::FuncIdRange>(msgReceived.message_id()) };
+        NEMemory::MessageResult result{ static_cast<NEMemory::MessageResult>(msgReceived.result()) };
+        LOG_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, NEMemory::as_string(result));
 
         switch ( msgId )
         {
         case NEService::FuncIdRange::SystemServiceNotifyConnection:
-            serviceConnectionEvent(msgReceived);
+            service_connection_event(msgReceived);
             break;
 
         case NEService::FuncIdRange::SystemServiceNotifyRegister:
             {
-                ASSERT( mClientConnection.getCookie() == msgReceived.getTarget() );
+                ASSERT( mClientConnection.cookie() == msgReceived.target() );
                 NEService::RegistrationAction reqType;
                 msgReceived >> reqType;
-                LOG_DBG("Remote routing service registration notification of type [ %s ]", NEService::getString(reqType));
+                LOG_DBG("Remote routing service registration notification of type [ %s ]", NEService::as_string(reqType));
 
                 switch ( reqType )
                 {
@@ -307,14 +307,14 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                         ProxyAddress proxy(msgReceived);
                         NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
-                        proxy.setSource( mChannel.getSource() );
+                        proxy.set_source( mChannel.source() );
                         if ( result == NEMemory::MessageResult::Succeed )
                         {
-                            mRegisterConsumer.registeredRemoteServiceConsumer(proxy);
+                            mRegisterConsumer.on_consumer_registered(proxy);
                         }
                         else
                         {
-                            mRegisterConsumer.unregisteredRemoteServiceConsumer(proxy, reason, NEService::COOKIE_ANY);
+                            mRegisterConsumer.on_consumer_unregistered(proxy, reason, NEService::COOKIE_ANY);
                         }
                     }
                     break;
@@ -322,14 +322,14 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                 case NEService::RegistrationAction::RegisterStub:
                     {
                         StubAddress stub(msgReceived);
-                        stub.setSource( mChannel.getSource() );
+                        stub.set_source( mChannel.source() );
                         if ( result == NEMemory::MessageResult::Succeed )
                         {
-                            mRegisterConsumer.registeredRemoteServiceProvider( stub );
+                            mRegisterConsumer.on_provider_registered( stub );
                         }
                         else
                         {
-                            mRegisterConsumer.unregisteredRemoteServiceProvider( stub, NEService::DisconnectReason::UndefinedReason, NEService::COOKIE_ANY );
+                            mRegisterConsumer.on_provider_unregistered( stub, NEService::DisconnectReason::UndefinedReason, NEService::COOKIE_ANY );
                         }
                     }
                     break;
@@ -339,8 +339,8 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                         ProxyAddress proxy(msgReceived);
                         NEService::DisconnectReason reason { NEService::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
-                        proxy.setSource( mChannel.getSource() );
-                        mRegisterConsumer.unregisteredRemoteServiceConsumer(proxy, reason, NEService::COOKIE_ANY);
+                        proxy.set_source( mChannel.source() );
+                        mRegisterConsumer.on_consumer_unregistered(proxy, reason, NEService::COOKIE_ANY);
                     }
                     break;
 
@@ -349,8 +349,8 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
                         StubAddress stub(msgReceived);
                         NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
                         msgReceived >> reason;
-                        stub.setSource( mChannel.getSource() );
-                        mRegisterConsumer.unregisteredRemoteServiceProvider(stub, reason, NEService::COOKIE_ANY);
+                        stub.set_source( mChannel.source() );
+                        mRegisterConsumer.on_provider_unregistered(stub, reason, NEService::COOKIE_ANY);
                     }
                     break;
 
@@ -391,16 +391,16 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
         case NEService::FuncIdRange::EmptyFunctionId:          // fall through
         default:
             {
-                if ( NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
+                if ( NEService::is_executable_id(static_cast<uint32_t>(msgId)) )
                 {
-                    StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
+                    StreamableEvent * eventRemote = RemoteEventFactory::event_from_stream(msgReceived, mChannel);
                     if ( eventRemote != nullptr )
                     {
-                        eventRemote->deliverEvent();
+                        eventRemote->deliver_event();
                     }
                     else
                     {
-                        failedProcessMessage(msgReceived);
+                        failed_process_message(msgReceived);
                     }
                 }
                 else
@@ -414,120 +414,120 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
     else
     {
         LOG_WARN("Invalid message from host [ %s : %u ], ignore processing"
-                    , whichSource.getAddress().getHostAddress().getString()
-                    , whichSource.getAddress().getHostPort( ) );
+                    , whichSource.address().host_address().as_string()
+                    , whichSource.address().host_port( ) );
     }
 }
 
 
-void RouterClient::processRemoteRequestEvent( RemoteRequestEvent & requestEvent)
+void RouterClient::process_request_event( RemoteRequestEvent & requestEvent)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteRequestEvent);
 
-    if ( requestEvent.isRemote() )
+    if ( requestEvent.is_remote() )
     {
         RemoteMessage data;
-        if ( RemoteEventFactory::createStreamFromEvent( data, requestEvent, mChannel) )
+        if ( RemoteEventFactory::stream_from_event( data, requestEvent, mChannel) )
         {
             LOG_DBG("Sending [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , requestEvent.getRuntimeClassName().getString()
-                      , data.getMessageId()
-                      , data.getSource()
-                      , data.getTarget());
+                      , requestEvent.runtime_class_name().as_string()
+                      , data.message_id()
+                      , data.source()
+                      , data.target());
 
-            sendMessage(data);
+            send_message(data);
         }
         else
         {
-            LOG_ERR("Failed to create remote request data with message [ %u ]", requestEvent.getRequestId() );
+            LOG_ERR("Failed to create remote request data with message [ %u ]", requestEvent.request_id() );
         }
     }
     else
     {
-        LOG_WARN("Request event with message [ %u ] is not remote, ignoring sending event", requestEvent.getRequestId());
+        LOG_WARN("Request event with message [ %u ] is not remote, ignoring sending event", requestEvent.request_id());
     }
 }
 
-void RouterClient::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent )
+void RouterClient::process_notify_request( RemoteNotifyRequestEvent & requestNotifyEvent )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteNotifyRequestEvent);
 
-    if ( requestNotifyEvent.isRemote() )
+    if ( requestNotifyEvent.is_remote() )
     {
         RemoteMessage data;
-        if ( RemoteEventFactory::createStreamFromEvent( data, requestNotifyEvent, mChannel) )
+        if ( RemoteEventFactory::stream_from_event( data, requestNotifyEvent, mChannel) )
         {
             LOG_DBG("Send [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , requestNotifyEvent.getRuntimeClassName().getString()
-                      , data.getMessageId()
-                      , data.getSource()
-                      , data.getTarget());
+                      , requestNotifyEvent.runtime_class_name().as_string()
+                      , data.message_id()
+                      , data.source()
+                      , data.target());
 
-            sendMessage(data);
+            send_message(data);
         }
         else
         {
-            LOG_ERR("Failed to create remote notify request message [ %u ]", requestNotifyEvent.getRequestId() );
+            LOG_ERR("Failed to create remote notify request message [ %u ]", requestNotifyEvent.request_id() );
         }
     }
     else
     {
-        LOG_WARN("Notify request [ %u ] is not remote, ignoring sending event", requestNotifyEvent.getRequestId());
+        LOG_WARN("Notify request [ %u ] is not remote, ignoring sending event", requestNotifyEvent.request_id());
     }
 }
 
 
-void RouterClient::processRemoteResponseEvent(RemoteResponseEvent & responseEvent)
+void RouterClient::process_response_event(RemoteResponseEvent & responseEvent)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteResponseEvent);
 
-    if ( responseEvent.isRemote() )
+    if ( responseEvent.is_remote() )
     {
         RemoteMessage data;
-        if ( RemoteEventFactory::createStreamFromEvent( data, responseEvent, mChannel) )
+        if ( RemoteEventFactory::stream_from_event( data, responseEvent, mChannel) )
         {
             LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
-                      , responseEvent.getRuntimeClassName().getString()
-                      , data.getMessageId()
-                      , data.getSource()
-                      , data.getTarget());
+                      , responseEvent.runtime_class_name().as_string()
+                      , data.message_id()
+                      , data.source()
+                      , data.target());
 
-            sendMessage(data);
+            send_message(data);
         }
         else
         {
-            LOG_ERR("Failed to create remote response message [ %u ]", responseEvent.getResponseId() );
+            LOG_ERR("Failed to create remote response message [ %u ]", responseEvent.response_id() );
         }
     }
     else
     {
-        LOG_WARN("Response event with message [ %u ] is not remote, ignoring", responseEvent.getResponseId());
+        LOG_WARN("Response event with message [ %u ] is not remote, ignoring", responseEvent.response_id());
     }
 }
 
-bool RouterClient::postEvent(Event & eventElem)
+bool RouterClient::post_event(Event & eventElem)
 {
-    if ( eventElem.isRemote() )
+    if ( eventElem.is_remote() )
     {
-        eventElem.setEventConsumer( static_cast<RemoteEventConsumer *>(this) );
+        eventElem.set_event_consumer( static_cast<RemoteEventConsumer *>(this) );
     }
 
-    return EventDispatcher::postEvent(eventElem);
+    return EventDispatcher::post_event(eventElem);
 }
 
-void RouterClient::readyForEvents(bool isReady)
+void RouterClient::ready_for_events(bool is_ready)
 {
-    if (isReady)
+    if (is_ready)
     {
-        registerForServiceClientCommands();
-        DispatcherThread::readyForEvents(true);
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
+        register_client_commands();
+        DispatcherThread::ready_for_events(true);
+        set_connection_state(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
     else
     {
-        DispatcherThread::readyForEvents(false);
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
-        unregisterForServiceClientCommands();
+        DispatcherThread::ready_for_events(false);
+        set_connection_state(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
+        unregister_client_commands();
     }
 }
 

@@ -25,20 +25,20 @@ LoggerBase::LoggerBase( LogConfiguration & logConfig)
 {
 }
 
-bool LoggerBase::createLayouts()
+bool LoggerBase::create_layouts()
 {
-    bool result = mLayoutsMessage.createLayouts(mLogConfiguration.getLayoutMessage());
-    result |= mLayoutsScopeEnter.createLayouts(mLogConfiguration.getLayoutEnter());
-    result |= mLayoutsScopeExit.createLayouts(mLogConfiguration.getLayoutExit());
+    bool result = mLayoutsMessage.create_layouts(mLogConfiguration.layout_message());
+    result |= mLayoutsScopeEnter.create_layouts(mLogConfiguration.layout_enter());
+    result |= mLayoutsScopeExit.create_layouts(mLogConfiguration.layout_exit());
 
     return result;
 }
 
-void LoggerBase::releaseLayouts()
+void LoggerBase::release_layouts()
 {
-    mLayoutsMessage.deleteLayouts();
-    mLayoutsScopeEnter.deleteLayouts();
-    mLayoutsScopeExit.deleteLayouts();
+    mLayoutsMessage.delete_layouts();
+    mLayoutsScopeEnter.delete_layouts();
+    mLayoutsScopeExit.delete_layouts();
 }
 
 #endif  // AREG_LOGS

@@ -67,48 +67,56 @@ public:
     };
 
     /**
-     * \brief   Converts and returns the string of LoggingEventData::LogAction value
+     * \brief   Converts and returns the string representation of a LogAction value.
+     *
+     * \param   action      The LogAction value to convert.
+     * \return  Returns the string representation of the LogAction.
      **/
-    static inline const char * getString( LoggingEventData::LogAction action );
+    static inline const char * as_string( LoggingEventData::LogAction action );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates the logging even data with undefined action
+     * \brief   Creates the logging event data with undefined action.
      **/
     LoggingEventData();
 
     /**
-     * \brief   Creates the logging even data with specified action
-     * \param   action  The action ID to set in event data
+     * \brief   Creates the logging event data with specified action.
+     *
+     * \param   action      The action ID to set in event data.
      **/
     explicit LoggingEventData( LoggingEventData::LogAction action );
     
     /**
-     * \brief   Creates the logging even data with specified action and data
-     * \param   action      The action ID to set in event data
-     * \param   dataBuffer  The buffer of data set.
+     * \brief   Creates the logging event data with specified action and data.
+     *
+     * \param   action          The action ID to set in event data.
+     * \param   dataBuffer      The buffer of data to set.
      **/
     LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer );
 
     /**
-     * \brief   Creates the logging even data with specified action and logging message data
-     * \param   action  The action ID to set in event data
-     * \param   logData The buffer of logging message data set.
+     * \brief   Creates the logging event data with specified action and logging message data.
+     *
+     * \param   action      The action ID to set in event data.
+     * \param   logData     The logging message data to set.
      **/
     LoggingEventData( LoggingEventData::LogAction action, const NELogging::LogEntry & logData );
 
     /**
      * \brief   Copies logging event data from given source.
-     * \param   src     The source to copy data.
+     *
+     * \param   src     The source to copy data from.
      **/
     LoggingEventData( const LoggingEventData & src );
 
     /**
-     * \brief   Copies logging event data from given source.
-     * \param   src     The source to copy data.
+     * \brief   Moves logging event data from given source.
+     *
+     * \param   src     The source to move data from.
      **/
     LoggingEventData( LoggingEventData && src ) noexcept;
 
@@ -122,13 +130,15 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Copies data from given source
+     * \brief   Copies data from given source.
+     *
      * \param   src     The source of data to copy.
      **/
     LoggingEventData & operator = ( const LoggingEventData & src );
 
     /**
-     * \brief   Moves data from given source
+     * \brief   Moves data from given source.
+     *
      * \param   src     The source of data to move.
      **/
     LoggingEventData & operator = ( LoggingEventData && src ) noexcept;
@@ -140,17 +150,17 @@ public:
     /**
      * \brief   Returns the value of action set in event data.
      **/
-    inline LoggingEventData::LogAction getLoggingAction() const;
+    inline LoggingEventData::LogAction logging_action() const;
 
     /**
      * \brief   Returns the streaming buffer for writing.
      **/
-    inline SharedBuffer & getWritableStream();
+    inline SharedBuffer & writable_stream();
 
     /**
      * \brief   Returns the streaming buffer for reading.
      **/
-    inline const SharedBuffer & getReadableStream() const;
+    inline const SharedBuffer & readable_stream() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -174,22 +184,22 @@ AREG_DECLARE_EVENT(LoggingEventData, LoggingEvent, LoggingEventConsumer)
 // LoggingEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline LoggingEventData::LogAction LoggingEventData::getLoggingAction() const
+inline LoggingEventData::LogAction LoggingEventData::logging_action() const
 {
     return mAction;
 }
 
-inline SharedBuffer & LoggingEventData::getWritableStream()
+inline SharedBuffer & LoggingEventData::writable_stream()
 {
     return mDataBuffer;
 }
 
-inline const SharedBuffer & LoggingEventData::getReadableStream() const
+inline const SharedBuffer & LoggingEventData::readable_stream() const
 {
     return mDataBuffer;
 }
 
-inline const char * LoggingEventData::getString( LoggingEventData::LogAction action )
+inline const char * LoggingEventData::as_string( LoggingEventData::LogAction action )
 {
     switch ( action )
     {

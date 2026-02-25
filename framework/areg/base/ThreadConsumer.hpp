@@ -29,14 +29,8 @@ class Thread;
 // ThreadConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The Thread Consumer class is required by Thread object
- *          to trigger functions on certain events. For example,
- *          when the system thread is created and registered in the
- *          the system, the consumer gets notification onThreadRegistered(),
- *          when thread is ready for cyclic run, onRun() method
- *          of the consumer is triggered. All functionalities of the
- *          thread should be written in the consumer object.
- *          For more details see description of the methods.
+ * \brief   Interface for thread lifecycle callbacks. Implement this class to respond to thread
+ *          creation, running, and destruction events.
  **/
 class AREG_API ThreadConsumer
 {
@@ -58,16 +52,18 @@ public:
     };
 
     /**
-     * \brief   Returns string value of eExistingCode types. Used for debugging.
+     * \brief   Returns the string representation of an exit code. Used for debugging.
+     *
+     * \param   code    The exit code to convert to string.
      **/
-    static inline const char * getString( ThreadConsumer::ExitCode code);
+    static inline const char * as_string( ThreadConsumer::ExitCode code);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Protected default constructor
+     * \brief
      **/
     ThreadConsumer() = default;
 
@@ -85,36 +81,31 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   This callback function is called from Thread object, when it is 
-     *          running and fully operable. If thread needs run in loop, the loop 
-     *          should be implemented here. When consumer exits this function, 
-     *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
+     * \brief   Called when the thread starts running and is fully operable. Implement the thread's
+     *          main loop here. When this returns, the thread completes. Call create_thread() again
+     *          to restart.
      **/
-    virtual void onThreadRuns() = 0;
+    virtual void on_thread_runs() = 0;
 
     /**
-     * \brief	Function triggered with thread object has been created.
-     *          If this function returns true, thread will continue running.
-     *          If this function returns false, the thread will not run.
-     * \param	threadObj	The new created Thread object, 
-     *                      which contains this consumer.
-     * \return	Return true if thread should run. Return false, it should not run.
+     * \brief   Called when the thread object is created. Return true to start the thread; false to
+     *          prevent running.
+     *
+     * \param   threadObj       The newly created Thread object.
+     * \return  Return true if the thread should run; false otherwise.
      **/
-    virtual bool onThreadRegistered( Thread * threadObj );
+    virtual bool on_thread_registered( Thread * threadObj );
     /**
-     * \brief   Function is triggered from thread object when it is going to be destroyed.
-     *          This method might be called by system when it is going to shut down.
-     *          Implement mechanism to exit thread here.
+     * \brief   Called when the thread is about to be destroyed. Implement exit logic here.
      **/
-    virtual void onThreadUnregistering();
+    virtual void on_thread_unregistering();
 
     /**
-     * \brief   Function is called from Thread object when it is going to exit.
-     *          This method is triggered after exiting from Run() function.
-     * \return  Return thread exit error code.
+     * \brief   Called after the thread exits the run loop. Return the thread exit code.
+     *
+     * \return  Return the thread exit error code.
      **/
-    virtual int32_t onThreadExit();
+    virtual int32_t on_thread_exit();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -127,7 +118,7 @@ private:
 // ThreadConsumer inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * ThreadConsumer::getString(ThreadConsumer::ExitCode code)
+inline const char * ThreadConsumer::as_string(ThreadConsumer::ExitCode code)
 {
     switch (code)
     {

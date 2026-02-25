@@ -52,6 +52,10 @@
  *                      possible to convert to type VALUE_TYPE.
  **/
 template <typename VALUE>
+/**
+ * \brief   Bi-directional linked list with elements automatically sorted in ascending or descending
+ *          order during insertion. Not thread-safe; synchronization must be handled externally.
+ **/
 class SortedLinkedList : private Constless<std::list<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -65,19 +69,18 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor. Creates empty linked list
+     * \brief   Initializes an empty sorted linked list with the specified sort order.
      **/
     explicit SortedLinkedList(bool sortAscending = true);
 
     /**
-     * \brief   Copy constructor.
-     * \param   src     The source to copy data.
+     * \brief
      **/
     SortedLinkedList(const SortedLinkedList<VALUE>& src) = default;
 
     /**
-     * \brief   Move constructor.
-     * \param   src     The source to copy data.
+     * \brief
+     * \note    Move constructor. Takes ownership of the source list.
      **/
     SortedLinkedList(SortedLinkedList<VALUE>&& src) noexcept = default;
 
@@ -95,46 +98,47 @@ public:
 /************************************************************************/
 
     /**
-     * \brief	Assigning operator, assigns elements of src to the Linked List
-     * \param	src	Source Linked List to get elements.
+     * \brief   Assigns elements from src to this list, replacing existing content.
+     *
+     * \param   src     Source list to copy elements from.
      **/
     inline SortedLinkedList<VALUE>& operator = (const SortedLinkedList<VALUE>& src);
 
     /**
-     * \brief	Move operator, moves elements of src to the Linked List
-     * \param	src	Source Linked List to get elements.
+     * \brief   Moves elements from src to this list, replacing existing content.
+     *
+     * \param   src     Source list to move elements from.
      **/
     inline SortedLinkedList<VALUE>& operator = (SortedLinkedList<VALUE>&& src) noexcept;
 
     /**
-     * \brief   Checks equality of 2 linked-list objects, and returns true if they are equal.
-     *          There should be possible to compare VALUE types entries of linked list.
-     * \param   other   The linked-list object to compare
+     * \brief   Returns true if both lists have identical elements in identical order.
+     *
+     * \param   other       The list to compare with.
      **/
     inline bool operator == (const SortedLinkedList<VALUE>& other) const;
 
     /**
-     * \brief   Checks inequality of 2 linked-list objects, and returns true if they are not equal.
-     *          There should be possible to compare VALUE types entries of linked list.
-     * \param   other   The linked-list object to compare
+     * \brief   Returns true if the lists differ in elements or order.
+     *
+     * \param   other       The list to compare with.
      **/
     inline bool operator != (const SortedLinkedList<VALUE>& other) const;
 
 
     /**
-     * \brief   Subscript operator. Returns value of element by given
-     *          valid index. The index should be valid, otherwise
-     *          assertion raised. May be used only on the right.
-     * \param   atIndex     The valid zero-based index.
-     * \return  Returns Value of Element at given index, the value should not be modified
+     * \brief   Returns the element at the given zero-based index. Index must be valid.
+     *
+     * \param   atIndex     Valid zero-based index of element to access.
+     * \return  Returns const reference to the element; value should not be modified.
      **/
     inline const VALUE& operator [] (uint32_t atIndex) const;
 
     /**
-     * \brief   Subscript operator. Returns value of element by given
-     *          valid Position. May be used only on the right.
-     * \param   atPosition  The valid Linked List position.
-     * \return  Returns Value of Element at given Linked List position, the value can be modified
+     * \brief   Returns the element at the given list position.
+     *
+     * \param   atPosition      Valid position in the list.
+     * \return  Returns const reference to the element.
      **/
     inline const VALUE& operator [] (const LISTPOS atPosition) const;
 
@@ -153,6 +157,13 @@ public:
      * \param   input   The Linked List object to save initialized values.
      **/
     template<typename V>
+    /**
+     * \brief   Reads list elements from the input stream, clearing any existing elements first.
+     *
+     * \param   stream      The input stream to read from.
+     * \param[in,out] input       The list to store deserialized elements. Existing elements are
+     *                            cleared.
+     **/
     friend const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input);
     /**
      * \brief   Writes to the stream Linked List values.
@@ -163,6 +174,12 @@ public:
      * \param   output  The Linked List object to read out values.
      **/
     template<typename V>
+    /**
+     * \brief   Writes all list elements to the output stream in head-to-tail order.
+     *
+     * \param[in,out] stream      The output stream to write to.
+     * \param   output      The list whose elements will be serialized.
+     **/
     friend OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output);
 
 //////////////////////////////////////////////////////////////////////////
@@ -174,401 +191,374 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns true, if Linked List container is empty.
+     * \brief   Returns true if the list contains no elements.
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
-     * \brief   Returns the size of Linked List container
+     * \brief   Returns the number of elements in the list.
      **/
-    inline uint32_t getSize() const;
+    inline uint32_t size() const;
 
     /**
-     * \brief   Returns true if the list is sorting ascending
+     * \brief   Returns true if elements are sorted in ascending order.
      **/
-    inline bool isAscending() const;
+    inline bool is_ascending() const;
 
     /**
-     * \brief   Returns true if the list is sorting descending
+     * \brief   Returns true if elements are sorted in descending order.
      **/
-    inline bool isDescending() const;
+    inline bool is_descending() const;
 
     /**
-     * \brief	Returns the first position of the hash map, which is not invalid if
-     *          the hash map is not empty. Otherwise, it is equal to the last position
-     *          and not valid.
+     * \brief   Returns the position of the first element, or an invalid position if the list is
+     *          empty.
      **/
-    inline LISTPOS firstPosition() const;
+    inline LISTPOS first_position() const;
 
     /**
-     * \brief	Returns the last position of the hash map, which is always invalid.
+     * \brief   Returns an always-invalid sentinel position marking the end of the list.
      **/
-    inline LISTPOS lastPosition() const;
+    inline LISTPOS last_position() const;
 
     /**
-     * \brief   Returns true if specified position pointing start of the linked list.
+     * \brief   Returns true if the position points to the first element.
+     *
      * \param   pos     The position to check.
-     * \return  Returns true if specified position pointing start of the linked list.
      **/
-    inline bool isFirstPosition(const LISTPOS pos) const;
+    inline bool is_first_position(const LISTPOS pos) const;
 
     /**
-     * \brief   Returns true if specified position pointing start of the linked list.
+     * \brief   Returns true if the position points to the last element.
+     *
      * \param   pos     The position to check.
-     * \return  Returns true if specified position pointing start of the linked list.
      **/
-    inline bool isLastPosition(const LISTPOS pos) const;
+    inline bool is_last_position(const LISTPOS pos) const;
 
     /**
-     * \brief   Returns invalid position object.
+     * \brief   Returns an invalid position value representing no valid element.
      **/
-    inline LISTPOS invalidPosition() const;
+    inline LISTPOS invalid_position() const;
 
     /**
-     * \brief   Returns true if specified position reached the end of the hash map.
+     * \brief   Returns true if the position has reached the end of the list.
+     *
      * \param   pos     The position to check.
-     * \return  Returns true if specified position reached the end of the hash map.
      **/
-    inline bool isInvalidPosition(const LISTPOS pos) const;
+    inline bool is_invalid_position(const LISTPOS pos) const;
 
     /**
-     * \brief   Returns true if specified position is not pointing the end of the hash map.
-     *          NOTE:   This method does not ensure that the position object is pointing
-     *                  to the valid entry in the hash map. To do so, use 'checkPos' method.
-     * \param pos       The position to check.
-     * \return Returns true if specified position is not pointing the end of the hash map.
-     */
-    inline bool isValidPosition(const LISTPOS pos) const;
+     * \brief   Returns true if the position points to a valid element (not the end).
+     *
+     * \param   pos     The position to check.
+     **/
+    inline bool is_valid_position(const LISTPOS pos) const;
 
     /**
-     * \brief   Checks and ensures that specified position is pointing the valid entry in the linked list.
-     *          The duration of checkup depends on the location of the position in the linked list.
-     * \param pos       The position to check.
-     * \return  Returns true if specified position points to the valid entry in the linked list.
-     */
-    inline bool checkPosition(const LISTPOS pos) const;
+     * \brief   Returns true if the position points to a valid entry in the list; may be slower due
+     *          to traversal.
+     *
+     * \param   pos     The position to verify.
+     **/
+    inline bool check_position(const LISTPOS pos) const;
 
     /**
-     * \brief	Checks whether given element exist in the linked list or not. The elements of type
-     *          VALUE should have comparing operators.
-     * \param	elemSearch  The element to search.
-     * \return	Returns true if could find element starting at given position.
+     * \brief   Returns true if the element exists in the list.
+     *
+     * \param   elemSearch      The element to search for.
      **/
     inline bool contains(const VALUE& elemSearch) const;
 
     /**
-     * \brief	Checks whether given element exist in the linked list or not. The elements of type
-     *          VALUE should have comparing operators.
-     * \param	elemSearch  The element to search.
-     * \param	startAt	    The position to start searching.
-     * \return	Returns true if could find element starting at given position.
+     * \brief   Returns true if the element exists starting from the given position.
+     *
+     * \param   elemSearch      The element to search for.
+     * \param   startAt         The position to start searching.
      **/
     inline bool contains(const VALUE& elemSearch, LISTPOS startAt) const;
 
     /**
-     * \brief   Returns the vector object where the data are stored.
+     * \brief   Returns const reference to the underlying std::list container.
      **/
-    inline const std::list<VALUE>& getData() const;
+    inline const std::list<VALUE>& data() const;
 
 /************************************************************************/
 // Operations
 /************************************************************************/
 
     /**
-     * \brief   Remove all entries of the linked list.
+     * \brief   Removes all elements from the list.
      **/
     inline void clear();
 
     /**
-     * \brief   Delete extra entries in the linked list.
+     * \brief   Deallocates unused capacity in the list.
      **/
-    inline void freeExtra();
+    inline void free_extra();
 
     /**
-     * \brief   Sets the size of the linked list to zero and deletes all capacity space.
-     */
+     * \brief   Clears all elements and deallocates all memory.
+     **/
     inline void release();
 
     /**
-     * \brief   Returns value of head element in Linked List container.
-     *          On call the Linked List should not be empty, otherwise assertion is raised.
+     * \brief   Returns const reference to the first element. List must not be empty.
      **/
-    inline const VALUE& firstEntry() const;
+    inline const VALUE& first_entry() const;
 
     /**
-     * \brief   Returns value of tail element in Linked List container.
-     *          On call the Linked List should not be empty, otherwise assertion is raised.
+     * \brief   Returns const reference to the last element. List must not be empty.
      **/
-    inline const VALUE& lastEntry() const;
+    inline const VALUE& last_entry() const;
 
     /**
-     * \brief	Returns given position value and on exit position of next element in Linked List container.
-     *          On input, the value of 'nextPos' should be valid (for example, should be equal to head position).
-     *          Otherwise assertion is raised.
-     * \param[in,out]   nextPos     On input, this should be valid position of element in Linked List container.
-     *                              On output, this contains position of next element in Linked List container
-     *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
-     * \return	Returns value of element at the given position.
+     * \brief   Returns the element at the current position and advances the position to the next
+     *          element.
+     *
+     * \param[in,out] nextPos     On input, a valid position. On output, the position of the next
+     *                            element or invalid position if at the end.
      **/
-    inline const VALUE & getNext(LISTPOS & nextPos) const;
+    inline const VALUE & next(LISTPOS & nextPos) const;
 
     /**
-     * \brief	Returns position of next element in Linked List
-     * \param	atPosition	Actual position to get the next position
-     * \return	If element at given position has next element, returns position of next element in Linked List.
-     *          Otherwise it returns nullptr
+     * \brief   Returns the position of the next element, or invalid position if at the end.
+     *
+     * \param   atPosition      The current position.
      **/
-    inline LISTPOS nextPosition(LISTPOS atPosition) const;
+    inline LISTPOS next_position(LISTPOS atPosition) const;
 
     /**
-     * \brief	Returns given position value and on exit position of previous element in Linked List container.
-     *          On input, the value of 'prevPos' should be valid (for example, should be equal to tail position).
-     *          Otherwise assertion is raised.
-     * \param[in,out]   prevPos     On input, this should be valid position of element in Linked List container.
-     *                              On output, this contains position of previous element in Linked List container
-     *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
-     * \return	Returns value of element at the given position.
+     * \brief   Returns the element at the current position and moves the position backward to the
+     *          previous element.
+     *
+     * \param[in,out] prevPos     On input, a valid position. On output, the position of the
+     *                            previous element or invalid position if at the beginning.
      **/
-    inline const VALUE & getPrev(LISTPOS & prevPos) const;
+    inline const VALUE & prev(LISTPOS & prevPos) const;
 
     /**
-     * \brief	Returns position of previous element in Linked List
-     * \param	atPosition	Actual position to get the previous position
-     * \return	If element at given position has previous element, returns position of previous element in Linked List.
-     *          Otherwise it returns nullptr
+     * \brief   Returns the position of the previous element, or invalid position if at the
+     *          beginning.
+     *
+     * \param   atPosition      The current position.
      **/
-    inline LISTPOS prevPosition(const LISTPOS atPosition) const;
+    inline LISTPOS prev_position(const LISTPOS atPosition) const;
 
     /**
-     * \brief   Returns value of element at the give position.
-     * \param   atPosition  The valid position in Linked List
-     * \return  Returns Value at given position, which should not be modified.
+     * \brief   Returns const reference to the element at the given position.
+     *
+     * \param   atPosition      Valid position in the list.
      **/
-    inline const VALUE& valueAtPosition(const LISTPOS atPosition) const;
+    inline const VALUE& value_at_position(const LISTPOS atPosition) const;
 
     /**
-     * \brief	Returns the value of element by give index. The index of head element is 0.
-     *          The index must not be more than GetSize() - 1.
-     * \param	index	The index of element to get value
-     * \return	The value of element by give index.
+     * \brief   Returns const reference to the element at the given zero-based index.
+     *
+     * \param   index       Valid zero-based index, must be less than size().
      **/
-    inline const VALUE& getAt(uint32_t index) const;
+    inline const VALUE& at(uint32_t index) const;
 
     /**
-     * \brief   Returns value of element at the give position.
-     * \param   atPosition  The valid position in Linked List
-     * \return  Returns Value at given position, which should not be modified.
+     * \brief   Returns const reference to the element at the given position.
+     *
+     * \param   atPosition      Valid position in the list.
      **/
-    inline const VALUE& getAt(const SortedLinkedList<VALUE>::LISTPOS atPosition) const;
+    inline const VALUE& at(const SortedLinkedList<VALUE>::LISTPOS atPosition) const;
 
     /**
-     * \brief	On exit, returns position and value of next element in Linked List container.
-     *          On input, the value of 'nextPos' should be valid (for example, should be equal to head position).
-     *          Otherwise assertion is raised.
-     * \param[in,out]	nextPos	    On input, this should be valid position of element in Linked List container.
-     *                              On output, this contains position of next element in Linked List container
-     *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
-     * \param[out]      nextValue   If Linked List has next element, this contains value of next element.
-     *                              Otherwise, the value is unchanged. Check function return value before using parameter
-     * \return	Returns true if Linked List has next element. Before using out_value function return value
-     *          should be validated.
+     * \brief   Returns true if a next element exists; on success, nextPos and nextValue are
+     *          updated.
+     *
+     * \param[in,out] nextPos         On input, a valid position. On output, the position of the
+     *                                next element or invalid position if at the end.
+     * \param[out] nextValue       If the function returns true, contains the next element value.
+     *                             Otherwise unchanged.
      **/
-    bool nextEntry(LISTPOS& nextPos, VALUE& nextValue) const;
+    bool next_entry(LISTPOS& nextPos, VALUE& nextValue) const;
 
     /**
-     * \brief	On exit, returns position and value of previous element in Linked List container.
-     *          On input, the value of 'prevPos' should be valid (for example, should be equal to tail position).
-     *          Otherwise assertion is raised.
-     * \param[in,out]   prevPos	    On input, this should be valid position of element in Linked List container.
-     *                              On output, this contains position of previous element in Linked List container
-     *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
-     * \param[out]      prevValue   If Linked List has previous element, this contains value of previous element.
-     *                              Otherwise, the value is unchanged. Check function return value before using parameter
-     *                              value of this parameter.
-     * \return	Returns true if Linked List has previous element. Before using out_value function return value
-     *          should be validated.
+     * \brief   Returns true if a previous element exists; on success, prevPos and prevValue are
+     *          updated.
+     *
+     * \param[in,out] prevPos         On input, a valid position. On output, the position of the
+     *                                previous element or invalid position if at the beginning.
+     * \param[out] prevValue       If the function returns true, contains the previous element
+     *                             value. Otherwise unchanged.
      **/
-    bool prevEntry(LISTPOS& prevPos, VALUE& prevValue) const;
+    bool prev_entry(LISTPOS& prevPos, VALUE& prevValue) const;
 
     /**
-     * \brief   Removes head element from Sorted Linked List.
+     * \brief   Removes the first element from the list.
      **/
-    inline void removeFirst();
+    inline void remove_first();
 
     /**
-     * \brief   Removes the head element from the linked list. On output, the 'value' contains
-     *          data of removed element. Function returns true if linked list was not empty,
-     *          succeeded to remove head and the 'value' contains the data of removed element.
-     * \param[out]  value   If succeeded to remove head element, on output it contains
-     *                      the data of remove element.
-     * \return  Returns true if succeeded to remove head. It as well indicates that the 'value'
-     *          contains data of removed element.
-     */
-    bool removeFirst(VALUE& value);
-
-    /**
-     * \brief   Removes tail element from Sorted Linked List.
+     * \brief   Removes and returns the first element. Returns false if the list was empty.
+     *
+     * \param[out] value       On success, contains the removed element.
      **/
-    inline void removeLast();
+    bool remove_first(VALUE& value);
 
     /**
-     * \brief   Removes the tails element from the linked list. On output, the 'value' contains
-     *          data of removed element. Function returns true if linked list was not empty,
-     *          succeeded to remove tails and the 'value' contains the data of removed element.
-     * \param[out]  value   If succeeded to remove head element, on output it contains
-     *                      the data of remove element.
-     * \return  Returns true if succeeded to remove tail. It as well indicates that the 'value'
-     *          contains data of removed element.
-     */
-    bool removeLast(VALUE& value);
+     * \brief   Removes the last element from the list.
+     **/
+    inline void remove_last();
 
     /**
-     * \brief   Add element to the sorted Linked List and returns position of the added element.
-     *          Before adding, it will search the right position, depending on sorting algorithm.
-     * \param   newElement   New element to add in Linked List
-     * \return  Returns position of the element in Linked List.
+     * \brief   Removes and returns the last element. Returns false if the list was empty.
+     *
+     * \param[out] value       On success, contains the removed element.
+     **/
+    bool remove_last(VALUE& value);
+
+    /**
+     * \brief   Inserts element at its sorted position and returns the position where inserted.
+     *
+     * \param   newElement      Element to insert.
      **/
     LISTPOS add(const VALUE& newElement);
+    /**
+     * \brief   Inserts element at its sorted position and returns the position where inserted.
+     *
+     * \param   newElement      Element to move and insert.
+     * \note    Move overload. Takes ownership of the element.
+     **/
     LISTPOS add(VALUE&& newElement);
 
     /**
-     * \brief   Add uniquely element to the sorted Linked List and returns position of the element.
-     *          Before adding, it will check whether the element is unique in the list and search the right
-     *          position, depending on sorting algorithm. The element should have all comparing operators.
-     *          If parameter 'updateExisting' is true, it updates the existing entry.
-     * \param   newElement   New element to add in Linked List
-     * \param   updateExisting  If true, updates the existing element.
-     *                          If, for example, 2 objects are compared by the name and not by
-     *                          absolute values, setting this parameter true updates the existing entry.
-     * \return  Returns a pair where first element indicates the position of the element in the Sorted Linked List
-     *          and the second entry indicates whether the new entry added or not.
+     * \brief   Inserts element only if not already in the list; returns position and insertion
+     *          success flag.
+     *
+     * \param   newElement          Element to conditionally insert.
+     * \param   updateExisting      If true and element exists, the existing element is updated with
+     *                              the new value.
      **/
-    std::pair<LISTPOS, bool> addIfUnique(const VALUE& newElement, bool updateExisting = false );
-    std::pair<LISTPOS, bool> addIfUnique(VALUE&& newElement, bool updateExisting = false );
-
+    std::pair<LISTPOS, bool> add_if_unique(const VALUE& newElement, bool updateExisting = false );
     /**
-     * \brief   Pops the element at the head of linked list and returns the stored value.
-     *          The linked list must not be empty.
-     * \return  The popped out element from the header of the linked list.
-     */
-    inline VALUE popFirst();
-
-    /**
-     * \brief   Pops the element at the tails of linked list and returns the stored value.
-     *          The linked list must not be empty.
-     * \return  The popped out element from the tail of the linked list.
-     */
-    inline VALUE popLast();
-
-    /**
-     * \brief	Sets new value at give position and returns old value of same element.
-     * \param	atPosition	The Linked List element position to change value
-     * \param	newValue	New Value to change
+     * \brief   Inserts element only if not already in the list; returns position and insertion
+     *          success flag.
+     *
+     * \param   newElement          Element to move and conditionally insert.
+     * \param   updateExisting      If true and element exists, the existing element is updated with
+     *                              the new value.
+     * \note    Move overload. Takes ownership of the element.
      **/
-    inline void setAt(LISTPOS atPosition, const VALUE& newValue);
+    std::pair<LISTPOS, bool> add_if_unique(VALUE&& newElement, bool updateExisting = false );
 
     /**
-     * \brief	Removes element at given position and returns value of removed element.
-     * \param	atPosition  Position of element to remove from Linked List.
-     *                      It should be valid position, otherwise assertion is raised.
-     * \return  Returns position following nest to removed position or invalid position
-     *          if last entry was removed.
+     * \brief   Removes and returns the first element. List must not be empty.
      **/
-    inline LISTPOS removeAt(LISTPOS atPosition);
+    inline VALUE pop_first();
 
     /**
-     * \brief	Removes element at given position and on output returns value of removed element.
-     * \param	atPosition  On input, position of element to remove from Linked List.
-     *                      It should be valid position, otherwise assertion is raised.
-     * \param[out]  Value   On output, it contains value of removed element
-     * \return  Returns position following nest to removed position or invalid position
-     *          if last entry was removed.
+     * \brief   Removes and returns the last element. List must not be empty.
      **/
-    inline LISTPOS removeAt(LISTPOS atPosition, VALUE& Value);
+    inline VALUE pop_last();
 
     /**
-     * \brief	Searches and removes first match of given element from Linked List.
-     *          If 'searchAfter' is nullptr, it will start searching element from head.
-     *          And returns true if element was found and successfully removed from Linked List.
-     * \param	removeElement	Element to search and remove from Linked List
-     * \return	Returns true if element was found and successfully removed from linked list.
+     * \brief   Replaces the element at the given position with a new value.
+     *
+     * \param   atPosition      Valid position of element to replace.
+     * \param   newValue        The new value to store.
      **/
-    bool removeEntry(const VALUE& removeElement);
+    inline void set_at(LISTPOS atPosition, const VALUE& newValue);
 
     /**
-     * \brief	Searches and removes first match of given element from Linked List.
-     *          If 'searchAfter' is nullptr, it will start searching element from head.
-     *          And returns true if element was found and successfully removed from Linked List.
-     * \param	removeElement	Element to search and remove from Linked List
-     * \param	searchAfter	    Position at which starts searching, the searching done by moving to next element
-     * \return	Returns true if element was found and successfully removed from linked list.
+     * \brief   Removes element at the given position and returns the position of the next element.
+     *
+     * \param   atPosition      Valid position of element to remove.
      **/
-    bool removeEntry(const VALUE& removeElement, LISTPOS searchAfter);
+    inline LISTPOS remove_at(LISTPOS atPosition);
 
     /**
-     * \brief	Searches position of element by given value. If searchAfter is valid, the searching will be started
-     *          from given position and will move to next element.
-     * \param	searchValue	Value of element to search
-     * \return	Returns position of the element in the linked list.
+     * \brief   Removes element at the given position and returns the position of the next element.
+     *
+     * \param   atPosition      Valid position of element to remove.
+     * \param[out] Value           On return, contains the removed element value.
+     **/
+    inline LISTPOS remove_at(LISTPOS atPosition, VALUE& Value);
+
+    /**
+     * \brief   Searches for and removes the first matching element, starting from the head.
+     *
+     * \param   removeElement       The element to search for and remove.
+     **/
+    bool remove_entry(const VALUE& removeElement);
+
+    /**
+     * \brief   Searches for and removes the first matching element, starting from the given
+     *          position.
+     *
+     * \param   removeElement       The element to search for and remove.
+     * \param   searchAfter         The position to start searching (moves to next elements during
+     *                              search).
+     **/
+    bool remove_entry(const VALUE& removeElement, LISTPOS searchAfter);
+
+    /**
+     * \brief   Returns the position of the first element equal to the search value, or invalid
+     *          position if not found.
+     *
+     * \param   searchValue     The element to search for.
      **/
     inline LISTPOS find(const VALUE& searchValue) const;
 
     /**
-     * \brief	Searches position of element by given value. If searchAfter is valid, the searching will be started
-     *          from given position and will move to next element.
-     * \param	searchValue	Value of element to search
-     * \param	searchAfter	If valid position, the searching starts from next element specified by position.
-     *                      If invalid position, the searching starts from the beginning of the linked list.
-     * \return	Returns position of the element in the linked list.
+     * \brief   Returns the position of the first matching element starting from the given position,
+     *          or invalid position if not found.
+     *
+     * \param   searchValue     The element to search for.
+     * \param   searchAfter     If valid, search begins at the next element. If invalid, search
+     *                          begins at the head.
      **/
     inline LISTPOS find(const VALUE& searchValue, LISTPOS searchAfter) const;
 
     /**
-     * \brief	Returns position of element by given index. The index of head element is 0.
-     *          The index of last element (tail element) is GetSize() - 1.
-     *          If invalid index is passed, function returns nullptr
-     * \param	index	The index of element in Linked List to get position
-     * \return	Returns position of element if index is valid, i.e. more or equal to 0 and less than GetSize().
-     *          Otherwise returns nullptr (INVALID_POSITION)
+     * \brief   Returns the position of the element at the given zero-based index, or invalid
+     *          position if index is out of bounds.
+     *
+     * \param   index       Zero-based index of element.
      **/
-    inline LISTPOS findIndex(uint32_t index) const;
+    inline LISTPOS find_index(uint32_t index) const;
 
     /**
-     * \brief	Returns valid index of element by given valid position.
-     *          Otherwise returns 0xFFFFFFFF.
-     * \param	atPosition  The position of element, which index should be returned.
-     * \return	The index of element by given position
+     * \brief   Returns the zero-based index of the given position, or 0xFFFFFFFF if position is
+     *          invalid.
+     *
+     * \param   atPosition      Valid position in the list.
      **/
-    uint32_t makeIndex(LISTPOS atPosition) const;
+    uint32_t make_index(LISTPOS atPosition) const;
 
     /**
-     * \brief   Call to resort the linked list.
+     * \brief   Re-sorts all elements according to the current sort order.
      **/
     void resort();
 
     /**
-     * \brief   Merges entries from the `source` into *this.
-     *          No elements are copied, and the source container becomes empty after the merge.
-     *          The elements from `*this` always precede the elements from `source`, 
-     *          and the order of elements do not change, which means that the order 
-     *          of elements in the result list remain either ascending or descending.
-     * \param   source  The source of sorted linked list to merge.
+     * \brief   Merges elements from source into this list without copying; source becomes empty
+     *          afterward.
+     *
+     * \param[in,out] source      The source list to merge; becomes empty after the call.
      **/
     inline void merge(SortedLinkedList<VALUE> & source);
+    /**
+     * \brief   Merges elements from source into this list without copying; source becomes empty
+     *          afterward.
+     *
+     * \param   source      The source list to merge; becomes empty after the call.
+     * \note    Move overload. Takes ownership of elements.
+     **/
     inline void merge(SortedLinkedList<VALUE> && source);
 
     /**
-     * \brief   Copies elements from the sorted linked list into the provided pre-allocated buffer.
-     *          If `elemCount` is less than the number of elements in the sorted linked list,
-     *          only the first `elemCount` elements are copied. Otherwise, all elements
-     *          in the sorted linked list are copied. No elements are copied if `elemCount` is 0.
-     * \param   list [in, out]  A pre-allocated buffer where the sorted linked list elements will be copied.
-     *                          Must be large enough to hold at least `elemCount` elements.
-     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
-     *                          If set to 0, no elements are copied.
-     * \return  The number of elements successfully copied into the `list` buffer.
+     * \brief   Copies up to elemCount elements into the provided buffer and returns the number of
+     *          elements copied.
+     *
+     * \param[in,out] list            Pre-allocated buffer to store copied elements; must be large
+     *                                enough for elemCount elements.
+     * \param   elemCount       Maximum number of elements to copy. If zero, no elements are copied.
      **/
-    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
+    inline uint32_t elements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected methods
@@ -576,13 +566,11 @@ public:
 protected:
 
     /**
-     * \brief   Returns the position of the element at the given index.
-     *          The value of returned position cannot be modified.
-     * \param   index   The index of the element to return position.
-     * \return  Returns the position of the element at the given index.
-     *          The value of returned position cannot be modified.
+     * \brief   Returns the position of the element at the given zero-based index.
+     *
+     * \param   index       Zero-based index of element.
      **/
-    inline LISTPOS getPosition(uint32_t index) const;
+    inline LISTPOS position(uint32_t index) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -590,9 +578,9 @@ protected:
 private:
 
     /**
-     * \brief   Converts the constant iterator of the list into the LISTPOS type.
-     * \param   cit     The constant iterator of the list.
-     * \return  Returns converted LISTPOS type.
+     * \brief   Converts a std::list const_iterator to a LISTPOS position.
+     *
+     * \param   cit     A const_iterator from the underlying list.
      **/
     inline LISTPOS _citer2pos(typename std::list<VALUE>::const_iterator cit) const;
 
@@ -653,83 +641,83 @@ bool SortedLinkedList<VALUE>::operator != (const SortedLinkedList<VALUE>& other)
 template <typename VALUE >
 inline const VALUE& SortedLinkedList<VALUE>::operator [](uint32_t atIndex) const
 {
-    return getAt(atIndex);
+    return at(atIndex);
 }
 
 template <typename VALUE >
 inline const VALUE& SortedLinkedList<VALUE>::operator [] (const SortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
-    return valueAtPosition(atPosition);
+    return value_at_position(atPosition);
 }
 
 template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::isEmpty() const
+inline bool SortedLinkedList<VALUE>::is_empty() const
 {
     return mValueList.empty();
 }
 
 template <typename VALUE >
-inline uint32_t SortedLinkedList<VALUE>::getSize() const
+inline uint32_t SortedLinkedList<VALUE>::size() const
 {
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template<typename VALUE>
-inline bool SortedLinkedList<VALUE>::isAscending() const
+inline bool SortedLinkedList<VALUE>::is_ascending() const
 {
     return (mSorting == NECommon::SortOrder::Ascending);
 }
 
 template<typename VALUE>
-inline bool SortedLinkedList<VALUE>::isDescending() const
+inline bool SortedLinkedList<VALUE>::is_descending() const
 {
     return (mSorting == NECommon::SortOrder::Descending);
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::firstPosition() const
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::first_position() const
 {
     return _citer2pos(mValueList.begin());
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::lastPosition() const
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::last_position() const
 {
 	return _citer2pos(mValueList.empty() == false ? --mValueList.end() : mValueList.end());
 }
 
 template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::isFirstPosition(const SortedLinkedList<VALUE>::LISTPOS pos) const
+inline bool SortedLinkedList<VALUE>::is_first_position(const SortedLinkedList<VALUE>::LISTPOS pos) const
 {
     return (pos == mValueList.begin());
 }
 
 template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::isLastPosition(const SortedLinkedList<VALUE>::LISTPOS pos) const
+inline bool SortedLinkedList<VALUE>::is_last_position(const SortedLinkedList<VALUE>::LISTPOS pos) const
 {
     return ((mValueList.empty() == false) && (pos == --mValueList.end()));
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::invalidPosition() const
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::invalid_position() const
 {
     return _citer2pos(mValueList.end());
 }
 
 template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::isInvalidPosition(const SortedLinkedList<VALUE>::LISTPOS pos) const
+inline bool SortedLinkedList<VALUE>::is_invalid_position(const SortedLinkedList<VALUE>::LISTPOS pos) const
 {
     return (pos == mValueList.end());
 }
 
 template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::isValidPosition(const SortedLinkedList<VALUE>::LISTPOS pos) const
+inline bool SortedLinkedList<VALUE>::is_valid_position(const SortedLinkedList<VALUE>::LISTPOS pos) const
 {
     return (pos != mValueList.end());
 }
 
 template <typename VALUE >
-inline bool SortedLinkedList<VALUE>::checkPosition(const SortedLinkedList<VALUE>::LISTPOS pos) const
+inline bool SortedLinkedList<VALUE>::check_position(const SortedLinkedList<VALUE>::LISTPOS pos) const
 {
 	auto it = mValueList.begin();
     while ((it != mValueList.end()) && (it != pos))
@@ -745,7 +733,7 @@ inline void SortedLinkedList<VALUE>::clear()
 }
 
 template <typename VALUE >
-inline void SortedLinkedList<VALUE>::freeExtra()
+inline void SortedLinkedList<VALUE>::free_extra()
 {
     mValueList.clear();
 }
@@ -757,34 +745,34 @@ inline void SortedLinkedList<VALUE>::release()
 }
 
 template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::firstEntry() const
+inline const VALUE& SortedLinkedList<VALUE>::first_entry() const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::lastEntry() const
+inline const VALUE& SortedLinkedList<VALUE>::last_entry() const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
 template<typename VALUE>
-inline const VALUE& SortedLinkedList<VALUE>::getNext(LISTPOS& nextPos) const
+inline const VALUE& SortedLinkedList<VALUE>::next(LISTPOS& nextPos) const
 {
     return *nextPos++;
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::nextPosition(SortedLinkedList<VALUE>::LISTPOS atPosition) const
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::next_position(SortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return ++atPosition;
 }
 
 template <typename VALUE >
-inline const VALUE & SortedLinkedList<VALUE>::getPrev(LISTPOS & prevPos) const
+inline const VALUE & SortedLinkedList<VALUE>::prev(LISTPOS & prevPos) const
 {
     ASSERT(prevPos != mValueList.end());
     LISTPOS pos = prevPos;
@@ -795,42 +783,42 @@ inline const VALUE & SortedLinkedList<VALUE>::getPrev(LISTPOS & prevPos) const
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::prevPosition(SortedLinkedList<VALUE>::LISTPOS atPosition) const
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::prev_position(SortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     typename std::list<VALUE>::iterator it = static_cast<typename std::list<VALUE>::iterator>(atPosition);
-    return (atPosition == mValueList.begin() ? invalidPosition() : static_cast<SortedLinkedList<VALUE>::LISTPOS >(--it));
+    return (atPosition == mValueList.begin() ? invalid_position() : static_cast<SortedLinkedList<VALUE>::LISTPOS >(--it));
 }
 
 template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::valueAtPosition(const SortedLinkedList<VALUE>::LISTPOS atPosition) const
+inline const VALUE& SortedLinkedList<VALUE>::value_at_position(const SortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
 }
 
 template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::getAt(uint32_t index) const
+inline const VALUE& SortedLinkedList<VALUE>::at(uint32_t index) const
 {
-    LISTPOS pos = getPosition(index);
-    ASSERT(isValidPosition(pos));
+    LISTPOS pos = position(index);
+    ASSERT(is_valid_position(pos));
 
     return *pos;
 }
 
 template <typename VALUE >
-inline const VALUE& SortedLinkedList<VALUE>::getAt(const SortedLinkedList<VALUE>::LISTPOS atPosition) const
+inline const VALUE& SortedLinkedList<VALUE>::at(const SortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::nextEntry(SortedLinkedList<VALUE>::LISTPOS& nextPos, VALUE& nextValue) const
+bool SortedLinkedList<VALUE>::next_entry(SortedLinkedList<VALUE>::LISTPOS& nextPos, VALUE& nextValue) const
 {
     bool result = false;
     ASSERT(nextPos != mValueList.end());
-    nextPos = nextPosition(nextPos);
+    nextPos = next_position(nextPos);
     if (nextPos != mValueList.end())
     {
         nextValue = *nextPos;
@@ -841,11 +829,11 @@ bool SortedLinkedList<VALUE>::nextEntry(SortedLinkedList<VALUE>::LISTPOS& nextPo
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::prevEntry(SortedLinkedList<VALUE>::LISTPOS& prevPos, VALUE& prevValue) const
+bool SortedLinkedList<VALUE>::prev_entry(SortedLinkedList<VALUE>::LISTPOS& prevPos, VALUE& prevValue) const
 {
     bool result = false;
     ASSERT(prevPos != mValueList.end());
-    prevPos = prevPosition(prevPos);
+    prevPos = prev_position(prevPos);
     if (prevPos != mValueList.end())
     {
         prevValue = *prevPos;
@@ -856,14 +844,14 @@ bool SortedLinkedList<VALUE>::prevEntry(SortedLinkedList<VALUE>::LISTPOS& prevPo
 }
 
 template <typename VALUE >
-inline void SortedLinkedList<VALUE>::removeFirst()
+inline void SortedLinkedList<VALUE>::remove_first()
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_front();
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::removeFirst(VALUE& value)
+bool SortedLinkedList<VALUE>::remove_first(VALUE& value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -877,14 +865,14 @@ bool SortedLinkedList<VALUE>::removeFirst(VALUE& value)
 }
 
 template <typename VALUE >
-inline void SortedLinkedList<VALUE>::removeLast()
+inline void SortedLinkedList<VALUE>::remove_last()
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_back();
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::removeLast(VALUE& value)
+bool SortedLinkedList<VALUE>::remove_last(VALUE& value)
 {
     bool result = false;
     if (mValueList.empty() == false)
@@ -946,7 +934,7 @@ typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::add(VALUE&& n
 }
 
 template <typename VALUE >
-std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
+std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::add_if_unique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
     if (mSorting == NECommon::SortOrder::Ascending)
@@ -979,7 +967,7 @@ std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALU
 }
 
 template <typename VALUE >
-std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
+std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALUE>::add_if_unique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
     if (mSorting == NECommon::SortOrder::Ascending)
@@ -1012,7 +1000,7 @@ std::pair<typename SortedLinkedList<VALUE>::LISTPOS, bool> SortedLinkedList<VALU
 }
 
 template <typename VALUE >
-inline VALUE SortedLinkedList<VALUE>::popFirst()
+inline VALUE SortedLinkedList<VALUE>::pop_first()
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.front();
@@ -1021,7 +1009,7 @@ inline VALUE SortedLinkedList<VALUE>::popFirst()
 }
 
 template <typename VALUE >
-inline VALUE SortedLinkedList<VALUE>::popLast()
+inline VALUE SortedLinkedList<VALUE>::pop_last()
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.back();
@@ -1030,23 +1018,23 @@ inline VALUE SortedLinkedList<VALUE>::popLast()
 }
 
 template <typename VALUE >
-inline void SortedLinkedList<VALUE>::setAt(LISTPOS atPosition, const VALUE& newValue)
+inline void SortedLinkedList<VALUE>::set_at(LISTPOS atPosition, const VALUE& newValue)
 {
     ASSERT(atPosition != mValueList.end());
     *atPosition = newValue;
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::removeAt(LISTPOS atPosition)
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::remove_at(LISTPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::removeAt(LISTPOS atPosition, VALUE& out_value)
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::remove_at(LISTPOS atPosition, VALUE& out_value)
 {
-    LISTPOS result = invalidPosition();
+    LISTPOS result = invalid_position();
 
     if (atPosition != result)
     {
@@ -1058,7 +1046,7 @@ inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::remove
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::removeEntry(const VALUE& removeElement)
+bool SortedLinkedList<VALUE>::remove_entry(const VALUE& removeElement)
 {
     bool result = false;
     auto it = std::find(mValueList.begin(), mValueList.end(), removeElement);
@@ -1072,10 +1060,10 @@ bool SortedLinkedList<VALUE>::removeEntry(const VALUE& removeElement)
 }
 
 template <typename VALUE >
-bool SortedLinkedList<VALUE>::removeEntry(const VALUE& removeElement, SortedLinkedList<VALUE>::LISTPOS searchAfter /*= nullptr*/)
+bool SortedLinkedList<VALUE>::remove_entry(const VALUE& removeElement, SortedLinkedList<VALUE>::LISTPOS searchAfter /*= nullptr*/)
 {
     bool result = false;
-    LISTPOS end = invalidPosition();
+    LISTPOS end = invalid_position();
     if (searchAfter != end)
     {
         auto it = std::find(++searchAfter, end, removeElement);
@@ -1098,36 +1086,36 @@ inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::find(c
 template <typename VALUE >
 inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::find(const VALUE& searchValue, SortedLinkedList<VALUE>::LISTPOS searchAfter) const
 {
-    LISTPOS end = invalidPosition();
+    LISTPOS end = invalid_position();
     return (searchAfter != end ? static_cast<LISTPOS>(std::find(++searchAfter, end, searchValue)) : end);
 }
 
 template <typename VALUE >
 inline bool SortedLinkedList<VALUE>::contains(const VALUE& elemSearch) const
 {
-    return contains(elemSearch, firstPosition());
+    return contains(elemSearch, first_position());
 }
 
 template<typename VALUE>
 inline bool SortedLinkedList<VALUE>::contains(const VALUE& elemSearch, LISTPOS startAt) const
 {
-    return (startAt != mValueList.end() ? std::find(startAt, invalidPosition(), elemSearch) != mValueList.end() : false);
+    return (startAt != mValueList.end() ? std::find(startAt, invalid_position(), elemSearch) != mValueList.end() : false);
 }
 
 template<typename VALUE>
-inline const std::list<VALUE>& SortedLinkedList<VALUE>::getData() const
+inline const std::list<VALUE>& SortedLinkedList<VALUE>::data() const
 {
     return mValueList;
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::findIndex(uint32_t index) const
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::find_index(uint32_t index) const
 {
     return _citer2pos(index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
 template <typename VALUE >
-uint32_t SortedLinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
+uint32_t SortedLinkedList<VALUE>::make_index(LISTPOS atPosition) const
 {
     uint32_t result{ 0 };
     LISTPOS pos = mValueList.begin();
@@ -1141,7 +1129,7 @@ uint32_t SortedLinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 template <typename VALUE >
 void SortedLinkedList<VALUE>::resort()
 {
-    if (isAscending())
+    if (is_ascending())
     {
         mValueList.sort();
     }
@@ -1167,14 +1155,14 @@ inline void SortedLinkedList<VALUE>::merge(SortedLinkedList<VALUE>&& source)
     source.mValueList.sort();
     mValueList.merge(std::move(source.mValueList));
     resort();
-    if (source.isEmpty() == false)
+    if (source.is_empty() == false)
     {
         source.mSorting = mSorting;
     }
 }
 
 template<typename VALUE>
-inline uint32_t SortedLinkedList<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+inline uint32_t SortedLinkedList<VALUE>::elements(VALUE* list, uint32_t elemCount)
 {
     uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
     uint32_t i = 0;
@@ -1191,7 +1179,7 @@ inline uint32_t SortedLinkedList<VALUE>::getElements(VALUE* list, uint32_t elemC
 }
 
 template <typename VALUE >
-inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::getPosition(uint32_t index) const
+inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::position(uint32_t index) const
 {
     auto pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
     for (uint32_t i = 1; i <= index; ++i)
@@ -1236,7 +1224,7 @@ const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input)
 template <typename V>
 OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output)
 {
-    uint32_t size = output.getSize();
+    uint32_t size = output.size();
     uint8_t sort = static_cast<uint8_t>(output.mSorting);
 
     stream << size;

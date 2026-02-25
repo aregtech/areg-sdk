@@ -68,6 +68,10 @@
  *
  **/
 template<typename VALUE>
+/**
+ * \brief   Fixed-size array container with pre-allocated capacity, supporting element access and
+ *          copying but not insertion or removal operations. Not thread-safe.
+ **/
 class FixedArray
 {
 //////////////////////////////////////////////////////////////////////////
@@ -75,26 +79,29 @@ class FixedArray
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Creates FixedArray with initial size. If the initial
-     *          size is zero, no element can be accessed. To change the size,
-     *          assigning or move operators should be used.
-     * \param	elemCount	The initial size of array.
+     * \brief   Creates a FixedArray with initial size. Size zero means no elements can be accessed;
+     *          use assignment or move to change size.
+     *
+     * \param   elemCount       Initial element count (default 0).
      **/
     explicit FixedArray( uint32_t elemCount = 0);
     /**
-     * \brief   Copy elements of array from the given source.
-     * \param   src     The source to copy data.
+     * \brief   Copies all elements from source array.
+     *
+     * \param   src     Source array to copy from.
      **/
     FixedArray( const FixedArray<VALUE> & src );
     /**
-     * \brief   Moves elements of array from the given source.
-     * \param   src     The source to move data.
+     * \brief   Moves all elements from source array.
+     *
+     * \param   src     Source array to move from.
      **/
     FixedArray( FixedArray<VALUE> && src ) noexcept;
     /**
-     * \brief   Compiles entries from the given array of objects.
-     * \param   list    The list of entries to copy.
-     * \param   count   The number of entries in the array.
+     * \brief   Initializes array by copying from C-style array.
+     *
+     * \param   list        C-style array to copy from.
+     * \param   count       Number of elements in array.
      **/
     FixedArray(const VALUE* list, uint32_t count);
     /**
@@ -111,51 +118,48 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Subscript operator. Returns reference to value of element by given valid zero-based index.
-     *          May be used on either the right (r-value) or the left (l-value) of an assignment statement.
+     * \brief   Returns reference to element at index for both read and write access.
+     *
+     * \param   index       Zero-based index.
      **/
     inline VALUE& operator [] (uint32_t index);
 
     /**
-     * \brief   Subscript operator. Returns reference to value of element by given valid zero-based index.
-     *          The index should be valid number between 0 and (mSize -1).
-     *          May be used on the right (r-value).
+     * \brief   Returns const reference to element at valid index for read-only access.
+     *
+     * \param   index       Zero-based index between 0 and size()-1.
      **/
     inline const VALUE& operator [] (uint32_t index) const;
 
     /**
-     * \brief   Assigning operator. Copies all values from given source.
-     *          If array previously had values, they will be removed and new values
-     *          from source array will be set in the same sequence as they are
-     *          present in the source. The size of FixedArray may differ.
-     * \param   src     The source of fixed array of values.
+     * \brief   Assigns all values from source array, replacing existing contents.
+     *
+     * \param   src     Source FixedArray.
      **/
     inline FixedArray<VALUE> & operator = ( const FixedArray<VALUE> & src);
 
     /**
-     * \brief   Move operator. Moves all values from given source.
-     *          If Array previously had values, they will be removed and new values
-     *          from source Array will be set in the same sequence as they are
-     *          present in the source. The size of FixedArray may differ.
-     * \param   src     The source of fixed array of values.
+     * \brief   Move-assigns all values from source array, leaving source empty.
+     *
+     * \param   src     Source FixedArray to move from.
      **/
     inline FixedArray<VALUE> & operator = ( FixedArray<VALUE> && src ) noexcept;
 
     /**
-     * \brief   Checks equality of 2 array objects, and returns true if they are equal.
-     *          There should be possible to compare VALUE type entries of array.
-     * \param   other   The fixed array object to compare.
+     * \brief   Returns true if two arrays have equal size and all elements are equal.
+     *
+     * \param   other       Array to compare.
      **/
     inline bool operator == (const FixedArray<VALUE> & other) const;
     /**
-     * \brief   Checks inequality of 2 array objects, and returns true if they are not equal.
-     *          There should be possible to compare VALUE type entries of array.
-     * \param   other   The fixed array object to compare.
+     * \brief   Returns true if two arrays differ in size or have any unequal elements.
+     *
+     * \param   other       Array to compare.
      **/
     inline bool operator != (const FixedArray<VALUE> & other) const;
 
     /**
-     * \brief   Returns pointer to the fixed array values. The values cannot be modified
+     * \brief   Returns const pointer to first element (read-only access to array data).
      **/
     inline operator const VALUE * () const;
 
@@ -174,6 +178,12 @@ public:
      * \param   input   The fixed array object to save initialized values.
      **/
     template<typename V>
+    /**
+     * \brief   Deserializes array values from stream, replacing existing contents.
+     *
+     * \param   stream      Streaming object to read values from.
+     * \param[out] input       FixedArray to receive deserialized values.
+     **/
     friend const InStream & operator >> ( const InStream & stream, FixedArray<V> & input );
     /**
      * \brief   Writes to the stream the values of fixed array.
@@ -184,6 +194,12 @@ public:
      * \param   output  The fixed array object containing value to stream.
      **/
     template<typename V>
+    /**
+     * \brief   Serializes all array values to stream starting from first element.
+     *
+     * \param[out] stream      Streaming object to write values to.
+     * \param   output      FixedArray containing values to serialize.
+     **/
     friend OutStream & operator << ( OutStream & stream, const FixedArray<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
@@ -191,26 +207,28 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns true if the fixed array is empty and has no elements.
+     * \brief   Returns true if the array has no elements.
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
-     * \brief	Returns the size of the fixed array.
+     * \brief   Returns the number of elements in the array.
      **/
-    inline uint32_t getSize() const;
+    inline uint32_t size() const;
 
     /**
-     * \brief   Returns true if the specified index is valid.
+     * \brief   Returns true if the index is within valid range [0, size()-1].
+     *
+     * \param   index       Index to validate.
      **/
-    inline bool isValidIndex(const uint32_t index) const;
+    inline bool is_valid_index(const uint32_t index) const;
 
     /**
-     * \brief	Checks whether given element exist in fixed array or not. The elements of type
-     *          VALUE should have comparing operators.
-     * \param	elemSearch	The element to search.
-     * \param	startAt	    The index to start searching.
-     * \return	Returns true if could find element starting at given position.
+     * \brief   Returns true if element exists in array starting from given index.
+     *
+     * \param   elemSearch      Element to search for.
+     * \param   startAt         Index to start searching (default 0).
+     * \return  Returns true if element found; false otherwise.
      **/
     inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
@@ -219,83 +237,105 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Clears all elements of array
+     * \brief   Removes all elements from array, setting size to zero.
      **/
     inline void clear();
 
     /**
-     * \brief   Returns element value by valid index, which can be used by right operation (r-value).
-     *          The index should be valid.
+     * \brief   Returns const reference to element at index for read-only access.
+     *
+     * \param   index       Valid zero-based index.
      **/
-    inline const VALUE& getAt(uint32_t index) const;
+    inline const VALUE& at(uint32_t index) const;
 
     /**
-     * \brief   Returns element value by valid index, which can be used by left (l-value) and right operation (r-value).
-     *          The index should be valid.
+     * \brief   Returns reference to element at index for read or write access.
+     *
+     * \param   index       Valid zero-based index.
      **/
-    inline VALUE& getAt(uint32_t index);
+    inline VALUE& at(uint32_t index);
 
     /**
-     * \brief   Sets new element at given valid index. The index should be valid.
+     * \brief   Replaces element at valid index with new value (copy).
+     *
+     * \param   index           Valid zero-based index.
+     * \param   newElement      New element value to set.
      **/
-    inline void setAt(uint32_t index, const VALUE& newElement);
-    inline void setAt(uint32_t index, VALUE && newElement);
+    inline void set_at(uint32_t index, const VALUE& newElement);
+    /**
+     * \brief   Replaces element at valid index with new value (move).
+     *
+     * \param   index           Valid zero-based index.
+     * \param   newElement      New element value to move.
+     * \note    Move overload. Takes ownership of newElement.
+     **/
+    inline void set_at(uint32_t index, VALUE && newElement);
 
     /**
-     * \brief   Returns element value by valid zero-based index.
-     * \param   atPosition  Zero-based valid position in array.
+     * \brief   Returns const reference to element at valid zero-based position.
+     *
+     * \param   atPosition      Valid zero-based position in array.
      **/
-    inline const VALUE& valueAtPosition( const uint32_t atPosition ) const;
-    inline VALUE& valueAtPosition( uint32_t atPosition );
+    inline const VALUE& value_at_position( const uint32_t atPosition ) const;
+    /**
+     * \brief   Returns reference to element at valid zero-based position for read or write access.
+     *
+     * \param   atPosition      Valid zero-based position in array.
+     **/
+    inline VALUE& value_at_position( uint32_t atPosition );
 
     /**
-     * \brief   Returns array of values, which cannot be modified.
+     * \brief   Returns const pointer to array data (read-only access).
      **/
-    inline const VALUE* getValues() const;
+    inline const VALUE* values() const;
 
     /**
-     * \brief	Copies all entries from given source. If array previously had values,
-     *          they will be removed and new values from source array will be set
-     *          in the same sequence as they present in the source.
-     * \param	src	    The source of array elements.
+     * \brief   Copies all elements from source array, replacing existing contents.
+     *
+     * \param   src     Source array to copy from.
      **/
     void copy(const FixedArray< VALUE >& src);
 
     /**
-     * \brief	Moves all entries from given source. On output, the source of array is empty.
-     * \param	src	    The source of array elements
+     * \brief   Moves all elements from source array, leaving source empty.
+     *
+     * \param   src     Source array to move from.
      **/
     inline void move(FixedArray< VALUE >&& src) noexcept;
 
     /**
-     * \brief	Search element entry in the array and returns the index.
-     *          If element is not found, returns -1. The elements of type VALUE
-     *          should have comparing operators.
-     * \param	elemSearch	The element to search.
-     * \param	startAt	    The index to start searching.
-     * \return	If found, returns valid index of element in array. Otherwise, returns INVALID_INDEX aka -1.
+     * \brief   Searches for element and returns its index, or -1 if not found.
+     *
+     * \param   elemSearch      Element to search for.
+     * \param   startAt         Index to start searching (default 0).
+     * \return  Valid array index if found; otherwise -1 (INVALID_INDEX).
      **/
     inline int32_t find(const VALUE& elemSearch, uint32_t startAt = 0) const;
 
     /**
-     * \brief   Resize the array, set new length and copy existing data.
-     * \param   newLength   The new length of array to set.
+     * \brief   Resizes the array to new length and preserves existing elements.
+     *
+     * \param   newLength       New array size.
      **/
     inline void resize(uint32_t newLength );
 
     /**
-     * \brief   Return the fist entry in the array. The array must not be empty.
-     *          Otherwise, it fails with the assertion.
+     * \brief   Returns const reference to first element. Array must not be empty.
      **/
-    inline const VALUE & firstEntry() const;
-    inline VALUE & firstEntry();
+    inline const VALUE & first_entry() const;
+    /**
+     * \brief   Returns reference to first element for read or write. Array must not be empty.
+     **/
+    inline VALUE & first_entry();
 
     /**
-     * \brief   Return the last entry in the array. The array must not be empty.
-     *          Otherwise, it fails with the assertion.
+     * \brief   Returns const reference to last element. Array must not be empty.
      **/
-    inline const VALUE & lastEntry() const;
-    inline VALUE & lastEntry();
+    inline const VALUE & last_entry() const;
+    /**
+     * \brief   Returns reference to last element for read or write. Array must not be empty.
+     **/
+    inline VALUE & last_entry();
 
     /**
      * \brief   Sorts the array, compares the elements by given Compare functionality.
@@ -303,21 +343,22 @@ public:
      * \return  Sorts and returns the fixed array object.
      **/
     template <class Compare>
+    /**
+     * \brief   Sorts array in-place using provided comparator and returns self.
+     *
+     * \param   comp    Comparator function/functor (similar to std::greater).
+     * \return  Returns reference to this sorted FixedArray.
+     **/
     inline FixedArray< VALUE >& sort(Compare comp);
 
     /**
-     * \brief   Copies elements from the array into the provided pre-allocated buffer.
-     *          If `elemCount` is less than the number of elements in the array,
-     *          only the first `elemCount` elements are copied. Otherwise, all elements
-     *          in the array are copied. No elements are copied if `elemCount` is 0
-     * \param   list [in, out]  A pre-allocated buffer where the array elements
-     *                          will be copied. Must be large enough to hold at least
-     *                          `elemCount` elements.
-     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
-     *                          If set to 0, no elements are copied.
-     * \return  The number of elements successfully copied into the `list` buffer.
+     * \brief   Copies up to elemCount elements into pre-allocated buffer.
+     *
+     * \param[out] list            Pre-allocated buffer large enough for elemCount elements.
+     * \param   elemCount       Maximum number of elements to copy (0 means no copy).
+     * \return  Number of elements actually copied.
      **/
-    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
+    inline uint32_t elements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
@@ -353,7 +394,7 @@ FixedArray<VALUE>::FixedArray( const FixedArray<VALUE>& src )
     : mValueList( src.mElemCount != 0 ? DEBUG_NEW VALUE[src.mElemCount] : nullptr )
     , mElemCount( mValueList != nullptr ? src.mElemCount : 0 )
 {
-    NEMemory::copyElems<VALUE>(mValueList, src.mValueList, mElemCount);
+    NEMemory::copy_elems<VALUE>(mValueList, src.mValueList, mElemCount);
 }
 
 template< typename VALUE >
@@ -370,7 +411,7 @@ FixedArray<VALUE>::FixedArray(const VALUE* list, uint32_t count)
     : mValueList(count ? DEBUG_NEW VALUE[count] : nullptr)
     , mElemCount(mValueList != nullptr ? count : 0)
 {
-    NEMemory::copyElems<VALUE>(mValueList, list, mElemCount);
+    NEMemory::copy_elems<VALUE>(mValueList, list, mElemCount);
 }
 
 template< typename VALUE >
@@ -382,14 +423,14 @@ FixedArray<VALUE>::~FixedArray()
 template< typename VALUE >
 inline VALUE& FixedArray<VALUE>::operator [] (uint32_t index)
 {
-    ASSERT(isValidIndex(index));
+    ASSERT(is_valid_index(index));
     return mValueList[index];
 }
 
 template< typename VALUE >
 inline const VALUE& FixedArray<VALUE>::operator [] (uint32_t index) const
 {
-    ASSERT(isValidIndex(index));
+    ASSERT(is_valid_index(index));
     return static_cast<const VALUE&>(mValueList[index]);
 }
 
@@ -410,13 +451,13 @@ inline FixedArray<VALUE> & FixedArray<VALUE>::operator = ( FixedArray<VALUE> && 
 template< typename VALUE >
 inline bool FixedArray<VALUE>::operator == ( const FixedArray<VALUE>& other ) const
 {
-    return ((mElemCount == other.getSize()) && NEMemory::equalElements<VALUE>(mValueList, other.mValueList, mElemCount));
+    return ((mElemCount == other.size()) && NEMemory::equal_elements<VALUE>(mValueList, other.mValueList, mElemCount));
 }
 
 template< typename VALUE >
 inline bool FixedArray<VALUE>::operator != (const FixedArray<VALUE>& other) const
 {
-    return ((mElemCount != other.getSize()) || !NEMemory::equalElements<VALUE>(mValueList, other.mValueList, mElemCount));
+    return ((mElemCount != other.size()) || !NEMemory::equal_elements<VALUE>(mValueList, other.mValueList, mElemCount));
 }
 
 template< typename VALUE >
@@ -426,19 +467,19 @@ inline FixedArray<VALUE>::operator const VALUE * () const
 }
 
 template< typename VALUE >
-inline bool FixedArray<VALUE>::isEmpty() const
+inline bool FixedArray<VALUE>::is_empty() const
 {
     return (mElemCount == 0);
 }
 
 template< typename VALUE >
-inline uint32_t FixedArray<VALUE>::getSize() const
+inline uint32_t FixedArray<VALUE>::size() const
 {
     return mElemCount;
 }
 
 template< typename VALUE >
-inline bool FixedArray<VALUE>::isValidIndex(uint32_t whichIndex) const
+inline bool FixedArray<VALUE>::is_valid_index(uint32_t whichIndex) const
 {
     return (whichIndex < mElemCount);
 }
@@ -458,49 +499,49 @@ inline void FixedArray<VALUE>::clear()
 }
 
 template< typename VALUE >
-inline const VALUE& FixedArray<VALUE>::getAt(uint32_t index ) const
+inline const VALUE& FixedArray<VALUE>::at(uint32_t index ) const
 {
-    ASSERT(isValidIndex(index));
+    ASSERT(is_valid_index(index));
     return static_cast<const VALUE&>(mValueList[index]);
 }
 
 template< typename VALUE >
-inline VALUE & FixedArray<VALUE>::getAt(uint32_t index )
+inline VALUE & FixedArray<VALUE>::at(uint32_t index )
 {
-    ASSERT(isValidIndex(index));
+    ASSERT(is_valid_index(index));
     return mValueList[index];
 }
 
 template< typename VALUE >
-inline void FixedArray<VALUE>::setAt(uint32_t index, const VALUE& newValue )
+inline void FixedArray<VALUE>::set_at(uint32_t index, const VALUE& newValue )
 {
-    ASSERT(isValidIndex(index));
+    ASSERT(is_valid_index(index));
     mValueList[index] = newValue;
 }
 
 template< typename VALUE >
-inline void FixedArray<VALUE>::setAt(uint32_t index, VALUE && newValue)
+inline void FixedArray<VALUE>::set_at(uint32_t index, VALUE && newValue)
 {
-    ASSERT(isValidIndex(index));
+    ASSERT(is_valid_index(index));
     mValueList[index] = std::move(newValue);
 }
 
 template<typename VALUE >
-inline const VALUE & FixedArray< VALUE >::valueAtPosition( const uint32_t atPosition ) const
+inline const VALUE & FixedArray< VALUE >::value_at_position( const uint32_t atPosition ) const
 {
-    ASSERT( isValidIndex( atPosition ) );
+    ASSERT( is_valid_index( atPosition ) );
     return static_cast<const VALUE&>(mValueList[atPosition]);
 }
 
 template<typename VALUE >
-inline VALUE& FixedArray< VALUE >::valueAtPosition( uint32_t atPosition )
+inline VALUE& FixedArray< VALUE >::value_at_position( uint32_t atPosition )
 {
-    ASSERT( isValidIndex( atPosition ) );
+    ASSERT( is_valid_index( atPosition ) );
     return mValueList[atPosition];
 }
 
 template< typename VALUE >
-inline const VALUE* FixedArray<VALUE>::getValues() const
+inline const VALUE* FixedArray<VALUE>::values() const
 {
     return  mValueList;
 }
@@ -510,11 +551,11 @@ void FixedArray<VALUE>::copy(const FixedArray< VALUE >& src)
 {
     if (static_cast<const FixedArray<VALUE> *>(this) != &src)
     {
-        if (mElemCount != src.getSize())
+        if (mElemCount != src.size())
         {
             clear();
-            mValueList = src.getSize() > 0 ? DEBUG_NEW VALUE[src.getSize()] : nullptr;
-            mElemCount = mValueList != nullptr ? src.getSize() : 0;
+            mValueList = src.size() > 0 ? DEBUG_NEW VALUE[src.size()] : nullptr;
+            mElemCount = mValueList != nullptr ? src.size() : 0;
         }
 
         for (uint32_t i = 0; i < mElemCount; ++i)
@@ -566,28 +607,28 @@ void FixedArray<VALUE>::resize(uint32_t newLength)
 }
 
 template<typename VALUE>
-inline const VALUE & FixedArray<VALUE>::firstEntry() const
+inline const VALUE & FixedArray<VALUE>::first_entry() const
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline VALUE & FixedArray<VALUE>::firstEntry()
+inline VALUE & FixedArray<VALUE>::first_entry()
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ 0 ];
 }
 
 template<typename VALUE>
-inline const VALUE & FixedArray<VALUE>::lastEntry() const
+inline const VALUE & FixedArray<VALUE>::last_entry() const
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ mElemCount - 1 ];
 }
 
 template<typename VALUE>
-inline VALUE & FixedArray<VALUE>::lastEntry()
+inline VALUE & FixedArray<VALUE>::last_entry()
 {
     ASSERT( mElemCount != 0 );
     return mValueList[ mElemCount - 1 ];
@@ -606,7 +647,7 @@ inline FixedArray<VALUE>& FixedArray<VALUE>::sort(Compare comp)
 }
 
 template<typename VALUE>
-inline uint32_t FixedArray<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+inline uint32_t FixedArray<VALUE>::elements(VALUE* list, uint32_t elemCount)
 {
     uint32_t result{ std::min(mElemCount, elemCount) };
     for (uint32_t i = 0; i < result; ++i)

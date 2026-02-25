@@ -269,7 +269,7 @@ namespace NEPersistence
     /**
      * \brief
      **/
-    inline const NEPersistence::ConfigKey& log_remote_queue_size();
+    inline const NEPersistence::ConfigKey& remote_queue_size();
 
     /**
      * \brief
@@ -364,12 +364,12 @@ namespace NEPersistence
     /**
      * \brief
      **/
-    inline const NEPersistence::ConfigKey& default_buffer_block_size();
+    inline const NEPersistence::ConfigKey& buffer_block_size();
 
     /**
      * \brief
      **/
-    inline const NEPersistence::ConfigKey& default_message_queue_size();
+    inline const NEPersistence::ConfigKey& message_queue_size();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -416,7 +416,7 @@ inline const NEPersistence::ConfigKey& NEPersistence::log_file_append()
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogFileAppend)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::log_remote_queue_size()
+inline const NEPersistence::ConfigKey& NEPersistence::remote_queue_size()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogRemoteQueueSize)];
 }
@@ -506,12 +506,12 @@ const NEPersistence::ConfigKey& NEPersistence::log_database_password()
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabasePassword)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::default_buffer_block_size()
+const NEPersistence::ConfigKey& NEPersistence::buffer_block_size()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultBufferBlock)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::default_message_queue_size()
+const NEPersistence::ConfigKey& NEPersistence::message_queue_size()
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultMessageQueue)];
 }

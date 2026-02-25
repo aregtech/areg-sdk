@@ -25,15 +25,15 @@
  // Posix specific methods
  //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerBase::_osCreateWaitableTimer()
+TIMERHANDLE TimerBase::_os_create()
 {
     return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix( ));
 }
 
-void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )
+void TimerBase::_os_destroy( TIMERHANDLE handle )
 {
     TimerPosix * timer = reinterpret_cast<TimerPosix *>(handle);
-    timer->destroyTimer( );
+    timer->destroy_timer( );
     delete timer;
 }
 

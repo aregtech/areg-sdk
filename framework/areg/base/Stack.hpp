@@ -54,6 +54,10 @@ template <typename VALUE> class StackBase;
  *                  operator. And should be possible to convert to type const VALUE &.
  **/
 template <typename VALUE>
+/**
+ * \brief   Synchronized FIFO stack container that requires a synchronization object (lock) to
+ *          manage thread-safe access.
+ **/
 class StackBase   : private Constless<std::deque<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -68,33 +72,37 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Stack initialization constructor.
-     *          Receives reference to synchronization object.
-     *          It is declared as protected to prevent direct call.
-     *          Use Stack or ConcurrentStack objects instead.
-     * \param   syncObject  Reference to synchronization object.
+     * \brief   Initializes stack with a synchronization object. Protected to prevent direct
+     *          instantiation; use Stack or ConcurrentStack instead.
+     *
+     * \param   syncObject      The synchronization object to manage thread-safe access.
      **/
     explicit StackBase( Lockable & syncObject );
 
     /**
-     * \brief   Initializes the resource lock object and copies elements from given source.
-     * \param   syncObject  The instance of synchronization object
-     * \param   source      The Stack source, which contains elements to copy.
+     * \brief   Initializes stack with a synchronization object and copies elements from source.
+     *
+     * \param   syncObject      The synchronization object to manage thread-safe access.
+     * \param   source          The source stack from which to copy elements.
      **/
     StackBase( Lockable & syncObject, const StackBase<VALUE> & source );
 
     /**
-     * \brief   Initializes the resource lock object and move elements from given source.
-     * \param   syncObject  The instance of synchronization object
-     * \param   source      The Stack source, which contains elements to move.
+     * \brief   Initializes stack with a synchronization object and moves elements from source.
+     *
+     * \param   syncObject      The synchronization object to manage thread-safe access.
+     * \param   source          The source stack from which to move elements.
+     * \note    Move constructor.
      **/
     StackBase( Lockable & syncObject, StackBase<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Compiles entries from the given array of objects.
-     * \param   syncObject  The instance of synchronization object
-     * \param   list        The list of entries to copy.
-     * \param   count       The number of entries in the array.
+     * \brief   Initializes stack with a synchronization object and copies elements from the given
+     *          array.
+     *
+     * \param   syncObject      The synchronization object to manage thread-safe access.
+     * \param   list            Array of elements to copy into the stack.
+     * \param   count           The number of elements in the array.
      **/
     StackBase(Lockable& syncObject, const VALUE* list, uint32_t count);
 
@@ -108,40 +116,45 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigning operator. It is copying stack elements from given source
-     *          in the same order as they are created in the source stack.
-     *          If stack had entries, all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to get stack entries.
-     * \return  Returns stack object.
+     * \brief   Copies all elements from source stack, replacing existing contents.
+     *
+     * \param   source      The source stack to copy from.
+     * \return  Reference to this stack object.
      **/
     inline StackBase<VALUE> & operator = ( const StackBase<VALUE> & source );
 
     /**
-     * \brief   Assigning operator. It is moves stack elements from given source
-     *          in the same order as they are created in the source stack.
-     *          If stack had entries, all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to get stack entries.
-     * \return  Returns stack object.
+     * \brief   Moves all elements from source stack, replacing existing contents.
+     *
+     * \param   source      The source stack to move from.
+     * \return  Reference to this stack object.
+     * \note    Move overload.
      **/
     inline StackBase<VALUE> & operator = ( StackBase<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Returns element at specified position.
-     */
+     * \brief   Returns the constant reference to element at the specified position.
+     **/
     inline const VALUE& operator [] (STACKPOS atPosition) const;
+    /**
+     * \brief   Returns the mutable reference to element at the specified position. Allows
+     *          modification of the returned value.
+     **/
     inline VALUE& operator [] (STACKPOS atPosition);
 
     /**
-     * \brief   Compares 2 stack object and returns true if they are equal.
-     * \param   other   A stack object to compare.
-     * \return  Returns true if 2 stack objects are equal.
+     * \brief   Returns true if two stacks are equal; false otherwise.
+     *
+     * \param   other       The stack to compare with.
+     * \return  True if stacks contain identical elements in the same order; false otherwise.
      **/
     inline bool operator == (const StackBase<VALUE> & other) const;
 
     /**
-     * \brief   Compares 2 stack object and returns true if they are not equal.
-     * \param   other   A stack object to compare.
-     * \return  Returns true if 2 stack objects are not equal.
+     * \brief   Returns true if two stacks are not equal; false otherwise.
+     *
+     * \param   other       The stack to compare with.
+     * \return  True if stacks differ; false otherwise.
      **/
     inline bool operator != (const StackBase<VALUE> & other) const;
 
@@ -161,6 +174,14 @@ public:
      * \param   input   The Stack object to save initialized values.
      **/
     template<typename V>
+    /**
+     * \brief   Deserializes stack values from the input stream. Replaces existing contents. VALUE
+     *          type must support the streaming operator.
+     *
+     * \param   stream      The input stream to read from.
+     * \param   input       The stack to receive deserialized values.
+     * \return  Reference to the input stream.
+     **/
     friend const InStream & operator >> (const InStream & stream, StackBase<V> & input);
     /**
      * \brief   Writes to the stream Stack values.
@@ -171,6 +192,14 @@ public:
      * \param   output  The Stack object to read out values.
      **/
     template<typename V>
+    /**
+     * \brief   Serializes all stack values to the output stream, starting from the head. VALUE type
+     *          must support the streaming operator.
+     *
+     * \param   stream      The output stream to write to.
+     * \param   output      The stack to serialize.
+     * \return  Reference to the output stream.
+     **/
     friend OutStream & operator << (OutStream & stream, const StackBase<V> & output);
 
 //////////////////////////////////////////////////////////////////////////
@@ -179,224 +208,261 @@ public:
 public:
 
     /**
-     * \brief   Returns number of elements saved in stack.
+     * \brief
      **/
-    inline uint32_t getSize() const;
+    inline uint32_t size() const;
 
     /**
-     * \brief   Returns true if Ring Stack is empty
+     * \brief
      **/
-    inline bool isEmpty() const;
+    inline bool is_empty() const;
 
     /**
-     * \brief   Returns true if specified position pointing start of the stack.
+     * \brief   Returns true if the specified position points to the beginning of the stack.
+     *
      * \param   pos     The position to check.
-     * \return  Returns true if specified position pointing start of the stack.
+     * \return  True if position is the first; false otherwise.
      **/
-    inline bool isFirstPosition(const STACKPOS pos) const;
+    inline bool is_first_position(const STACKPOS pos) const;
 
     /**
-     * \brief   Returns true if specified position pointing start of the stack.
+     * \brief   Returns true if the specified position points to the end of the stack.
+     *
      * \param   pos     The position to check.
-     * \return  Returns true if specified position pointing start of the stack.
+     * \return  True if position is the last; false otherwise.
      **/
-    inline bool isLastPosition(const STACKPOS pos) const;
+    inline bool is_last_position(const STACKPOS pos) const;
 
     /**
-     * \brief   Returns the invalid position of the stack.
+     * \brief
      **/
-    STACKPOS invalidPosition() const;
+    STACKPOS invalid_position() const;
 
     /**
-     * \brief   Returns true if the given position is valid, i.e. is not pointing the end of the stack.
-     *          Note, it does not check whether there is a such position in the stack,
-     *          The method ensures that the position is not pointing to the invalid value.
+     * \brief   Returns true if the given position is valid and not pointing to the end of the
+     *          stack.
+     *
+     * \param   pos     The position to validate.
+     * \return  True if position is valid; false otherwise.
      **/
-    bool isValidPosition(const STACKPOS pos) const;
+    bool is_valid_position(const STACKPOS pos) const;
 
     /**
-     * \brief   Returns true if specified position is invalid, i.e. points the end of the stack.
+     * \brief   Returns true if the specified position is invalid or points to the end of the stack.
+     *
+     * \param   pos     The position to check.
+     * \return  True if position is invalid; false otherwise.
      **/
-    bool isInvalidPosition(const STACKPOS pos) const;
+    bool is_invalid_position(const STACKPOS pos) const;
 
     /**
-     * \brief   Checks and ensures that specified position is pointing the valid entry in the stack.
-     *          The duration of checkup depends on the location of the position in the stack.
-     * \param pos       The position to check.
-     * \return  Returns true if specified position points to the valid entry in the stack.
-     */
-    inline bool checkPosition(const STACKPOS pos) const;
+     * \brief   Validates that the specified position points to a valid entry in the stack.
+     *
+     * \param   pos     The position to check.
+     * \return  True if the position points to a valid entry; false otherwise.
+     **/
+    inline bool check_position(const STACKPOS pos) const;
 
     /**
-     * \brief	Checks whether given element exist in the stack or not. The elements of type
-     *          VALUE should have comparing operators.
-     * \param	elemSearch  The element to search.
-     * \return	Returns true if could find element starting at given position.
+     * \brief   Returns true if the element is found in the stack. VALUE type must have comparison
+     *          operators defined.
+     *
+     * \param   elemSearch      The element to search for.
+     * \return  True if element is found; false otherwise.
      **/
     inline bool contains(const VALUE& elemSearch) const;
 
     /**
-     * \brief	Checks whether given element exist in the stack or not. The elements of type
-     *          VALUE should have comparing operators.
-     * \param	elemSearch  The element to search.
-     * \param	startAt	    The position to start searching.
-     * \return	Returns true if could find element starting at given position.
+     * \brief   Returns true if the element is found in the stack, starting from the specified
+     *          position.
+     *
+     * \param   elemSearch      The element to search for.
+     * \param   startAt         The position to start searching from.
+     * \return  True if element is found from the start position onward; false otherwise.
      **/
     inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
 
     /**
-     * \brief   Returns the vector object where the data are stored.
+     * \brief
      **/
-    inline const std::deque<VALUE>& getData() const;
+    inline const std::deque<VALUE>& data() const;
 
 /************************************************************************/
 // Operations
 /************************************************************************/
 
     /**
-     * \brief   Removes all elements from stack and makes it empty.
+     * \brief
      **/
     inline void clear();
 
     /**
-     * \brief   Delete extra entries in array.
+     * \brief
      **/
-    inline void freeExtra();
+    inline void free_extra();
 
     /**
-     * \brief   Sets the size of array to zero and deletes all unused capacity of the string.
-     */
+     * \brief
+     **/
     inline void release();
 
     /**
-     * \brief   Locks stack that methods can be accessed only from locking thread.
-     *          In case if NolockSyncObject is used, no locking will happen,
-     *          the function will return immediately and thread will continue to run.
-     * \return  Returns true if stack successfully locked
+     * \brief   Acquires the synchronization lock. If NolockSyncObject is used, returns immediately
+     *          without blocking.
+     *
+     * \return  True if lock acquired successfully; false otherwise.
      **/
     inline bool lock() const;
 
     /**
-     * \brief   If stack previously was locked by thread, it will unlock stack
-     *          In case if NolockSyncObject is used, nothing will happen.
-     * \return  Returns true if stack successfully unlocked
+     * \brief   Releases the synchronization lock. Has no effect if NolockSyncObject is used.
+     *
+     * \return  True if unlock successful; false otherwise.
      **/
     inline bool unlock() const;
 
     /**
-     * \brief	Sets new size of stack. If needed, either increases or truncates
-     *          elements in the stack. The elements of type VALUE should have default
-     *          constructor create and initialize elements.
-     * \param	newSize	    New size to set. If zero, stack is emptied.
+     * \brief   Changes the stack size. Increases capacity and initializes new elements, or
+     *          truncates if shrinking. VALUE type must have a default constructor.
+     *
+     * \param   newSize     The new size. If zero, the stack is emptied.
      **/
     inline void resize(uint32_t newSize);
 
     /**
-     * \brief   Returns first inserted element in the stack without changing stack.
-     *          The caller of function should make sure that the stack is not empty,
-     *          otherwise it may cause system crash.
-     *          Check the size of stack before calling function.
+     * \brief   Returns the first inserted element without removing it. Caller must ensure the stack
+     *          is not empty.
      **/
-    inline const VALUE & firstEntry() const;
+    inline const VALUE & first_entry() const;
 
     /**
-     * \brief   Returns first inserted element in the stack without changing stack.
-     *          The caller of function should make sure that the stack is not empty,
-     *          otherwise it may cause system crash.
-     *          Check the size of stack before calling function.
+     * \brief   Returns the last inserted element without removing it. Caller must ensure the stack
+     *          is not empty.
      **/
-    inline const VALUE & lastEntry() const;
+    inline const VALUE & last_entry() const;
 
     /**
-     * \brief	Push new element at the end of stack.
-     * \param	newElement  New Element to push into stack
-     * \return  Returns size of stack.
+     * \brief   Adds a new element to the end of the stack.
+     *
+     * \param   newElement      The element to add.
+     * \return  The new size of the stack.
      **/
-    inline uint32_t pushLast( const VALUE & newElement );
-    inline uint32_t pushLast(VALUE && newElement);
+    inline uint32_t push_last( const VALUE & newElement );
+    /**
+     * \brief   Adds a new element to the end of the stack.
+     *
+     * \param   newElement      The element to add.
+     * \return  The new size of the stack.
+     * \note    Move overload. Takes ownership of the element.
+     **/
+    inline uint32_t push_last(VALUE && newElement);
 
     /**
-     * \brief	Push new element in the beginning of stack, that on pop
-     *          operation will be popped first.
-     * \param	newElement  New Element to push into stack
-     * \return  Returns size of stack.
+     * \brief   Adds a new element to the beginning of the stack; pops first when removing.
+     *
+     * \param   newElement      The element to add.
+     * \return  The new size of the stack.
      **/
-    inline uint32_t pushFirst( const VALUE & newElement );
-    inline uint32_t pushFirst( VALUE && newElement);
+    inline uint32_t push_first( const VALUE & newElement );
+    /**
+     * \brief   Adds a new element to the beginning of the stack; pops first when removing.
+     *
+     * \param   newElement      The element to add.
+     * \return  The new size of the stack.
+     * \note    Move overload. Takes ownership of the element.
+     **/
+    inline uint32_t push_first( VALUE && newElement);
 
     /**
-     * \brief	Pops element from Stack and returns value of element.
-     *          The stack should not be empty before calling this method.
-     *          Otherwise assertion is raised.
-     * \return	Returns Element from stack.
+     * \brief   Removes and returns the first element. Stack must not be empty; assertion fails
+     *          otherwise.
+     *
+     * \return  The removed element.
      **/
-    inline VALUE popFirst();
+    inline VALUE pop_first();
 
     /**
-     * \brief   Copies all elements from given source and returns the number of copied elements.
-     *          If Stack previously had elements, they will be lost.
-     * \param   source  The stack source to copy elements.
-     * \return  Returns the number of copied elements.
+     * \brief   Copies all elements from source stack. Existing contents are replaced.
+     *
+     * \param   source      The source stack to copy from.
+     * \return  The number of copied elements.
      **/
     inline uint32_t copy( const StackBase<VALUE> & source );
 
     /**
-     * \brief   Moves all elements from given source and returns the number of moved elements.
-     *          If Stack previously had elements, they will be lost.
-     * \param   source  The stack source to copy elements.
-     * \return  Returns the number of copied elements.
+     * \brief   Moves all elements from source stack. Existing contents are replaced.
+     *
+     * \param   source      The source stack to move from.
+     * \return  The number of moved elements.
      **/
     inline uint32_t move( StackBase<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Searches element in the stack starting at given position.
-     *          The given position should be valid or equal to NECommon::START_POSITION
-     *          to search at the beginning of stack.
-     * \param   Value       The element value to search in the stack.
-     * \return  If found element, returns valid position. Otherwise, it returns invalid position.
+     * \brief   Searches for the element in the stack from the beginning.
+     *
+     * \param   Value       The element value to search for.
+     * \return  Valid position if found; invalid position otherwise.
      **/
     inline STACKPOS find(const VALUE & Value) const;
 
     /**
-     * \brief   Searches element in the stack starting at given position.
-     *          The given position should be valid or equal to NECommon::START_POSITION
-     *          to search at the beginning of stack.
-     * \param   Value       The element value to search in the stack.
-     * \param	searchAfter	If valid position, the searching starts from next element specified by position.
-     *                      If invalid position, the searching starts from the beginning of the stack.
-     * \return  If found element, returns valid position. Otherwise, it returns invalid position.
+     * \brief   Searches for the element in the stack, starting after the specified position.
+     *
+     * \param   Value           The element value to search for.
+     * \param   searchAfter     If valid, search starts from the next element after this position.
+     *                          If invalid, search starts from the beginning.
+     * \return  Valid position if found; invalid position otherwise.
      **/
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
 
     /**
-     * \brief   Returns the first (head) position of the stack. Returns nullptr if empty.
+     * \brief
      **/
-    inline STACKPOS firstPosition() const;
+    inline STACKPOS first_position() const;
 
     /**
-     * \brief   Return value at given position. The position should be valid.
-     * \param   pos     The position to get the value.
-     * \return  Returns value at given position.
+     * \brief   Returns the constant reference to the element at the given position. Position must
+     *          be valid.
+     *
+     * \param   pos     The valid position in the stack.
+     * \return  Constant reference to the element at the position.
      **/
-    inline const VALUE & getAt( const STACKPOS pos ) const;
-    inline VALUE& getAt(STACKPOS pos);
+    inline const VALUE & at( const STACKPOS pos ) const;
+    /**
+     * \brief   Returns the mutable reference to the element at the given position. Allows
+     *          modification. Position must be valid.
+     *
+     * \param   pos     The valid position in the stack.
+     * \return  Mutable reference to the element at the position.
+     **/
+    inline VALUE& at(STACKPOS pos);
 
 
     /**
-     * \brief   Returns value of element at the give position.
-     * \param   atPosition  The valid position in stack
+     * \brief   Returns the constant reference to the element at the specified position.
+     *
+     * \param   atPosition      The valid position in the stack.
+     * \return  Constant reference to the element.
      **/
-    inline const VALUE& valueAtPosition( const STACKPOS atPosition ) const;
-    inline VALUE& valueAtPosition( STACKPOS atPosition );
+    inline const VALUE& value_at_position( const STACKPOS atPosition ) const;
+    /**
+     * \brief   Returns the mutable reference to the element at the specified position. Allows
+     *          modification.
+     *
+     * \param   atPosition      The valid position in the stack.
+     * \return  Mutable reference to the element.
+     **/
+    inline VALUE& value_at_position( STACKPOS atPosition );
 
     /**
-     * \brief   Returns next valid position after given position value.
-     *          Returns nullptr if given position was last.
-     * \param   pos     The position value to get next.
-     * \return  If given position is not last in the stack, it returns next valid position value.
-     *          Otherwise, it returns nullptr.
+     * \brief   Returns the next valid position after the given one, or an invalid position if at
+     *          the end.
+     *
+     * \param   pos     The current position.
+     * \return  Valid position if one exists after the given position; invalid position if at the
+     *          end.
      **/
-    inline STACKPOS nextPosition( STACKPOS pos ) const;
+    inline STACKPOS next_position( STACKPOS pos ) const;
 
     /**
      * \brief   Sorts the stack, compares the elements by given Compare functionality.
@@ -404,20 +470,25 @@ public:
      * \return  Sorts and returns the Stack object.
      **/
     template <class Compare>
+    /**
+     * \brief   Sorts the stack using the provided comparison function. Returns this stack for
+     *          chaining.
+     *
+     * \param   comp    The comparison function, similar to std::greater().
+     * \return  Reference to this stack object.
+     **/
     inline StackBase< VALUE >& sort(Compare comp);
 
     /**
-     * \brief   Copies elements from the stack into the provided pre-allocated buffer.
-     *          If `elemCount` is less than the number of elements in the stack,
-     *          only the first `elemCount` elements are copied. Otherwise, all elements
-     *          in the stack are copied. No elements are copied if `elemCount` is 0.
-     * \param   list [in, out]  A pre-allocated buffer where the stack elements will be copied.
-     *                          Must be large enough to hold at least `elemCount` elements.
-     * \param   elemCount [in]  The maximum number of elements to copy into the `list` buffer.
-     *                          If set to 0, no elements are copied.
-     * \return  The number of elements successfully copied into the `list` buffer.
+     * \brief   Copies elements from the stack into the provided buffer. If elemCount is smaller
+     *          than the stack size, only the first elemCount elements are copied.
+     *
+     * \param[in,out] list            Pre-allocated buffer where elements will be copied. Must be
+     *                                large enough to hold elemCount elements.
+     * \param   elemCount       Maximum number of elements to copy. If zero, no elements are copied.
+     * \return  The number of elements successfully copied.
      **/
-    inline uint32_t getElements(VALUE* list, uint32_t elemCount);
+    inline uint32_t elements(VALUE* list, uint32_t elemCount);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -433,8 +504,17 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     StackBase() = delete;
+    /**
+     * \brief
+     **/
     StackBase( const StackBase<VALUE> & /* source */ ) = delete;
+    /**
+     * \brief
+     **/
     StackBase( StackBase<VALUE> && /* source */ ) = delete;
 };
 
@@ -447,6 +527,10 @@ private:
  *          of stack are accessed by more than one thread.
  **/
 template <typename VALUE>
+/**
+ * \brief   Thread-safe FIFO stack with synchronized data access. Use when multiple threads access
+ *          the stack.
+ **/
 class ConcurrentStack  : public StackBase<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -454,38 +538,43 @@ class ConcurrentStack  : public StackBase<VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief   Creates an empty concurrent stack.
      **/
     ConcurrentStack();
 
     /**
-     * \brief   Copies data from given source.
-     * \param   source  The source to copy data.
+     * \brief   Creates a stack by copying from a base stack.
+     *
+     * \param   source      The source stack to copy from.
      **/
     explicit ConcurrentStack( const StackBase<VALUE> & source );
 
     /**
-     * \brief   Moves data from given source.
-     * \param   source  The source to move data.
+     * \brief   Creates a stack by moving from a base stack.
+     *
+     * \param   source      The source stack to move from.
      **/
     explicit ConcurrentStack( StackBase<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Copies data from given source.
-     * \param   source  The source to copy data.
+     * \brief   Copies from another concurrent stack.
+     *
+     * \param   source      The source stack to copy from.
      **/
     ConcurrentStack( const ConcurrentStack<VALUE> & source );
 
     /**
-     * \brief   Moves data from given source.
-     * \param   source  The source to move data.
+     * \brief   Moves from another concurrent stack.
+     *
+     * \param   source      The source stack to move from.
      **/
     ConcurrentStack( ConcurrentStack<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Compiles entries from the given array of objects.
-     * \param   list    The list of entries to copy.
-     * \param   count   The number of entries in the array.
+     * \brief   Creates a stack from an array of elements.
+     *
+     * \param   list        Array of elements to copy.
+     * \param   count       Number of elements in the array.
      **/
     ConcurrentStack(const VALUE* list, uint32_t count);
 
@@ -500,34 +589,34 @@ public:
 public:
 
     /**
-     * \brief   Copies entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to copy stack entries.
-     * \return  Returns stack object.
+     * \brief   Copies entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline ConcurrentStack<VALUE> & operator = ( const ConcurrentStack<VALUE> & source );
 
     /**
-     * \brief   Moves entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to move stack entries.
-     * \return  Returns stack object.
+     * \brief   Moves entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline ConcurrentStack<VALUE> & operator = ( ConcurrentStack<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Copies entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to copy stack entries.
-     * \return  Returns stack object.
+     * \brief   Copies entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline ConcurrentStack<VALUE> & operator = ( const StackBase<VALUE> & source );
 
     /**
-     * \brief   Moves entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to move stack entries.
-     * \return  Returns stack object.
+     * \brief   Moves entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline ConcurrentStack<VALUE> & operator = ( StackBase<VALUE> && source ) noexcept;
 
@@ -550,6 +639,10 @@ private:
  *          are accessed only by one thread.
  **/
 template <typename VALUE>
+/**
+ * \brief   Non-blocking FIFO stack without synchronization. Not thread-safe. Use when a single
+ *          thread accesses the stack.
+ **/
 class Stack    : public StackBase<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -557,38 +650,43 @@ class Stack    : public StackBase<VALUE>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor
+     * \brief   Creates an empty stack.
      **/
     Stack();
 
     /**
-     * \brief   Copies data from given source.
-     * \param   source  The source to copy data.
+     * \brief   Creates a stack by copying from a base stack.
+     *
+     * \param   source      The source stack to copy from.
      **/
     explicit Stack( const StackBase<VALUE> & source );
 
     /**
-     * \brief   Moves data from given source.
-     * \param   source  The source to move data.
+     * \brief   Creates a stack by moving from a base stack.
+     *
+     * \param   source      The source stack to move from.
      **/
     explicit Stack( StackBase<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Copies data from given source.
-     * \param   source  The source to copy data.
+     * \brief   Copies from another stack.
+     *
+     * \param   source      The source stack to copy from.
      **/
     Stack( const Stack<VALUE> & source );
 
     /**
-     * \brief   Moves data from given source.
-     * \param   source  The source to move data.
+     * \brief   Moves from another stack.
+     *
+     * \param   source      The source stack to move from.
      **/
     Stack( Stack<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Compiles entries from the given array of objects.
-     * \param   list    The list of entries to copy.
-     * \param   count   The number of entries in the array.
+     * \brief   Creates a stack from an array of elements.
+     *
+     * \param   list        Array of elements to copy.
+     * \param   count       Number of elements in the array.
      **/
     Stack(const VALUE* list, uint32_t count);
 
@@ -603,34 +701,34 @@ public:
 public:
 
     /**
-     * \brief   Copies entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to copy stack entries.
-     * \return  Returns stack object.
+     * \brief   Copies entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline Stack<VALUE> & operator = ( const Stack<VALUE> & source );
 
     /**
-     * \brief   Moves entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to move stack entries.
-     * \return  Returns stack object.
+     * \brief   Moves entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline Stack<VALUE> & operator = ( Stack<VALUE> && source ) noexcept;
 
     /**
-     * \brief   Copies entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to copy stack entries.
-     * \return  Returns stack object.
+     * \brief   Copies entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline Stack<VALUE> & operator = ( const StackBase<VALUE> & source );
 
     /**
-     * \brief   Moves entries from given sources. If stack had entries
-     *          all entries will be lost and new entries will be created.
-     * \param   source  The instance of source to move stack entries.
-     * \return  Returns stack object.
+     * \brief   Moves entries from source. Previous entries are discarded.
+     *
+     * \param   source      The source stack.
+     * \return  Reference to this object.
      **/
     inline Stack<VALUE> & operator = ( StackBase<VALUE> && source ) noexcept;
 
@@ -745,35 +843,35 @@ inline bool StackBase<VALUE>::operator != (const StackBase<VALUE>& other) const
 }
 
 template <typename VALUE>
-inline uint32_t StackBase<VALUE>::getSize() const
+inline uint32_t StackBase<VALUE>::size() const
 {
     Lock lock( mSyncObject );
     return static_cast<uint32_t>(mValueList.size());
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::isEmpty() const
+inline bool StackBase<VALUE>::is_empty() const
 {
     Lock lock( mSyncObject );
     return mValueList.empty();
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::isFirstPosition(STACKPOS pos) const
+inline bool StackBase<VALUE>::is_first_position(STACKPOS pos) const
 {
     Lock lock(mSyncObject);
     return (pos == mValueList.begin());
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::isLastPosition(STACKPOS pos) const
+inline bool StackBase<VALUE>::is_last_position(STACKPOS pos) const
 {
     Lock lock(mSyncObject);
     return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalidPosition() const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalid_position() const
 {
     Lock lock(mSyncObject);
     auto end = mValueList.end();
@@ -781,21 +879,21 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalidPosition() c
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::isValidPosition(STACKPOS pos) const
+inline bool StackBase<VALUE>::is_valid_position(STACKPOS pos) const
 {
     Lock lock(mSyncObject);
     return (pos != mValueList.end());
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::isInvalidPosition(STACKPOS pos) const
+inline bool StackBase<VALUE>::is_invalid_position(STACKPOS pos) const
 {
     Lock lock(mSyncObject);
     return (pos == mValueList.end());
 }
 
 template <typename VALUE>
-inline bool StackBase<VALUE>::checkPosition(STACKPOS pos) const
+inline bool StackBase<VALUE>::check_position(STACKPOS pos) const
 {
     Lock lock(mSyncObject);
     auto it = mValueList.begin();
@@ -808,17 +906,17 @@ inline bool StackBase<VALUE>::checkPosition(STACKPOS pos) const
 template<typename VALUE>
 inline bool StackBase<VALUE>::contains(const VALUE& elemSearch) const
 {
-    return contains(elemSearch, firstPosition());
+    return contains(elemSearch, first_position());
 }
 
 template<typename VALUE>
 inline bool StackBase<VALUE>::contains(const VALUE& elemSearch, STACKPOS startAt) const
 {
-    return (startAt != mValueList.end() ? std::find(startAt, invalidPosition(), elemSearch) != mValueList.end() : false);
+    return (startAt != mValueList.end() ? std::find(startAt, invalid_position(), elemSearch) != mValueList.end() : false);
 }
 
 template<typename VALUE>
-inline const std::deque<VALUE>& StackBase<VALUE>::getData() const
+inline const std::deque<VALUE>& StackBase<VALUE>::data() const
 {
     return mValueList;
 }
@@ -831,7 +929,7 @@ inline void StackBase<VALUE>::clear()
 }
 
 template <typename VALUE>
-inline void StackBase<VALUE>::freeExtra()
+inline void StackBase<VALUE>::free_extra()
 {
     Lock lock(mSyncObject);
     mValueList.shrink_to_fit();
@@ -865,14 +963,14 @@ inline void StackBase< VALUE >::resize(uint32_t newSize)
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::firstEntry() const
+inline const VALUE & StackBase<VALUE>::first_entry() const
 {
     Lock lock(mSyncObject);
     return mValueList.front();
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::lastEntry() const
+inline const VALUE & StackBase<VALUE>::last_entry() const
 {
     Lock lock(mSyncObject);
     return mValueList.back();
@@ -899,7 +997,7 @@ inline uint32_t StackBase<VALUE>::move( StackBase<VALUE> && source ) noexcept
 }
 
 template <typename VALUE>
-inline uint32_t StackBase<VALUE>::pushLast( const VALUE & newElement )
+inline uint32_t StackBase<VALUE>::push_last( const VALUE & newElement )
 {
     Lock lock(mSyncObject);
     mValueList.push_back(newElement);
@@ -907,7 +1005,7 @@ inline uint32_t StackBase<VALUE>::pushLast( const VALUE & newElement )
 }
 
 template <typename VALUE>
-inline uint32_t StackBase<VALUE>::pushLast(VALUE && newElement)
+inline uint32_t StackBase<VALUE>::push_last(VALUE && newElement)
 {
     Lock lock(mSyncObject);
     mValueList.push_back(std::move(newElement));
@@ -915,7 +1013,7 @@ inline uint32_t StackBase<VALUE>::pushLast(VALUE && newElement)
 }
 
 template <typename VALUE>
-inline uint32_t StackBase<VALUE>::pushFirst( const VALUE & newElement )
+inline uint32_t StackBase<VALUE>::push_first( const VALUE & newElement )
 {
     Lock lock(mSyncObject);
     mValueList.push_front(newElement);
@@ -923,7 +1021,7 @@ inline uint32_t StackBase<VALUE>::pushFirst( const VALUE & newElement )
 }
 
 template <typename VALUE>
-inline uint32_t StackBase<VALUE>::pushFirst(VALUE && newElement)
+inline uint32_t StackBase<VALUE>::push_first(VALUE && newElement)
 {
     Lock lock(mSyncObject);
     mValueList.push_front(std::move(newElement));
@@ -931,7 +1029,7 @@ inline uint32_t StackBase<VALUE>::pushFirst(VALUE && newElement)
 }
 
 template <typename VALUE>
-VALUE StackBase<VALUE>::popFirst()
+VALUE StackBase<VALUE>::pop_first()
 {
     Lock lock(mSyncObject);
 
@@ -952,12 +1050,12 @@ template <typename VALUE>
 inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE & Value, STACKPOS searchAfter ) const
 {
     Lock lock(mSyncObject);
-    STACKPOS end = invalidPosition();
+    STACKPOS end = invalid_position();
     return (searchAfter != end ? std::find(++searchAfter, end, Value) : end);
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::firstPosition() const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::first_position() const
 {
     Lock lock(mSyncObject);
     auto it = mValueList.begin();
@@ -965,7 +1063,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::firstPosition() con
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::getAt( const STACKPOS pos ) const
+inline const VALUE & StackBase<VALUE>::at( const STACKPOS pos ) const
 {
     Lock lock(mSyncObject);
 
@@ -974,7 +1072,7 @@ inline const VALUE & StackBase<VALUE>::getAt( const STACKPOS pos ) const
 }
 
 template <typename VALUE>
-inline VALUE & StackBase<VALUE>::getAt( STACKPOS pos )
+inline VALUE & StackBase<VALUE>::at( STACKPOS pos )
 {
     Lock lock(mSyncObject);
 
@@ -983,7 +1081,7 @@ inline VALUE & StackBase<VALUE>::getAt( STACKPOS pos )
 }
 
 template <typename VALUE>
-inline const VALUE & StackBase<VALUE>::valueAtPosition( const STACKPOS atPosition ) const
+inline const VALUE & StackBase<VALUE>::value_at_position( const STACKPOS atPosition ) const
 {
     Lock lock( mSyncObject );
 
@@ -992,7 +1090,7 @@ inline const VALUE & StackBase<VALUE>::valueAtPosition( const STACKPOS atPositio
 }
 
 template <typename VALUE>
-inline VALUE & StackBase<VALUE>::valueAtPosition( STACKPOS atPosition )
+inline VALUE & StackBase<VALUE>::value_at_position( STACKPOS atPosition )
 {
     Lock lock( mSyncObject );
 
@@ -1001,7 +1099,7 @@ inline VALUE & StackBase<VALUE>::valueAtPosition( STACKPOS atPosition )
 }
 
 template <typename VALUE>
-inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::nextPosition( STACKPOS pos ) const
+inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::next_position( STACKPOS pos ) const
 {
     Lock lock(mSyncObject);
 
@@ -1010,7 +1108,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::nextPosition( STACK
 }
 
 template<typename VALUE>
-inline uint32_t StackBase<VALUE>::getElements(VALUE* list, uint32_t elemCount)
+inline uint32_t StackBase<VALUE>::elements(VALUE* list, uint32_t elemCount)
 {
     uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
     uint32_t i = 0;
@@ -1207,7 +1305,7 @@ OutStream & operator << ( OutStream & stream, const StackBase<V> & output )
 {
     Lock lock(output.mSyncObject);
 
-    uint32_t size = output.getSize();
+    uint32_t size = output.size();
     stream << size;
 
     for (const auto& value : output.mValueList)

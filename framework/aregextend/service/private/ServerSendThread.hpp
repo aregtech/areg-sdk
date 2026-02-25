@@ -63,19 +63,19 @@ public:
      * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataSend() const;
+    inline uint32_t extract_data_send() const;
 
     /**
      * \brief   Call to enable or disable the received data calculation.
      *          It as well resets the existing calculated data.
      * \param   enable  Flag, indicating whether data calculation is enabled or not.
      **/
-    inline void setEnableCalculateData(bool enable);
+    inline void set_data_rate_enabled(bool enable);
 
     /**
      * \brief   Returns flag, indicating whether data calculation is enabled or not.
      **/
-    inline bool isCalculateDataEnabled() const;
+    inline bool is_data_rate_enabled() const;
 
 protected:
 /************************************************************************/
@@ -85,9 +85,9 @@ protected:
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
      *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
      **/
-    void readyForEvents( bool isReady ) override;
+    void ready_for_events( bool is_ready ) override;
 
 /************************************************************************/
 // EventRouter class overrides
@@ -102,7 +102,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool post_event( Event & eventElem ) override;
 
 private:
 /************************************************************************/
@@ -115,7 +115,7 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    void processEvent( const SendMessageEventData & data ) override;
+    void process_event( const SendMessageEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -150,12 +150,12 @@ private:
 // ServerSendThread class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerSendThread::extractDataSend() const
+inline uint32_t ServerSendThread::extract_data_send() const
 {
     return static_cast<uint32_t>(mBytesSend.exchange(0));
 }
 
-inline void ServerSendThread::setEnableCalculateData(bool enable)
+inline void ServerSendThread::set_data_rate_enabled(bool enable)
 {
     if (mSaveDataSend != enable)
     {
@@ -164,7 +164,7 @@ inline void ServerSendThread::setEnableCalculateData(bool enable)
     }
 }
 
-inline bool ServerSendThread::isCalculateDataEnabled() const
+inline bool ServerSendThread::is_data_rate_enabled() const
 {
     return mSaveDataSend;
 }

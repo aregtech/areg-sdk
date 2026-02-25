@@ -22,44 +22,44 @@
 
 LayoutManager::~LayoutManager()
 {
-    deleteLayouts();
+    delete_layouts();
 }
 
-bool LayoutManager::createLayouts( const char * layoutFormat )
+bool LayoutManager::create_layouts( const char * layoutFormat )
 {
-    deleteLayouts();
-    int32_t len = NEString::isEmpty<char>(layoutFormat) == false ? NEString::getStringLength<char>( layoutFormat ) : 0;
+    delete_layouts();
+    int32_t len = NEString::is_empty<char>(layoutFormat) == false ? NEString::string_length<char>( layoutFormat ) : 0;
     char * strFormat = len > 0 ? DEBUG_NEW char[ static_cast<uint32_t>(len) + 1u ] : nullptr;
 
     if ( strFormat != nullptr )
     {
-        NEString::copyString<char, char>( strFormat, len + 1, layoutFormat, len );
-        _createLayouts(strFormat);
+        NEString::copy_string<char, char>( strFormat, len + 1, layoutFormat, len );
+        _create_layouts(strFormat);
         delete [] strFormat;
     }
 
-    return (mLayoutList.isEmpty() == false);
+    return (mLayoutList.is_empty() == false);
 }
 
-bool LayoutManager::createLayouts(const String& layoutFormat)
+bool LayoutManager::create_layouts(const String& layoutFormat)
 {
-    deleteLayouts();
-    uint32_t len  = static_cast<uint32_t>(layoutFormat.getLength());
+    delete_layouts();
+    uint32_t len  = static_cast<uint32_t>(layoutFormat.length());
     char* strFormat = len != 0 ? DEBUG_NEW char[len + 1] : nullptr;
 
     if (strFormat != nullptr)
     {
-        NEString::copyString<char, char>(strFormat, static_cast<NEString::CharCount>(len + 1), layoutFormat.getString(), static_cast<NEString::CharCount>(len));
-        _createLayouts(strFormat);
+        NEString::copy_string<char, char>(strFormat, static_cast<NEString::CharCount>(len + 1), layoutFormat.as_string(), static_cast<NEString::CharCount>(len));
+        _create_layouts(strFormat);
         delete[] strFormat;
     }
 
-    return (mLayoutList.isEmpty() == false);
+    return (mLayoutList.is_empty() == false);
 }
 
-void LayoutManager::deleteLayouts()
+void LayoutManager::delete_layouts()
 {
-    const std::vector<LogLayout*>& list{ mLayoutList.getData() };
+    const std::vector<LogLayout*>& list{ mLayoutList.data() };
     for (LogLayout* layout : list)
     {
         delete layout;
@@ -68,23 +68,23 @@ void LayoutManager::deleteLayouts()
     mLayoutList.clear();
 }
 
-void LayoutManager::logMessage(const NELogging::LogEntry & logMsg, OutStream & stream) const
+void LayoutManager::log_message(const NELogging::LogEntry & logMsg, OutStream & stream) const
 {
     if (logMsg.logMessagePrio == NELogging::LogPriority::PrioIgnoreLayout)
     {
-        stream.write(logMsg.logMessage);
+        stream.write(logMsg.log_message);
     }
     else
     {
-        const std::vector<LogLayout*>& list{ mLayoutList.getData() };
+        const std::vector<LogLayout*>& list{ mLayoutList.data() };
         for (const LogLayout* layout : list)
         {
-            layout->logMessage(logMsg, stream);
+            layout->log_message(logMsg, stream);
         }
     }
 }
 
-inline void LayoutManager::_createLayouts(char* layoutFormat)
+inline void LayoutManager::_create_layouts(char* layoutFormat)
 {
     ASSERT(layoutFormat != nullptr);
 

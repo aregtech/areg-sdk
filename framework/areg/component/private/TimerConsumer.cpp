@@ -20,17 +20,17 @@
 // TimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 
-void TimerConsumer::processEvent( const TimerEventData & /* data */ )
+void TimerConsumer::process_event( const TimerEventData & /* data */ )
 {
     ASSERT(false);
 }
 
-void TimerConsumer::startEventProcessing( Event& eventElem )
+void TimerConsumer::start_event_processing( Event& eventElem )
 {
     TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
-    Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
+    Timer *timer = timerEvent != nullptr ? timerEvent->data().timer() : nullptr;
     if (timer != nullptr )
     {
-        processTimer(*timer);
+        process_timer(*timer);
     }
 }

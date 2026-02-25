@@ -51,7 +51,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     static_cast<void>(envp);
     int32_t result{ ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, argc);
-    MultitargetRouter& router = MultitargetRouter::getInstance();
+    MultitargetRouter& router = MultitargetRouter::instance();
     router.parseOptions(static_cast<int32_t>(argc), argvTemp, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
     result = router.serviceMain(router.getCurrentOption(), nullptr);
     NESystemService::deleteArguments(argvTemp, argc);
@@ -61,7 +61,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #else   // _MINGW
 int main(int argc, char* argv[], char* envp[])
 {
-    MultitargetRouter& router = MultitargetRouter::getInstance();
+    MultitargetRouter& router = MultitargetRouter::instance();
     router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, std::size(NESystemService::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }
@@ -71,12 +71,12 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-        MultitargetRouter& router = MultitargetRouter::getInstance();
-        router.setState(NESystemService::ServicePhase::Starting);
+        MultitargetRouter& router = MultitargetRouter::instance();
+        router.set_state(NESystemService::ServicePhase::Starting);
         char** argvTemp = NESystemService::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
         router.serviceMain(NESystemService::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
         NESystemService::deleteArguments(argvTemp, static_cast<int32_t>(argc));
-        router.setState(NESystemService::ServicePhase::Stopped);
+        router.set_state(NESystemService::ServicePhase::Stopped);
     }
     catch (const std::exception & /*ex*/)
     {
@@ -89,19 +89,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch ( CtrlCode )
     {
     case SERVICE_CONTROL_STOP:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
+        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServicePause);
+        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
+        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        MultitargetRouter::getInstance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
+        MultitargetRouter::instance().controlService(SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:

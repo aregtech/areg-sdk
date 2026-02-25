@@ -24,6 +24,6 @@
 // LogCollectorConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
 LogCollectorConsoleService::LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : SystemServiceConsole( &LogCollector::getInstance().getDataRateHelper( ), entry, owner )
+    : SystemServiceConsole( &LogCollector::instance().getDataRateHelper( ), entry, owner )
 {
 }

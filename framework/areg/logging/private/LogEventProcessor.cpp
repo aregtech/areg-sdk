@@ -31,34 +31,34 @@ LogEventProcessor::LogEventProcessor( LogManager & logManager )
 {
 }
 
-void LogEventProcessor::processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
+void LogEventProcessor::process_log_event( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
 {
-    stream.moveToBegin( );
+    stream.move_to_begin( );
 
     switch ( cmdLog )
     {
     case LoggingEventData::LogAction::StartLogs:
-        _loggingStartLogs( );
+        _logging_start_logs( );
         break;
 
     case LoggingEventData::LogAction::StopLogs:
-        _loggingStopLogs( );
+        _logging_stop_logs( );
         break;
 
     case LoggingEventData::LogAction::EnableLogs:
-        _loggingSetEnableLogs( true );
+        _set_logging_enabled( true );
         break;
 
     case LoggingEventData::LogAction::DisableLogs:
-        _loggingSetEnableLogs( false );
+        _set_logging_enabled( false );
         break;
 
     case LoggingEventData::LogAction::SaveScopes:
-        _loggingSaveScopes( );
+        _logging_save_scopes( );
         break;
 
     case LoggingEventData::LogAction::LogMessage:
-        _loggingLogMessage( stream );
+        _logging_log_message( stream );
         break;
 
     case LoggingEventData::LogAction::UpdateScopes:   // fall through
@@ -69,34 +69,34 @@ void LogEventProcessor::processLogEvent( LoggingEventData::LogAction cmdLog, con
     }
 }
 
-inline void LogEventProcessor::_loggingStartLogs()
+inline void LogEventProcessor::_logging_start_logs()
 {
-    mLogManager.startLogs( );
+    mLogManager.start_logs( );
 }
 
-inline void LogEventProcessor::_loggingStopLogs()
+inline void LogEventProcessor::_logging_stop_logs()
 {
-    mLogManager.stopLogs( );
+    mLogManager.stop_logs( );
 }
 
-inline void LogEventProcessor::_loggingSetEnableLogs( bool logsEnable )
+inline void LogEventProcessor::_set_logging_enabled( bool logsEnable )
 {
-    mLogManager.mLogConfig.setRemoteTcpEnable(logsEnable);
+    mLogManager.mLogConfig.set_tcp_enable(logsEnable);
 }
 
-inline void LogEventProcessor::_loggingSaveScopes()
+inline void LogEventProcessor::_logging_save_scopes()
 {
-    mLogManager.mLogConfig.saveConfiguration( );
+    mLogManager.mLogConfig.save_configuration( );
 }
 
-inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
+inline void LogEventProcessor::_logging_log_message( const SharedBuffer & data )
 {
-    const NELogging::LogEntry * logMessage = reinterpret_cast<const NELogging::LogEntry *>(data.getBuffer( ));
-    ASSERT( logMessage != nullptr );
-    mLogManager.writeLogMessage( *logMessage );
+    const NELogging::LogEntry * log_message = reinterpret_cast<const NELogging::LogEntry *>(data.buffer( ));
+    ASSERT( log_message != nullptr );
+    mLogManager.write_log_message( *log_message );
 }
 
-inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount )
+inline void LogEventProcessor::_change_scope_priority( const SharedBuffer & stream, uint32_t scopeCount )
 {
     String scopeName{ };
     uint32_t scopeId{ };
@@ -107,7 +107,7 @@ inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream
         stream >> scopeName;
         stream >> scopeId;
         stream >> scopePrio;
-        mLogManager.changeScopePriority( scopeName, scopeId, scopePrio );
+        mLogManager.change_scope_priority( scopeName, scopeId, scopePrio );
     }
 }
 

@@ -17,7 +17,7 @@
 #include "areg/component/Channel.hpp"
 #include "areg/base/CommonDefs.hpp"
 
-const Channel & Channel::getInvalidChannel()
+const Channel & Channel::invalid_channel()
 {
     static const Channel _invalidChannel( NEService::SOURCE_UNKNOWN, NEService::TARGET_UNKNOWN, NEService::COOKIE_UNKNOWN );
     return _invalidChannel;
@@ -67,16 +67,16 @@ Channel & Channel::operator = ( Channel && source ) noexcept
     return (*this);
 }
 
-String Channel::convToString() const
+String Channel::to_string() const
 {
     constexpr const char * format{ "%llu.%llu.%llu" };
 
     char buffer[ 128 ]{ 0 };
-    int32_t len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
+    int32_t len = String::format_string( buffer, 128, format, mSource, mTarget, mCookie );
+    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::empty_string());
 }
 
-const Channel & Channel::convFromString(const String & channel)
+const Channel & Channel::conv_from_string(const String & channel)
 {
     mSource = NEService::SOURCE_UNKNOWN;
     mTarget = NEService::TARGET_UNKNOWN;
@@ -88,9 +88,9 @@ const Channel & Channel::convFromString(const String & channel)
     pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
     channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
 
-    mSource = static_cast<ITEM_ID>( source.toUInt64() );
-    mTarget = static_cast<ITEM_ID>( target.toUInt64() );
-    mCookie = static_cast<ITEM_ID>( cookie.toUInt64() );
+    mSource = static_cast<ITEM_ID>( source.to_uint64() );
+    mTarget = static_cast<ITEM_ID>( target.to_uint64() );
+    mCookie = static_cast<ITEM_ID>( cookie.to_uint64() );
 
     return (*this);
 }

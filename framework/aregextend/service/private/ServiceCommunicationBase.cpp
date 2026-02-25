@@ -77,13 +77,13 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
 void ServiceCommunicationBase::addInstance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance)
 {
     Lock lock(mLock);
-    mInstanceMap.addIfUnique(cookie, instance);
+    mInstanceMap.add_if_unique(cookie, instance);
 }
 
 void ServiceCommunicationBase::removeInstance(const ITEM_ID & cookie)
 {
     Lock lock(mLock);
-    mInstanceMap.removeAt(cookie);
+    mInstanceMap.remove_at(cookie);
 }
 
 void ServiceCommunicationBase::removeAllInstances()
@@ -92,7 +92,7 @@ void ServiceCommunicationBase::removeAllInstances()
     mInstanceMap.release();
 }
 
-bool ServiceCommunicationBase::setupServiceConnectionData(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
+bool ServiceCommunicationBase::setup_connection_data(NERemoteService::RemoteServiceKind service, uint32_t connectTypes)
 {
     bool result{ false };
     if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
@@ -100,11 +100,11 @@ bool ServiceCommunicationBase::setupServiceConnectionData(NERemoteService::Remot
         if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::ConnectionType::Tcpip)) != 0)
         {
             ConnectionConfiguration config(mService, NERemoteService::ConnectionType::Tcpip);
-            if (config.isConfigured() && config.getConnectionEnableFlag())
+            if (config.is_configured() && config.connection_enable_flag())
             {
-                String address{ config.getConnectionAddress() };
-                uint16_t port{ config.getConnectionPort() };
-                result = mServerConnection.setAddress(address, port);
+                String address{ config.connection_address() };
+                uint16_t port{ config.connection_port() };
+                result = mServerConnection.set_address(address, port);
             }
         }
     }
@@ -112,48 +112,48 @@ bool ServiceCommunicationBase::setupServiceConnectionData(NERemoteService::Remot
     return result;
 }
 
-void ServiceCommunicationBase::applyServiceConnectionData(const String & hostName, uint16_t portNr)
+void ServiceCommunicationBase::apply_connection_data(const String & hostName, uint16_t portNr)
 {
-    mServerConnection.setAddress( hostName, portNr );
+    mServerConnection.set_address( hostName, portNr );
 }
 
-bool ServiceCommunicationBase::connectServiceHost()
+bool ServiceCommunicationBase::connect_service_host()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
 
     Lock lock(mLock);
 
     bool result{ false };
-    if ( mServerConnection.isValid() == false && isRunning() == false )
+    if ( mServerConnection.is_valid() == false && is_running() == false )
     {
-        if ( createThread( NECommon::WAIT_INFINITE ) && waitForDispatcherStart(NECommon::WAIT_INFINITE) )
+        if ( create_thread( NECommon::WAIT_INFINITE ) && wait_start(NECommon::WAIT_INFINITE) )
         {
             result = true;
-            sendCommand( ServiceEventData::ServiceCommand::CMD_StartService );
+            send_command( ServiceEventData::ServiceCommand::CMD_StartService );
         }
 
         LOG_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
     }
     else
     {
-        result = isRunning( ) && mServerConnection.isValid( );
-        ASSERT(isRunning());
+        result = is_running( ) && mServerConnection.is_valid( );
+        ASSERT(is_running());
     }
 
     return result;
 }
 
-bool ServiceCommunicationBase::reconnectServiceHost()
+bool ServiceCommunicationBase::reconnect_service_host()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
 
     Lock lock(mLock);
     bool result = true;
-    if (isRunning() == false)
+    if (is_running() == false)
     {
-        if (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE))
+        if (create_thread(NECommon::WAIT_INFINITE) && wait_start(NECommon::WAIT_INFINITE))
         {
-            result = sendCommand( ServiceEventData::ServiceCommand::CMD_RestartService );
+            result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
         }
 
         LOG_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
@@ -161,47 +161,47 @@ bool ServiceCommunicationBase::reconnectServiceHost()
     else
     {
         LOG_WARN("The servicing thread is running, restarting servicing.");
-        result = sendCommand( ServiceEventData::ServiceCommand::CMD_RestartService );
+        result = send_command( ServiceEventData::ServiceCommand::CMD_RestartService );
     }
 
     return result;
 }
 
-void ServiceCommunicationBase::disconnectServiceHost()
+void ServiceCommunicationBase::disconnect_service_host()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
-    if ( isRunning() )
+    if ( is_running() )
     {
-        sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::HighPrio );
+        send_command( ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::HighPrio );
         mEventSendStop.lock();
     }
 }
 
-bool ServiceCommunicationBase::isServiceHostConnected() const
+bool ServiceCommunicationBase::is_host_connected() const
 {
     Lock lock( mLock );
-    return (mServerConnection.isValid() && isRunning());
+    return (mServerConnection.is_valid() && is_running());
 }
 
-bool ServiceCommunicationBase::isServiceHostPending() const
+bool ServiceCommunicationBase::is_host_pending() const
 {
     Lock lock(mLock);
-    return ((mServerConnection.isValid() == false) && isRunning());
+    return ((mServerConnection.is_valid() == false) && is_running());
 }
 
-bool ServiceCommunicationBase::isServiceHostSetup() const
+bool ServiceCommunicationBase::is_host_setup() const
 {
     Lock lock(mLock);
-    return mServerConnection.getAddress().isValid();
+    return mServerConnection.address().is_valid();
 }
 
 bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & clientSocket)
 {
     bool result{ false };
-    if ( clientSocket.isValid( ) && clientSocket.isAlive() )
+    if ( clientSocket.is_valid( ) && clientSocket.is_alive() )
     {
         Lock lock(mLock);
-        const String & ipAddress = clientSocket.getAddress( ).getHostAddress( );
+        const String & ipAddress = clientSocket.address( ).host_address( );
         result =  ((mConnectBehavior == ConnectionPolicy::Accept) && (mBlackList.contains( ipAddress ) == false)) ||
                   ((mConnectBehavior == ConnectionPolicy::Reject) && (mWhiteList.contains( ipAddress ) == true ));
 
@@ -213,30 +213,30 @@ bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & client
 void ServiceCommunicationBase::connectionLost( SocketAccepted & clientSocket )
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectionLost);
-    const ITEM_ID & cookie { mServerConnection.getCookie(clientSocket) };
+    const ITEM_ID & cookie { mServerConnection.cookie(clientSocket) };
     const ITEM_ID & channel{ mServerConnection.getChannelId() };
 
     LOG_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
                 , static_cast<uint32_t>(cookie)
-                , clientSocket.getHandle()
-                , clientSocket.getAddress().getHostAddress().getString()
-                , clientSocket.getAddress().getHostPort());
+                , clientSocket.handle()
+                , clientSocket.address().host_address().as_string()
+                , clientSocket.address().host_port());
 
     if ( cookie != NEService::COOKIE_UNKNOWN )
     {
         removeInstance(cookie);
-        RemoteMessage msgDisconnect = NERemoteService::createDisconnectRequest(cookie, channel);
+        RemoteMessage msgDisconnect = NERemoteService::create_disconnect_request(cookie, channel);
         sendCommunicationMessage(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
     }
 
-    mServerConnection.closeConnection(clientSocket);
+    mServerConnection.close_connection(clientSocket);
 }
 
 void ServiceCommunicationBase::connectionFailure()
 {
-    if ( isServiceHostConnected())
+    if ( is_host_connected())
     {
-        reconnectServiceHost();
+        reconnect_service_host();
     }
 }
 
@@ -245,69 +245,69 @@ void ServiceCommunicationBase::disconnectServices()
     removeAllInstances();
 }
 
-void ServiceCommunicationBase::onServiceReconnectTimerExpired()
+void ServiceCommunicationBase::on_reconnect_timer()
 {
     Lock lock( mLock );
-    startConnection( );
+    start_connection( );
 }
 
-void ServiceCommunicationBase::onServiceStart()
+void ServiceCommunicationBase::on_service_start()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStart);
     Lock lock( mLock );
-    mEventSendStop.resetEvent();
-    startConnection();
+    mEventSendStop.reset();
+    start_connection();
 }
 
-void ServiceCommunicationBase::onServiceStop()
+void ServiceCommunicationBase::on_service_stop()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStop);
 
     do
     {
         Lock lock(mLock);
-        stopConnection();
+        stop_connection();
     } while (false);
 
-    mEventSendStop.setEvent();
+    mEventSendStop.set_event();
 }
 
-void ServiceCommunicationBase::onServiceRestart()
+void ServiceCommunicationBase::on_service_restart()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceRestart);
     restartConnection();
 }
 
-void ServiceCommunicationBase::onServiceExit()
+void ServiceCommunicationBase::on_service_exit()
 {
     LOG_SCOPE( areg_aregextend_service_ServiceCommunicatonBase_onServiceExit );
-    onServiceStop( );
-    triggerExit( );
+    on_service_stop( );
+    trigger_exit( );
 }
 
-void ServiceCommunicationBase::onChannelConnected(const ITEM_ID& /*cookie*/)
+void ServiceCommunicationBase::on_channel_connected(const ITEM_ID& /*cookie*/)
 {
 }
 
-bool ServiceCommunicationBase::startConnection()
+bool ServiceCommunicationBase::start_connection()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_startConnection);
     LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
-                , mServerConnection.getAddress().getHostAddress().getString()
-                , mServerConnection.getAddress().getHostPort());
+                , mServerConnection.address().host_address().as_string()
+                , mServerConnection.address().host_port());
 
 
-    ASSERT(mServerConnection.getAddress().isValid());
-    ASSERT(mServerConnection.isValid() == false);
-    ASSERT(mThreadReceive.isRunning() == false);
-    ASSERT(mThreadSend.isRunning() == false);
+    ASSERT(mServerConnection.address().is_valid());
+    ASSERT(mServerConnection.is_valid() == false);
+    ASSERT(mThreadReceive.is_running() == false);
+    ASSERT(mThreadSend.is_running() == false);
 
     bool result = false;
-    mTimerConnect.stopTimer();
+    mTimerConnect.stop_timer();
 
-    if ( mServerConnection.createSocket() )
+    if ( mServerConnection.create_socket() )
     {
-        LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.getSocketHandle()));
+        LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.socket_handle()));
         if ( startSendThread( ) && startReceiveThread( ) )
         {
             result = true;
@@ -316,7 +316,7 @@ bool ServiceCommunicationBase::startConnection()
         else
         {
             LOG_ERR( "Failed to create send-receive threads, cannot communicate. Stop remote service" );
-            mServerConnection.closeSocket( );
+            mServerConnection.close_socket( );
         }
     }
     else
@@ -327,7 +327,7 @@ bool ServiceCommunicationBase::startConnection()
     if ( result == false )
     {
         LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
-        mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
+        mTimerConnect.start_timer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
     }
 
     return result;
@@ -337,110 +337,110 @@ bool ServiceCommunicationBase::restartConnection()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_restartConnection);
     LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
-                , mServerConnection.getAddress().getHostAddress().getString()
-                , mServerConnection.getAddress().getHostPort());
+                , mServerConnection.address().host_address().as_string()
+                , mServerConnection.address().host_port());
 
-    stopConnection();
-    return startConnection();
+    stop_connection();
+    return start_connection();
 }
 
-void ServiceCommunicationBase::stopConnection()
+void ServiceCommunicationBase::stop_connection()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_stopConnection);
     LOG_WARN("Stopping remote servicing connection");
 
-    mThreadReceive.triggerExit();
+    mThreadReceive.trigger_exit();
 
     disconnectServices( );
-    disconnectService( Event::EventPriority::NormalPrio );
+    disconnect_service( Event::EventPriority::NormalPrio );
 
     // Wait without triggering exit.
-    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-    mServerConnection.closeSocket( );
+    mThreadSend.completion_wait( NECommon::WAIT_INFINITE );
+    mServerConnection.close_socket( );
     // Trigger exit and clean resources.
-    mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
-    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadSend.shutdown_thread( NECommon::WAIT_INFINITE );
+    mThreadReceive.shutdown_thread( NECommon::WAIT_INFINITE );
 }
 
 bool ServiceCommunicationBase::startSendThread()
 {
-    return mThreadSend.createThread( NECommon::WAIT_INFINITE ) && 
-           mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE );
+    return mThreadSend.create_thread( NECommon::WAIT_INFINITE ) && 
+           mThreadSend.wait_start( NECommon::WAIT_INFINITE );
 }
 
 bool ServiceCommunicationBase::startReceiveThread()
 {
-    return mThreadReceive.createThread( NECommon::WAIT_INFINITE ) &&
-           mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE );
+    return mThreadReceive.create_thread( NECommon::WAIT_INFINITE ) &&
+           mThreadReceive.wait_start( NECommon::WAIT_INFINITE );
 }
 
 #ifdef DEBUG
-void ServiceCommunicationBase::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
+void ServiceCommunicationBase::failed_send_message(const RemoteMessage & msgFailed, Socket & whichTarget )
 #else  // DEBUG
-void ServiceCommunicationBase::failedSendMessage(const RemoteMessage& /*msgFailed*/, Socket& whichTarget)
+void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFailed*/, Socket& whichTarget)
 #endif // DEBUG
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedSendMessage);
 
 #ifdef DEBUG
 
-    const ITEM_ID & cookie = msgFailed.getTarget( );
-    SocketAccepted client = mServerConnection.getClientByCookie( cookie );
-    ASSERT( (client.isValid() == false) || (whichTarget.getHandle( ) == client.getHandle( )) );
+    const ITEM_ID & cookie = msgFailed.target( );
+    SocketAccepted client = mServerConnection.client_by_cookie( cookie );
+    ASSERT( (client.is_valid() == false) || (whichTarget.handle( ) == client.handle( )) );
 
 #endif // DEBUG
 
     LOG_WARN("Failed to send message to [ %s ] client [ %d ], probably the connection is lost, closing connection"
-                    , whichTarget.isValid() ? "VALID" : "INVALID"
-                    , static_cast<int32_t>(whichTarget.getHandle()));
+                    , whichTarget.is_valid() ? "VALID" : "INVALID"
+                    , static_cast<int32_t>(whichTarget.handle()));
 
-    if ( whichTarget.isValid())
+    if ( whichTarget.is_valid())
     {
         connectionLost( static_cast<SocketAccepted &>(whichTarget) );
     }
 }
 
-void ServiceCommunicationBase::failedReceiveMessage(Socket & whichSource)
+void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_failedReceiveMessage);
 
-    SocketAccepted client = mServerConnection.getClientByHandle(whichSource.getHandle());
+    SocketAccepted client = mServerConnection.client_by_handle(whichSource.handle());
     LOG_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
-                        , client.isValid() ? "VALID" : "INVALID"
-                        , static_cast<int32_t>(client.getHandle())
-                        , static_cast<int32_t>(whichSource.getHandle()));
+                        , client.is_valid() ? "VALID" : "INVALID"
+                        , static_cast<int32_t>(client.handle())
+                        , static_cast<int32_t>(whichSource.handle()));
 
-    if (client.isValid())
+    if (client.is_valid())
     {
         connectionLost(client);
     }
 }
 
-void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
+void ServiceCommunicationBase::process_received_message(const RemoteMessage & msgReceived, Socket & whichSource)
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_processReceivedMessage);
-    if ( msgReceived.isValid() )
+    if ( msgReceived.is_valid() )
     {
-        const ITEM_ID & cookie = mServerConnection.getCookie(whichSource.getHandle());
-        const ITEM_ID & source = msgReceived.getSource();
-        const ITEM_ID & target = msgReceived.getTarget();
-        NEService::FuncIdRange msgId  = static_cast<NEService::FuncIdRange>( msgReceived.getMessageId() );
+        const ITEM_ID & cookie = mServerConnection.cookie(whichSource.handle());
+        const ITEM_ID & source = msgReceived.source();
+        const ITEM_ID & target = msgReceived.target();
+        NEService::FuncIdRange msgId  = static_cast<NEService::FuncIdRange>( msgReceived.message_id() );
 
         LOG_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"
-                        , NEService::getString(msgId)
+                        , NEService::as_string(msgId)
                         , static_cast<uint32_t>(msgId)
                         , static_cast<uint32_t>(source)
                         , static_cast<uint32_t>(cookie)
-                        , static_cast<const char *>(whichSource.getAddress().getHostAddress())
-                        , static_cast<int32_t>(whichSource.getAddress().getHostPort( ))
+                        , static_cast<const char *>(whichSource.address().host_address())
+                        , static_cast<int32_t>(whichSource.address().host_port( ))
                         , static_cast<id_type>(target));
 
-        if ( (source >= NEService::COOKIE_REMOTE_SERVICE) && NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
+        if ( (source >= NEService::COOKIE_REMOTE_SERVICE) && NEService::is_executable_id(static_cast<uint32_t>(msgId)) )
         {
             LOG_DBG("Forwarding message [ 0x%X ] to send to target [ %u ]", static_cast<uint32_t>(msgId), static_cast<uint32_t>(target));
             if ( target != NEService::TARGET_UNKNOWN )
             {
-                sendMessage(msgReceived);
+                send_message(msgReceived);
             }
         }
         else if ( (source == cookie) && (msgId != NEService::FuncIdRange::SystemServiceConnect) )
@@ -457,61 +457,61 @@ void ServiceCommunicationBase::processReceivedMessage(const RemoteMessage & msgR
         {
             NEService::ConnectedInstance instance{};
             msgReceived >> instance;
-            instance.ciTimestamp = static_cast<TIME64>(DateTime::getNow());
+            instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
             instance.ciCookie = cookie;
             addInstance(cookie, instance);
-            RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, NEService::MessageSource::SourceService));
+            RemoteMessage msgConnect(connect_message(mServerConnection.getChannelId(), cookie, NEService::MessageSource::SourceService));
             LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
-                        , NEService::getString( static_cast<NEService::FuncIdRange>(msgConnect.getMessageId()))
-                        , static_cast<uint32_t>(msgConnect.getMessageId())
-                        , static_cast<uint32_t>(msgConnect.getTarget())
-                        , static_cast<uint32_t>(whichSource.getHandle())
-                        , msgConnect.getChecksum());
+                        , NEService::as_string( static_cast<NEService::FuncIdRange>(msgConnect.message_id()))
+                        , static_cast<uint32_t>(msgConnect.message_id())
+                        , static_cast<uint32_t>(msgConnect.target())
+                        , static_cast<uint32_t>(whichSource.handle())
+                        , msgConnect.checksum());
 
-            sendMessage( msgConnect );
+            send_message( msgConnect );
         }
         else
         {
             LOG_WARN("Ignoring to process message [ %s ] of id [ 0x%X ] from source [ %u ]"
-                        , NEService::getString(msgId)
+                        , NEService::as_string(msgId)
                         , static_cast<uint32_t>(msgId)
                         , static_cast<uint32_t>(source));
         }
     }
     else
     {
-        LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.getSource()));
+        LOG_WARN("Received invalid message from source [ %u ], ignoring to process", static_cast<uint32_t>(msgReceived.source()));
     }
 }
 
-void ServiceCommunicationBase::readyForEvents( bool isReady )
+void ServiceCommunicationBase::ready_for_events( bool is_ready )
 {
-    if ( isReady )
+    if ( is_ready )
     {
-        ServiceServerEvent::addListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
-        DispatcherThread::readyForEvents( true );
+        ServiceServerEvent::add_listener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        DispatcherThread::ready_for_events( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        ServiceServerEvent::removeListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        DispatcherThread::ready_for_events( false );
+        ServiceServerEvent::remove_listener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
     }
 }
 
-bool ServiceCommunicationBase::postEvent( Event & eventElem )
+bool ServiceCommunicationBase::post_event( Event & eventElem )
 {
-    return EventDispatcher::postEvent( eventElem );
+    return EventDispatcher::post_event( eventElem );
 }
 
-RemoteMessage ServiceCommunicationBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const
+RemoteMessage ServiceCommunicationBase::connect_message(const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const
 {
-    RemoteMessage result{ NERemoteService::createConnectNotify(source, target) };
-    result.moveToEnd();
+    RemoteMessage result{ NERemoteService::create_connect_notify(source, target) };
+    result.move_to_end();
     result << msgSource;
     return result;
 }
 
-RemoteMessage ServiceCommunicationBase::createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const
+RemoteMessage ServiceCommunicationBase::disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const
 {
-    return NERemoteService::createDisconnectNotify(source, target);
+    return NERemoteService::create_disconnect_notify(source, target);
 }

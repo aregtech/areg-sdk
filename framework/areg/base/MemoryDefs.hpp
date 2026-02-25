@@ -114,9 +114,12 @@ namespace NEMemory
     };
 
     /**
-     * \brief   Converts the values of type NEMemory::MessageResult to string, used in logs and output messages.
+     * \brief   Converts NEMemory::MessageResult enumeration to string representation for logging
+     *          and output.
+     *
+     * \param   msgResult       MessageResult value to convert.
      **/
-    inline const char * getString( NEMemory::MessageResult msgResult );
+    inline const char * as_string( NEMemory::MessageResult msgResult );
 
     /**
      * \brief   Types of data buffer
@@ -129,9 +132,11 @@ namespace NEMemory
         , Remote    =  2    //!< Buffer type for remote communication
     };
     /**
-     * \brief   Returns string value of NEMemory::BufferType
+     * \brief   Returns string representation of NEMemory::BufferType enumeration value.
+     *
+     * \param   val     BufferType value to convert.
      **/
-    inline const char * getString( NEMemory::BufferType val );
+    inline const char * as_string( NEMemory::BufferType val );
 
     /**
      * \brief   NEMemory::BLOCK_SIZE
@@ -172,18 +177,20 @@ namespace NEMemory
     constexpr  NEMemory::Primitive  InvalidElement{{0}};
 
     /**
-     * \brief   Compares 2 NEMemory::Primitive elements, returns true if they are equal
-     * \param   lsh     Left-Hand Operand
-     * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 NEMemory::Primitive elements are equal
+     * \brief   Returns true if two Primitive elements are equal.
+     *
+     * \param   lsh     Left-hand Primitive operand.
+     * \param   rhs     Right-hand Primitive operand.
+     * \return  Returns true if both Primitive elements are equal; false otherwise.
      **/
     inline bool operator == (const NEMemory::Primitive & lsh, const NEMemory::Primitive & rhs);
 
     /**
-     * \brief   Compares 2 NEMemory::Primitive elements, returns true if they are not equal
-     * \param   lsh     Left-Hand Operand
-     * \param   rhs     Right-Hand Operand
-     * \return  Returns true if 2 NEMemory::Primitive elements are not equal
+     * \brief   Returns true if two Primitive elements are not equal.
+     *
+     * \param   lsh     Left-hand Primitive operand.
+     * \param   rhs     Right-hand Primitive operand.
+     * \return  Returns true if Primitive elements differ; false otherwise.
      **/
     inline bool operator != (const NEMemory::Primitive & lsh, const NEMemory::Primitive & rhs);
 
@@ -312,20 +319,20 @@ namespace NEMemory
     };
 
     /**
-     * \brief   Returns the pointer to data buffer for writing. 
-     *          Returns nullptr if pointer to byte buffer is invalid.
-     * \param   byteBuffer  The pointer to byte-buffer object.
-     * \return  Returns data buffer to write.
+     * \brief   Returns writable pointer to data buffer, or nullptr if buffer pointer is invalid.
+     *
+     * \param   byteBuffer      Byte-buffer object pointer.
+     * \return  Writable data buffer pointer, or nullptr if invalid.
      **/
-    inline uint8_t * getBufferDataWrite( RawBuffer * byteBuffer );
+    inline uint8_t * buffer_data_write( RawBuffer * byteBuffer );
 
     /**
-     * \brief   Returns the pointer to data buffer for reading. 
-     *          Returns nullptr if pointer to byte buffer is invalid.
-     * \param   byteBuffer  The pointer to byte-buffer object.
-     * \return  Returns data buffer to read.
+     * \brief   Returns read-only pointer to data buffer, or nullptr if buffer pointer is invalid.
+     *
+     * \param   byteBuffer      Byte-buffer object pointer.
+     * \return  Read-only data buffer pointer, or nullptr if invalid.
      **/
-    inline const uint8_t * getBufferDataRead( const RawBuffer * byteBuffer );
+    inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer );
 
     /**
      * \brief	Constructs elements in allocated buffer, i.e. calls default constructor to initialize element
@@ -338,7 +345,17 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must have public available default constructor.
      **/
     template <typename ELEM_TYPE>
-    inline ELEM_TYPE * constructElems(void *begin, uint32_t elemCount);
+    /**
+     * \brief   Constructs elements in allocated buffer by calling the default constructor for each
+     *          element.
+     *
+     * \param   begin           Pointer to heap-allocated buffer.
+     * \param   elemCount       Number of elements to construct. If zero, no elements are
+     *                          constructed.
+     * \return  Pointer to first constructed element in array.
+     * \note    ELEM_TYPE must have a public default constructor.
+     **/
+    inline ELEM_TYPE * construct_elems(void *begin, uint32_t elemCount);
 
     /**
      * \brief	Constructs elements with argument in allocated buffer,  i.e. calls constructor with argument to initialize elements
@@ -352,7 +369,18 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must have public available appropriate constructor with arguments.
      **/
     template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-    inline ELEM_TYPE * constructElemsWithArgument(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
+    /**
+     * \brief   Constructs elements in allocated buffer by calling the constructor with an argument
+     *          for each element.
+     *
+     * \param   begin           Pointer to heap-allocated buffer.
+     * \param   elemCount       Number of elements to construct. If zero, no elements are
+     *                          initialized.
+     * \param   arg             Argument value to pass to constructor.
+     * \return  Pointer to first constructed element in array.
+     * \note    ELEM_TYPE must have a public constructor accepting ARGUMENT_TYPE.
+     **/
+    inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
 
     /**
      * \brief	Destroys elements previously constructed / initialized in heap,
@@ -365,7 +393,14 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must have public available destructor.
      **/
     template <typename ELEM_TYPE>
-    inline void destroyElems(ELEM_TYPE *begin, uint32_t elemCount);
+    /**
+     * \brief   Destroys previously constructed elements in heap by calling the destructor for each.
+     *
+     * \param   begin           Pointer to buffer with allocated elements.
+     * \param   elemCount       Number of elements to destroy.
+     * \note    ELEM_TYPE must have a public destructor.
+     **/
+    inline void destroy_elems(ELEM_TYPE *begin, uint32_t elemCount);
 
     /**
      * \brief	Copies element from source to destination. The allocated buffer of destination should be big enough
@@ -383,7 +418,18 @@ namespace NEMemory
      *              - the ELEM_SRC should support assigning operator ( operator = ).
      **/
     template <typename ELEM_DST, typename ELEM_SRC = ELEM_DST>
-    inline void copyElems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount);
+    /**
+     * \brief   Copies elements from source to destination buffer using assignment operator.
+     *
+     * \param[out] destination     Pre-allocated destination buffer with at least elemCount elements
+     *                             capacity.
+     * \param   source          Source buffer containing elements to copy.
+     * \param   elemCount       Number of elements to copy. Both buffers must have at least
+     *                          elemCount elements.
+     * \note    If ELEM_DST and ELEM_SRC differ: ELEM_SRC must be convertible to ELEM_DST (via
+     *          static_cast), and ELEM_DST must support operator=.
+     **/
+    inline void copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount);
 
     /**
      * \brief	Moves elements starting from source to destination positions. The source and destination must refer
@@ -397,7 +443,17 @@ namespace NEMemory
      * \note    The type ELEM_TYPE must support assigning operator ( operator = ).
      **/
     template <typename ELEM_TYPE>
-    void moveElems(ELEM_TYPE * destination, const ELEM_TYPE * source, uint32_t elemCount);
+    /**
+     * \brief   Moves elements from source to destination within the same allocated memory block,
+     *          handling overlapping regions.
+     *
+     * \param[out] destination     Destination pointer within same memory block.
+     * \param   source          Source pointer within same memory block.
+     * \param   elemCount       Number of elements to move.
+     * \note    Source and destination must refer to the same allocated memory chunk. Do not use if
+     *          buffers are in different memory spaces. ELEM_TYPE must support operator=.
+     **/
+    void move_elems(ELEM_TYPE * destination, const ELEM_TYPE * source, uint32_t elemCount);
 
     /**
      * \brief	Sets certain element value to the allocated memory. The type of allocated elements and element value
@@ -419,7 +475,15 @@ namespace NEMemory
      *          NEMemory::SetMemory<MyStruct, const MyStruct &>(buffer, zero, 100); // <= sets same value to all entries.
      **/
     template <typename ELEM, typename ELEM_TYPE = ELEM>
-    inline void setMemory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
+    /**
+     * \brief   Sets every element in buffer to the specified value using assignment operator.
+     *
+     * \param   begin           Pointer to allocated element buffer.
+     * \param   elemValue       Value to assign to every element.
+     * \param   elemCount       Number of elements in buffer.
+     * \note    ELEM must support operator= that accepts ELEM_TYPE.
+     **/
+    inline void set_memory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
 
     /**
      * \brief	Compares 2 buffers of same elements. The type ELEM should have comparing
@@ -431,11 +495,21 @@ namespace NEMemory
      * \tparam  ELEM    The type of elements to compare
      * \note    If elements type is structure or class, it should be possible
      *          to compare elements by applying comparing operator '==' ( operator == ).
-     *          If not, use method NEMemory::memEqual
-     * \see     NEMemory::memEqual
+     *          If not, use method NEMemory::mem_equal
+     * \see     NEMemory::mem_equal
      **/
     template <typename ELEM>
-    bool equalElements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
+    /**
+     * \brief   Compares two buffers of same element type, returning true if all elements match.
+     *
+     * \param   lhs         Left-hand buffer of elements.
+     * \param   rhs         Right-hand buffer of elements.
+     * \param   count       Number of elements to compare.
+     * \return  Returns true if all elements in both buffers are equal; false otherwise.
+     * \note    ELEM must support operator== for element-by-element comparison. For
+     *          structures/classes without operator==, use NEMemory::mem_equal instead.
+     **/
+    bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
 
     /**
      * \brief	Compares 2 buffers of different elements. 
@@ -451,10 +525,21 @@ namespace NEMemory
      * \note    If elements type is structure or class, it should be possible
      *          to convert type of elements ELEM_RIGHT to the type 'const ELEM_LEFT' and
      *          ELEM_LEFT should have valid comparing operator (operator ==).
-     * \see     NEMemory::memEqual, NEMemory::equalElement
+     * \see     NEMemory::mem_equal, NEMemory::equalElement
      **/
     template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
-    bool equalElements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
+    /**
+     * \brief   Compares two buffers of different element types, returning true if all elements
+     *          match after conversion.
+     *
+     * \param   lhs         Left-hand buffer.
+     * \param   rhs         Right-hand buffer.
+     * \param   count       Number of elements to compare.
+     * \return  Returns true if all elements are equal after conversion; false otherwise.
+     * \note    ELEM_RIGHT must be convertible to ELEM_LEFT (via static_cast), and ELEM_LEFT must
+     *          support operator==.
+     **/
+    bool equal_elements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
 
     /**
      * \brief   Sets zero in a given element. The data is set byte-wise.
@@ -464,7 +549,12 @@ namespace NEMemory
      *                  Normally expecting structure.
      **/
     template<typename ELEM>
-    inline void zeroElement( ELEM & elem );
+    /**
+     * \brief   Sets all bytes of a single element to zero, typically used for structures.
+     *
+     * \param   elem    Element to zero.
+     **/
+    inline void zero_element( ELEM & elem );
 
     /**
      * \brief   Sets zero in given element list. The data is set to each entry.
@@ -475,78 +565,84 @@ namespace NEMemory
      * \tparam  ELEM        The type of element entry. Can be primitive or objects (struct or class).
      **/
     template<typename ELEM>
-    inline void zeroElements( ELEM * elemList, uint32_t elemCount );
+    /**
+     * \brief   Sets all elements in a list to zero using byte-wise clearing.
+     *
+     * \param   elemList        List of elements to zero.
+     * \param   elemCount       Number of elements in list.
+     **/
+    inline void zero_elements( ELEM * elemList, uint32_t elemCount );
 
     /**
-     * \brief   Fills specified buffer with the specified symbol.
-     * \param   buffer  The buffer to fill.
-     * \param   length  The length of buffer in bytes.
-     * \param   symbol  The symbol to fill the buffer.
+     * \brief   Fills buffer with the specified byte value.
+     *
+     * \param   buffer      Buffer to fill.
+     * \param   length      Buffer length in bytes.
+     * \param   symbol      Byte value to fill buffer with.
      **/
-    inline void memSet( void * buffer, uint32_t length, uint8_t symbol );
+    inline void mem_set( void * buffer, uint32_t length, uint8_t symbol );
 
     /**
-     * \brief   Sets zero in a buffer.
-     * \param   buffer  The buffer where zero should be set.
-     * \param   length  The length of buffer in bytes.
+     * \brief   Sets all bytes in buffer to zero.
+     *
+     * \param   buffer      Buffer to clear.
+     * \param   length      Buffer length in bytes.
      **/
-    inline void memZero( void * buffer, uint32_t length );
+    inline void mem_zero( void * buffer, uint32_t length );
 
     /**
-     * \brief	Moves elements starting from source to destination positions. The source and destination must refer
-     *          to the same chunk of allocated memory. Do not call this function if buffers, which are allocated
-     *          in different spaces. The function assumes that the allocated memory is enough to move data.
-     * \param	memDst  The pointer to destination position to move data
-     * \param	memSrc	The pointer of source of data to move
-     * \param	count   The number of bytes to move.
+     * \brief   Moves bytes from source to destination within the same allocated memory, handling
+     *          overlapping regions.
+     *
+     * \param[out] memDst      Destination pointer within same memory block.
+     * \param   memSrc      Source pointer within same memory block.
+     * \param   count       Number of bytes to move.
      **/
-    inline void memMove(void * memDst, const void * memSrc, uint32_t count);
+    inline void mem_move(void * memDst, const void * memSrc, uint32_t count);
 
     /**
-     * \brief	Copies data from source to destination. The allocated buffer of destination should be big enough
-     *          to copy data. Otherwise, the function copies maximum available space in destination data.
-     * \param	memDst      Pointer to destination buffer. It should have minimum size to keep elemCount elements.
-     * \param   dstSpace    The space available in destination buffer.
-     * \param	memSrc      Pointer to buffer containing sources of data to copy.
-     * \param	count       Amount of data in bytes to copy.
-     * \return  Returns amount of data actually copied in destination buffer.
+     * \brief   Copies data from source to destination, respecting destination buffer capacity.
+     *
+     * \param[out] memDst      Destination buffer with minimum size dstSpace.
+     * \param   dstSpace    Available space in destination buffer in bytes.
+     * \param   memSrc      Source buffer containing data to copy.
+     * \param   count       Desired number of bytes to copy.
+     * \return  Number of bytes actually copied (limited by dstSpace if it is smaller than count).
      **/
-    inline uint32_t memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count);
+    inline uint32_t mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count);
 
     /**
-     * \brief   Compares 2 chunks of memory object and returns the compare results:
-     *          -   NEMath::Smaller if the content of memLeft is smaller than memRight;
-     *          -   NEMath::Equal   if the content of memLeft is same as memRight;
-     *          -   NEMath::Bigger if the content of memLeft is greater than memRight.
-     *          The comparison is done byte by byte.
-     * \param   memLeft     The pointer of chunk of buffer to compare.
-     * \param   memRight    The pointer of chunk of buffer to compare with.
-     * \param   count       The size if bytes to compare.
-     * \return  The results are one of:
-     *          -   NEMath::Smaller if the content of memLeft is smaller than memRight;
-     *          -   NEMath::Equal   if the content of memLeft is same as memRight;
-     *          -   NEMath::Bigger if the content of memLeft is greater than memRight.
+     * \brief   Compares two memory blocks byte-by-byte, returning NEMath::Ordering result.
+     *
+     * \param   memLeft     Left-hand memory buffer to compare.
+     * \param   memRight    Right-hand memory buffer to compare.
+     * \param   count       Number of bytes to compare.
+     * \return  NEMath::Smaller if memLeft < memRight, Equal if identical, Bigger if memLeft >
+     *          memRight.
      **/
-    inline NEMath::Ordering memCompare( const void * memLeft, const void * memRight, uint32_t count);
+    inline NEMath::Ordering mem_compare( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
-     * \brief   Compares 2 chunks of memories and return true if they are equal.
-     *          2 chunks of memory are equal if either they are same or have same content.
-     * \param   memLeft     The pointer of chunk of buffer to compare.
-     * \param   memRight    The pointer of chunk of buffer to compare with.
-     * \param   count       The size if bytes to compare.
-     * \return  Returns true if both chunks are equal.
+     * \brief   Returns true if two memory blocks contain identical data.
+     *
+     * \param   memLeft     Left-hand memory buffer.
+     * \param   memRight    Right-hand memory buffer.
+     * \param   count       Number of bytes to compare.
+     * \return  Returns true if both memory chunks are identical; false otherwise.
      **/
-    inline bool memEqual( const void * memLeft, const void * memRight, uint32_t count);
+    inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
      * \brief   The custom buffer allocator.
      **/
     template<typename BufType>
+    /**
+     * \brief   Functor for custom buffer allocation.
+     **/
     struct BufferAllocator
     {
         /**
-         * \brief   The operator is called when buffer object should be allocated.
+         * \brief   Allocates a buffer of the specified size.
          **/
         BufType* operator ( ) (uint32_t space);
     };
@@ -555,10 +651,13 @@ namespace NEMemory
      * \brief   The custom buffer deleter.
      **/
     template<typename BufType>
+    /**
+     * \brief   Functor for custom buffer deallocation.
+     **/
     struct BufferDeleter
     {
         /**
-         * \brief   The operator is called when buffer object should be deleted.
+         * \brief   Deallocates a buffer.
          **/
         void operator ( ) (void * buffer);
     };
@@ -629,7 +728,7 @@ inline bool NEMemory::operator != ( const NEMemory::Primitive& lsh, const NEMemo
 // Comparing operators
 /************************************************************************/
 
-inline void NEMemory::memSet( void * buffer, uint32_t length, uint8_t symbol )
+inline void NEMemory::mem_set( void * buffer, uint32_t length, uint8_t symbol )
 {
     if ( (buffer != nullptr) && (length > 0) )
     {
@@ -637,12 +736,12 @@ inline void NEMemory::memSet( void * buffer, uint32_t length, uint8_t symbol )
     }
 }
 
-inline void NEMemory::memZero( void * buffer, uint32_t length )
+inline void NEMemory::mem_zero( void * buffer, uint32_t length )
 {
-    NEMemory::memSet( buffer, length, 0x00u );
+    NEMemory::mem_set( buffer, length, 0x00u );
 }
 
-inline void NEMemory::memMove( void * memDst, const void * memSrc, uint32_t count )
+inline void NEMemory::mem_move( void * memDst, const void * memSrc, uint32_t count )
 {
     if ( (memDst != nullptr) && (memSrc != nullptr) && (count > 0) )
     {
@@ -650,7 +749,7 @@ inline void NEMemory::memMove( void * memDst, const void * memSrc, uint32_t coun
     }
 }
 
-inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
+inline uint32_t NEMemory::mem_copy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
 {
     uint32_t result = 0;
     if (memDst != memSrc)
@@ -669,7 +768,7 @@ inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void 
     return result;
 }
 
-inline NEMath::Ordering NEMemory::memCompare( const void * memLeft, const void * memRight, uint32_t count )
+inline NEMath::Ordering NEMemory::mem_compare( const void * memLeft, const void * memRight, uint32_t count )
 {
     NEMath::Ordering result = NEMath::Ordering::Equal;
 
@@ -694,9 +793,9 @@ inline NEMath::Ordering NEMemory::memCompare( const void * memLeft, const void *
     return result;
 }
 
-inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uint32_t count )
+inline bool NEMemory::mem_equal( const void * memLeft, const void * memRight, uint32_t count )
 {
-    return (NEMath::Ordering::Equal == memCompare(memLeft, memRight, count));
+    return (NEMath::Ordering::Equal == mem_compare(memLeft, memRight, count));
 }
 
 
@@ -704,12 +803,12 @@ inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uin
 // Byte buffer functions
 /************************************************************************/
 
-inline uint8_t * NEMemory::getBufferDataWrite(NEMemory::RawBuffer * byteBuffer)
+inline uint8_t * NEMemory::buffer_data_write(NEMemory::RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
-inline const uint8_t * NEMemory::getBufferDataRead(const RawBuffer * byteBuffer)
+inline const uint8_t * NEMemory::buffer_data_read(const RawBuffer * byteBuffer)
 {
     return (byteBuffer != nullptr ? reinterpret_cast<const uint8_t *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
@@ -719,7 +818,7 @@ inline const uint8_t * NEMemory::getBufferDataRead(const RawBuffer * byteBuffer)
 /************************************************************************/
 
 template <typename ELEM_TYPE>
-inline ELEM_TYPE * NEMemory::constructElems(void *begin, uint32_t elemCount)
+inline ELEM_TYPE * NEMemory::construct_elems(void *begin, uint32_t elemCount)
 {
     if ( begin != nullptr )
     {
@@ -741,7 +840,7 @@ inline ELEM_TYPE * NEMemory::constructElems(void *begin, uint32_t elemCount)
 }
 
 template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
-inline ELEM_TYPE * NEMemory::constructElemsWithArgument(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg)
+inline ELEM_TYPE * NEMemory::construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg)
 {
     if ( begin != nullptr )
     {
@@ -763,7 +862,7 @@ inline ELEM_TYPE * NEMemory::constructElemsWithArgument(void *begin, uint32_t el
 }
 
 template <typename ELEM_TYPE>
-inline void NEMemory::destroyElems(ELEM_TYPE *begin, uint32_t elemCount)
+inline void NEMemory::destroy_elems(ELEM_TYPE *begin, uint32_t elemCount)
 {
     if ( begin != nullptr )
     {
@@ -776,7 +875,7 @@ inline void NEMemory::destroyElems(ELEM_TYPE *begin, uint32_t elemCount)
 }
 
 template <typename ELEM_DST, typename ELEM_SRC /*= ELEM_DST*/>
-inline void NEMemory::copyElems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount)
+inline void NEMemory::copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount)
 {
     if ((destination != source) && (destination != nullptr) && (source != nullptr) )
     {
@@ -788,7 +887,7 @@ inline void NEMemory::copyElems(ELEM_DST *destination, const ELEM_SRC *source, u
 }
 
 template <typename ELEM_TYPE>
-void NEMemory::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32_t elemCount)
+void NEMemory::move_elems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32_t elemCount)
 {
     if (destination < source)
     {
@@ -808,7 +907,7 @@ void NEMemory::moveElems(ELEM_TYPE *destination, const ELEM_TYPE *source, uint32
 }
 
 template <typename ELEM, typename ELEM_TYPE /*= ELEM*/>
-inline void NEMemory::setMemory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemCount)
+inline void NEMemory::set_memory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemCount)
 {
     if (begin != nullptr )
     {
@@ -820,14 +919,14 @@ inline void NEMemory::setMemory(ELEM* begin, ELEM_TYPE elemValue, uint32_t elemC
 }
 
 template <typename ELEM>
-inline bool NEMemory::equalElements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
+inline bool NEMemory::equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count)
 {
-    return equalElements<ELEM, ELEM>(lhs, rhs, count);
+    return equal_elements<ELEM, ELEM>(lhs, rhs, count);
 }
 
 
 template <typename ELEM_LEFT, typename ELEM_RIGHT /*= ELEM_LEFT*/>
-inline bool NEMemory::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)
+inline bool NEMemory::equal_elements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs, uint32_t count)
 {
     bool result = false;
     if ( (count == 0) || (lhs == rhs) )
@@ -851,18 +950,18 @@ inline bool NEMemory::equalElements(const ELEM_LEFT* lhs, const ELEM_RIGHT* rhs,
 }
 
 template<typename ELEM>
-inline void NEMemory::zeroElement( ELEM & elem )
+inline void NEMemory::zero_element( ELEM & elem )
 {
-    NEMemory::zeroElements<ELEM>(&elem, 1);
+    NEMemory::zero_elements<ELEM>(&elem, 1);
 }
 
 template<typename ELEM>
-inline void NEMemory::zeroElements( ELEM * elemList, uint32_t elemCount )
+inline void NEMemory::zero_elements( ELEM * elemList, uint32_t elemCount )
 {
     if ( elemCount > 0 )
     {
         constexpr uint32_t one = static_cast<int32_t>(sizeof(ELEM));
-        NEMemory::memZero( reinterpret_cast<void *>(elemList), elemCount * one );
+        NEMemory::mem_zero( reinterpret_cast<void *>(elemList), elemCount * one );
     }
 }
 
@@ -882,7 +981,7 @@ void NEMemory::BufferDeleter<BufType>::operator ( ) (void * buffer)
     }
 }
 
-inline const char * NEMemory::getString( NEMemory::MessageResult msgResult )
+inline const char * NEMemory::as_string( NEMemory::MessageResult msgResult )
 {
     switch ( msgResult )
     {
@@ -903,7 +1002,7 @@ inline const char * NEMemory::getString( NEMemory::MessageResult msgResult )
     }
 }
 
-inline const char * NEMemory::getString(NEMemory::BufferType val )
+inline const char * NEMemory::as_string(NEMemory::BufferType val )
 {
     switch (val)
     {

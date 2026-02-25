@@ -53,9 +53,9 @@ ServiceRequestEvent::ServiceRequestEvent(const InStream & stream)
     stream >> mSequenceNr;
 }
 
-const InStream & ServiceRequestEvent::readStream(const InStream & stream)
+const InStream & ServiceRequestEvent::read_stream(const InStream & stream)
 {
-    StubEvent::readStream(stream);
+    StubEvent::read_stream(stream);
     stream >> mProxySource;
     stream >> mMessageId;
     stream >> mRequestType;
@@ -63,9 +63,9 @@ const InStream & ServiceRequestEvent::readStream(const InStream & stream)
     return stream;
 }
 
-OutStream & ServiceRequestEvent::writeStream(OutStream & stream) const
+OutStream & ServiceRequestEvent::write_stream(OutStream & stream) const
 {
-    StubEvent::writeStream(stream);
+    StubEvent::write_stream(stream);
     stream << mProxySource;
     stream << mMessageId;
     stream << mRequestType;

@@ -36,9 +36,8 @@ class InStream;
 // ServiceItem class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Service Item is a base class of all service based address used in the system.
- *          It contains service name, version and the type of service. It is used by Proxy and Stub
- *          objects to identify service target and source.
+ * \brief   Base class for all service addresses used in the system. Contains service name, version,
+ *          and type; used by Proxy and Stub objects to identify service endpoints.
  **/
 class AREG_API ServiceItem
 {
@@ -63,58 +62,67 @@ protected:
 public:
 
     /**
-     * \brief   Creates Service Item path as a string.
+     * \brief   Converts service item to a path string.
+     *
      * \param   service     The service item to convert.
-     * /return  Returns service item as a string.
+     * \return  Returns the service item as a string path.
      **/
-    static String convAddressToPath( const ServiceItem & service );
+    static String to_path( const ServiceItem & service );
    
     /**
-     * \brief   Converts given service item path as a string to service item object.
+     * \brief   Converts service item path string to service item object.
+     *
      * \param   pathService     The path of service item as a string.
-     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service item.
-     * \return  Returns generated service address object.
+     * \param[in,out] out_nextPart    If not nullptr, on output points to the next part after the
+     *                                service item in the path.
+     * \return  Returns the parsed service address object.
      **/
-    static ServiceItem convPathToAddress(  const char* pathService, const char** out_nextPart = nullptr );
+    static ServiceItem from_path(  const char* pathService, const char** out_nextPart = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates empty service item.
+     * \brief
      **/
     ServiceItem();
 
     /**
-     * \brief   Creates service item, sets service name.
-     * \param   serviceName     The service name to set.
+     * \brief   Initializes with service name.
+     *
+     * \param   serviceName     The service name.
      **/
     explicit ServiceItem( const String & serviceName );
 
     /**
-     * \brief   Creates service item, sets service name, version and type.
-     * \param   serviceName     The service name to set.
-     * \param   serviceVersion  The service version to set.
-     * \param   serviceType     The type of service
+     * \brief   Initializes with service name, version, and type.
+     *
+     * \param   serviceName         The service name.
+     * \param   serviceVersion      The service version.
+     * \param   serviceType         The service type.
      **/
     ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::ServiceType serviceType );
 
     /**
-     * \brief   Creates service item and initializes data from given stream.
-     * \param   stream      The streaming object, which contains service item information.
+     * \brief   Deserializes service item from stream.
+     *
+     * \param   stream      The stream containing service item information.
      **/
     ServiceItem( const InStream & stream );
 
     /**
-     * \brief   Copy constructor.
-     * \param   source  The source of data to copy.
+     * \brief
+     *
+     * \param   source      The source to copy.
      **/
     ServiceItem( const ServiceItem & source );
 
     /**
-     * \brief   Move constructor.
-     * \param   source  The source of data to move.
+     * \brief
+     *
+     * \param   source      The source to move.
+     * \note    Move overload.
      **/
     ServiceItem( ServiceItem && source ) noexcept;
 
@@ -129,30 +137,34 @@ public:
 public:
     /**
      * \brief   Copies data from given source.
-     * \param   source      The source of data to copy
+     *
+     * \param   source      The source to copy.
      **/
     inline ServiceItem & operator = ( const ServiceItem & source );
 
     /**
      * \brief   Moves data from given source.
-     * \param   source      The source of data to move.
+     *
+     * \param   source      The source to move.
      **/
     inline ServiceItem & operator = ( ServiceItem && source ) noexcept;
 
     /**
-     * \brief   Checks equality of 2 service item and returns true if they are equal.
-     * \param   other       The service item to check
+     * \brief   Returns true if service items are equal.
+     *
+     * \param   other       The service item to compare.
      **/
     inline bool operator == ( const ServiceItem & other ) const;
 
     /**
-     * \brief   Checks inequality of 2 service item and returns true if they are not equal.
-     * \param   other       The service item to check
+     * \brief   Returns true if service items are not equal.
+     *
+     * \param   other       The service item to compare.
      **/
     inline bool operator != (const ServiceItem & other ) const;
 
     /**
-     * \brief   Converts service item to 32-bit unsigned integer value.
+     * \brief   Converts service item to 32-bit unsigned integer.
      **/
     inline explicit operator uint32_t () const;
 
@@ -160,18 +172,18 @@ public:
 // Friend global operators for streaming
 /************************************************************************/
     /**
-     * \brief   Streaming operator.
-     *          De-serialize Service Item object
-     * \param   stream  The streaming object to read out data
-     * \param   input   The Service Item to initialize data from stream.
+     * \brief   Deserializes service item from stream.
+     *
+     * \param   stream      The stream to read.
+     * \param[out] input       The service item to initialize.
      **/
     friend inline const InStream & operator >> ( const InStream & stream, ServiceItem & input);
 
     /**
-     * \brief   Streaming operator.
-     *          Serialize Service Item data to streaming object.
-     * \param   stream  The streaming object to write data
-     * \param   output  The Service Item containing data for streaming
+     * \brief   Serializes service item to stream.
+     *
+     * \param[out] stream      The stream to write.
+     * \param   output      The service item to serialize.
      **/
     friend inline OutStream & operator << ( OutStream & stream, const ServiceItem & output );
 
@@ -182,73 +194,87 @@ public:
     /**
      * \brief   Returns true if service item is valid.
      **/
-    inline bool isValid() const;
+    inline bool is_valid() const;
 
     /**
-     * \brief   Returns service name.
+     * \brief   Returns the service name.
      **/
-    inline const String & getServiceName() const;
+    inline const String & service_name() const;
 
     /**
-     * \brief   Sets the service name
+     * \brief   Sets the service name.
+     *
+     * \param   serviceName     The service name to set.
      **/
-    inline void setServiceName( const String & serviceName );
+    inline void set_service_name( const String & serviceName );
 
     /**
-     * \brief   Returns service version
+     * \brief   Returns the service version.
      **/
-    inline const Version & getServiceVersion() const;
+    inline const Version & service_version() const;
 
     /**
-     * \brief   Sets service version
+     * \brief   Sets the service version.
+     *
+     * \param   serviceVersion      The service version to set.
      **/
-    inline void setServiceVersion( const Version & serviceVersion );
+    inline void set_service_version( const Version & serviceVersion );
 
     /**
-     * \brief   Returns service type
+     * \brief   Returns the service type.
      **/
-    inline NEService::ServiceType getServiceType() const;
+    inline NEService::ServiceType service_type() const;
 
     /**
-     * \brief   Sets the service type
+     * \brief   Sets the service type.
+     *
+     * \param   serviceType     The service type to set.
      **/
-    inline void setServiceType( NEService::ServiceType serviceType );
+    inline void set_service_type( NEService::ServiceType serviceType );
 
     /**
-     * \brief   Returns true if service is remote
+     * \brief   Returns true if service is public (remote).
      **/
-    inline bool isServicePublic() const;
+    inline bool is_service_public() const;
 
     /**
-     * \brief   Checks whether given service item is compatible.
+     * \brief   Returns true if service is compatible with the given service.
+     *
+     * \param   other       The service to check compatibility against.
      **/
-    inline bool isServiceCompatible( const ServiceItem & other ) const;
+    inline bool is_service_compatible( const ServiceItem & other ) const;
 
     /**
-     * \brief   Creates Service Item path as a string.
-     * /return  Returns service item as a string.
+     * \brief   Converts service item to path string.
+     *
+     * \return  Returns the service item as a string path.
      **/
-    String convToString() const;
+    String to_string() const;
 
     /**
-     * \brief   Converts given service item path as a string to service item object.
-     * \param   pathService     The path of service item as a string.
-     * \param   out_nextPart    If not nullptr, on output this parameter points to next part of part after service item.
+     * \brief   Parses service item path string and initializes from path.
+     *
+     * \param   pathService     The service path as a string.
+     * \param[in,out] out_nextPart    If not nullptr, on output points to the next part after the
+     *                                service item.
      **/
-    void convFromString(  const char* pathService, const char** out_nextPart = nullptr );
+    void conv_from_string(  const char* pathService, const char** out_nextPart = nullptr );
 
 protected:
     /**
      * \brief   Returns true if service item has valid data.
      **/
-    inline bool isValidated() const;
+    inline bool is_validated() const;
    
 private:
 
     /**
-     * \brief   Returns the calculated hash-key value of specified service item.
+     * \brief   Returns the hash value of the given service item.
+     *
+     * \param   svcItem     The service item to hash.
+     * \return  Returns the calculated hash value.
      **/
-    static uint32_t _magicNumber( const ServiceItem svcItem );
+    static uint32_t _magic_number( const ServiceItem svcItem );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -300,54 +326,54 @@ namespace std
 // ServiceItem class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const String & ServiceItem::getServiceName() const
+inline const String & ServiceItem::service_name() const
 {
     return mServiceName;
 }
 
-inline void ServiceItem::setServiceName( const String & serviceName )
+inline void ServiceItem::set_service_name( const String & serviceName )
 {
     mServiceName = serviceName;
     mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
-    mMagicNum    = ServiceItem::_magicNumber(*this);
+    mMagicNum    = ServiceItem::_magic_number(*this);
 }
 
-inline const Version & ServiceItem::getServiceVersion() const
+inline const Version & ServiceItem::service_version() const
 {
     return mServiceVersion;
 }
 
-inline void ServiceItem::setServiceVersion( const Version & serviceVersion )
+inline void ServiceItem::set_service_version( const Version & serviceVersion )
 {
     mServiceVersion = serviceVersion;
 }
 
-inline NEService::ServiceType ServiceItem::getServiceType() const
+inline NEService::ServiceType ServiceItem::service_type() const
 {
     return mServiceType;
 }
 
-inline void ServiceItem::setServiceType( NEService::ServiceType serviceType )
+inline void ServiceItem::set_service_type( NEService::ServiceType serviceType )
 {
     mServiceType = serviceType;
-    mMagicNum    = serviceType != NEService::ServiceType::Invalid ? ServiceItem::_magicNumber(*this) : NEMath::CHECKSUM_IGNORE;
+    mMagicNum    = serviceType != NEService::ServiceType::Invalid ? ServiceItem::_magic_number(*this) : NEMath::CHECKSUM_IGNORE;
 }
 
-inline bool ServiceItem::isServicePublic() const
+inline bool ServiceItem::is_service_public() const
 {
     return (mServiceType == NEService::ServiceType::Public);
 }
 
-inline bool ServiceItem::isValid() const
+inline bool ServiceItem::is_valid() const
 {
     return ( mMagicNum != NEMath::CHECKSUM_IGNORE );
 }
 
-inline bool ServiceItem::isValidated() const
+inline bool ServiceItem::is_validated() const
 {
-    return (mServiceName.isEmpty()  == false                                    ) && 
+    return (mServiceName.is_empty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
-           (mServiceVersion         != Version::getInvalidVersion()             ) && 
+           (mServiceVersion         != Version::invalid_version()             ) && 
            (mServiceType            != NEService::ServiceType::Invalid  );
 }
 
@@ -392,9 +418,9 @@ inline ServiceItem::operator uint32_t () const
     return mMagicNum;
 }
 
-inline bool ServiceItem::isServiceCompatible( const ServiceItem & other ) const
+inline bool ServiceItem::is_service_compatible( const ServiceItem & other ) const
 {
-    return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
+    return ((mMagicNum == other.mMagicNum) && mServiceVersion.is_compatible(other.mServiceVersion));
 }
 
 inline const InStream & operator >> ( const InStream & stream, ServiceItem & input )
@@ -403,7 +429,7 @@ inline const InStream & operator >> ( const InStream & stream, ServiceItem & inp
     stream >> input.mServiceVersion;
     stream >> input.mServiceType;
     
-    input.mMagicNum = ServiceItem::_magicNumber(input);
+    input.mMagicNum = ServiceItem::_magic_number(input);
 
     return stream;
 }
