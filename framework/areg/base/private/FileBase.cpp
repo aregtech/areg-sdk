@@ -453,9 +453,9 @@ int32_t FileBase::readString(areg::String & outValue ) const
     return _readString<char, areg::String>(self(), outValue);
 }
 
-int32_t FileBase::readString(WideString & outValue) const
+int32_t FileBase::readString(areg::WideString & outValue) const
 {
-    return _readString<char, WideString>(self(), outValue);
+    return _readString<char, areg::WideString>(self(), outValue);
 }
 
 int32_t FileBase::readLine( char * buffer, int32_t charCount) const
@@ -473,9 +473,9 @@ int32_t FileBase::readLine( areg::String & buffer) const
     return _readLine<char, areg::String>(self(), buffer);
 }
 
-int32_t FileBase::readLine(WideString & buffer) const
+int32_t FileBase::readLine(areg::WideString & buffer) const
 {
-    return _readLine<wchar_t, WideString>(self(), buffer);
+    return _readLine<wchar_t, areg::WideString>(self(), buffer);
 }
 
 bool FileBase::writeString( const char* buffer )
@@ -493,7 +493,7 @@ bool FileBase::writeString(const areg::String& buffer)
     return _writeString<char>(self(), buffer.getString(), static_cast<int32_t>(buffer.getLength()));
 }
 
-bool FileBase::writeString(const WideString& buffer)
+bool FileBase::writeString(const areg::WideString& buffer)
 {
     return _writeString<wchar_t>(self(), buffer.getString(), static_cast<int32_t>(buffer.getLength()));
 }
@@ -513,7 +513,7 @@ bool FileBase::writeLine(const areg::String& buffer)
     return _writeLine<char>(self(), buffer);
 }
 
-bool FileBase::writeLine(const WideString& buffer)
+bool FileBase::writeLine(const areg::WideString& buffer)
 {
     return _writeLine<wchar_t>(self(), buffer);
 }
@@ -576,7 +576,7 @@ uint32_t FileBase::read(areg::String & ascii) const
     return static_cast<uint32_t>(readString(ascii));
 }
 
-uint32_t FileBase::read(WideString & wide) const
+uint32_t FileBase::read(areg::WideString & wide) const
 {
     return static_cast<uint32_t>(readString(wide));
 }
@@ -607,7 +607,7 @@ uint32_t FileBase::write(const areg::String & ascii)
     return write(reinterpret_cast<const uint8_t *>(buffer), space);
 }
 
-uint32_t FileBase::write(const WideString & wide)
+uint32_t FileBase::write(const areg::WideString & wide)
 {
     const wchar_t * buffer  = wide.getString();
     uint32_t space      = isTextMode() != 0 ? static_cast<uint32_t>(wide.getLength()) * sizeof(wchar_t) : wide.getSpace();
@@ -697,7 +697,7 @@ uint32_t FileBase::searchText( uint32_t startPos, const areg::String & text, boo
     return _searchText<char>( *this, startPos, text.getString(), static_cast<uint32_t>(text.getLength()), caseSensitive );
 }
 
-uint32_t FileBase::searchText( uint32_t startPos, const WideString & text, bool caseSensitive ) const
+uint32_t FileBase::searchText( uint32_t startPos, const areg::WideString & text, bool caseSensitive ) const
 {
     return _searchText<wchar_t>( *this, startPos, text.getString( ), static_cast<uint32_t>(text.getLength( )), caseSensitive );
 }

@@ -27,7 +27,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class String; }
-class WideString;
+namespace areg { class WideString; }
 class InStream;
 class Cursor;
 
@@ -161,7 +161,7 @@ public:
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool getString(WideString & Value) const;
+    bool getString(areg::WideString & Value) const;
 
     /**
      * \brief   Reads from streaming object single line of null-terminated ASCII string.
@@ -185,7 +185,7 @@ public:
      * \return  If reading succeeded, function returns true and the output parameter is valid.
      *          Otherwise, the value of output parameter should be ignored.
      **/
-    bool readLine(WideString & Value) const;
+    bool readLine(areg::WideString & Value) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

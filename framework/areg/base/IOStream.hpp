@@ -50,7 +50,7 @@ class OutStream;
  * Dependencies
  ************************************************************************/
 namespace areg { class String; }
-class WideString;
+namespace areg { class WideString; }
 class ByteBuffer;
 /************************************************************************
  * \brief   Predefined MACRO to support data read / write streaming
@@ -196,7 +196,7 @@ public:
      * \param   wide    The instance of wide-string object to copy data.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual uint32_t read( WideString & wide ) const = 0;
+    virtual uint32_t read( areg::WideString & wide ) const = 0;
 
     /**
      * \brief   Resets cursor position and moves to the begin of data.
@@ -316,7 +316,7 @@ public:
      * \param	wide 	The instance of wide-string object as a data source.
      * \return	Returns the size in bytes of written data.
      **/
-    virtual uint32_t write( const WideString & wide ) = 0;
+    virtual uint32_t write( const areg::WideString & wide ) = 0;
 
     /**
      * \brief	Flushes cached data to output stream object.

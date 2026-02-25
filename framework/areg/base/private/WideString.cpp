@@ -52,7 +52,7 @@ namespace
      * \return  Returns the number of characters copied into the string.
      **/
     template<typename DigitType>
-    inline int32_t _formatBinary( WideString & result, DigitType number )
+    inline int32_t _formatBinary( areg::WideString & result, DigitType number )
     {
         wchar_t buffer[ areg::MSG_MIN_BUF_SIZE ]{ 0 };
         wchar_t * dst  = buffer;
@@ -79,7 +79,7 @@ namespace
         }
         else
         {
-            result = WideString::EmptyChar;
+            result = areg::WideString::EmptyChar;
         }
 
         result  += buffer;
@@ -100,7 +100,7 @@ namespace
      *          In case of error, the return is negative.
      **/
     template<typename DigitType, int32_t const CharCount = areg::MSG_MIN_BUF_SIZE>
-    inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
+    inline int32_t _formatDigit( areg::WideString & result, const wchar_t * format, DigitType number )
     {
         wchar_t buffer[ CharCount ] { 0 };
 
@@ -141,7 +141,7 @@ namespace
      * \return  Returns the number of characters in the buffer, not including null-character.
      **/
     template<int32_t const CharCount = areg::MSG_MIN_BUF_SIZE>
-    inline int32_t _formatStringList( WideString & result, const wchar_t * format, va_list argptr )
+    inline int32_t _formatStringList( areg::WideString & result, const wchar_t * format, va_list argptr )
     {
         wchar_t buffer[ CharCount ] { 0 };
         int32_t count = _formatStringList( buffer, CharCount, format, argptr );
@@ -163,473 +163,476 @@ namespace
 } // namespace
 
 
-// the static empty string
-const WideString & WideString::getEmptyString()
+namespace areg
 {
-    static const WideString _emptyString{ L"" };
-    return _emptyString;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-WideString::WideString(const areg::String & source)
-    : StringBase<wchar_t>( )
-{
-    assign(source.getString(), source.getLength());
-}
-
-WideString::WideString( const InStream & stream )
-    : StringBase<wchar_t>( )
-{
-    readStream(stream);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// operators / operations
-//////////////////////////////////////////////////////////////////////////
-
-WideString & WideString::operator = (const areg::String & src)
-{
-    assign(src.getString(), src.getLength());
-    return (*this);
-}
-
-bool WideString::operator == (const areg::String& other) const
-{
-    bool result = false;
-    if (getLength() == other.getLength())
+    // the static empty string
+    const WideString & WideString::getEmptyString()
     {
-        result = _isEqual(getString(), other.getString());
+        static const WideString _emptyString{ L"" };
+        return _emptyString;
     }
 
-    return result;
-}
-
-bool WideString::operator == (const std::string& other) const
-{
-    bool result = false;
-    if (getLength() == static_cast<areg::CharCount>(other.length()))
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    WideString::WideString(const areg::String & source)
+        : StringBase<wchar_t>( )
     {
-        result = _isEqual(getString(), other.c_str());
+        assign(source.getString(), source.getLength());
     }
 
-    return result;
-}
-
-bool WideString::operator == (const char* other) const
-{
-    bool result = false;
-    if (getLength() == static_cast<areg::CharCount>(strlen(other)))
+    WideString::WideString( const InStream & stream )
+        : StringBase<wchar_t>( )
     {
-        result = _isEqual(getString(), other);
+        readStream(stream);
     }
 
-    return result;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // operators / operations
+    //////////////////////////////////////////////////////////////////////////
 
-bool WideString::operator != (const char* other) const
-{
-    bool result = true;
-    if (getLength() == static_cast<areg::CharCount>(strlen(other)))
+    WideString & WideString::operator = (const areg::String & src)
     {
-        result = _isEqual(getString(), other) == false;
+        assign(src.getString(), src.getLength());
+        return (*this);
     }
 
-    return result;
-}
-
-bool WideString::operator != (const std::string& other) const
-{
-    bool result = true;
-    if (getLength() == static_cast<areg::CharCount>(other.length()))
+    bool WideString::operator == (const areg::String& other) const
     {
-        result = _isEqual(getString(), other.c_str()) == false;
-    }
-
-    return result;
-}
-
-bool WideString::operator != (const areg::String& other) const
-{
-    bool result = true;
-    if (getLength() == other.getLength())
-    {
-        result = _isEqual(getString(), other.getString()) == false;
-    }
-
-    return result;
-}
-
-WideString & WideString::operator += (const areg::String & src)
-{
-    append(src.getString(), src.getLength());
-    return (*this);
-}
-
-WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next /*= nullptr*/)
-{
-    WideString result;
-    if ( out_next != nullptr )
-    {
-        *out_next = nullptr;
-    }
-
-    if (areg::isEmpty<wchar_t>(src) == false)
-    {
-        areg::CharPos pos = areg::findFirst<wchar_t>(strPhrase, src, areg::START_POS, true, out_next);
-        result.assign(src, areg::isPositionValid(pos) ? pos : areg::COUNT_ALL);
-    }
-
-    return result;
-}
-
-int32_t WideString::makeInt32( const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/ )
-{
-    wchar_t * temp = nullptr;
-    int32_t result  = static_cast<int32_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int32_t>(radix) ) : 0);
-    if (end != nullptr)
-    {
-        *end = temp != nullptr ? temp : strDigit;
-    }
-
-    return result;
-}
-
-uint32_t WideString::makeUInt32( const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/ )
-{
-    wchar_t * temp = nullptr;
-    uint32_t result = static_cast<uint32_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstoul(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
-    if (end != nullptr)
-    {
-        *end = temp != nullptr ? temp : strDigit;
-    }
-
-    return result;
-}
-
-int64_t WideString::makeInt64( const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/ )
-{
-    wchar_t * temp = nullptr;
-    int64_t result = static_cast<int64_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
-    if (end != nullptr)
-    {
-        *end = temp != nullptr ? temp : strDigit;
-    }
-
-    return result;
-}
-
-uint64_t WideString::makeUInt64(const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/)
-{
-    wchar_t * temp = nullptr;
-    uint64_t result = static_cast<uint64_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstoull(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
-    if (end != nullptr)
-    {
-        *end = temp != nullptr ? temp : strDigit;
-    }
-
-    return result;
-}
-
-float WideString::makeFloat(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
-{
-    wchar_t * temp = nullptr;
-    float result = static_cast<float>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstof(strDigit, &temp) : 0);
-    if (end != nullptr)
-    {
-        *end = temp != nullptr ? temp : strDigit;
-    }
-
-    return result;
-}
-
-double WideString::makeDouble(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
-{
-    wchar_t * temp = nullptr;
-    double result = static_cast<double>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstod(strDigit, &temp) : 0);
-    if (end != nullptr)
-    {
-        *end = temp != nullptr ? temp : strDigit;
-    }
-
-    return result;
-}
-
-bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= nullptr*/ )
-{
-    bool result = false;
-    int32_t lenSkip = 0;
-    int32_t lenTrue = static_cast<int32_t>(areg::BOOLEAN_TRUE.length());
-    int32_t lenFalse= static_cast<int32_t>(areg::BOOLEAN_FALSE.length());
-    if ( areg::compareStrings<wchar_t, char>(strBoolean, areg::BOOLEAN_TRUE.data(), lenTrue, false) == areg::Ordering::Equal)
-    {
-        result = true;
-        lenSkip= lenTrue;
-    }
-    else if ( areg::compareStrings<wchar_t, char>(strBoolean, areg::BOOLEAN_FALSE.data(), lenFalse, false) == areg::Ordering::Equal)
-    {
-        result = false;
-        lenSkip= lenFalse;
-    }
-
-    if ( end != nullptr )
-    {
-        *end = (strBoolean + lenSkip);
-    }
-
-    return result;
-}
-
-WideString WideString::makeString(int32_t number, areg::Radix radix /*= areg::Decimal */)
-{
-    WideString result;
-
-    switch ( radix )
-    {
-    case areg::Radix::Binary:
-        _formatBinary<int32_t>( result, number );
-        break;
-
-    case areg::Radix::Octal:
-        if ( number < 0)
-            _formatDigit<int32_t>( result, L"-%0.11o", -1 * number );
-        else
-            _formatDigit<int32_t>( result, L"%0.11o", number );
-        break;
-
-    case areg::Radix::Hexadecimal:
-        if ( number < 0 )
-            _formatDigit<int32_t>( result, L"-0x%.8X", -1 * number );
-        else
-            _formatDigit<int32_t>( result, L"0x%.8X", number );
-        break;
-
-    case areg::Radix::Decimal:    // fall through
-    case areg::Radix::Automatic:  // fall through
-    default:
-        _formatDigit<int32_t>( result, L"%d", number );
-        break;
-    }
-
-    return result;
-}
-
-WideString WideString::makeString(uint32_t number, areg::Radix radix /*= areg::Decimal */)
-{
-    WideString result;
-
-    switch ( radix )
-    {
-    case areg::Radix::Binary:
-        _formatBinary<uint32_t>(result, number);
-        break;
-
-    case areg::Radix::Octal:
-        _formatDigit<uint32_t>(result, L"%0.11o", number);
-        break;
-
-    case areg::Radix::Hexadecimal:
-        _formatDigit<uint32_t>(result, L"0x%.8X", number);
-        break;
-
-    case areg::Radix::Decimal:    // fall through
-    case areg::Radix::Automatic:  // fall through
-    default:
-        _formatDigit<uint32_t>( result, L"%u", number );
-        break;
-    }
-
-    return result;
-}
-
-WideString WideString::makeString(int64_t number, areg::Radix radix /*= areg::Decimal */)
-{
-    WideString result;
-
-    switch (radix)
-    {
-    case areg::Radix::Binary:
-        _formatBinary<int64_t>(result, number);
-        break;
-
-    case areg::Radix::Octal:
-        if (number < 0)
-            _formatDigit<int64_t>(result, L"-%0.22llo", -1 * number);
-        else
-            _formatDigit<int64_t>(result, L"%0.22llo", number);
-        break;
-
-    case areg::Radix::Hexadecimal:
-        if (number < 0)
-            _formatDigit<int64_t>(result, L"-0x%.16llX", -1 * number);
-        else
-            _formatDigit<int64_t>(result, L"0x%.16llX", number);
-        break;
-
-    case areg::Radix::Decimal:    // fall through
-    case areg::Radix::Automatic:  // fall through
-    default:
-        _formatDigit<int64_t>(result, L"%lld", number);
-        break;
-    }
-
-    return result;
-}
-
-WideString WideString::makeString(uint64_t number, areg::Radix radix /*= areg::Decimal */)
-{
-    WideString result;
-
-    switch ( radix )
-    {
-    case areg::Radix::Binary:
-        _formatBinary<uint64_t>( result, number );
-        break;
-
-    case areg::Radix::Octal:
-        _formatDigit<uint64_t>( result, L"%.22llo", number );
-        break;
-
-    case areg::Radix::Hexadecimal:
-        _formatDigit<uint64_t>( result, L"0x%.16llX", number );
-        break;
-
-    case areg::Radix::Decimal:    // fall through
-    case areg::Radix::Automatic:  // fall through
-    default:
-        _formatDigit<uint64_t>( result, L"%llu", number );
-        break;
-    }
-
-    return result;
-}
-
-WideString WideString::makeString(float number)
-{
-    WideString result;
-    _formatDigit<double>( result, L"%f", static_cast<double>(number) );
-    return result;
-}
-
-WideString WideString::makeString(double number)
-{
-    WideString result;
-    _formatDigit<double>( result, L"%g", number );
-    return result;
-}
-
-WideString WideString::makeString( bool value )
-{
-    return WideString(value ? areg::BOOLEAN_TRUE : areg::BOOLEAN_FALSE);
-}
-
-int32_t WideString::formatString( wchar_t * strDst, int32_t count, const wchar_t * format, ... )
-{
-    va_list argptr;
-    va_start( argptr, format );
-    int32_t result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
-    va_end( argptr );
-    return result;
-}
-
-int32_t WideString::formatStringList( wchar_t * strDst, int32_t count, const wchar_t * format, va_list argptr )
-{
-    return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
-}
-
-WideString & WideString::format(const wchar_t * format, ...)
-{
-    va_list argptr;
-    va_start(argptr, format);
-
-    formatList(format, argptr);
-    
-    va_end(argptr);
-
-    return (*this);
-}
-
-WideString & WideString::formatList(const wchar_t * format, va_list argptr)
-{
-    clear();
-    if (format != nullptr)
-    {
-        int32_t count = areg::requiredBufferSize(format, argptr);
-
-        switch ( count )
+        bool result = false;
+        if (getLength() == other.getLength())
         {
-        case areg::MSG_MIN_BUF_SIZE:
-            _formatStringList<areg::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            result = _isEqual(getString(), other.getString());
+        }
+
+        return result;
+    }
+
+    bool WideString::operator == (const std::string& other) const
+    {
+        bool result = false;
+        if (getLength() == static_cast<areg::CharCount>(other.length()))
+        {
+            result = _isEqual(getString(), other.c_str());
+        }
+
+        return result;
+    }
+
+    bool WideString::operator == (const char* other) const
+    {
+        bool result = false;
+        if (getLength() == static_cast<areg::CharCount>(strlen(other)))
+        {
+            result = _isEqual(getString(), other);
+        }
+
+        return result;
+    }
+
+    bool WideString::operator != (const char* other) const
+    {
+        bool result = true;
+        if (getLength() == static_cast<areg::CharCount>(strlen(other)))
+        {
+            result = _isEqual(getString(), other) == false;
+        }
+
+        return result;
+    }
+
+    bool WideString::operator != (const std::string& other) const
+    {
+        bool result = true;
+        if (getLength() == static_cast<areg::CharCount>(other.length()))
+        {
+            result = _isEqual(getString(), other.c_str()) == false;
+        }
+
+        return result;
+    }
+
+    bool WideString::operator != (const areg::String& other) const
+    {
+        bool result = true;
+        if (getLength() == other.getLength())
+        {
+            result = _isEqual(getString(), other.getString()) == false;
+        }
+
+        return result;
+    }
+
+    WideString & WideString::operator += (const areg::String & src)
+    {
+        append(src.getString(), src.getLength());
+        return (*this);
+    }
+
+    WideString WideString::getSubstring(const wchar_t * src, const wchar_t * strPhrase, const wchar_t ** out_next /*= nullptr*/)
+    {
+        WideString result;
+        if ( out_next != nullptr )
+        {
+            *out_next = nullptr;
+        }
+
+        if (areg::isEmpty<wchar_t>(src) == false)
+        {
+            areg::CharPos pos = areg::findFirst<wchar_t>(strPhrase, src, areg::START_POS, true, out_next);
+            result.assign(src, areg::isPositionValid(pos) ? pos : areg::COUNT_ALL);
+        }
+
+        return result;
+    }
+
+    int32_t WideString::makeInt32( const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/ )
+    {
+        wchar_t * temp = nullptr;
+        int32_t result  = static_cast<int32_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstol( strDigit, &temp, static_cast<int32_t>(radix) ) : 0);
+        if (end != nullptr)
+        {
+            *end = temp != nullptr ? temp : strDigit;
+        }
+
+        return result;
+    }
+
+    uint32_t WideString::makeUInt32( const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/ )
+    {
+        wchar_t * temp = nullptr;
+        uint32_t result = static_cast<uint32_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstoul(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
+        if (end != nullptr)
+        {
+            *end = temp != nullptr ? temp : strDigit;
+        }
+
+        return result;
+    }
+
+    int64_t WideString::makeInt64( const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/ )
+    {
+        wchar_t * temp = nullptr;
+        int64_t result = static_cast<int64_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstoll(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
+        if (end != nullptr)
+        {
+            *end = temp != nullptr ? temp : strDigit;
+        }
+
+        return result;
+    }
+
+    uint64_t WideString::makeUInt64(const wchar_t * strDigit, areg::Radix radix /*= areg::Decimal*/, const wchar_t ** end /*= nullptr*/)
+    {
+        wchar_t * temp = nullptr;
+        uint64_t result = static_cast<uint64_t>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstoull(strDigit, &temp, static_cast<int32_t>(radix)) : 0);
+        if (end != nullptr)
+        {
+            *end = temp != nullptr ? temp : strDigit;
+        }
+
+        return result;
+    }
+
+    float WideString::makeFloat(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
+    {
+        wchar_t * temp = nullptr;
+        float result = static_cast<float>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstof(strDigit, &temp) : 0);
+        if (end != nullptr)
+        {
+            *end = temp != nullptr ? temp : strDigit;
+        }
+
+        return result;
+    }
+
+    double WideString::makeDouble(const wchar_t * strDigit, const wchar_t ** end /*= nullptr*/ )
+    {
+        wchar_t * temp = nullptr;
+        double result = static_cast<double>(areg::isEmpty<wchar_t>(strDigit) == false ? wcstod(strDigit, &temp) : 0);
+        if (end != nullptr)
+        {
+            *end = temp != nullptr ? temp : strDigit;
+        }
+
+        return result;
+    }
+
+    bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= nullptr*/ )
+    {
+        bool result = false;
+        int32_t lenSkip = 0;
+        int32_t lenTrue = static_cast<int32_t>(areg::BOOLEAN_TRUE.length());
+        int32_t lenFalse= static_cast<int32_t>(areg::BOOLEAN_FALSE.length());
+        if ( areg::compareStrings<wchar_t, char>(strBoolean, areg::BOOLEAN_TRUE.data(), lenTrue, false) == areg::Ordering::Equal)
+        {
+            result = true;
+            lenSkip= lenTrue;
+        }
+        else if ( areg::compareStrings<wchar_t, char>(strBoolean, areg::BOOLEAN_FALSE.data(), lenFalse, false) == areg::Ordering::Equal)
+        {
+            result = false;
+            lenSkip= lenFalse;
+        }
+
+        if ( end != nullptr )
+        {
+            *end = (strBoolean + lenSkip);
+        }
+
+        return result;
+    }
+
+    WideString WideString::makeString(int32_t number, areg::Radix radix /*= areg::Decimal */)
+    {
+        WideString result;
+
+        switch ( radix )
+        {
+        case areg::Radix::Binary:
+            _formatBinary<int32_t>( result, number );
             break;
 
-        case areg::MSG_BUF_SIZE:
-            _formatStringList<areg::MSG_BUF_SIZE>( *this, format, argptr );
+        case areg::Radix::Octal:
+            if ( number < 0)
+                _formatDigit<int32_t>( result, L"-%0.11o", -1 * number );
+            else
+                _formatDigit<int32_t>( result, L"%0.11o", number );
             break;
 
-        case areg::MSG_BIG_BUF_SIZE:
-            _formatStringList<areg::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+        case areg::Radix::Hexadecimal:
+            if ( number < 0 )
+                _formatDigit<int32_t>( result, L"-0x%.8X", -1 * number );
+            else
+                _formatDigit<int32_t>( result, L"0x%.8X", number );
             break;
 
-        case areg::MSG_EXTRA_BUF_SIZE:
-            _formatStringList<areg::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
-            break;
-
+        case areg::Radix::Decimal:    // fall through
+        case areg::Radix::Automatic:  // fall through
         default:
-            ASSERT( false ); // put assertion to catch assertion.
+            _formatDigit<int32_t>( result, L"%d", number );
             break;
         }
+
+        return result;
     }
 
-    return (*this);
-}
-
-WideString& WideString::assign(const char* source, areg::CharCount count /*= areg::COUNT_ALL*/)
-{
-    mData.clear();
-
-    if (areg::isEmpty<char>(source) == false)
+    WideString WideString::makeString(uint32_t number, areg::Radix radix /*= areg::Decimal */)
     {
-        count = count == areg::COUNT_ALL ? static_cast<areg::CharCount>(strlen(source)) : count;
-        mData.resize(static_cast<uint32_t>(count));
-        wchar_t* dst = mData.data();
-        while (--count >= 0)
+        WideString result;
+
+        switch ( radix )
         {
-            *dst++ = static_cast<wchar_t>(*source++);
+        case areg::Radix::Binary:
+            _formatBinary<uint32_t>(result, number);
+            break;
+
+        case areg::Radix::Octal:
+            _formatDigit<uint32_t>(result, L"%0.11o", number);
+            break;
+
+        case areg::Radix::Hexadecimal:
+            _formatDigit<uint32_t>(result, L"0x%.8X", number);
+            break;
+
+        case areg::Radix::Decimal:    // fall through
+        case areg::Radix::Automatic:  // fall through
+        default:
+            _formatDigit<uint32_t>( result, L"%u", number );
+            break;
         }
 
-        *dst = EmptyChar;
+        return result;
     }
 
-    return (*this);
-}
-
-WideString& WideString::append(const char* source, areg::CharCount count /*= areg::COUNT_ALL*/)
-{
-    if (areg::isEmpty<char>(source) == false)
+    WideString WideString::makeString(int64_t number, areg::Radix radix /*= areg::Decimal */)
     {
-        uint32_t len = static_cast<uint32_t>(mData.length());
-        count = count == areg::COUNT_ALL ? static_cast<areg::CharCount>(strlen(source)) : count;
-        uint32_t newSize = len + static_cast<uint32_t>(count);
-        mData.resize(newSize);
-        wchar_t* dst = mData.data() + len;
-        while (--count >= 0)
+        WideString result;
+
+        switch (radix)
         {
-            *dst++ = static_cast<wchar_t>(*source++);
+        case areg::Radix::Binary:
+            _formatBinary<int64_t>(result, number);
+            break;
+
+        case areg::Radix::Octal:
+            if (number < 0)
+                _formatDigit<int64_t>(result, L"-%0.22llo", -1 * number);
+            else
+                _formatDigit<int64_t>(result, L"%0.22llo", number);
+            break;
+
+        case areg::Radix::Hexadecimal:
+            if (number < 0)
+                _formatDigit<int64_t>(result, L"-0x%.16llX", -1 * number);
+            else
+                _formatDigit<int64_t>(result, L"0x%.16llX", number);
+            break;
+
+        case areg::Radix::Decimal:    // fall through
+        case areg::Radix::Automatic:  // fall through
+        default:
+            _formatDigit<int64_t>(result, L"%lld", number);
+            break;
         }
 
-        *dst = EmptyChar;
+        return result;
     }
 
-    return (*this);
-}
+    WideString WideString::makeString(uint64_t number, areg::Radix radix /*= areg::Decimal */)
+    {
+        WideString result;
 
-void WideString::readStream(const InStream& stream)
-{
-    stream.read(*this);
-}
+        switch ( radix )
+        {
+        case areg::Radix::Binary:
+            _formatBinary<uint64_t>( result, number );
+            break;
 
-void WideString::writeStream(OutStream& stream) const
-{
-    stream.write(*this);
-}
+        case areg::Radix::Octal:
+            _formatDigit<uint64_t>( result, L"%.22llo", number );
+            break;
+
+        case areg::Radix::Hexadecimal:
+            _formatDigit<uint64_t>( result, L"0x%.16llX", number );
+            break;
+
+        case areg::Radix::Decimal:    // fall through
+        case areg::Radix::Automatic:  // fall through
+        default:
+            _formatDigit<uint64_t>( result, L"%llu", number );
+            break;
+        }
+
+        return result;
+    }
+
+    WideString WideString::makeString(float number)
+    {
+        WideString result;
+        _formatDigit<double>( result, L"%f", static_cast<double>(number) );
+        return result;
+    }
+
+    WideString WideString::makeString(double number)
+    {
+        WideString result;
+        _formatDigit<double>( result, L"%g", number );
+        return result;
+    }
+
+    WideString WideString::makeString( bool value )
+    {
+        return WideString(value ? areg::BOOLEAN_TRUE : areg::BOOLEAN_FALSE);
+    }
+
+    int32_t WideString::formatString( wchar_t * strDst, int32_t count, const wchar_t * format, ... )
+    {
+        va_list argptr;
+        va_start( argptr, format );
+        int32_t result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
+        va_end( argptr );
+        return result;
+    }
+
+    int32_t WideString::formatStringList( wchar_t * strDst, int32_t count, const wchar_t * format, va_list argptr )
+    {
+        return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
+    }
+
+    WideString & WideString::format(const wchar_t * format, ...)
+    {
+        va_list argptr;
+        va_start(argptr, format);
+
+        formatList(format, argptr);
+        
+        va_end(argptr);
+
+        return (*this);
+    }
+
+    WideString & WideString::formatList(const wchar_t * format, va_list argptr)
+    {
+        clear();
+        if (format != nullptr)
+        {
+            int32_t count = areg::requiredBufferSize(format, argptr);
+
+            switch ( count )
+            {
+            case areg::MSG_MIN_BUF_SIZE:
+                _formatStringList<areg::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+                break;
+
+            case areg::MSG_BUF_SIZE:
+                _formatStringList<areg::MSG_BUF_SIZE>( *this, format, argptr );
+                break;
+
+            case areg::MSG_BIG_BUF_SIZE:
+                _formatStringList<areg::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+                break;
+
+            case areg::MSG_EXTRA_BUF_SIZE:
+                _formatStringList<areg::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+                break;
+
+            default:
+                ASSERT( false ); // put assertion to catch assertion.
+                break;
+            }
+        }
+
+        return (*this);
+    }
+
+    WideString& WideString::assign(const char* source, areg::CharCount count /*= areg::COUNT_ALL*/)
+    {
+        mData.clear();
+
+        if (areg::isEmpty<char>(source) == false)
+        {
+            count = count == areg::COUNT_ALL ? static_cast<areg::CharCount>(strlen(source)) : count;
+            mData.resize(static_cast<uint32_t>(count));
+            wchar_t* dst = mData.data();
+            while (--count >= 0)
+            {
+                *dst++ = static_cast<wchar_t>(*source++);
+            }
+
+            *dst = EmptyChar;
+        }
+
+        return (*this);
+    }
+
+    WideString& WideString::append(const char* source, areg::CharCount count /*= areg::COUNT_ALL*/)
+    {
+        if (areg::isEmpty<char>(source) == false)
+        {
+            uint32_t len = static_cast<uint32_t>(mData.length());
+            count = count == areg::COUNT_ALL ? static_cast<areg::CharCount>(strlen(source)) : count;
+            uint32_t newSize = len + static_cast<uint32_t>(count);
+            mData.resize(newSize);
+            wchar_t* dst = mData.data() + len;
+            while (--count >= 0)
+            {
+                *dst++ = static_cast<wchar_t>(*source++);
+            }
+
+            *dst = EmptyChar;
+        }
+
+        return (*this);
+    }
+
+    void WideString::readStream(const InStream& stream)
+    {
+        stream.read(*this);
+    }
+
+    void WideString::writeStream(OutStream& stream) const
+    {
+        stream.write(*this);
+    }
+} // namespace areg

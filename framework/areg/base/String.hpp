@@ -31,7 +31,7 @@
  ************************************************************************/
 class InStream;
 class OutStream;
-class WideString;
+namespace areg { class WideString; }
 
 //////////////////////////////////////////////////////////////////////////
 // String class declaration.
@@ -108,7 +108,7 @@ namespace areg
         inline String(const std::string& source);
         inline String(const std::string_view& source);
         inline String(std::string&& source) noexcept;
-        inline String(const WideString& source);
+        inline String(const areg::WideString& source);
         inline String(const std::wstring& source);
         inline String(const wchar_t* source);
 
@@ -164,7 +164,7 @@ namespace areg
         inline String & operator = (const wchar_t src );
         inline String & operator = (String && src) noexcept;
         inline String & operator = (std::string && src) noexcept;
-        String & operator = ( const WideString & src );
+        String & operator = ( const areg::WideString & src );
 
         /**
          * \brief   Determines equality of two strings.
@@ -181,7 +181,7 @@ namespace areg
         inline bool operator == (const char ch) const;
         bool operator == (const wchar_t* other) const;
         bool operator == (const std::wstring& other) const;
-        bool operator == (const WideString& other) const;
+        bool operator == (const areg::WideString& other) const;
 
         inline bool operator != (const String& other) const;
         inline bool operator != (const std::string& other) const;
@@ -190,7 +190,7 @@ namespace areg
         inline bool operator != (const char ch) const;
         bool operator != (const wchar_t* other) const;
         bool operator != (const std::wstring& other) const;
-        bool operator != (const WideString& other) const;
+        bool operator != (const areg::WideString& other) const;
 
         /**
          * \brief   Appends given null-terminated wide-char string at the end of existing string.
@@ -205,7 +205,7 @@ namespace areg
         inline String& operator += (const wchar_t* src);
         inline String& operator += (const wchar_t src);
         inline String& operator += (const std::wstring& src);
-        String & operator += ( const WideString & src );
+        String & operator += ( const areg::WideString & src );
 
     /************************************************************************/
     // Friend global operators to operate String

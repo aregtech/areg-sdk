@@ -155,7 +155,7 @@ uint32_t EventDataStream::read( areg::String & ascii ) const
     return mDataBuffer.read(ascii);
 }
 
-uint32_t EventDataStream::read( WideString & wide ) const
+uint32_t EventDataStream::read( areg::WideString & wide ) const
 {
     return mDataBuffer.read(wide);
 }
@@ -191,7 +191,7 @@ uint32_t EventDataStream::write( const areg::String & ascii )
     return mDataBuffer.write(ascii);
 }
 
-uint32_t EventDataStream::write( const WideString & wide )
+uint32_t EventDataStream::write( const areg::WideString & wide )
 {
     return mDataBuffer.write(wide);
 }

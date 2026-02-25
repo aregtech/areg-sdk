@@ -104,7 +104,7 @@ bool ReadConverter::getString( areg::String & Value ) const
     return result;
 }
 
-bool ReadConverter::getString( WideString & Value ) const
+bool ReadConverter::getString( areg::WideString & Value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');
@@ -145,7 +145,7 @@ bool ReadConverter::readLine( areg::String & Value ) const
     return result;
 }
 
-bool ReadConverter::readLine( WideString & Value ) const
+bool ReadConverter::readLine( areg::WideString & Value ) const
 {
     bool result = false;
     wchar_t ch  = static_cast<wchar_t>('\0');

@@ -38,7 +38,7 @@ WriteConverter::WriteConverter( OutStream & writeStream, Cursor & /*writePositio
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool WriteConverter::setString( const WideString & in_value )
+bool WriteConverter::setString( const areg::WideString & in_value )
 {
     return setString( in_value.getString() );
 }

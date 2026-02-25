@@ -132,7 +132,7 @@ protected:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const WideString & wide ) override;
+    uint32_t write( const areg::WideString & wide ) override;
 
     /**
      * \brief	Flushes cached data to output stream object.

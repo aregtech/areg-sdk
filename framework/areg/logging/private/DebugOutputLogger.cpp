@@ -155,7 +155,7 @@ uint32_t DebugOutputLogger::write( const areg::String & ascii )
     return ascii.getSpace();
 }
 
-uint32_t DebugOutputLogger::write( const WideString & wide )
+uint32_t DebugOutputLogger::write( const areg::WideString & wide )
 {
 #if defined(OUTPUT_DEBUG)
     mOutputMessageA += wide;

@@ -106,7 +106,7 @@ uint32_t BufferStreamBase::read( areg::String & ascii ) const
 /**
  * \brief   Reads string data from Input Stream object, copies into given Wide String and returns the size of copied data.
  **/
-uint32_t BufferStreamBase::read( WideString & wide ) const
+uint32_t BufferStreamBase::read( areg::WideString & wide ) const
 {
     uint32_t result = 0;
     wide.clear();
@@ -176,7 +176,7 @@ uint32_t BufferStreamBase::write( const areg::String & ascii )
 /**
  * \brief   Writes string data from given wide-char String object to output stream object.
  **/
-uint32_t BufferStreamBase::write( const WideString & wide )
+uint32_t BufferStreamBase::write( const areg::WideString & wide )
 {
     return write(reinterpret_cast<const uint8_t*>(wide.getString()), wide.getSpace());
 }

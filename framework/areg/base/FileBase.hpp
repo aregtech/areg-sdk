@@ -28,7 +28,7 @@
 
 #include <string_view>
 
-class WideString;
+namespace areg { class WideString; }
 class ByteBuffer;
 
 //////////////////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ public:
      * \param   wide    The wide-char string to write.
      * \return  The instance of file.
      **/
-    friend inline FileBase & operator << (FileBase & stream, const WideString & wide );
+    friend inline FileBase & operator << (FileBase & stream, const areg::WideString & wide );
 
     /**
      * \brief   Writes files data as ASCII string. The file outputs string until reaches end of file,
@@ -272,7 +272,7 @@ public:
      * \param   stream  The instance of file data contains the data.
      * \param   wide    On output, this contains the wide-char string data.
      **/
-    friend inline const FileBase & operator >> ( const FileBase & stream, WideString & wide );
+    friend inline const FileBase & operator >> ( const FileBase & stream, areg::WideString & wide );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -581,7 +581,7 @@ public:
      * \return	Returns number of characters, which could read.
      **/
     int32_t readString(areg::String & buffer) const;
-    int32_t readString(WideString & buffer) const;
+    int32_t readString(areg::WideString & buffer) const;
 
     /**
      * \brief	Reads a line of string, automatically sets null-terminate char at
@@ -605,7 +605,7 @@ public:
      * \return	Returns number of characters, which could read.
      **/
     int32_t readLine(areg::String & buffer) const;
-    int32_t readLine(WideString & buffer) const;
+    int32_t readLine(areg::WideString & buffer) const;
 
     /**
      * \brief	Writes string in file and returns true if succeeded.
@@ -618,7 +618,7 @@ public:
     bool writeString(const char* buffer);
     bool writeString(const wchar_t* buffer);
     bool writeString(const areg::String& buffer);
-    bool writeString(const WideString& buffer);
+    bool writeString(const areg::WideString& buffer);
 
     /**
      * \brief	Writes line of string in file and returns true if succeeded.
@@ -632,7 +632,7 @@ public:
     bool writeLine(const char* inValue);
     bool writeLine(const wchar_t* inValue);
     bool writeLine(const areg::String& buffer);
-    bool writeLine(const WideString& buffer);
+    bool writeLine(const areg::WideString& buffer);
 
     /**
      * \brief   Writes string into the file.
@@ -669,7 +669,7 @@ public:
     uint32_t searchText( uint32_t startPos, const char * text, bool caseSensitive ) const;
     uint32_t searchText( uint32_t startPos, const wchar_t * text, bool caseSensitive ) const;
     uint32_t searchText( uint32_t startPos, const areg::String & text, bool caseSensitive ) const;
-    uint32_t searchText( uint32_t startPos, const WideString & text, bool caseSensitive ) const;
+    uint32_t searchText( uint32_t startPos, const areg::WideString & text, bool caseSensitive ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override methods
@@ -811,7 +811,7 @@ public:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t read( WideString & wide ) const override;
+    uint32_t read( areg::WideString & wide ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -839,7 +839,7 @@ public:
      * \param   wide  The buffer of String containing data to stream to Output Stream.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t write( const WideString & wide ) override;
+    uint32_t write( const areg::WideString & wide ) override;
 
     /**
      * \brief   Clears the buffers for the file and causes all buffered data 
@@ -1134,7 +1134,7 @@ inline FileBase & operator << ( FileBase & stream, const wchar_t * wide )
     return stream;
 }
 
-inline FileBase & operator << ( FileBase & stream, const WideString & wide )
+inline FileBase & operator << ( FileBase & stream, const areg::WideString & wide )
 {
     stream.write( wide );
     return stream;
@@ -1146,7 +1146,7 @@ inline const FileBase & operator >> ( const FileBase & stream, areg::String & as
     return stream;
 }
 
-inline const FileBase & operator >> ( const FileBase & stream, WideString & wide )
+inline const FileBase & operator >> ( const FileBase & stream, areg::WideString & wide )
 {
     stream.read(wide);
     return stream;

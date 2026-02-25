@@ -419,7 +419,7 @@ uint32_t File::read(areg::String & ascii) const
     return FileBase::read(ascii);
 }
 
-uint32_t File::read(WideString & wide) const
+uint32_t File::read(areg::WideString & wide) const
 {
     return FileBase::read(wide);
 }
@@ -448,7 +448,7 @@ uint32_t File::write(const areg::String & ascii)
     return FileBase::write(ascii);
 }
 
-uint32_t File::write(const WideString & wide)
+uint32_t File::write(const areg::WideString & wide)
 {
     return FileBase::write(wide);
 }

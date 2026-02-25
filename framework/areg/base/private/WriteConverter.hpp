@@ -30,7 +30,7 @@
 class OutStream;
 class Cursor;
 namespace areg { class String; }
-class WideString;
+namespace areg { class WideString; }
 
 //////////////////////////////////////////////////////////////////////////
 // WriteConverter class declaration
@@ -136,7 +136,7 @@ public:
      * \param   in_value [in]    The wide-char string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
-    bool setString( const WideString & in_value );
+    bool setString( const areg::WideString & in_value );
 
     /**
      * \brief   Writes null-terminated wide-char string value to the writable streaming object

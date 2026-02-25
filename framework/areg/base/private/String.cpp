@@ -175,7 +175,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    String::String(const WideString & source)
+    String::String(const areg::WideString & source)
         : StringBase<char>( )
     {
         assign(source.getString(), source.getLength());
@@ -191,13 +191,13 @@ namespace areg
     // operators / operations
     //////////////////////////////////////////////////////////////////////////
 
-    String & String::operator = (const WideString & src)
+    String & String::operator = (const areg::WideString & src)
     {
         assign(src.getString(), src.getLength());
         return (*this);
     }
 
-    bool String::operator == (const WideString& other) const
+    bool String::operator == (const areg::WideString& other) const
     {
         bool result = false;
         if (getLength() == other.getLength())
@@ -252,7 +252,7 @@ namespace areg
         return result;
     }
 
-    bool String::operator != (const WideString& other) const
+    bool String::operator != (const areg::WideString& other) const
     {
         bool result = true;
         if (getLength() == other.getLength())
@@ -263,7 +263,7 @@ namespace areg
         return result;
     }
 
-    String & String::operator += (const WideString & src)
+    String & String::operator += (const areg::WideString & src)
     {
         append(src.getString(), src.getLength());
         return (*this);

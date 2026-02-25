@@ -217,7 +217,7 @@ protected:
      * \param   wide      The buffer of Wide String to stream data from Input Stream object.
      * \return  Returns the size in bytes of copied string data.
      **/
-    uint32_t read( WideString & wide ) const override;
+    uint32_t read( areg::WideString & wide ) const override;
 
 /************************************************************************/
 // OutStream interface overrides
@@ -256,7 +256,7 @@ protected:
     * \param   wide  The buffer of String containing data to stream to Output Stream.
     * \return  Returns the size in bytes of copied string data.
     **/
-    uint32_t write( const WideString & wide ) override;
+    uint32_t write( const areg::WideString & wide ) override;
 
     /**
      * \brief	Flushes cached data to output stream object.
