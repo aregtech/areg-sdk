@@ -45,7 +45,7 @@ namespace
  **/
 const ComponentAddress & ComponentAddress::getInvalidComponentAddress()
 {
-    static const ComponentAddress _invalidComponentAddress(ThreadAddress::getInvalidThreadAddress(), areg::String(INVALID_COMPONENT_NAME));
+    static const ComponentAddress _invalidComponentAddress(areg::ThreadAddress::getInvalidThreadAddress(), areg::String(INVALID_COMPONENT_NAME));
     return _invalidComponentAddress;
 }
 
@@ -54,19 +54,19 @@ const ComponentAddress & ComponentAddress::getInvalidComponentAddress()
 //////////////////////////////////////////////////////////////////////////
 ComponentAddress::ComponentAddress()
     : mRoleName     ( INVALID_COMPONENT_NAME )
-    , mThreadAddress( ThreadAddress::getInvalidThreadAddress() )
+    , mThreadAddress( areg::ThreadAddress::getInvalidThreadAddress() )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
-ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress )
+ComponentAddress::ComponentAddress( const areg::ThreadAddress & threadAddress )
     : mRoleName     ( INVALID_COMPONENT_NAME )
     , mThreadAddress( threadAddress )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
 }
 
-ComponentAddress::ComponentAddress( const ThreadAddress & threadAddress, const areg::String & roleName )
+ComponentAddress::ComponentAddress( const areg::ThreadAddress & threadAddress, const areg::String & roleName )
     : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
     , mThreadAddress( threadAddress )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
@@ -92,7 +92,7 @@ ComponentAddress::ComponentAddress( const areg::String & roleName )
 
 ComponentAddress::ComponentAddress( const areg::String & roleName, const areg::String & nameThread )
     : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( nameThread.isEmpty() != false ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : ThreadAddress::getInvalidThreadAddress())
+    , mThreadAddress( nameThread.isEmpty() != false ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : areg::ThreadAddress::getInvalidThreadAddress())
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
@@ -132,7 +132,7 @@ areg::String ComponentAddress::convToString() const
 
     result.append(mRoleName)
           .append(areg::COMPONENT_PATH_SEPARATOR)
-          .append(ThreadAddress::convAddressToPath(mThreadAddress));
+            .append(areg::ThreadAddress::convAddressToPath(mThreadAddress));
 
     return result;
 }
@@ -142,7 +142,7 @@ void ComponentAddress::convFromString(const char * pathComponent, const char** o
     const char* strSource = pathComponent;
 
     mRoleName       = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
-    mThreadAddress  = ThreadAddress::convPathToAddress(strSource, &strSource);
+    mThreadAddress  = areg::ThreadAddress::convPathToAddress(strSource, &strSource);
     mMagicNum       = ComponentAddress::_magicNumber(*this);
 
     if (out_nextPart != nullptr)

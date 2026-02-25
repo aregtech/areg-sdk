@@ -99,7 +99,7 @@ public:
      *          Otherwise component address is invalid and component
      *          cannot be included in dispatching process.
      **/
-    ComponentAddress( const ThreadAddress & threadAddress );
+    ComponentAddress( const areg::ThreadAddress & threadAddress );
     
     /**
      * \brief	Initialization component.
@@ -108,7 +108,7 @@ public:
      * \param	threadAddress	The address of master component thread.
      * \param	roleName	    The role name of component.
      **/
-    ComponentAddress( const ThreadAddress & threadAddress, const areg::String & roleName );
+    ComponentAddress( const areg::ThreadAddress & threadAddress, const areg::String & roleName );
 
     /**
      * \brief	Initialization component.
@@ -207,7 +207,7 @@ public:
     /**
      * \brief   Returns component master thread address.
      **/
-    inline const ThreadAddress & getThreadAddress() const;
+    inline const areg::ThreadAddress & getThreadAddress() const;
 
     /**
      * \brief   Returns the name of component (role name)
@@ -262,7 +262,7 @@ private:
     /**
      * \brief   Thread address object.
      **/
-    ThreadAddress   mThreadAddress;
+    areg::ThreadAddress   mThreadAddress;
     /**
      * \brief   The numeric value of Component Address object
      **/
@@ -329,7 +329,7 @@ ComponentAddress::operator uint32_t () const
     return mMagicNum;
 }
 
-inline const ThreadAddress& ComponentAddress::getThreadAddress() const
+inline const areg::ThreadAddress& ComponentAddress::getThreadAddress() const
 {
     return mThreadAddress;
 }

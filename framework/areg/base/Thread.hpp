@@ -251,7 +251,7 @@ public:
     /**
      * \brief	Returns the address object of thread.
      **/
-    inline const ThreadAddress & getAddress() const;
+    inline const areg::ThreadAddress & getAddress() const;
 
     /**
      * \brief   Sets the thread priority level and returns the old priority level.
@@ -316,7 +316,7 @@ public:
      *                          the name of the thread, process and thread ID.
      * \return	If not nullptr, the thread object was found.
      **/
-    inline static Thread * findThreadByAddress( const ThreadAddress & threadAddres );
+    inline static Thread * findThreadByAddress( const areg::ThreadAddress & threadAddres );
 
     /**
      * \brief   Lookup Thread by thread ID and returns Thread Address object,
@@ -325,7 +325,7 @@ public:
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
-    inline static const ThreadAddress & findThreadAddressById( id_type threadId );
+    inline static const areg::ThreadAddress & findThreadAddressById( id_type threadId );
 
     /**
      * \brief   Lookup Thread by thread name and returns Thread Address object,
@@ -334,7 +334,7 @@ public:
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
-    inline static const ThreadAddress & findThreadAddressByName( const areg::String & threadName );
+    inline static const areg::ThreadAddress & findThreadAddressByName( const areg::String & threadName );
 
     /**
      * \brief   Suspends current thread and puts in a sleep mode for specified timeout in milliseconds.
@@ -370,7 +370,7 @@ public:
      * \brief   Returns the address of current thread.
      *          If Thread is not registered, returns invalid address.
      **/
-    inline static const ThreadAddress & getCurrentThreadAddress();
+    inline static const areg::ThreadAddress & getCurrentThreadAddress();
 
     /**
      * \brief   Returns the current Thread Consumer, saved in local storage.
@@ -392,7 +392,7 @@ public:
      * \brief   Returns the address of thread by specified ID. 
      *          If Thread is not registered, returns invalid address.
      **/
-    static const ThreadAddress & getThreadAddress( id_type threadId );
+    static const areg::ThreadAddress & getThreadAddress( id_type threadId );
 
     /**
      * \brief   Returns the stack size of the current thread in bytes.
@@ -469,7 +469,7 @@ protected:
     /**
      * \brief   Thread address, containing process ID and thread ID info
      **/
-    const ThreadAddress     mThreadAddress;
+    const areg::ThreadAddress     mThreadAddress;
     /**
      * \brief   The thread current priority level.
      **/
@@ -740,7 +740,7 @@ inline const areg::String& Thread::getName() const
     return mThreadAddress.getThreadName();
 }
 
-inline const ThreadAddress & Thread::getAddress() const
+inline const areg::ThreadAddress & Thread::getAddress() const
 {
     Lock lock(mSyncObject);
     return mThreadAddress;
@@ -756,21 +756,21 @@ inline Thread* Thread::findThreadById( id_type threadId)
     return Thread::_getMapThreadId().findResourceObject(threadId);
 }
 
-inline Thread* Thread::findThreadByAddress(const ThreadAddress& threadAddress)
+inline Thread* Thread::findThreadByAddress(const areg::ThreadAddress& threadAddress)
 {
     return Thread::findThreadByName(threadAddress.getThreadName());
 }
 
-inline const ThreadAddress & Thread::findThreadAddressById( id_type threadId)
+inline const areg::ThreadAddress & Thread::findThreadAddressById( id_type threadId)
 {
     Thread* threadObj = Thread::findThreadById(threadId);
-    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
+    return (threadObj != nullptr ? threadObj->getAddress() : areg::ThreadAddress::getInvalidThreadAddress());
 }
 
-inline const ThreadAddress& Thread::findThreadAddressByName(const areg::String & threadName)
+inline const areg::ThreadAddress& Thread::findThreadAddressByName(const areg::String & threadName)
 {
     Thread* threadObj = Thread::findThreadByName(threadName);
-    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
+    return (threadObj != nullptr ? threadObj->getAddress() : areg::ThreadAddress::getInvalidThreadAddress());
 }
 
 inline void Thread::_setRunning( bool isRunning )
@@ -789,7 +789,7 @@ inline const areg::String & Thread::getCurrentThreadName()
     return Thread::getThreadName( Thread::_osGetCurrentThreadId() );
 }
 
-inline const ThreadAddress & Thread::getCurrentThreadAddress()
+inline const areg::ThreadAddress & Thread::getCurrentThreadAddress()
 {
     return Thread::getThreadAddress( Thread::_osGetCurrentThreadId() );
 }

@@ -253,10 +253,10 @@ const areg::String & Thread::getThreadName( id_type threadId )
     return (threadObj != nullptr ? threadObj->getName() : areg::String::getEmptyString());
 }
 
-const ThreadAddress & Thread::getThreadAddress( id_type threadId )
+const areg::ThreadAddress & Thread::getThreadAddress( id_type threadId )
 {
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
+    return (threadObj != nullptr ? threadObj->getAddress() : areg::ThreadAddress::getInvalidThreadAddress());
 }
 
 size_t Thread::getCurrentStackSize()

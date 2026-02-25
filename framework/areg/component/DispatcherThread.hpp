@@ -97,7 +97,7 @@ public:
      * \param   threadAddr  The unique thread address to search. Should be local address
      * \return	If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object, which destroys any event passed to thread.
      **/
-    static inline DispatcherThread & getDispatcherThread(const ThreadAddress & threadAddr );
+    static inline DispatcherThread & getDispatcherThread(const areg::ThreadAddress & threadAddr );
 
     /**
      * \brief   Static method to get reference to the current 
@@ -298,7 +298,7 @@ inline DispatcherThread & DispatcherThread::getDispatcherThread( id_type threadI
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
 }
 
-inline DispatcherThread & DispatcherThread::getDispatcherThread(const ThreadAddress & threadAddr )
+inline DispatcherThread & DispatcherThread::getDispatcherThread(const areg::ThreadAddress & threadAddr )
 {
     DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::findThreadByAddress(threadAddr), DispatcherThread);
     return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );

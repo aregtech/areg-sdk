@@ -81,7 +81,7 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 
 ProxyAddress::ProxyAddress()
     : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME )
-    , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
+    , mThreadName   ( areg::ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -188,7 +188,7 @@ void ProxyAddress::setThread( const areg::String & threadName )
     else
     {
         mMagicNum   = areg::CHECKSUM_IGNORE;
-        mThreadName = ThreadAddress::getInvalidThreadAddress().getThreadName();
+        mThreadName = areg::ThreadAddress::getInvalidThreadAddress().getThreadName();
     }
 }
 
@@ -284,7 +284,7 @@ void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextP
 
 bool ProxyAddress::isValidated() const
 {
-    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
+    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
 AREG_API_IMPL const InStream & operator >> ( const InStream & stream, ProxyAddress & input )

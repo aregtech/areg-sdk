@@ -60,7 +60,7 @@ DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& which
         // start checking component binded worker threads.
         mWorkerThreadMap.lock();
 
-        ThreadAddress Key;
+        areg::ThreadAddress Key;
         DispatcherThread * dispThread = static_cast<DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
         while (result == nullptr && dispThread != nullptr)
         {
@@ -90,7 +90,7 @@ bool ComponentInfo::isWorkerThreadRegistered( WorkerThread& workerThread ) const
     return isWorkerThreadAddress(workerThread.getAddress());
 }
 
-bool ComponentInfo::isMasterThreadAddress( const ThreadAddress& threadAddress ) const
+bool ComponentInfo::isMasterThreadAddress( const areg::ThreadAddress& threadAddress ) const
 {
     return (threadAddress == mMasterThread.getAddress());
 }

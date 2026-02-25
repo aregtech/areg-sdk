@@ -214,7 +214,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
 {
     _shutdownServices();
 
-    ThreadAddress addrThread;
+    areg::ThreadAddress addrThread;
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
@@ -225,7 +225,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
 
 void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
 {
-    ThreadAddress addrThread;
+    areg::ThreadAddress addrThread;
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
@@ -238,7 +238,7 @@ void Component::terminateSelf()
 {
     _shutdownServices();
 
-    ThreadAddress threadAddress;
+    areg::ThreadAddress threadAddress;
 
     while (mComponentInfo.hasWorkerThreads())
     {
@@ -274,7 +274,7 @@ StubBase* Component::findServerByName( const areg::String & serviceName )
 
 void Component::waitComponentCompletion( uint32_t waitTimeout )
 {
-    ThreadAddress addrThread;
+    areg::ThreadAddress addrThread;
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {

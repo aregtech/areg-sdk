@@ -66,7 +66,7 @@ const StubAddress & StubAddress::getInvalidStubAddress()
 //////////////////////////////////////////////////////////////////////////
 StubAddress::StubAddress()
     : ServiceAddress( )
-    , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
+    , mThreadName   ( areg::ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -137,7 +137,7 @@ StubAddress::StubAddress( StubAddress && source ) noexcept
 
 StubAddress::StubAddress(const ServiceAddress & source)
     : ServiceAddress(static_cast<const ServiceAddress&>(source))
-    , mThreadName   (ThreadAddress::getInvalidThreadAddress().getThreadName())
+    , mThreadName   (areg::ThreadAddress::getInvalidThreadAddress().getThreadName())
     , mChannel      ( )
     , mMagicNum     (static_cast<uint32_t>(source))
 {
@@ -147,7 +147,7 @@ StubAddress::StubAddress(const ServiceAddress & source)
 
 StubAddress::StubAddress( ServiceAddress && source)
     : ServiceAddress(std::move(source))
-    , mThreadName   (ThreadAddress::getInvalidThreadAddress().getThreadName())
+    , mThreadName   (areg::ThreadAddress::getInvalidThreadAddress().getThreadName())
     , mChannel      ( )
     , mMagicNum     (static_cast<uint32_t>(static_cast<const ServiceAddress &>(self())))
 {
@@ -194,7 +194,7 @@ void StubAddress::setThread(const areg::String & threadName)
     else
     {
         mMagicNum   = areg::CHECKSUM_IGNORE;
-        mThreadName = ThreadAddress::getInvalidThreadAddress().getThreadName();
+        mThreadName = areg::ThreadAddress::getInvalidThreadAddress().getThreadName();
     }
 }
 
@@ -278,7 +278,7 @@ uint32_t StubAddress::_magicNumber(const StubAddress & addrStub)
 
 bool StubAddress::isValidated() const
 {
-    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
+    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
 AREG_API_IMPL const InStream & operator >> ( const InStream & stream, StubAddress & input )
