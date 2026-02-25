@@ -31,7 +31,7 @@ class ConnectionProvider;
 class RegistrationProvider;
 class ServiceManager;
 class ProxyAddress;
-class StubAddress;
+namespace areg { class StubAddress; }
 namespace areg { class InStream; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
      *                              about public service connection status.
      **/
-    void _registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider );
+    void _registerServer( const areg::StubAddress & whichServer, RegistrationProvider& registerProvider );
 
     /**
       * \brief   The function is called when it is requested to unregister the service provider.
@@ -99,7 +99,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
       *                             about public service connection status.
      **/
-    void _unregisterServer( const StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
 
      /**
       * \brief   The function is called when it is requested to register the service consumer.
@@ -127,7 +127,7 @@ private:
      * \param   client      The address of service consumer to send the event.
      * \param   server      The address of service provider that connected.
      **/
-    void _sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const;
+    void _sendClientConnectedEvent( const ProxyAddress & client, const areg::StubAddress & server ) const;
 
     /**
      * \brief   Creates and sends predefined service consumer disconnected notification.
@@ -135,7 +135,7 @@ private:
      * \param   server      The address of service provider that disconnected.
      * \param   status      The service connection status.
      **/
-    void _sendClientDisconnectEvent( const ProxyAddress & client, const StubAddress & server, const areg::ServiceConnectionState status ) const;
+    void _sendClientDisconnectEvent( const ProxyAddress & client, const areg::StubAddress & server, const areg::ServiceConnectionState status ) const;
 
     /**
      * \brief   Terminates the component thread. No guarantee that all resources are cleanup.

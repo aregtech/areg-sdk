@@ -31,7 +31,7 @@ namespace
     inline static void _createRegisterRequest( areg::RemoteMessage & out_msgRegister
                                              , areg::RegistrationAction reqType
                                              , areg::DisconnectReason reason
-                                             , const StubAddress & addrService)
+                                             , const areg::StubAddress & addrService)
     {
         if (out_msgRegister.initMessage(areg::getMessageRegisterService().rbHeader) != nullptr)
         {
@@ -59,7 +59,7 @@ namespace
     inline static void _createRegisterNotify( areg::RemoteMessage & out_msgNotify
                                             , areg::RegistrationAction reqType
                                             , areg::DisconnectReason reason
-                                            , const StubAddress & addrService)
+                                            , const areg::StubAddress & addrService)
     {
         if (out_msgNotify.initMessage(areg::getMessageRegisterNotify().rbHeader) != nullptr)
         {
@@ -262,12 +262,12 @@ AREG_API_IMPL const areg::RawMessage & areg::getMessageRegisterNotify()
     return _messageRegisterNotify;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterService( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterService( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(source) )
     {
-        StubAddress temp( stub );
+        areg::StubAddress temp( stub );
         temp.setCookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterStub, areg::DisconnectReason::UndefinedReason, temp);
 
@@ -294,12 +294,12 @@ AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterClient( const ProxyA
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterUnregisterService( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::createRouterUnregisterService( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(source) )
     {
-        StubAddress temp( stub );
+        areg::StubAddress temp( stub );
         temp.setCookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterStub, reason, temp);
 
@@ -375,12 +375,12 @@ AREG_API_IMPL bool areg::isMessageRegisterService(const areg::RemoteMessage & ms
     return result;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceRegisteredNotification(const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::createServiceRegisteredNotification(const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(target) )
     {
-        StubAddress temp( stub );
+        areg::StubAddress temp( stub );
         _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterStub, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
@@ -405,12 +405,12 @@ AREG_API_IMPL areg::RemoteMessage areg::createServiceClientRegisteredNotificatio
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceUnregisteredNotification(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::createServiceUnregisteredNotification(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(target) )
     {
-        StubAddress temp( stub );
+        areg::StubAddress temp( stub );
         _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterStub, reason, temp);
 
         msgResult.setSource(source);

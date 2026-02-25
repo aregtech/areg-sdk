@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class StubAddress;
+namespace areg { class StubAddress; }
 class ProxyAddress;
 class ComponentAddress;
 
@@ -69,7 +69,7 @@ protected:
      * \param   eventType       The type of event.
      **/
     ServiceRequestEvent( const ProxyAddress & proxyAddress
-                       , const StubAddress & target
+                       , const areg::StubAddress & target
                        , uint32_t reqId
                        , areg::RequestType reqType
                        , Event::EventType eventType );

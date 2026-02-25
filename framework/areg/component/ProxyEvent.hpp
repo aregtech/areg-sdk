@@ -35,7 +35,7 @@ class ProxyEventConsumer;
  ************************************************************************/
 class Event;
 class ProxyEvent;
-class StubAddress;
+namespace areg { class StubAddress; }
 class ServiceResponseEvent;
 class NotificationConsumer;
 class Channel;
@@ -212,7 +212,7 @@ protected:
      *                      The connection status should be areg::Connected
      *                      To be able to send message to service target from Proxy client.
      **/
-    virtual void serviceConnectionUpdated( const StubAddress & Server, const Channel & Channel, areg::ServiceConnectionState Status ) = 0;
+    virtual void serviceConnectionUpdated( const areg::StubAddress & Server, const Channel & Channel, areg::ServiceConnectionState Status ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

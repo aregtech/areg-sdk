@@ -70,7 +70,7 @@ bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo 
 void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & out_clientList )
 {
     areg::ServiceConnectionState state = whichServer.getConnectionStatus();
-    const StubAddress & addrStub = whichServer.getAddress();
+    const areg::StubAddress & addrStub = whichServer.getAddress();
 
     for ( LISTPOS pos = firstPosition(); isValidPosition(pos); ++ pos)
     {
@@ -87,7 +87,7 @@ void ClientList::serverUnavailable( ClientList & out_clientList )
     {
         ClientInfo & client = valueAtPosition( pos );
         out_clientList.pushLast( client );
-        client.setTargetServer( StubAddress::getInvalidStubAddress() );
+        client.setTargetServer( areg::StubAddress::getInvalidStubAddress() );
         client.setConnectionStatus( areg::ServiceConnectionState::Pending );
     }
 }

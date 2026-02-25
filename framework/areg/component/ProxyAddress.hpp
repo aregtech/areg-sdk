@@ -31,7 +31,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class InStream; }
-class StubAddress;
+namespace areg { class StubAddress; }
 class Event;
 class ServiceRequestEvent;
 class ServiceResponseEvent;
@@ -181,7 +181,7 @@ public:
      * \brief   Returns true if passed stub address is compatible with existing proxy address
      * \param   addrStub    Address of stub to compare.
      **/
-    inline bool operator == (const StubAddress & addrStub ) const;
+    inline bool operator == (const areg::StubAddress & addrStub ) const;
 
     /**
      * \brief   Checks inequality of 2 proxy addresses. Returns true if 2 proxy addresses are not equal.
@@ -304,7 +304,7 @@ public:
      * \return  Returns true if specified service provider address (stub-address)
      *          is compatible with the proxy address.
      **/
-    bool isStubCompatible( const StubAddress & addrStub ) const;
+    bool isStubCompatible( const areg::StubAddress & addrStub ) const;
 
     /**
      * \brief   Delivers specified service request event to target Stub
@@ -415,7 +415,7 @@ namespace std
 // ProxyAddress class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
+inline bool ProxyAddress::operator == ( const areg::StubAddress & addrStub ) const
 {
     return isStubCompatible(addrStub);
 }

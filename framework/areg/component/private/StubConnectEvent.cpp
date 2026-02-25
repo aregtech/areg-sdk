@@ -20,7 +20,7 @@
 
 AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
-StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
+StubConnectEvent::StubConnectEvent(const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
     : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
                             , stubTarget
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
@@ -30,7 +30,7 @@ StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, areg::Service
 {
 }
 
-StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
+StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
     : ServiceRequestEvent   ( proxyClient
                             , stubTarget
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)

@@ -37,10 +37,10 @@ ServerList::MAPPOS ServerList::findServer(const ServerInfo& server) const
     return find(server);
 }
 
-ServerList::MAPPOS ServerList::findServer(const StubAddress& whichServer) const
+ServerList::MAPPOS ServerList::findServer(const areg::StubAddress& whichServer) const
 {
     LOG_SCOPE(areg_component_private_ServerList_findServer);
-    LOG_DBG("Search server based on server address [ %s ]", StubAddress::convAddressToPath(whichServer).getString());
+    LOG_DBG("Search server based on server address [ %s ]", areg::StubAddress::convAddressToPath(whichServer).getString());
 
     ServerInfo server(whichServer);
     return ServerList::find(server);
@@ -70,7 +70,7 @@ const ServerInfo & ServerList::registerClient( const ProxyAddress & whichClient,
     out_client = pos->second.registerClient(whichClient, pos->first);
     LOG_DBG("There are [ %d ] registered clients for service [ %s ]"
                 , pos->second.getSize()
-                , StubAddress::convAddressToPath(pos->first.getAddress()).getString());
+                , areg::StubAddress::convAddressToPath(pos->first.getAddress()).getString());
 
     return pos->first;
 }
@@ -90,13 +90,13 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
         LOG_DBG("Unregistered client [ %s ] from [ %s ] service [ %s ] with status [ %s ]. There are still [ %d ] registered clients"
                     , ProxyAddress::convAddressToPath(out_client.getAddress()).getString()
                     , pos->first.getAddress().isRemoteAddress() ? "REMOTE" : "LOCAL"
-                    , StubAddress::convAddressToPath(pos->first.getAddress()).getString()
+                    , areg::StubAddress::convAddressToPath(pos->first.getAddress()).getString()
                     , areg::getString(pos->first.getConnectionStatus())
                     , pos->second.getSize());
 
         if (pos->second.isEmpty())
         {
-            const StubAddress & addrStub = pos->first.getAddress();
+            const areg::StubAddress & addrStub = pos->first.getAddress();
             if (addrStub.getSource() == areg::SOURCE_UNKNOWN || addrStub.isRemoteAddress())
             {
                 removePosition(pos);
@@ -111,7 +111,7 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
     return result;
 }
 
-const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, ClientList & out_clinetList )
+const ServerInfo & ServerList::registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList )
 {
     LOG_SCOPE(areg_component_private_ServerList_registerServer);
 
@@ -121,7 +121,7 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
     std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(server, ClientList());
     LOG_DBG("[ %s ] entry for server [ %s ]"
                 , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
-                , StubAddress::convAddressToPath(addrStub).getString());
+                , areg::StubAddress::convAddressToPath(addrStub).getString());
 
     ServerListBase::MAPPOS pos = added.first;
     ASSERT(ServerListBase::isValidPosition(pos));
@@ -135,14 +135,14 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
 
     LOG_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
                     , addrStub.isRemoteAddress() ? "REMOTE" : "LOCAL"
-                    , StubAddress::convAddressToPath(addrStub).getString()
+                    , areg::StubAddress::convAddressToPath(addrStub).getString()
                     , areg::getString(server.getConnectionStatus())
                     , out_clinetList.getSize());
 
     return key;
 }
 
-ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, ClientList & out_clinetList )
+ServerInfo ServerList::unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList )
 {
     LOG_SCOPE(areg_component_private_ServerList_unregisterServer);
 
@@ -159,7 +159,7 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
 
         LOG_INFO("Found and unregistered [ %s ] service [ %s ], [ %d ] clients are going to be notified, the list is [ %s ]"
                         , whichServer.isRemoteAddress() ? "REMOTE" : "LOCAL"
-                        , StubAddress::convAddressToPath(whichServer).getString()
+                        , areg::StubAddress::convAddressToPath(whichServer).getString()
                         , out_clinetList.getSize()
                         , value.isEmpty() ? "EMPTY" : "NOT EMPTY");
 
@@ -176,20 +176,20 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
     return result;
 }
 
-areg::ServiceConnectionState ServerList::getServerState(const StubAddress & whichServer) const
+areg::ServiceConnectionState ServerList::getServerState(const areg::StubAddress & whichServer) const
 {
     ServerListBase::MAPPOS pos = findServer(whichServer);
     return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : areg::ServiceConnectionState::Unknown);
 }
 
-const ClientList & ServerList::getClientList(const StubAddress & whichServer) const
+const ClientList & ServerList::getClientList(const areg::StubAddress & whichServer) const
 {
     ServerListBase::MAPPOS pos = findServer(whichServer);
     ASSERT(ServerListBase::isValidPosition(pos));
     return pos->second;
 }
 
-bool ServerList::isServerRegistered(const StubAddress & server) const
+bool ServerList::isServerRegistered(const areg::StubAddress & server) const
 {
     return (ServerListBase::isValidPosition(find(ServerInfo(server))));
 }

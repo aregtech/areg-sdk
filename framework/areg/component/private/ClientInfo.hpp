@@ -22,7 +22,7 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
-class StubAddress;
+namespace areg { class StubAddress; }
 //////////////////////////////////////////////////////////////////////////
 // ClientInfo class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ public:
      * \return  Returns true if existing proxy address is compatible with
      *          given proxy address.
      **/
-    bool operator == ( const StubAddress & server ) const;
+    bool operator == ( const areg::StubAddress & server ) const;
 
     /**
      * \brief   Operator to covert client info to 32-bit unsigned integer.
@@ -143,7 +143,7 @@ public:
     * \brief   Sets target server object in client info.
     * \param   addrStub    The address of targeted server component to set in client information.
     **/
-    void setTargetServer( const StubAddress & addrStub );
+    void setTargetServer( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Called when server is in connected state.

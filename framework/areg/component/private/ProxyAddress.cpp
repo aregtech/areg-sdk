@@ -170,7 +170,7 @@ ProxyAddress::ProxyAddress( const areg::InStream & stream )
     mMagicNum = ProxyAddress::_magicNumber(*this);
 }
 
-bool ProxyAddress::isStubCompatible(const StubAddress & addrStub ) const
+bool ProxyAddress::isStubCompatible(const areg::StubAddress & addrStub ) const
 {
     return addrStub.isProxyCompatible(*this);
 }

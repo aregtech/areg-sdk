@@ -536,7 +536,7 @@ public:
     /**
      * \brief   Returns the address of target Stub object.
      **/
-    inline const StubAddress & getStubAddress() const;
+    inline const areg::StubAddress & getStubAddress() const;
 
     /**
      * \brief   Returns true if Proxy have got server connected notification.
@@ -732,7 +732,7 @@ protected:
      *                      The connection status should be areg::Connected
      *                      To be able to send message to service target from Proxy client.
      **/
-    void serviceConnectionUpdated( const StubAddress & server, const Channel & channel, areg::ServiceConnectionState status ) override;
+    void serviceConnectionUpdated( const areg::StubAddress & server, const Channel & channel, areg::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ProxyBase interface overrides
@@ -980,7 +980,7 @@ protected:
     /**
      * \brief   The address of Implemented Stub Service Interface
      **/
-    StubAddress             mStubAddress;
+    areg::StubAddress             mStubAddress;
 
     /**
      * \brief   Sequence number counter. Changed on ever request send
@@ -1094,7 +1094,7 @@ inline const ProxyAddress& ProxyBase::getProxyAddress() const
     return mProxyAddress;
 }
 
-inline const StubAddress& ProxyBase::getStubAddress() const
+inline const areg::StubAddress& ProxyBase::getStubAddress() const
 {
     return mStubAddress;
 }

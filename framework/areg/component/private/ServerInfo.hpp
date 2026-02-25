@@ -56,7 +56,7 @@ public:
      *          and sets state to Registered if specified server address is valid.
      * \param   server  The address of Stub server
      **/
-    explicit ServerInfo( const StubAddress & server );
+    explicit ServerInfo( const areg::StubAddress & server );
 
     /**
      * \brief   Initialization constructor.
@@ -64,7 +64,7 @@ public:
      *          and sets state to Registered if specified server address is valid.
      * \param   server  The address of Stub server
      **/
-    explicit ServerInfo( StubAddress && server );
+    explicit ServerInfo( areg::StubAddress && server );
 
     /**
      * \brief   Initialization constructor.
@@ -111,14 +111,14 @@ public:
      *          if specified Stub address is valid. Otherwise, it will set state Undefined.
      * \param   server  The stub address to set.
      **/
-    ServerInfo & operator = ( const StubAddress & server );
+    ServerInfo & operator = ( const areg::StubAddress & server );
 
     /**
      * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
      *          if specified Stub address is valid. Otherwise, it will set state Undefined.
      * \param   server  The stub address to set.
      **/
-    ServerInfo & operator = ( StubAddress && server ) noexcept;
+    ServerInfo & operator = ( areg::StubAddress && server ) noexcept;
 
     /**
      * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
@@ -144,7 +144,7 @@ public:
      * \brief   Returns true, if specified and the existing Stub address objects are equal. Otherwise returns false.
      * \param   server  The Stub server address to compare
      **/
-    bool operator == ( const StubAddress & server ) const;
+    bool operator == ( const areg::StubAddress & server ) const;
 
     /**
      * \brief   Returns true, if the Service Info of specified Client Info object and the existing Service Info objects are equal.
@@ -166,7 +166,7 @@ public:
     /**
      * \brief   Returns Stub server address
      **/
-    inline const StubAddress & getAddress() const;
+    inline const areg::StubAddress & getAddress() const;
 
     /**
      * \brief   Returns the state of Server Info.
@@ -198,7 +198,7 @@ private:
     /**
      * \brief   The Server Stub address
      **/
-    StubAddress mServerAddress;
+    areg::StubAddress mServerAddress;
     /**
      * \brief   The State of Server Info. State Registered set only when Stub address is valid.
      **/
@@ -238,7 +238,7 @@ namespace std
 // ServerInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress& ServerInfo::getAddress() const
+inline const areg::StubAddress& ServerInfo::getAddress() const
 {
     return mServerAddress;
 }

@@ -27,7 +27,7 @@
 /************************************************************************
  * Child objects
  ************************************************************************/
-class StubAddress;
+namespace areg { class StubAddress; }
 class ProxyAddress;
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ public:
      * \brief   Creates service address, which is contained in stub address object.
      * \param   addrStub        The address of stub object with contains information of service address.
      **/
-    explicit ServiceAddress( const StubAddress & addrStub );
+    explicit ServiceAddress( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Creates service address, which is contained in proxy address object.

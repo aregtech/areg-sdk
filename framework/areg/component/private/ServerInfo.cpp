@@ -24,19 +24,19 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServerInfo::ServerInfo()
-    : mServerAddress( StubAddress::getInvalidStubAddress() )
+    : mServerAddress( areg::StubAddress::getInvalidStubAddress() )
     , mServerState  ( areg::ServiceConnectionState::Unknown )
 {
 }
 
-ServerInfo::ServerInfo( const StubAddress & server )
+ServerInfo::ServerInfo( const areg::StubAddress & server )
     : mServerAddress( server )
     , mServerState  (  )
 {
     setConnectionStatus( areg::ServiceConnectionState::Connected );
 }
 
-ServerInfo::ServerInfo( StubAddress && server )
+ServerInfo::ServerInfo( areg::StubAddress && server )
     : mServerAddress( server )
     , mServerState  ( )
 {
@@ -81,7 +81,7 @@ ServerInfo & ServerInfo::operator = ( ServerInfo && src ) noexcept
     return (*this);
 }
 
-ServerInfo & ServerInfo::operator = ( const StubAddress & server )
+ServerInfo & ServerInfo::operator = ( const areg::StubAddress & server )
 {
     mServerAddress  = server;
     setConnectionStatus( areg::ServiceConnectionState::Connected );
@@ -89,7 +89,7 @@ ServerInfo & ServerInfo::operator = ( const StubAddress & server )
     return (*this);
 }
 
-ServerInfo & ServerInfo::operator = ( StubAddress && server ) noexcept
+ServerInfo & ServerInfo::operator = ( areg::StubAddress && server ) noexcept
 {
     mServerAddress  = std::move(server);
     setConnectionStatus( areg::ServiceConnectionState::Connected );
@@ -118,7 +118,7 @@ bool ServerInfo::operator == ( const ServerInfo & other ) const
     return (mServerAddress == other.mServerAddress);
 }
 
-bool ServerInfo::operator == ( const StubAddress & server ) const
+bool ServerInfo::operator == ( const areg::StubAddress & server ) const
 {
     return server.getRoleName() == mServerAddress.getRoleName() && server.isServiceCompatible(mServerAddress.getService());
 }

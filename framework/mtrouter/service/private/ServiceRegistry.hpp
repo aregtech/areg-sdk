@@ -72,7 +72,7 @@ public:
      * \brief   Returns true if passed stub service is already registered.
      * \param   addrStub    The remote servicing stub object to check.
      **/
-    bool isServiceRegistered( const StubAddress & addrStub ) const;
+    bool isServiceRegistered( const areg::StubAddress & addrStub ) const;
 
     /**
      * \brief   Returns true if passed proxy address is already registered.
@@ -94,7 +94,7 @@ public:
      * \return  If found registered remote Stub address, returns the actual service connection status.
      *          Otherwise, returns unknown service connection status.
      **/
-    areg::ServiceConnectionState getServiceStatus( const StubAddress & addrStub ) const;
+    areg::ServiceConnectionState getServiceStatus( const areg::StubAddress & addrStub ) const;
 
     /**
      * \brief   By given remote servicing Proxy address checks and returns the service connection status.
@@ -146,7 +146,7 @@ public:
      * \param[out]  out_listProxies     On output, contains list of remote service proxy waiting for connection
      * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
-    const ServiceStub & registerServiceStub( const StubAddress & addrStub, ListServiceProxies & out_listProxies );
+    const ServiceStub & registerServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
      * \brief   Unregisters remote Stub address and returns the registered stub service object.
@@ -155,7 +155,7 @@ public:
      * \param[out]  out_listProxies     On output, contains list of remote service proxy previously connected to Stub
      * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
-    const ServiceStub & unregisterServiceStub( const StubAddress & addrStub, ListServiceProxies & out_listProxies );
+    const ServiceStub & unregisterServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
      * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
@@ -164,7 +164,7 @@ public:
      * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList(const ITEM_ID & cookie, areg::ArrayList<StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const;
+    void getServiceList(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
@@ -173,7 +173,7 @@ public:
      * \param[out]  listProviders      On output the list contains stub address objects that have sources of specified cookie.
      * \param[out]  listConsumers    On output the list contains proxy address objects that have sources of specified cookie.
      **/
-    void getServiceSources(const ITEM_ID & cookie, areg::ArrayList<StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers);
+    void getServiceSources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers);
 
     /**
      * \brief   Call to disconnect proxy service specified by proxy address.

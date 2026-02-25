@@ -66,7 +66,7 @@ protected:
      * \param   stubService     The address of service provider to register in the system.
      * \return  Returns true if succeeded registration.
      **/
-    bool registerServiceProvider( const StubAddress & stubService ) override;
+    bool registerServiceProvider( const areg::StubAddress & stubService ) override;
 
     /**
      * \brief   Call to unregister the service provider from the system and disconnect service consumers.
@@ -74,7 +74,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    void unregisterServiceProvider( const StubAddress & stubService, const areg::DisconnectReason reason ) override;
+    void unregisterServiceProvider( const areg::StubAddress & stubService, const areg::DisconnectReason reason ) override;
 
     /**
      * \brief   Call to register the remote service consumer in the system and connect to service provider.
@@ -105,13 +105,13 @@ protected:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const override;
+    void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.
      * \param   stub    The address of remote service provider that has been registered.
      **/
-    void registeredRemoteServiceProvider( const StubAddress & stub ) override;
+    void registeredRemoteServiceProvider( const areg::StubAddress & stub ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is registered in the system.
@@ -126,7 +126,7 @@ protected:
      * \param   cookie  The cookie of source that has initiated to unregister provider.
      *                  The parameter is ignored if 'areg::COOKIE_ANY'.
      **/
-    void unregisteredRemoteServiceProvider( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+    void unregisteredRemoteServiceProvider( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when a remote service consumer is unregistered from the system.

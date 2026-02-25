@@ -24,7 +24,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class StubAddress;
+namespace areg { class StubAddress; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceProxy class declaration.
@@ -60,13 +60,13 @@ public:
      * \brief   Extracts relevant data from given Stub address and initializes Proxy service object.
      * \param   addrStub    The Stub address to extract information.
      **/
-    explicit ServiceProxy(const StubAddress & addrStub);
+    explicit ServiceProxy(const areg::StubAddress & addrStub);
 
     /**
      * \brief   Extracts relevant data from given Stub address and initializes Stub service object.
      * \param   addrStub    The Stub address to extract information.
      **/
-    explicit ServiceProxy(StubAddress && addrStub) noexcept;
+    explicit ServiceProxy(areg::StubAddress && addrStub) noexcept;
 
     /**
      * \brief   Copies data from given source.
@@ -139,7 +139,7 @@ public:
      * \param   addrStub        The address of remote servicing stub to check.
      * \return  Returns true if 2 objects are equal.
      **/
-    bool operator == ( const StubAddress & addrStub ) const;
+    bool operator == ( const areg::StubAddress & addrStub ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -177,7 +177,7 @@ public:
      * \return  Returns true if proxy entry status is connected, 
      *          i.e. at least of proxy client was waiting for connection
      **/
-    bool stubAvailable( const StubAddress & addrStub );
+    bool stubAvailable( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Called when the remote service stub of proxy is not available anymore.

@@ -21,7 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/ServiceDefs.hpp"
 
-class StubAddress;
+namespace areg { class StubAddress; }
 class ProxyAddress;
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ public:
      * \param   stubService     The address of service provider to register in the system.
      * \return  Returns true if succeeded registration.
      **/
-    virtual bool registerServiceProvider(const StubAddress& stubService) = 0;
+    virtual bool registerServiceProvider(const areg::StubAddress& stubService) = 0;
 
     /**
      * \brief   Call to unregister the service provider from the system and disconnect service consumers.
@@ -70,7 +70,7 @@ public:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterServiceProvider(const StubAddress& stubService, const areg::DisconnectReason reason) = 0;
+    virtual void unregisterServiceProvider(const areg::StubAddress& stubService, const areg::DisconnectReason reason) = 0;
 
     /**
      * \brief   Call to register the remote service consumer in the system and connect to service provider.

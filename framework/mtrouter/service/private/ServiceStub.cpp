@@ -23,13 +23,13 @@ ServiceStub::ServiceStub()
 {
 }
 
-ServiceStub::ServiceStub( const StubAddress & addrStub )
+ServiceStub::ServiceStub( const areg::StubAddress & addrStub )
     : mStubAddress  ( addrStub )
     , mConnectStatus( addrStub.isValid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
 }
 
-ServiceStub::ServiceStub( StubAddress && addrStub ) noexcept
+ServiceStub::ServiceStub( areg::StubAddress && addrStub ) noexcept
     : mStubAddress  ( std::move(addrStub) )
     , mConnectStatus(mStubAddress.isValid( ) ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
@@ -65,7 +65,7 @@ ServiceStub::ServiceStub( ServiceAddress && addrService)
 {
 }
 
-ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
+ServiceStub & ServiceStub::operator = ( const areg::StubAddress & addrStub )
 {
     mStubAddress    = addrStub;
     mConnectStatus  = addrStub.isValid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
@@ -73,7 +73,7 @@ ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
     return (*this);
 }
 
-ServiceStub & ServiceStub::operator = ( StubAddress && addrStub ) noexcept
+ServiceStub & ServiceStub::operator = ( areg::StubAddress && addrStub ) noexcept
 {
     mStubAddress    = std::move(addrStub);
     mConnectStatus  = mStubAddress.isValid( ) ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
@@ -105,7 +105,7 @@ ServiceStub & ServiceStub::operator = ( ServiceStub && stubService ) noexcept
     return (*this);
 }
 
-bool ServiceStub::operator == ( const StubAddress & addrStub ) const
+bool ServiceStub::operator == ( const areg::StubAddress & addrStub ) const
 {
     return static_cast<const ServiceAddress &>(mStubAddress) == static_cast<const ServiceAddress &>(addrStub);
 }
@@ -131,7 +131,7 @@ bool ServiceStub::isValid() const
     return mStubAddress.isValid() && (mStubAddress.getSource() != areg::SOURCE_UNKNOWN) && (mStubAddress.getCookie() != areg::COOKIE_UNKNOWN);
 }
 
-void ServiceStub::setService( const StubAddress & addrStub, areg::ServiceConnectionState connectStatus /*= areg::ServiceConnectionState::Connected */ )
+void ServiceStub::setService( const areg::StubAddress & addrStub, areg::ServiceConnectionState connectStatus /*= areg::ServiceConnectionState::Connected */ )
 {
     mStubAddress    = addrStub;
     setServiceStatus( connectStatus );

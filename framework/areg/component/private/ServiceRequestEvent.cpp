@@ -29,7 +29,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, areg::StubEvent)
 // ServiceRequestEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
-                                        , const StubAddress  & target
+                                        , const areg::StubAddress  & target
                                         , uint32_t reqId
                                         , areg::RequestType reqType
                                         , Event::EventType eventType)

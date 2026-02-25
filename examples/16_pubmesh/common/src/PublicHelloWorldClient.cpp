@@ -56,7 +56,7 @@ bool PublicHelloWorldClient::serviceConnected( areg::ServiceConnectionState stat
         {
             LOG_DBG( "Disconnected [ %s : %s ]"
                     , proxy.getStubAddress( ).isSourcePublic( ) ? "LOCAL PUBLIC" : "REMOTE PUBLIC"
-                    , StubAddress::convAddressToPath( proxy.getStubAddress()).getString());
+                    , areg::StubAddress::convAddressToPath( proxy.getStubAddress()).getString());
             printf("----- Disconnected %s service consumer -----\n", proxy.getStubAddress().isSourcePublic() ? "LOCAL PUBLIC" : "REMOTE PUBLIC");
             mTimer.stopTimer( );
         }

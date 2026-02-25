@@ -64,7 +64,7 @@ ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const areg::Str
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-ServiceAddress::ServiceAddress( const StubAddress & addrStub )
+ServiceAddress::ServiceAddress( const areg::StubAddress & addrStub )
     : ServiceItem   ( static_cast<const ServiceItem &>(addrStub) )
     , mRoleName     ( addrStub.getRoleName() )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )

@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class StubAddress;
+namespace areg { class StubAddress; }
 class ProxyAddress;
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ public:
     /**
      * \brief   Returns true if server with requested address is registered.
      **/
-    bool isServerRegistered( const StubAddress & server ) const;
+    bool isServerRegistered( const areg::StubAddress & server ) const;
 
     /**
      * \brief   Registers requested client by given address in the list.
@@ -113,7 +113,7 @@ public:
      *                                  Server to be connected.
      * \return  Returns updated and registered Server Info object.
      **/
-    const ServerInfo & registerServer( const StubAddress & addrStub, ClientList & out_clinetList );
+    const ServerInfo & registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList );
 
     /**
      * \brief   Unregisters specified Stub Server from the list and returns related
@@ -123,7 +123,7 @@ public:
      *                                  objects that were previousely registered to the service provider (server).
      * \return  Returns updated and registered Server Info object.
      **/
-    ServerInfo unregisterServer( const StubAddress & whichServer, ClientList & out_clinetList );
+    ServerInfo unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -138,7 +138,7 @@ public:
      *          is not registered yet, or returns ServerInfo::SERVER_REGISTERED
      *          if Server is registered and runs.
      **/
-    areg::ServiceConnectionState getServerState( const StubAddress & whichServer ) const;
+    areg::ServiceConnectionState getServerState( const areg::StubAddress & whichServer ) const;
 
     /**
      * \brief   Returns Client Info List related with specified server.
@@ -146,7 +146,7 @@ public:
      * \return  Returns Client Info List related with specified server.
      *          If list is empty, there is no Client connected to server yet.
      **/
-    const ClientList & getClientList( const StubAddress & whichServer ) const;
+    const ClientList & getClientList( const areg::StubAddress & whichServer ) const;
 
     /**
      * \brief   Searches the server info object for given client.
@@ -169,7 +169,7 @@ private:
     /**
      * \brief   Find server component by service address.
      **/
-    MAPPOS findServer(const StubAddress& whichServer) const;
+    MAPPOS findServer(const areg::StubAddress& whichServer) const;
 
     /**
      * \brief   Find server component by server info.

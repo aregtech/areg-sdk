@@ -29,7 +29,7 @@
  /************************************************************************
   * Dependencies
   ************************************************************************/
-class StubAddress;
+namespace areg { class StubAddress; }
 class ProxyAddress;
 namespace areg { class RemoteMessage; }
 class Channel;
@@ -168,7 +168,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to register service provider.
      * \see     createRouterUnregisterService
      **/
-    AREG_API areg::RemoteMessage createRouterRegisterService( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createRouterRegisterService( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createRouterUnregisterService
@@ -179,7 +179,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to unregister service provider.
      * \see     createRouterRegisterService
      **/
-    AREG_API areg::RemoteMessage createRouterUnregisterService( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createRouterUnregisterService( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createRouterRegisterClient
@@ -210,7 +210,7 @@ namespace areg
      * \param   target  The ID of the target to send the service provider is registered notification message.
      * \see     createServiceUnregisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceRegisteredNotification( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createServiceRegisteredNotification( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::createServiceUnregisteredNotification
@@ -221,7 +221,7 @@ namespace areg
      * \param   target  The ID of the target to send the service provider is unregistered notification message.
      * \see     createServiceRegisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createServiceUnregisteredNotification( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createServiceClientRegisteredNotification

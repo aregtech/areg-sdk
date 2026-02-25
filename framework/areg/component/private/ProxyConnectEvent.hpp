@@ -58,7 +58,7 @@ public:
      * \param   server          The address of Stub object. If valid, Proxy can send request events.
      * \param   connectStatus   Indicates the connection status.
      **/
-    ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, areg::ServiceConnectionState connectStatus );
+    ProxyConnectEvent( const ProxyAddress & proxy, const areg::StubAddress & server, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Copy constructor.
@@ -86,7 +86,7 @@ public:
     /**
      * \brief   Returns the target address Stub object.
      **/
-    inline const StubAddress & getStubAddress() const;
+    inline const areg::StubAddress & getStubAddress() const;
 
     /**
      * \brief   Returns the current connection status set in proxy connect event.
@@ -121,7 +121,7 @@ private:
     /**
      * \brief   The address of Stub server object.
      **/
-    StubAddress                     mStubAddress;
+    areg::StubAddress                     mStubAddress;
 
     /**
      * \brief   The proxy connection status.
@@ -140,7 +140,7 @@ private:
 // ProxyConnectEvent class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const StubAddress & ProxyConnectEvent::getStubAddress() const
+inline const areg::StubAddress & ProxyConnectEvent::getStubAddress() const
 {
     return mStubAddress;
 }

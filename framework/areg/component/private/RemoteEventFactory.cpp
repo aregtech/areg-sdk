@@ -44,7 +44,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
     {
     case Event::EventType::EventRemoteServiceRequest:
         {
-            StubAddress addrStub;
+            areg::StubAddress addrStub;
             stream >> addrStub;
             if ( comChannel.getCookie() == addrStub.getCookie() )
             {
@@ -64,7 +64,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
                     eventRequest->setSourceChannel(chSource);
 
                     LOG_DBG("Created Event::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
-                                , StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
+                                , areg::StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
                 }
 
@@ -75,7 +75,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
 
     case Event::EventType::EventRemoteNotifyRequest:
         {
-            StubAddress addrStub;
+            areg::StubAddress addrStub;
             stream >> addrStub;
             if ( comChannel.getCookie() == addrStub.getCookie() )
             {
@@ -95,7 +95,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
                     eventNotify->setSourceChannel(chSource);
 
                     LOG_DBG("Created Event::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
-                                , StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
+                                , areg::StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
                 }
 

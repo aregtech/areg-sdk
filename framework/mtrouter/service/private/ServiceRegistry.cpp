@@ -40,7 +40,7 @@ const ListServiceProxies  ServiceRegistry::EmptyProxiesList;
 // ServiceRegistry class methods
 //////////////////////////////////////////////////////////////////////////
 
-bool ServiceRegistry::isServiceRegistered(const StubAddress & addrStub) const
+bool ServiceRegistry::isServiceRegistered(const areg::StubAddress & addrStub) const
 {
     return contains(ServiceStub(addrStub));
 }
@@ -67,7 +67,7 @@ const ServiceProxy & ServiceRegistry::getProxyService(const ProxyAddress & addPr
     return getProxyServiceList( static_cast<const ServiceAddress &>(addProxy) ).getService(addProxy);
 }
 
-areg::ServiceConnectionState ServiceRegistry::getServiceStatus(const StubAddress & addrStub) const
+areg::ServiceConnectionState ServiceRegistry::getServiceStatus(const areg::StubAddress & addrStub) const
 {
     return getStubService(addrStub).getServiceStatus();
 }
@@ -140,7 +140,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
     return (isValidPosition( pos ) ? keyAtPosition( pos ) : ServiceRegistry::InvalidStubService);
 }
 
-const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const ServiceStub & ServiceRegistry::registerServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceStub);
 
@@ -152,7 +152,7 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
     if ( pos.second )
     {
         LOG_DBG("Registered new service [ %s ], there are no proxies yet waiting for service"
-                    , StubAddress::convAddressToPath(addrStub).getString());
+                    , areg::StubAddress::convAddressToPath(addrStub).getString());
 
         result.setServiceStatus( areg::ServiceConnectionState::Connected );
         out_listProxies = proxies;
@@ -164,14 +164,14 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
         out_listProxies = proxies;
 
         LOG_DBG("Registered service [ %s ] availability, [ %d ] proxies will be notified"
-                    , StubAddress::convAddressToPath(addrStub).getString()
+                    , areg::StubAddress::convAddressToPath(addrStub).getString()
                     , out_listProxies.getSize());
     }
 
     return result;
 }
 
-const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceStub);
 
@@ -186,7 +186,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & a
         if ( proxies.isEmpty() )
         {
             LOG_INFO("Service [ %s ] is unregistered and has no proxies, deleting registry entry"
-                        , StubAddress::convAddressToPath(addrStub).getString());
+                        , areg::StubAddress::convAddressToPath(addrStub).getString());
 
             removePosition(pos);
             pos = invalidPosition();
@@ -196,14 +196,14 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & a
         {
             out_listProxies = proxies;
             LOG_INFO("Service [ %s ] is unregistered, there are [ %d ] service clients"
-                        , StubAddress::convAddressToPath(addrStub).getString()
+                        , areg::StubAddress::convAddressToPath(addrStub).getString()
                         , out_listProxies.getSize());
         }
     }
     else
     {
         LOG_WARN("Service [ %s ] was not in registered list, ignoring"
-                    , StubAddress::convAddressToPath(addrStub).getString());
+                    , areg::StubAddress::convAddressToPath(addrStub).getString());
     }
 
     return (isValidPosition(pos) ? keyAtPosition(pos) : ServiceRegistry::InvalidStubService);
@@ -214,7 +214,7 @@ ServiceRegistry::MAPPOS ServiceRegistry::findService( const ServiceAddress & add
     return find(ServiceStub(addrService));
 }
 
-void ServiceRegistry::getServiceList(const ITEM_ID & cookie , areg::ArrayList<StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const
+void ServiceRegistry::getServiceList(const ITEM_ID & cookie , areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceList);
     LOG_DBG("Filter service list for cookie [ %u ]", static_cast<uint32_t>(cookie));
@@ -222,14 +222,14 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , areg::ArrayList<St
     for (ServiceRegistryBase::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
         const ServiceStub & svcStub  = keyAtPosition(posMap);
-        const StubAddress & addrStub = svcStub.getServiceAddress();
+        const areg::StubAddress & addrStub = svcStub.getServiceAddress();
         const ListServiceProxies & listProxies = valueAtPosition(posMap);
 
         if ( svcStub.isValid() && ((cookie == areg::COOKIE_ANY) || (addrStub.getCookie() == cookie)) )
         {
             LOG_INFO("The cookie [ %u ] of service [ %s ] with status [ %s ] match criteria."
                         , static_cast<uint32_t>(addrStub.getCookie())
-                        , StubAddress::convAddressToPath(addrStub).getString()
+                        , areg::StubAddress::convAddressToPath(addrStub).getString()
                         , areg::getString(svcStub.getServiceStatus()));
 
             listProviders.add(addrStub);
@@ -237,7 +237,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , areg::ArrayList<St
         else
         {
             LOG_DBG("Ignore stub [ %s ] with cookie [ %u ] and status [ %s ]"
-                        , StubAddress::convAddressToPath(addrStub).getString()
+                        , areg::StubAddress::convAddressToPath(addrStub).getString()
                         , static_cast<uint32_t>(addrStub.getCookie())
                         , areg::getString(svcStub.getServiceStatus()));
         }
@@ -266,7 +266,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , areg::ArrayList<St
     }
 }
 
-void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, areg::ArrayList<StubAddress> & stubSource, areg::ArrayList<ProxyAddress> & proxySources)
+void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & stubSource, areg::ArrayList<ProxyAddress> & proxySources)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_getServiceSources);
     LOG_DBG("Pickup services with [ %u ] sources ", static_cast<uint32_t>(cookie));
@@ -274,7 +274,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, areg::ArrayList<
     for (ServiceRegistry::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
         const ServiceStub & svcStub  = keyAtPosition(posMap);
-        const StubAddress & addrStub = svcStub.getServiceAddress();
+        const areg::StubAddress & addrStub = svcStub.getServiceAddress();
         const ListServiceProxies & listProxies = valueAtPosition(posMap);
 
         if (svcStub.isValid() && (cookie == addrStub.getSource()))

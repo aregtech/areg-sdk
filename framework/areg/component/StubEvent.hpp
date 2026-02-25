@@ -102,7 +102,7 @@ namespace areg
          * \param	toTarget    The address of target Stub
          * \param	eventType   The type of event.
          **/
-        StubEvent(const StubAddress & toTarget, Event::EventType eventType );
+        StubEvent(const areg::StubAddress & toTarget, Event::EventType eventType );
 
         /**
          * \brief   Destructor.
@@ -128,7 +128,7 @@ namespace areg
         /**
          * \brief   Returns the address of Stub of event target.
          **/
-        inline const StubAddress & getTargetStub() const;
+        inline const areg::StubAddress & getTargetStub() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -157,7 +157,7 @@ namespace areg
         /**
          * \brief   Event target Stub address
          **/
-        StubAddress   mTargetStubAddress;
+        areg::StubAddress   mTargetStubAddress;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
@@ -187,7 +187,7 @@ namespace areg
          * \brief   Default constructor
          * \param   stubAddress The address of stub object, which is handling consumer
          **/
-        explicit StubEventConsumer( const StubAddress & stubAddress );
+        explicit StubEventConsumer( const areg::StubAddress & stubAddress );
 
         /**
          * \brief   Destructor
@@ -242,7 +242,7 @@ namespace areg
          * \param   stubTarget  The address of registered service provider
          * \param   status      The connection status of the service provider.
          **/
-        virtual void processStubRegisteredEvent( const StubAddress & stubTarget, ServiceConnectionState status ) = 0;
+        virtual void processStubRegisteredEvent( const areg::StubAddress & stubTarget, ServiceConnectionState status ) = 0;
 
         /**
          * \brief   Send by system when client is requested connect / disconnect
@@ -292,7 +292,7 @@ namespace areg
 
     private:
         //!< The address of stub object, which is handling consumer.
-        const StubAddress & mStubAddress;
+        const areg::StubAddress & mStubAddress;
         //!< The pointer to the currently processing event object.
         Event *             mCurEvent;
 
@@ -312,7 +312,7 @@ namespace areg
     // StubEvent class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const StubAddress & StubEvent::getTargetStub() const
+    inline const areg::StubAddress & StubEvent::getTargetStub() const
     {
         return mTargetStubAddress;
     }

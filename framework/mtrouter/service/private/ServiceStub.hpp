@@ -47,13 +47,13 @@ public:
      * \brief   Initializes Stub address of remote service
      * \param   addrStub    The Stub address to set.
      **/
-    ServiceStub( const StubAddress & addrStub );
+    ServiceStub( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Initializes Stub address of remote service
      * \param   addrStub    The Stub address to set.
      **/
-    ServiceStub( StubAddress && addrStub ) noexcept;
+    ServiceStub( areg::StubAddress && addrStub ) noexcept;
 
     /**
      * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
@@ -99,13 +99,13 @@ public:
      * \brief   Copies Stub address data from given source
      * \param   addrStub    The Stub address data to copy
      **/
-    ServiceStub & operator = ( const StubAddress & addrStub );
+    ServiceStub & operator = ( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Moves Stub address data from given source.
      * \param   addrStub    The Stub address data to move.
      **/
-    ServiceStub & operator = ( StubAddress && addrStub ) noexcept;
+    ServiceStub & operator = ( areg::StubAddress && addrStub ) noexcept;
 
     /**
      * \brief   Creates and copies Stub address data out of Proxy address.
@@ -129,7 +129,7 @@ public:
      * \brief   Checks equality of address set in Service and given Stub address
      * \param   addrStub    The address of Stub to check
      **/
-    bool operator == ( const StubAddress & addrStub ) const;
+    bool operator == ( const areg::StubAddress & addrStub ) const;
 
     /**
      * \brief   Checks equality of Stub address set in service and Proxy address.
@@ -171,7 +171,7 @@ public:
     /**
      * \brief   Returns Stub remote address of service
      **/
-    inline const StubAddress & getServiceAddress() const;
+    inline const areg::StubAddress & getServiceAddress() const;
 
     /**
      * \brief   Returns true if Stub service object is valid.
@@ -188,13 +188,13 @@ public:
      * \param   addrStub        The address of remote Stub to set.
      * \param   connectStatus   The connection status to set.
      **/
-    void setService( const StubAddress & addrStub, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Connected );
+    void setService( const areg::StubAddress & addrStub, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Connected );
 
 private:
     /**
      * \brief   The address of remote Stub
      **/
-    StubAddress                     mStubAddress;
+    areg::StubAddress                     mStubAddress;
     /**
      * \brief   The connection status of service.
      **/
@@ -249,7 +249,7 @@ inline areg::ServiceConnectionState ServiceStub::getServiceStatus() const
     return mConnectStatus;
 }
 
-inline const StubAddress & ServiceStub::getServiceAddress() const
+inline const areg::StubAddress & ServiceStub::getServiceAddress() const
 {
     return mStubAddress;
 }

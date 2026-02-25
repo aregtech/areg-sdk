@@ -51,7 +51,7 @@ ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProx
         pos = lastPosition();
     }
 
-    const StubAddress & addrStub = stubService.getServiceAddress();
+    const areg::StubAddress & addrStub = stubService.getServiceAddress();
     ServiceProxy & proxyService = valueAtPosition(pos);
     if ( addrStub == addrProxy)
     {
@@ -84,7 +84,7 @@ ServiceProxy ListServiceProxies::unregisterService( const ProxyAddress & addrPro
     return result;
 }
 
-int32_t ListServiceProxies::stubServiceAvailable( const StubAddress & addrStub )
+int32_t ListServiceProxies::stubServiceAvailable( const areg::StubAddress & addrStub )
 {
     int32_t result = 0;
     for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )

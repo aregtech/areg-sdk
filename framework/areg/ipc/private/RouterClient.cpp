@@ -109,7 +109,7 @@ bool RouterClient::isServiceHostPending() const
     return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting)));
 }
 
-bool RouterClient::registerServiceProvider( const StubAddress & stubService )
+bool RouterClient::registerServiceProvider( const areg::StubAddress & stubService )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceProvider);
     Lock lock( mLock );
@@ -117,7 +117,7 @@ bool RouterClient::registerServiceProvider( const StubAddress & stubService )
     if ( isConnectionStarted() )
     {
         LOG_DBG("Queuing to send register [ %s ] service message by connection [ %d ]"
-                   , StubAddress::convAddressToPath(stubService).getString()
+                   , areg::StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
         result = sendMessage(areg::createRouterRegisterService(stubService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), Event::EventPriority::HighPrio );
@@ -126,7 +126,7 @@ bool RouterClient::registerServiceProvider( const StubAddress & stubService )
     return result;
 }
 
-void RouterClient::unregisterServiceProvider(const StubAddress & stubService, const areg::DisconnectReason reason )
+void RouterClient::unregisterServiceProvider(const areg::StubAddress & stubService, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceProvider);
 
@@ -134,7 +134,7 @@ void RouterClient::unregisterServiceProvider(const StubAddress & stubService, co
     if ( isConnectionStarted() )
     {
         LOG_DBG("Queuing to send unregister [ %s ] service message by connection [ %d ]"
-                   , StubAddress::convAddressToPath(stubService).getString()
+                   , areg::StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
         sendMessage(areg::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie(), areg::COOKIE_ROUTER) );
@@ -321,7 +321,7 @@ void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceiv
 
                 case areg::RegistrationAction::RegisterStub:
                     {
-                        StubAddress stub(msgReceived);
+                        areg::StubAddress stub(msgReceived);
                         stub.setSource( mChannel.getSource() );
                         if ( result == areg::MessageResult::Succeed )
                         {
@@ -346,7 +346,7 @@ void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceiv
 
                 case areg::RegistrationAction::UnregisterStub:
                     {
-                        StubAddress stub(msgReceived);
+                        areg::StubAddress stub(msgReceived);
                         areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
                         msgReceived >> reason;
                         stub.setSource( mChannel.getSource() );

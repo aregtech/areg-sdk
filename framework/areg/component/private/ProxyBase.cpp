@@ -268,7 +268,7 @@ ProxyBase::ProxyBase(const areg::String & roleName, const areg::InterfaceData & 
     : ProxyEventConsumer  ( mProxyAddress )
 
     , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : areg::String::getEmptyString() )
-    , mStubAddress      ( StubAddress::getInvalidStubAddress() )
+    , mStubAddress      ( areg::StubAddress::getInvalidStubAddress() )
     , mSequenceCount    ( 0 )
     , mListenerList     ( serviceIfData.idAttributeCount + serviceIfData.idResponseCount )
     , mListConnect      (   )
@@ -358,7 +358,7 @@ void ProxyBase::terminateSelf()
     }
 }
 
-void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Channel & channel, areg::ServiceConnectionState status )
+void ProxyBase::serviceConnectionUpdated( const areg::StubAddress & server, const Channel & channel, areg::ServiceConnectionState status )
 {
     LOG_SCOPE(areg_component_ProxyBase_serviceConnectionUpdated);
 
@@ -368,7 +368,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
         LOG_DBG("The proxy [ %s ] have got [ %s ] status update notification event from stub [ %s ]"
                     , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
                     , areg::getString(status)
-                    , StubAddress::convAddressToPath(server).getString());
+                    , areg::StubAddress::convAddressToPath(server).getString());
 
         ASSERT(channel.getTarget() == server.getSource() || status != areg::ServiceConnectionState::Connected);
         mProxyAddress.setChannel(channel);
@@ -380,7 +380,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
         }
         else
         {
-            mStubAddress = StubAddress::getInvalidStubAddress();
+            mStubAddress = areg::StubAddress::getInvalidStubAddress();
             mProxyData.resetStates();
         }
 
@@ -686,7 +686,7 @@ void ProxyBase::stopProxy()
         ServiceManager::requestUnregisterClient( getProxyAddress( ), areg::DisconnectReason::ConsumerDisconnected );
         mDispatcherThread.removeConsumer( *this );
 
-        mStubAddress = StubAddress::getInvalidStubAddress();
+        mStubAddress = areg::StubAddress::getInvalidStubAddress();
         mProxyData.resetStates();
         // mProxyAddress.setChannel(Channel::getInvalidChannel());
     }

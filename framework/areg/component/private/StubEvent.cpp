@@ -35,7 +35,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // StubEvent class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    StubEvent::StubEvent( const StubAddress& toTarget, Event::EventType eventType )
+    StubEvent::StubEvent( const areg::StubAddress& toTarget, Event::EventType eventType )
         : StreamableEvent   (eventType)
         , mTargetStubAddress(toTarget)
     {
@@ -89,7 +89,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // StubEventConsumer class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    areg::StubEventConsumer::StubEventConsumer( const StubAddress & stubAddress )
+    areg::StubEventConsumer::StubEventConsumer( const areg::StubAddress & stubAddress )
         : EventConsumer   ( )
         , mStubAddress      ( stubAddress )
         , mCurEvent         ( nullptr )

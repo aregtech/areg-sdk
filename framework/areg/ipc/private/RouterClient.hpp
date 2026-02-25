@@ -134,7 +134,7 @@ protected:
      * \param   stubService     The address of service provider to register in the system.
      * \return  Returns true if succeeded registration.
      **/
-    bool registerServiceProvider( const StubAddress & stubService ) override;
+    bool registerServiceProvider( const areg::StubAddress & stubService ) override;
 
     /**
      * \brief   Call to unregister the service provider from the system and disconnect service consumers.
@@ -142,7 +142,7 @@ protected:
      * \param   stubService     The address of service provider to unregister in the system.
      * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    void unregisterServiceProvider( const StubAddress & stubService, const areg::DisconnectReason reason ) override;
+    void unregisterServiceProvider( const areg::StubAddress & stubService, const areg::DisconnectReason reason ) override;
 
     /**
      * \brief   Call to register the remote service consumer in the system and connect to service provider.

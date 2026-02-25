@@ -86,7 +86,7 @@ void ServiceManager::queryCommunicationData( uint32_t & sizeSend, uint32_t & siz
     sizeReceive = serviceManager.mServiceClient.queryBytesReceived( );
 }
 
-void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
+void ServiceManager::requestRegisterServer( const areg::StubAddress & whichServer )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
     LOG_DBG("Request to register server [ %s ] of interface [ %s ]"
@@ -101,7 +101,7 @@ void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestUnregisterServer( const StubAddress & whichServer, const areg::DisconnectReason reason )
+void ServiceManager::requestUnregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
 
@@ -295,7 +295,7 @@ void ServiceManager::_waitServiceManagerThread()
     shutdownThread(areg::DO_NOT_WAIT);
 }
 
-void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<StubAddress> & out_listStubs, areg::ArrayList<ProxyAddress> & out_lisProxies ) const
+void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<ProxyAddress> & out_lisProxies ) const
 {
     LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
     Lock lock( mLock );
@@ -307,12 +307,12 @@ void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg:
 
     for (ServerList::MAPPOS posMap = serverList.firstPosition(); serverList.isValidPosition(posMap); posMap = serverList.nextPosition(posMap) )
     {
-        const StubAddress & server      = serverList.keyAtPosition(posMap).getAddress();
+        const areg::StubAddress & server      = serverList.keyAtPosition(posMap).getAddress();
         const ClientList & clientList   = serverList.valueAtPosition(posMap);
 
         if ( server.isValid() && ((cookie == areg::COOKIE_ANY) || (server.getCookie() == cookie)) )
         {
-            LOG_DBG("Found stub [ %s ] of cookie [ %u ]", StubAddress::convAddressToPath(server).getString(), static_cast<uint32_t>(cookie));
+            LOG_DBG("Found stub [ %s ] of cookie [ %u ]", areg::StubAddress::convAddressToPath(server).getString(), static_cast<uint32_t>(cookie));
             out_listStubs.add(server);
         }
 
@@ -330,7 +330,7 @@ void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg:
     LOG_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", out_listStubs.getSize(), out_lisProxies.getSize(), cookie);
 }
 
-void ServiceManager::registeredRemoteServiceProvider( const StubAddress & stub )
+void ServiceManager::registeredRemoteServiceProvider( const areg::StubAddress & stub )
 {
     ServiceManager::requestRegisterServer(stub);
 }
@@ -340,7 +340,7 @@ void ServiceManager::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
     ServiceManager::requestRegisterClient(proxy);
 }
 
-void ServiceManager::unregisteredRemoteServiceProvider(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= areg::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceProvider(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= areg::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterServer(stub, reason);
 }

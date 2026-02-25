@@ -45,14 +45,14 @@ RouterServerService::RouterServerService()
 {
 }
 
-bool RouterServerService::registerServiceProvider(const StubAddress & /* stubService */)
+bool RouterServerService::registerServiceProvider(const areg::StubAddress & /* stubService */)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceProvider);
     LOG_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
-void RouterServerService::unregisterServiceProvider(const StubAddress & /* stubService */, const areg::DisconnectReason /*reason*/ )
+void RouterServerService::unregisterServiceProvider(const areg::StubAddress & /* stubService */, const areg::DisconnectReason /*reason*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceProvider);
     LOG_ERR("Method is not implemented, this should not be called");
@@ -96,7 +96,7 @@ void RouterServerService::onServiceMessageReceived(const areg::RemoteMessage &ms
             {
             case areg::RegistrationAction::RegisterStub:
                 {
-                    StubAddress stubService(msgReceived);
+                    areg::StubAddress stubService(msgReceived);
                     stubService.setSource(source);
                     registeredRemoteServiceProvider(stubService);
                 }
@@ -112,7 +112,7 @@ void RouterServerService::onServiceMessageReceived(const areg::RemoteMessage &ms
 
             case areg::RegistrationAction::UnregisterStub:
                 {
-                    StubAddress stubService(msgReceived);
+                    areg::StubAddress stubService(msgReceived);
                     areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
                     msgReceived >> reason;
                     stubService.setSource(source);
@@ -144,7 +144,7 @@ void RouterServerService::onServiceMessageReceived(const areg::RemoteMessage &ms
             removeInstance(cookie);
             mServerConnection.closeConnection(cookie);
 
-            areg::ArrayList<StubAddress>  listStubs;
+            areg::ArrayList<areg::StubAddress>  listStubs;
             areg::ArrayList<ProxyAddress> listProxies;
             mServiceRegistry.getServiceSources(cookie, listStubs, listProxies);
 
@@ -247,7 +247,7 @@ void RouterServerService::disconnectServices()
 {
     ServiceCommunicationBase::disconnectServices( );
 
-    areg::ArrayList<StubAddress>  stubList;
+    areg::ArrayList<areg::StubAddress>  stubList;
     areg::ArrayList<ProxyAddress> proxyList;
     extractRemoteServiceAddresses(areg::COOKIE_ANY, stubList, proxyList);
 
@@ -264,17 +264,17 @@ void RouterServerService::disconnectServices()
     mServiceRegistry.clear( );
 }
 
-void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, areg::ArrayList<StubAddress> & out_listStubs, areg::ArrayList<ProxyAddress> & out_lisProxies ) const
+void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<ProxyAddress> & out_lisProxies ) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }
 
-void RouterServerService::registeredRemoteServiceProvider(const StubAddress & stub)
+void RouterServerService::registeredRemoteServiceProvider(const areg::StubAddress & stub)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceProvider);
     ASSERT(stub.isServicePublic());
 
-    LOG_DBG("Going to register remote stub [ %s ]", StubAddress::convAddressToPath(stub).getString());
+    LOG_DBG("Going to register remote stub [ %s ]", areg::StubAddress::convAddressToPath(stub).getString());
     if ( mServiceRegistry.getServiceStatus(stub) != areg::ServiceConnectionState::Connected )
     {
         ListServiceProxies listProxies;
@@ -282,7 +282,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
         if ( stubService.getServiceStatus() == areg::ServiceConnectionState::Connected && listProxies.isEmpty() == false )
         {
             LOG_DBG("Stub [ %s ] is connected, sending notification messages to [ %d ] waiting proxies"
-                        , StubAddress::convAddressToPath(stubService.getServiceAddress()).getString()
+                        , areg::StubAddress::convAddressToPath(stubService.getServiceAddress()).getString()
                         , listProxies.getSize());
 
             areg::ArrayList<ITEM_ID> sendList;
@@ -326,7 +326,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
                 {
                      // ignore, it already has registered stub locally or proxy is not connected
                     LOG_DBG("ignoring sending stub registration message, Stub [ %s ] and Proxy [ %s ] have same origin."
-                                    , StubAddress::convAddressToPath(stub).getString()
+                                    , areg::StubAddress::convAddressToPath(stub).getString()
                                     , ProxyAddress::convAddressToPath(addrProxy).getString());
                 }
             }
@@ -335,14 +335,14 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
         {
             // ignore, stub is not connected or list is empty
             LOG_DBG("Ignoring sending stub [ %s ] connected notification, the proxy list is empty [ %s ]"
-                            , StubAddress::convAddressToPath(stub).getString()
+                            , areg::StubAddress::convAddressToPath(stub).getString()
                             , listProxies.isEmpty() ? "YES" : "NO");
         }
     }
     else
     {
         // ignore, stub is already connected
-        LOG_DBG("Stub [ %s ] is already marked as connected, ignoring registration", StubAddress::convAddressToPath(stub).getString());
+        LOG_DBG("Stub [ %s ] is already marked as connected, ignoring registration", areg::StubAddress::convAddressToPath(stub).getString());
     }
 }
 
@@ -353,11 +353,11 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
     {
         ServiceProxy proxyService;
         const ServiceStub & stubService   = mServiceRegistry.registerServiceProxy(proxy, proxyService);
-        const StubAddress & addrStub      = stubService.getServiceAddress();
+        const areg::StubAddress & addrStub      = stubService.getServiceAddress();
 
         LOG_DBG("Registered proxy [ %s ], for connection with stub [ %s ], connection status is [ %s ]"
                     , ProxyAddress::convAddressToPath(proxy).getString()
-                    , StubAddress::convAddressToPath(addrStub).getString()
+                    , areg::StubAddress::convAddressToPath(addrStub).getString()
                     , areg::getString( proxyService.getServiceStatus()));
 
         if ( (proxyService.getServiceStatus() == areg::ServiceConnectionState::Connected) && (proxy.getSource() != addrStub.getSource()) )
@@ -388,7 +388,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
         {
             // ignore, it is done locally
             LOG_DBG("Ignore send stub registration message, Stub [ %s ] and Proxy [ %s ] have same origin."
-                            , StubAddress::convAddressToPath(addrStub).getString()
+                            , areg::StubAddress::convAddressToPath(addrStub).getString()
                             , ProxyAddress::convAddressToPath(proxy).getString());
         }
     }
@@ -398,7 +398,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
     }
 }
 
-void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
+void RouterServerService::unregisteredRemoteServiceProvider(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceProvider);
     if ( mServiceRegistry.getServiceStatus(stub) == areg::ServiceConnectionState::Connected )
@@ -471,7 +471,7 @@ void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress &
     }
 
     ASSERT(svcStub != nullptr);
-    const StubAddress & addrStub    = svcStub->getServiceAddress();
+    const areg::StubAddress & addrStub    = svcStub->getServiceAddress();
 
     if ((svcStub->getServiceStatus() == areg::ServiceConnectionState::Connected) && (proxy.getSource() != addrStub.getSource()))
     {

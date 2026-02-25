@@ -31,7 +31,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(RequestEvent, ServiceRequestEvent)
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RequestEvent::RequestEvent( const ProxyAddress & fromSource
-                          , const StubAddress & toTarget
+                          , const areg::StubAddress & toTarget
                           , uint32_t reqId
                           , Event::EventType eventType )
     : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
@@ -41,7 +41,7 @@ RequestEvent::RequestEvent( const ProxyAddress & fromSource
 
 RequestEvent::RequestEvent( const EventDataStream & args
                           , const ProxyAddress & fromSource
-                          , const StubAddress& toTarget
+                          , const areg::StubAddress& toTarget
                           , uint32_t reqId
                           , Event::EventType eventType
                           , const areg::String & name /*= areg::String::getEmptyString()*/ )
@@ -82,14 +82,14 @@ AREG_IMPLEMENT_RUNTIME_EVENT(LocalRequestEvent, RequestEvent)
 //////////////////////////////////////////////////////////////////////////
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-LocalRequestEvent::LocalRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId )
+LocalRequestEvent::LocalRequestEvent( const ProxyAddress & fromSource, const areg::StubAddress & toTarget, uint32_t reqId )
     : RequestEvent(fromSource, toTarget, reqId, Event::EventType::EventLocalServiceRequest)
 {
 }
 
 LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
                                     , const ProxyAddress & fromSource
-                                    , const StubAddress & toTarget
+                                    , const areg::StubAddress & toTarget
                                     , uint32_t reqId
                                     , const areg::String & name /*= areg::String::getEmptyString()*/ )
     : RequestEvent(args, fromSource, toTarget, reqId, Event::EventType::EventLocalServiceRequest, name)
@@ -113,14 +113,14 @@ AREG_IMPLEMENT_RUNTIME_EVENT(RemoteRequestEvent, RequestEvent)
 //////////////////////////////////////////////////////////////////////////
 // RequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId )
+RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const areg::StubAddress & toTarget, uint32_t reqId )
     : RequestEvent(fromSource, toTarget, reqId, Event::EventType::EventRemoteServiceRequest)
 {
 }
 
 RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
                                       , const ProxyAddress & fromSource
-                                      , const StubAddress & toTarget
+                                      , const areg::StubAddress & toTarget
                                       , uint32_t reqId
                                       , const areg::String & name /*= areg::String::getEmptyString()*/ )
     : RequestEvent(args, fromSource, toTarget, reqId, Event::EventType::EventRemoteServiceRequest, name)
@@ -146,7 +146,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(NotifyRequestEvent, ServiceRequestEvent)
 // NotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
-                                      , const StubAddress & toStub
+                                      , const areg::StubAddress & toStub
                                       , uint32_t msgId
                                       , areg::RequestType reqType
                                       , Event::EventType eventType)
@@ -172,7 +172,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(LocalNotifyRequestEvent, NotifyRequestEvent)
 // NotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 LocalNotifyRequestEvent::LocalNotifyRequestEvent( const ProxyAddress & fromProxy
-                                                , const StubAddress & toStub
+                                                , const areg::StubAddress & toStub
                                                 , uint32_t msgId
                                                 , areg::RequestType reqType )
     : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::EventType::EventLocalNotifyRequest)
@@ -197,7 +197,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(RemoteNotifyRequestEvent, NotifyRequestEvent)
 // NotifyRequestEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RemoteNotifyRequestEvent::RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
-                                                  , const StubAddress & toStub
+                                                  , const areg::StubAddress & toStub
                                                   , uint32_t msgId
                                                   , areg::RequestType reqType )
     : NotifyRequestEvent  ( fromProxy, toStub, msgId, reqType, Event::EventType::EventRemoteNotifyRequest)

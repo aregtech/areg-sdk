@@ -192,15 +192,15 @@ namespace areg
         //////////////////////////////////////////////////////////////////////////
         // StubBase resource tracking
         //////////////////////////////////////////////////////////////////////////
-        using MapStub           = areg::HashMap<StubAddress, StubBase *>;
+        using MapStub           = areg::HashMap<areg::StubAddress, StubBase *>;
         /**
          * \brief   Stub resource helper definition.
          **/
-        using ImplStubResource  = areg::ResourceMapImpl<StubAddress, StubBase *>;
+        using ImplStubResource  = areg::ResourceMapImpl<areg::StubAddress, StubBase *>;
         /**
          * \brief   Resource Map definition.
          **/
-        using MapStubResource   = areg::ConcurrentResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
+        using MapStubResource   = areg::ConcurrentResourceMap<areg::StubAddress, StubBase *, MapStub, ImplStubResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -233,7 +233,7 @@ namespace areg
         /**
          * \brief   Returns the address of Stub object.
          **/
-        inline const StubAddress & getAddress() const;
+        inline const areg::StubAddress & getAddress() const;
 
         /**
          * \brief   Returns the role name of the implemented service interface.
@@ -262,7 +262,7 @@ namespace areg
          * \return  If found, returns valid pointer of Stub object.
          *          Otherwise returns nullptr.
          **/
-        static StubBase * findStubByAddress(const StubAddress& address);
+        static StubBase * findStubByAddress(const areg::StubAddress& address);
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides
@@ -408,7 +408,7 @@ namespace areg
          * \param   stubTarget  The address of registered service provider
          * \param   status      The connection status of the service provider.
          **/
-        void processStubRegisteredEvent( const StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
+        void processStubRegisteredEvent( const areg::StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
 
         /**
          * \brief   Send by system when client is requested connect / disconnect
@@ -667,7 +667,7 @@ namespace areg
         /**
          * \brief   The address object of stub
          **/
-        StubAddress                         mAddress;
+        areg::StubAddress                         mAddress;
 
         /**
          * \brief   The service connection status
@@ -812,7 +812,7 @@ namespace areg
         return (*this);
     }
 
-    inline const StubAddress& StubBase::getAddress() const
+    inline const areg::StubAddress& StubBase::getAddress() const
     {
         return mAddress;
     }

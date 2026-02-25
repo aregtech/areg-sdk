@@ -269,7 +269,7 @@ namespace areg
         return mComponent.getMasterThread();
     }
 
-    StubBase* StubBase::findStubByAddress( const StubAddress& address )
+    StubBase* StubBase::findStubByAddress( const areg::StubAddress& address )
     {
         return map_providers().findResourceObject(address);
     }
@@ -509,7 +509,7 @@ namespace areg
         clientConnected( proxyAddress, status );
     }
 
-    void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, areg::ServiceConnectionState status )
+    void StubBase::processStubRegisteredEvent(const areg::StubAddress & stubTarget, areg::ServiceConnectionState status )
     {
         if ( areg::isServiceConnected( status) )
         {

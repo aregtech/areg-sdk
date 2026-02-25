@@ -53,7 +53,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAdd
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress & addrStub)
+ServiceManagerEventData ServiceManagerEventData::registerStub(const areg::StubAddress & addrStub)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub );
     areg::OutStream & stream = data.getWriteStream();
@@ -62,7 +62,7 @@ ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress 
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, areg::DisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregisterStub( const areg::StubAddress & addrStub, areg::DisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub );
     areg::OutStream & stream = data.getWriteStream();

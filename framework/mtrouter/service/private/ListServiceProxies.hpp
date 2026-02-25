@@ -153,7 +153,7 @@ public:
      * \return  If list of proxy services is not empty, the return value is
      *          not zero. Otherwise, it returns zero.
      **/
-    int32_t stubServiceAvailable( const StubAddress & addrStub );
+    int32_t stubServiceAvailable( const areg::StubAddress & addrStub );
 
     /**
      * \brief   Sets all registered proxy service in pending state

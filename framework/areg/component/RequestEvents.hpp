@@ -84,7 +84,7 @@ protected:
      *                      local request or remote request type.
      **/
     RequestEvent( const ProxyAddress & fromSource
-                , const StubAddress & toTarget
+                , const areg::StubAddress & toTarget
                 , uint32_t reqId
                 , Event::EventType eventType);
 
@@ -101,7 +101,7 @@ protected:
      **/
     RequestEvent( const EventDataStream & args
                 , const ProxyAddress & fromSource
-                , const StubAddress & toTarget
+                , const areg::StubAddress & toTarget
                 , uint32_t reqId
                 , Event::EventType eventType
                 , const areg::String & name = areg::String::getEmptyString());
@@ -216,7 +216,7 @@ protected:
      * \param	toTarget	The address of Stub target
      * \param	reqId	    The ID of request.
      **/
-    LocalRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
+    LocalRequestEvent(const ProxyAddress & fromSource, const areg::StubAddress & toTarget, uint32_t reqId);
 
     /**
      * \brief	Creates event with data. Initializes event source, target information and message ID.
@@ -229,7 +229,7 @@ protected:
      **/
     LocalRequestEvent( const EventDataStream & args
                      , const ProxyAddress & fromSource
-                     , const StubAddress & toTarget
+                     , const areg::StubAddress & toTarget
                      , uint32_t reqId
                      , const areg::String & name = areg::String::getEmptyString());
 
@@ -282,7 +282,7 @@ protected:
      * \param	toTarget	The address of Stub target
      * \param	reqId	    The ID of request.
      **/
-    RemoteRequestEvent(const ProxyAddress & fromSource, const StubAddress & toTarget, uint32_t reqId);
+    RemoteRequestEvent(const ProxyAddress & fromSource, const areg::StubAddress & toTarget, uint32_t reqId);
 
     /**
      * \brief	Creates event with data. Initializes event source, target information and message ID.
@@ -295,7 +295,7 @@ protected:
      **/
     RemoteRequestEvent( const EventDataStream & args
                       , const ProxyAddress & fromSource
-                      , const StubAddress & toTarget
+                      , const areg::StubAddress & toTarget
                       , uint32_t reqId
                       , const areg::String & name = areg::String::getEmptyString());
 
@@ -373,7 +373,7 @@ protected:
      * \param   eventType   The type of event. It should be either local request or remote request type.
      **/
     NotifyRequestEvent( const ProxyAddress & fromProxy
-                      , const StubAddress & toStub
+                      , const areg::StubAddress & toStub
                       , uint32_t msgId
                       , areg::RequestType reqType
                       , Event::EventType eventType );
@@ -424,7 +424,7 @@ protected:
      * \param   reqType     The type of request.
      **/
     LocalNotifyRequestEvent( const ProxyAddress & fromProxy
-                           , const StubAddress & toStub
+                           , const areg::StubAddress & toStub
                            , uint32_t msgId
                            , areg::RequestType reqType );
 
@@ -475,7 +475,7 @@ protected:
      * \param   reqType     The type of request.
      **/
     RemoteNotifyRequestEvent( const ProxyAddress & fromProxy
-                            , const StubAddress & toStub
+                            , const areg::StubAddress & toStub
                             , uint32_t msgId
                             , areg::RequestType reqType );
 

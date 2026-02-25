@@ -115,7 +115,7 @@ bool ClientInfo::operator == (const ClientInfo & other) const
     return (this != &other ? mClientAddress == other.mClientAddress : true);
 }
 
-bool ClientInfo::operator == (const StubAddress & server) const
+bool ClientInfo::operator == (const areg::StubAddress & server) const
 {
     return mClientAddress == server;
 }
@@ -141,7 +141,7 @@ ClientInfo::operator uint32_t () const
     return static_cast<uint32_t>( addrService );
 }
 
-void ClientInfo::setTargetServer(const StubAddress & addrStub)
+void ClientInfo::setTargetServer(const areg::StubAddress & addrStub)
 {
     if ( mClientAddress.getSource() != areg::SOURCE_UNKNOWN )
     {
