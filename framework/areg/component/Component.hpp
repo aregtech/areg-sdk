@@ -60,7 +60,7 @@ class AREG_API Component   : public    RuntimeObject
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
     //!< The basic operations of resource-map.
-    using ImplComponentResource = ResourceMapImpl<uint32_t, Component *>;
+    using ImplComponentResource = areg::ResourceMapImpl<uint32_t, Component *>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      *          Component           The saved values are Component objects.

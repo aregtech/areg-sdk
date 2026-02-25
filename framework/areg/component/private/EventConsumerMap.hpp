@@ -136,7 +136,7 @@ public:
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class ImplEventConsumerMap	: public ResourceMapImpl<RuntimeClassID, EventConsumerList *>
+class ImplEventConsumerMap	: public areg::ResourceMapImpl<RuntimeClassID, EventConsumerList *>
 {
 public:
     /**

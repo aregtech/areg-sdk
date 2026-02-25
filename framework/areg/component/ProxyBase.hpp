@@ -230,7 +230,7 @@ private:
     /**
      * \brief   Proxy resource map helper.
      **/
-    using ImplProxyResource = ResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
+    using ImplProxyResource = areg::ResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
 
     /**
      * \brief   ProxyBase::MapProxyResource
@@ -255,7 +255,7 @@ private:
     /**
      * \brief   The helper class used in the map of lists..
      **/
-    class ImplThreadProxyMap    : public ResourceListMapImpl<areg::String, std::shared_ptr<ProxyBase>, ThreadProxyList>
+    class ImplThreadProxyMap    : public areg::ResourceListMapImpl<areg::String, std::shared_ptr<ProxyBase>, ThreadProxyList>
     {
     public:
         /**

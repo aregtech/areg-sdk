@@ -74,7 +74,7 @@
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
          , class MapContainer   = HashMap<RESOURCE_KEY, RESOURCE_OBJECT>
-         , class Deleter        = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+         , class Deleter        = areg::ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class ResourceMapBase   : protected MapContainer
                         , protected Deleter
 {
@@ -269,7 +269,7 @@ private:
  *
  * \see    ConcurrentResourceMap, ResourceMap
  **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter = areg::ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////

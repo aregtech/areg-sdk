@@ -77,7 +77,7 @@
  *                  possible to convert to type 'const VALUE&'.
  **/
 template < typename KEY, typename VALUE>
-class HashMap : protected Constless<std::unordered_map<KEY, VALUE>>
+class HashMap : protected areg::Constless<std::unordered_map<KEY, VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -546,14 +546,14 @@ protected:
 
 template < typename KEY, typename VALUE >
 HashMap<KEY, VALUE>::HashMap(uint32_t hashSize /* = areg::MAP_DEFAULT_HASH_SIZE */)
-    : Constless<std::unordered_map<KEY, VALUE>>( )
+    : areg::Constless<std::unordered_map<KEY, VALUE>>( )
     , mValueList(hashSize)
 {
 }
 
 template<typename KEY, typename VALUE>
 HashMap<KEY, VALUE>::HashMap(const KEY* keys, const VALUE* values, uint32_t count)
-    : Constless<std::unordered_map<KEY, VALUE>>()
+    : areg::Constless<std::unordered_map<KEY, VALUE>>()
     , mValueList()
 {
     mValueList.reserve(count);
@@ -1005,7 +1005,7 @@ inline uint32_t HashMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint3
 template<typename KEY, typename VALUE>
 inline typename HashMap<KEY, VALUE>::MAPPOS HashMap<KEY, VALUE>::_citer2pos(typename std::unordered_map<KEY, VALUE>::const_iterator cit) const
 {
-    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, cit);
+    return areg::Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, cit);
 }
 
 //////////////////////////////////////////////////////////////////////////

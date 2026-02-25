@@ -37,7 +37,7 @@ class Property;
 //!< Scope hash map
 using MapLogScope   = areg::ScopeList;
 //!< Scope resource map helper
-using ImplLogScope  = ResourceMapImpl<uint32_t, LogScope *>;
+using ImplLogScope  = areg::ResourceMapImpl<uint32_t, LogScope *>;
 //!< The log scope key-value pair.
 using LogScopePair  = std::pair<uint32_t, LogScope *>;
 //!< The map of scopes to configure

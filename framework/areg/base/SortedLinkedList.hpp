@@ -52,7 +52,7 @@
  *                      possible to convert to type VALUE_TYPE.
  **/
 template <typename VALUE>
-class SortedLinkedList : private Constless<std::list<VALUE>>
+class SortedLinkedList : private areg::Constless<std::list<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal objects and types declaration
@@ -616,7 +616,7 @@ protected:
 
 template <typename VALUE >
 SortedLinkedList<VALUE>::SortedLinkedList(bool sortAscending /*= true*/)
-    : Constless<std::list<VALUE>> ( )
+    : areg::Constless<std::list<VALUE>> ( )
     , mValueList( )
     , mSorting  (sortAscending ? areg::SortOrder::Ascending : areg::SortOrder::Descending )
 {
@@ -1205,7 +1205,7 @@ inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::getPos
 template <typename VALUE >
 inline typename SortedLinkedList<VALUE>::LISTPOS SortedLinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const
 {
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+    return areg::Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 

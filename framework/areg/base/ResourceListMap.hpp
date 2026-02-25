@@ -79,7 +79,7 @@ template <typename RESOURCE_KEY
         , typename RESOURCE_OBJECT
         , class ResourceList = LinkedList<RESOURCE_OBJECT>
         , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
-        , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
+        , class Tracker      = areg::ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
 class ResourceListMapBase   : protected MapContainer
                             , protected Tracker
 {
@@ -288,7 +288,7 @@ template <typename RESOURCE_KEY
         , typename RESOURCE_OBJECT
         , class ResourceList = LinkedList<RESOURCE_OBJECT>
         , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
-        , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
+        , class Tracker      = areg::ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
 class ResourceListMap  : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -340,7 +340,7 @@ template <typename RESOURCE_KEY
         , typename RESOURCE_OBJECT
         , class ResourceList = LinkedList<RESOURCE_OBJECT>
         , class MapContainer = HashMap<RESOURCE_KEY, ResourceList>
-        , class Tracker      = ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
+        , class Tracker      = areg::ResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>>
 class ConcurrentResourceListMap    : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker>
 {
 //////////////////////////////////////////////////////////////////////////

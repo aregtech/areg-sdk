@@ -69,7 +69,7 @@
  *                  possible to convert to type 'const VALUE&'.
  **/
 template < typename KEY, typename VALUE>
-class OrderedMap : protected Constless< std::map<KEY, VALUE> >
+class OrderedMap : protected areg::Constless< std::map<KEY, VALUE> >
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -532,14 +532,14 @@ protected:
 
 template<typename KEY, typename VALUE>
 inline OrderedMap<KEY, VALUE>::OrderedMap(Compare comp)
-    : Constless< std::map<KEY, VALUE> >()
+    : areg::Constless< std::map<KEY, VALUE> >()
     , mValueList(comp)
 {
 }
 
 template<typename KEY, typename VALUE>
 OrderedMap<KEY, VALUE>::OrderedMap(const KEY* keys, const VALUE* values, uint32_t count)
-    : Constless< std::map<KEY, VALUE> >()
+    : areg::Constless< std::map<KEY, VALUE> >()
     , mValueList()
 {
     for (uint32_t i = 0; i < count; ++i)
@@ -588,7 +588,7 @@ template < typename KEY, typename VALUE >
 inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::firstPosition() const
 {
     auto pos = mValueList.begin();
-    return Constless<std::map<KEY, VALUE>>::iter(mValueList, pos);
+    return areg::Constless<std::map<KEY, VALUE>>::iter(mValueList, pos);
 }
 
 template < typename KEY, typename VALUE >
@@ -601,7 +601,7 @@ template < typename KEY, typename VALUE >
 inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::invalidPosition() const
 {
 	auto end = mValueList.end();
-    return Constless<std::map<KEY, VALUE>>::iter(mValueList, end);
+    return areg::Constless<std::map<KEY, VALUE>>::iter(mValueList, end);
 }
 
 template < typename KEY, typename VALUE >
@@ -661,7 +661,7 @@ template < typename KEY, typename VALUE >
 inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::find(const KEY& Key) const
 {
     auto cit = mValueList.empty() ? mValueList.end() : mValueList.find(Key);
-    return Constless<std::map<KEY, VALUE>>::iter(mValueList, cit);
+    return areg::Constless<std::map<KEY, VALUE>>::iter(mValueList, cit);
 }
 
 template < typename KEY, typename VALUE >

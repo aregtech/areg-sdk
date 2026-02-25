@@ -193,7 +193,7 @@ protected:
     /**
      * \brief   Stub resource helper definition.
      **/
-    using ImplStubResource  = ResourceMapImpl<StubAddress, StubBase *>;
+    using ImplStubResource  = areg::ResourceMapImpl<StubAddress, StubBase *>;
     /**
      * \brief   Resource Map definition.
      **/

@@ -656,21 +656,21 @@ private:
      *          The unique thread ID is set when thread is created
      **/
     using   MapThreadID             = IdMap<Thread *>;
-    using   ImplThreadIDResource    = ResourceMapImpl<id_type, Thread *>;
+    using   ImplThreadIDResource    = areg::ResourceMapImpl<id_type, Thread *>;
     using   MapThreadIDResource     = ConcurrentResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
     using   MapThreadPoiters        = PtrMap<Thread *>;
-    using   ImplThreadHandleResource= ResourceMapImpl< void *, Thread *>;
+    using   ImplThreadHandleResource= areg::ResourceMapImpl< void *, Thread *>;
     using   MapThreadHandleResource = ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
     using   MapThreadName           = StringMap<Thread *>;
-    using   ImplThreadNameResource  = ResourceMapImpl<areg::String, Thread *>;
+    using   ImplThreadNameResource  = areg::ResourceMapImpl<areg::String, Thread *>;
     using   MapThreadNameResource   = ConcurrentResourceMap<areg::String, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/

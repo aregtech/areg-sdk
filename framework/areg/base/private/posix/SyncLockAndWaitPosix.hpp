@@ -68,7 +68,7 @@ class SyncLockAndWaitPosix
     /**
      * \brief   The helper class of resource list map that contains helper functions implementation.
      **/
-    class ImplResourceListMap : public ResourceListMapImpl<WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
+    class ImplResourceListMap : public areg::ResourceListMapImpl<WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
     {
     public:
         /**
@@ -121,7 +121,7 @@ class SyncLockAndWaitPosix
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
-    using ImplWaitIDResource= ResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
+    using ImplWaitIDResource= areg::ResourceMapImpl<ptr_type, SyncLockAndWaitPosix *>;
     /**
      * \brief   Resource map of waitable where the keys are pthread_t (thread ID) and the values are
      *          LockAndWait objects. It is used in the timer.

@@ -50,7 +50,7 @@
  *                  default constructor, applicable comparing and assigning operators.
  **/
 template <typename VALUE> 
-class LinkedList  : private Constless<std::list<VALUE>>
+class LinkedList  : private areg::Constless<std::list<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal objects and types declaration
@@ -652,7 +652,7 @@ protected:
 
 template<typename VALUE>
 LinkedList<VALUE>::LinkedList(const VALUE* list, uint32_t count)
-    : Constless<std::list<VALUE>>()
+    : areg::Constless<std::list<VALUE>>()
     , mValueList()
 {
     for (uint32_t i = 0; i < count; ++i)
@@ -1232,7 +1232,7 @@ inline const std::list<VALUE>& LinkedList<VALUE>::getData() const
 template <typename VALUE >
 inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::findIndex(uint32_t index) const
 {
-    return Constless<std::list<VALUE>>::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+    return areg::Constless<std::list<VALUE>>::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
 template <typename VALUE >
@@ -1303,7 +1303,7 @@ inline LinkedList<VALUE>& LinkedList<VALUE>::sort(Compare comp)
 template<typename VALUE>
 inline typename LinkedList<VALUE>::LISTPOS LinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const
 {
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+    return areg::Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 //////////////////////////////////////////////////////////////////////////

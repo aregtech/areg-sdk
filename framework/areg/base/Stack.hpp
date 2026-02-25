@@ -54,7 +54,7 @@ template <typename VALUE> class StackBase;
  *                  operator. And should be possible to convert to type const VALUE &.
  **/
 template <typename VALUE>
-class StackBase   : private Constless<std::deque<VALUE>>
+class StackBase   : private areg::Constless<std::deque<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
@@ -653,7 +653,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
 StackBase<VALUE>::StackBase( Lockable & syncObject )
-    : Constless<std::deque<VALUE>>( )
+    : areg::Constless<std::deque<VALUE>>( )
     , mValueList    ( )
     , mSyncObject   ( syncObject )
 {
@@ -661,7 +661,7 @@ StackBase<VALUE>::StackBase( Lockable & syncObject )
 
 template <typename VALUE>
 StackBase<VALUE>::StackBase( Lockable & syncObject, const StackBase<VALUE> & source )
-    : Constless<std::deque<VALUE>>( )
+    : areg::Constless<std::deque<VALUE>>( )
     , mValueList    ( )
     , mSyncObject   ( syncObject )
 {
@@ -671,7 +671,7 @@ StackBase<VALUE>::StackBase( Lockable & syncObject, const StackBase<VALUE> & sou
 
 template <typename VALUE>
 StackBase<VALUE>::StackBase( Lockable & syncObject, StackBase<VALUE> && source ) noexcept
-    : Constless<std::deque<VALUE>>( )
+    : areg::Constless<std::deque<VALUE>>( )
     , mValueList    ( )
     , mSyncObject   ( syncObject )
 {
@@ -681,7 +681,7 @@ StackBase<VALUE>::StackBase( Lockable & syncObject, StackBase<VALUE> && source )
 
 template<typename VALUE>
 StackBase<VALUE>::StackBase(Lockable& syncObject, const VALUE* list, uint32_t count)
-    : Constless<std::deque<VALUE>>()
+    : areg::Constless<std::deque<VALUE>>()
     , mValueList ()
     , mSyncObject(syncObject)
 {
@@ -777,7 +777,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalidPosition() c
 {
     Lock lock(mSyncObject);
     auto end = mValueList.end();
-    return Constless<std::deque<VALUE>>::iter(mValueList, end);
+    return areg::Constless<std::deque<VALUE>>::iter(mValueList, end);
 }
 
 template <typename VALUE>
@@ -945,7 +945,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE& V
 {
     Lock lock(mSyncObject);
     auto it = std::find(mValueList.begin(), mValueList.end(), Value);
-    return Constless<std::deque<VALUE>>::iter(mValueList, it);
+    return areg::Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
 
 template <typename VALUE>
@@ -961,7 +961,7 @@ inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::firstPosition() con
 {
     Lock lock(mSyncObject);
     auto it = mValueList.begin();
-    return Constless<std::deque<VALUE>>::iter(mValueList, it);
+    return areg::Constless<std::deque<VALUE>>::iter(mValueList, it);
 }
 
 template <typename VALUE>

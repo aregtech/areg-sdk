@@ -54,7 +54,7 @@
  *                  default constructor, applicable comparing and assigning operators.
  **/
 template<typename VALUE>
-class ArrayList   : private Constless<std::vector<VALUE>>
+class ArrayList   : private areg::Constless<std::vector<VALUE>>
 {
 protected:
     using ARRAYPOS  = typename std::vector<VALUE>::iterator;
@@ -494,7 +494,7 @@ protected:
 
 template<typename VALUE >
 ArrayList< VALUE >::ArrayList( uint32_t capacity /*= areg::ARRAY_DEFAULT_CAPACITY*/, uint32_t resize /*= 0*/ )
-    : Constless<std::vector<VALUE>>( )
+    : areg::Constless<std::vector<VALUE>>( )
     , mValueList( )
 {
     capacity = std::max( resize, capacity );
@@ -511,21 +511,21 @@ ArrayList< VALUE >::ArrayList( uint32_t capacity /*= areg::ARRAY_DEFAULT_CAPACIT
 
 template<typename VALUE>
 ArrayList<VALUE>::ArrayList( const ArrayList<VALUE> & src )
-    : Constless<std::vector<VALUE>>( )
+    : areg::Constless<std::vector<VALUE>>( )
     , mValueList( src.mValueList )
 {
 }
 
 template<typename VALUE>
 ArrayList<VALUE>::ArrayList( const std::vector<VALUE> & src )
-    : Constless<std::vector<VALUE>>( )
+    : areg::Constless<std::vector<VALUE>>( )
     , mValueList( src )
 {
 }
 
 template<typename VALUE>
 ArrayList<VALUE>::ArrayList(const VALUE* list, uint32_t count)
-    : Constless<std::vector<VALUE>>( )
+    : areg::Constless<std::vector<VALUE>>( )
     , mValueList( list != nullptr ? count : 0)
 {
     if (areg::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
@@ -544,14 +544,14 @@ ArrayList<VALUE>::ArrayList(const VALUE* list, uint32_t count)
 
 template<typename VALUE>
 ArrayList<VALUE>::ArrayList( ArrayList<VALUE> && src ) noexcept
-    : Constless<std::vector<VALUE>>( )
+    : areg::Constless<std::vector<VALUE>>( )
     , mValueList( std::move(src.mValueList) )
 {
 }
 
 template<typename VALUE>
 ArrayList<VALUE>::ArrayList( std::vector<VALUE> && src ) noexcept
-    : Constless<std::vector<VALUE>>( )
+    : areg::Constless<std::vector<VALUE>>( )
     , mValueList( std::move( src ) )
 {
 }
@@ -1122,7 +1122,7 @@ inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::getPosition(uin
 template<typename VALUE >
 inline typename ArrayList< VALUE >::ARRAYPOS ArrayList< VALUE >::_citer2pos(typename std::vector<VALUE>::const_iterator cit) const
 {
-    return Constless<std::vector<VALUE>>::iter(mValueList, cit);
+    return areg::Constless<std::vector<VALUE>>::iter(mValueList, cit);
 }
 
 //////////////////////////////////////////////////////////////////////////
