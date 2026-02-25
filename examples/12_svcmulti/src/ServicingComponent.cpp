@@ -21,7 +21,7 @@ DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_processTimer);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & ownerThread)
     : Component ( entry, ownerThread )
-    , StubBase  ( self(), areg::getEmptyInterface() )
+    , areg::StubBase  ( self(), areg::getEmptyInterface() )
 
     , mTimer    ( self(), entry.mRoleName )
     , mCount    ( 0 )
@@ -31,9 +31,9 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, Compo
 void ServicingComponent::startupServiceInterface(Component & holder)
 {
     LOG_SCOPE(examples_12_svcmulti_ServicingComponent_startupServiceInterface);
-    LOG_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_INFO("The service [ %s ] of component [ %s ] has been started", areg::StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
-    StubBase::startupServiceInterface(holder);
+    areg::StubBase::startupServiceInterface(holder);
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
 
     printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
@@ -42,10 +42,10 @@ void ServicingComponent::startupServiceInterface(Component & holder)
 void ServicingComponent::shutdownServiceInterface(Component & holder)
 {
     LOG_SCOPE(examples_12_svcmulti_ServicingComponent_shutdownServiceIntrface);
-    LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", areg::StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
     mTimer.stopTimer();
-    StubBase::shutdownServiceInterface(holder);
+    areg::StubBase::shutdownServiceInterface(holder);
 
     std::cout << "Local servicing stopped..." << std::endl;
 }

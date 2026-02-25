@@ -34,7 +34,7 @@
 namespace areg { class WorkerThreadConsumer; }
 class ComponentThread;
 namespace areg { class WorkerThread; }
-class StubBase;
+namespace areg { class StubBase; }
 
 //////////////////////////////////////////////////////////////////////////
 // Component class declaration
@@ -89,7 +89,7 @@ public:
      *          The list of addresses of Servers.
      *          StubBase  The pointer to base class of Stub objects.
      **/
-    using ListServers           = areg::LinkedList<StubBase*>;
+    using ListServers           = areg::LinkedList<areg::StubBase*>;
 
 /************************************************************************/
 // static functions to load / unload component
@@ -271,7 +271,7 @@ public:
      * \brief	Registers Stub / Server object of component
      * \param	server	The Stub / Server object to register for component
      **/
-    void registerServerItem( StubBase & server );
+    void registerServerItem( areg::StubBase & server );
 
     /**
      * \brief	Find and return Stub / Server object by specified
@@ -279,7 +279,7 @@ public:
      * \param	serviceName	The service name of Stub / Server object.
      * \return	If found, returns pointer to registered server object.
      **/
-    StubBase * findServerByName( const areg::String & serviceName );
+    areg::StubBase * findServerByName( const areg::String & serviceName );
 
     /**
      * \brief	Finds event dispatcher consumer of specific runtime class ID object.

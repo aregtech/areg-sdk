@@ -21,7 +21,7 @@
 
 //! \brief   A demo of simple servicing component with timer without component servicing (request) methods.
 class ServicingComponent    : public    Component
-                            , protected StubBase
+                            , protected areg::StubBase
                             , protected areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////

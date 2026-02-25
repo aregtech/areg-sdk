@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
-    , StubBase          ( self( ), areg::getEmptyInterface( ) )
+    , areg::StubBase          ( self( ), areg::getEmptyInterface( ) )
     , areg::TimerConsumer   ( )
 
     , mDataRateHelper   ( dataRate )
@@ -38,7 +38,7 @@ SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg:
 
 void SystemServiceConsole::startupServiceInterface( Component & holder )
 {
-    StubBase::startupServiceInterface( holder );
+    areg::StubBase::startupServiceInterface( holder );
 
     Console & console = Console::getInstance( );
     console.lockConsole( );
@@ -61,7 +61,7 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
 void SystemServiceConsole::shutdownServiceInterface( Component & holder )
 {
     mTimer.stopTimer( );
-    StubBase::shutdownServiceInterface( holder );
+    areg::StubBase::shutdownServiceInterface( holder );
 }
 
 #ifdef DEBUG

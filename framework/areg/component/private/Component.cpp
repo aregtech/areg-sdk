@@ -203,7 +203,7 @@ void Component::startupComponent( ComponentThread& /* comThread */ )
 {
     for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {
-        StubBase * stub = mServerList.valueAtPosition(pos);
+        areg::StubBase * stub = mServerList.valueAtPosition(pos);
         ASSERT( stub != nullptr );
         stub->startupServiceInterface(self());
         ServiceManager::requestRegisterServer(stub->getAddress());
@@ -250,17 +250,17 @@ void Component::terminateSelf()
     delete this;
 }
 
-void Component::registerServerItem( StubBase& server )
+void Component::registerServerItem( areg::StubBase& server )
 {
     mServerList.pushLast(&server);
 }
 
-StubBase* Component::findServerByName( const areg::String & serviceName )
+areg::StubBase* Component::findServerByName( const areg::String & serviceName )
 {
-    StubBase* result = nullptr;
+    areg::StubBase* result = nullptr;
     for (ListServers::LISTPOS  pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {
-        StubBase* stub = mServerList.valueAtPosition(pos);
+        areg::StubBase* stub = mServerList.valueAtPosition(pos);
         ASSERT(stub != nullptr);
         if (stub->getAddress().getServiceName() == serviceName)
         {
@@ -307,7 +307,7 @@ inline void Component::_shutdownServices()
 {
     for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {
-        StubBase* stub = mServerList.valueAtPosition(pos);
+        areg::StubBase* stub = mServerList.valueAtPosition(pos);
         ASSERT(stub != nullptr);
 
         stub->shutdownServiceInterface(self());

@@ -51,7 +51,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
                 addrStub.setCookie( areg::COOKIE_LOCAL );
             }
 
-            const StubBase * stub = StubBase::findStubByAddress(addrStub);
+            const areg::StubBase * stub = areg::StubBase::findStubByAddress(addrStub);
             if ( stub != nullptr )
             {
                 stream.moveToBegin();
@@ -82,7 +82,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteM
                 addrStub.setCookie( areg::COOKIE_LOCAL );
             }
 
-            const StubBase * stub = StubBase::findStubByAddress(addrStub);
+            const areg::StubBase * stub = areg::StubBase::findStubByAddress(addrStub);
             if ( stub != nullptr )
             {
                 stream.moveToBegin();

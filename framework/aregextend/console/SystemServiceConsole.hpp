@@ -39,7 +39,7 @@ class DataRateHelper;
  *          It has a time with timeout 1 second to grab the data and output data rate.
  **/
 class SystemServiceConsole  : public    Component
-                            , protected StubBase
+                            , protected areg::StubBase
                             , protected areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
