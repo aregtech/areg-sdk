@@ -51,7 +51,7 @@ void Mutex::_osCreateMutex( bool initLock )
     mSyncObject = syncObj;
     if ( initLock )
     {
-        mOwnerThreadId.store( Thread::getCurrentThreadId( ) );
+        mOwnerThreadId.store( areg::Thread::getCurrentThreadId( ) );
     }
 }
 
@@ -61,7 +61,7 @@ bool Mutex::_osLockMutex( uint32_t timeout )
 
     if (WaitForSingleObject(static_cast<HANDLE>(mSyncObject), timeout) == WAIT_OBJECT_0)
     {
-        mOwnerThreadId.store( Thread::getCurrentThreadId( ) );
+        mOwnerThreadId.store( areg::Thread::getCurrentThreadId( ) );
         result = true;
     }
 

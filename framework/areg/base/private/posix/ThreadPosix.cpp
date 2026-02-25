@@ -62,14 +62,14 @@ namespace
 /************************************************************************/
 // System specific thread routines
 /************************************************************************/
-void* Thread::_posixThreadRoutine(void* data)
+void* areg::Thread::_posixThreadRoutine(void* data)
 {
     int32_t oldState{ 0 };
     int32_t oldType{ 0 };
     ::pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldType);
 
-    Thread::_defaultThreadFunction(data);
+    areg::Thread::_defaultThreadFunction(data);
 
     ::pthread_setcancelstate(oldState, nullptr);
     ::pthread_setcanceltype(oldType, nullptr);
@@ -78,7 +78,7 @@ void* Thread::_posixThreadRoutine(void* data)
     return nullptr;
 }
 
-unsigned long Thread::_windowsThreadRoutine(void* /* data */ )
+unsigned long areg::Thread::_windowsThreadRoutine(void* /* data */ )
 {
     ASSERT(false);
     return 0;
@@ -90,20 +90,20 @@ unsigned long Thread::_windowsThreadRoutine(void* /* data */ )
  **/
 #if ((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_osSetThreadName( id_type threadId, const char* threadName)
+void areg::Thread::_osSetThreadName( id_type threadId, const char* threadName)
 {
     pthread_setname_np(threadId, threadName != nullptr ? threadName : "");
 }
 
 #else// !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_osSetThreadName( id_type /*threadId*/, const char* /*threadName*/)
+void areg::Thread::_osSetThreadName( id_type /*threadId*/, const char* /*threadName*/)
 {
 }
 
 #endif // !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_osCloseHandle(  THREADHANDLE handle )
+void areg::Thread::_osCloseHandle(  THREADHANDLE handle )
 {
     if (handle != nullptr)
     {
@@ -117,7 +117,7 @@ void Thread::_osCloseHandle(  THREADHANDLE handle )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::_osSleep(uint32_t timeout)
+void areg::Thread::_osSleep(uint32_t timeout)
 {
     // since _POSIX_C_SOURCE >= 199309L use nanosleep
     // otherwise, can use:
@@ -132,23 +132,23 @@ void Thread::_osSleep(uint32_t timeout)
     nanosleep(&ts, nullptr);
 }
 
-id_type Thread::_osGetCurrentThreadId()
+id_type areg::Thread::_osGetCurrentThreadId()
 {
     return areg::convToNum<id_type, pthread_t>(pthread_self());
 }
 
-Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
+areg::Thread::ThreadCompletion areg::Thread::_osDestroyThread(uint32_t waitForStopMs)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
-    Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
-    pthread_t threadId  = areg::convToPtr<pthread_t, id_type>(Thread::INVALID_THREAD_ID);
+    areg::Thread::ThreadCompletion result = areg::Thread::ThreadCompletion::Invalid;
+    pthread_t threadId  = areg::convToPtr<pthread_t, id_type>(areg::Thread::INVALID_THREAD_ID);
 
     do
     {
         Lock lock(mSyncObject);
-        if (mThreadHandle == Thread::INVALID_THREAD_HANDLE)
+        if (mThreadHandle == areg::Thread::INVALID_THREAD_HANDLE)
         {
-            return Thread::ThreadCompletion::Invalid;
+            return areg::Thread::ThreadCompletion::Invalid;
         }
 
         threadId = areg::convToPtr<pthread_t, id_type>(mThreadId);
@@ -161,7 +161,7 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
         // here we assume that it was requested to wait for thread exit, but it is still running
         // force to terminate thread and close handles due to waiting timeout expire
         AREG_OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
-        result = Thread::ThreadCompletion::Terminated;
+        result = areg::Thread::ThreadCompletion::Terminated;
         pthread_cancel(threadId);
         mWaitForRun.resetEvent();
         mWaitForExit.setEvent();
@@ -170,14 +170,14 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
     {
         // The thread completed job normally
         AREG_OUTPUT_DBG("The thread [ %s ] completed job", mThreadAddress.getThreadName().getString());
-        result = Thread::ThreadCompletion::Completed;
+        result = areg::Thread::ThreadCompletion::Completed;
         ASSERT (waitForStopMs != areg::WAIT_INFINITE || isRunning() == false);
     }
 
     return result;
 }
 
-bool Thread::_osCreateSystemThread()
+bool areg::Thread::_osCreateSystemThread()
 {
     bool result { false };
 
@@ -197,12 +197,12 @@ bool Thread::_osCreateSystemThread()
                 }
                 
                 if ((areg::RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
-                    (areg::RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
+                    (areg::RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &areg::Thread::_posixThreadRoutine, static_cast<void *>(this))) )
                 {
                     result          = true;
                     mThreadHandle   = static_cast<THREADHANDLE>(handle);
                     mThreadId       = areg::convToNum<id_type, pthread_t>(handle->pthreadId);
-                    mThreadPriority = Thread::ThreadPriority::Normal;
+                    mThreadPriority = areg::Thread::ThreadPriority::Normal;
 
                     if (_registerThread() == false)
                     {
@@ -226,7 +226,7 @@ bool Thread::_osCreateSystemThread()
     return result;
 }
 
-Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
+areg::Thread::ThreadPriority areg::Thread::_osSetPriority( ThreadPriority newPriority )
 {
     /**
      * if priority of a thread is changed, a real-time scheduling policy must be used,
@@ -238,30 +238,30 @@ Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
     static const int32_t deltaPrio  { (maxPriority - minPriority) / 4 };
 
     Lock  lock(mSyncObject);
-    Thread::ThreadPriority oldPrio = mThreadPriority;
+    areg::Thread::ThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
         int32_t schedPrio       { std::numeric_limits<int32_t>::min() };
         pthread_t threadId  { areg::convToPtr<pthread_t, id_type>(mThreadId) };
         switch (newPriority)
         {
-        case Thread::ThreadPriority::Lowest:
+        case areg::Thread::ThreadPriority::Lowest:
             schedPrio  = minPriority;
             break;
 
-        case Thread::ThreadPriority::Low:
+        case areg::Thread::ThreadPriority::Low:
             schedPrio  = minPriority + 1 * deltaPrio;
             break;
 
-        case Thread::ThreadPriority::Normal:
+        case areg::Thread::ThreadPriority::Normal:
             schedPrio  = minPriority + 2 * deltaPrio;
             break;
 
-        case Thread::ThreadPriority::High:
+        case areg::Thread::ThreadPriority::High:
             schedPrio  = minPriority + 3 * deltaPrio;
             break;
 
-        case Thread::ThreadPriority::Highest:
+        case areg::Thread::ThreadPriority::Highest:
             schedPrio  = maxPriority;
             break;
 
@@ -280,7 +280,7 @@ Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
         else
         {
             AREG_OUTPUT_ERR("Cannot set thread priority [ %s ] (POSIX priority %d ) for thread [ %p ] , failed with error code [ %x ]."
-                , Thread::getString(newPriority)
+                , areg::Thread::getString(newPriority)
                 , schedParam.sched_priority
                 , static_cast<id_type>(mThreadId)
                 , errno);
@@ -291,7 +291,7 @@ Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
     return oldPrio;
 }
 
-size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
+size_t areg::Thread::_osGetCurrentStackSize(THREADHANDLE handle)
 {
     size_t size{ 0u };
      PosixThread* thread = reinterpret_cast< PosixThread*>(handle);

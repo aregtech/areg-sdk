@@ -50,11 +50,11 @@ static Mutex        gMutexDummy(false);         //!< Initially unlocked
 DEF_LOG_SCOPE(sync_main_HelloThread_HelloThread);
 DEF_LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
 
-class HelloThread : public Thread, protected areg::ThreadConsumer
+class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(static_cast<areg::ThreadConsumer &>(*this), "HelloThread"), areg::ThreadConsumer(), mQuit(true, true)
+        : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "HelloThread"), areg::ThreadConsumer(), mQuit(true, true)
     {
         LOG_SCOPE(sync_main_HelloThread_HelloThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
@@ -95,7 +95,7 @@ protected:
                 Lock lock(gMutexDummy);
                 LOG_DBG("Timeout expired, thread [ %s ] simulating work", getName().getString());
                 std::cout << "Wait multi-lock timeout expired, continue the job." << std::endl;
-                Thread::sleep(waitTimeout);
+                areg::Thread::sleep(waitTimeout);
             }
             else
             {
@@ -114,11 +114,11 @@ protected:
 DEF_LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
 DEF_LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
 
-class GoodbyeThread : public Thread, protected areg::ThreadConsumer
+class GoodbyeThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     GoodbyeThread()
-        : Thread(static_cast<areg::ThreadConsumer &>(*this), "GoodbyeThread"), areg::ThreadConsumer(), mQuit(false, true)
+        : areg::Thread(static_cast<areg::ThreadConsumer &>(*this), "GoodbyeThread"), areg::ThreadConsumer(), mQuit(false, true)
     {
         LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
@@ -145,7 +145,7 @@ protected:
         if (waitResult >= 0)
             multiLock.unlock(waitResult);
 
-        Thread::sleep(areg::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
         mQuit.setEvent();
     }
 };
@@ -173,18 +173,18 @@ int main()
         LOG_DBG("Starting Hello Thread");
         helloThread.createThread(areg::DO_NOT_WAIT);
 
-        Thread::sleep(areg::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gEventRun.setEvent();   // let HelloThread proceed
 
-        Thread::sleep(areg::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
         gMutexWait.unlock();
-        Thread::sleep(areg::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         GoodbyeThread goodbyeThread;
         LOG_DBG("Starting Goodbye Thread");
         goodbyeThread.createThread(areg::WAIT_INFINITE);
 
-        Thread::sleep(areg::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
         gEventExit.setEvent();

@@ -214,7 +214,7 @@ private:
     /**
      * \brief   The thread object to get user inputs from console.
      **/
-    Thread  mConsole;
+    areg::Thread  mConsole;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

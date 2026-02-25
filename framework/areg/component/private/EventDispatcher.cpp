@@ -42,7 +42,7 @@ EventDispatcher::~EventDispatcher()
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class, methods
 //////////////////////////////////////////////////////////////////////////
-bool EventDispatcher::onThreadRegistered( Thread * threadObj )
+bool EventDispatcher::onThreadRegistered( areg::Thread * threadObj )
 {
     mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
     ASSERT(mDispatcherThread != nullptr);

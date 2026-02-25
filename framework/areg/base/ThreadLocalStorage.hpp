@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Thread;
+namespace areg { class Thread; }
 
 namespace areg
 {
@@ -50,7 +50,7 @@ namespace areg
     /************************************************************************/
     // Friend classes
     /************************************************************************/
-        friend Thread;
+        friend areg::Thread;
 
     /************************************************************************/
     // Internal class declaration
@@ -77,7 +77,7 @@ namespace areg
          *          withing thread context where it was created.
          * \param   owningThread    The local storage owning thread.
          **/
-        explicit ThreadLocalStorage( Thread & owningThread );
+        explicit ThreadLocalStorage( areg::Thread & owningThread );
         /**
          * \brief   Destructor
          **/
@@ -104,7 +104,7 @@ namespace areg
         /**
          * \brief   Returns the owning thread object.
          **/
-        inline Thread & getOwnerThread() const;
+        inline areg::Thread & getOwnerThread() const;
 
         /**
          * \brief   Returns the size of a thread local storage,
@@ -219,7 +219,7 @@ namespace areg
         /**
          * \brief   The thread object, which is a holder of thread storage.
          **/
-        Thread &    mOwningThread;
+        areg::Thread &    mOwningThread;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden methods
@@ -233,7 +233,7 @@ namespace areg
     // ThreadLocalStorage class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline Thread & ThreadLocalStorage::getOwnerThread() const
+    inline areg::Thread & ThreadLocalStorage::getOwnerThread() const
     {
         return mOwningThread;
     }

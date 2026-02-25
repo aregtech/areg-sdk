@@ -90,7 +90,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Disable running function and return error on exit.
     //////////////////////////////////////////////////////////////////////////
-    virtual bool onThreadRegistered( Thread * threadObj ) override;
+    virtual bool onThreadRegistered( areg::Thread * threadObj ) override;
     virtual void onThreadRuns() override;
     virtual int32_t onThreadExit() override;
 
@@ -152,7 +152,7 @@ bool NullDispatcherThread::postEvent( Event& eventElem )
     return false;
 }
 
-bool NullDispatcherThread::onThreadRegistered( Thread * /* threadObj */)
+bool NullDispatcherThread::onThreadRegistered( areg::Thread * /* threadObj */)
 {
     ASSERT(false);
     return false;
@@ -189,7 +189,7 @@ bool NullDispatcherThread::waitForDispatcherStart( uint32_t /* waitTimeout */ /*
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class runtime implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(DispatcherThread, Thread)
+AREG_IMPLEMENT_RUNTIME(DispatcherThread, areg::Thread)
 
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class statics
@@ -204,7 +204,7 @@ DispatcherThread & DispatcherThread::_getNullDispatherThread()
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 DispatcherThread::DispatcherThread (const areg::String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
-    : Thread          ( static_cast<areg::ThreadConsumer &>(self()), threadName, stackSizeKb )
+    : areg::Thread          ( static_cast<areg::ThreadConsumer &>(self()), threadName, stackSizeKb )
     , EventDispatcher ( threadName, maxQeueue )
 
     , mEventStarted     ( true, false )
@@ -242,7 +242,7 @@ void DispatcherThread::triggerExit()
     mExternalEvents.unlockQueue( );
 }
 
-Thread::ThreadCompletion DispatcherThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+areg::Thread::ThreadCompletion DispatcherThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
     LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -251,7 +251,7 @@ Thread::ThreadCompletion DispatcherThread::shutdownThread( uint32_t waitForStopM
                 , isRunning() ? "RUNNING" : "NOT RUNNING" );
 
     stopDispatcher( );
-    Thread::ThreadCompletion result = Thread::shutdownThread(waitForStopMs);
+    areg::Thread::ThreadCompletion result = areg::Thread::shutdownThread(waitForStopMs);
     removeAllEvents( );
     return result;
 }
@@ -288,17 +288,17 @@ bool DispatcherThread::isExitEvent(const Event * checkEvent) const
 DispatcherThread * DispatcherThread::findEventConsumerThread( const RuntimeClassID & whichClass )
 {
     DispatcherThread * result = nullptr;
-    Thread* dispThread = AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
+    areg::Thread* dispThread = AREG_RUNTIME_CAST(areg::Thread::getCurrentThread(), DispatcherThread);
     result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
-    id_type threadId = Thread::INVALID_THREAD_ID;
-    dispThread = Thread::getFirstThread(threadId);
+    id_type threadId = areg::Thread::INVALID_THREAD_ID;
+    dispThread = areg::Thread::getFirstThread(threadId);
     while ((result == nullptr) && (dispThread != nullptr))
     {
         dispThread = dispThread != nullptr ? AREG_RUNTIME_CAST(dispThread, DispatcherThread) : nullptr;
         result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
-        dispThread = Thread::getNextThread(threadId);
+        dispThread = areg::Thread::getNextThread(threadId);
     }
 
     return result;

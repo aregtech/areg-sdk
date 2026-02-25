@@ -27,7 +27,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ThreadLocalStorage class constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    ThreadLocalStorage::ThreadLocalStorage(Thread & owningThread)
+    ThreadLocalStorage::ThreadLocalStorage(areg::Thread & owningThread)
         : mStorageList  ( )
         , mOwningThread (owningThread)
     {

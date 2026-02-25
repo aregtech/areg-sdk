@@ -108,7 +108,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     Subscriber  mSubscriber;        //!< A subscriber to this publisher that runs in the same thread. Made for testing purpose.
-    Thread      mConsoleThread;     //!< The thread to run console to interact with users.
+    areg::Thread      mConsoleThread;     //!< The thread to run console to interact with users.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

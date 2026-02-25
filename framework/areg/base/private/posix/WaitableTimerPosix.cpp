@@ -59,7 +59,7 @@ WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char 
     , mIsSignaled       ( false )
     , mFiredCount       ( 0 )
     , mDueTime          ( {0, 0} )
-    , mThreadId         ( Thread::INVALID_THREAD_ID )
+    , mThreadId         ( areg::Thread::INVALID_THREAD_ID )
 {
 #ifdef __APPLE__
     mTimerQueue = dispatch_queue_create("areg.waitable.timer", DISPATCH_QUEUE_SERIAL);
@@ -111,7 +111,7 @@ bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
             areg::os::convTimeout(mDueTime, msTimeout);
             mTimeout    = msTimeout;
             mIsSignaled = false;
-            mThreadId   = Thread::getCurrentThreadId();
+            mThreadId   = areg::Thread::getCurrentThreadId();
             result      = true;
 
             dispatch_resume(mTimerSource);
@@ -133,7 +133,7 @@ bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
         mDueTime.tv_nsec= interval.it_value.tv_nsec;
         mTimeout        = msTimeout;
         mIsSignaled     = false;
-        mThreadId       = Thread::getCurrentThreadId();
+        mThreadId       = areg::Thread::getCurrentThreadId();
         result          = true;
         if ( areg::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
         {

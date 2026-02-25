@@ -266,9 +266,9 @@ private:
     //! The timer to trigger to output data
     Timer                       mTimer;
     //! The thread to input from console.
-    Thread                      mInputThread;
+    areg::Thread                      mInputThread;
     //! The thread to generate image data.
-    Thread                      mImageThread;
+    areg::Thread                      mImageThread;
     //! The actual options.
     areg::OptionValues    mOptions;
     //! The atomic object to quit input thread.

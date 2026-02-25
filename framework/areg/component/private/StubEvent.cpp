@@ -67,7 +67,7 @@ void StubEvent::deliverEvent()
 {
     if ( mTargetThread == nullptr )
     {
-        Thread * thread = Thread::findThreadByName( mTargetStubAddress.getThread() );
+        areg::Thread * thread = areg::Thread::findThreadByName( mTargetStubAddress.getThread() );
         registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
     }
 

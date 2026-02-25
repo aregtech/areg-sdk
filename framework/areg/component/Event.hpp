@@ -101,7 +101,7 @@ public:                                                                         
 class EventConsumer;
 class EventDispatcher;
 class DispatcherThread;
-class Thread;
+namespace areg { class Thread; }
 
 //////////////////////////////////////////////////////////////////////////
 // Event class declaration

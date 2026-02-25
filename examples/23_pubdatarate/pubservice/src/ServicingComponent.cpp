@@ -264,7 +264,7 @@ void ServicingComponent::onThreadRuns()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 
-    const areg::String& threadName = Thread::getCurrentThreadName();
+    const areg::String& threadName = areg::Thread::getCurrentThreadName();
     if (threadName == THREAD_WAITINPUT )
     {
         LOG_DBG("Started console input thread.");

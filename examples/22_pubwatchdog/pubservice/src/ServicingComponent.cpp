@@ -46,7 +46,7 @@ void ServicingComponent::requestStartSleep( uint32_t timeoutSleep )
     {
         printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog );
         setServiceState( HelloWatchdog::ComponentState::Started );
-        Thread::sleep( timeoutSleep );
+        areg::Thread::sleep( timeoutSleep );
         responseStartSleep( timeoutSleep );
     }
     else

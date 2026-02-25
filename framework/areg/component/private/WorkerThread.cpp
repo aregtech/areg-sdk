@@ -94,7 +94,7 @@ void WorkerThread::terminateSelf()
     mHasStarted = false;
     removeAllEvents();
     mEventExit.setEvent();
-    Thread::shutdownThread(areg::TIMEOUT_10_MS);
+    areg::Thread::shutdownThread(areg::TIMEOUT_10_MS);
 
     delete this;
 }

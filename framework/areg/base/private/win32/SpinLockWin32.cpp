@@ -44,7 +44,7 @@ SpinLockWin32::~SpinLockWin32()
 
 bool SpinLockWin32::lock()
 {
-    id_type currThread = Thread::getCurrentThreadId( );
+    id_type currThread = areg::Thread::getCurrentThreadId( );
 
     if ( mOwnerThread != currThread )
     {
@@ -72,7 +72,7 @@ bool SpinLockWin32::unlock()
 {
     bool result = false;
 
-    id_type currThread = Thread::getCurrentThreadId( );
+    id_type currThread = areg::Thread::getCurrentThreadId( );
     if ( mOwnerThread == currThread )
     {
         ASSERT( mLockCount != 0 );
@@ -91,7 +91,7 @@ bool SpinLockWin32::unlock()
 bool SpinLockWin32::tryLock()
 {
     bool result = true;
-    id_type currThread = Thread::getCurrentThreadId( );
+    id_type currThread = areg::Thread::getCurrentThreadId( );
     if ( mOwnerThread !=  currThread )
     {
         result = false;

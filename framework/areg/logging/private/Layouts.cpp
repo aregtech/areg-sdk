@@ -352,7 +352,7 @@ void ThreadNameLayout::logMessage( const areg::LogEntry & msgLog, OutStream & st
 
     if (msgLog.logDataType == areg::LogDataType::Local)
     {
-        const areg::String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
+        const areg::String& thread{ areg::Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
         name = thread.getString();
         len  = static_cast<uint32_t>(thread.getLength());
     }

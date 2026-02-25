@@ -640,7 +640,7 @@ void ProxyBase::processServiceAvailableEvent( NotificationConsumer & consumer, u
     {
         if (delayEvent != areg::DO_NOT_WAIT)
         {
-            Thread::sleep(delayEvent);
+            areg::Thread::sleep(delayEvent);
         }
 
         static_cast<ProxyListener&>(consumer).serviceConnected(getConnectionStatus(), self());

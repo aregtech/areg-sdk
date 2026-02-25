@@ -29,22 +29,22 @@
 /************************************************************************/
 // System specific thread routines
 /************************************************************************/
-void * Thread::_posixThreadRoutine( void * /*data*/ )
+void * areg::Thread::_posixThreadRoutine( void * /*data*/ )
 {
     ASSERT(false);
     return nullptr;
 }
 
-unsigned long Thread::_windowsThreadRoutine( void * data )
+unsigned long areg::Thread::_windowsThreadRoutine( void * data )
 {
-    return Thread::_defaultThreadFunction(data);
+    return areg::Thread::_defaultThreadFunction(data);
 }
 
 /**
  * \brief   This function call is a recommendation from MSDN documentation.
  *          It is using undocumented way to set name of thread in native code.
  **/
-void Thread::_osSetThreadName( id_type threadId, const char* threadName)
+void areg::Thread::_osSetThreadName( id_type threadId, const char* threadName)
 {
 #ifdef _MSC_VER
     /**
@@ -81,7 +81,7 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
 #endif // _MSC_VER
 }
 
-void Thread::_osCloseHandle(  THREADHANDLE handle )
+void areg::Thread::_osCloseHandle(  THREADHANDLE handle )
 {
     if ( handle != nullptr )
     {
@@ -93,24 +93,24 @@ void Thread::_osCloseHandle(  THREADHANDLE handle )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::_osSleep(uint32_t timeout)
+void areg::Thread::_osSleep(uint32_t timeout)
 {
     ::Sleep(timeout);
 }
 
-id_type Thread::_osGetCurrentThreadId()
+id_type areg::Thread::_osGetCurrentThreadId()
 {
     return static_cast<id_type>(::GetCurrentThreadId());
 }
 
-Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
+areg::Thread::ThreadCompletion areg::Thread::_osDestroyThread(uint32_t waitForStopMs)
 {
     mSyncObject.lock(areg::WAIT_INFINITE);
 
-    Thread::ThreadCompletion result = Thread::ThreadCompletion::Invalid;
+    areg::Thread::ThreadCompletion result = areg::Thread::ThreadCompletion::Invalid;
 
     THREADHANDLE handle = mThreadHandle;
-    if (handle != Thread::INVALID_THREAD_HANDLE)
+    if (handle != areg::Thread::INVALID_THREAD_HANDLE)
     {
         _unregisterThread();
         mSyncObject.unlock();  // unlock, to let thread complete exit task.
@@ -136,7 +136,7 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
 #endif // _MSC_VER
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
-            result = Thread::ThreadCompletion::Terminated;
+            result = areg::Thread::ThreadCompletion::Terminated;
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(areg::ThreadConsumer::ExitCode::Terminated));
             this->mWaitForRun.resetEvent();
             this->mWaitForExit.setEvent();
@@ -147,7 +147,7 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
         else
         {
             // The thread completed job normally
-            result = Thread::ThreadCompletion::Completed;
+            result = areg::Thread::ThreadCompletion::Completed;
             ASSERT (waitForStopMs != areg::WAIT_INFINITE || isRunning() == false);
         }
 
@@ -156,7 +156,7 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
     else
     {
         // The thread is not valid and not running, nothing to destroy
-        result = Thread::ThreadCompletion::Invalid;
+        result = areg::Thread::ThreadCompletion::Invalid;
     }
 
     mSyncObject.unlock(); // nothing to do, the thread is already destroyed
@@ -164,7 +164,7 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
     return result;
 }
 
-bool Thread::_osCreateSystemThread()
+bool areg::Thread::_osCreateSystemThread()
 {
     bool result = false;
     if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
@@ -177,7 +177,7 @@ bool Thread::_osCreateSystemThread()
         unsigned long dwStack   { mStackSizeKB * areg::ONE_KILOBYTE };
         HANDLE handle = ::CreateThread( nullptr
                                       , dwStack
-                                      , (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine)
+                                      , (LPTHREAD_START_ROUTINE)(&areg::Thread::_windowsThreadRoutine)
                                       , static_cast<void *>(this)
                                       , dwFlags
                                       , &threadId);
@@ -186,7 +186,7 @@ bool Thread::_osCreateSystemThread()
             result          = true;
             mThreadHandle   = static_cast<THREADHANDLE>(handle);
             mThreadId       = threadId;
-            mThreadPriority = Thread::ThreadPriority::Normal;
+            mThreadPriority = areg::Thread::ThreadPriority::Normal;
 
             if (_registerThread() == false)
             {
@@ -199,37 +199,37 @@ bool Thread::_osCreateSystemThread()
     return result;
 }
 
-Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
+areg::Thread::ThreadPriority areg::Thread::_osSetPriority( ThreadPriority newPriority )
 {
     Lock  lock(mSyncObject);
-    Thread::ThreadPriority oldPrio{ mThreadPriority };
+    areg::Thread::ThreadPriority oldPrio{ mThreadPriority };
 
     if (_isValidNoLock() && (newPriority != mThreadPriority))
     {
         int32_t Prio = std::numeric_limits<int32_t>::min();
         switch (newPriority)
         {
-        case Thread::ThreadPriority::Lowest:
+        case areg::Thread::ThreadPriority::Lowest:
             Prio = THREAD_PRIORITY_LOWEST;
             break;
 
-        case Thread::ThreadPriority::Low:
+        case areg::Thread::ThreadPriority::Low:
             Prio = THREAD_PRIORITY_BELOW_NORMAL;
             break;
 
-        case Thread::ThreadPriority::Normal:
+        case areg::Thread::ThreadPriority::Normal:
             Prio = THREAD_PRIORITY_NORMAL;
             break;
 
-        case Thread::ThreadPriority::High:
+        case areg::Thread::ThreadPriority::High:
             Prio = THREAD_PRIORITY_ABOVE_NORMAL;
             break;
 
-        case Thread::ThreadPriority::Highest:
+        case areg::Thread::ThreadPriority::Highest:
             Prio = THREAD_PRIORITY_HIGHEST;
             break;
 
-        case Thread::ThreadPriority::Undefined:     // fall through
+        case areg::Thread::ThreadPriority::Undefined:     // fall through
         default:
             break;  // do nothing, invalid priority value
         }
@@ -243,7 +243,7 @@ Thread::ThreadPriority Thread::_osSetPriority( ThreadPriority newPriority )
     return oldPrio;
 }
 
-size_t Thread::_osGetCurrentStackSize(THREADHANDLE handle)
+size_t areg::Thread::_osGetCurrentStackSize(THREADHANDLE handle)
 {
     ULONG size{ 0u };
     return ((handle != NULL) && SetThreadStackGuarantee(&size) ? static_cast<size_t>(size) : 0);

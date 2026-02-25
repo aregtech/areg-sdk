@@ -32,6 +32,9 @@ constexpr std::string_view   STORAGE_THREAD_CONSUMER { "ThreadConsumer" };
 
 }
 
+namespace areg
+{
+
 //////////////////////////////////////////////////////////////////////////
 // Thread class constants definition
 //////////////////////////////////////////////////////////////////////////
@@ -395,3 +398,5 @@ void Thread::dumpThreads()
 }
 
 #endif // _DEBUG
+
+} // namespace areg

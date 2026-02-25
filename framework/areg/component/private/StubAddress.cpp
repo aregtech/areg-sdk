@@ -183,7 +183,7 @@ bool StubAddress::isProxyCompatible(const ProxyAddress & proxyAddress) const
 
 void StubAddress::setThread(const areg::String & threadName)
 {
-    Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
+    areg::Thread * thread = threadName.isEmpty() ? areg::Thread::getCurrentThread() : areg::Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->isValid())
     {
@@ -203,7 +203,7 @@ bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) cons
     bool result{ false };
 
     const ITEM_ID & target{ mChannel.getSource() };
-    Thread* thread = target != areg::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
+    areg::Thread* thread = target != areg::TARGET_UNKNOWN ? areg::Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
     DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
     if (dispatcher != nullptr)
     {

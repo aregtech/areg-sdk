@@ -115,7 +115,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
     , logModuleId   { Process::CURRENT_PROCESS }
-    , logThreadId   { Thread::INVALID_THREAD_ID }
+    , logThreadId   { areg::Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
     , logDuration   ( 0u )
@@ -139,7 +139,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { LogManager::getConnectionCookie() }
     , logModuleId   { Process::getInstance().getId() }
-    , logThreadId   { Thread::getCurrentThreadId() }
+    , logThreadId   { areg::Thread::getCurrentThreadId() }
     , logTimestamp  { DateTime::getNow() }
     , logReceived   { DateTime::INVALID_TIME }
     , logDuration   { scopeStamp != 0u ? static_cast<uint32_t>(logTimestamp - scopeStamp) : 0u }
@@ -164,7 +164,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
     , logModuleId   { Process::CURRENT_PROCESS }
-    , logThreadId   { Thread::INVALID_THREAD_ID }
+    , logThreadId   { areg::Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
     , logDuration   ( 0u )
@@ -325,7 +325,7 @@ AREG_API_IMPL RemoteMessage areg::createLogMessage(const areg::LogEntry& logMess
 
         if (areg::LogDataType::Local != dataType)
         {
-            const areg::String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
+            const areg::String& threadName{ areg::Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
             areg::memCopy(log->logThread, areg::LOG_NAMES_SIZE, threadName.getString(), static_cast<uint32_t>(threadName.getLength()) + 1);
             log->logThreadLen   = static_cast<uint32_t>(threadName.getLength());
         }

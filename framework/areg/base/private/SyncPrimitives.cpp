@@ -170,7 +170,7 @@ bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
             break;
 
         while ( mLock.load( std::memory_order_relaxed ) )
-            Thread::sleep( 0 );
+            areg::Thread::sleep( 0 );
     }
 
     return true;

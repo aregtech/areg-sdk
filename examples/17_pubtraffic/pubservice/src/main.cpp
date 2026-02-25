@@ -65,7 +65,7 @@ int main()
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
-    Thread * thread = Thread::findThreadByName(_threadName);
+    areg::Thread * thread = areg::Thread::findThreadByName(_threadName);
     ASSERT(thread != nullptr );
     ASSERT(thread->isInstanceOfRuntimeClass("DispatcherThread"));
 
@@ -119,7 +119,7 @@ int main()
                 return true;
             });
 
-        Thread::switchThread();
+        areg::Thread::switchThread();
 
     } while (doLoop);
         

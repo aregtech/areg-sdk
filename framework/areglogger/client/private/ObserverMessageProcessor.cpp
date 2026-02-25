@@ -449,7 +449,7 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(areg::LogEntry& log, 
     log.logTarget       = areg::TARGET_LOCAL;
     log.logCookie       = cookie;
     log.logModuleId     = Process::CURRENT_PROCESS;
-    log.logThreadId     = Thread::INVALID_THREAD_ID;
+    log.logThreadId     = areg::Thread::INVALID_THREAD_ID;
     log.logTimestamp    = timestamp == 0u ? static_cast<TIME64>(now) : timestamp;
     log.logReceived     = static_cast<TIME64>(now);
     log.logDuration     = 0u;

@@ -22,7 +22,7 @@ namespace areg
 // ThreadConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-    bool ThreadConsumer::onThreadRegistered(Thread * /*threadObj*/)
+    bool ThreadConsumer::onThreadRegistered(areg::Thread * /*threadObj*/)
     {
         return true;
     }

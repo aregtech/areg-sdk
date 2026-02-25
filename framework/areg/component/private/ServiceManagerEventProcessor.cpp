@@ -469,7 +469,7 @@ bool ServiceManagerEventProcessor::_terminateComponentThread( const areg::String
 
     bool result{ false };
 
-    Thread * thread = Thread::findThreadByName( threadName );
+    areg::Thread * thread = areg::Thread::findThreadByName( threadName );
     ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
     if ( compThread != nullptr )
     {
@@ -490,7 +490,7 @@ void ServiceManagerEventProcessor::_startComponentThread( const areg::String & t
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
     const areg::ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
-    Thread * thread = Thread::findThreadByName( threadName );
+    areg::Thread * thread = areg::Thread::findThreadByName( threadName );
     if ( entry.isValid( ) && (thread == nullptr) )
     {
         ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );

@@ -403,7 +403,7 @@ bool ComponentLoader::loadModel( areg::Model & whichModel ) const
         {
             Lock lock( mLock );
             const areg::ComponentThreadEntry& entry = thrList.mListThreads[i];
-            if ( entry.isValid( ) && Thread::findThreadByName( entry.mThreadName ) == nullptr )
+            if ( entry.isValid( ) && areg::Thread::findThreadByName( entry.mThreadName ) == nullptr )
             {
                 ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
                 if ( thrObject != nullptr )
@@ -462,7 +462,7 @@ void ComponentLoader::unloadModel( bool waitComplete, areg::Model & whichModel )
         ThreadList threadList( modelThreads.mListThreads.getSize( ) );
         for ( uint32_t i = 0; i < modelThreads.mListThreads.getSize( ); ++ i )
         {
-            Thread * compThread = Thread::findThreadByName(modelThreads.mListThreads.getAt( i ).mThreadName);
+            areg::Thread * compThread = areg::Thread::findThreadByName(modelThreads.mListThreads.getAt( i ).mThreadName);
             if (compThread != nullptr)
             {
                 ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
@@ -509,7 +509,7 @@ void ComponentLoader::waitModelThreads(areg::Model & whichModel)
         ThreadList threadList(modelThreads.mListThreads.getSize());
         for (uint32_t i = 0; i < modelThreads.mListThreads.getSize(); ++ i)
         {
-            Thread * compThread = Thread::findThreadByName(modelThreads.mListThreads.getAt(i).mThreadName);
+            areg::Thread * compThread = areg::Thread::findThreadByName(modelThreads.mListThreads.getAt(i).mThreadName);
             if (compThread != nullptr)
             {
                 ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);
@@ -531,7 +531,7 @@ void ComponentLoader::_exitThreads( const ThreadList & threadList ) const
 {
     for (uint32_t i = 0; i < threadList.getSize(); ++ i )
     {
-        Thread* thrObject = threadList[i];
+        areg::Thread* thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
         thrObject->triggerExit( );
     }
@@ -541,7 +541,7 @@ void ComponentLoader::_waitThreads( const ThreadList & threadList ) const
 {
     for ( uint32_t i = 0; i < threadList.getSize(); ++ i )
     {
-        Thread * thrObject = threadList[i];
+        areg::Thread * thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
         thrObject->completionWait( areg::WAIT_INFINITE );
     }
@@ -551,7 +551,7 @@ void ComponentLoader::_shutdownThreads( const ThreadList & threadList ) const
 {
     for ( uint32_t i = 0; i < threadList.getSize(); ++ i )
     {
-        Thread* thrObject = threadList[i];
+        areg::Thread* thrObject = threadList[i];
         ASSERT( thrObject != nullptr );
         thrObject->shutdownThread( areg::DO_NOT_WAIT );
         delete thrObject;

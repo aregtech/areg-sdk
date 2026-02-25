@@ -41,6 +41,9 @@ namespace areg { class ThreadLocalStorage; }
 namespace areg { class ThreadConsumer; }
 class InStream;
 
+namespace areg
+{
+
 //////////////////////////////////////////////////////////////////////////
 // Thread class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -845,5 +848,7 @@ inline const char * Thread::getString( Thread::ThreadPriority threadPriority )
         return "ERR: Invalid Thread::ThreadPriority value!";
     }
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_THREAD_HPP

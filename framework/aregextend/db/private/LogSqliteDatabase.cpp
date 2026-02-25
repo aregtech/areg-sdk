@@ -486,8 +486,8 @@ inline void LogSqliteDatabase::_initialize()
     Process& proc{ Process::getInstance() };
     DateTime now{ DateTime::getNow() };
     areg::String module{ proc.getAppName() };
-    id_type threadId{ Thread::getCurrentThreadId() };
-    areg::String thread{ Thread::getThreadName(threadId) };
+    id_type threadId{ areg::Thread::getCurrentThreadId() };
+    areg::String thread{ areg::Thread::getThreadName(threadId) };
 
     char sql[SQL_LEN]{};
     areg::String::formatString( sql, SQL_LEN, _fmtVersion.data()
@@ -675,8 +675,8 @@ bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& inst
     Lock lock(mLock);
     Process& proc    { Process::getInstance() };
     areg::String   module  { proc.getAppName() };
-    id_type  threadId{ Thread::getCurrentThreadId() };
-    areg::String   thread  { Thread::getThreadName(threadId) };
+    id_type  threadId{ areg::Thread::getCurrentThreadId() };
+    areg::String   thread  { areg::Thread::getThreadName(threadId) };
 
     char sqlInst[SQL_LEN];
     areg::String::formatString( sqlInst, SQL_LEN, _fmtInstance.data()
@@ -698,8 +698,8 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
 
     Process& proc{ Process::getInstance() };
     areg::String module{ proc.getAppName() };
-    id_type threadId{ Thread::getCurrentThreadId() };
-    areg::String thread{ Thread::getThreadName(threadId) };
+    id_type threadId{ areg::Thread::getCurrentThreadId() };
+    areg::String thread{ areg::Thread::getThreadName(threadId) };
 
     char sqlInst[SQL_LEN];
     areg::String::formatString( sqlInst, SQL_LEN, _fmtUpdInstance.data()

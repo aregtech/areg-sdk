@@ -45,7 +45,7 @@ void ServicingComponent::requestStartSleep( uint32_t timeoutSleep )
 
     setServiceState( HelloWatchdog::ComponentState::Started );
 
-    Thread::sleep(timeoutSleep);
+    areg::Thread::sleep(timeoutSleep);
 
     responseStartSleep(timeoutSleep);
 }

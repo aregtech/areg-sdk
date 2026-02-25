@@ -166,7 +166,7 @@ int main()
         startTimerThread(t2);
 
         LOG_INFO("Main thread sleeping to let timers run...");
-        Thread::sleep(TIMEOUT_APPLICATION);
+        areg::Thread::sleep(TIMEOUT_APPLICATION);
 
         stopTimerThread(t1);
         stopTimerThread(t2);

@@ -298,7 +298,7 @@ inline WorkerThread* ComponentInfo::findWorkerThread( const areg::ThreadAddress&
 
 inline WorkerThread* ComponentInfo::findWorkerThread( const areg::String & threadName ) const
 {
-    Thread* targetThread = Thread::findThreadByName(threadName);
+    areg::Thread* targetThread = areg::Thread::findThreadByName(threadName);
     return (targetThread != nullptr ? findWorkerThread(targetThread->getAddress()) : nullptr);
 }
 

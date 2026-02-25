@@ -154,7 +154,7 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+    areg::Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.

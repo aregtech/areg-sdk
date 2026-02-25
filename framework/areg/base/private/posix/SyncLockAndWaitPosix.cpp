@@ -563,7 +563,7 @@ bool SyncLockAndWaitPosix::_requestOwnership( int32_t firedEvent )
                         , firedEvent
                         , this
                         , mWaitingList.getSize()
-                        , Thread::getCurrentThread()
+                        , areg::Thread::getCurrentThread()
                         , waitable);
         }
 

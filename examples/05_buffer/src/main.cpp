@@ -27,11 +27,11 @@
 #endif // _MSC_VER
 
 //! \brief Thread to read buffer and output message
-class HelloThread : public Thread, protected areg::ThreadConsumer
+class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     explicit HelloThread(SharedBuffer& buffer)
-        : Thread(*this, "HelloThread") // set consumer and name
+        : areg::Thread(*this, "HelloThread") // set consumer and name
         , mBuffer(buffer)
     {
     }

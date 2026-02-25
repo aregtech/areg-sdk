@@ -73,7 +73,7 @@ public:
      *                      which contains this consumer.
      * \return	Return true if thread should run. Return false, it should not run.
      **/
-    bool onThreadRegistered( Thread * threadObj ) override;
+    bool onThreadRegistered( areg::Thread * threadObj ) override;
 
     /**
      * \brief   Function is triggered from thread object when it is going to be destroyed.

@@ -49,7 +49,7 @@ std::string gData{};                    //!< A text to output
 void WorkerThread()
 {
     TIME64 start = DateTime::getNow();
-    Thread::sleep(areg::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait
+    areg::Thread::sleep(areg::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait
     VERIFY(gEvtReady.lock()); // Verify that the event is signaled
 
     // after the wait, we own the lock
@@ -76,7 +76,7 @@ int main()
 
     // simulate some work to make sure that the worker thread signaled event before it is locked
     TIME64 start = DateTime::getNow();
-    Thread::sleep(areg::WAIT_1_SECOND * 2);
+    areg::Thread::sleep(areg::WAIT_1_SECOND * 2);
 
     // make sure that the `gEvtReady` event remains in non-signaled state even when worker thread completed job.
     VERIFY(!gEvtReady.lock(areg::WAIT_10_MILLISECONDS));

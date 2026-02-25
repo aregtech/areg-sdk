@@ -282,7 +282,7 @@
  ************************************************************************/
 class Component;
 class ComponentThread;
-class Thread;
+namespace areg { class Thread; }
 
 //////////////////////////////////////////////////////////////////////////
 // ModelDataCreator class declaration
@@ -381,7 +381,7 @@ private:
      * \brief   ComponentLoader::ThreadList
      *          Array of component threads.
      **/
-    using ThreadList    = ArrayList<Thread *>;
+    using ThreadList    = ArrayList<areg::Thread *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

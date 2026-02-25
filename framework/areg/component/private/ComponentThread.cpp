@@ -225,7 +225,7 @@ inline void ComponentThread::_shutdownComponents()
     }
 }
 
-Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+areg::Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
 {
     ListComponent::LISTPOS pos = mListComponent.firstPosition( );
     while ( mListComponent.isValidPosition( pos ) )

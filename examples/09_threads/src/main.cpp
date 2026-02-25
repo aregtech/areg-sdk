@@ -31,12 +31,12 @@ DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
 
 Mutex gSync(false);
 
-class HelloThread   : public Thread
+class HelloThread   : public areg::Thread
                     , protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(*this, "HelloThread")
+        : areg::Thread(*this, "HelloThread")
     {
         LOG_SCOPE(threads_main_HelloThread_Ctor);
         LOG_DBG("Initialized thread [HelloThread]");
@@ -59,7 +59,7 @@ protected:
 
         } while (false);
 
-        Thread::sleep(areg::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
     }
 };
 
@@ -158,7 +158,7 @@ int main()
         HelloDispatcher helloDispatcher;
         helloDispatcher.createThread(areg::WAIT_INFINITE);
 
-        Thread::sleep(areg::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.getName().getString());
         helloDispatcher.shutdownThread(areg::WAIT_INFINITE);
