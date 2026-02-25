@@ -583,7 +583,7 @@ namespace areg
          *                                  will be added to the list.
          * \return  Returns number of new nodes added to the list.
          **/
-        static int32_t splitPath(const char * filePath, StringList & in_out_List);
+        static int32_t splitPath(const char * filePath, areg::StringList & in_out_List);
 
         /**
          * \brief   From given directory name and file name creates the full path of the file.

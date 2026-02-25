@@ -662,14 +662,14 @@ private:
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   MapThreadPoiters        = PtrMap<Thread *>;
+    using   MapThreadPoiters        = areg::PtrMap<Thread *>;
     using   ImplThreadHandleResource= areg::ResourceMapImpl< void *, Thread *>;
     using   MapThreadHandleResource = areg::ConcurrentResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   MapThreadName           = StringMap<Thread *>;
+    using   MapThreadName           = areg::StringMap<Thread *>;
     using   ImplThreadNameResource  = areg::ResourceMapImpl<areg::String, Thread *>;
     using   MapThreadNameResource   = areg::ConcurrentResourceMap<areg::String, Thread *, MapThreadName, ImplThreadNameResource>;
 

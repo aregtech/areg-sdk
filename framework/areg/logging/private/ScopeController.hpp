@@ -41,7 +41,7 @@ using ImplLogScope  = areg::ResourceMapImpl<uint32_t, LogScope *>;
 //!< The log scope key-value pair.
 using LogScopePair  = std::pair<uint32_t, LogScope *>;
 //!< The map of scopes to configure
-using ListScopes    = StringToIntegerHashMap;
+using ListScopes    = areg::StringToIntegerHashMap;
     
 /**
  * \brief   Resource map, container of all logging scopes

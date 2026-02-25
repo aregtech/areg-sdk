@@ -23,7 +23,7 @@
 #include "areg/base/Containers.hpp"
 
 class PageChat;
-typedef StringHashMap<PageChat *>   MapChatPages;
+typedef areg::StringHashMap<PageChat *>   MapChatPages;
 
 class DistributedDialog : public CPropertySheet
                         , public ConnectionHandler

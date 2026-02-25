@@ -370,7 +370,7 @@ namespace areg
         return result;
     }
 
-    int32_t File::splitPath(const char * filePath, StringList & in_out_List)
+    int32_t File::splitPath(const char * filePath, areg::StringList & in_out_List)
     {
         int32_t oldCount        { static_cast<int32_t>(in_out_List.getSize()) };
         const char * start  { filePath };

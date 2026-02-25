@@ -65,7 +65,7 @@ class AREG_API Component   : public    areg::RuntimeObject
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      *          Component           The saved values are Component objects.
      **/
-    using MapComponentContainer  = IntegerHashMap<Component *>;
+    using MapComponentContainer  = areg::IntegerHashMap<Component *>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.

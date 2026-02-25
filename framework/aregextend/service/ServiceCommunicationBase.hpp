@@ -491,8 +491,8 @@ protected:
     ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
     ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
     DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
-    StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
-    StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
+    areg::StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
+    areg::StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
     ServiceServerConsumer                   mEventConsumer;     //!< The custom event consumer object
     ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
     areg::MapInstances                 mInstanceMap;       //!< The map of connected instance.

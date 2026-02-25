@@ -156,7 +156,7 @@ uint32_t StubBase::findListeners( uint32_t requestId, StubListenerList & out_lis
     return out_listners.getSize();
 }
 
-void StubBase::clearAllListeners( const ProxyAddress & whichProxy, IntegerArray & removedIDs )
+void StubBase::clearAllListeners( const ProxyAddress & whichProxy, areg::IntegerArray & removedIDs )
 {
     StubListenerList::LISTPOS pos = mListListener.firstPosition();
     while ( mListListener.isValidPosition(pos))

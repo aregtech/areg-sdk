@@ -297,7 +297,7 @@ private:
      * \brief   ProxyBase::MapThreadProxy
      *          The string hash map which values are list of proxies.
      **/
-    using MapThreadProxy    = StringHashMap<ThreadProxyList>;
+    using MapThreadProxy    = areg::StringHashMap<ThreadProxyList>;
 
     /**
      * \brief   ProxyBase::MapThreadProxyList

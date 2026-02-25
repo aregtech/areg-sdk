@@ -184,7 +184,7 @@ protected:
     /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = IntegerMap<StubBase::Listener>;
+    using MapStubSession     = areg::IntegerMap<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
@@ -544,7 +544,7 @@ protected:
      * \param   whichProxy  The address of request source proxy to remove.
      * \param   removedIDs  The list of removed request IDs
      **/
-    void clearAllListeners(const ProxyAddress & whichProxy, IntegerArray& removedIDs);
+    void clearAllListeners(const ProxyAddress & whichProxy, areg::IntegerArray& removedIDs);
     /**
      * \brief   Returns all listeners for specified proxy and on output returns
      *          list of remove request IDs.

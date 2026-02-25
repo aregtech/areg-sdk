@@ -117,7 +117,7 @@ class SyncLockAndWaitPosix
     /**
      * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
      **/
-    using MapWaitID         = IdHashMap<SyncLockAndWaitPosix *>;
+    using MapWaitID         = areg::IdHashMap<SyncLockAndWaitPosix *>;
     /**
      * \brief   Helper object for resource map basic method implementations
      **/

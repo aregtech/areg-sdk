@@ -22,8 +22,8 @@ bool areg::OptionValues::parseCommand(const areg::String& cmd)
     LOG_SCOPE(examples_23_pubservice_NEUtilities_sOptionData_parseCommand);
     LOG_DBG("Parsing command [ $s ]", cmd.getString());
 
-    Tokenizer tokens(cmd, _delimiter, false);
-    const StringArray& list = tokens.getList();
+    areg::Tokenizer tokens(cmd, _delimiter, false);
+    const areg::StringArray& list = tokens.getList();
     mFlags = static_cast<uint32_t>(OptionFlag::CmdNothing);
 
     for (uint32_t i = 0; i < list.getSize(); ++i)

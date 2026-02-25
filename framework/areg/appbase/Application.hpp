@@ -57,7 +57,7 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using MapAppStorage     = StringHashMap<areg::Primitive>;
+    using MapAppStorage     = areg::StringHashMap<areg::Primitive>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
