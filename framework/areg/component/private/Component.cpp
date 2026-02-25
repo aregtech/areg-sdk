@@ -54,7 +54,7 @@ Component* Component::loadComponent(const areg::ComponentEntry &entry, Component
             areg::WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
             if (consumer != nullptr)
             {
-                WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
+                areg::WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
                                                                       , *consumer
                                                                       , componentThread
                                                                       , wtEntry.mWatchdogTimeout
@@ -160,17 +160,17 @@ Component::~Component()
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-WorkerThread* Component::createWorkerThread(  const areg::String & threadName
+areg::WorkerThread* Component::createWorkerThread(  const areg::String & threadName
                                             , areg::WorkerThreadConsumer& consumer
                                             , ComponentThread & /* ownerThread */
                                             , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE */
                                             , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT */
                                             , uint32_t maxQeueue        /* = areg::IGNORE_VALUE */)
 {
-    WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
+    areg::WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread == nullptr)
     {
-        workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
+        workThread = DEBUG_NEW areg::WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
         if (workThread != nullptr)
         {
             if (workThread->createThread(areg::WAIT_INFINITE))
@@ -190,7 +190,7 @@ WorkerThread* Component::createWorkerThread(  const areg::String & threadName
 
 void Component::deleteWorkerThread( const areg::String & threadName )
 {
-    WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
+    areg::WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread != nullptr)
     {
         workThread->shutdownThread(areg::WAIT_INFINITE);
@@ -215,7 +215,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     _shutdownServices();
 
     areg::ThreadAddress addrThread;
-    WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+    areg::WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
         workerThread->shutdownThread( areg::WAIT_INFINITE );
@@ -226,7 +226,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
 void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
 {
     areg::ThreadAddress addrThread;
-    WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+    areg::WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
         workerThread->shutdownThread( areg::WAIT_INFINITE );
@@ -242,7 +242,7 @@ void Component::terminateSelf()
 
     while (mComponentInfo.hasWorkerThreads())
     {
-        WorkerThread* workThread = mComponentInfo.removeFirstWorkerThread(threadAddress);
+        areg::WorkerThread* workThread = mComponentInfo.removeFirstWorkerThread(threadAddress);
         ASSERT(workThread != nullptr);
         workThread->terminateSelf();
     }
@@ -275,7 +275,7 @@ StubBase* Component::findServerByName( const areg::String & serviceName )
 void Component::waitComponentCompletion( uint32_t waitTimeout )
 {
     areg::ThreadAddress addrThread;
-    WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+    areg::WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
         workerThread->shutdownThread(waitTimeout);
@@ -288,7 +288,7 @@ areg::WorkerThreadConsumer* Component::workerThreadConsumer( const areg::String 
     return nullptr;
 }
 
-void Component::notifyWorkerThreadStarted(areg::WorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
+void Component::notifyWorkerThreadStarted(areg::WorkerThreadConsumer& /*consumer*/, areg::WorkerThread& /*workerThread*/)
 {
 }
 

@@ -33,7 +33,7 @@
  ************************************************************************/
 namespace areg { class WorkerThreadConsumer; }
 class ComponentThread;
-class WorkerThread;
+namespace areg { class WorkerThread; }
 class StubBase;
 
 //////////////////////////////////////////////////////////////////////////
@@ -231,7 +231,7 @@ public:
      * \param   consumer        The worker thread consumer object
      * \param   workerThread    The worker thread, which is started.
      **/
-    virtual void notifyWorkerThreadStarted(areg::WorkerThreadConsumer& consumer, WorkerThread & workerThread);
+    virtual void notifyWorkerThreadStarted(areg::WorkerThreadConsumer& consumer, areg::WorkerThread & workerThread);
 
 /************************************************************************/
 // Component operations
@@ -247,7 +247,7 @@ public:
      *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      * \return	Pointer to created worker thread object.
      **/
-    WorkerThread * createWorkerThread( const areg::String & threadName
+    areg::WorkerThread * createWorkerThread( const areg::String & threadName
                                      , areg::WorkerThreadConsumer & consumer
                                      , ComponentThread & ownerThread
                                      , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE

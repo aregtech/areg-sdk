@@ -52,7 +52,7 @@ protected:
      * \param   workThread      The Worker Thread object to notify startup
      * \param   masterThread    The component thread, which owns worker thread.
      **/
-    void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) override;
+    void registerEventConsumers( areg::WorkerThread & workThread, ComponentThread & masterThread ) override;
 
     /**
      * \brief   Triggered by Worker Thread when stops running.
@@ -60,7 +60,7 @@ protected:
      *          method to stop receiving events.
      * \param   workThread  The Worker Thread object to notify stop
      **/
-    void unregisterEventConsumers( WorkerThread & workThread ) override;
+    void unregisterEventConsumers( areg::WorkerThread & workThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Private members.

@@ -35,7 +35,7 @@ Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDO
 {
 }
 
-Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+Watchdog::Watchdog(areg::WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
     : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
     , mGuardId          (_generateId())
     , mSequence         (0u)

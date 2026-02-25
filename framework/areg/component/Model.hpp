@@ -71,7 +71,7 @@ namespace areg
  * Dependencies
  ************************************************************************/
 class Component;
-class WorkerThread;
+namespace areg { class WorkerThread; }
 class ComponentThread;
 namespace areg { class WorkerThreadConsumer; }
 

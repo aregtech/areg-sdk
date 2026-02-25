@@ -75,17 +75,17 @@ DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID&
     return result;
 }
 
-void ComponentInfo::registerWorkerThread( WorkerThread& workerThread )
+void ComponentInfo::registerWorkerThread( areg::WorkerThread& workerThread )
 {
     mWorkerThreadMap.registerResourceObject(workerThread.getAddress(), &workerThread);
 }
 
-bool ComponentInfo::unregisterWorkerThread( WorkerThread& workerThread )
+bool ComponentInfo::unregisterWorkerThread( areg::WorkerThread& workerThread )
 {
     return (mWorkerThreadMap.unregisterResourceObject(workerThread.getAddress()) == &workerThread);
 }
 
-bool ComponentInfo::isWorkerThreadRegistered( WorkerThread& workerThread ) const
+bool ComponentInfo::isWorkerThreadRegistered( areg::WorkerThread& workerThread ) const
 {
     return isWorkerThreadAddress(workerThread.getAddress());
 }

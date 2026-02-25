@@ -22,14 +22,14 @@ inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
     return (*this);
 }
 
-void HardwareWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & /* masterThread */ )
+void HardwareWorkerConsumer::registerEventConsumers(areg::WorkerThread & workThread, ComponentThread & /* masterThread */ )
 {
     PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
 
     printf("Example Hardware is initialized .....\n\n");
 }
 
-void HardwareWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
+void HardwareWorkerConsumer::unregisterEventConsumers(areg::WorkerThread & workThread)
 {
     PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
 

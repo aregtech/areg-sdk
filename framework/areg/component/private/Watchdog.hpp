@@ -25,7 +25,7 @@
   * Dependencies.
   ************************************************************************/
 class ComponentThread;
-class WorkerThread;
+namespace areg { class WorkerThread; }
 
 /**
  * \brief   Watchdog is a guarding object to track thread execution.
@@ -98,7 +98,7 @@ public:
      * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
      *                      The timeout with value zero disables Watchdog
      **/
-    Watchdog(WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
+    Watchdog(areg::WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
     /**
      * \brief   Destructor.
