@@ -154,7 +154,7 @@ public:
  *          It is used in Dispatcher, when a Consumer is registered for Event.
  *          For use, see implementation of EventDispatcherBase class
  **/
-using EventConsumerMap  = ConcurrentRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
+using EventConsumerMap  = areg::ConcurrentRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation
