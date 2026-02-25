@@ -36,7 +36,7 @@ class ProxyEventConsumer;
 class Event;
 class ProxyEvent;
 namespace areg { class StubAddress; }
-class ServiceResponseEvent;
+namespace areg { class ServiceResponseEvent; }
 class NotificationConsumer;
 class Channel;
 class ResponseEvent;
@@ -187,12 +187,12 @@ protected:
     /**
      * \brief   Triggered to process Response Event sent by Stub.
      **/
-    virtual void processResponseEvent( ServiceResponseEvent & eventElem ) = 0;
+    virtual void processResponseEvent( areg::ServiceResponseEvent & eventElem ) = 0;
 
     /**
      * \brief   Triggered to process Attribute update event sent by Stub.
      **/
-    virtual void processAttributeEvent( ServiceResponseEvent & eventElem ) = 0;
+    virtual void processAttributeEvent( areg::ServiceResponseEvent & eventElem ) = 0;
 
     /**
      * \brief   Triggered to process generic Proxy Event.

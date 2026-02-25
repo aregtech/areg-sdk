@@ -36,7 +36,7 @@
 namespace areg { class StubAddress; }
 class ProxyAddress;
 class ServiceRequestEvent;
-class ServiceResponseEvent;
+namespace areg { class ServiceResponseEvent; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class declaration

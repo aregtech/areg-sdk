@@ -38,7 +38,7 @@ using SessionID = uint32_t;
  * Dependencies
  ************************************************************************/
 class RemoteNotifyRequestEvent;
-class ServiceResponseEvent;
+namespace areg { class ServiceResponseEvent; }
 class RemoteRequestEvent;
 class ComponentThread;
 class EventDataStream;
@@ -563,7 +563,7 @@ namespace areg
          * \param   masterEvent     The event, containing updated object ID and the new
          *                          value of attribute.
          **/
-        void sendResponseNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
+        void sendResponseNotification( const StubBase::StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent );
 
         /**
          * \brief   Sends error message for requested to get attribute.
@@ -572,7 +572,7 @@ namespace areg
          * \param   masterEvent     The event, containing error type and 
          *                          attribute object ID.
          **/
-        void sendErrorNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
+        void sendErrorNotification( const StubBase::StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent );
 
         /**
          * \brief   Sends attribute update notification message to all
@@ -583,14 +583,14 @@ namespace areg
          *                          attribute object ID, update type and new 
          *                          updated  value of attribute.
          **/
-        void sendUpdateNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const;
+        void sendUpdateNotification( const StubBase::StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent ) const;
 
         /**
          * \brief   Sends Service Response message to trigger response call 
          *          on Proxy and Clients side
          * \param   eventElem   Service response event to send.
          **/
-        void sendServiceResponse( ServiceResponseEvent & eventElem ) const;
+        void sendServiceResponse( areg::ServiceResponseEvent & eventElem ) const;
 
         /**
          * \brief   Cancel current request.

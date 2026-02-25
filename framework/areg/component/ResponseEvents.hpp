@@ -54,7 +54,7 @@
  *          response and update calls. It is containing data object to 
  *          transfer message specific parameter information.
  **/
-class AREG_API ResponseEvent   : public ServiceResponseEvent
+class AREG_API ResponseEvent   : public areg::ServiceResponseEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.

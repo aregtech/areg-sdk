@@ -197,7 +197,7 @@ bool ProxyAddress::deliverServiceEvent(ServiceRequestEvent & stubEvent) const
     return ProxyAddress::_deliverEvent( static_cast<Event &>(stubEvent), mChannel.getTarget());
 }
 
-bool ProxyAddress::deliverServiceEvent(ServiceResponseEvent & proxyEvent) const
+bool ProxyAddress::deliverServiceEvent(areg::ServiceResponseEvent & proxyEvent) const
 {
     return ProxyAddress::_deliverEvent( static_cast<Event &>(proxyEvent), mChannel.getSource());
 }

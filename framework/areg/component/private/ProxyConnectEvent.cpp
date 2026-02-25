@@ -22,13 +22,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, areg::ServiceResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const areg::StubAddress & implAddress, areg::ServiceConnectionState connectStatus )
-    : ServiceResponseEvent  ( target
+    : areg::ServiceResponseEvent  ( target
                             , areg::ResultType::DataOK
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , Event::EventType::EventLocalProxyConnect )
@@ -38,14 +38,14 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const areg::S
 }
 
 ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
-    : ServiceResponseEvent  ( target, static_cast<const ServiceResponseEvent &>(src) )
+    : areg::ServiceResponseEvent  ( target, static_cast<const areg::ServiceResponseEvent &>(src) )
     , mStubAddress          ( src.mStubAddress )
     , mConnectionStatus     ( src.mConnectionStatus )
 {
 }
 
 ProxyConnectEvent::ProxyConnectEvent(const areg::InStream & stream)
-    : ServiceResponseEvent  ( stream )
+    : areg::ServiceResponseEvent  ( stream )
     , mStubAddress          ( stream )
     , mConnectionStatus     ( areg::ServiceConnectionState::Unknown )
 {
@@ -54,7 +54,7 @@ ProxyConnectEvent::ProxyConnectEvent(const areg::InStream & stream)
 
 const areg::InStream & ProxyConnectEvent::readStream(const areg::InStream & stream)
 {
-    ServiceResponseEvent::readStream(stream);
+    areg::ServiceResponseEvent::readStream(stream);
     stream >> mStubAddress;
     stream >> mConnectionStatus;
     return stream;
@@ -62,7 +62,7 @@ const areg::InStream & ProxyConnectEvent::readStream(const areg::InStream & stre
 
 areg::OutStream & ProxyConnectEvent::writeStream(areg::OutStream & stream) const
 {
-    ServiceResponseEvent::writeStream(stream);
+    areg::ServiceResponseEvent::writeStream(stream);
     stream << mStubAddress;
     stream << mConnectionStatus;
     return stream;

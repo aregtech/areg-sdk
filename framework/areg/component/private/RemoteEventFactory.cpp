@@ -225,7 +225,7 @@ bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, co
 
     case Event::EventType::EventRemoteServiceResponse:
         {
-            const ServiceResponseEvent * proxyEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceResponseEvent);
+            const areg::ServiceResponseEvent * proxyEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, areg::ServiceResponseEvent);
             if ( proxyEvent != nullptr )
             {
                 eventStreamable.writeStream(stream);

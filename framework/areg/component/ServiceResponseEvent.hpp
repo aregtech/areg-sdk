@@ -29,189 +29,192 @@
  ************************************************************************/
 class ProxyAddress;
 
-/**
- * \brief       The Service Response class is a base class for all kind
- *              response events sent from Stub to Proxy after processing
- *              request calls. Normally, this is either request call 
- *              response or Attribute update notification. It is derived
- *              from ProxyEvent.
- * 
- * \details     This class contains response ID, result, service interface
- *              version and executed request sequence number. As well as
- *              this should be response call to notify Proxy about server
- *              connect and disconnect status update.
- *
- **/
-//////////////////////////////////////////////////////////////////////////
-// ServiceResponseEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-class AREG_API ServiceResponseEvent    : public ProxyEvent
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal defines
-//////////////////////////////////////////////////////////////////////////
-protected:
     /**
-     * \todo        <b>TODO :</b> remove version object from here and place
-     *              in data streaming object, because this parameter is 
-     *              needed only on server connect and optional on server
-     *              disconnect case. In all other cases version object
-     *              might be ignored.
+     * \brief       The Service Response class is a base class for all kind
+     *              response events sent from Stub to Proxy after processing
+     *              request calls. Normally, this is either request call 
+     *              response or Attribute update notification. It is derived
+     *              from ProxyEvent.
+     * 
+     * \details     This class contains response ID, result, service interface
+     *              version and executed request sequence number. As well as
+     *              this should be response call to notify Proxy about server
+     *              connect and disconnect status update.
+     *
      **/
-//////////////////////////////////////////////////////////////////////////
-// Declare as runtime event.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ServiceResponseEvent)
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceResponseEvent class declaration
+    //////////////////////////////////////////////////////////////////////////
+    class AREG_API ServiceResponseEvent    : public ProxyEvent
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Internal defines
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \todo        <b>TODO :</b> remove version object from here and place
+         *              in data streaming object, because this parameter is 
+         *              needed only on server connect and optional on server
+         *              disconnect case. In all other cases version object
+         *              might be ignored.
+         **/
+    //////////////////////////////////////////////////////////////////////////
+    // Declare as runtime event.
+    //////////////////////////////////////////////////////////////////////////
+        AREG_DECLARE_RUNTIME_EVENT(ServiceResponseEvent)
 
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
 
-    /**
-     * \brief   Creates service response event. Sets given parameters
-     * \param   target      The event target proxy address
-     * \param   result      The response result
-     * \param   responseId  The response message ID
-     * \param   eventType   The type of event.
-     * \param   seqNr       The sequence number of call.
-     **/
-    ServiceResponseEvent( const ProxyAddress & target
-                        , areg::ResultType result
-                        , uint32_t responseId
-                        , Event::EventType eventType
-                        , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
+        /**
+         * \brief   Creates service response event. Sets given parameters
+         * \param   target      The event target proxy address
+         * \param   result      The response result
+         * \param   responseId  The response message ID
+         * \param   eventType   The type of event.
+         * \param   seqNr       The sequence number of call.
+         **/
+        ServiceResponseEvent( const ProxyAddress & target
+                            , areg::ResultType result
+                            , uint32_t responseId
+                            , Event::EventType eventType
+                            , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
 
-    /**
-     * \brief   Copies all data from given source, except the target proxy address. This is used if proxy needs to clone
-     *          event data to send to different target proxy objects.
-     * \param   target  The target proxy address
-     * \param   src     The service response source to copy data.
-     **/
-    ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
+        /**
+         * \brief   Copies all data from given source, except the target proxy address. This is used if proxy needs to clone
+         *          event data to send to different target proxy objects.
+         * \param   target  The target proxy address
+         * \param   src     The service response source to copy data.
+         **/
+        ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
 
-    /**
-     * \brief   Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
-     **/
-    ServiceResponseEvent(const areg::InStream & stream);
+        /**
+         * \brief   Creates event from streaming object and initializes data
+         * \param   stream  The streaming object to read data
+         **/
+        ServiceResponseEvent(const areg::InStream & stream);
 
-    /**
-     * \brief   Destructor. Protected.
-     * \remark  Do not call directly, use Destroy() method to clean properly.
-     **/
-    virtual ~ServiceResponseEvent() = default;
+        /**
+         * \brief   Destructor. Protected.
+         * \remark  Do not call directly, use Destroy() method to clean properly.
+         **/
+        virtual ~ServiceResponseEvent() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Get and set response message ID.
-     **/
-    inline uint32_t getResponseId() const;
+        /**
+         * \brief   Get and set response message ID.
+         **/
+        inline uint32_t getResponseId() const;
 
-    /**
-     * \brief   Returns response call result
-     **/
-    inline areg::ResultType getResult() const;
+        /**
+         * \brief   Returns response call result
+         **/
+        inline areg::ResultType getResult() const;
 
-    /**
-     * \brief   Returns sequence number of call.
-     **/
-    inline const SequenceNumber & getSequenceNumber() const;
+        /**
+         * \brief   Returns sequence number of call.
+         **/
+        inline const SequenceNumber & getSequenceNumber() const;
 
-    /**
-     * \brief   Sets sequence number of call.
-     **/
-    inline void setSequenceNumber( const SequenceNumber & newSeqNr );
+        /**
+         * \brief   Sets sequence number of call.
+         **/
+        inline void setSequenceNumber( const SequenceNumber & newSeqNr );
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Clones existing service event object.
-     *          Copies all data and sets specified target proxy address.
-     *          Overwrite this method in every service response specific
-     *          class to be able to clone events.
-     * \param   target  The target proxy address.
-     * \return  Cloned service response event object, which contains specified
-     *          target proxy address.
-     **/
-    virtual ServiceResponseEvent * cloneForTarget(const ProxyAddress & target) const;
+        /**
+         * \brief   Clones existing service event object.
+         *          Copies all data and sets specified target proxy address.
+         *          Overwrite this method in every service response specific
+         *          class to be able to clone events.
+         * \param   target  The target proxy address.
+         * \return  Cloned service response event object, which contains specified
+         *          target proxy address.
+         **/
+        virtual ServiceResponseEvent * cloneForTarget(const ProxyAddress & target) const;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    const areg::InStream & readStream( const areg::InStream & stream ) override;
+    //////////////////////////////////////////////////////////////////////////
+    // Operations
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+    /************************************************************************/
+    // StreamableEvent overrides
+    /************************************************************************/
+        /**
+         * \brief   Reads and initialize event data from streaming object.
+         * \param   stream  The streaming object to read out event data
+         * \return  Returns streaming object to read out data.
+         **/
+        const areg::InStream & readStream( const areg::InStream & stream ) override;
 
-    /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
+        /**
+         * \brief   Writes event data to streaming object
+         * \param   stream  The streaming object to write event data.
+         * \return  Returns streaming object to write event data.
+         **/
+        areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   The response message ID
-     **/
-    uint32_t            mResponseId;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   The response message ID
+         **/
+        uint32_t            mResponseId;
 
-    /**
-     * \brief   The response result
-     **/
-    areg::ResultType mResult;
+        /**
+         * \brief   The response result
+         **/
+        areg::ResultType mResult;
 
-    /**
-     * \brief   The sequence number.
-     **/
-    SequenceNumber          mSequenceNr;
+        /**
+         * \brief   The sequence number.
+         **/
+        SequenceNumber          mSequenceNr;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    ServiceResponseEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ServiceResponseEvent );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ServiceResponseEvent() = delete;
+        AREG_NOCOPY_NOMOVE( ServiceResponseEvent );
+    };
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceResponseEvent class inline function implementation
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceResponseEvent class inline function implementation
+    //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServiceResponseEvent::getResponseId() const
-{
-    return mResponseId;
-}
+    inline uint32_t ServiceResponseEvent::getResponseId() const
+    {
+        return mResponseId;
+    }
 
-inline areg::ResultType ServiceResponseEvent::getResult() const
-{
-    return mResult;
-}
+    inline areg::ResultType ServiceResponseEvent::getResult() const
+    {
+        return mResult;
+    }
 
-inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber() const
-{
-    return mSequenceNr;
-}
+    inline const SequenceNumber & ServiceResponseEvent::getSequenceNumber() const
+    {
+        return mSequenceNr;
+    }
 
-inline void ServiceResponseEvent::setSequenceNumber( const SequenceNumber & newSeqNr )
-{
-    mSequenceNr = newSeqNr;
-}
+    inline void ServiceResponseEvent::setSequenceNumber( const SequenceNumber & newSeqNr )
+    {
+        mSequenceNr = newSeqNr;
+    }
 
+} // namespace areg
 #endif  // AREG_COMPONENT_SERVICERESPONSEEVENT_HPP

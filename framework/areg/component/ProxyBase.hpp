@@ -43,7 +43,7 @@
  ************************************************************************/
 class NotificationConsumer;
 class NotificationEventData;
-class ServiceResponseEvent;
+namespace areg { class ServiceResponseEvent; }
 class RemoteResponseEvent;
 class ServiceRequestEvent;
 class NotificationEvent;
@@ -627,7 +627,7 @@ protected:
      *                      Contains response message and information
      *                      sent by Stub
      **/
-    virtual void processResponseEvent(ServiceResponseEvent & eventElem) override = 0;
+    virtual void processResponseEvent(areg::ServiceResponseEvent & eventElem) override = 0;
 
     /**
      * \brief   Method derived from ProxyEventConsumer interface.
@@ -637,7 +637,7 @@ protected:
      *                      Contains new updated value of Attribute
      *                      and validation flag.
      **/
-    virtual void processAttributeEvent(ServiceResponseEvent & eventElem) override = 0;
+    virtual void processAttributeEvent(areg::ServiceResponseEvent & eventElem) override = 0;
 
 /************************************************************************/
 // ProxyBase overrides. Should be implemented.

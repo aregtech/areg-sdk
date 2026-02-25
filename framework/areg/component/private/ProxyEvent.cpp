@@ -153,7 +153,7 @@ void ProxyEventConsumer::startEventProcessing( Event & eventElem )
                 }
                 else
                 {
-                    ServiceResponseEvent* eventServiceResponse = AREG_RUNTIME_CAST(&eventElem, ServiceResponseEvent);
+                    areg::ServiceResponseEvent* eventServiceResponse = AREG_RUNTIME_CAST(&eventElem, areg::ServiceResponseEvent);
                     if ( eventServiceResponse != nullptr )
                     {
                         processResponseEvent(*eventServiceResponse);

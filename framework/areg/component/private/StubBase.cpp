@@ -191,12 +191,12 @@ namespace areg
         }
     }
 
-    void StubBase::sendResponseNotification( const StubListenerList & whichListeners, const ServiceResponseEvent& masterEvent )
+    void StubBase::sendResponseNotification( const StubListenerList & whichListeners, const areg::ServiceResponseEvent& masterEvent )
     {
         for(StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos) )
         {
             const StubBase::Listener& listener = whichListeners[pos];
-            ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
+            areg::ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
             if (eventResp != nullptr)
             {
                 if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
@@ -217,12 +217,12 @@ namespace areg
         }
     }
 
-    void StubBase::sendErrorNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent )
+    void StubBase::sendErrorNotification( const StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent )
     {
         for(StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos))
         {
             const StubBase::Listener& listener = whichListeners[pos];
-            ServiceResponseEvent* eventError = masterEvent.cloneForTarget(listener.mProxy);
+            areg::ServiceResponseEvent* eventError = masterEvent.cloneForTarget(listener.mProxy);
             if (eventError != nullptr)
             {
                 if (static_cast<int32_t>(listener.mSequenceNr) >= 0)
@@ -241,12 +241,12 @@ namespace areg
         }
     }
 
-    void StubBase::sendUpdateNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const
+    void StubBase::sendUpdateNotification( const StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent ) const
     {
         for (StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos))
         {
             const StubBase::Listener& listener = whichListeners[pos];
-            ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
+            areg::ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
             if ( eventResp != nullptr )
             {
                 sendServiceResponse( *eventResp );
@@ -254,7 +254,7 @@ namespace areg
         }
     }
 
-    void StubBase::sendServiceResponse( ServiceResponseEvent & eventElem ) const
+    void StubBase::sendServiceResponse( areg::ServiceResponseEvent & eventElem ) const
     {
         eventElem.getTargetProxy().deliverServiceEvent(eventElem);
     }

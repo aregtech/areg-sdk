@@ -23,7 +23,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ResponseEvent class runtime function implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(ResponseEvent, ServiceResponseEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(ResponseEvent, areg::ServiceResponseEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // ResponseEvent class Constructors / Destructor
@@ -33,7 +33,7 @@ ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
                             , uint32_t respId
                             , Event::EventType eventType
                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/ )
-    : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
+    : areg::ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData (respId, Event::isExternal(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
 {
 }
@@ -45,33 +45,33 @@ ResponseEvent::ResponseEvent( const EventDataStream & args
                             , Event::EventType eventType
                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
                             , const areg::String & name /*= areg::String::getEmptyString()*/ )
-    : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
+    : areg::ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData (respId, args, name)
 {
 }
 
 ResponseEvent::ResponseEvent( const ProxyAddress& proxyTarget, const ResponseEvent& src )
-    : ServiceResponseEvent(proxyTarget, static_cast<const ServiceResponseEvent &>(src))
+    : areg::ServiceResponseEvent(proxyTarget, static_cast<const areg::ServiceResponseEvent &>(src))
     , mData (src.mData)
 {
 }
 
 ResponseEvent::ResponseEvent(const areg::InStream & stream)
-    : ServiceResponseEvent(stream)
+    : areg::ServiceResponseEvent(stream)
     , mData (stream)
 {
 }
 
 const areg::InStream & ResponseEvent::readStream(const areg::InStream & stream)
 {
-    ServiceResponseEvent::readStream(stream);
+    areg::ServiceResponseEvent::readStream(stream);
     stream >> mData;
     return stream;
 }
 
 areg::OutStream & ResponseEvent::writeStream(areg::OutStream & stream) const
 {
-    ServiceResponseEvent::writeStream(stream);
+    areg::ServiceResponseEvent::writeStream(stream);
     stream << mData;
     return stream;
 }

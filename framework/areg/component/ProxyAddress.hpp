@@ -34,7 +34,7 @@ namespace areg { class InStream; }
 namespace areg { class StubAddress; }
 class Event;
 class ServiceRequestEvent;
-class ServiceResponseEvent;
+namespace areg { class ServiceResponseEvent; }
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class declaration
@@ -322,7 +322,7 @@ public:
      *          for remote target, the returned boolean value indicates whether event was successfully
      *          queued in the communication channel to deliver.
      **/
-    bool deliverServiceEvent( ServiceResponseEvent & proxyEvent ) const;
+    bool deliverServiceEvent( areg::ServiceResponseEvent & proxyEvent ) const;
 
     /**
      * \brief	Creates proxy address path as a string.

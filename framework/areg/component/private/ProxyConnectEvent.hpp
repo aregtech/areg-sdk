@@ -34,7 +34,7 @@
  *          the Event will contain Stub address as server for Proxy and
  *          starting from that point, the Proxy and Stub can start communication.
  **/
-class ProxyConnectEvent   : public ServiceResponseEvent
+class ProxyConnectEvent   : public areg::ServiceResponseEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
