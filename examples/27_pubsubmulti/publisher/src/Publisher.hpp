@@ -41,7 +41,7 @@
 class Publisher : public    Component
                 , protected PubSubStub
                 , private   TimerConsumer
-                , private   ThreadConsumer
+                , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants

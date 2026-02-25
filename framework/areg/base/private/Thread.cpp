@@ -76,7 +76,7 @@ Thread::MapThreadIDResource& Thread::_getMapThreadId()
 unsigned long Thread::_defaultThreadFunction(void* data)
 {
     Thread* threadObj = reinterpret_cast<Thread *>(data);
-    ThreadConsumer::ExitCode result= ThreadConsumer::ExitCode::NoParam;
+    areg::ThreadConsumer::ExitCode result= areg::ThreadConsumer::ExitCode::NoParam;
     if (threadObj != nullptr)
     {
         do 
@@ -89,7 +89,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         // it should be created in the thread context
         Thread::_getThreadLocalStorage(threadObj);
 
-        result = static_cast<ThreadConsumer::ExitCode>( threadObj->_threadEntry() );
+        result = static_cast<areg::ThreadConsumer::ExitCode>( threadObj->_threadEntry() );
 
         // delete thread local storage.
         Thread::_getThreadLocalStorage(nullptr);
@@ -139,7 +139,7 @@ areg::ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Thread::Thread(ThreadConsumer &threadConsumer, const areg::String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
+Thread::Thread(areg::ThreadConsumer &threadConsumer, const areg::String & threadName, uint32_t stackSizeKb /*= areg::STACK_SIZE_DEFAULT*/)
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
@@ -267,7 +267,7 @@ size_t Thread::getCurrentStackSize()
 
 int32_t Thread::_threadEntry()
 {
-    ThreadConsumer::ExitCode result = ThreadConsumer::ExitCode::Terminated;
+    areg::ThreadConsumer::ExitCode result = areg::ThreadConsumer::ExitCode::Terminated;
 
     if (Thread::_findThreadByHandle(mThreadHandle) != nullptr )
     {
@@ -282,7 +282,7 @@ int32_t Thread::_threadEntry()
 
         _setRunning(false);
 
-        result = static_cast<ThreadConsumer::ExitCode>(mThreadConsumer.onThreadExit());
+        result = static_cast<areg::ThreadConsumer::ExitCode>(mThreadConsumer.onThreadExit());
         onPostExitThread();
 
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
@@ -352,11 +352,11 @@ void Thread::_unregisterThread()
     }
 }
 
-ThreadConsumer& Thread::getCurrentThreadConsumer()
+areg::ThreadConsumer& Thread::getCurrentThreadConsumer()
 {
     ASSERT(getCurrentThread() != nullptr );
     areg::ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
-    ThreadConsumer* consumer = reinterpret_cast<ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).valPtr.mElement);
+    areg::ThreadConsumer* consumer = reinterpret_cast<areg::ThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).valPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);
 }

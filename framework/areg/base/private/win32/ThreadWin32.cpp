@@ -137,7 +137,7 @@ Thread::ThreadCompletion Thread::_osDestroyThread(uint32_t waitForStopMs)
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
             result = Thread::ThreadCompletion::Terminated;
-            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(ThreadConsumer::ExitCode::Terminated));
+            ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(areg::ThreadConsumer::ExitCode::Terminated));
             this->mWaitForRun.resetEvent();
             this->mWaitForExit.setEvent();
 #ifdef _MSC_VER

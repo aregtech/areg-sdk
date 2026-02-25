@@ -166,7 +166,7 @@ void NullDispatcherThread::onThreadRuns()
 int32_t NullDispatcherThread::onThreadExit()
 {
     ASSERT(false);
-    return static_cast<int32_t>(ThreadConsumer::ExitCode::Error);
+    return static_cast<int32_t>(areg::ThreadConsumer::ExitCode::Error);
 }
 
 bool NullDispatcherThread::waitForDispatcherStart( uint32_t /* waitTimeout */ /*= areg::WAIT_INFINITE */ )
@@ -204,7 +204,7 @@ DispatcherThread & DispatcherThread::_getNullDispatherThread()
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
 DispatcherThread::DispatcherThread (const areg::String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
-    : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
+    : Thread          ( static_cast<areg::ThreadConsumer &>(self()), threadName, stackSizeKb )
     , EventDispatcher ( threadName, maxQeueue )
 
     , mEventStarted     ( true, false )

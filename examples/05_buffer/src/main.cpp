@@ -27,7 +27,7 @@
 #endif // _MSC_VER
 
 //! \brief Thread to read buffer and output message
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public Thread, protected areg::ThreadConsumer
 {
 public:
     explicit HelloThread(SharedBuffer& buffer)

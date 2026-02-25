@@ -27,7 +27,7 @@
 //////////////////////////////////////////////////////////////////////////
 EventDispatcher::EventDispatcher( const areg::String & name, uint32_t maxQeueue )
     : EventDispatcherBase   ( name, maxQeueue )
-    , ThreadConsumer      (  )
+    , areg::ThreadConsumer      (  )
     , EventRouter         (  )
 
     , mDispatcherThread     ( nullptr )
@@ -67,7 +67,7 @@ int32_t EventDispatcher::onThreadExit()
 {
     exitDispatcher( );
     mDispatcherThread   = nullptr;
-    return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
+    return static_cast<int32_t>(areg::ThreadConsumer::ExitCode::Normal);
 }
 
 bool EventDispatcher::postEvent( Event& eventElem )

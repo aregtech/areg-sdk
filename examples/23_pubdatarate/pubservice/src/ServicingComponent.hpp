@@ -48,7 +48,7 @@ AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  **/
 class ServicingComponent    : public    Component
                             , protected LargeDataStub
-                            , protected ThreadConsumer
+                            , protected areg::ThreadConsumer
 {
     friend class OptionConsumer;
     friend class ServicingTimerConsumer;

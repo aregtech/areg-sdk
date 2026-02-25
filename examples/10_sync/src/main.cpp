@@ -50,11 +50,11 @@ static Mutex        gMutexDummy(false);         //!< Initially unlocked
 DEF_LOG_SCOPE(sync_main_HelloThread_HelloThread);
 DEF_LOG_SCOPE(sync_main_HelloThread_onThreadRuns);
 
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(static_cast<ThreadConsumer &>(*this), "HelloThread"), ThreadConsumer(), mQuit(true, true)
+        : Thread(static_cast<areg::ThreadConsumer &>(*this), "HelloThread"), areg::ThreadConsumer(), mQuit(true, true)
     {
         LOG_SCOPE(sync_main_HelloThread_HelloThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
@@ -114,11 +114,11 @@ protected:
 DEF_LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
 DEF_LOG_SCOPE(sync_main_GoodbyeThread_onThreadRuns);
 
-class GoodbyeThread : public Thread, protected ThreadConsumer
+class GoodbyeThread : public Thread, protected areg::ThreadConsumer
 {
 public:
     GoodbyeThread()
-        : Thread(static_cast<ThreadConsumer &>(*this), "GoodbyeThread"), ThreadConsumer(), mQuit(false, true)
+        : Thread(static_cast<areg::ThreadConsumer &>(*this), "GoodbyeThread"), areg::ThreadConsumer(), mQuit(false, true)
     {
         LOG_SCOPE(sync_main_GoodbyeThread_GoodbyeThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());

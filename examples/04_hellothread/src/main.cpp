@@ -18,12 +18,12 @@
 #endif // _MSC_VER
 
 //! \brief   A thread to run and output message.
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread( static_cast<ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
-        , ThreadConsumer( )
+        : Thread( static_cast<areg::ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
+        , areg::ThreadConsumer( )
     {  }
 protected:
 /************************************************************************/

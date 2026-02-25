@@ -37,7 +37,7 @@
  *          because this will delay event processing.
  **/
 class AREG_API EventDispatcher  : public    EventDispatcherBase
-                                , public    ThreadConsumer
+                                , public    areg::ThreadConsumer
                                 , public    EventRouter
 {
 //////////////////////////////////////////////////////////////////////////

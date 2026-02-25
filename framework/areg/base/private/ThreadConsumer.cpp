@@ -15,21 +15,26 @@
  ************************************************************************/
 #include "areg/base/ThreadConsumer.hpp"
 
+namespace areg
+{
+
 //////////////////////////////////////////////////////////////////////////
 // ThreadConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool ThreadConsumer::onThreadRegistered(Thread * /*threadObj*/)
-{
-    return true;
-}
+    bool ThreadConsumer::onThreadRegistered(Thread * /*threadObj*/)
+    {
+        return true;
+    }
 
-void ThreadConsumer::onThreadUnregistering()
-{
+    void ThreadConsumer::onThreadUnregistering()
+    {
 
-}
+    }
 
-int32_t ThreadConsumer::onThreadExit()
-{
-    return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
-}
+    int32_t ThreadConsumer::onThreadExit()
+    {
+        return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
+    }
+
+} // namespace areg

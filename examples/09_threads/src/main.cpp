@@ -32,7 +32,7 @@ DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
 Mutex gSync(false);
 
 class HelloThread   : public Thread
-                    , protected ThreadConsumer
+                    , protected areg::ThreadConsumer
 {
 public:
     HelloThread()

@@ -80,7 +80,7 @@ Publisher::Publisher( const areg::ComponentEntry & entry, ComponentThread & owne
     : Component         ( entry, owner )
     , PubSubStub        ( static_cast<Component &>(self()) )
     , TimerConsumer   ( )
-    , ThreadConsumer  ( )
+    , areg::ThreadConsumer  ( )
 
     , mTimerOnChange    (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
     , mTimerAlways      (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
@@ -92,7 +92,7 @@ Publisher::Publisher( const areg::ComponentEntry & entry, ComponentThread & owne
     , mSeqInteger       (0)
     , mCountInteger     (0)
 
-    , mConsoleThread    (static_cast<ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
+    , mConsoleThread    (static_cast<areg::ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
     , mLock             (false)
 {
 }

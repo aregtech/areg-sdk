@@ -56,11 +56,11 @@ const OptionParser::OptionSetup PubSubController::ValidOptions[]
 PubSubController::PubSubController( const areg::ComponentEntry & entry, ComponentThread & owner )
     : Component         ( entry, owner )
     , Publisher         ( static_cast<Component &>(self()) )
-    , ThreadConsumer  ( )
+    , areg::ThreadConsumer  ( )
 
     , mSubscriber       ( entry.mDependencyServices[0], static_cast<Component &>(self()), 0 )
 
-    , mConsoleThread    (static_cast<ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
+    , mConsoleThread    (static_cast<areg::ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
 {
 }
 

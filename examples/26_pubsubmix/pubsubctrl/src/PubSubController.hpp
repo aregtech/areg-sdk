@@ -27,7 +27,7 @@
  **/
 class PubSubController  : public    Component
                         , private   Publisher
-                        , private   ThreadConsumer
+                        , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants

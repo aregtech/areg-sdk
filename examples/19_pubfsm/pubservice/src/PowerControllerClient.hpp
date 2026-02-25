@@ -99,7 +99,7 @@ AREG_DECLARE_EVENT(PowerControllerEventData, PowerControllerEvent, IEPowerContro
  *          lights start automatically to run.
  **/
 class PowerControllerClient : public    PowerManagerClientBase
-                            , protected ThreadConsumer
+                            , protected areg::ThreadConsumer
                             , protected IEPowerControllerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////

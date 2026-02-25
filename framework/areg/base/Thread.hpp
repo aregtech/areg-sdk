@@ -38,7 +38,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class ThreadLocalStorage; }
-class ThreadConsumer;
+namespace areg { class ThreadConsumer; }
 class InStream;
 
 //////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ public:
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
      *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
-    Thread( ThreadConsumer & threadConsumer, const areg::String & threadName, uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT);
+    Thread( areg::ThreadConsumer & threadConsumer, const areg::String & threadName, uint32_t stackSizeKb = areg::STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -375,7 +375,7 @@ public:
     /**
      * \brief   Returns the current Thread Consumer, saved in local storage.
      **/
-    static ThreadConsumer & getCurrentThreadConsumer();
+    static areg::ThreadConsumer & getCurrentThreadConsumer();
 
     /**
      * \brief   Returns the Local Storage Object of the Thread.
@@ -457,7 +457,7 @@ protected:
     /**
      * \brief   Reference to Thread Consumer interface
      **/
-    ThreadConsumer &      mThreadConsumer;
+    areg::ThreadConsumer &      mThreadConsumer;
     /**
      * \brief   Thread handle
      **/

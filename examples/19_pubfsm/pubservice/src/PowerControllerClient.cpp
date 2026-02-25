@@ -28,10 +28,10 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
 PowerControllerClient::PowerControllerClient(const char* roleName, Component & owner)
     : PowerManagerClientBase        (roleName, owner)
-    , ThreadConsumer              ( )
+    , areg::ThreadConsumer              ( )
     , IEPowerControllerEventConsumer( )
 
-    , mConsole                      ( static_cast<ThreadConsumer &>(self()), PowerControllerClient::ConsoleThreadName.data() )
+    , mConsole                      ( static_cast<areg::ThreadConsumer &>(self()), PowerControllerClient::ConsoleThreadName.data() )
 {
 }
 
