@@ -35,7 +35,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize()
+void areg::Process::_osInitilize()
 {
     mProcessId      = ::GetCurrentProcessId();
     mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
@@ -51,7 +51,7 @@ void Process::_osInitilize()
 }
 
 
-areg::String Process::_osGetEnvVariable( const char* var ) const
+areg::String areg::Process::_osGetEnvVariable( const char* var ) const
 {
     areg::String result;
     uint32_t length = var != nullptr ? static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0)) : 0;

@@ -372,7 +372,7 @@ uint32_t File::_osGetSpecialDir(char* buffer, uint32_t /*length*/, const File::S
         ::sprintf(buffer, "%s%c.%s%c%s"
                     , filePath
                     , static_cast<int32_t>(File::PATH_SEPARATOR)
-                    , Process::getInstance().getAppName().getString()
+                    , areg::Process::getInstance().getAppName().getString()
                     , static_cast<int32_t>(File::PATH_SEPARATOR)
                     , DIR_NAME_APPDATA);
         break;

@@ -50,7 +50,7 @@ bool PublicHelloWorldClient::serviceConnected( areg::ServiceConnectionState stat
         if ( PublicHelloWorldClientBase::isConnected() )
         {
             LOG_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.getName().getString());
-            requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), Process::getInstance().getAppName());
+            requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), areg::Process::getInstance().getAppName());
         }
         else
         {

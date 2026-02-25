@@ -445,12 +445,12 @@ AREG_API_IMPL areg::RemoteMessage areg::createConnectRequest(const ITEM_ID & sou
         msgHelloServer.setSequenceNr( areg::SEQUENCE_NUMBER_NOTIFY );
         areg::ConnectedInstance instance{ };
         instance.ciSource   = msgSource;
-        instance.ciBitness  = static_cast<areg::InstanceBitness>(Process::getInstance().getBitness());
+        instance.ciBitness  = static_cast<areg::InstanceBitness>(areg::Process::getInstance().getBitness());
         instance.ciCookie   = source;
         instance.ciTimestamp= static_cast<TIME64>(DateTime::getNow());
-        instance.ciInstance = Process::getInstance().getName();
+        instance.ciInstance = areg::Process::getInstance().getName();
         // instance.ciInstance = Process::getInstance().getAppName();
-        instance.ciLocation = Process::getInstance().getPath();
+        instance.ciLocation = areg::Process::getInstance().getPath();
 
         msgHelloServer << instance;
     }

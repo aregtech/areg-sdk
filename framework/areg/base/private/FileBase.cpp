@@ -716,6 +716,6 @@ void FileBase::normalizeName(areg::String & name)
     name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, areg::START_POS, true);
 
     // replace all "%appname%"
-    const areg::String & appName = Process::getInstance().getAppName();
+    const areg::String & appName = areg::Process::getInstance().getAppName();
     name.replace(FileBase::FILE_MASK_APPNAME, appName, areg::START_POS, true);
 }

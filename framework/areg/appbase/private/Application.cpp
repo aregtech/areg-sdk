@@ -138,7 +138,7 @@ const areg::Model & Application::findModel( const char * modelName )
 
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
-    areg::String path( areg::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
+    areg::String path( areg::isEmpty<char>(dirPath) ? areg::Process::getInstance().getPath().getString() : dirPath);
     File::setCurrentDir(path);
 }
 
@@ -337,7 +337,7 @@ void Application::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeRe
 
 const areg::String & Application::getApplicationName()
 {
-    return Process::getInstance().getAppName();
+    return areg::Process::getInstance().getAppName();
 }
 
 const areg::String & Application::getMachineName()
@@ -372,7 +372,7 @@ bool Application::saveConfiguration(const char* fileName /*= nullptr*/, ConfigLi
 void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
-    const areg::String& module = Process::getInstance().getAppName();
+    const areg::String& module = areg::Process::getInstance().getAppName();
 
     const uint32_t countReadonly{ std::size(areg::DefaultReadonlyProperties) };
     areg::ListProperties defReadonly(countReadonly);

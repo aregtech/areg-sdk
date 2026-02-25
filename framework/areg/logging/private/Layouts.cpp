@@ -116,7 +116,7 @@ ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
 
 void ModuleIdLayout::logMessage( const areg::LogEntry & msgLog, OutStream & stream ) const
 {
-    static const ITEM_ID _moduleId{ Process::getInstance().getId() };
+    static const ITEM_ID _moduleId{ areg::Process::getInstance().getId() };
 #ifdef _BIT64
     static const areg::String  _moduleName{ areg::String::makeString(static_cast<uint64_t>(_moduleId), areg::Radix::Hexadecimal) };
 #else   // _BIT32
@@ -304,14 +304,14 @@ void ModuleNameLayout::logMessage( const areg::LogEntry & msgLog, OutStream & st
 {
     if (msgLog.logDataType == areg::LogDataType::Local)
     {
-        static const areg::String& _module{ Process::getInstance().getAppName() };
+        static const areg::String& _module{ areg::Process::getInstance().getAppName() };
         stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
     }
     else
     {
         if (msgLog.logCookie == areg::COOKIE_LOCAL)
         {
-            static const areg::String& _module{ Process::getInstance().getAppName() };
+            static const areg::String& _module{ areg::Process::getInstance().getAppName() };
             stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
         }
         else if ((msgLog.logCookie != areg::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))

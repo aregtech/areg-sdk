@@ -373,7 +373,7 @@ bool ScopeNode::isEmpty() const
 //////////////////////////////////////////////////////////////////////////
 
 ScopeRoot::ScopeRoot()
-    : ScopeNode     ( ScopeNodeBase::NodeType::Root, Process::getInstance().getAppName(), static_cast<uint32_t>(areg::LogPriority::PrioNotset) )
+    : ScopeNode     ( ScopeNodeBase::NodeType::Root, areg::Process::getInstance().getAppName(), static_cast<uint32_t>(areg::LogPriority::PrioNotset) )
 {
 }
 

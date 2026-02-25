@@ -180,7 +180,7 @@ inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 areg::String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
 {
     char buffer[File::MAXIMUM_PATH];
-    areg::String pref(prefix == nullptr ? Process::getInstance().getAppName().getString() : prefix);
+    areg::String pref(prefix == nullptr ? areg::Process::getInstance().getAppName().getString() : prefix);
     areg::String name;
     if (unique)
     {
@@ -188,7 +188,7 @@ areg::String File::genTempFileName(const char* prefix, bool unique, bool inTempF
         DateTime timestamp{ DateTime::getNow() };
         int32_t len = areg::String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
                                       , pref.getString()
-                                      , static_cast<uint32_t>(Process::getInstance().getId())
+                                      , static_cast<uint32_t>(areg::Process::getInstance().getId())
                                       , ticks
                                       , timestamp.getTime());
         name.assign(buffer, len > 0 ? len : 0);
@@ -229,7 +229,7 @@ areg::String File::genTempFileName()
 
 const areg::String & File::getExecutableDir()
 {
-    return Process::getInstance().getPath();
+    return areg::Process::getInstance().getPath();
 }
 
 areg::String File::getFileNameWithExtension( const char* filePath )

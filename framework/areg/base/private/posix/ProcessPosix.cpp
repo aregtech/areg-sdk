@@ -31,7 +31,7 @@
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void Process::_osInitilize()
+void areg::Process::_osInitilize()
 {
     mProcessId = ::getpid( );
     mProcessHandle = static_cast<void *>(&mProcessId);
@@ -88,7 +88,7 @@ void Process::_osInitilize()
 }
 
 
-areg::String Process::_osGetEnvVariable( const char* var ) const
+areg::String areg::Process::_osGetEnvVariable( const char* var ) const
 {
     return areg::String(var != nullptr ? ::getenv(var) : areg::String::EmptyString);
 }

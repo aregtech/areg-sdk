@@ -483,7 +483,7 @@ inline void LogSqliteDatabase::_createIndexes()
 
 inline void LogSqliteDatabase::_initialize()
 {
-    Process& proc{ Process::getInstance() };
+    areg::Process& proc{ areg::Process::getInstance() };
     DateTime now{ DateTime::getNow() };
     areg::String module{ proc.getAppName() };
     id_type threadId{ areg::Thread::getCurrentThreadId() };
@@ -491,7 +491,7 @@ inline void LogSqliteDatabase::_initialize()
 
     char sql[SQL_LEN]{};
     areg::String::formatString( sql, SQL_LEN, _fmtVersion.data()
-                        , Process::getInstance().getName().getString()
+                        , areg::Process::getInstance().getName().getString()
                         , areg::LOG_VERSION.data()
                         , "Areg SDK database logging module. Visit https://areg.tech for more information."
                         , "Created by Areg log observer API module."
@@ -673,7 +673,7 @@ bool LogSqliteDatabase::logMessage(const areg::LogEntry& message)
 bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& instance, const DateTime& timestamp)
 {
     Lock lock(mLock);
-    Process& proc    { Process::getInstance() };
+    areg::Process& proc    { areg::Process::getInstance() };
     areg::String   module  { proc.getAppName() };
     id_type  threadId{ areg::Thread::getCurrentThreadId() };
     areg::String   thread  { areg::Thread::getThreadName(threadId) };
@@ -696,7 +696,7 @@ bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const Dat
     Lock lock(mLock);
     logScopesDeactivate(cookie, timestamp);
 
-    Process& proc{ Process::getInstance() };
+    areg::Process& proc{ areg::Process::getInstance() };
     areg::String module{ proc.getAppName() };
     id_type threadId{ areg::Thread::getCurrentThreadId() };
     areg::String thread{ areg::Thread::getThreadName(threadId) };

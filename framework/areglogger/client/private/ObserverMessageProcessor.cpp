@@ -438,7 +438,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const areg::RemoteMessage& m
 
 inline void ObserverMessageProcessor::_initLocalLogMessage(areg::LogEntry& log, ITEM_ID cookie, TIME64 timestamp /*= 0*/) const
 {
-    Process& process = Process::getInstance();
+    areg::Process& process = areg::Process::getInstance();
     areg::String instance  = process.getName();
     DateTime now     = DateTime::getNow();
 
@@ -448,7 +448,7 @@ inline void ObserverMessageProcessor::_initLocalLogMessage(areg::LogEntry& log, 
     log.logSource       = areg::SOURCE_LOCAL;
     log.logTarget       = areg::TARGET_LOCAL;
     log.logCookie       = cookie;
-    log.logModuleId     = Process::CURRENT_PROCESS;
+    log.logModuleId     = areg::Process::CURRENT_PROCESS;
     log.logThreadId     = areg::Thread::INVALID_THREAD_ID;
     log.logTimestamp    = timestamp == 0u ? static_cast<TIME64>(now) : timestamp;
     log.logReceived     = static_cast<TIME64>(now);

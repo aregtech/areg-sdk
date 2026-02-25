@@ -114,7 +114,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType)
     , logSource     { areg::COOKIE_LOCAL }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
-    , logModuleId   { Process::CURRENT_PROCESS }
+    , logModuleId   { areg::Process::CURRENT_PROCESS }
     , logThreadId   { areg::Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
@@ -138,7 +138,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logSource     { areg::COOKIE_LOCAL }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { LogManager::getConnectionCookie() }
-    , logModuleId   { Process::getInstance().getId() }
+    , logModuleId   { areg::Process::getInstance().getId() }
     , logThreadId   { areg::Thread::getCurrentThreadId() }
     , logTimestamp  { DateTime::getNow() }
     , logReceived   { DateTime::INVALID_TIME }
@@ -163,7 +163,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t /*scopeId*/, uin
     , logSource     { areg::COOKIE_LOCAL }
     , logTarget     { areg::COOKIE_LOGGER }
     , logCookie     { areg::COOKIE_LOCAL }
-    , logModuleId   { Process::CURRENT_PROCESS }
+    , logModuleId   { areg::Process::CURRENT_PROCESS }
     , logThreadId   { areg::Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logReceived   { DateTime::INVALID_TIME }
@@ -319,7 +319,7 @@ AREG_API_IMPL areg::RemoteMessage areg::createLogMessage(const areg::LogEntry& l
         log->logCookie   = srcCookie;
         log->logDataType = dataType;
 
-        const areg::String& module = Process::getInstance().getAppName();
+        const areg::String& module = areg::Process::getInstance().getAppName();
         areg::memCopy(log->logModule, areg::LOG_NAMES_SIZE, module.getString(), static_cast<uint32_t>(module.getLength()) + 1);
         log->logModuleLen   = static_cast<uint32_t>(module.getLength());
 

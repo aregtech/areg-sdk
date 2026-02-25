@@ -233,7 +233,7 @@ namespace
 } // namespace
 
 ConfigManager::ConfigManager()
-    : mModule               (Process::getInstance().getAppName())
+    : mModule               (areg::Process::getInstance().getAppName())
     , mWritableProperties   ( )
     , mReadonlyProperties   ( )
     , mIsConfigured         (false)
