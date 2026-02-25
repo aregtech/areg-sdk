@@ -17,70 +17,74 @@
 
 #include <utility>
 
-//////////////////////////////////////////////////////////////////////////
-// Identifier class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Types and constants
-//////////////////////////////////////////////////////////////////////////
-const Identifier    Identifier::BAD_IDENTIFIER{ Identifier::BAD_IDENTIFIER_VALUE, Identifier::BAD_IDENTIFIER_NAME };
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-Identifier::Identifier()
-    : mValue    (Identifier::BAD_IDENTIFIER_VALUE)
-    , mName     (Identifier::BAD_IDENTIFIER_NAME)
+namespace areg
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Identifier class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-Identifier::Identifier( uint32_t idValue, const char * idName )
-    : mValue    (idValue)
-    , mName     (idName)
-{
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Types and constants
+    //////////////////////////////////////////////////////////////////////////
+    const Identifier    Identifier::BAD_IDENTIFIER{ Identifier::BAD_IDENTIFIER_VALUE, Identifier::BAD_IDENTIFIER_NAME };
 
-Identifier::Identifier( uint32_t idValue, const std::string_view& idName )
-    : mValue    (idValue)
-    , mName     (idName)
-{
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    Identifier::Identifier()
+        : mValue    (Identifier::BAD_IDENTIFIER_VALUE)
+        , mName     (Identifier::BAD_IDENTIFIER_NAME)
+    {
+    }
 
-Identifier::Identifier( uint32_t idValue, const areg::String& idName )
-    : mValue    (idValue)
-    , mName     (idName)
-{
-}
+    Identifier::Identifier( uint32_t idValue, const char * idName )
+        : mValue    (idValue)
+        , mName     (idName)
+    {
+    }
 
-Identifier::Identifier( const Identifier & src )
-    : mValue    (src.mValue)
-    , mName     (src.mName)
-{
-}
+    Identifier::Identifier( uint32_t idValue, const std::string_view& idName )
+        : mValue    (idValue)
+        , mName     (idName)
+    {
+    }
 
-Identifier::Identifier( Identifier && src ) noexcept
-    : mValue    ( std::move(src.mValue) )
-    , mName     ( std::move(src.mName) )
-{
-}
+    Identifier::Identifier( uint32_t idValue, const String& idName )
+        : mValue    (idValue)
+        , mName     (idName)
+    {
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
+    Identifier::Identifier( const Identifier & src )
+        : mValue    (src.mValue)
+        , mName     (src.mName)
+    {
+    }
 
-Identifier& Identifier::operator = ( const Identifier & src )
-{
-    this->mValue    = src.mValue;
-    this->mName     = src.mName;
+    Identifier::Identifier( Identifier && src ) noexcept
+        : mValue    ( std::move(src.mValue) )
+        , mName     ( std::move(src.mName) )
+    {
+    }
 
-    return (*this);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Methods
+    //////////////////////////////////////////////////////////////////////////
 
-Identifier & Identifier::operator = ( Identifier && src )  noexcept
-{
-    this->mValue    = std::move( src.mValue );
-    this->mName     = std::move( src.mName );
+    Identifier& Identifier::operator = ( const Identifier & src )
+    {
+        this->mValue    = src.mValue;
+        this->mName     = src.mName;
 
-    return (*this);
-}
+        return (*this);
+    }
+
+    Identifier & Identifier::operator = ( Identifier && src )  noexcept
+    {
+        this->mValue    = std::move( src.mValue );
+        this->mName     = std::move( src.mName );
+
+        return (*this);
+    }
+
+} // namespace areg

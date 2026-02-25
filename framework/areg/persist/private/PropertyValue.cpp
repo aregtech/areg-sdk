@@ -61,7 +61,7 @@ PropertyValue::PropertyValue(bool bValue)
 {
 }
 
-PropertyValue::PropertyValue(const std::vector<Identifier> & idList)
+PropertyValue::PropertyValue(const std::vector<areg::Identifier> & idList)
     : mValue( )
 {
     setIndentifier(idList);
@@ -109,7 +109,7 @@ PropertyValue& PropertyValue::operator = (bool bValue)
     return (*this);
 }
 
-PropertyValue & PropertyValue::operator = (const std::vector<Identifier> & idList)
+PropertyValue & PropertyValue::operator = (const std::vector<areg::Identifier> & idList)
 {
     setIndentifier(idList);
     return (*this);
@@ -180,9 +180,9 @@ double PropertyValue::getDouble() const
     return mValue.toDouble( );
 }
 
-uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) const
+uint32_t PropertyValue::getIndetifier( const std::vector<areg::Identifier> & idList ) const
 {
-    uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
+    uint32_t result = areg::Identifier::BAD_IDENTIFIER_VALUE;
     if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
     {
         std::vector<areg::StringBase<char>> list { mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
@@ -194,7 +194,7 @@ uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) 
                 const areg::String& idName = id.getName();
                 if (value == idName)
                 {
-                    if (result == Identifier::BAD_IDENTIFIER_VALUE)
+                    if (result == areg::Identifier::BAD_IDENTIFIER_VALUE)
                     {
                         result = id.getValue();
                     }
@@ -235,9 +235,9 @@ void PropertyValue::setDouble(double dValue)
     mValue = areg::String::makeString( dValue );
 }
 
-ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
+ArrayList<areg::Identifier> PropertyValue::getIdentifierList(const std::vector<areg::Identifier>& lookupList) const
 {
-    ArrayList<Identifier> result;
+    ArrayList<areg::Identifier> result;
     if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
     {
         std::vector<areg::StringBase<char>> list{ mValue.split(areg::SYNTAX_VALUE_LIST_DELIMITER) };
@@ -259,7 +259,7 @@ ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identif
     return result;
 }
 
-void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList)
+void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<areg::Identifier>& lookupList)
 {
     mValue.clear();
     for (const auto& entry : lookupList)
@@ -278,7 +278,7 @@ void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<Identif
     }
 }
 
-void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
+void PropertyValue::setIndentifier(const std::vector<areg::Identifier> & idList)
 {
     mValue.clear();
     for ( const auto& entry : idList )

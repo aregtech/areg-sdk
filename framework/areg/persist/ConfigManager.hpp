@@ -419,7 +419,7 @@ public:
     /**
      * \brief   Returns list of logging targets specified in the areg::LogTarget.
      **/
-    std::vector<Identifier> getLogTargets() const;
+    std::vector<areg::Identifier> getLogTargets() const;
 
     /**
      * \brief   Returns logging status.
@@ -448,7 +448,7 @@ public:
      * \param   logType     The Identifier object containing areg::LogTarget value and string equivalent.
      * \return  If returns true, the logging for the specified target is enabled. Otherwise, it is disabled.
      **/
-    inline bool getLogEnabled(const Identifier& logType) const;
+    inline bool getLogEnabled(const areg::Identifier& logType) const;
 
     /**
      * \brief   Returns log enable or disable state for the given target.
@@ -464,7 +464,7 @@ public:
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
      **/
-    inline void setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary = false);
+    inline void setLogEnabled(const areg::Identifier& logType, bool newValue, bool isTemporary = false);
 
     /**
      * \brief   Sets the logging state for the target defined in areg::LogTarget.
@@ -620,13 +620,13 @@ public:
     /**
      * \brief   Returns list of remote services.
      **/
-    std::vector<Identifier> getServiceList() const;
+    std::vector<areg::Identifier> getServiceList() const;
 
     /**
      * \brief   Returns list of connection identifiers of the remote service.
      * \param   service The remote service, which identifiers should be initialized.
      **/
-    std::vector<Identifier> getRemoteServiceConnections(const areg::String& service) const;
+    std::vector<areg::Identifier> getRemoteServiceConnections(const areg::String& service) const;
 
     /**
      * \brief   Returns the name of the service of the remote connection.
@@ -989,7 +989,7 @@ inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= 
     setModuleProperty(key.section, key.property, key.position, areg::String::makeString(newValue), confKey, isTemporary);
 }
 
-inline bool ConfigManager::getLogEnabled(const Identifier& logType) const
+inline bool ConfigManager::getLogEnabled(const areg::Identifier& logType) const
 {
     return getLogEnabled(logType.getName());
 }
@@ -1003,7 +1003,7 @@ inline void ConfigManager::setLogEnabled(const areg::String& logType, bool newVa
     setModuleProperty(key.section, key.property, logType, areg::String::makeString(newValue), confKey, isTemporary);
 }
 
-inline void ConfigManager::setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary /*= false*/)
+inline void ConfigManager::setLogEnabled(const areg::Identifier& logType, bool newValue, bool isTemporary /*= false*/)
 {
     setLogEnabled(logType.getName(), newValue, isTemporary);
 }

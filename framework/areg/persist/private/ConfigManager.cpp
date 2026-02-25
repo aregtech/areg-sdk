@@ -555,7 +555,7 @@ areg::Version ConfigManager::getConfigVersion() const
     return result;
 }
 
-std::vector<Identifier> ConfigManager::getServiceList() const
+std::vector<areg::Identifier> ConfigManager::getServiceList() const
 {
     Lock lock(mLock);
 
@@ -564,7 +564,7 @@ std::vector<Identifier> ConfigManager::getServiceList() const
 
     const Property* prop = getProperty(key.section, key.property, key.position, confKey);
 
-    std::vector<Identifier> result;
+    std::vector<areg::Identifier> result;
     if (prop != nullptr)
     {
         result = prop->getValue().getIdentifierList(areg::RemoteServiceIdentifiers).getData();
@@ -573,7 +573,7 @@ std::vector<Identifier> ConfigManager::getServiceList() const
     return result;
 }
 
-std::vector<Identifier> ConfigManager::getLogTargets() const
+std::vector<areg::Identifier> ConfigManager::getLogTargets() const
 {
     Lock lock(mLock);
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogTarget;
@@ -581,7 +581,7 @@ std::vector<Identifier> ConfigManager::getLogTargets() const
 
     const Property* prop = getProperty(key.section, key.property, key.position, confKey);
 
-    std::vector<Identifier> result;
+    std::vector<areg::Identifier> result;
     if (prop != nullptr)
     {
         result = prop->getValue().getIdentifierList(areg::LogTypeIdentifiers).getData();
@@ -640,7 +640,7 @@ bool ConfigManager::getLogEnabled(const areg::String& logType) const
 
 bool ConfigManager::getLogEnabled(areg::LogTarget logType) const
 {
-    areg::String id = Identifier::convToString( static_cast<uint32_t>(logType)
+    areg::String id = areg::Identifier::convToString( static_cast<uint32_t>(logType)
                                         , areg::LogTypeIdentifiers
                                         , static_cast<uint32_t>(areg::LogTarget::Undefined));
     return getLogEnabled(id);
@@ -648,7 +648,7 @@ bool ConfigManager::getLogEnabled(areg::LogTarget logType) const
 
 void ConfigManager::setLogEnabled(areg::LogTarget logType, bool newValue, bool isTemporary /*= false*/)
 {
-    areg::String id = Identifier::convToString( static_cast<uint32_t>(logType)
+    areg::String id = areg::Identifier::convToString( static_cast<uint32_t>(logType)
                                         , areg::LogTypeIdentifiers
                                         , static_cast<uint32_t>(areg::LogTarget::Undefined));
     setLogEnabled(id, newValue, isTemporary);
@@ -884,14 +884,14 @@ int32_t ConfigManager::removeModuleScopes()
     return removeModuleProperties(key.section, key.property, confKey);
 }
 
-std::vector<Identifier> ConfigManager::getRemoteServiceConnections(const areg::String& service) const
+std::vector<areg::Identifier> ConfigManager::getRemoteServiceConnections(const areg::String& service) const
 {
     Lock lock(mLock);
 
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::ServiceConnection;
     const areg::ConfigKey& key = areg::getServiceConnection();
 
-    std::vector<Identifier> result;
+    std::vector<areg::Identifier> result;
     const PropertyValue* value = getPropertyValue(service, key.property, key.position, confKey);
     if (value != nullptr)
     {
@@ -913,10 +913,10 @@ areg::String ConfigManager::getRemoteServiceName(const areg::String& service, co
 
 areg::String ConfigManager::getRemoteServiceName(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = areg::Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = areg::Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServiceName(service, connect);
@@ -934,10 +934,10 @@ bool ConfigManager::getRemoteServiceEnable(const areg::String& service, const ar
 
 bool ConfigManager::getRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = areg::Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = areg::Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServiceEnable(service, connect);
@@ -954,10 +954,10 @@ void ConfigManager::setRemoteServiceEnable(const areg::String& service, const ar
 
 void ConfigManager::setRemoteServiceEnable(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, bool newValue, bool isTemporary /*= false*/)
 {
-    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = areg::Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = areg::Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     setRemoteServiceEnable(service, connect, newValue, isTemporary);
@@ -986,10 +986,10 @@ areg::String ConfigManager::getRemoteServiceAddress(const areg::String& service,
 
 areg::String ConfigManager::getRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = areg::Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = areg::Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServiceAddress(service, connect);
@@ -1006,10 +1006,10 @@ void ConfigManager::setRemoteServiceAddress(const areg::String& service, const a
 
 void ConfigManager::setRemoteServiceAddress(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, const areg::String& newValue, bool isTemporary /*= false*/)
 {
-    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = areg::Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = areg::Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     setRemoteServiceAddress(service, connect, newValue, isTemporary);
@@ -1027,10 +1027,10 @@ uint16_t ConfigManager::getRemoteServicePort(const areg::String& service, const 
 
 uint16_t ConfigManager::getRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType) const
 {
-    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = areg::Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = areg::Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     return getRemoteServicePort(service, connect);
@@ -1047,10 +1047,10 @@ void ConfigManager::setRemoteServicePort(const areg::String& service, const areg
 
 void ConfigManager::setRemoteServicePort(areg::RemoteServiceKind serviceType, areg::ConnectionType connectType, uint16_t newValue, bool isTemporary /*= false*/)
 {
-    const areg::String& service = Identifier::convToString( static_cast<uint32_t>(serviceType)
+    const areg::String& service = areg::Identifier::convToString( static_cast<uint32_t>(serviceType)
                                                     , areg::RemoteServiceIdentifiers
                                                     , static_cast<uint32_t>(areg::RemoteServiceKind::Unknown));
-    const areg::String & connect = Identifier::convToString(static_cast<uint32_t>(connectType)
+    const areg::String & connect = areg::Identifier::convToString(static_cast<uint32_t>(connectType)
                                                     , areg::ConnectionIdentifiers
                                                     , static_cast<uint32_t>(areg::ConnectionType::Undefined));
     setRemoteServicePort(service, connect, newValue, isTemporary);

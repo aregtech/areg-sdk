@@ -29,8 +29,8 @@ ConnectionConfiguration::ConnectionConfiguration(const areg::String& service, co
 }
 
 ConnectionConfiguration::ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType)
-    : mServiceName  (Identifier::convToString(static_cast<uint32_t>(service), areg::RemoteServiceIdentifiers, static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)))
-    , mConnectType  (Identifier::convToString(static_cast<uint32_t>(connectType), areg::ConnectionIdentifiers, static_cast<uint32_t>(areg::ConnectionType::Undefined)))
+    : mServiceName  (areg::Identifier::convToString(static_cast<uint32_t>(service), areg::RemoteServiceIdentifiers, static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)))
+    , mConnectType  (areg::Identifier::convToString(static_cast<uint32_t>(connectType), areg::ConnectionIdentifiers, static_cast<uint32_t>(areg::ConnectionType::Undefined)))
 {
 }
 

@@ -18,7 +18,7 @@
 #include "areg/appbase/AppDefs.hpp"
 
 //! Logging type identifiers
-AREG_API_IMPL const std::vector<Identifier>     areg::LogTypeIdentifiers =
+AREG_API_IMPL const std::vector<areg::Identifier>     areg::LogTypeIdentifiers =
 {
       {static_cast<uint32_t>(areg::LogTarget::Undefined)   , areg::DefaultLogTypes[0].ltIdName        }
     , {static_cast<uint32_t>(areg::LogTarget::Remote)      , areg::DefaultLogTypes[1].ltIdName        }
@@ -28,7 +28,7 @@ AREG_API_IMPL const std::vector<Identifier>     areg::LogTypeIdentifiers =
 };
 
 //! Connection type identifiers
-AREG_API_IMPL const std::vector<Identifier>   areg::ConnectionIdentifiers
+AREG_API_IMPL const std::vector<areg::Identifier>   areg::ConnectionIdentifiers
 {
       { static_cast<uint32_t>(areg::ConnectionType::Undefined)  , areg::DefaultConnections[0].ltIdName     }
     , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)      , areg::DefaultConnections[1].ltIdName     }
@@ -38,7 +38,7 @@ AREG_API_IMPL const std::vector<Identifier>   areg::ConnectionIdentifiers
 };
 
 //! Remote service identifiers
-AREG_API_IMPL const std::vector<Identifier>   areg::RemoteServiceIdentifiers
+AREG_API_IMPL const std::vector<areg::Identifier>   areg::RemoteServiceIdentifiers
 {
       { static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)  , areg::DefaultRemotetServices[0].ltIdName }
     , { static_cast<uint32_t>(areg::RemoteServiceKind::Router)   , areg::DefaultRemotetServices[1].ltIdName }
@@ -46,7 +46,7 @@ AREG_API_IMPL const std::vector<Identifier>   areg::RemoteServiceIdentifiers
 };
 
 //! Log priority identifiers
-AREG_API_IMPL const std::vector<Identifier>   areg::LogScopePriorityIndentifiers
+AREG_API_IMPL const std::vector<areg::Identifier>   areg::LogScopePriorityIndentifiers
 {
       { static_cast<uint32_t>(areg::LogPriority::PrioInvalid)  , areg::PRIO_NO_PRIO                             }
     , { static_cast<uint32_t>(areg::LogPriority::PrioNotset)   , areg::PRIO_NOTSET_STR                          }

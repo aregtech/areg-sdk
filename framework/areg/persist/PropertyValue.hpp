@@ -63,7 +63,7 @@ public:
      * \brief   Initializes Value from list of identifiers.
      * \param   idList  The Value as a list of identifiers to set.
      **/
-    explicit PropertyValue( const std::vector<Identifier> & idList );
+    explicit PropertyValue( const std::vector<areg::Identifier> & idList );
     /**
      * \brief   Copies value from given source
      * \param   value   The source to copy value
@@ -130,7 +130,7 @@ public:
      * \brief   Copies property Value from given source as a list of identifiers
      * \param   idList      The data to convert.
      **/
-    PropertyValue & operator = ( const std::vector<Identifier> & idList );
+    PropertyValue & operator = ( const std::vector<areg::Identifier> & idList );
 
     /**
      * \brief   Checks equality of two Value objects.
@@ -242,27 +242,27 @@ public:
      * \param   lookupList  The lookup list to convert literal identifiers into integer values.
      * \return  Combined with logical OR operation digital value of the identifiers.
      **/
-    uint32_t getIndetifier( const std::vector<Identifier> & lookupList) const;
+    uint32_t getIndetifier( const std::vector<areg::Identifier> & lookupList) const;
 
     /**
      * \brief   Converts and sets value as a list of Identifiers
      * \param   idList      The list of Identifiers to convert and set.
      **/
-    void setIndentifier( const std::vector<Identifier> & idList );
+    void setIndentifier( const std::vector<areg::Identifier> & idList );
 
     /**
      * \brief   Parses the value and returns the list of identifiers.
      * \param   lookupList  The lookup list to convert literal identifiers into integer values.
      * \return  Combined with logical OR ('|') operation digital value of the identifiers.
      **/
-    ArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
+    ArrayList<areg::Identifier> getIdentifierList(const std::vector<areg::Identifier>& lookupList) const;
 
     /**
      * \brief   Sets as a string the list of values of the property.
      * \param   idBits      The bitwise set of IDs.
      * \param   lookupList  The lookup list to find entry and convert to the string.
      **/
-    void setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList);
+    void setIdentifierList(uint32_t idBits, const std::vector<areg::Identifier>& lookupList);
 
     /**
      * \brief   Parses the value and returns the list of string. The strings in the value should be

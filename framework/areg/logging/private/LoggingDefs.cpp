@@ -515,12 +515,12 @@ AREG_API_IMPL const ITEM_ID & areg::getCookie()
 
 AREG_API_IMPL areg::String areg::makePrioString(uint32_t priorities)
 {
-    return Identifier::convToString(priorities, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+    return areg::Identifier::convToString(priorities, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioNotset));
 }
 
 AREG_API_IMPL uint32_t areg::makePriorities(const areg::String& prioString)
 {
-    uint16_t id = static_cast<uint16_t>(Identifier::convFromString(prioString, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioInvalid)));
+    uint16_t id = static_cast<uint16_t>(areg::Identifier::convFromString(prioString, areg::LogScopePriorityIndentifiers, static_cast<uint32_t>(areg::LogPriority::PrioInvalid)));
     return static_cast<uint32_t>(static_cast<areg::LogPriority>(id));
 }
 

@@ -288,25 +288,25 @@ namespace areg
      * \brief   areg::LogTypeIdentifiers
      *          The list of logging type identifiers to convert to string or areg::LogTarget types
      **/
-    extern AREG_API const std::vector<Identifier> LogTypeIdentifiers;
+    extern AREG_API const std::vector<areg::Identifier> LogTypeIdentifiers;
 
     /**
      * \brief   areg::ConnectionIdentifiers
      *          The list of connection type identifiers to convert to string or areg::ConnectionType types
      **/
-    extern AREG_API const std::vector<Identifier> ConnectionIdentifiers;
+    extern AREG_API const std::vector<areg::Identifier> ConnectionIdentifiers;
 
     /**
      * \brief   areg::RemoteServiceIdentifiers
      *          The list of remote servicing type identifiers to convert to string or areg::RemoteServiceKind types
      **/
-    extern AREG_API const std::vector<Identifier> RemoteServiceIdentifiers;
+    extern AREG_API const std::vector<areg::Identifier> RemoteServiceIdentifiers;
 
     /**
      * \brief   areg::LogScopePriorityIndentifiers
      *          The list of logging priority type identifiers to convert to string or areg::LogPriority types
      **/
-    extern AREG_API const std::vector<Identifier> LogScopePriorityIndentifiers;
+    extern AREG_API const std::vector<areg::Identifier> LogScopePriorityIndentifiers;
 
     /**
      * \brief   areg::AppState
