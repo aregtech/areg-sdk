@@ -163,7 +163,7 @@ private:
     /**
      * \brief   The fixed array of waitable. The maximum size of array is areg::MAXIMUM_WAITING_OBJECTS
      **/
-    using WaitingList   = FixedArray<WaitablePosix *>;
+    using WaitingList   = areg::FixedArray<WaitablePosix *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Public static methods.

@@ -592,7 +592,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    using StateArrayBase    = FixedArray<DataState>;
+    using StateArrayBase    = areg::FixedArray<DataState>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/

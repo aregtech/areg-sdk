@@ -25,7 +25,7 @@
  **/
 TEST(FixedArrayTest, TestConstructors)
 {
-    using FixedArray = FixedArray<int>;
+    using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray empty, notEmpty(elemCount);
@@ -79,7 +79,7 @@ TEST(FixedArrayTest, TestConstructors)
  **/
 TEST(FixedArrayTest, TestCopyMove)
 {
-    using FixedArray = FixedArray<int>;
+    using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray empty, notEmpty(elemCount);
@@ -131,7 +131,7 @@ TEST(FixedArrayTest, TestCopyMove)
  **/
 TEST(FixedArrayTest, TestValues)
 {
-    using FixedArray = FixedArray<int>;
+    using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
     constexpr int32_t arr[]{ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
@@ -152,7 +152,7 @@ TEST(FixedArrayTest, TestValues)
  **/
 TEST(FixedArrayTest, TestSearchElem)
 {
-    using FixedArray = FixedArray<int>;
+    using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray notEmpty(elemCount);
@@ -180,7 +180,7 @@ TEST(FixedArrayTest, TestSearchElem)
  **/
 TEST(FixedArrayTest, TestElemPosition)
 {
-    using FixedArray = FixedArray<int>;
+    using FixedArray = areg::FixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
 
     FixedArray notEmpty(elemCount);
@@ -200,7 +200,7 @@ TEST(FixedArrayTest, TestElemPosition)
  **/
 TEST(FixedArrayTest, TestAscending)
 {
-    using FixedArray = FixedArray<int>;
+    using FixedArray = areg::FixedArray<int>;
 
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -219,7 +219,7 @@ TEST(FixedArrayTest, TestAscending)
  **/
 TEST(FixedArrayTest, TestDescending)
 {
-    using FixedArray = FixedArray<int>;
+    using FixedArray = areg::FixedArray<int>;
 
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
