@@ -36,7 +36,7 @@ bool TimerManagerBase::runDispatcher()
 {
     readyForEvents( true );
 
-    SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
+    areg::SyncObject* syncObjects[] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(syncObjects, 2, false);
     int32_t whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();

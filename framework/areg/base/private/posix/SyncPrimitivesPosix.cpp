@@ -42,7 +42,7 @@
 // SyncObject class methods
 //////////////////////////////////////////////////////////////////////////
 
-void SyncObject::_osDestroySyncObject()
+void areg::SyncObject::_osDestroySyncObject()
 {
     if (mSyncObject != nullptr)
     {
@@ -188,7 +188,7 @@ bool CriticalSection::_osTryLock()
 #if 0 // TODO: Probably don't need anymore and should be removed
 
 SpinLock::SpinLock()
-    : Lockable( SyncObject::SyncKind::SoSpinlock )
+    : Lockable( areg::SyncObject::SyncKind::SoSpinlock )
 {
     mSyncObject    = DEBUG_NEW SpinLockPosix( );
 }

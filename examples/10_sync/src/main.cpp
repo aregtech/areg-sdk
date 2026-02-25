@@ -75,7 +75,7 @@ protected:
         LOG_INFO("Auto-reset event 'gEventRun' is signaled");
 
         // Multi-lock with multiple objects
-        SyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
+        areg::SyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
         MultiLock multiLock(objects, std::size(objects), false);
 
         constexpr uint32_t waitTimeout{ areg::WAIT_1_MILLISECOND * 150 };
@@ -135,7 +135,7 @@ protected:
         mQuit.resetEvent();
 
         // Multi-lock with exit event + dummy mutex
-        SyncObject* objects[] = { &gEventExit, &gMutexDummy };
+        areg::SyncObject* objects[] = { &gEventExit, &gMutexDummy };
         MultiLock multiLock(objects, std::size(objects), false);
 
         int32_t waitResult = multiLock.lock(areg::WAIT_INFINITE, false, false);
@@ -186,7 +186,7 @@ int main()
 
         areg::Thread::sleep(areg::WAIT_1_SECOND);
 
-        SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
+        areg::SyncObject* objects[] = { &helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy };
         gEventExit.setEvent();
         gEventRun.setEvent();
 

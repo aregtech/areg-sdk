@@ -73,7 +73,7 @@ class Wait;
 //////////////////////////////////////////////////////////////////////////
 // Lockable class declaration
 //////////////////////////////////////////////////////////////////////////
-class AREG_API Lockable : public SyncObject
+class AREG_API Lockable : public areg::SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -83,7 +83,7 @@ protected:
      * \brief   Protected constructor. Should not be accessed directly.
      *          Only via derived classes
      **/
-    Lockable( SyncObject::SyncKind syncObjectType );
+    Lockable( areg::SyncObject::SyncKind syncObjectType );
 
 public:
     /**
@@ -266,7 +266,7 @@ private:
  *          state of event object to be signaled. The creating thread specifies the initial state 
  *          of the object in Constructor and whether it is a manual-reset or auto-reset event object.
  **/
-class AREG_API SyncEvent  : public SyncObject
+class AREG_API SyncEvent  : public areg::SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -947,7 +947,7 @@ private:
  *              or canceled. A periodic timer is either a periodic manual-reset
  *              timer or a periodic synchronization timer.
  **/
-class AREG_API SyncTimer: public SyncObject
+class AREG_API SyncTimer: public areg::SyncObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -1155,7 +1155,7 @@ public:
      *                      synchronization will not be automatically
      *                      unlocked in destructor
      **/
-    explicit Lock( SyncObject &syncObj, bool autoLock = true );
+    explicit Lock( areg::SyncObject &syncObj, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-locking was enabled, it will call
@@ -1190,7 +1190,7 @@ private:
     /**
      * \brief   Reference to Synchronization object passed in constructor
      **/
-    SyncObject &  mSyncObject;
+    areg::SyncObject &  mSyncObject;
     /**
      * \brief   Auto-locking flag. Indicates whether synchronization
      *          object is locked / unlocked automatically or manually
@@ -1280,7 +1280,7 @@ public:
      *                      synchronization objects and wait for all objects
      *                      to be signaled.
      **/
-    MultiLock( SyncObject* pObjects[], int32_t count, bool autoLock = true );
+    MultiLock( areg::SyncObject* pObjects[], int32_t count, bool autoLock = true );
 
     /**
      * \brief   Destructor. If auto-lock is enabled, unlocks all synchronization
@@ -1355,7 +1355,7 @@ private:
     /**
      * \brief   List of synchronization objects passed on initialization
      **/
-    SyncObject* const*  mSyncObjArray;
+    areg::SyncObject* const*  mSyncObjArray;
     /**
      * \brief   Size of synchronization object. 
      *          Cannot be more than MAX_SIZE_OF_ARRAY (64)

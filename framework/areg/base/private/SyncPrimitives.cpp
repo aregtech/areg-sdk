@@ -24,15 +24,15 @@
 // Lockable class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Lockable::Lockable( SyncObject::SyncKind syncObjectType )
-    : SyncObject   (syncObjectType)
+Lockable::Lockable( areg::SyncObject::SyncKind syncObjectType )
+    : areg::SyncObject   (syncObjectType)
 {
-    ASSERT( syncObjectType == SyncObject::SyncKind::SoMutex      ||
-            syncObjectType == SyncObject::SyncKind::SoSemaphore  ||
-            syncObjectType == SyncObject::SyncKind::SoCritical   ||
-            syncObjectType == SyncObject::SyncKind::SoSpinlock   ||
-            syncObjectType == SyncObject::SyncKind::SoReslock    ||
-            syncObjectType == SyncObject::SyncKind::SoNolock     );
+    ASSERT( syncObjectType == areg::SyncObject::SyncKind::SoMutex      ||
+            syncObjectType == areg::SyncObject::SyncKind::SoSemaphore  ||
+            syncObjectType == areg::SyncObject::SyncKind::SoCritical   ||
+            syncObjectType == areg::SyncObject::SyncKind::SoSpinlock   ||
+            syncObjectType == areg::SyncObject::SyncKind::SoReslock    ||
+            syncObjectType == areg::SyncObject::SyncKind::SoNolock     );
 }
 
 bool Lockable::tryLock()
@@ -48,7 +48,7 @@ bool Lockable::tryLock()
 // Mutex class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Mutex::Mutex( bool initLock /* = true */ )
-    : Lockable( SyncObject::SyncKind::SoMutex )
+    : Lockable( areg::SyncObject::SyncKind::SoMutex )
     , mOwnerThreadId( 0 )
 {
     _osCreateMutex( initLock );
@@ -67,7 +67,7 @@ Mutex::~Mutex()
 // SyncEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 SyncEvent::SyncEvent( bool initLock /* = true */, bool autoReset /* = true */ )
-    : SyncObject( SyncObject::SyncKind::SoEvent )
+    : areg::SyncObject( areg::SyncObject::SyncKind::SoEvent )
 
     , mAutoReset( autoReset )
 {
@@ -88,7 +88,7 @@ SyncEvent::~SyncEvent()
 // Semaphore class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Semaphore::Semaphore( int32_t maxCount, int32_t initCount /* = 0 */ )
-    : Lockable( SyncObject::SyncKind::SoSemaphore )
+    : Lockable( areg::SyncObject::SyncKind::SoSemaphore )
 
     , mMaxCount( std::max( maxCount, 1 ) )
     , mCurrCount( areg::isInRange<int32_t>(initCount, 0, mMaxCount) ? initCount : 0 )
@@ -141,7 +141,7 @@ bool Semaphore::tryLock()
 // CriticalSection class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 CriticalSection::CriticalSection()
-    : Lockable( SyncObject::SyncKind::SoCritical )
+    : Lockable( areg::SyncObject::SyncKind::SoCritical )
 {
     _osCreateCriticalSection( );
 }
@@ -157,7 +157,7 @@ CriticalSection::~CriticalSection()
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock()
-    : Lockable( SyncObject::SyncKind::SoSpinlock )
+    : Lockable( areg::SyncObject::SyncKind::SoSpinlock )
     , mLock         ( false )
 {
 }
@@ -181,7 +181,7 @@ bool SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 //////////////////////////////////////////////////////////////////////////
 
 ResourceLock::ResourceLock( bool initLock /*= false*/ )
-    : Lockable( SyncObject::SyncKind::SoReslock )
+    : Lockable( areg::SyncObject::SyncKind::SoReslock )
 {
     _osCreateResourceLock( initLock );
 }
@@ -197,7 +197,7 @@ ResourceLock::~ResourceLock()
 //////////////////////////////////////////////////////////////////////////
 
 NolockSyncObject::NolockSyncObject()
-    : Lockable( SyncObject::SyncKind::SoNolock )
+    : Lockable( areg::SyncObject::SyncKind::SoNolock )
 {
 }
 
@@ -209,7 +209,7 @@ NolockSyncObject::NolockSyncObject()
 // SyncTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 SyncTimer::SyncTimer( uint32_t msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
-    : SyncObject  ( SyncObject::SyncKind::SoTimer )
+    : areg::SyncObject  ( areg::SyncObject::SyncKind::SoTimer )
 
     , mTimeout      ( msTimeout )
     , mIsPeriodic   ( isPeriodic )
@@ -232,7 +232,7 @@ SyncTimer::~SyncTimer()
 //////////////////////////////////////////////////////////////////////////
 // Lock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Lock::Lock(SyncObject &syncObj, bool autoLock /* = true */)
+Lock::Lock(areg::SyncObject &syncObj, bool autoLock /* = true */)
     : mSyncObject(syncObj)
     , mAutoLock  (autoLock)
 {
@@ -257,7 +257,7 @@ Lock::~Lock()
 //////////////////////////////////////////////////////////////////////////
 // MultiLock class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-MultiLock::MultiLock(SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
+MultiLock::MultiLock(areg::SyncObject* pObjects[], int32_t count, bool autoLock /* = true */)
     : mSyncObjArray (pObjects)
     , mSizeCount    (std::min(count, areg::MAXIMUM_WAITING_OBJECTS))
     , mAutoLock     (autoLock)

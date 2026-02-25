@@ -208,7 +208,7 @@ bool EventDispatcherBase::runDispatcher()
 {
     readyForEvents( true );
 
-    SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
+    areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
     int32_t whichEvent  = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();

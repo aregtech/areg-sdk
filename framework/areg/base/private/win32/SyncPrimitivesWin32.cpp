@@ -32,7 +32,7 @@
 // SyncObject class methods
 //////////////////////////////////////////////////////////////////////////
 
-void SyncObject::_osDestroySyncObject()
+void areg::SyncObject::_osDestroySyncObject()
 {
     if ( mSyncObject != nullptr )
     {
@@ -180,7 +180,7 @@ bool CriticalSection::_osTryLock()
 //////////////////////////////////////////////////////////////////////////
 
 SpinLock::SpinLock()
-    : Lockable( SyncObject::SyncKind::SoSpinlock )
+    : Lockable( areg::SyncObject::SyncKind::SoSpinlock )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
     mSyncObject    = DEBUG_NEW SpinLockWin32( );
