@@ -208,7 +208,7 @@ namespace areg
         /**
          * \brief   The watchdog object to track the event processing.
          **/
-        Watchdog                    mWatchdog;
+        areg::Watchdog                    mWatchdog;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods

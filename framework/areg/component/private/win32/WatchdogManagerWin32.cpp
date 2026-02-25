@@ -41,7 +41,7 @@ void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool areg::WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
 {
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = 0;
@@ -68,9 +68,9 @@ void areg::WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigne
 {
     ASSERT(argPtr != nullptr);
     areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
-    Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<Watchdog::WATCHDOG_ID>(argPtr);
-    Watchdog::GUARD_ID guardId = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    areg::Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<areg::Watchdog::WATCHDOG_ID>(argPtr);
+    areg::Watchdog::GUARD_ID guardId = areg::Watchdog::makeGuardId(watchdogId);
+    areg::Watchdog* watchdog = watchdogManager.mWatchdogResource.findResourceObject(guardId);
     if (watchdog != nullptr)
     {
         watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);

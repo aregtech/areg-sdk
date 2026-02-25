@@ -21,51 +21,55 @@
 
 #include <atomic>
 
-Watchdog::GUARD_ID Watchdog::_generateId()
+namespace areg
 {
-    static std::atomic<Watchdog::GUARD_ID> _id{ 0 };
-    return (++_id);
-}
-
-Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-    , mGuardId          (_generateId())
-    , mSequence         (0u)
-    , mComponentThread  (thread)
-{
-}
-
-Watchdog::Watchdog(areg::WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-    : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
-    , mGuardId          (_generateId())
-    , mSequence         (0u)
-    , mComponentThread  (thread.getBindingComponentThread())
-{
-}
-
-Watchdog::~Watchdog()
-{
-    areg::WatchdogManager::stopTimer(*this);
-}
-
-void Watchdog::startGuard()
-{
-    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    Watchdog::GUARD_ID Watchdog::_generateId()
     {
-        Lock lock(mLock);
-        ASSERT(mHandle != nullptr);
-        ++mSequence;
-        mActive = areg::WatchdogManager::startTimer(*this);
+        static std::atomic<Watchdog::GUARD_ID> _id{ 0 };
+        return (++_id);
     }
-}
 
-void Watchdog::stopGuard()
-{
-    if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+    Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+        , mGuardId          (_generateId())
+        , mSequence         (0u)
+        , mComponentThread  (thread)
     {
-        Lock lock(mLock);
-        ASSERT(mHandle != nullptr);
-        mActive = false;
+    }
+
+    Watchdog::Watchdog(areg::WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
+        , mGuardId          (_generateId())
+        , mSequence         (0u)
+        , mComponentThread  (thread.getBindingComponentThread())
+    {
+    }
+
+    Watchdog::~Watchdog()
+    {
         areg::WatchdogManager::stopTimer(*this);
     }
-}
+
+    void Watchdog::startGuard()
+    {
+        if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+        {
+            Lock lock(mLock);
+            ASSERT(mHandle != nullptr);
+            ++mSequence;
+            mActive = areg::WatchdogManager::startTimer(*this);
+        }
+    }
+
+    void Watchdog::stopGuard()
+    {
+        if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+        {
+            Lock lock(mLock);
+            ASSERT(mHandle != nullptr);
+            mActive = false;
+            areg::WatchdogManager::stopTimer(*this);
+        }
+    }
+
+} // namespace areg

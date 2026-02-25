@@ -43,13 +43,13 @@ void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool areg::WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
 {
     bool result = false;
     TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
     if (posixTimer != nullptr)
     {
-        Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
+        areg::Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
         if (posixTimer->startTimer(watchdog, watchdogId, &areg::WatchdogManager::_posixWatchdogExpiredRoutine))
         {
             result = true;
@@ -64,9 +64,9 @@ void areg::WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
 {
     areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
     ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    areg::Watchdog::WATCHDOG_ID watchdogId = static_cast<areg::Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
+    areg::Watchdog::GUARD_ID guardId  = areg::Watchdog::makeGuardId(watchdogId);
+    areg::Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
 
     if (watchdog != nullptr)
     {
@@ -82,9 +82,9 @@ void areg::WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
     areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
     ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    areg::Watchdog::WATCHDOG_ID watchdogId = static_cast<areg::Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
+    areg::Watchdog::GUARD_ID guardId  = areg::Watchdog::makeGuardId(watchdogId);
+    areg::Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
 
     if (watchdog != nullptr)
     {

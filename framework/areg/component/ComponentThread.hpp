@@ -313,7 +313,7 @@ private:
     /**
      * \brief   The watchdog object to track the event processing.
      **/
-    Watchdog        mWatchdog;
+    areg::Watchdog        mWatchdog;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)

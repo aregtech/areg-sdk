@@ -44,8 +44,8 @@ namespace areg
          **/
         static constexpr std::string_view WATCHDOG_THREAD_NAME { "_AREG_WATCHDOG_THREAD_NAME_" };
 
-        using MapWatchdogResource   = areg::OrderedMap<Watchdog::GUARD_ID, Watchdog *>;
-        using WatchdogResource      = areg::ConcurrentResourceMap<Watchdog::GUARD_ID, Watchdog *, MapWatchdogResource>;
+        using MapWatchdogResource   = areg::OrderedMap<areg::Watchdog::GUARD_ID, areg::Watchdog *>;
+        using WatchdogResource      = areg::ConcurrentResourceMap<areg::Watchdog::GUARD_ID, areg::Watchdog *, MapWatchdogResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // Static members
@@ -103,13 +103,13 @@ namespace areg
          * \param   watchdog    The watchdog object that should be started.
          * \return  Returns true if timer was successfully created.
          **/
-        static bool startTimer(Watchdog& watchdog);
+        static bool startTimer(areg::Watchdog& watchdog);
 
         /**
          * \brief   Stops the watchdog timer. Returns true if timer successfully was stopped.
          * \param   watchdog    The watchdog object that should be stopped.
          **/
-        static void stopTimer(Watchdog& watchdog);
+        static void stopTimer(areg::Watchdog& watchdog);
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -157,7 +157,7 @@ namespace areg
         /**
          * \brief   Called when expired timers should be processed.
          **/
-        void _processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes);
+        void _processExpiredTimer(areg::Watchdog* watchdog, areg::Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes);
 
         /**
          * \brief   Stops and removes all watchdog timers.
@@ -168,13 +168,13 @@ namespace areg
          * \brief   Creates system timer for watchdog and registers it in the resource map.
          * \param   watchdog       The Watchdog object that should be registered.
          **/
-        inline void _registerWatchdog( Watchdog & watchdog);
+        inline void _registerWatchdog( areg::Watchdog & watchdog);
 
         /**
          * \brief   Stop watchdog timer and unregister from the resource map.
          * \param   watchdog   The instance of watchdog object to unregister.
          **/
-        inline void _unregisterWatchdog( Watchdog & watchdog );
+        inline void _unregisterWatchdog( areg::Watchdog & watchdog );
 
     //////////////////////////////////////////////////////////////////////////
     //  OS specific hidden methods
@@ -217,7 +217,7 @@ namespace areg
          * \param   watchdog    The Watchdog  object with timer information.
          * \return  Returns true if system Watchdog started with success.
          **/
-        static bool _osSystemTimerStart( Watchdog & watchdog );
+        static bool _osSystemTimerStart( areg::Watchdog & watchdog );
 
         /**
          * \brief   Stops previously started waitable timer.

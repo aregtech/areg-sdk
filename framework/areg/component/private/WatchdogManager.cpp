@@ -60,7 +60,7 @@ namespace areg
         return getInstance().isReady();
     }
 
-    bool WatchdogManager::startTimer(Watchdog& watchdog)
+    bool WatchdogManager::startTimer(areg::Watchdog& watchdog)
     {
         bool result = false;
         ASSERT(watchdog.getHandle() != nullptr);
@@ -77,7 +77,7 @@ namespace areg
         return result;
     }
 
-    void WatchdogManager::stopTimer(Watchdog& watchdog)
+    void WatchdogManager::stopTimer(areg::Watchdog& watchdog)
     {
         getInstance()._unregisterWatchdog(watchdog);
         WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
@@ -103,12 +103,12 @@ namespace areg
     // Methods
     //////////////////////////////////////////////////////////////////////////
 
-    inline void WatchdogManager::_registerWatchdog(Watchdog & watchdog)
+    inline void WatchdogManager::_registerWatchdog(areg::Watchdog & watchdog)
     {
         mWatchdogResource.registerResourceObject(watchdog.getId(), &watchdog);
     }
 
-    inline void WatchdogManager::_unregisterWatchdog(Watchdog& watchdog)
+    inline void WatchdogManager::_unregisterWatchdog(areg::Watchdog& watchdog)
     {
         mWatchdogResource.unregisterResourceObject(watchdog.getId());
         WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
@@ -118,7 +118,7 @@ namespace areg
     {
         mWatchdogResource.lock();
 
-        std::pair< Watchdog::GUARD_ID, Watchdog*> elem;
+        std::pair< areg::Watchdog::GUARD_ID, areg::Watchdog*> elem;
         while (mWatchdogResource.isEmpty() == false)
         {
             mWatchdogResource.removeResourceFirstElement(elem);
@@ -131,7 +131,7 @@ namespace areg
 
     void WatchdogManager::processEvent(const TimerManagerEventData & data)
     {
-        Watchdog* watchdog = static_cast<Watchdog*>(data.getTimer());
+        areg::Watchdog* watchdog = static_cast<areg::Watchdog*>(data.getTimer());
         ASSERT(watchdog != nullptr);
         if (mWatchdogResource.existResource(watchdog->getId()))
         {
@@ -139,13 +139,13 @@ namespace areg
         }
     }
 
-    void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
+    void WatchdogManager::_processExpiredTimer(areg::Watchdog* watchdog, areg::Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
     {
         LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 
         mWatchdogResource.lock();
 
-        Watchdog::SEQUENCE_ID sequence  = Watchdog::makeSequenceId(watchdogId);
+        areg::Watchdog::SEQUENCE_ID sequence  = areg::Watchdog::makeSequenceId(watchdogId);
         if ((watchdog != nullptr) && (watchdog->getSequence() == sequence))
         {
             LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]"
