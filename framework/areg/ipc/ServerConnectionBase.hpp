@@ -303,7 +303,7 @@ protected:
     /**
      * \brief   The instance of server socket connection, which accepts connections
      **/
-    SocketServer        mServerSocket;
+    areg::SocketServer        mServerSocket;
     /**
      * \brief   The cookie value generator, counter.
      **/

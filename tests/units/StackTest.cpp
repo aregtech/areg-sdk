@@ -468,7 +468,7 @@ TEST(StackTest, TestAscending)
     Stack arr1(_arr1, _len), res1(_res1, _len);
     arr1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
 
-    EXPECT_NE(arr1, areg::Stack(_arr1, _len));
+    EXPECT_NE(arr1, Stack(_arr1, _len));
     EXPECT_EQ(arr1.getSize(), _len);
     EXPECT_EQ(arr1, res1);
 }
