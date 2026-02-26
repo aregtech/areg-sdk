@@ -35,7 +35,7 @@
 /**
  * \brief   The logging database engine, responsible to log messages in the database.
  **/
-class LogSqliteDatabase : public LogDatabaseEngine
+class LogSqliteDatabase : public areg::LogDatabaseEngine
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types

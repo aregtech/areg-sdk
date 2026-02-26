@@ -157,7 +157,7 @@ uint32_t LogManager::getScopePriority( const char * scopeName )
     return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
 }
 
-void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
+void LogManager::setLogDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
 {
     LogManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
 }

@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class LogDatabaseEngine;
+namespace areg { class LogDatabaseEngine; }
 
 //////////////////////////////////////////////////////////////////////////
 // DatabaseLogger class declaration
@@ -63,8 +63,8 @@ public:
      * \brief   Returns the pointer to the database engine handler object,
      *          which is responsible to handle the database.
      **/
-    inline const LogDatabaseEngine * getDatabaseEngine() const;
-    inline LogDatabaseEngine * getDatabaseEngine();
+    inline const areg::LogDatabaseEngine * getDatabaseEngine() const;
+    inline areg::LogDatabaseEngine * getDatabaseEngine();
 
     /**
      * \brief   Call to set the logging database engine object.
@@ -74,7 +74,7 @@ public:
      * \param   dbEngine    The pointer to the log database engine to save log messages.
      *                      If nullptr, no message is forwarded to the database engine.
      **/
-    inline void setDatabaseEngine(LogDatabaseEngine * dbEngine);
+    inline void setDatabaseEngine(areg::LogDatabaseEngine * dbEngine);
 
     /**
      * \brief   Returns true if the logging database engine is nut null.
@@ -142,7 +142,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The pointer to the database engine.
-    LogDatabaseEngine *   mDatabase;
+    areg::LogDatabaseEngine *   mDatabase;
 
     //!< Locking object.
     mutable Mutex           mLock;
@@ -159,19 +159,19 @@ private:
 // DatabaseLogger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
+inline const areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
+inline areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline void DatabaseLogger::setDatabaseEngine(LogDatabaseEngine * dbEngine)
+inline void DatabaseLogger::setDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
 {
     Lock lock(mLock);
     mDatabase = dbEngine;

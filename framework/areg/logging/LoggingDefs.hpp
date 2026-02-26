@@ -31,7 +31,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogDatabaseEngine;
+namespace areg { class LogDatabaseEngine; }
 namespace areg { class LogScope; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -584,7 +584,7 @@ namespace areg
     /**
      * \brief   Call to set external logging database engine.
      **/
-    AREG_API void setLogDatabaseEngine(LogDatabaseEngine* dbEngine);
+    AREG_API void setLogDatabaseEngine(areg::LogDatabaseEngine* dbEngine);
 
     //////////////////////////////////////////////////////////////////////////////
     // NELogging namespace streamable types

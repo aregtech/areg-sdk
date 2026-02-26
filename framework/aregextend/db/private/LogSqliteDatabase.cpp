@@ -425,7 +425,7 @@ areg::String LogSqliteDatabase::getReadAllLogMessagesQuery()
 }
 
 LogSqliteDatabase::LogSqliteDatabase()
-    : LogDatabaseEngine   ( )
+    : areg::LogDatabaseEngine   ( )
 
     , mDatabase             ( )
     , mStmtLogs             (mDatabase)

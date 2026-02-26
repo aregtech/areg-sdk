@@ -40,7 +40,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogDatabaseEngine;
+namespace areg { class LogDatabaseEngine; }
 namespace areg { class LogScope; }
 class LogMessage;
 namespace areg
@@ -257,7 +257,7 @@ public:
      *          Otherwise, ignores to write the log messages.
      * \param   dbEngine    The pointer to the log database engine to set.
      **/
-    static void setLogDatabaseEngine(LogDatabaseEngine * dbEngine);
+    static void setLogDatabaseEngine(areg::LogDatabaseEngine * dbEngine);
 
     /**
      * \brief   Returns true if database and data tables are initialized and the

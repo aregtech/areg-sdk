@@ -483,7 +483,7 @@ AREG_API_IMPL areg::RemoteMessage areg::messageConfigurationSaved()
     return msgScope;
 }
 
-AREG_API_IMPL void areg::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
+AREG_API_IMPL void areg::setLogDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
 {
     LogManager::setLogDatabaseEngine(dbEngine);
 }
@@ -656,7 +656,7 @@ AREG_API_IMPL areg::RemoteMessage areg::messageConfigurationSaved()
     return msgScope;
 }
 
-AREG_API_IMPL void areg::setLogDatabaseEngine(LogDatabaseEngine * /*dbEngine*/)
+AREG_API_IMPL void areg::setLogDatabaseEngine(areg::LogDatabaseEngine * /*dbEngine*/)
 {
 }
 
