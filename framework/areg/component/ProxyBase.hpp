@@ -49,7 +49,7 @@ namespace areg { class ServiceRequestEvent; }
 namespace areg { class NotificationEvent; }
 namespace areg { class DispatcherThread; }
 namespace areg { class EventDataStream; }
-class ProxyListener;
+namespace areg { class ProxyListener; }
 namespace areg { class ProxyEvent; }
 class ProxyBase;
 namespace areg { class Version; }
@@ -216,7 +216,7 @@ namespace areg
          * \brief   Proxy Connected client List class to handle connect and 
          *          disconnect service.
          ************************************************************************/
-        using ProxyConnectList  = areg::ArrayList<ProxyListener *>;
+        using ProxyConnectList  = areg::ArrayList<areg::ProxyListener *>;
 
         //////////////////////////////////////////////////////////////////////////
         // ProxyBase::ProxyMap class declaration.
@@ -440,7 +440,7 @@ namespace areg
          **/
         static std::shared_ptr<ProxyBase> findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
-                                                        , ProxyListener & connect
+                                                        , areg::ProxyListener & connect
                                                         , FuncCreateProxy funcCreate
                                                         , const areg::String & ownerThread = areg::String::getEmptyString() );
 
@@ -463,7 +463,7 @@ namespace areg
          **/
         static std::shared_ptr<ProxyBase> findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
-                                                        , ProxyListener & connect
+                                                        , areg::ProxyListener & connect
                                                         , FuncCreateProxy funcCreate
                                                         , areg::DispatcherThread & ownerThread );
 
@@ -603,7 +603,7 @@ namespace areg
          *          and delete Proxy object.
          * \param   connect The object to notify when Proxy is disconnected.
          **/
-        void freeProxy( ProxyListener & connect );
+        void freeProxy( areg::ProxyListener & connect );
 
         /**
          * \brief   Function is called when thread completes job and makes cleanups.

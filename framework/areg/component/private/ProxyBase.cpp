@@ -171,7 +171,7 @@ namespace areg
 
     std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
-                                                        , ProxyListener & connect
+                                                        , areg::ProxyListener & connect
                                                         , FuncCreateProxy funcCreate
                                                         , const areg::String & ownerThread /*= areg::String::getEmptyString()*/)
     {
@@ -180,7 +180,7 @@ namespace areg
 
     std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
-                                                        , ProxyListener & connect
+                                                        , areg::ProxyListener & connect
                                                         , FuncCreateProxy funcCreate
                                                         , areg::DispatcherThread & ownerThread )
     {
@@ -302,7 +302,7 @@ namespace areg
         ProxyBase::ServiceAvailableEvent::removeListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
     }
 
-    void ProxyBase::freeProxy( ProxyListener & connect )
+    void ProxyBase::freeProxy( areg::ProxyListener & connect )
     {
         int32_t exists = mListConnect.find(&connect, 0);
         if ( exists >= 0 )
@@ -405,7 +405,7 @@ namespace areg
             for (index = 0 ; index < conListeners.getSize(); ++ index)
             {
                 const ProxyBase::Listener& listener = conListeners[index];
-                ProxyListener * connect = static_cast<ProxyListener *>(listener.mListener);
+                areg::ProxyListener * connect = static_cast<areg::ProxyListener *>(listener.mListener);
                 if ( proxyConnected )
                 {
                     mListConnect.addIfUnique(connect);
@@ -645,7 +645,7 @@ namespace areg
                 areg::Thread::sleep(delayEvent);
             }
 
-            static_cast<ProxyListener&>(consumer).serviceConnected(getConnectionStatus(), self());
+            static_cast<areg::ProxyListener&>(consumer).serviceConnected(getConnectionStatus(), self());
         }
     }
 
@@ -672,7 +672,7 @@ namespace areg
 
             for (uint32_t i = 0 ; i < mListConnect.getSize(); ++ i)
             {
-                ProxyListener * listener = mListConnect.getAt(i);
+                areg::ProxyListener * listener = mListConnect.getAt(i);
                 ASSERT(listener != nullptr);
                 listener->serviceConnected( areg::ServiceConnectionState::Disconnected, *this);
             }
