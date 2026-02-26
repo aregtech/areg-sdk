@@ -111,7 +111,7 @@ void PowerControllerClient::onThreadRuns()
     } while (loop);
 
     printf("Quiting the Traffic Light Controller application ...");
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }
 
 void PowerControllerClient::processEvent(const PowerControllerEventData & data)

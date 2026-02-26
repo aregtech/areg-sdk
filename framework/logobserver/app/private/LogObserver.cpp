@@ -324,7 +324,7 @@ void LogObserver::logMain( int32_t argc, char ** argv )
         , &LogObserver::callbackLogMessageEx
     };
 
-    Application::setWorkingDirectory(nullptr);
+    areg::Application::setWorkingDirectory(nullptr);
     areg::String fileConfig(areg::DEFAULT_CONFIG_FILE);
     OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
@@ -344,7 +344,7 @@ void LogObserver::logMain( int32_t argc, char ** argv )
 
     _runConsoleInputExtended();
 
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
     ::logObserverDisconnectLogger();
     ::logObserverRelease();
 }

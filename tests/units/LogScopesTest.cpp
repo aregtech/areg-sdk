@@ -50,7 +50,7 @@ namespace
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
 TEST( LogScopeTest, StartAndStopLogging )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGS );
     ASSERT_TRUE( IS_LOGGING_STARTED( ) || !AREG_LOGS );
     
@@ -70,7 +70,7 @@ TEST( LogScopeTest, StartAndStopLogging )
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadAndSaveConfiguration );
 TEST( LogScopeTest, LoadAndSaveConfiguration )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
     ASSERT_TRUE( LOGGING_START(DEFAULT_CONFIG_FILE.data()) || !AREG_LOGS );
     ASSERT_TRUE( IS_LOGGING_STARTED() || !AREG_LOGS );
 
@@ -93,7 +93,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
 TEST( LogScopeTest, LoadSavedLogConfiguration )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
     bool isLogEnabled{ false };
@@ -118,7 +118,7 @@ TEST( LogScopeTest, LoadSavedLogConfiguration )
     {
         areg::ConfigManager config;
         config.readConfig(testConfig);
-        Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+        areg::Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
 
         if ( LOGGING_START( testConfig ) || !AREG_LOGS)
         {
@@ -155,7 +155,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog )
 
 TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
 
@@ -271,7 +271,7 @@ DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noS
 DEF_LOG_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
 TEST( LogScopeTest, ScopePriorityGroupping )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
     areg::String defaultConfig{ DEFAULT_CONFIG_FILE };
     areg::String testConfig{ TEST_CONFIG_FILE };
 
@@ -391,7 +391,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     areg::ConfigManager config;
     config.readConfig(testConfig);
-    Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+    areg::Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
 
     LOGGING_START( testConfig );
 

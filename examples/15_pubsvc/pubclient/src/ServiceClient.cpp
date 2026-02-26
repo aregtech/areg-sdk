@@ -48,7 +48,7 @@ bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg:
     {
         LOG_WARN("Shutting down application!");
         mTimer.stopTimer( );
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
 
     return result;

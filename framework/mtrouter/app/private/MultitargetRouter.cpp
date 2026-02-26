@@ -269,12 +269,12 @@ void MultitargetRouter::printHelp( bool /* isCmdLine */ )
 
 void MultitargetRouter::startConsoleService()
 {
-    Application::loadModel( _modelName );
+    areg::Application::loadModel( _modelName );
 }
 
 void MultitargetRouter::stopConsoleService()
 {
-    Application::unloadModel( _modelName );
+    areg::Application::unloadModel( _modelName );
 }
 
 bool MultitargetRouter::_checkCommand(const areg::String& cmd)

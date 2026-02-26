@@ -148,7 +148,7 @@ void Publisher::quit()
     mTimerOnChange.stopTimer();
 
     setServiceProviderState(PubSubMix::RunState::Shutdown);
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }
 
 void Publisher::processTimer(areg::Timer & timer)

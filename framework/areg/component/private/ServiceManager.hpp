@@ -33,6 +33,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
+namespace areg { class Application; }
 namespace areg { class StubAddress; }
 namespace areg { class ProxyAddress; }
 namespace areg { class ServiceRequestEvent; }
@@ -69,7 +70,7 @@ class ServiceManager    : private   areg::DispatcherThread
                         , private   areg::ConnectionConsumer
                         , private   areg::RegistrationConsumer
 {
-    friend class Application;
+    friend class areg::Application;
     friend class ServiceManagerEventProcessor;
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime

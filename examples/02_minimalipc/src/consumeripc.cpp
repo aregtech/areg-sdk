@@ -40,7 +40,7 @@ protected:
         if (HelloServiceClientBase::serviceConnected(status, proxy) && areg::isServiceConnected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
         else if (areg::isServiceConnected(status) == false)
-            Application::signalAppQuit(); // quit application if service connection is lost.
+            areg::Application::signalAppQuit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
         return (static_cast<const areg::ProxyBase *>(getProxy()) == static_cast<const areg::ProxyBase *>(&proxy));
@@ -50,7 +50,7 @@ protected:
     virtual void responseHelloService() override
     {
         std::cout << "\'Good bye Service!\'" << std::endl;
-        Application::signalAppQuit();   // quit application is if received response
+        areg::Application::signalAppQuit();   // quit application is if received response
     }
 };
 
@@ -74,12 +74,12 @@ END_MODEL("ConsumerModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::initApplication();
+    areg::Application::initApplication();
     // load model to initialize components
-    Application::loadModel("ConsumerModel");
+    areg::Application::loadModel("ConsumerModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::releaseApplication();
     return 0;
 }

@@ -245,7 +245,7 @@ namespace areg
         uint32_t result = _result.load();
         if (result == 0)
         {
-            result = Application::getConfigManager().getDefaultBufferBlockSize();
+            result = areg::Application::getConfigManager().getDefaultBufferBlockSize();
             _result.store(result);
             result = result == 0 ? areg::BLOCK_SIZE : result;
         }

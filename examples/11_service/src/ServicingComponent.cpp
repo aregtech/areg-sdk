@@ -77,6 +77,6 @@ void ServicingComponent::processTimer(areg::Timer & timer)
         ASSERT(mCount == TIMER_EVENTS);
 
         LOG_INFO("The timer is not active anymore, signaling quit event");
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
 }

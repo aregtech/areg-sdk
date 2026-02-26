@@ -40,7 +40,7 @@ protected:
     {
         std::cout << "\'Hello Service!\'" << std::endl;
         responseHelloService();
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
 
 private:
@@ -69,12 +69,12 @@ END_MODEL("ProviderModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::initApplication();
+    areg::Application::initApplication();
     // load model to initialize components
-    Application::loadModel("ProviderModel");
+    areg::Application::loadModel("ProviderModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::releaseApplication();
     return 0;
 }

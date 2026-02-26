@@ -46,7 +46,7 @@ bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg:
         {
             LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, exit application ...\n");
-            Application::signalAppQuit();
+            areg::Application::signalAppQuit();
         }
     }
     else

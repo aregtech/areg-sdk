@@ -80,25 +80,25 @@ int main()
 
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
-    Application::initApplication(true, true, false, true, true, nullptr);
+    areg::Application::initApplication(true, true, false, true, true, nullptr);
 
     do 
     {
         LOG_SCOPE(examples_12_svcmulti_main);
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
-        ASSERT( Application::findModel( _modelName ).isValid( ) );
+        ASSERT( areg::Application::findModel( _modelName ).isValid( ) );
 
-        Application::loadModel(_modelName);
+        areg::Application::loadModel(_modelName);
         std::cout << "Service model is loaded. Waiting to quit application signal." << std::endl;
-        Application::waitAppQuit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
-        Application::unloadModel(_modelName);                // stop and unload components
+        areg::Application::waitAppQuit( areg::WAIT_INFINITE ); // wait for quit signal to complete application.
+        areg::Application::unloadModel(_modelName);                // stop and unload components
         
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
+            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
-        Application::releaseApplication();      // release and cleanup resources of application.
+        areg::Application::releaseApplication();      // release and cleanup resources of application.
 
     } while (false);
 

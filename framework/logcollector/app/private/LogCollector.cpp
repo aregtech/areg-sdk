@@ -206,7 +206,7 @@ void LogCollector::runConsoleInputSimple()
 
 void LogCollector::runService()
 {
-    Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 }
 
 std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::getAppOptions() const
@@ -296,12 +296,12 @@ void LogCollector::printHelp( bool /* isCmdLine */ )
 
 void LogCollector::startConsoleService()
 {
-    Application::loadModel( _modelName );
+    areg::Application::loadModel( _modelName );
 }
 
 void LogCollector::stopConsoleService()
 {
-    Application::unloadModel( _modelName );
+    areg::Application::unloadModel( _modelName );
 }
 
 bool LogCollector::_checkCommand(const areg::String& cmd)

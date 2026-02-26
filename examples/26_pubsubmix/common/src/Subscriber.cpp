@@ -208,7 +208,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProvide
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            areg::Application::signalAppQuit();
         }
     }
 }

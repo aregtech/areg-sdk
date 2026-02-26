@@ -325,7 +325,7 @@ inline void SortedEventStack::_insertAtBegin(areg::Event* newEvent)
 inline constexpr uint32_t SortedEventStack::_calcQueueSize(uint32_t requestedSize)
 {
     if (requestedSize == areg::IGNORE_VALUE)
-        requestedSize = Application::getConfigManager().getDefaultMessageQueueSize();
+        requestedSize = areg::Application::getConfigManager().getDefaultMessageQueueSize();
 
     return (requestedSize != areg::IGNORE_VALUE ? std::max(MIN_QUEUE_SIZE, requestedSize) : MAX_QUEUE_SIZE);
 }

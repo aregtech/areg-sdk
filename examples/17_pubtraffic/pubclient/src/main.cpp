@@ -92,7 +92,7 @@ int main()
     console.moveToLine( 10 );
 
     // Initialize application, use default settings: enable logging, servicing, routing, timer and watchdog.
-    Application::initApplication( );
+    areg::Application::initApplication( );
 
     // Create model manually during run-time.
     areg::Model model(_modelName);
@@ -111,16 +111,16 @@ int main()
     areg::ComponentLoader::addModelUnique(model);
 
     // By passing nullptr, load all models to initialize components
-    Application::loadModel( nullptr );
+    areg::Application::loadModel( nullptr );
         
     // wait until Application quit signal is set.
-    Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 
     // By passing nullptr, stop and unload all models.
-    Application::unloadModel( nullptr );
+    areg::Application::unloadModel( nullptr );
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::releaseApplication();
     
 	return 0;
 }

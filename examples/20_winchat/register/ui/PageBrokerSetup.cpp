@@ -87,8 +87,8 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
             ::PostMessage(sheet->m_hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection), static_cast<WPARAM>(false), 0 );
         }
 
-        Application::unloadModel( chat::MODEL_NAME_CENTRAL_SERVER );
-        Application::stopMessageRouting();
+        areg::Application::unloadModel( chat::MODEL_NAME_CENTRAL_SERVER );
+        areg::Application::stopMessageRouting();
         mIsConnected = false;
     }
 }

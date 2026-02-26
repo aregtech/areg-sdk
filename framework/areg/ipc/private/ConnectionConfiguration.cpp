@@ -38,43 +38,43 @@ namespace areg
 
     areg::String ConnectionConfiguration::getConnectionAddress() const
     {
-        return Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
+        return areg::Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
     }
 
     void ConnectionConfiguration::setConnectionAddress(const areg::String& address)
     {
-        Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
+        areg::Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
     }
 
     void ConnectionConfiguration::setConnectionData(const areg::String& address, uint16_t portNr)
     {
-        Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
-        Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+        areg::Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
+        areg::Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
     }
 
     bool ConnectionConfiguration::isConfigured() const
     {
-        return Application::isConfigured();
+        return areg::Application::isConfigured();
     }
 
     bool ConnectionConfiguration::getConnectionEnableFlag() const
     {
-        return Application::getConfigManager().getRemoteServiceEnable(mServiceName, mConnectType);
+        return areg::Application::getConfigManager().getRemoteServiceEnable(mServiceName, mConnectType);
     }
 
     void ConnectionConfiguration::setConnectionEnableFlag(bool isEnabled)
     {
-        Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
+        areg::Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
     }
 
     uint16_t ConnectionConfiguration::getConnectionPort() const
     {
-        return Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
+        return areg::Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
     }
 
     void ConnectionConfiguration::setConnectionPort(uint16_t portNr)
     {
-        Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+        areg::Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
     }
 
     bool ConnectionConfiguration::getConnectionIpAddress( uint8_t & field0

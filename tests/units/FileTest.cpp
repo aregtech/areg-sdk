@@ -39,7 +39,7 @@
  **/
 TEST( FileTest, StlFileRead )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     constexpr char fileName[]{ "./config/areg.init" };
     std::error_code err{};
@@ -62,7 +62,7 @@ TEST( FileTest, StlFileRead )
  **/
 TEST( FileTest, StlFileReadWrite )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     std::fstream fileRead, fileWrite;
     constexpr char fileNameRead[ ]{ "./config/areg.init" };
@@ -94,7 +94,7 @@ TEST( FileTest, Win32FileRead )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     constexpr char fileName[ ]{ "./config/areg.init" };
     ASSERT_TRUE( PathFileExistsA(fileName) );
@@ -121,7 +121,7 @@ TEST( FileTest, Win32FileReadWrite )
 {
 #if defined(WINDOWS) && !defined(_MINGW)
 
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     constexpr char fileNameRead[ ]{ "./config/areg.init" };
     constexpr char fileNameWrite[ ]{ "./write_with_win32.txt" };
@@ -153,7 +153,7 @@ TEST( FileTest, Win32FileReadWrite )
  **/
 TEST( FileTest, CheckFileExistence )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
     const areg::String fileWrong{ "./config/blah-blah.init" };
@@ -166,7 +166,7 @@ TEST( FileTest, CheckFileExistence )
  **/
 TEST( FileTest, NormalizeFilePathBasic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
     areg::String normalized = areg::File::normalizePath( fileName );
@@ -179,7 +179,7 @@ TEST( FileTest, NormalizeFilePathBasic )
  **/
 TEST( FileTest, FileOpenBasic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
     constexpr unsigned int mode{  static_cast<uint32_t>(areg::File::OpenMode::Read) 
@@ -200,7 +200,7 @@ TEST( FileTest, FileOpenBasic )
  **/
 TEST( FileTest, CreateEmptyFile )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
     const areg::String fileNameWrite{ "./empty_file_areg.txt" };
     constexpr uint32_t modeWrite{ static_cast<uint32_t>(areg::File::OpenMode::Read) 
                                 | static_cast<uint32_t>(areg::File::OpenMode::Text) 
@@ -219,7 +219,7 @@ TEST( FileTest, CreateEmptyFile )
  **/
 TEST( FileTest, FileReadBasic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     const areg::String fileName{ "./config/areg.init" };
     constexpr uint32_t mode { static_cast<uint32_t>(areg::File::OpenMode::Read)
@@ -244,7 +244,7 @@ TEST( FileTest, FileReadBasic )
  **/
 TEST( FileTest, FileReadWriteBasic )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     const areg::String fileNameRead{ "./config/areg.init" };
     const areg::String fileNameWrite{ "./write_with_areg.txt" };
@@ -284,7 +284,7 @@ TEST( FileTest, FileReadWriteBasic )
  **/
 TEST( FileTest, CreateFolderCascaded )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     const areg::String dirPath( "./dir1/dir2/dir3/" );
     ASSERT_FALSE( areg::File::existDir( dirPath ) );
@@ -301,7 +301,7 @@ TEST( FileTest, CreateFolderCascaded )
  **/
 TEST( FileTest, FileReadAndWriteInSubfolder )
 {
-    Application::setWorkingDirectory( nullptr );
+    areg::Application::setWorkingDirectory( nullptr );
 
     const areg::String fileNameRead { "./config/areg.init" };
     const areg::String fileNameWrite{ "./logs/write_with_areg.txt" };

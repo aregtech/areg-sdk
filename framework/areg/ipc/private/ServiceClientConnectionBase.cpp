@@ -309,7 +309,7 @@ namespace areg
         mThreadSend.shutdownThread( areg::WAIT_INFINITE );
         mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
 
-        if ( Application::isServicingReady( ) )
+        if ( areg::Application::isServicingReady( ) )
         {
             mTimerConnect.startTimer(areg::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
         }
@@ -325,7 +325,7 @@ namespace areg
         areg::Channel channel = mChannel;
         mChannel.invalidate();
 
-        if ( Application::isServicingReady( ) && mTimerConnect.isStopped( ) )
+        if ( areg::Application::isServicingReady( ) && mTimerConnect.isStopped( ) )
         {
             LOG_DBG( "Restarting lost connection with remote service" );
 

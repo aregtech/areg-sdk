@@ -84,5 +84,5 @@ void PublicServiceComponent::requestSystemShutdown()
     LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
     printf("Processing the system shutdown!\n");
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }

@@ -90,7 +90,7 @@ void ServicingComponent::startupServiceInterface( areg::Component & holder )
     mOptionChanged = true;
     mPauseEvent.resetEvent();   // pause
 
-    Application::queryCommunicationData( sizeSend, sizeReceive );
+    areg::Application::queryCommunicationData( sizeSend, sizeReceive );
     uint64_t sizeItem = mItemRate != 0 ? mDataRate / mItemRate : 0;
 
     areg::DataLiteral dataRate = areg::convDataSize(mDataRate);
@@ -149,7 +149,7 @@ void ServicingComponent::onTimerExpired()
     uint32_t ignoreSleep= mIgnoreSleep;
 
     uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
-    Application::queryCommunicationData( sizeSend, sizeReceive );
+    areg::Application::queryCommunicationData( sizeSend, sizeReceive );
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
     areg::DataLiteral dataRate = areg::convDataSize( mDataRate );
@@ -199,7 +199,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         broadcastServiceStopping();
 
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
     else if (data.hasStart())
     {

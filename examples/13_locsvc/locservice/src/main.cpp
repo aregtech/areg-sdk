@@ -75,7 +75,7 @@ int main()
     std::cout << "A Demo to demonstrate simple request, response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    Application::initApplication( true, true, false, true, false, nullptr );
+    areg::Application::initApplication( true, true, false, true, false, nullptr );
     LOGGING_CONFIGURE_AND_START(nullptr);
 
     do 
@@ -84,23 +84,23 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::loadModel(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(areg::WAIT_INFINITE);
+        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unloadModel(_modelName);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
+            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::releaseApplication();
 
     } while (false);
 

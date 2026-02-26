@@ -60,12 +60,12 @@ void LogManager::sendCommandMessage(LoggingEventData::LogAction cmd, const areg:
 
 bool LogManager::readLogConfig( const char* configFile /*= nullptr*/ )
 {
-    return Application::loadConfiguration(configFile);
+    return areg::Application::loadConfiguration(configFile);
 }
 
 bool LogManager::startLogging(const char* configFile /*= nullptr*/ )
 {
-    Application::loadConfiguration(configFile);
+    areg::Application::loadConfiguration(configFile);
 
     LogManager& logManager = LogManager::getInstance();
     Lock lock(logManager.mLock);
@@ -82,7 +82,7 @@ bool LogManager::startLogging(const char* configFile /*= nullptr*/ )
 bool LogManager::saveLogConfig(const char* configFile /*= nullptr*/ )
 {
     LogManager::updateScopeConfiguration();
-    return Application::saveConfiguration(configFile);
+    return areg::Application::saveConfiguration(configFile);
 }
 
 void LogManager::updateScopeConfiguration()
@@ -101,7 +101,7 @@ bool LogManager::isLoggingEnabled()
 
 bool LogManager::isLoggingConfigured()
 {
-    return Application::isConfigured();
+    return areg::Application::isConfigured();
 }
 
 bool LogManager::forceActivateLogging()
@@ -122,9 +122,9 @@ bool LogManager::forceActivateLogging()
 
 void LogManager::setDefaultConfiguration(bool overwriteExisting)
 {
-    if (overwriteExisting || Application::isConfigured() == false)
+    if (overwriteExisting || areg::Application::isConfigured() == false)
     {
-        Application::setupDefaultConfiguration();
+        areg::Application::setupDefaultConfiguration();
     }
 }
 

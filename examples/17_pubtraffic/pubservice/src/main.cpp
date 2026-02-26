@@ -57,11 +57,11 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(true, true, true, true, true, nullptr);
+    areg::Application::initApplication(true, true, true, true, true, nullptr);
 
 
     // load model to initialize components
-    Application::loadModel(_modelName);
+    areg::Application::loadModel(_modelName);
 
     // The components are initialized. Find the service component thread.
     // It is used to send custom event.
@@ -124,10 +124,10 @@ int main()
     } while (doLoop);
         
     // stop and unload components
-    Application::unloadModel(_modelName);
+    areg::Application::unloadModel(_modelName);
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::releaseApplication();
 
 	return 0;
 }

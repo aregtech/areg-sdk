@@ -150,7 +150,7 @@ int main()
     {
         LOG_SCOPE(threads_main_main);
 
-        Application::startTimerManager();
+        areg::Application::startTimerManager();
 
         HelloThread helloThread;
         helloThread.createThread(areg::WAIT_INFINITE);

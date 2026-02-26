@@ -165,7 +165,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            areg::Application::signalAppQuit();
         }
     }
 }

@@ -64,7 +64,7 @@ int main()
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::initApplication( );
 
     do
     {
@@ -72,18 +72,18 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::loadModel(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(areg::WAIT_INFINITE);
+        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 
         // stop and unload components
-        Application::unloadModel(_modelName);
+        areg::Application::unloadModel(_modelName);
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::releaseApplication();
 
     } while (false);
 

@@ -70,5 +70,5 @@ void ServicingComponent::requestShutdownService()
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
     setServiceState( HelloWatchdog::ComponentState::Stopped );
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }

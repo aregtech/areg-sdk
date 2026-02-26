@@ -177,7 +177,7 @@ void RouterClient::failedSendMessage(const areg::RemoteMessage & msgFailed, areg
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedSendMessage);
 
-    if (Application::isServicingReady())
+    if (areg::Application::isServicingReady())
     {
         uint32_t msgId{ msgFailed.getMessageId() };
         if ( areg::isExecutableId(msgId) || areg::isConnectNotifyId(msgId) )
@@ -220,7 +220,7 @@ void RouterClient::failedReceiveMessage( areg::Socket & whichSource )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedReceiveMessage);
 
-    if (Application::isServicingReady())
+    if (areg::Application::isServicingReady())
     {
         if (whichSource.isValid())
         {
@@ -246,7 +246,7 @@ void RouterClient::failedProcessMessage( const areg::RemoteMessage & msgUnproces
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_failedProcessMessage);
 
-    if (Application::isServicingReady())
+    if (areg::Application::isServicingReady())
     {
         uint32_t msgId{ msgUnprocessed.getMessageId() };
         if ( areg::isExecutableId(msgId) )

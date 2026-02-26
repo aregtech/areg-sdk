@@ -145,7 +145,7 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
                 }
 
                 requestSystemShutdown( );
-                Application::signalAppQuit( );
+                areg::Application::signalAppQuit( );
                 areg::Thread::switchThread();
             }
             else

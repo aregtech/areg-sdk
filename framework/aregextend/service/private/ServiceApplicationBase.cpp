@@ -39,7 +39,7 @@ ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBas
 int32_t ServiceApplicationBase::serviceMain(aregext::ServiceOption optStartup, const char* argument)
 {
     int32_t result{ RESULT_SUCCEEDED };
-    Application::setWorkingDirectory(nullptr);
+    areg::Application::setWorkingDirectory(nullptr);
     mSystemServiceOption = optStartup;
     switch (optStartup)
     {
@@ -98,7 +98,7 @@ bool ServiceApplicationBase::serviceInitialize(aregext::ServiceOption /*option*/
         }
     }
 
-    Application::initApplication( true
+    areg::Application::initApplication( true
                                 , true
                                 , false
                                 , true
@@ -110,7 +110,7 @@ bool ServiceApplicationBase::serviceInitialize(aregext::ServiceOption /*option*/
 
 void ServiceApplicationBase::serviceRelease()
 {
-    Application::releaseApplication();
+    areg::Application::releaseApplication();
 }
 
 bool ServiceApplicationBase::serviceInstall()
@@ -160,7 +160,7 @@ bool ServiceApplicationBase::serviceStart()
         }
         else
         {
-            Application::signalAppQuit();
+            areg::Application::signalAppQuit();
         }
     }
 
@@ -193,7 +193,7 @@ bool ServiceApplicationBase::serviceContinue()
     else
     {
         LOG_ERR("Failed to resume [ %s ] system service", getServiceNameA());
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
 
     return result;
@@ -206,7 +206,7 @@ void ServiceApplicationBase::serviceStop()
     setState(aregext::ServicePhase::Stopping);
     mCommunication.disconnectServiceHost();
     mCommunication.waitToComplete();
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }
 
 void ServiceApplicationBase::serviceShutdown()
@@ -226,7 +226,7 @@ bool ServiceApplicationBase::setState(aregext::ServicePhase newState)
 
 void ServiceApplicationBase::runService()
 {
-    Application::waitAppQuit(areg::WAIT_INFINITE);
+    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 }
 
 int32_t ServiceApplicationBase::startServiceDispatcher()

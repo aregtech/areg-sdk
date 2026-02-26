@@ -192,9 +192,9 @@ void PageNetworkSetup::OnClickedBrokerConnect()
             mBrokerPort = static_cast<USHORT>(temp);
             areg::String ipAddress;
             ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
-            if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
+            if ( areg::Application::startMessageRouting( ipAddress, mBrokerPort ) )
             {
-                Application::loadModel( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
+                areg::Application::loadModel( chat::MODEL_NAME_DISTRIBUTED_CLIENT );
                 CWnd *wnd = GetDlgItem(IDC_EDIT_NICKNAME);
                 wnd->EnableWindow(TRUE);
                 wnd->SetFocus();
@@ -212,8 +212,8 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
         ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::WindowCommand::CmdDisconnectTriggered), 0, 0);
         mConnectionHandler.ResetConnectionList();
 
-        Application::unloadModel(chat::MODEL_NAME_DISTRIBUTED_CLIENT);
-        Application::stopMessageRouting();
+        areg::Application::unloadModel(chat::MODEL_NAME_DISTRIBUTED_CLIENT);
+        areg::Application::stopMessageRouting();
         mConnectPending = false;
         mRegisterPending= false;
     }
@@ -273,7 +273,7 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
         mBrokerPort = 0xFFFFu;
     }
     
-    if ( (Application::isRouterConnected( ) == false) && (mBrokerPort < 0xFFFFu) && (mCtrlAddress.IsBlank( ) == FALSE) )
+    if ( (areg::Application::isRouterConnected( ) == false) && (mBrokerPort < 0xFFFFu) && (mCtrlAddress.IsBlank( ) == FALSE) )
     {
         pCmdUI->Enable( TRUE );
         if ( mConnectEnable == FALSE )
@@ -292,7 +292,7 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
 
 void PageNetworkSetup::OnBnUdateBrokerDisconnect( CCmdUI* pCmdUI )
 {
-    if ( Application::isRouterConnected( ) )
+    if ( areg::Application::isRouterConnected( ) )
     {
         pCmdUI->Enable( TRUE );
         if ( mDisconnectEnabled == FALSE )
@@ -311,7 +311,7 @@ void PageNetworkSetup::OnBnUdateBrokerDisconnect( CCmdUI* pCmdUI )
 
 void PageNetworkSetup::OnUpdateRemoteData( CCmdUI* pCmdUI )
 {
-    pCmdUI->Enable( Application::isRouterConnected( ) ? FALSE : TRUE );
+    pCmdUI->Enable( areg::Application::isRouterConnected( ) ? FALSE : TRUE );
 }
 
 void PageNetworkSetup::OnUpdateNickname( CCmdUI* pCmdUI )
@@ -361,7 +361,7 @@ void PageNetworkSetup::OnUpdateButtonRegister( CCmdUI* pCmdUI )
 
 bool PageNetworkSetup::canRegistered() const
 {
-    return (Application::isRouterConnected( ) ? mConnectionHandler.GetRegistered() == false : false);
+    return (areg::Application::isRouterConnected( ) ? mConnectionHandler.GetRegistered() == false : false);
 }
 
 void PageNetworkSetup::setFocusNickname() const

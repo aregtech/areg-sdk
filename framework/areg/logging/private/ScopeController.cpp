@@ -208,7 +208,7 @@ void ScopeController::configureScopes( const areg::String & scopeName, uint32_t 
 void ScopeController::configureScopes()
 {
     std::vector<areg::Property> scopes;
-    Application::getConfigManager().getModuleLogScopes(scopes);
+    areg::Application::getConfigManager().getModuleLogScopes(scopes);
     for (const areg::Property& prop : scopes)
     {
         configureScopes(prop);

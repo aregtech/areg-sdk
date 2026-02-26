@@ -145,12 +145,12 @@ int main()
 {
     std::cout << "Demo: timers in binding thread context ..." << std::endl;
 
-    Application::startLogging(true);
+    areg::Application::startLogging(true);
     do
     {
         LOG_SCOPE(timer_main_main);
 
-        if (!Application::startTimerManager())
+        if (!areg::Application::startTimerManager())
         {
             LOG_ERR("Failed to start timer manager");
         }
@@ -171,10 +171,10 @@ int main()
         stopTimerThread(t1);
         stopTimerThread(t2);
 
-        Application::stopTimerManager();
+        areg::Application::stopTimerManager();
     } while (false);
     
-    Application::stopLogging();
+    areg::Application::stopLogging();
 
     std::cout << "Exit application, check logs for details!" << std::endl;
     return 0;
