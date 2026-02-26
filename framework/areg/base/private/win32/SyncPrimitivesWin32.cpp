@@ -183,7 +183,7 @@ areg::SpinLock::SpinLock()
     : areg::Lockable( areg::SyncObject::SyncKind::SoSpinlock )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    mSyncObject    = DEBUG_NEW SpinLockWin32( );
+    mSyncObject    = DEBUG_NEW areg::os::SpinLockWin32( );
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
     mSyncObject    = DEBUG_NEW areg::CriticalSection( );
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
@@ -194,7 +194,7 @@ areg::SpinLock::~areg::SpinLock()
     if ( mSyncObject != nullptr )
     {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-        delete reinterpret_cast<SpinLockWin32 *>(mSyncObject);
+        delete reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
         delete reinterpret_cast<areg::CriticalSection *>(mSyncObject);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
@@ -205,7 +205,7 @@ areg::SpinLock::~areg::SpinLock()
 bool areg::SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->lock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject)->lock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
     return (mSyncObject != nullptr ? reinterpret_cast<areg::CriticalSection *>(mSyncObject)->lock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
@@ -214,7 +214,7 @@ bool areg::SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 bool areg::SpinLock::unlock()
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->unlock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject)->unlock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
     return (mSyncObject != nullptr ? reinterpret_cast<areg::CriticalSection *>(mSyncObject)->unlock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
@@ -223,7 +223,7 @@ bool areg::SpinLock::unlock()
 bool areg::SpinLock::tryLock()
 {
 #if defined (__cplusplus) && (__cplusplus > 201703L)
-    return (mSyncObject != nullptr ? reinterpret_cast<SpinLockWin32 *>(mSyncObject)->tryLock( ) : false);
+    return (mSyncObject != nullptr ? reinterpret_cast<areg::os::SpinLockWin32 *>(mSyncObject)->tryLock( ) : false);
 #else // defined (__cplusplus) && (__cplusplus > 201703L)
     return (mSyncObject != nullptr ? reinterpret_cast<areg::CriticalSection *>(mSyncObject)->tryLock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
