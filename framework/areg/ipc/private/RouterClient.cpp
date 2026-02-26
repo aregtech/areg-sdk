@@ -44,7 +44,7 @@ DEF_LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 // RouterClient class implementation
 //////////////////////////////////////////////////////////////////////////
 
-RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, areg::RegistrationConsumer& registerConsumer)
+RouterClient::RouterClient(areg::ConnectionConsumer& connectionConsumer, areg::RegistrationConsumer& registerConsumer)
     : areg::ServiceClientConnectionBase   ( areg::COOKIE_ROUTER
                                     , areg::RemoteServiceKind::Router
                                     , static_cast<uint32_t>(areg::ConnectionType::Tcpip)

@@ -49,7 +49,7 @@ struct ObserverEvents;
 class LoggerClient  : public    areg::ServiceClientConnectionBase
                     , public    ConfigListener
                     , protected areg::DispatcherThread
-                    , protected ConnectionConsumer
+                    , protected areg::ConnectionConsumer
                     , protected areg::RemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////

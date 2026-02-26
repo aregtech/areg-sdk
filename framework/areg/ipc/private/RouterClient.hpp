@@ -56,7 +56,7 @@ public:
      * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
      * \param   registerConsumer    The instance of remote service registration consumer to handle service register notification.
      **/
-    RouterClient(ConnectionConsumer& connectionConsumer, areg::RegistrationConsumer & registerConsumer);
+    RouterClient(areg::ConnectionConsumer& connectionConsumer, areg::RegistrationConsumer & registerConsumer);
     /**
      * \brief   Destructor
      **/

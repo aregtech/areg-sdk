@@ -228,11 +228,11 @@ void ServiceManager::_requestCreateThread(const areg::String& componentThread)
 ServiceManager::ServiceManager()
     : areg::DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , ServiceManagerEventConsumer( )
-    , ConnectionConsumer         ( )
+    , areg::ConnectionConsumer         ( )
     , areg::RegistrationConsumer       ( )
 
     , mEventProcessor   ( self() )
-    , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<areg::RegistrationConsumer&>(self()) )
+    , mServiceClient    ( static_cast<areg::ConnectionConsumer&>(self()), static_cast<areg::RegistrationConsumer&>(self()) )
     , mLock             (  )
 {
 }

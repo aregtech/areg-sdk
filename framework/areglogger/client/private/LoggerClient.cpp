@@ -36,13 +36,13 @@ LoggerClient::LoggerClient()
                                  , LoggerClient::SERVICE_TYPE
                                  , static_cast<uint32_t>(CONNECT_TYPE)
                                  , LoggerClient::SOURCE_TYPE
-                                 , static_cast<ConnectionConsumer &>(self())
+                                 , static_cast<areg::ConnectionConsumer &>(self())
                                  , static_cast<areg::RemoteMessageHandler &>(self())
                                  , static_cast<areg::DispatcherThread &>(self())
                                  , LoggerClient::THREAD_PREFIX)
     , ConfigListener    ( )
     , areg::DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-    , ConnectionConsumer( )
+    , areg::ConnectionConsumer( )
     , areg::RemoteMessageHandler     ( )
 
     , mCallbacks                 ( nullptr )

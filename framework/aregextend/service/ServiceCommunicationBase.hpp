@@ -43,7 +43,7 @@
  *          accept service connections.
  **/
 class ServiceCommunicationBase  : public    areg::RemoteMessageHandler
-                                , public    ConnectionConsumer
+                                , public    areg::ConnectionConsumer
                                 , public    areg::ConnectionProvider
                                 , protected areg::DispatcherThread
                                 , protected areg::ServiceEventConsumer

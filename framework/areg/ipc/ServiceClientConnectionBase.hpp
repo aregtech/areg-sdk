@@ -33,7 +33,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ConnectionConsumer;
+namespace areg { class ConnectionConsumer; }
 namespace areg { class RemoteMessageHandler; }
 
 namespace areg
@@ -91,7 +91,7 @@ namespace areg
                                     , areg::RemoteServiceKind service
                                     , uint32_t connectTypes
                                     , areg::MessageSource msgSource
-                                    , ConnectionConsumer& connectionConsumer
+                                    , areg::ConnectionConsumer& connectionConsumer
                                     , areg::RemoteMessageHandler & messageHandler
                                     , areg::DispatcherThread & messageDispatcher
                                     , const areg::String & prefixName);
@@ -408,7 +408,7 @@ namespace areg
         /**
          * \brief   Instance of remote servicing consumer to handle message.
          **/
-        ConnectionConsumer &                    mConnectionConsumer;
+        areg::ConnectionConsumer &                    mConnectionConsumer;
 
         /**
          * \brief   The thread that makes message dispatching.

@@ -45,7 +45,7 @@ namespace areg
                                                             , areg::RemoteServiceKind service
                                                             , uint32_t connectTypes
                                                             , areg::MessageSource msgSource
-                                                            , ConnectionConsumer& connectionConsumer
+                                                            , areg::ConnectionConsumer& connectionConsumer
                                                             , areg::RemoteMessageHandler & messageHandler
                                                             , areg::DispatcherThread & messageDispatcher
                                                             , const areg::String & prefixName)
