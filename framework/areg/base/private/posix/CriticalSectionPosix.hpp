@@ -36,7 +36,7 @@
  *          The Critical Section can be used only for the communication between threads.
  *          The Critical Section can be owned only by one thread at a time.
  **/
-class CriticalSectionPosix   : protected SyncObjectPosix
+class CriticalSectionPosix   : protected areg::os::SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.

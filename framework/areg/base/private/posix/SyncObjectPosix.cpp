@@ -22,14 +22,17 @@
 #include "areg/base/StringDefs.hpp"
 #include <string.h>
 
-//////////////////////////////////////////////////////////////////////////
-// SyncObjectPosix class implementation
-//////////////////////////////////////////////////////////////////////////
-
-SyncObjectPosix::SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName /* = nullptr */ )
-    : mSyncType ( syncType )
-    , mSyncName ( asciiName != nullptr ? asciiName : areg::EmptyStringA )
+namespace areg::os
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // SyncObjectPosix class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    SyncObjectPosix::SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName /* = nullptr */ )
+        : mSyncType ( syncType )
+        , mSyncName ( asciiName != nullptr ? asciiName : areg::EmptyStringA )
+    {
+    }
+} // namespace areg::os
 
 #endif //  defined(_POSIX) || defined(POSIX)

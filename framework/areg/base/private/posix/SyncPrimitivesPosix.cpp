@@ -46,7 +46,7 @@ void areg::SyncObject::_osDestroySyncObject()
 {
     if (mSyncObject != nullptr)
     {
-        SyncObjectPosix * syncObject = reinterpret_cast<SyncObjectPosix *>(mSyncObject);
+        areg::os::SyncObjectPosix * syncObject = reinterpret_cast<areg::os::SyncObjectPosix *>(mSyncObject);
         mSyncObject = nullptr;
 
         syncObject->freeResources();

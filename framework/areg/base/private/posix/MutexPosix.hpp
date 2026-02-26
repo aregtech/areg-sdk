@@ -36,7 +36,7 @@
  *          waitable synchronization objects that can trigger event to
  *          a waiting thread.
  **/
-class MutexPosix   : public SyncObjectPosix
+class MutexPosix   : public areg::os::SyncObjectPosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.

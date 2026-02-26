@@ -31,7 +31,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* = nullptr */)
-    : SyncObjectPosix( areg::os::SyncKind::SoMutex, asciiName)
+    : areg::os::SyncObjectPosix( areg::os::SyncKind::SoMutex, asciiName)
 
     , mPosixMutex       ( )
     , mMutexValid       ( false )
@@ -46,7 +46,7 @@ MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* =
 }
 
 MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
-    : SyncObjectPosix( syncType, asciiName )
+    : areg::os::SyncObjectPosix( syncType, asciiName )
 
     , mPosixMutex       ( )
     , mMutexValid       ( false )
