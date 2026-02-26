@@ -44,7 +44,7 @@ namespace areg::os
 
         do 
         {
-            ObjectLockPosix lock(*this);
+            areg::os::ObjectLockPosix lock(*this);
             if (mCurCount < mMaxCount)
             {
                 ++ mCurCount;
@@ -62,13 +62,13 @@ namespace areg::os
 
     bool WaitableSemaphorePosix::checkSignaled(pthread_t /*contextThread*/) const
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
         return (mCurCount > 0);
     }
 
     bool WaitableSemaphorePosix::notifyRequestOwnership(pthread_t ownerThread)
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
         bool result = false;
 
         if ((mCurCount > 0) && (ownerThread != static_cast<pthread_t>(0)))

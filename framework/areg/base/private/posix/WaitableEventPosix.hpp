@@ -183,7 +183,7 @@ private:
 
 inline areg::os::ResetMode WaitableEventPosix::getResetInfo() const
 {
-    ObjectLockPosix lock(*this);
+    areg::os::ObjectLockPosix lock(*this);
     return mEventReset;
 }
 

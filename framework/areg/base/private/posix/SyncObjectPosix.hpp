@@ -31,7 +31,7 @@
 // Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
 class SyncObjectPosix;
-    class MutexPosix;
+    namespace areg::os { class MutexPosix; }
         class WaitableBaseIX;
             class WaitableEventPosix;
             namespace areg::os { class WaitableMutexPosix; }

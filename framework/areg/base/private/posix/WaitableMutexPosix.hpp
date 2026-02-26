@@ -159,7 +159,7 @@ namespace areg::os
 
     inline pthread_t WaitableMutexPosix::getOwningThreadId() const
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
         return mOwnerThread;
     }
 

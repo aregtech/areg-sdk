@@ -30,7 +30,7 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
 
     WaitablePosix::WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
-        : MutexPosix     ( syncType, isRecursive, asciiName )
+        : areg::os::MutexPosix     ( syncType, isRecursive, asciiName )
     {
     }
 

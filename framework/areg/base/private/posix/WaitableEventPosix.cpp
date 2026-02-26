@@ -42,7 +42,7 @@ bool WaitableEventPosix::setEvent()
 
     do 
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
 
         if (isValid())
         {
@@ -73,7 +73,7 @@ bool WaitableEventPosix::setEvent()
 bool WaitableEventPosix::resetEvent()
 {
     bool result = false;
-    ObjectLockPosix lock(*this);
+    areg::os::ObjectLockPosix lock(*this);
     if ( isValid() )
     {
 #ifdef DEBUG
@@ -102,7 +102,7 @@ void WaitableEventPosix::pulseEvent()
 {
     do 
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
         if (isValid())
         {
             if (mIsSignaled == false)
@@ -123,7 +123,7 @@ void WaitableEventPosix::pulseEvent()
 
 bool WaitableEventPosix::checkSignaled(pthread_t /*contextThread*/) const
 {
-    ObjectLockPosix lock(*this);
+    areg::os::ObjectLockPosix lock(*this);
     return mIsSignaled;
 }
 
@@ -139,7 +139,7 @@ bool WaitableEventPosix::checkCanSignalMultipleThreads() const
 
 void WaitableEventPosix::notifyReleasedThreads(int32_t numThreads)
 {
-    ObjectLockPosix lock(*this);
+    areg::os::ObjectLockPosix lock(*this);
 
     if ((mEventReset == areg::os::ResetMode::Automatic) && (numThreads > 0))
     {

@@ -151,7 +151,7 @@ namespace areg::os
 
     inline int32_t WaitableSemaphorePosix::getCurrentCount() const
     {
-        ObjectLockPosix lock(*this); return mCurCount;
+        areg::os::ObjectLockPosix lock(*this); return mCurCount;
     }
 
 } // namespace areg::os

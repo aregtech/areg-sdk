@@ -87,7 +87,7 @@ namespace areg::os
     bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
     {
         bool result = false;
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
 
         _stopTimer();
 
@@ -152,7 +152,7 @@ namespace areg::os
         bool sendSignal = false;
         do 
         {
-            ObjectLockPosix lock(*this);
+            areg::os::ObjectLockPosix lock(*this);
 
             sendSignal = (mIsSignaled == false);
             _stopTimer();
@@ -175,7 +175,7 @@ namespace areg::os
         bool sendSignal = false;
         do 
         {
-            ObjectLockPosix lock(*this);
+            areg::os::ObjectLockPosix lock(*this);
 
             sendSignal = (mIsSignaled == false);
             _resetTimer();
@@ -193,13 +193,13 @@ namespace areg::os
 
     bool WaitableTimerPosix::checkSignaled(pthread_t /*contextThread*/) const
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
         return mIsSignaled;
     }
 
     bool WaitableTimerPosix::isValid() const
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
     #ifdef __APPLE__
         return (mTimerQueue != nullptr);
     #else   // !__APPLE__
@@ -219,7 +219,7 @@ namespace areg::os
 
     void WaitableTimerPosix::notifyReleasedThreads(int32_t /* numThreads */)
     {
-        ObjectLockPosix lock(*this);
+        areg::os::ObjectLockPosix lock(*this);
         if (mResetInfo == areg::os::ResetMode::Automatic)
         {
             AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
@@ -279,7 +279,7 @@ namespace areg::os
 
         do
         {
-            ObjectLockPosix lock(*this);
+            areg::os::ObjectLockPosix lock(*this);
 
     #ifdef __APPLE__
             if ( mTimerSource != nullptr )

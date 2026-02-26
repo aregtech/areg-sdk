@@ -221,7 +221,7 @@ bool areg::SpinLock::tryLock()
 
 void areg::ResourceLock::_osCreateResourceLock( bool initLock )
 {
-    mSyncObject  = DEBUG_NEW MutexPosix(initLock, "ResourceLock");
+    mSyncObject  = DEBUG_NEW areg::os::MutexPosix(initLock, "ResourceLock");
 }
 
 void areg::ResourceLock::_osReleaseResourceLock()
@@ -231,18 +231,18 @@ void areg::ResourceLock::_osReleaseResourceLock()
 
 bool areg::ResourceLock::_osLock(uint32_t timeout)
 {
-    return reinterpret_cast<MutexPosix *>(mSyncObject)->lock(timeout);
+    return reinterpret_cast<areg::os::MutexPosix *>(mSyncObject)->lock(timeout);
 }
 
 bool areg::ResourceLock::_osUnlock()
 {
-    reinterpret_cast<MutexPosix *>(mSyncObject)->unlock( );
+    reinterpret_cast<areg::os::MutexPosix *>(mSyncObject)->unlock( );
     return true;
 }
 
 bool areg::ResourceLock::_osTryLock()
 {
-    return reinterpret_cast<MutexPosix *>(mSyncObject)->tryLock();
+    return reinterpret_cast<areg::os::MutexPosix *>(mSyncObject)->tryLock();
 }
 
 //////////////////////////////////////////////////////////////////////////

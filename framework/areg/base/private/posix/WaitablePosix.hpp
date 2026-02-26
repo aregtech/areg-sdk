@@ -39,7 +39,7 @@ namespace areg::os
      *          signaled. This object cannot be directly instantiated.
      *          Instead, instantiate one of child classes.
      **/
-    class WaitablePosix : public MutexPosix
+    class WaitablePosix : public areg::os::MutexPosix
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
