@@ -274,7 +274,7 @@ namespace areg
          *          When Dispatcher is started, this event is signaled.
          *          Otherwise it is not signaled.
          **/
-        SyncEvent    mEventStarted;
+        areg::SyncEvent    mEventStarted;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden method calls.

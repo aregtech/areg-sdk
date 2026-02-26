@@ -85,7 +85,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         do 
         {
             // Check if initialization is completed and ready to run.
-            Lock lock(threadObj->mSyncObject);
+            areg::Lock lock(threadObj->mSyncObject);
         } while (false);
 
         // instantiate thread local storage before starting running
@@ -180,7 +180,7 @@ bool Thread::createThread(uint32_t waitForStartMs /* = areg::DO_NOT_WAIT */)
 
     do 
     {
-        Lock  lock(mSyncObject);
+        areg::Lock  lock(mSyncObject);
         result = _osCreateSystemThread();
     } while (false);
 
@@ -298,7 +298,7 @@ int32_t Thread::_threadEntry()
 
 void Thread::_cleanResources(bool unregister)
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
 
     if (unregister)
     {

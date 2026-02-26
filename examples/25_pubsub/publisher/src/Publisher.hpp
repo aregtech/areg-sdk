@@ -165,7 +165,7 @@ private:
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
     areg::Thread      mConsoleThread;     //!< The thread to run console to interact with users.
-    Mutex       mLock;              //!< Synchronization object for multithreading environment.
+    areg::Mutex       mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -25,13 +25,13 @@ ConnectionHandler::~ConnectionHandler()
 
 bool ConnectionHandler::IsValid() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return (GetCookie() != ConnectionManager::InvalidCookie) && (mNickName.isEmpty() == false);
 }
 
 bool ConnectionHandler::AddConnection(const chat::ConnectionRecord & newConnection)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     int32_t pos = areg::INVALID_INDEX;
     
     if (newConnection.nickName != mNickName)
@@ -45,7 +45,7 @@ bool ConnectionHandler::AddConnection(const chat::ConnectionRecord & newConnecti
 
 int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConnections)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     int32_t result = 0;
     for (uint32_t i = 0; i < listConnections.getSize(); ++i)
     {
@@ -65,7 +65,7 @@ int32_t ConnectionHandler::AddConnections(const chat::ListConnections & listConn
 
 bool ConnectionHandler::RemoveConnection(const chat::ConnectionRecord & connection)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     int32_t pos = findConnection(connection);
     if ( pos != areg::INVALID_INDEX )
     {
@@ -77,7 +77,7 @@ bool ConnectionHandler::RemoveConnection(const chat::ConnectionRecord & connecti
 
 bool ConnectionHandler::ConnectionExist(const chat::ConnectionRecord & connection)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return ( findConnection(connection) != areg::INVALID_INDEX);
 }
 
@@ -99,7 +99,7 @@ int32_t ConnectionHandler::findConnection(const chat::ConnectionRecord & connect
 
 void ConnectionHandler::ResetConnectionList()
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
 
     mListConnections.clear( );
     mNickName.clear( );
@@ -114,31 +114,31 @@ void ConnectionHandler::ResetConnectionList()
 
 void ConnectionHandler::SetConnectCookie( uint32_t cookie )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mConnectCookie  = cookie;
 }
 
 uint32_t ConnectionHandler::GetConnectCookie() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mConnectCookie;
 }
 
 void ConnectionHandler::SetCookie( uint32_t cookie )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mCookie         = cookie;
     mConnectCookie  = cookie;
 }
 
 uint32_t ConnectionHandler::GetCookie() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return (mCookie != chat::InvalidCookie ? mCookie : mConnectCookie);
 }
 
 uint32_t ConnectionHandler::GetCookieDirect() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mCookie;
 }

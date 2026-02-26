@@ -50,7 +50,7 @@ namespace areg
 
     bool TimerBase::createWaitableTimer()
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
 
         if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
         {
@@ -63,7 +63,7 @@ namespace areg
 
     void TimerBase::destroyWaitableTimer()
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
 
         TIMERHANDLE handle = mHandle;
         mHandle = nullptr;

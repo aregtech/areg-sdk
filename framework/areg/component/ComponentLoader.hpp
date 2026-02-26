@@ -705,7 +705,7 @@ namespace areg
         /**
          * \brief   Synchronization object
          **/
-        mutable ResourceLock    mLock;
+        mutable areg::ResourceLock    mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

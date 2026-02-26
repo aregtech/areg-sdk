@@ -387,11 +387,11 @@ private:
     /**
      * \brief   An object used to block the user input procedure to use in multithreading environment.
      **/
-    mutable SyncEvent       mEnable;
+    mutable areg::SyncEvent       mEnable;
     /**
      * \brief   The synchronization object used in multithreading environment.
      **/
-    mutable ResourceLock    mLock;
+    mutable areg::ResourceLock    mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

@@ -98,7 +98,7 @@ private:
     DirectMessagingClient *     mChatClient;
     bool                        mIsServicing;
     ptr_type                    mWndChat;
-    mutable Mutex               mLock;
+    mutable areg::Mutex               mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls
@@ -115,13 +115,13 @@ private:
 
 inline bool ChatPrticipantHandler::IsValid() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return (mWndChat != 0) && (mConnectionService != nullptr);
 }
 
 inline void ChatPrticipantHandler::SetConnectionData( const areg::String & serviceName, const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mServiceName        = serviceName;
     mInitiator          = initiator;
     mListParticipants   = listParticipants;
@@ -129,72 +129,72 @@ inline void ChatPrticipantHandler::SetConnectionData( const areg::String & servi
 
 inline const areg::String & ChatPrticipantHandler::GetServiceName() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mServiceName;
 }
 
 void ChatPrticipantHandler::SetParticipantsList( const chat::ListParticipants & listParaticipants )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mListParticipants = listParaticipants;
 }
 
 inline const chat::sInitiator & ChatPrticipantHandler::GetInitiator() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mInitiator;
 }
 
 inline const chat::ListParticipants & ChatPrticipantHandler::GetParticipantList() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mListParticipants;
 }
 
 inline void ChatPrticipantHandler::SetChatWindow(ptr_type hWnd )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mWndChat    = hWnd;
 }
 
 inline ptr_type ChatPrticipantHandler::GetChatWindow() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mWndChat;
 }
 
 inline void ChatPrticipantHandler::SetConnectionService( DirectChatService * connectService )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mConnectionService  = connectService;
 }
 
 inline DirectChatService * ChatPrticipantHandler::GetConnectionService() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mConnectionService;
 }
 
 inline void ChatPrticipantHandler::SetConnectionOwner( const chat::Participant & ownerConnection )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mOwnerConnection    = ownerConnection;
 }
 
 inline const chat::Participant & ChatPrticipantHandler::GetConnectionOwner() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mOwnerConnection;
 }
 
 inline void ChatPrticipantHandler::SetChatClient( DirectMessagingClient * chatClient )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mChatClient = chatClient;
 }
 
 inline DirectMessagingClient * ChatPrticipantHandler::GetChatClient() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return mChatClient;
 }

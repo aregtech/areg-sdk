@@ -285,14 +285,14 @@ namespace areg
     bool Application::isElementStored( const areg::String & elemName )
     {
         Application & theApp = Application::getInstance();
-        Lock lock(theApp.mLock);
+        areg::Lock lock(theApp.mLock);
         return theApp.mStorage.contains(elemName);
     }
 
     areg::Primitive Application::storeElement( const areg::String & elemName, areg::Primitive elem )
     {
         Application & theApp = Application::getInstance( );
-        Lock lock( theApp.mLock );
+        areg::Lock lock( theApp.mLock );
 
         MapAppStorage::MAPPOS pos = theApp.mStorage.find(elemName);
         areg::Primitive result = areg::InvalidElement;
@@ -309,7 +309,7 @@ namespace areg
     areg::Primitive Application::getStoredElement( const areg::String & elemName )
     {
         Application & theApp = Application::getInstance( );
-        Lock lock( theApp.mLock );
+        areg::Lock lock( theApp.mLock );
 
         MapAppStorage::MAPPOS pos = theApp.mStorage.find( elemName );
         return (theApp.mStorage.isValidPosition(pos) ? theApp.mStorage.valueAtPosition( pos ) : areg::InvalidElement);

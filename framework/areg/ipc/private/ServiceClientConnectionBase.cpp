@@ -94,7 +94,7 @@ namespace areg
             {
                 if (msgReceived.getResult() == areg::MESSAGE_SUCCESS)
                 {
-                    Lock lock(mLock);
+                    areg::Lock lock(mLock);
                     ASSERT(cookie == msgReceived.getTarget());
                     mClientConnection.setCookie(cookie);
                     onChannelConnected(cookie);
@@ -134,7 +134,7 @@ namespace areg
 
     bool ServiceClientConnectionBase::setupServiceConnectionData(areg::RemoteServiceKind service, uint32_t connectTypes)
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
 
         bool result{ false };
         if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
@@ -156,13 +156,13 @@ namespace areg
 
     void ServiceClientConnectionBase::applyServiceConnectionData( const areg::String & hostName, uint16_t portNr )
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
         mClientConnection.setAddress( hostName, portNr );
     }
 
     bool ServiceClientConnectionBase::connectServiceHost()
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
         bool result{ false };
         if (mClientConnection.isValid() == false)
         {
@@ -195,19 +195,19 @@ namespace areg
 
     bool ServiceClientConnectionBase::isServiceHostConnected() const
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
         return isConnectionStarted();
     }
 
     bool ServiceClientConnectionBase::isServiceHostPending() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return ((mClientConnection.isValid() == false) && (getConnectionState() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting));
     }
 
     bool ServiceClientConnectionBase::isServiceHostSetup() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mClientConnection.getAddress().isValid();
     }
 
@@ -361,7 +361,7 @@ namespace areg
     void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
     {
         LOG_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         if (cookie >= areg::COOKIE_REMOTE_SERVICE)
         {

@@ -337,7 +337,7 @@ namespace areg
         /**
          * \brief   Synchronization object for data sharing
          **/
-        mutable ResourceLock    mLock;
+        mutable areg::ResourceLock    mLock;
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
@@ -351,37 +351,37 @@ namespace areg
 
     inline bool ServerConnectionBase::setAddress(const areg::String & hostName, uint16_t portNr)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mServerSocket.setAddress(hostName, portNr, true);
     }
 
     inline void ServerConnectionBase::setAddress( const areg::SocketAddress & newAddress )
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mServerSocket.setAddress(newAddress);
     }
 
     inline const areg::SocketAddress & ServerConnectionBase::getAddress() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mServerSocket.getAddress();
     }
 
     inline bool ServerConnectionBase::isValid() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mServerSocket.isValid();
     }
 
     inline SOCKETHANDLE ServerConnectionBase::getSocketHandle() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mServerSocket.getHandle();
     }
 
     inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection ) const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mAcceptedConnections.contains(connection);
     }
 
@@ -392,7 +392,7 @@ namespace areg
 
     inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
 
         MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
         return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : areg::COOKIE_UNKNOWN );
@@ -400,14 +400,14 @@ namespace areg
 
     inline areg::SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
         MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
         return (mCookieToSocket.isValidPosition(pos) ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : areg::SocketAccepted());
     }
 
     inline areg::SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
         MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
         return (mAcceptedConnections.isValidPosition(pos) ? mAcceptedConnections.getAt(clientSocket) : areg::SocketAccepted());
     }

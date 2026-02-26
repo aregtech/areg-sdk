@@ -42,7 +42,7 @@ SortedEventStack::~SortedEventStack()
 
 void SortedEventStack::deleteAllEvents()
 {
-    Lock lock( mSyncObject );
+    areg::Lock lock( mSyncObject );
 
     while ( mValueList.empty( ) == false )
     {
@@ -55,7 +55,7 @@ void SortedEventStack::deleteAllEvents()
 
 uint32_t SortedEventStack::deleteAllLowerPriority(areg::Event::EventPriority eventPrio)
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
 
     while (mValueList.empty() == false)
     {
@@ -78,7 +78,7 @@ uint32_t SortedEventStack::deleteAllLowerPriority(areg::Event::EventPriority eve
 
 uint32_t SortedEventStack::deleteAllExceptClass(const areg::RuntimeClassID& eventClassId)
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
@@ -103,7 +103,7 @@ uint32_t SortedEventStack::deleteAllExceptClass(const areg::RuntimeClassID& even
 
 uint32_t SortedEventStack::deleteAllMatchPriority(areg::Event::EventPriority eventPrio)
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
@@ -128,7 +128,7 @@ uint32_t SortedEventStack::deleteAllMatchPriority(areg::Event::EventPriority eve
 
 uint32_t SortedEventStack::deleteAllMatchClass(const areg::RuntimeClassID& eventClassId)
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
@@ -154,7 +154,7 @@ uint32_t SortedEventStack::deleteAllMatchClass(const areg::RuntimeClassID& event
 uint32_t SortedEventStack::pushEvent(areg::Event * newEvent, areg::Event** removedEvent)
 {
     ASSERT(newEvent != nullptr);
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     switch (newEvent->getEventPriority())
     {
     case areg::Event::EventPriority::LowPrio:
@@ -262,7 +262,7 @@ uint32_t  SortedEventStack::popEvent(areg::Event** stackEvent)
 {
     ASSERT(stackEvent != nullptr);
 
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     if (mValueList.empty() == false)
     {
         *stackEvent = mValueList.front();

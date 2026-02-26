@@ -332,13 +332,13 @@ protected:
      * \brief   Exit Synchronization Event. 
      *          Signaled, when dispatcher should be stopped and exit from loop.
      **/
-    SyncEvent           mEventExit;
+    areg::SyncEvent           mEventExit;
     /**
      * \brief   Queue Synchronization Event.
      *          Signaled when new event is pushed into the queue and 
      *          reset (not signaled) when queue is empty.
      **/
-    SyncEvent           mEventQueue;
+    areg::SyncEvent           mEventQueue;
 
     /**
      * \brief   Flag, which is indicating whether dispatcher is started or not.

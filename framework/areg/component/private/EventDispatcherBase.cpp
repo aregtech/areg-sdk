@@ -209,7 +209,7 @@ bool EventDispatcherBase::runDispatcher()
     readyForEvents( true );
 
     areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
-    MultiLock multiLock(syncObjects, 2, false);
+    areg::MultiLock multiLock(syncObjects, 2, false);
     int32_t whichEvent  = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
@@ -242,7 +242,7 @@ bool EventDispatcherBase::runDispatcher()
                     // there is no request to exit thread.
                     eventElem = nullptr;
                     int32_t eventLock = multiLock.lock(areg::DO_NOT_WAIT);
-                    if ( eventLock == MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
+                    if ( eventLock == areg::MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
                     {
                         eventElem = static_cast<EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
                     }

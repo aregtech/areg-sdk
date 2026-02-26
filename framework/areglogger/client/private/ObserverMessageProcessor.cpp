@@ -85,7 +85,7 @@ void ObserverMessageProcessor::notifyConnectedClients(const areg::RemoteMessage&
 
     do
     {
-        Lock lock(mLoggerClient.mLock);
+        areg::Lock lock(mLoggerClient.mLock);
         msgReceived >> remConnect;
 
         if (remConnect == areg::RemoteConnectionState::Connected)
@@ -109,7 +109,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const areg::RemoteMessage
 
     do
     {
-        Lock lock(mLoggerClient.mLock);
+        areg::Lock lock(mLoggerClient.mLock);
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
         mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
         msgReceived >> count;
@@ -165,7 +165,7 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const areg::RemoteMessage& 
 
     do
     {
-        Lock lock(mLoggerClient.mLock);
+        areg::Lock lock(mLoggerClient.mLock);
         callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
         mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
         msgReceived >> count;
@@ -216,7 +216,7 @@ void ObserverMessageProcessor::notifyLogMessage(const areg::RemoteMessage& msgRe
 
     do
     {
-        Lock lock(mLoggerClient.mLock);
+        areg::Lock lock(mLoggerClient.mLock);
         const areg::LogEntry* msgRemote = reinterpret_cast<const areg::LogEntry*>(msgReceived.getBuffer());
         ASSERT(msgRemote != nullptr);
         const_cast<areg::LogEntry*>(msgRemote)->logReceived = static_cast<TIME64>(now);
@@ -286,7 +286,7 @@ void ObserverMessageProcessor::_clientsConnected(const areg::RemoteMessage& msgR
 
     do
     {
-        Lock lock(mLoggerClient.mLock);
+        areg::Lock lock(mLoggerClient.mLock);
         areg::DateTime now(areg::DateTime::getNow());
 
         if (LogObserverBase::_theLogObserver != nullptr)
@@ -383,7 +383,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const areg::RemoteMessage& m
 
     do
     {
-        Lock lock(mLoggerClient.mLock);
+        areg::Lock lock(mLoggerClient.mLock);
 
         if (LogObserverBase::_theLogObserver == nullptr)
         {

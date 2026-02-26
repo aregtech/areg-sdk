@@ -105,14 +105,14 @@ void RouterClient::onServiceExit()
 
 bool RouterClient::isServiceHostPending() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == areg::ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting)));
 }
 
 bool RouterClient::registerServiceProvider( const areg::StubAddress & stubService )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceProvider);
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     bool result{ false };
     if ( isConnectionStarted() )
     {
@@ -130,7 +130,7 @@ void RouterClient::unregisterServiceProvider(const areg::StubAddress & stubServi
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceProvider);
 
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     if ( isConnectionStarted() )
     {
         LOG_DBG("Queuing to send unregister [ %s ] service message by connection [ %d ]"
@@ -144,7 +144,7 @@ void RouterClient::unregisterServiceProvider(const areg::StubAddress & stubServi
 bool RouterClient::registerServiceConsumer(const areg::ProxyAddress & proxyService)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceConsumer );
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     bool result { false };
     if ( isConnectionStarted() )
     {
@@ -162,7 +162,7 @@ void RouterClient::unregisterServiceConsumer(const areg::ProxyAddress & proxySer
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     if ( isConnectionStarted() )
     {
         LOG_DBG("Queuing to send unregister [ %s ] service client message by connection [ %d ]"

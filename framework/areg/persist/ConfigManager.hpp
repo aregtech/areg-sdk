@@ -815,7 +815,7 @@ namespace areg
         /**
          * \brief   Synchronization object for multithreading.
          **/
-        mutable Mutex   mLock;
+        mutable areg::Mutex   mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -829,25 +829,25 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     inline bool ConfigManager::isConfigured() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mIsConfigured;
     }
 
     inline const areg::String& ConfigManager::getConfigFile() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mFilePath;
     }
 
     inline const areg::ListProperties& ConfigManager::getReadonlyProperties() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mReadonlyProperties;
     }
 
     inline const areg::ListProperties& ConfigManager::getModuleProperties() const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mWritableProperties;
     }
 
@@ -896,7 +896,7 @@ namespace areg
                                                                 , const areg::String& position /*= areg::String::EmptyString*/
                                                                 , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         const areg::Property* result{ getProperty(section, property, position, keyType)};
         return (result != nullptr ? &result->getValue() : nullptr);
@@ -917,7 +917,7 @@ namespace areg
                                                                       , const areg::String& position /*= areg::String::EmptyString*/
                                                                       , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         const areg::Property* result{ getModuleProperty(section, property, position, keyType) };
         return (result != nullptr ? &result->getValue() : nullptr);
@@ -933,7 +933,7 @@ namespace areg
                                                                , const areg::String& position /*= areg::String::EmptyString*/
                                                                , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         const areg::Property* result{ getModuleProperty(section, property, position, keyType) };
         return (result != nullptr ? &const_cast<areg::Property *>(result)->getValue() : nullptr);
@@ -942,7 +942,7 @@ namespace areg
     inline int32_t ConfigManager::addModuleProperties(const areg::ListProperties& propList)
     {
         int32_t result{ 0 };
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         const std::vector<areg::Property>& list = propList.getData();
         for (const auto& prop : list)
         {
@@ -958,7 +958,7 @@ namespace areg
 
     inline void ConfigManager::replaceModuleProperty(const areg::ListProperties& listProperties)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mWritableProperties = listProperties;
     }
 
@@ -969,13 +969,13 @@ namespace areg
 
     inline void ConfigManager::releaseModuleProperties()
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mWritableProperties.clear();
     }
 
     inline void ConfigManager::releaseProperties()
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mIsConfigured = false;
         mWritableProperties.clear();
         mReadonlyProperties.clear();
@@ -983,7 +983,7 @@ namespace areg
 
     inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= false*/)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogStatus;
         const areg::ConfigKey& key = areg::getLogStatus();
@@ -998,7 +998,7 @@ namespace areg
 
     inline void ConfigManager::setLogEnabled(const areg::String& logType, bool newValue, bool isTemporary /*= false*/)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogEnable;
         const areg::ConfigKey& key = areg::getLogEnable();
@@ -1012,7 +1012,7 @@ namespace areg
 
     inline void ConfigManager::setLogFileLocation(const areg::String& newValue, bool isTemporary /*= false*/)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogFileLocation;
         const areg::ConfigKey& key = areg::getLogFileLocation();

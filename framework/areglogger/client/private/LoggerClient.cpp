@@ -57,13 +57,13 @@ bool LoggerClient::startLoggerClient(const areg::String & address /*= areg::Stri
 {
     if ((address.isEmpty() == false) && (portNr != areg::InvalidPort))
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mIsPaused = false;
         applyServiceConnectionData(address, portNr);
     }
     else
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mIsPaused = false;
         areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
         if (config.isConfigured())
@@ -79,7 +79,7 @@ void LoggerClient::stopLoggerClient()
 {
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mIsPaused = false;
     } while (false);
 
@@ -88,7 +88,7 @@ void LoggerClient::stopLoggerClient()
 
 void LoggerClient::setCallbacks(const ObserverEvents* callbacks)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mCallbacks = callbacks;
 }
 
@@ -99,7 +99,7 @@ void LoggerClient::setPaused(bool doPause)
 
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mIsPaused = doPause;
         callback = (mCallbacks != nullptr) && isConnectionStarted() ? mCallbacks->evtLoggingStarted : nullptr;
         isStarted = mIsPaused ? false : isConnectionStarted();
@@ -117,7 +117,7 @@ void LoggerClient::setPaused(bool doPause)
 
 const areg::SocketAddress& LoggerClient::getAddress() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mClientConnection.getAddress();
 }
 
@@ -190,7 +190,7 @@ bool LoggerClient::requestConnectedInstances()
 bool LoggerClient::requestScopes(const ITEM_ID& target /*= areg::TARGET_ALL*/)
 {
     bool result{ false };
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if ((mChannel.getCookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
     {
         result = sendMessage(areg::messageQueryScopes(mChannel.getCookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
@@ -202,7 +202,7 @@ bool LoggerClient::requestScopes(const ITEM_ID& target /*= areg::TARGET_ALL*/)
 bool LoggerClient::requestChangeScopePrio(const areg::ScopeNames & scopes, const ITEM_ID& target /*= areg::TARGET_ALL*/)
 {
     bool result{ false };
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if ((mChannel.getCookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
     {
         result = sendMessage(areg::messageUpdateScopes(mChannel.getCookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target, scopes));
@@ -214,7 +214,7 @@ bool LoggerClient::requestChangeScopePrio(const areg::ScopeNames & scopes, const
 bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= areg::TARGET_ALL*/)
 {
     bool result{ false };
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if ((mChannel.getCookie() != areg::COOKIE_UNKNOWN) && (target != areg::TARGET_UNKNOWN))
     {
         result = sendMessage(areg::messageSaveConfiguration(mChannel.getCookie(), target == areg::TARGET_ALL ? LoggerClient::TARGET_ID : target));
@@ -394,7 +394,7 @@ void LoggerClient::postReadConfiguration(areg::ConfigManager& config)
 
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         if (mCallbacks != nullptr)
         {
             callbackConf    = mCallbacks->evtObserverConfigured;
@@ -512,7 +512,7 @@ void LoggerClient::connectedRemoteServiceChannel(const areg::Channel& channel)
 
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         const areg::SocketAddress& addr{ mClientConnection.getAddress() };
         address = addr.getHostAddress();
         port = addr.getHostPort();
@@ -550,7 +550,7 @@ void LoggerClient::disconnectedRemoteServiceChannel(const areg::Channel& /* chan
 
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         const areg::SocketAddress& addr{ mClientConnection.getAddress() };
         address = addr.getHostAddress();
         port = addr.getHostPort();
@@ -582,7 +582,7 @@ void LoggerClient::lostRemoteServiceChannel(const areg::Channel& /* channel */)
 
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         callback = mCallbacks != nullptr ? mCallbacks->evtLoggingStarted : nullptr;
         mInstances.clear();
     } while (false);
@@ -602,7 +602,7 @@ void LoggerClient::failedSendMessage(const areg::RemoteMessage& /* msgFailed */,
     FuncMessagingFailed callback{ nullptr };
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
     } while (false);
 
@@ -621,7 +621,7 @@ void LoggerClient::failedReceiveMessage(areg::Socket& /* whichSource */)
     FuncMessagingFailed callback{ nullptr };
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
     } while (false);
 

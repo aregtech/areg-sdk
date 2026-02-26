@@ -578,7 +578,7 @@ bool LogSqliteDatabase::isOperable() const
 
 bool LogSqliteDatabase::connect(const areg::String& dbPath, bool readOnly)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mDbLogEnabled && mDatabase.isOperable() == false)
     {
         bool exists = areg::File::existFile(dbPath);
@@ -606,7 +606,7 @@ bool LogSqliteDatabase::connect(const areg::String& dbPath, bool readOnly)
 
 void LogSqliteDatabase::disconnect()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if ((mDatabase.isOperable() == false) || (mIsInitialized == false))
         return;
 
@@ -621,19 +621,19 @@ void LogSqliteDatabase::disconnect()
 
 bool LogSqliteDatabase::execute(const areg::String& sql)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mDatabase.execute(sql);
 }
 
 bool LogSqliteDatabase::begin()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mDatabase.begin();
 }
 
 bool LogSqliteDatabase::commit(bool doCommit)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mDatabase.commit(doCommit);
 }
 
@@ -644,7 +644,7 @@ bool LogSqliteDatabase::areTablesInitialized() const
 
 bool LogSqliteDatabase::logMessage(const areg::LogEntry& message)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mStmtLogs.isValid() == false)
     {
         return false;
@@ -672,7 +672,7 @@ bool LogSqliteDatabase::logMessage(const areg::LogEntry& message)
 
 bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& instance, const areg::DateTime& timestamp)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     areg::Process& proc    { areg::Process::getInstance() };
     areg::String   module  { proc.getAppName() };
     id_type  threadId{ areg::Thread::getCurrentThreadId() };
@@ -693,7 +693,7 @@ bool LogSqliteDatabase::logInstanceConnected(const areg::ConnectedInstance& inst
 
 bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const areg::DateTime& timestamp)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     logScopesDeactivate(cookie, timestamp);
 
     areg::Process& proc{ areg::Process::getInstance() };
@@ -717,7 +717,7 @@ bool LogSqliteDatabase::logScopeActivate(const areg::ScopeEntry & scope, const I
 
 uint32_t LogSqliteDatabase::logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const areg::DateTime& timestamp)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     uint32_t result{ 0 };
     SqliteStatement stmt(mDatabase, _sqlInsertScope);
     for (const auto& scope : scopes.getData())
@@ -771,7 +771,7 @@ bool LogSqliteDatabase::logScopeDeactivate(const ITEM_ID& cookie, uint32_t scope
 
 bool LogSqliteDatabase::rollback()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mDatabase.rollback();
 }
 
@@ -784,7 +784,7 @@ std::vector<areg::String> LogSqliteDatabase::getLogInstanceNames()
 
 void LogSqliteDatabase::getLogInstanceNames(std::vector<areg::String>& names)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceName);
     if (stmt.isValid())
@@ -811,7 +811,7 @@ std::vector<ITEM_ID> LogSqliteDatabase::getLogInstances()
 
 void LogSqliteDatabase::getLogInstances(std::vector<ITEM_ID>& ids)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstanceIds);
     if (stmt.isValid())
@@ -835,7 +835,7 @@ std::vector<areg::String> LogSqliteDatabase::getLogThreadNames()
 
 void LogSqliteDatabase::getLogThreadNames(std::vector<areg::String>& names)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     names.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadNames);
     if (stmt.isValid())
@@ -859,7 +859,7 @@ std::vector<ITEM_ID> LogSqliteDatabase::getLogThreads()
 
 void LogSqliteDatabase::getLogThreads(std::vector<ITEM_ID>& ids)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     ids.clear();
     SqliteStatement stmt(mDatabase, _sqlGetThreadIds);
     if (stmt.isValid())
@@ -904,7 +904,7 @@ std::vector<areg::ConnectedInstance> LogSqliteDatabase::getLogInstanceInfos()
 
 void LogSqliteDatabase::getLogInstanceInfos(std::vector<areg::ConnectedInstance>& infos)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     infos.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogInstances);
     if (stmt.isValid())
@@ -929,7 +929,7 @@ std::vector<areg::ScopeEntry> LogSqliteDatabase::getLogInstScopes(ITEM_ID instId
 
 void LogSqliteDatabase::getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, ITEM_ID instId)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     scopes.clear();
     SqliteStatement stmt(mDatabase, _sqlGetLogScopes);
     if (stmt.isValid())
@@ -955,7 +955,7 @@ std::vector<areg::SharedBuffer> LogSqliteDatabase::getLogMessages()
 
 void LogSqliteDatabase::getLogMessages(std::vector<areg::SharedBuffer>& messages)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
     if (stmt.isValid())
@@ -986,7 +986,7 @@ void LogSqliteDatabase::getLogInstMessages(std::vector<areg::SharedBuffer>& mess
         return;
     }
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
     if (stmt.isValid())
@@ -1018,7 +1018,7 @@ void LogSqliteDatabase::getLogScopeMessages(std::vector<areg::SharedBuffer>& mes
         return;
     }
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetScopeLogMessages);
     if (stmt.isValid())
@@ -1046,7 +1046,7 @@ std::vector<areg::SharedBuffer> LogSqliteDatabase::getLogMessages(ITEM_ID instId
         return getLogInstMessages(instId);
     }
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     std::vector<areg::SharedBuffer> result;
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
     if (stmt.isValid())
@@ -1081,7 +1081,7 @@ void LogSqliteDatabase::getLogMessages(std::vector<areg::SharedBuffer>& messages
         return;
     }
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     messages.clear();
     SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
     if (stmt.isValid())
@@ -1220,7 +1220,7 @@ uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& stmt, ITEM_I
 
 uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID instId, const areg::ArrayList<ScopeFilter>& filter)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0u;
     else if (tableExists("scopes", _master) == false)
@@ -1258,7 +1258,7 @@ uint32_t LogSqliteDatabase::setupFilterLogs(ITEM_ID instId, const areg::ArrayLis
 
 uint32_t LogSqliteDatabase::setupStatementReadFilterLogs(SqliteStatement& stmt, ITEM_ID instId)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     stmt.reset();
     if (mDatabase.isOperable() == false)
         return 0u;
@@ -1321,7 +1321,7 @@ uint32_t LogSqliteDatabase::_updaeFilterLogScopes(ITEM_ID instId, const areg::Ar
 
 uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0u;
 
@@ -1340,7 +1340,7 @@ uint32_t LogSqliteDatabase::countLogEntries(ITEM_ID instId)
 
 uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0;
 
@@ -1359,7 +1359,7 @@ uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
 
 uint32_t LogSqliteDatabase::countLogInstances()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0;
 
@@ -1369,7 +1369,7 @@ uint32_t LogSqliteDatabase::countLogInstances()
 
 uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mDatabase.isOperable() == false)
         return 0;
 

@@ -130,7 +130,7 @@ void Publisher::start()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_start);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
     mTimerAlways.stopTimer();
@@ -158,7 +158,7 @@ void Publisher::stop()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_stop);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
     mTimerAlways.stopTimer();
@@ -171,7 +171,7 @@ void Publisher::invalidate()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_invalidate);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
 
     mCountString = 0;
@@ -189,7 +189,7 @@ void Publisher::quit()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_quit);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
     mTimerAlways.stopTimer();
@@ -205,7 +205,7 @@ void Publisher::processTimer(areg::Timer & timer)
 
     if (&timer == &mTimerAlways)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         if (++ mCountInteger > PubSub::CycleAlways)
         {
             ++ mSeqInteger;
@@ -217,7 +217,7 @@ void Publisher::processTimer(areg::Timer & timer)
     }
     else if (&timer == &mTimerOnChange)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         if (++ mCountString > PubSub::CycleAlways)
         {
             ++ mSeqString;

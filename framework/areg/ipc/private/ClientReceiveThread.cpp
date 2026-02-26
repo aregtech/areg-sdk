@@ -40,14 +40,14 @@ bool ClientReceiveThread::runDispatcher()
     readyForEvents( true );
 
     areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
-    MultiLock multiLock(syncObjects, 2, false);
+    areg::MultiLock multiLock(syncObjects, 2, false);
     areg::RemoteMessage msgReceived;
     int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
     do
     {
         whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
-        if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
+        if ( whichEvent == areg::MultiLock::LOCK_INDEX_TIMEOUT )
         {
             whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
             int32_t sizeReceive = mConnection.receiveMessage( msgReceived );

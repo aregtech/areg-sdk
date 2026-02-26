@@ -271,7 +271,7 @@ void ServiceManager::readyForEvents( bool isReady )
 
 bool ServiceManager::_startServiceManagerThread()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     ASSERT(isReady() || (isRunning() == false));
     return (isReady() || (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE)));
 }
@@ -298,7 +298,7 @@ void ServiceManager::_waitServiceManagerThread()
 void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<areg::ProxyAddress> & out_lisProxies ) const
 {
     LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
 
     out_listStubs.clear();
     out_lisProxies.clear();

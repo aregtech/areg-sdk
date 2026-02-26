@@ -29,7 +29,7 @@
 DEF_LOG_SCOPE(threads_main_HelloThread_Ctor);
 DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
 
-Mutex gSync(false);
+areg::Mutex gSync(false);
 
 class HelloThread   : public areg::Thread
                     , protected areg::ThreadConsumer
@@ -54,7 +54,7 @@ protected:
         LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), areg::WAIT_500_MILLISECONDS);
         do
         {
-            Lock lock(gSync);
+            areg::Lock lock(gSync);
             std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << areg::WAIT_500_MILLISECONDS << " ms" << std::endl;
 
         } while (false);
@@ -95,7 +95,7 @@ protected:
         areg::DispatcherThread::readyForEvents(isReady);
         if (isReady)
         {
-            Lock lock(gSync);
+            areg::Lock lock(gSync);
             LOG_DBG("Dispatcher thread is ready for event dispatching");
             std::cout << "Dispatcher thread is ready for event dispatching" << std::endl;
             mTimer.startTimer(100);
@@ -114,7 +114,7 @@ protected:
         LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
         LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().getString());
 
-        Lock lock(gSync);
+        areg::Lock lock(gSync);
         std::cout << "Received event [" << eventElem.getRuntimeClassName().getString() << "], custom dispatching here" << std::endl;
         return true; // prevent processTimer()
     }

@@ -477,11 +477,11 @@ private:
     /**
      * \brief   An event, indicating that the logging has been started.
      */
-    SyncEvent           mLogStarted;
+    areg::SyncEvent           mLogStarted;
     /**
      * \brief   Synchronization object used to synchronize data access.
      **/
-    mutable ResourceLock    mLock;
+    mutable areg::ResourceLock    mLock;
 
 private:
 //////////////////////////////////////////////////////////////////////////
@@ -536,7 +536,7 @@ inline LogManager & LogManager::self()
 
 inline bool LogManager::isLoggingStarted()
 {
-    Lock lock(getInstance().mLock);
+    areg::Lock lock(getInstance().mLock);
     return getInstance().mIsStarted;
 }
 

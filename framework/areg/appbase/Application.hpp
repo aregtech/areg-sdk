@@ -411,11 +411,11 @@ namespace areg
         /**
          * \brief   Exit application event.
          **/
-        SyncEvent       mAppQuit;
+        areg::SyncEvent       mAppQuit;
         /**
          * \brief   Synchronization object
          **/
-        ResourceLock    mLock;
+        areg::ResourceLock    mLock;
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)
     #endif  // _MSC_VER

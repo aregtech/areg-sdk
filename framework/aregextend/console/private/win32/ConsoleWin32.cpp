@@ -108,7 +108,7 @@ void Console::_osRelease()
 
 void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -119,7 +119,7 @@ void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -130,7 +130,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
 
 void Console::_osOutputText(const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -139,7 +139,7 @@ void Console::_osOutputText(const areg::String& text) const
 
 void Console::_osOutputText(const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -148,7 +148,7 @@ void Console::_osOutputText(const std::string_view& text) const
 
 Console::Coord Console::_osGetCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -162,7 +162,7 @@ Console::Coord Console::_osGetCursorPosition() const
 
 void Console::_osSetCursorCurPosition(Console::Coord pos) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
@@ -183,7 +183,7 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
 
 void Console::_osRefreshScreen() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     FlushConsoleInputBuffer(hStdOut);
@@ -191,7 +191,7 @@ void Console::_osRefreshScreen() const
 
 void Console::_osClearLine() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -200,7 +200,7 @@ void Console::_osClearLine() const
 
 void Console::_osClearScreen() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hStdOut != nullptr)
@@ -217,7 +217,7 @@ bool Console::_osReadInputList(const char* format, va_list varList) const
 
 void Console::_osSaveCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, nullptr);
@@ -225,7 +225,7 @@ void Console::_osSaveCursorPosition() const
 
 void Console::_osRestoreCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, nullptr);
@@ -233,7 +233,7 @@ void Console::_osRestoreCursorPosition() const
 
 void Console::_osMoveCursorOneLineUp() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, nullptr);
@@ -241,7 +241,7 @@ void Console::_osMoveCursorOneLineUp() const
 
 void Console::_osMoveCursorOneLineDown() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);

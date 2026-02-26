@@ -68,7 +68,7 @@ bool LogManager::startLogging(const char* configFile /*= nullptr*/ )
     areg::Application::loadConfiguration(configFile);
 
     LogManager& logManager = LogManager::getInstance();
-    Lock lock(logManager.mLock);
+    areg::Lock lock(logManager.mLock);
     if (logManager.isReady() == false)
     {
         lock.unlock();
@@ -88,7 +88,7 @@ bool LogManager::saveLogConfig(const char* configFile /*= nullptr*/ )
 void LogManager::updateScopeConfiguration()
 {
     LogManager& logManager = LogManager::getInstance();
-    Lock lock(logManager.mLock);
+    areg::Lock lock(logManager.mLock);
 
     areg::LogConfiguration config;
     config.updateScopeConfiguration(logManager.mScopeController);
@@ -110,7 +110,7 @@ bool LogManager::forceActivateLogging()
     LogManager & logManager = LogManager::getInstance();
     if ( logManager.isLoggingStarted() == false )
     {
-        Lock lock( logManager.mLock );
+        areg::Lock lock( logManager.mLock );
         logManager.mLogConfig.setStatus(true);
         logManager.mLogConfig.setLogEnabled(areg::LogTarget::File, true);
         logManager.mScopeController.activateDefaults( );
@@ -206,13 +206,13 @@ LogManager::LogManager()
 //////////////////////////////////////////////////////////////////////////
 void LogManager::clearConfigData()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mScopeController.clearConfigScopes( );
 }
 
 void LogManager::resetScopes()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mScopeController.resetScopes();
 }
 

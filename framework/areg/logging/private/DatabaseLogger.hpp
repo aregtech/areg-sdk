@@ -145,7 +145,7 @@ private:
     areg::LogDatabaseEngine *   mDatabase;
 
     //!< Locking object.
-    mutable Mutex           mLock;
+    mutable areg::Mutex           mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -161,25 +161,25 @@ private:
 
 inline const areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mDatabase;
 }
 
 inline areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mDatabase;
 }
 
 inline void DatabaseLogger::setDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mDatabase = dbEngine;
 }
 
 inline bool DatabaseLogger::isValid() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return (mDatabase != nullptr);
 }
 

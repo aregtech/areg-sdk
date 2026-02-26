@@ -76,19 +76,19 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
 
 void ServiceCommunicationBase::addInstance(const ITEM_ID & cookie, const areg::ConnectedInstance & instance)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mInstanceMap.addIfUnique(cookie, instance);
 }
 
 void ServiceCommunicationBase::removeInstance(const ITEM_ID & cookie)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mInstanceMap.removeAt(cookie);
 }
 
 void ServiceCommunicationBase::removeAllInstances()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mInstanceMap.release();
 }
 
@@ -121,7 +121,7 @@ bool ServiceCommunicationBase::connectServiceHost()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectServiceHost);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     bool result{ false };
     if ( mServerConnection.isValid() == false && isRunning() == false )
@@ -147,7 +147,7 @@ bool ServiceCommunicationBase::reconnectServiceHost()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_reconnectServiceHost);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     bool result = true;
     if (isRunning() == false)
     {
@@ -179,19 +179,19 @@ void ServiceCommunicationBase::disconnectServiceHost()
 
 bool ServiceCommunicationBase::isServiceHostConnected() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return (mServerConnection.isValid() && isRunning());
 }
 
 bool ServiceCommunicationBase::isServiceHostPending() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return ((mServerConnection.isValid() == false) && isRunning());
 }
 
 bool ServiceCommunicationBase::isServiceHostSetup() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mServerConnection.getAddress().isValid();
 }
 
@@ -200,7 +200,7 @@ bool ServiceCommunicationBase::canAcceptConnection(const areg::SocketAccepted & 
     bool result{ false };
     if ( clientSocket.isValid( ) && clientSocket.isAlive() )
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         const areg::String & ipAddress = clientSocket.getAddress( ).getHostAddress( );
         result =  ((mConnectBehavior == ConnectionPolicy::Accept) && (mBlackList.contains( ipAddress ) == false)) ||
                   ((mConnectBehavior == ConnectionPolicy::Reject) && (mWhiteList.contains( ipAddress ) == true ));
@@ -247,14 +247,14 @@ void ServiceCommunicationBase::disconnectServices()
 
 void ServiceCommunicationBase::onServiceReconnectTimerExpired()
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     startConnection( );
 }
 
 void ServiceCommunicationBase::onServiceStart()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceStart);
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mEventSendStop.resetEvent();
     startConnection();
 }
@@ -265,7 +265,7 @@ void ServiceCommunicationBase::onServiceStop()
 
     do
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         stopConnection();
     } while (false);
 

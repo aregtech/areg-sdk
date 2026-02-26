@@ -488,15 +488,15 @@ protected:
     /**
      * \brief   Object to synchronize data access
      **/
-    mutable ResourceLock    mSyncObject;
+    mutable areg::ResourceLock    mSyncObject;
     /**
      * \brief   Synchronization Event object, signaled when new created thread starts running
      **/
-    SyncEvent               mWaitForRun;
+    areg::SyncEvent               mWaitForRun;
     /**
      * \brief   Synchronization Event object, signaled when thread completes running and going to exist
      **/
-    SyncEvent               mWaitForExit;
+    areg::SyncEvent               mWaitForExit;
 
 //////////////////////////////////////////////////////////////////////////
 // Private / Hidden types, variables and methods
@@ -721,31 +721,31 @@ inline bool Thread::_isValidNoLock() const
 
 inline bool Thread::isRunning() const
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     return mIsRunning;
 }
 
 inline bool Thread::isValid() const
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     return _isValidNoLock();
 }
 
 inline id_type Thread::getId() const
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     return mThreadId;
 }
 
 inline const areg::String& Thread::getName() const
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     return mThreadAddress.getThreadName();
 }
 
 inline const areg::ThreadAddress & Thread::getAddress() const
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     return mThreadAddress;
 }
 
@@ -778,7 +778,7 @@ inline const areg::ThreadAddress& Thread::findThreadAddressByName(const areg::St
 
 inline void Thread::_setRunning( bool isRunning )
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     mIsRunning  = isRunning;
 }
 
@@ -799,7 +799,7 @@ inline const areg::ThreadAddress & Thread::getCurrentThreadAddress()
 
 inline Thread::ThreadPriority Thread::getPriority() const
 {
-    Lock  lock( mSyncObject );
+    areg::Lock  lock( mSyncObject );
     return (isValid( ) ? mThreadPriority : Thread::ThreadPriority::Undefined);
 }
 

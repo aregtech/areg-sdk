@@ -206,7 +206,7 @@ private:
 
 inline bool SortedEventStack::isEmpty() const
 {
-    Lock lock(mSyncObject);
+    areg::Lock lock(mSyncObject);
     return mValueList.empty();
 }
 

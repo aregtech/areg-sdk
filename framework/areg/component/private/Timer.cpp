@@ -68,7 +68,7 @@ namespace areg
     {
         LOG_SCOPE(areg_component_Timer_startTimer);
 
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         if (isActive())
         {
@@ -114,7 +114,7 @@ namespace areg
 
     bool Timer::timerIsExpired(uint32_t highValue, uint32_t lowValue, ptr_type /*context*/ )
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         if (mExpiredAt != 0)
         {
@@ -145,7 +145,7 @@ namespace areg
 
     void Timer::_queueTimer()
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
         {
@@ -162,7 +162,7 @@ namespace areg
 
     void Timer::_unqueueTimer()
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         if ( mMaxQueued != Timer::IGNORE_TIMER_QUEUE && mEventsCount > static_cast<uint32_t>(mMaxQueued) )
         {
@@ -178,7 +178,7 @@ namespace areg
 
     inline void Timer::_stopTimer()
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         TimerManager::stopTimer(self());
 

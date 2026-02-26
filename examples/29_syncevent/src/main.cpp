@@ -41,8 +41,8 @@
  *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
  *          Compare the version of STL and Areg. Both do the same.
  **/
-SyncEvent   gEvtReady(true, true);      //!< non-signaled, auto-reset event
-SyncEvent   gEvtProcess(true, true);    //!< non-signaled, auto-reset event
+areg::SyncEvent   gEvtReady(true, true);      //!< non-signaled, auto-reset event
+areg::SyncEvent   gEvtProcess(true, true);    //!< non-signaled, auto-reset event
 std::string gData{};                    //!< A text to output
 
 //! \brief  This callback is triggered when thread runs and fully operable.

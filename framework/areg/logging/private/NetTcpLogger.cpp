@@ -49,7 +49,7 @@ NetTcpLogger::NetTcpLogger(areg::LogConfiguration & logConfig, ScopeController &
 
 bool NetTcpLogger::openLogger()
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     bool result{ false };
 
     if (mClientConnection.isValid() == false)
@@ -104,7 +104,7 @@ void NetTcpLogger::logMessage(const areg::LogEntry& logMessage)
 
 bool NetTcpLogger::isLoggerOpened() const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return isConnectedState();
 }
 

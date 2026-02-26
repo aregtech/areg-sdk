@@ -36,7 +36,7 @@ DatabaseLogger::DatabaseLogger(areg::LogConfiguration& logConfig)
 
 DatabaseLogger::~DatabaseLogger()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (mDatabase != nullptr)
     {
         mDatabase->disconnect();
@@ -46,7 +46,7 @@ DatabaseLogger::~DatabaseLogger()
 
 bool DatabaseLogger::openLogger()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     bool result{ false };
 
     areg::String dbFile;
@@ -69,7 +69,7 @@ bool DatabaseLogger::openLogger()
 
 void DatabaseLogger::closeLogger()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (isValid())
     {
         mDatabase->disconnect();
@@ -78,7 +78,7 @@ void DatabaseLogger::closeLogger()
 
 void DatabaseLogger::logMessage(const areg::LogEntry& logMessage)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     if (isValid())
     {
         mDatabase->logMessage(logMessage);
@@ -92,7 +92,7 @@ bool DatabaseLogger::isLoggerOpened() const
 
 void DatabaseLogger::flushLogs()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (isValid())
     {

@@ -145,7 +145,7 @@ areg::Thread::ThreadCompletion areg::Thread::_osDestroyThread(uint32_t waitForSt
 
     do
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         if (mThreadHandle == areg::Thread::INVALID_THREAD_HANDLE)
         {
             return areg::Thread::ThreadCompletion::Invalid;
@@ -237,7 +237,7 @@ areg::Thread::ThreadPriority areg::Thread::_osSetPriority( ThreadPriority newPri
     static const int32_t maxPriority{ sched_get_priority_max( schedPolicy ) };
     static const int32_t deltaPrio  { (maxPriority - minPriority) / 4 };
 
-    Lock  lock(mSyncObject);
+    areg::Lock  lock(mSyncObject);
     areg::Thread::ThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {

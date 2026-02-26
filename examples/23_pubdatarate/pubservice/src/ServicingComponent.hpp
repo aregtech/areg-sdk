@@ -277,7 +277,7 @@ private:
     std::atomic_bool            mOptionChanged;
     //! The event to pause generate image.
     //! The data generating thread should be paused when non-signaled and should run when signaled.
-    SyncEvent                   mPauseEvent;
+    areg::SyncEvent                   mPauseEvent;
     //!< Number of connected clients.
     int32_t                     mClients;
     //!< Data Rate in bytes
@@ -293,7 +293,7 @@ private:
     //!< The object to receive timer expired event
     ServicingTimerConsumer      mTimerConsumer;
     //!< The synchronization item.
-    CriticalSection             mLock;
+    areg::CriticalSection             mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -330,7 +330,7 @@ private:
      *                      data or ignored. It is used to compute blocks that were put in 
      *                      sleep or ignored.
      */
-    void _updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult);
+    void _updateData(uint64_t genData, uint32_t genBlocks, areg::Wait::WaitResolution waitResult);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

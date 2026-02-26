@@ -38,10 +38,10 @@
 // Global synchronization objects
 //////////////////////////////////////////////////////////////////////////
 
-static SyncEvent    gEventExit(true, false);    //!< Manual-reset event, initially non-signaled
-static SyncEvent    gEventRun(true, true);      //!< Auto-reset event, initially signaled
-static Mutex        gMutexWait(false);          //!< Initially unlocked
-static Mutex        gMutexDummy(false);         //!< Initially unlocked
+static areg::SyncEvent    gEventExit(true, false);    //!< Manual-reset event, initially non-signaled
+static areg::SyncEvent    gEventRun(true, true);      //!< Auto-reset event, initially signaled
+static areg::Mutex        gMutexWait(false);          //!< Initially unlocked
+static areg::Mutex        gMutexDummy(false);         //!< Initially unlocked
 
 //////////////////////////////////////////////////////////////////////////
 // HelloThread: simple demo worker
@@ -60,7 +60,7 @@ public:
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
     }
 
-    SyncEvent mQuit; //!< Signaled when the thread completes
+    areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
     void onThreadRuns() override
@@ -76,7 +76,7 @@ protected:
 
         // Multi-lock with multiple objects
         areg::SyncObject* objects[] = { &gEventExit, &gMutexWait, &gEventRun };
-        MultiLock multiLock(objects, std::size(objects), false);
+        areg::MultiLock multiLock(objects, std::size(objects), false);
 
         constexpr uint32_t waitTimeout{ areg::WAIT_1_MILLISECOND * 150 };
 
@@ -84,15 +84,15 @@ protected:
         {
             int32_t waitResult = multiLock.lock(waitTimeout, true, false);
 
-            if (waitResult == MultiLock::LOCK_INDEX_ALL)
+            if (waitResult == areg::MultiLock::LOCK_INDEX_ALL)
             {
                 LOG_INFO("All objects are signaled, exiting thread [ %s ]", getName().getString());
                 std::cout << "All synchronization objects are signaled, exiting thread." << std::endl;
                 break;
             }
-            else if (waitResult == MultiLock::LOCK_INDEX_TIMEOUT)
+            else if (waitResult == areg::MultiLock::LOCK_INDEX_TIMEOUT)
             {
-                Lock lock(gMutexDummy);
+                areg::Lock lock(gMutexDummy);
                 LOG_DBG("Timeout expired, thread [ %s ] simulating work", getName().getString());
                 std::cout << "Wait multi-lock timeout expired, continue the job." << std::endl;
                 areg::Thread::sleep(waitTimeout);
@@ -124,7 +124,7 @@ public:
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
     }
 
-    SyncEvent mQuit; //!< Signaled when the thread completes
+    areg::SyncEvent mQuit; //!< Signaled when the thread completes
 
 protected:
     void onThreadRuns() override
@@ -136,7 +136,7 @@ protected:
 
         // Multi-lock with exit event + dummy mutex
         areg::SyncObject* objects[] = { &gEventExit, &gMutexDummy };
-        MultiLock multiLock(objects, std::size(objects), false);
+        areg::MultiLock multiLock(objects, std::size(objects), false);
 
         int32_t waitResult = multiLock.lock(areg::WAIT_INFINITE, false, false);
         LOG_DBG("GoodbyeThread finished lock with result [%d]", waitResult);
@@ -190,7 +190,7 @@ int main()
         gEventExit.setEvent();
         gEventRun.setEvent();
 
-        MultiLock multiLock(objects, std::size(objects), true);
+        areg::MultiLock multiLock(objects, std::size(objects), true);
         std::cout << "All sync objects unlocked. Completing all threads." << std::endl;
 
         helloThread.shutdownThread(areg::WAIT_INFINITE);
@@ -200,7 +200,7 @@ int main()
         LOG_INFO("Testing event synchronization with timeout [%u] ms", eventTimeout);
 
         areg::DateTime start{ areg::DateTime::getNow() };
-        SyncEvent localEvent(false, false);
+        areg::SyncEvent localEvent(false, false);
         localEvent.lock(eventTimeout);
         areg::DateTime end{ areg::DateTime::getNow() };
         uint64_t duration = end.getTime() - start.getTime();

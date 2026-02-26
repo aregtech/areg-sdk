@@ -35,7 +35,7 @@ ChatPrticipantHandler::~ChatPrticipantHandler()
 
 int32_t ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     int32_t result = 0;
     if ( mInitiator == initiator )
     {
@@ -54,7 +54,7 @@ int32_t ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiato
 
 bool ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, const chat::Participant & participant )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     int32_t result = 0;
     if ( (mInitiator == initiator) && (findPosition( participant ) == areg::INVALID_INDEX) )
     {
@@ -66,7 +66,7 @@ bool ChatPrticipantHandler::AddParticipant( const chat::sInitiator & initiator, 
 
 int32_t ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator, const chat::ListParticipants & listParticipants )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     int32_t result = 0;
     if ( mInitiator == initiator )
     {
@@ -86,7 +86,7 @@ int32_t ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initi
 
 bool ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiator, const chat::Participant & participant )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     int32_t result = 0;
     if ( mInitiator == initiator )
     {
@@ -102,13 +102,13 @@ bool ChatPrticipantHandler::RemoveParticipant( const chat::sInitiator & initiato
 
 bool ChatPrticipantHandler::ParticipantExist( const chat::Participant & participant ) const
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     return (findPosition(participant) != areg::INVALID_INDEX);
 }
 
 bool ChatPrticipantHandler::IsEmpty() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     uint32_t size = mListParticipants.getSize( );
     if (size == 1)
     {
@@ -123,7 +123,7 @@ bool ChatPrticipantHandler::IsEmpty() const
 
 void ChatPrticipantHandler::Invalidate()
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mListParticipants.clear();
     mOwnerConnection    = chat::Participant();
     mInitiator          = chat::sInitiator();
@@ -150,7 +150,7 @@ int32_t ChatPrticipantHandler::findPosition( const chat::Participant & participa
 
 void ChatPrticipantHandler::SetInitiator( const chat::sInitiator & initiator )
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     mInitiator  = initiator;
     if ( mListParticipants.contains(initiator, 0) == false )
         mListParticipants.add(initiator);

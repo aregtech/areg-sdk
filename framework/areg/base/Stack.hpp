@@ -77,21 +77,21 @@ namespace areg
          *          Use Stack or ConcurrentStack objects instead.
          * \param   syncObject  Reference to synchronization object.
          **/
-        explicit StackBase( Lockable & syncObject );
+        explicit StackBase( areg::Lockable & syncObject );
 
         /**
          * \brief   Initializes the resource lock object and copies elements from given source.
          * \param   syncObject  The instance of synchronization object
          * \param   source      The Stack source, which contains elements to copy.
          **/
-        StackBase( Lockable & syncObject, const StackBase<VALUE> & source );
+        StackBase( areg::Lockable & syncObject, const StackBase<VALUE> & source );
 
         /**
          * \brief   Initializes the resource lock object and move elements from given source.
          * \param   syncObject  The instance of synchronization object
          * \param   source      The Stack source, which contains elements to move.
          **/
-        StackBase( Lockable & syncObject, StackBase<VALUE> && source ) noexcept;
+        StackBase( areg::Lockable & syncObject, StackBase<VALUE> && source ) noexcept;
 
         /**
          * \brief   Compiles entries from the given array of objects.
@@ -99,7 +99,7 @@ namespace areg
          * \param   list        The list of entries to copy.
          * \param   count       The number of entries in the array.
          **/
-        StackBase(Lockable& syncObject, const VALUE* list, uint32_t count);
+        StackBase(areg::Lockable& syncObject, const VALUE* list, uint32_t count);
 
         /**
          * \brief   Destructor. Public
@@ -430,7 +430,7 @@ namespace areg
         std::deque<VALUE>   mValueList;
 
          //! The instance of synchronization object to be used to make object thread-safe.
-        Lockable &    mSyncObject;
+        areg::Lockable &    mSyncObject;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden method calls
@@ -541,7 +541,7 @@ namespace areg
         /**
          * \brief   Resource lock synchronization object.
          **/
-        mutable ResourceLock    mLock;
+        mutable areg::ResourceLock    mLock;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -644,7 +644,7 @@ namespace areg
         /**
          * \brief   Synchronization object simulation.
          **/
-        mutable NolockSyncObject mNoLock;
+        mutable areg::NolockSyncObject mNoLock;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -655,7 +655,7 @@ namespace areg
     // StackBase<VALUE> class template implementation
     //////////////////////////////////////////////////////////////////////////
     template <typename VALUE>
-    StackBase<VALUE>::StackBase( Lockable & syncObject )
+    StackBase<VALUE>::StackBase( areg::Lockable & syncObject )
         : areg::Constless<std::deque<VALUE>>( )
         , mValueList    ( )
         , mSyncObject   ( syncObject )
@@ -663,27 +663,27 @@ namespace areg
     }
 
     template <typename VALUE>
-    StackBase<VALUE>::StackBase( Lockable & syncObject, const StackBase<VALUE> & source )
+    StackBase<VALUE>::StackBase( areg::Lockable & syncObject, const StackBase<VALUE> & source )
         : areg::Constless<std::deque<VALUE>>( )
         , mValueList    ( )
         , mSyncObject   ( syncObject )
     {
-        Lock lock(source.mSyncObject);
+        areg::Lock lock(source.mSyncObject);
         mValueList = source.mValueList;
     }
 
     template <typename VALUE>
-    StackBase<VALUE>::StackBase( Lockable & syncObject, StackBase<VALUE> && source ) noexcept
+    StackBase<VALUE>::StackBase( areg::Lockable & syncObject, StackBase<VALUE> && source ) noexcept
         : areg::Constless<std::deque<VALUE>>( )
         , mValueList    ( )
         , mSyncObject   ( syncObject )
     {
-        Lock lock(source.mSyncObject);
+        areg::Lock lock(source.mSyncObject);
         mValueList = std::move(source.mValueList);
     }
 
     template<typename VALUE>
-    StackBase<VALUE>::StackBase(Lockable& syncObject, const VALUE* list, uint32_t count)
+    StackBase<VALUE>::StackBase(areg::Lockable& syncObject, const VALUE* list, uint32_t count)
         : areg::Constless<std::deque<VALUE>>()
         , mValueList ()
         , mSyncObject(syncObject)
@@ -720,65 +720,65 @@ namespace areg
     template <typename VALUE>
     inline const VALUE& StackBase<VALUE>::operator [] (STACKPOS atPosition) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return (*atPosition);
     }
 
     template <typename VALUE>
     inline VALUE& StackBase<VALUE>::operator [] (STACKPOS atPosition)
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return (*atPosition);
     }
 
     template <typename VALUE>
     inline bool StackBase<VALUE>::operator == (const StackBase<VALUE>& other) const
     {
-        Lock lock(mSyncObject);
-        Lock lockOther(other.mSyncObject);
+        areg::Lock lock(mSyncObject);
+        areg::Lock lockOther(other.mSyncObject);
         return (mValueList == other.mValueList);
     }
 
     template <typename VALUE>
     inline bool StackBase<VALUE>::operator != (const StackBase<VALUE>& other) const
     {
-        Lock lock(mSyncObject);
-        Lock lockOther(other.mSyncObject);
+        areg::Lock lock(mSyncObject);
+        areg::Lock lockOther(other.mSyncObject);
         return (mValueList != other.mValueList);
     }
 
     template <typename VALUE>
     inline uint32_t StackBase<VALUE>::getSize() const
     {
-        Lock lock( mSyncObject );
+        areg::Lock lock( mSyncObject );
         return static_cast<uint32_t>(mValueList.size());
     }
 
     template <typename VALUE>
     inline bool StackBase<VALUE>::isEmpty() const
     {
-        Lock lock( mSyncObject );
+        areg::Lock lock( mSyncObject );
         return mValueList.empty();
     }
 
     template <typename VALUE>
     inline bool StackBase<VALUE>::isFirstPosition(STACKPOS pos) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return (pos == mValueList.begin());
     }
 
     template <typename VALUE>
     inline bool StackBase<VALUE>::isLastPosition(STACKPOS pos) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return (mValueList.empty() == false) && (pos == --mValueList.end());
     }
 
     template <typename VALUE>
     inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::invalidPosition() const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         auto end = mValueList.end();
         return areg::Constless<std::deque<VALUE>>::iter(mValueList, end);
     }
@@ -786,21 +786,21 @@ namespace areg
     template <typename VALUE>
     inline bool StackBase<VALUE>::isValidPosition(STACKPOS pos) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return (pos != mValueList.end());
     }
 
     template <typename VALUE>
     inline bool StackBase<VALUE>::isInvalidPosition(STACKPOS pos) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return (pos == mValueList.end());
     }
 
     template <typename VALUE>
     inline bool StackBase<VALUE>::checkPosition(STACKPOS pos) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         auto it = mValueList.begin();
         while ((it != mValueList.end()) && (it != pos))
             ++it;
@@ -829,21 +829,21 @@ namespace areg
     template <typename VALUE>
     inline void StackBase<VALUE>::clear()
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.clear();
     }
 
     template <typename VALUE>
     inline void StackBase<VALUE>::freeExtra()
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.shrink_to_fit();
     }
 
     template <typename VALUE>
     inline void StackBase<VALUE>::release()
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.clear();
         mValueList.shrink_to_fit();
     }
@@ -863,29 +863,29 @@ namespace areg
     template<typename VALUE >
     inline void StackBase< VALUE >::resize(uint32_t newSize)
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.resize(newSize > areg::MAX_CONTAINER_SIZE ? areg::MAX_CONTAINER_SIZE : newSize);
     }
 
     template <typename VALUE>
     inline const VALUE & StackBase<VALUE>::firstEntry() const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return mValueList.front();
     }
 
     template <typename VALUE>
     inline const VALUE & StackBase<VALUE>::lastEntry() const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         return mValueList.back();
     }
 
     template <typename VALUE>
     inline uint32_t StackBase<VALUE>::copy( const StackBase<VALUE> & source )
     {
-        Lock lock(mSyncObject);
-        Lock lockSource(source.mSyncObject);
+        areg::Lock lock(mSyncObject);
+        areg::Lock lockSource(source.mSyncObject);
 
         mValueList = source.mValueList;
         return static_cast<uint32_t>(mValueList.size());
@@ -894,8 +894,8 @@ namespace areg
     template <typename VALUE>
     inline uint32_t StackBase<VALUE>::move( StackBase<VALUE> && source ) noexcept
     {
-        Lock lock(mSyncObject);
-        Lock lockSource(source.mSyncObject);
+        areg::Lock lock(mSyncObject);
+        areg::Lock lockSource(source.mSyncObject);
 
         mValueList = std::move(source.mValueList);
         return static_cast<uint32_t>(mValueList.size());
@@ -904,7 +904,7 @@ namespace areg
     template <typename VALUE>
     inline uint32_t StackBase<VALUE>::pushLast( const VALUE & newElement )
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.push_back(newElement);
         return static_cast<uint32_t>(mValueList.size());
     }
@@ -912,7 +912,7 @@ namespace areg
     template <typename VALUE>
     inline uint32_t StackBase<VALUE>::pushLast(VALUE && newElement)
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.push_back(std::move(newElement));
         return static_cast<uint32_t>(mValueList.size());
     }
@@ -920,7 +920,7 @@ namespace areg
     template <typename VALUE>
     inline uint32_t StackBase<VALUE>::pushFirst( const VALUE & newElement )
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.push_front(newElement);
         return static_cast<uint32_t>(mValueList.size());
     }
@@ -928,7 +928,7 @@ namespace areg
     template <typename VALUE>
     inline uint32_t StackBase<VALUE>::pushFirst(VALUE && newElement)
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         mValueList.push_front(std::move(newElement));
         return static_cast<uint32_t>(mValueList.size());
     }
@@ -936,7 +936,7 @@ namespace areg
     template <typename VALUE>
     VALUE StackBase<VALUE>::popFirst()
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
 
         VALUE result = mValueList.front();
         mValueList.pop_front();
@@ -946,7 +946,7 @@ namespace areg
     template <typename VALUE>
     inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE& Value) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         auto it = std::find(mValueList.begin(), mValueList.end(), Value);
         return areg::Constless<std::deque<VALUE>>::iter(mValueList, it);
     }
@@ -954,7 +954,7 @@ namespace areg
     template <typename VALUE>
     inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::find(const VALUE & Value, STACKPOS searchAfter ) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         STACKPOS end = invalidPosition();
         return (searchAfter != end ? std::find(++searchAfter, end, Value) : end);
     }
@@ -962,7 +962,7 @@ namespace areg
     template <typename VALUE>
     inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::firstPosition() const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
         auto it = mValueList.begin();
         return areg::Constless<std::deque<VALUE>>::iter(mValueList, it);
     }
@@ -970,7 +970,7 @@ namespace areg
     template <typename VALUE>
     inline const VALUE & StackBase<VALUE>::getAt( const STACKPOS pos ) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
 
         ASSERT(pos != mValueList.end());
         return (*pos);
@@ -979,7 +979,7 @@ namespace areg
     template <typename VALUE>
     inline VALUE & StackBase<VALUE>::getAt( STACKPOS pos )
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
 
         ASSERT(pos != mValueList.end());
         return (*pos);
@@ -988,7 +988,7 @@ namespace areg
     template <typename VALUE>
     inline const VALUE & StackBase<VALUE>::valueAtPosition( const STACKPOS atPosition ) const
     {
-        Lock lock( mSyncObject );
+        areg::Lock lock( mSyncObject );
 
         ASSERT( atPosition != mValueList.end( ) );
         return (*atPosition);
@@ -997,7 +997,7 @@ namespace areg
     template <typename VALUE>
     inline VALUE & StackBase<VALUE>::valueAtPosition( STACKPOS atPosition )
     {
-        Lock lock( mSyncObject );
+        areg::Lock lock( mSyncObject );
 
         ASSERT( atPosition != mValueList.end( ) );
         return (*atPosition);
@@ -1006,7 +1006,7 @@ namespace areg
     template <typename VALUE>
     inline typename StackBase<VALUE>::STACKPOS StackBase<VALUE>::nextPosition( STACKPOS pos ) const
     {
-        Lock lock(mSyncObject);
+        areg::Lock lock(mSyncObject);
 
         ASSERT(pos != mValueList.end());
         return (++pos);
@@ -1191,7 +1191,7 @@ namespace areg
     template<typename V>
     const areg::InStream & operator >> ( const areg::InStream & stream, StackBase<V> & input )
     {
-        Lock lock(input.mSyncObject);
+        areg::Lock lock(input.mSyncObject);
 
         input.mValueList.clear();
         uint32_t size = 0;
@@ -1208,7 +1208,7 @@ namespace areg
     template<typename V>
     areg::OutStream & operator << ( areg::OutStream & stream, const StackBase<V> & output )
     {
-        Lock lock(output.mSyncObject);
+        areg::Lock lock(output.mSyncObject);
 
         uint32_t size = output.getSize();
         stream << size;

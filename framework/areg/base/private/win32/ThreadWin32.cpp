@@ -201,7 +201,7 @@ bool areg::Thread::_osCreateSystemThread()
 
 areg::Thread::ThreadPriority areg::Thread::_osSetPriority( ThreadPriority newPriority )
 {
-    Lock  lock(mSyncObject);
+    areg::Lock  lock(mSyncObject);
     areg::Thread::ThreadPriority oldPrio{ mThreadPriority };
 
     if (_isValidNoLock() && (newPriority != mThreadPriority))

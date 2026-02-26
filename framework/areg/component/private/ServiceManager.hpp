@@ -455,7 +455,7 @@ private:
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/
-    mutable ResourceLock            mLock;
+    mutable areg::ResourceLock            mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls

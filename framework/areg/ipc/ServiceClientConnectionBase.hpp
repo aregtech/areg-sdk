@@ -433,7 +433,7 @@ namespace areg
         /**
          * \brief   Data access synchronization object
          **/
-        mutable ResourceLock                    mLock;
+        mutable areg::ResourceLock                    mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden member variables

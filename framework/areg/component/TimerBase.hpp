@@ -226,7 +226,7 @@ namespace areg
         /**
          * \brief   Synchronization object
          **/
-        ResourceLock        mLock;
+        areg::ResourceLock        mLock;
 
     private:
         TimerBase() = delete;

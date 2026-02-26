@@ -40,7 +40,7 @@ LogCollectorServerService::LogCollectorServerService()
 
 void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const areg::ConnectedInstance& instance)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     ServiceCommunicationBase::addInstance(cookie, instance);
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
@@ -65,7 +65,7 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const areg::C
 
 void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     areg::ArrayList<ITEM_ID> listIds;
     areg::ConnectedInstance instance;
@@ -96,7 +96,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
 
 void LogCollectorServerService::removeAllInstances()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     
     mSaveTimer.stopTimer();
 
@@ -127,7 +127,7 @@ void LogCollectorServerService::removeAllInstances()
 
 void LogCollectorServerService::dispatchAndForwardLoggerMessage(const areg::RemoteMessage& msgForward)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     ASSERT(msgForward.isValid());
     ASSERT(msgForward.getSource() == areg::COOKIE_LOGGER);
@@ -181,7 +181,7 @@ void LogCollectorServerService::onServiceMessageReceived(const areg::RemoteMessa
 {
     LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageReceived);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     ASSERT( msgReceived.isValid() );
     areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>( msgReceived.getMessageId() );
 

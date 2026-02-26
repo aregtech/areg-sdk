@@ -586,7 +586,7 @@ protected:
     bool            mDbLogEnabled;
 
     //!< Mutex to protect database operations.
-    Mutex           mLock;
+    areg::Mutex           mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

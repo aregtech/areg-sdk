@@ -54,7 +54,7 @@ namespace areg
     {
         if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
         {
-            Lock lock(mLock);
+            areg::Lock lock(mLock);
             ASSERT(mHandle != nullptr);
             ++mSequence;
             mActive = areg::WatchdogManager::startTimer(*this);
@@ -65,7 +65,7 @@ namespace areg
     {
         if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
         {
-            Lock lock(mLock);
+            areg::Lock lock(mLock);
             ASSERT(mHandle != nullptr);
             mActive = false;
             areg::WatchdogManager::stopTimer(*this);

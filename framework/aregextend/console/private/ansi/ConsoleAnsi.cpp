@@ -101,31 +101,31 @@ void Console::_osRelease()
 
 void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
 }
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
 }
 
 void Console::_osOutputText(const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("%s", text.getString());
 }
 
 void Console::_osOutputText(const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("%s", text.data());
 }
 
 Console::Coord Console::_osGetCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     constexpr int32_t _EOY{ static_cast<int32_t>(';') };
     constexpr int32_t _EOX{ static_cast<int32_t>('R') };
     constexpr int32_t _ZERO{ static_cast<int32_t>('0') };
@@ -152,7 +152,7 @@ Console::Coord Console::_osGetCursorPosition() const
 
 void Console::_osSetCursorCurPosition(Console::Coord pos) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
@@ -183,20 +183,20 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
 
 void Console::_osRefreshScreen() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     ::fflush(stdout);
 }
 
 void Console::_osClearLine() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("%s", CMD_CLEAR_LINE.data());
     ::fflush(stdout);
 }
 
 void Console::_osClearScreen() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
 }
@@ -208,25 +208,25 @@ bool Console::_osReadInputList(const char* format, va_list varList) const
 
 void Console::_osSaveCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("\x1B[s");
 }
 
 void Console::_osRestoreCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("\x1B[u");
 }
 
 void Console::_osMoveCursorOneLineUp() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("\x1B[1F");
 }
 
 void Console::_osMoveCursorOneLineDown() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     printf("\x1B[1E");
 }
 

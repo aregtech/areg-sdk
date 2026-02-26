@@ -46,14 +46,14 @@ bool ServerReceiveThread::runDispatcher()
     if ( mConnection.serverListen( areg::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         areg::SyncObject* syncObjects[2] = {&mEventExit, &mEventQueue};
-        MultiLock multiLock(syncObjects, 2, false);
+        areg::MultiLock multiLock(syncObjects, 2, false);
 
         areg::RemoteMessage msgReceived;
         uint32_t retryCount = 0;
         do 
         {
             whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
-            if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
+            if ( whichEvent == areg::MultiLock::LOCK_INDEX_TIMEOUT )
             {
                 whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
                 areg::SocketAddress addrAccepted;

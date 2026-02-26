@@ -48,7 +48,7 @@ void ServerConnection::rejectConnection(areg::SocketAccepted & clientConnection)
 
 void ServerConnection::closeAllConnections()
 {
-    Lock lock( mLock );
+    areg::Lock lock( mLock );
     areg::RemoteMessage msgByeClient;
     if ( msgByeClient.initMessage(areg::getMessageNotifyClientConnection().rbHeader ) != nullptr )
     {

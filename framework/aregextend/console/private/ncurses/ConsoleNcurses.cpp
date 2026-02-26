@@ -68,7 +68,7 @@ void Console::_osRelease()
 
 void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (mContext != 0)
     {
@@ -80,7 +80,7 @@ void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (mContext != 0)
     {
@@ -92,7 +92,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
 
 void Console::_osOutputText(const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (mContext != 0)
     {
@@ -103,7 +103,7 @@ void Console::_osOutputText(const areg::String& text) const
 
 void Console::_osOutputText(const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (mContext != 0)
     {
@@ -114,7 +114,7 @@ void Console::_osOutputText(const std::string_view& text) const
 
 Console::Coord Console::_osGetCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     Console::Coord pos{ -1, -1 };
     if (mContext != 0)
@@ -131,7 +131,7 @@ Console::Coord Console::_osGetCursorPosition() const
 
 void Console::_osSetCursorCurPosition(Console::Coord pos) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (mContext != 0)
     {
@@ -163,7 +163,7 @@ void Console::_osRefreshScreen() const
 
 void Console::_osClearLine() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (mContext != 0)
     {
@@ -173,7 +173,7 @@ void Console::_osClearLine() const
 
 void Console::_osClearScreen() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (mContext != 0)
     {
@@ -188,14 +188,14 @@ bool Console::_osReadInputList(const char* format, va_list varList) const
 
 void Console::_osSaveCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     _cursorPos = _osGetCursorPosition();
     _isSaved = true;
 }
 
 void Console::_osRestoreCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     if (_isSaved)
     {
@@ -211,14 +211,14 @@ void Console::_osRestoreCursorPosition() const
 
 void Console::_osMoveCursorOneLineUp() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     Console::Coord pos = _osGetCursorPosition();
     mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
 }
 
 void Console::_osMoveCursorOneLineDown() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     Console::Coord pos = _osGetCursorPosition();
     mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
 }

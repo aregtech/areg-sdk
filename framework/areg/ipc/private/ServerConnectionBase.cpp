@@ -53,19 +53,19 @@ namespace areg
 
     bool ServerConnectionBase::createSocket(const areg::String & hostName, uint16_t portNr)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mServerSocket.createSocket(hostName, portNr);
     }
 
     bool ServerConnectionBase::createSocket()
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         return mServerSocket.createSocket();
     }
 
     void ServerConnectionBase::closeSocket()
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         mMasterList.clear();
         mCookieToSocket.clear();
         mSocketToCookie.clear();
@@ -87,7 +87,7 @@ namespace areg
 
     bool ServerConnectionBase::acceptConnection(areg::SocketAccepted & clientConnection)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         bool result = false;
 
         if ( mServerSocket.isValid() && clientConnection.isValid( ) )
@@ -122,7 +122,7 @@ namespace areg
 
     void ServerConnectionBase::closeConnection(areg::SocketAccepted & clientConnection)
     {
-        Lock lock( mLock );
+        areg::Lock lock( mLock );
 
         SOCKETHANDLE hSocket{ clientConnection.getHandle() };
         MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
@@ -138,7 +138,7 @@ namespace areg
 
     void ServerConnectionBase::closeConnection( const ITEM_ID & cookie )
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
 
         MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
         if (mCookieToSocket.isValidPosition(posCookie))

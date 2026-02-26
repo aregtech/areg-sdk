@@ -17,7 +17,7 @@
 void areg::Application::_osSetupHandlers()
 {
     areg::Application & theApp = areg::Application::getInstance();
-    Lock lock(theApp.mLock);
+    areg::Lock lock(theApp.mLock);
 
     if (theApp.mSetup == false)
     {
@@ -28,7 +28,7 @@ void areg::Application::_osSetupHandlers()
 void areg::Application::_osReleaseHandlers()
 {
     areg::Application& theApp = areg::Application::getInstance();
-    Lock lock(theApp.mLock);
+    areg::Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
     {

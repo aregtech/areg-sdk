@@ -308,7 +308,7 @@ void ServicingComponent::_runImageThread()
     std::chrono::nanoseconds nsPerBlock{ mOptions.nsPerBlock() };
     uint32_t blocks = mOptions.blocksCount();
 
-    Wait wait;
+    areg::Wait wait;
 
     while (mQuitThread == false)
     {
@@ -347,12 +347,12 @@ void ServicingComponent::_runImageThread()
     }
 }
 
-void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult)
+void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, areg::Wait::WaitResolution waitResult)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mDataRate += genData;
     mItemRate += genBlocks;
-    if (waitResult >= Wait::WaitResolution::Microsecond)
+    if (waitResult >= areg::Wait::WaitResolution::Microsecond)
     {
         mDidSleep += 1;
     }
