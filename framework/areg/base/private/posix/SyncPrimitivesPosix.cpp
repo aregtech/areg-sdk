@@ -132,23 +132,23 @@ void areg::SyncEvent::_osPulseEvent()
 
 void areg::Semaphore::_osCreateSemaphore( )
 {
-    mSyncObject = DEBUG_NEW WaitableSemaphorePosix(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
+    mSyncObject = DEBUG_NEW areg::os::WaitableSemaphorePosix(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
 }
 
 void areg::Semaphore::_osReleaseSemaphore()
 {
-    static_cast<WaitableSemaphorePosix *>(mSyncObject)->releaseSemaphore( );
+    static_cast<areg::os::WaitableSemaphorePosix *>(mSyncObject)->releaseSemaphore( );
 }
 
 bool areg::Semaphore::_osLock( uint32_t timeout )
 {
-    WaitableSemaphorePosix * syncSemaphore{ static_cast<WaitableSemaphorePosix *>(mSyncObject) };
+    areg::os::WaitableSemaphorePosix * syncSemaphore{ static_cast<areg::os::WaitableSemaphorePosix *>(mSyncObject) };
     return (static_cast<int32_t>(areg::os::SyncSignal::First)  == SyncLockAndWaitPosix::waitForSingleObject( *syncSemaphore, timeout ));
 }
 
 bool areg::Semaphore::_osUnlock()
 {
-    return static_cast<WaitableSemaphorePosix *>(mSyncObject)->releaseSemaphore( );
+    return static_cast<areg::os::WaitableSemaphorePosix *>(mSyncObject)->releaseSemaphore( );
 }
 
 
