@@ -108,7 +108,7 @@ namespace areg
          * \param   roleName    The role name of holder component
          * \param   threadName  Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
          **/
-        StubAddress( const ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
+        StubAddress( const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
 
         /**
          * \brief   Initialize Stub address from given service data, role name and holder thread.

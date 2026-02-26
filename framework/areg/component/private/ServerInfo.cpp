@@ -138,7 +138,7 @@ void ServerInfo::setConnectionStatus(areg::ServiceConnectionState newConnection)
 {
     if ( mServerAddress.getSource() != areg::SOURCE_UNKNOWN )
         mServerState = newConnection;
-    else if ( static_cast<const ServiceItem &>(mServerAddress).isValid() )
+    else if ( static_cast<const areg::ServiceItem &>(mServerAddress).isValid() )
         mServerState = areg::ServiceConnectionState::Pending;
     else
         mServerState = areg::ServiceConnectionState::Unknown;

@@ -93,7 +93,7 @@ namespace areg
         mMagicNum = StubAddress::_magicNumber(*this);
     }
 
-    StubAddress::StubAddress(const ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString() */)
+    StubAddress::StubAddress(const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString() */)
         : ServiceAddress( service, roleName )
         , mThreadName   ( )
         , mChannel      ( )
@@ -175,7 +175,7 @@ namespace areg
     {
         if (isValid() && proxyAddress.isValid())
         {
-            return (mRoleName == proxyAddress.getRoleName() && isServiceCompatible(static_cast<const ServiceItem&>(proxyAddress)));
+            return (mRoleName == proxyAddress.getRoleName() && isServiceCompatible(static_cast<const areg::ServiceItem&>(proxyAddress)));
         }
         else
         {

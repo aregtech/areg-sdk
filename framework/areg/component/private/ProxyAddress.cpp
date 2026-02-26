@@ -80,7 +80,7 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 //////////////////////////////////////////////////////////////////////////
 
 ProxyAddress::ProxyAddress()
-    : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME )
+    : ServiceAddress( areg::ServiceItem(), INVALID_PROXY_NAME )
     , mThreadName   ( areg::ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
@@ -102,7 +102,7 @@ ProxyAddress::ProxyAddress( const areg::String & serviceName
         mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress( const ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString()*/ )
+ProxyAddress::ProxyAddress( const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString()*/ )
     : ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )

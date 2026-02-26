@@ -38,7 +38,7 @@ class ProxyAddress;
  *          Since Service are not stand-alone module, but part of components, besides of
  *          service information it contains role name, which is given to component.
  **/
-class AREG_API ServiceAddress : public    ServiceItem
+class AREG_API ServiceAddress : public    areg::ServiceItem
 {
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -85,7 +85,7 @@ public:
      * \param   serviceItem     The service item object, which contains name, version and type information.
      * \param   roleName        The role name of owner component.
      **/
-    ServiceAddress( const ServiceItem  & serviceItem, const areg::String & roleName );
+    ServiceAddress( const areg::ServiceItem  & serviceItem, const areg::String & roleName );
 
     /**
      * \brief   Creates service address, which is contained in stub address object.
@@ -193,7 +193,7 @@ public:
     /**
      * \brief   Returns service item information, which contains service name, version and type.
      **/
-    inline const ServiceItem & getService() const;
+    inline const areg::ServiceItem & getService() const;
 
     /**
      * \brief   Creates Service address path as a string.
@@ -269,7 +269,7 @@ inline ServiceAddress & ServiceAddress::operator = ( const ServiceAddress & sour
 {
     if ( static_cast<const ServiceAddress *>(this) != &source )
     {
-        static_cast<ServiceItem &>(*this) = static_cast<const ServiceItem &>(source);
+        static_cast<areg::ServiceItem &>(*this) = static_cast<const areg::ServiceItem &>(source);
         mRoleName   = source.mRoleName;
         mMagicNum   = source.mMagicNum;
     }
@@ -281,7 +281,7 @@ inline ServiceAddress & ServiceAddress::operator = ( ServiceAddress && source ) 
 {
     if ( static_cast<ServiceAddress *>(this) != &source )
     {
-        static_cast<ServiceItem &>(*this) = static_cast<ServiceItem &&>(source);
+        static_cast<areg::ServiceItem &>(*this) = static_cast<areg::ServiceItem &&>(source);
         mRoleName   = std::move(source.mRoleName);
         mMagicNum   = source.mMagicNum;
     }
@@ -316,14 +316,14 @@ inline void ServiceAddress::setRoleName(const areg::String & roleName)
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-inline const ServiceItem & ServiceAddress::getService() const
+inline const areg::ServiceItem & ServiceAddress::getService() const
 {
-    return static_cast<const ServiceItem &>(*this);
+    return static_cast<const areg::ServiceItem &>(*this);
 }
 
 inline bool ServiceAddress::isValidated() const
 {
-    return ServiceItem::isValidated() && (mRoleName.isEmpty() == false);
+    return areg::ServiceItem::isValidated() && (mRoleName.isEmpty() == false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -332,7 +332,7 @@ inline bool ServiceAddress::isValidated() const
 
 inline const areg::InStream & operator >> ( const areg::InStream & stream, ServiceAddress & input )
 {
-    stream >> static_cast<ServiceItem &>(input); 
+    stream >> static_cast<areg::ServiceItem &>(input); 
     stream >> input.mRoleName; 
     input.mMagicNum = ServiceAddress::_magicNumber(input);
 
@@ -341,7 +341,7 @@ inline const areg::InStream & operator >> ( const areg::InStream & stream, Servi
 
 inline areg::OutStream & operator << ( areg::OutStream & stream, const ServiceAddress & output)
 {
-    stream << static_cast<const ServiceItem &>(output);
+    stream << static_cast<const areg::ServiceItem &>(output);
     stream << output.mRoleName;
     return stream;
 }

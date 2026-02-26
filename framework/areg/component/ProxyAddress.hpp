@@ -107,7 +107,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
+    ProxyAddress( const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.

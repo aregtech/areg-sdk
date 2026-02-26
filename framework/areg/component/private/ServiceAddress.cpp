@@ -37,7 +37,7 @@ ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, cons
 }
 
 ServiceAddress::ServiceAddress()
-    : ServiceItem   ( )
+    : areg::ServiceItem   ( )
     , mRoleName     ( areg::String::getEmptyString(), 0 )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -47,7 +47,7 @@ ServiceAddress::ServiceAddress( const areg::String & serviceName
                               , const areg::Version & serviceVersion
                               , areg::ServiceType serviceType
                               , const areg::String & roleName )
-    : ServiceItem   ( serviceName, serviceVersion, serviceType )
+    : areg::ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -55,8 +55,8 @@ ServiceAddress::ServiceAddress( const areg::String & serviceName
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const areg::String & roleName )
-    : ServiceItem   ( serviceItem )
+ServiceAddress::ServiceAddress( const areg::ServiceItem & serviceItem, const areg::String & roleName )
+    : areg::ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -65,7 +65,7 @@ ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const areg::Str
 }
 
 ServiceAddress::ServiceAddress( const areg::StubAddress & addrStub )
-    : ServiceItem   ( static_cast<const ServiceItem &>(addrStub) )
+    : areg::ServiceItem   ( static_cast<const areg::ServiceItem &>(addrStub) )
     , mRoleName     ( addrStub.getRoleName() )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -73,7 +73,7 @@ ServiceAddress::ServiceAddress( const areg::StubAddress & addrStub )
 }
 
 ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
-    : ServiceItem   ( static_cast<const ServiceItem &>(addrProxy) )
+    : areg::ServiceItem   ( static_cast<const areg::ServiceItem &>(addrProxy) )
     , mRoleName     ( addrProxy.getRoleName() )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -81,7 +81,7 @@ ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
 }
 
 ServiceAddress::ServiceAddress( const areg::InStream & stream )
-    : ServiceItem   ( stream )
+    : areg::ServiceItem   ( stream )
     , mRoleName     ( stream )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
@@ -89,14 +89,14 @@ ServiceAddress::ServiceAddress( const areg::InStream & stream )
 }
 
 ServiceAddress::ServiceAddress( const ServiceAddress & source )
-    : ServiceItem   ( static_cast<const ServiceItem &>(source) )
+    : areg::ServiceItem   ( static_cast<const areg::ServiceItem &>(source) )
     , mRoleName     ( source.mRoleName )
     , mMagicNum     ( source.mMagicNum )
 {
 }
 
 ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
-    : ServiceItem   ( static_cast<ServiceItem &&>(source) )
+    : areg::ServiceItem   ( static_cast<areg::ServiceItem &&>(source) )
     , mRoleName     ( std::move(source.mRoleName) )
     , mMagicNum     ( source.mMagicNum )
 {
@@ -104,7 +104,7 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 
 areg::String ServiceAddress::convToString() const
 {
-    areg::String result( ServiceItem::convToString() );
+    areg::String result( areg::ServiceItem::convToString() );
     result.append(areg::COMPONENT_PATH_SEPARATOR).append(mRoleName);
 
     return result;
@@ -113,7 +113,7 @@ areg::String ServiceAddress::convToString() const
 void ServiceAddress::convFromString(const char * pathService, const char** out_nextPart /*= nullptr */)
 {
     const char* strSource   = pathService;
-    ServiceItem::convFromString(pathService, &strSource);
+    areg::ServiceItem::convFromString(pathService, &strSource);
     mRoleName   = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
     mMagicNum   = ServiceAddress::_magicNumber(*this);
 
