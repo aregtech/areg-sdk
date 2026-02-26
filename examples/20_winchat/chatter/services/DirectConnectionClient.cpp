@@ -16,7 +16,7 @@
      ASSERT(mParticipantsHandler != nullptr);
 }
 
-bool DirectConnectionClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool DirectConnectionClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     bool result = DirectConnectionClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )

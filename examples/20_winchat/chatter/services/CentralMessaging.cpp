@@ -28,7 +28,7 @@ CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThrea
 {
 }
 
-bool CentralMessaging::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool CentralMessaging::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_CentralMessaging_ServiceConnected );
     bool result = CentralMessagerClientBase::serviceConnected( status, proxy );

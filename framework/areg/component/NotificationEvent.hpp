@@ -37,7 +37,7 @@ namespace areg { class NotificationEvent; }
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyBase;
+namespace areg { class ProxyBase; }
 
 
 namespace areg
@@ -84,7 +84,7 @@ namespace areg
          *                      If request fails, also request ID.
          * \param	seqNr	    The call sequence number.
          **/
-        NotificationEventData( const ProxyBase & proxy, ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
+        NotificationEventData( const areg::ProxyBase & proxy, ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
 
         /**
          * \brief   Copies data from given source.
@@ -122,11 +122,11 @@ namespace areg
         /**
          * \brief   Returns Proxy pointer if any was set or returns null.
          **/
-        inline const ProxyBase * getProxy() const;
+        inline const areg::ProxyBase * getProxy() const;
         /**
          * \brief   Sets the proxy object
          **/
-        inline void setProxy(const ProxyBase & proxy);
+        inline void setProxy(const areg::ProxyBase & proxy);
 
         /**
          * \brief   Returns the result of notification type.
@@ -163,7 +163,7 @@ namespace areg
         /**
          * \brief   Pointer of proxy, which triggered notification event.
          **/
-        const ProxyBase *     mProxy;
+        const areg::ProxyBase *     mProxy;
         /**
          * \brief   Notification type (or notification result)
          **/
@@ -355,12 +355,12 @@ namespace areg
     // class NotificationEventData inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const ProxyBase* NotificationEventData::getProxy() const
+    inline const areg::ProxyBase* NotificationEventData::getProxy() const
     {
         return mProxy;
     }
 
-    inline void NotificationEventData::setProxy( const ProxyBase & proxy )
+    inline void NotificationEventData::setProxy( const areg::ProxyBase & proxy )
     {
         mProxy = &proxy;
     }

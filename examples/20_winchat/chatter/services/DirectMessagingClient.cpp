@@ -42,7 +42,7 @@ void DirectMessagingClient::shutdownChat()
     }
 }
 
-bool DirectMessagingClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool DirectMessagingClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( chatter_DirectMessagingClient_ServiceConnected );
 

@@ -35,7 +35,7 @@ public:
 protected:
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(areg::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool serviceConnected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
     {
         if (HelloServiceClientBase::serviceConnected(status, proxy) && areg::isServiceConnected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
@@ -43,7 +43,7 @@ protected:
             Application::signalAppQuit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
-        return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
+        return (static_cast<const areg::ProxyBase *>(getProxy()) == static_cast<const areg::ProxyBase *>(&proxy));
     }
 
     //!< The response from Service Provider

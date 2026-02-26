@@ -79,7 +79,7 @@ void TrafficLightClient::broadcastEastWest(TrafficController::VehicleTrafficLigh
     printf("\tVehicle Light: %12s    |\tPedestrian Light: %s\n", fsm::getName(LightVehicle), fsm::getName(LightPedestrian));
 }
 
-bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 

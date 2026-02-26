@@ -74,7 +74,7 @@ void ServiceClient::broadcastServiceStopping()
     Application::signalAppQuit();
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_serviceConnected);
     bool result = LargeDataClientBase::serviceConnected(status, proxy);

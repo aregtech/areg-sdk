@@ -17,7 +17,7 @@ ClientComponent::ClientComponent(const areg::ComponentEntry & entry, areg::Compo
 {
 }
 
-bool ClientComponent::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool ClientComponent::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     bool result{ false };
     if ( HelloServiceClientBase::serviceConnected(status, proxy) )

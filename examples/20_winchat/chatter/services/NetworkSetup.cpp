@@ -45,7 +45,7 @@ void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cook
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool NetworkSetup::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool NetworkSetup::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 

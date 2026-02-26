@@ -36,7 +36,7 @@ Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & ow
     pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
 }
 
-bool Subscriber::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
     PubSubMixClientBase::serviceConnected( status, proxy );

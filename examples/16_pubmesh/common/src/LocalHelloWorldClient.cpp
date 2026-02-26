@@ -30,7 +30,7 @@ LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & depe
 {
 }
 
-bool LocalHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool LocalHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 

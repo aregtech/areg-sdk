@@ -37,7 +37,7 @@ areg::WorkerThreadConsumer * PatientClient::workerThreadConsumer(const areg::Str
     }
 }
 
-bool PatientClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool PatientClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     bool result = PatientInformationClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )

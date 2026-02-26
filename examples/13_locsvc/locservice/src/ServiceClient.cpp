@@ -26,7 +26,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 {
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_13_locservice_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );

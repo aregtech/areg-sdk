@@ -74,7 +74,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
     /**
      * \brief   Returns pointer to Worker Thread Consumer object identified

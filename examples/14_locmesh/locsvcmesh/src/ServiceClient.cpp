@@ -37,7 +37,7 @@ ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & ow
     LOG_DBG("Proxy: [ %s ]", areg::ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );

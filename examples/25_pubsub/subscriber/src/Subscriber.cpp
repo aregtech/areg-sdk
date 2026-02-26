@@ -51,7 +51,7 @@ Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThrea
 {
 }
 
-bool Subscriber::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );

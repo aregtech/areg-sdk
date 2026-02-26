@@ -21,7 +21,7 @@ SubscriberSecond::SubscriberSecond( const areg::DependencyEntry & entry, areg::C
 {
 }
 
-bool SubscriberSecond::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool SubscriberSecond::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
     LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));

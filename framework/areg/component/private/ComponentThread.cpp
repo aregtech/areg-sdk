@@ -191,11 +191,11 @@ namespace areg
             component->terminateSelf();
         }
 
-        areg::ArrayList<std::shared_ptr<ProxyBase>> proxyList;
-        ProxyBase::findThreadProxies(self(), proxyList);
+        areg::ArrayList<std::shared_ptr<areg::ProxyBase>> proxyList;
+        areg::ProxyBase::findThreadProxies(self(), proxyList);
         for (uint32_t i = 0; i < proxyList.getSize(); ++i)
         {
-            std::shared_ptr<ProxyBase> proxy = proxyList[i];
+            std::shared_ptr<areg::ProxyBase> proxy = proxyList[i];
             ASSERT(proxy != nullptr);
             proxy->terminateSelf();
         }
@@ -207,11 +207,11 @@ namespace areg
 
     inline void ComponentThread::_shutdownProxies()
     {
-        areg::ArrayList<std::shared_ptr<ProxyBase>> proxyList;
-        ProxyBase::findThreadProxies(self(), proxyList);
+        areg::ArrayList<std::shared_ptr<areg::ProxyBase>> proxyList;
+        areg::ProxyBase::findThreadProxies(self(), proxyList);
         for (uint32_t i = 0; i < proxyList.getSize(); ++i)
         {
-            std::shared_ptr<ProxyBase> proxy = proxyList[i];
+            std::shared_ptr<areg::ProxyBase> proxy = proxyList[i];
             ASSERT(proxy != nullptr);
             proxy->stopProxy();
         }

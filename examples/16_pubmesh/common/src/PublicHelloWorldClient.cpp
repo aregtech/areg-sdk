@@ -37,7 +37,7 @@ PublicHelloWorldClient::PublicHelloWorldClient( const areg::DependencyEntry & de
 {
 }
 
-bool PublicHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool PublicHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_serviceConnected);
     bool result{ true };

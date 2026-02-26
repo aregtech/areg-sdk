@@ -26,7 +26,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // NotificationEventData class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    areg::NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
+    areg::NotificationEventData::NotificationEventData( const areg::ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
         : mProxy        (&proxy)
         , mNotifyType   (notifyType)
         , mNotifyId     (notifyId)
@@ -117,7 +117,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     void NotificationEvent::setTargetThread()
     {
-        const ProxyBase * proxy = mData.getProxy();
+        const areg::ProxyBase * proxy = mData.getProxy();
         areg::DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : areg::DispatcherThread::getCurrentDispatcherThread();
         ASSERT(dispThread.isValid());
         registerForThread(&dispThread);

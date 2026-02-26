@@ -29,7 +29,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::Component
 {
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_22_pubclient_ServiceClient_serviceConnected);
     bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);

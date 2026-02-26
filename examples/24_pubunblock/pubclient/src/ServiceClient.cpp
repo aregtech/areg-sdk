@@ -39,7 +39,7 @@ ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::Componen
 {
 }
 
-bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy )
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceClient_serviceConnected );
     bool result = HelloUnblockClientBase::serviceConnected( status, proxy );

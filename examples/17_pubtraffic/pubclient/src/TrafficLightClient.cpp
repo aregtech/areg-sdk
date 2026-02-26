@@ -20,7 +20,7 @@ TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg:
 {
 }
 
-bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
 
