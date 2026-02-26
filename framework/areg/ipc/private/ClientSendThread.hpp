@@ -37,7 +37,7 @@ class ClientConnection;
  * \brief   The message sender thread. All messages to be sent to remote routing service
  *          are queued in message sender thread. 
  **/
-class ClientSendThread  : public    DispatcherThread
+class ClientSendThread  : public    areg::DispatcherThread
                         , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////

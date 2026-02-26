@@ -62,10 +62,10 @@ bool TimerManager::isTimerManagerStarted()
 
 bool TimerManager::startTimer( areg::Timer &timer )
 {
-    return TimerManager::startTimer(timer, DispatcherThread::getCurrentDispatcherThread());
+    return TimerManager::startTimer(timer, areg::DispatcherThread::getCurrentDispatcherThread());
 }
 
-bool TimerManager::startTimer(areg::Timer &timer, const DispatcherThread & whichThread)
+bool TimerManager::startTimer(areg::Timer &timer, const areg::DispatcherThread & whichThread)
 {
     LOG_SCOPE(areg_component_private_TimerManager_startTimer);
 
@@ -79,7 +79,7 @@ bool TimerManager::startTimer(areg::Timer &timer, const DispatcherThread & which
             LOG_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
             result = TimerManagerEvent::sendEvent( TimerManagerEventData(&timer)
                                                  , static_cast<TimerManagerEventConsumer &>(timerManager)
-                                                 , static_cast<DispatcherThread &>(timerManager) );
+                                                 , static_cast<areg::DispatcherThread &>(timerManager) );
         }
         else
         {
@@ -119,7 +119,7 @@ TimerManager::~TimerManager()
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool TimerManager::_registerTimer(areg::Timer &timer, const DispatcherThread & whichThread)
+bool TimerManager::_registerTimer(areg::Timer &timer, const areg::DispatcherThread & whichThread)
 {
     LOG_SCOPE(areg_component_private_TimerManager__registerTimer);
 
@@ -147,7 +147,7 @@ bool TimerManager::_registerTimer(areg::Timer &timer, const DispatcherThread & w
 bool TimerManager::_registerTimer(areg::Timer &timer, id_type whichThreadId)
 {
     areg::Thread * thread = areg::Thread::findThreadById(whichThreadId);
-    DispatcherThread * disp = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    areg::DispatcherThread * disp = thread != nullptr ? AREG_RUNTIME_CAST(thread, areg::DispatcherThread) : nullptr;
     return (disp != nullptr ? _registerTimer(timer, *disp) : false);
 }
 

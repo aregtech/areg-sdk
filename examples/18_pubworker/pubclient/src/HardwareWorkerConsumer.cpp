@@ -24,14 +24,14 @@ inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
 
 void HardwareWorkerConsumer::registerEventConsumers(areg::WorkerThread & workThread, areg::ComponentThread & /* masterThread */ )
 {
-    PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
+    PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is initialized .....\n\n");
 }
 
 void HardwareWorkerConsumer::unregisterEventConsumers(areg::WorkerThread & workThread)
 {
-    PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
+    PatientInfoEvent::removeListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<areg::DispatcherThread &>(workThread) );
 
     printf("Example Hardware is uninitialized .....\n\n");
 }

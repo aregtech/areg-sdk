@@ -36,7 +36,7 @@
  * Dependencies
  ************************************************************************/
 class TrafficLightActionHandler;
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM class declaration 
@@ -207,7 +207,7 @@ public:
      * \brief   Initialize State Machine. Call before calling any trigger.
      * \param   ownerThread The pointer of master thread to process internal events and timers.
      **/
-    void initFSM( DispatcherThread * ownerThread = nullptr );
+    void initFSM( areg::DispatcherThread * ownerThread = nullptr );
 
     /**
      * \brief   Release State Machine. Call when complete working with FSM.
@@ -418,7 +418,7 @@ private:
     /**
      * \brief   The master thread where event and timers should be processed. If nullptr, the current dispatcher value will be used.
      **/
-    DispatcherThread *          mMasterThread;
+    areg::DispatcherThread *          mMasterThread;
     /**
      * \brief   The flag, indicating whether State Machine is currently processing trigger or not.
      **/

@@ -37,7 +37,7 @@ class ClientConnection;
  *          All received messages are passed to receiver thread for further dispatching
  *          and distribution between components and services.
  **/
-class ClientReceiveThread    : public    DispatcherThread
+class ClientReceiveThread    : public    areg::DispatcherThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

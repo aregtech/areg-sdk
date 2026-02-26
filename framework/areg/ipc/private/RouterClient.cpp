@@ -51,10 +51,10 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
                                     , areg::MessageSource::SourceClient
                                     , connectionConsumer
                                     , static_cast<RemoteMessageHandler &>(self())
-                                    , static_cast<DispatcherThread &>(self())
+                                    , static_cast<areg::DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
     , RegistrationProvider     ( )
-    , DispatcherThread              (areg::String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
+    , areg::DispatcherThread              (areg::String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , RemoteEventConsumer         ( )
 
     , mRegisterConsumer (registerConsumer)
@@ -520,12 +520,12 @@ void RouterClient::readyForEvents(bool isReady)
     if (isReady)
     {
         registerForServiceClientCommands();
-        DispatcherThread::readyForEvents(true);
+        areg::DispatcherThread::readyForEvents(true);
         setConnectionState(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
     else
     {
-        DispatcherThread::readyForEvents(false);
+        areg::DispatcherThread::readyForEvents(false);
         setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
         unregisterForServiceClientCommands();
     }

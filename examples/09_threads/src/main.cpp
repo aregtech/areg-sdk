@@ -72,12 +72,12 @@ DEF_LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
 
-class HelloDispatcher   : public DispatcherThread
+class HelloDispatcher   : public areg::DispatcherThread
                         , private areg::TimerConsumer
 {
 public:
     HelloDispatcher() 
-        : DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+        : areg::DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
         , areg::TimerConsumer()
         , mTimer(*this, "aTimer")
     {
@@ -92,7 +92,7 @@ protected:
     void readyForEvents(bool isReady) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
-        DispatcherThread::readyForEvents(isReady);
+        areg::DispatcherThread::readyForEvents(isReady);
         if (isReady)
         {
             Lock lock(gSync);

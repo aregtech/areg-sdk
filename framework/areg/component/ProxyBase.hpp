@@ -47,7 +47,7 @@ namespace areg { class ServiceResponseEvent; }
 namespace areg { class RemoteResponseEvent; }
 namespace areg { class ServiceRequestEvent; }
 class NotificationEvent;
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 class EventDataStream;
 class ProxyListener;
 class ProxyEvent;
@@ -63,7 +63,7 @@ namespace areg { class Version; }
  *          ownerThread The instance of thread to dispatch messages.
  *                      If nullptr, uses current component thread.
  **/
-typedef ProxyBase* (*FuncCreateProxy)( const areg::String & /*roleName*/, DispatcherThread * /*ownerThread*/ );
+typedef ProxyBase* (*FuncCreateProxy)( const areg::String & /*roleName*/, areg::DispatcherThread * /*ownerThread*/ );
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class declaration
@@ -461,7 +461,7 @@ public:
                                                        , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
-                                                       , DispatcherThread & ownerThread );
+                                                       , areg::DispatcherThread & ownerThread );
 
     /**
      * \brief   Lookup in registries for instantiated proxy object and
@@ -479,7 +479,7 @@ public:
      * \param[out]  threadProxyList On output, which contains list of proxies created in specified thread.
      * \return  Returns number of proxies added to the list.
      **/
-    static int32_t findThreadProxies( DispatcherThread & ownerThread, areg::ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
+    static int32_t findThreadProxies( areg::DispatcherThread & ownerThread, areg::ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList );
 
     /**
      * \brief   Creates the request failure event to send to remote proxy. This may happen when either the request of client
@@ -515,7 +515,7 @@ protected:
      * \param   ownerThread     The instance of Proxy owner thread to dispatch messages.
      *                          If nullptr, the messages are dispatched in current thread.
      **/
-    ProxyBase( const areg::String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
+    ProxyBase( const areg::String & roleName, const areg::InterfaceData & serviceIfData, areg::DispatcherThread * ownerThread = nullptr );
 
 public:
     /**
@@ -572,7 +572,7 @@ public:
     /**
      * \brief   Returns the Proxy dispatcher thread.
      **/
-    inline DispatcherThread & getProxyDispatcherThread() const;
+    inline areg::DispatcherThread & getProxyDispatcherThread() const;
 
 #ifdef DEBUG
 
@@ -1030,7 +1030,7 @@ protected:
     /**
      * \brief   The Proxy dispatcher thread object
      **/
-    DispatcherThread &      mDispatcherThread;
+    areg::DispatcherThread &      mDispatcherThread;
 
 private:
 
@@ -1202,7 +1202,7 @@ inline void ProxyBase::setState( uint32_t msgId, areg::DataState newState )
     mProxyData.setDataState( msgId, newState );
 }
 
-inline DispatcherThread & ProxyBase::getProxyDispatcherThread() const
+inline areg::DispatcherThread & ProxyBase::getProxyDispatcherThread() const
 {
     return mDispatcherThread;
 }

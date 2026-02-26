@@ -265,7 +265,7 @@ LRESULT DistributedDialog::OnCmdServiceNetwork( WPARAM wParam, LPARAM lParam )
     if ( (wParam == 1) && (lParam != 0) )
     {
         LOG_DBG("Network service is available");
-        DispatcherThread * ownerThread = reinterpret_cast<DispatcherThread *>(lParam);
+        areg::DispatcherThread * ownerThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
         mPageSetup.OnServiceNetwork( true, ownerThread );
         mPageConnections.OnServiceNetwork( true, ownerThread );
         mPageMessaging.OnServiceNetwork( true, ownerThread );
@@ -286,7 +286,7 @@ LRESULT DistributedDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM lParam 
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceConnection);
     bool isConnected = wParam != 0;
-    DispatcherThread * ownerThread = reinterpret_cast<DispatcherThread *>(lParam);
+    areg::DispatcherThread * ownerThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isConnected )
     {
         LOG_DBG("Connection service is available");
@@ -313,7 +313,7 @@ LRESULT DistributedDialog::OnCmdClientConnection( WPARAM wParam, LPARAM lParam )
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientConnection);
 
     bool isConnected = wParam != 0;
-    DispatcherThread *dispThread = reinterpret_cast<DispatcherThread *>(lParam);
+    areg::DispatcherThread *dispThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isConnected )
     {
         LOG_DBG("Client Connections service is available");
@@ -341,7 +341,7 @@ LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam
     areg::String nickName = GetNickName();
 
     bool isRegistered = wParam != 0;
-    DispatcherThread * dispThread = reinterpret_cast<DispatcherThread *>(lParam);
+    areg::DispatcherThread * dispThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isRegistered )
     {
         LOG_DBG("Registered [ %s ]", nickName.getString());

@@ -53,7 +53,7 @@ void ProxyEvent::deliverEvent()
     if ( mTargetThread == nullptr )
     {
         areg::Thread * thread = areg::Thread::findThreadByName(mTargetProxyAddress.getThread());
-        registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
+        registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, areg::DispatcherThread) : nullptr );
     }
 
     if ( mTargetThread != nullptr )

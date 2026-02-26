@@ -24,7 +24,7 @@
 DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
-    : DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    : areg::DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
@@ -37,13 +37,13 @@ void ServerSendThread::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        DispatcherThread::readyForEvents( true );
+        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+        areg::DispatcherThread::readyForEvents( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        areg::DispatcherThread::readyForEvents( false );
+        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
         mConnection.closeAllConnections( );
         mConnection.disableSend( );
     }

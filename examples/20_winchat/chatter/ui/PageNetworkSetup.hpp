@@ -6,7 +6,7 @@
 
 class Component;
 class NetworkSetup;
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 class ConnectionHandler;
 
 // PageNetworkSetup dialog
@@ -25,10 +25,10 @@ public:
 public:
 
     void OnServiceStartup( bool isStarted, Component * owner );
-    void OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread );
-    void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
-    void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
-    void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
+    void OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread );
+    void OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread );
     void OnAddConnection( ConnectionManager::ConnectionRecord & data );
     void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
     void OnUpdateConnection();

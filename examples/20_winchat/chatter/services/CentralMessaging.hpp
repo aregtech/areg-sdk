@@ -7,7 +7,7 @@
 #include "areg/base/GEGlobal.h"
 #include "examples/20_winchat/services/CentralMessagerClientBase.hpp"
 
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 class ConnectionHandler;
 
 class CentralMessaging    : public CentralMessagerClientBase
@@ -16,7 +16,7 @@ class CentralMessaging    : public CentralMessagerClientBase
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
+    CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
     virtual ~CentralMessaging() = default;
 
 public:

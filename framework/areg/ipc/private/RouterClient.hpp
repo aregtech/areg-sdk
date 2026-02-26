@@ -40,7 +40,7 @@ class RegistrationConsumer;
  **/
 class RouterClient  : public    ServiceClientConnectionBase
                     , public    RegistrationProvider
-                    , protected DispatcherThread
+                    , protected areg::DispatcherThread
                     , private   RemoteMessageHandler
                     , private   RemoteEventConsumer
 {

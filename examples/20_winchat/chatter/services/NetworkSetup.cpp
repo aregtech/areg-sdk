@@ -41,7 +41,7 @@ void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cook
 
     mConnectionHandler.SetRegistered( false );
     bool isConnected = result == ConnectionManager::ConnectionResult::Accepted;
-    DispatcherThread *dispThread = getDispatcherThread();
+    areg::DispatcherThread *dispThread = getDispatcherThread();
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 

@@ -18,7 +18,7 @@ DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastSendMessage );
 DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastKeyTyping );
 DEF_LOG_SCOPE( chatter_CentralMessaging_broadcastBroadcastMessage );
 
-CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
+CentralMessaging::CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
     : CentralMessagerClientBase   ( roleName, ownerThread )
 
     , mConnectionHandler( handlerConnection )

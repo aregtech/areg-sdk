@@ -19,10 +19,10 @@
 //////////////////////////////////////////////////////////////////////////
 // Implement Runtime
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(TimerManagerBase, DispatcherThread)
+AREG_IMPLEMENT_RUNTIME(TimerManagerBase, areg::DispatcherThread)
 
 TimerManagerBase::TimerManagerBase(const areg::String& threadName)
-    : DispatcherThread              (threadName, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
+    : areg::DispatcherThread              (threadName, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , TimerManagerEventConsumer   ( )
 {
 }
@@ -79,14 +79,14 @@ void TimerManagerBase::readyForEvents(bool isReady)
 {
     if (isReady)
     {
-        TimerManagerEvent::addListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
+        TimerManagerEvent::addListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<areg::DispatcherThread&>(self()));
     }
     else
     {
-        TimerManagerEvent::removeListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
+        TimerManagerEvent::removeListener(static_cast<TimerManagerEventConsumer&>(self()), static_cast<areg::DispatcherThread&>(self()));
     }
 
-    DispatcherThread::readyForEvents( true );
+    areg::DispatcherThread::readyForEvents( true );
 }
 
 bool TimerManagerBase::startTimerManagerThread()

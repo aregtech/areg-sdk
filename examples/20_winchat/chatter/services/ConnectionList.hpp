@@ -8,7 +8,7 @@ class ConnectionList : public ConnectionManagerClientBase
 {
 public:
     ConnectionList( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
-    ConnectionList( const char * roleName, DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

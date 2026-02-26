@@ -113,7 +113,7 @@ bool Component::existComponent( const areg::String & roleName )
 
 areg::ComponentThread& Component::_getCurrentComponentThread()
 {
-    areg::ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), areg::ComponentThread);
+    areg::ComponentThread* result = AREG_RUNTIME_CAST(&(areg::DispatcherThread::getCurrentDispatcherThread()), areg::ComponentThread);
     ASSERT(result != nullptr);
     return *result;
 }

@@ -71,7 +71,7 @@ namespace areg
             watchdogManager._registerWatchdog(watchdog);
             result = TimerManagerEvent::sendEvent( TimerManagerEventData(&watchdog)
                                                 , static_cast<TimerManagerEventConsumer&>(watchdogManager)
-                                                , static_cast<DispatcherThread&>(watchdogManager));
+                                                , static_cast<areg::DispatcherThread&>(watchdogManager));
         }
 
         return result;

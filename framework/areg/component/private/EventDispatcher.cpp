@@ -44,7 +44,7 @@ EventDispatcher::~EventDispatcher()
 //////////////////////////////////////////////////////////////////////////
 bool EventDispatcher::onThreadRegistered( areg::Thread * threadObj )
 {
-    mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
+    mDispatcherThread = AREG_RUNTIME_CAST(threadObj, areg::DispatcherThread);
     ASSERT(mDispatcherThread != nullptr);
 
     EventDispatcherBase::removeAllEvents( );

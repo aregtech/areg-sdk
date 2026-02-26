@@ -27,7 +27,7 @@
 DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    : areg::DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , mConnectHandler   ( connectHandler )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )

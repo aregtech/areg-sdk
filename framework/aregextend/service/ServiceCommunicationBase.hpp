@@ -45,7 +45,7 @@
 class ServiceCommunicationBase  : public    RemoteMessageHandler
                                 , public    ConnectionConsumer
                                 , public    ConnectionProvider
-                                , protected DispatcherThread
+                                , protected areg::DispatcherThread
                                 , protected ServiceEventConsumer
                                 , protected ConnectionHandler
 {
@@ -563,7 +563,7 @@ inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceComm
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
-                                          , static_cast<DispatcherThread &>(self( ))
+                                          , static_cast<areg::DispatcherThread &>(self( ))
                                           , eventPrio );
 }
 
@@ -573,7 +573,7 @@ inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
-                                          , static_cast<DispatcherThread &>(self( ))
+                                          , static_cast<areg::DispatcherThread &>(self( ))
                                           , eventPrio );
 }
 
@@ -581,7 +581,7 @@ inline bool ServiceCommunicationBase::sendMessage( const areg::RemoteMessage & d
 {
     return SendMessageEvent::sendEvent( SendMessageEventData( data )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                        , static_cast<DispatcherThread &>(mThreadSend)
+                                        , static_cast<areg::DispatcherThread &>(mThreadSend)
                                         , eventPrio );
 }
 
@@ -614,7 +614,7 @@ inline void ServiceCommunicationBase::disconnectService( Event::EventPriority ev
 {
     SendMessageEvent::sendEvent( SendMessageEventData( )
                                  , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                 , static_cast<DispatcherThread &>(mThreadSend)
+                                 , static_cast<areg::DispatcherThread &>(mThreadSend)
                                  , eventPrio );
 }
 

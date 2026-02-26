@@ -48,7 +48,7 @@ struct ObserverEvents;
  **/
 class LoggerClient  : public    ServiceClientConnectionBase
                     , public    ConfigListener
-                    , protected DispatcherThread
+                    , protected areg::DispatcherThread
                     , protected ConnectionConsumer
                     , protected RemoteMessageHandler
 {

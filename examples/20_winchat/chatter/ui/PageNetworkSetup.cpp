@@ -83,7 +83,7 @@ void PageNetworkSetup::OnServiceStartup( bool isStarted, Component * owner )
     }
 }
 
-void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * /*ownerThread*/)
+void PageNetworkSetup::OnServiceNetwork( bool isConnected, areg::DispatcherThread * /*ownerThread*/)
 {
     mConnectionHandler.SetConnected( isConnected );
     if ( mRegisterPending )
@@ -97,18 +97,18 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * /*
     mConnectPending = isConnected ? false : mConnectPending;
 }
 
-void PageNetworkSetup::OnServiceConnection( bool /*isConnected*/, DispatcherThread* /*ownerThread*/)
+void PageNetworkSetup::OnServiceConnection( bool /*isConnected*/, areg::DispatcherThread* /*ownerThread*/)
 {
     // do nothing
 }
 
-void PageNetworkSetup::OnClientConnection( bool isConnected, DispatcherThread * /*dispThread*/)
+void PageNetworkSetup::OnClientConnection( bool isConnected, areg::DispatcherThread * /*dispThread*/)
 {
     mConnectPending = isConnected ? false : mConnectPending;
     mConnectionHandler.SetConnected(isConnected);
 }
 
-void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread * /*dispThread*/)
+void PageNetworkSetup::OnClientRegistration( bool isRegistered, areg::DispatcherThread * /*dispThread*/)
 {
     mRegisterPending = isRegistered ? false : mRegisterPending;
     if ( isRegistered )

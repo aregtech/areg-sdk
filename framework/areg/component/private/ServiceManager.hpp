@@ -64,7 +64,7 @@ namespace areg { class ServiceResponseEvent; }
  *          To start application Service Manager, use Application::initialize() method,
  *          which should be called before any model is loaded.
  **/
-class ServiceManager    : private   DispatcherThread
+class ServiceManager    : private   areg::DispatcherThread
                         , private   ServiceManagerEventConsumer
                         , private   ConnectionConsumer
                         , private   RegistrationConsumer

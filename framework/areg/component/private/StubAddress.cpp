@@ -186,7 +186,7 @@ namespace areg
     void StubAddress::setThread(const areg::String & threadName)
     {
         areg::Thread * thread = threadName.isEmpty() ? areg::Thread::getCurrentThread() : areg::Thread::findThreadByName(threadName);
-        DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, DispatcherThread);
+        areg::DispatcherThread * dispatcher = AREG_RUNTIME_CAST( thread, areg::DispatcherThread);
         if ( (dispatcher != nullptr) && dispatcher->isValid())
         {
             mThreadName = dispatcher->getAddress().getThreadName();
@@ -206,7 +206,7 @@ namespace areg
 
         const ITEM_ID & target{ mChannel.getSource() };
         areg::Thread* thread = target != areg::TARGET_UNKNOWN ? areg::Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
-        DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+        areg::DispatcherThread* dispatcher = thread != nullptr ? AREG_RUNTIME_CAST(thread, areg::DispatcherThread) : nullptr;
         if (dispatcher != nullptr)
         {
             result = serviceEvent.registerForThread(dispatcher);

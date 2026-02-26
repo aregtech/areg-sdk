@@ -17,7 +17,7 @@ ConnectionList::ConnectionList( const char * roleName, Component & owner, Connec
 
 }
 
-ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispThread, ConnectionHandler & handlerConnection )
+ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase ( roleName, dispThread )
     , mConnectionHandler            ( handlerConnection )
 {

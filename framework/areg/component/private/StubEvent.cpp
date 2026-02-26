@@ -69,7 +69,7 @@ namespace areg
         if ( mTargetThread == nullptr )
         {
             areg::Thread * thread = areg::Thread::findThreadByName( mTargetStubAddress.getThread() );
-            registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
+            registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, areg::DispatcherThread) : nullptr );
         }
 
         if ( mTargetThread != nullptr )

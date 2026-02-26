@@ -69,7 +69,7 @@ namespace areg
      *              the type of thread is identified during Runtime.
      *
      **/
-    class AREG_API WorkerThread    : public DispatcherThread
+    class AREG_API WorkerThread    : public areg::DispatcherThread
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime
@@ -175,7 +175,7 @@ namespace areg
          * \return  If found, returns valid pointer of dispatching thread. 
          *          Otherwise returns nullptr
          **/
-        DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass ) override;
+        areg::DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass ) override;
 
     /************************************************************************/
     // EventDispatcherBase overrides

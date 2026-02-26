@@ -38,10 +38,10 @@ LoggerClient::LoggerClient()
                                  , LoggerClient::SOURCE_TYPE
                                  , static_cast<ConnectionConsumer &>(self())
                                  , static_cast<RemoteMessageHandler &>(self())
-                                 , static_cast<DispatcherThread &>(self())
+                                 , static_cast<areg::DispatcherThread &>(self())
                                  , LoggerClient::THREAD_PREFIX)
     , ConfigListener    ( )
-    , DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    , areg::DispatcherThread           ( LoggerClient::THREAD_NAME, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , ConnectionConsumer( )
     , RemoteMessageHandler     ( )
 
@@ -437,12 +437,12 @@ void LoggerClient::readyForEvents(bool isReady)
     if (isReady)
     {
         registerForServiceClientCommands();
-        DispatcherThread::readyForEvents(true);
+        areg::DispatcherThread::readyForEvents(true);
         setConnectionState(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
     else
     {
-        DispatcherThread::readyForEvents(false);
+        areg::DispatcherThread::readyForEvents(false);
         setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
         unregisterForServiceClientCommands();
     }

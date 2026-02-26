@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class TimerConsumer; }
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 class TimerEvent;
 class TimerManager;
 
@@ -149,7 +149,7 @@ namespace areg
          *                      reaching specified number.
          * \return  Returns true if Timer was successfully started.
          **/
-        bool startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = areg::TimerBase::CONTINUOUSLY);
+        bool startTimer(uint32_t timeoutInMs, areg::DispatcherThread & whichThread, uint32_t eventCount = areg::TimerBase::CONTINUOUSLY);
 
         /**
          * \brief   Call to stop previously started timer.
@@ -223,7 +223,7 @@ namespace areg
         /**
          * \brief   The Dispatcher thread where currently the timer is dispatched.
          **/
-        DispatcherThread *  mDispatchThread;
+        areg::DispatcherThread *  mDispatchThread;
         /**
          * \brief   First starting time. The value is system dependent.
          **/

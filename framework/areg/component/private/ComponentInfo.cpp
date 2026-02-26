@@ -46,14 +46,14 @@ ComponentInfo::ComponentInfo( areg::ComponentThread& ownerThread, const areg::St
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, methods
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
+areg::DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
 {
-    DispatcherThread * result = nullptr;
+    areg::DispatcherThread * result = nullptr;
 
     // firs check master thread.
     if (mMasterThread.hasRegisteredConsumer(whichClass))
     {
-        result = static_cast<DispatcherThread *>(&mMasterThread);
+        result = static_cast<areg::DispatcherThread *>(&mMasterThread);
     }
     else
     {
@@ -61,7 +61,7 @@ DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID&
         mWorkerThreadMap.lock();
 
         areg::ThreadAddress Key;
-        DispatcherThread * dispThread = static_cast<DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
+        areg::DispatcherThread * dispThread = static_cast<areg::DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
         while (result == nullptr && dispThread != nullptr)
         {
             if (dispThread->hasRegisteredConsumer(whichClass))

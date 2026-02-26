@@ -46,22 +46,22 @@ void PageMessaging::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/)
     // do nothing
 }
 
-void PageMessaging::OnServiceNetwork( bool /*isConnected*/, DispatcherThread* /*ownerThread*/)
+void PageMessaging::OnServiceNetwork( bool /*isConnected*/, areg::DispatcherThread* /*ownerThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnServiceConnection( bool /*isConnected*/, DispatcherThread* /*ownerThread*/)
+void PageMessaging::OnServiceConnection( bool /*isConnected*/, areg::DispatcherThread* /*ownerThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnClientConnection( bool /*isConnected*/, DispatcherThread* /*dispThread*/)
+void PageMessaging::OnClientConnection( bool /*isConnected*/, areg::DispatcherThread* /*dispThread*/)
 {
     // do nothing
 }
 
-void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * dispThread )
+void PageMessaging::OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread )
 {
     if ( isRegistered )
     {

@@ -32,7 +32,7 @@ class TimerConsumer;
  ************************************************************************/
 namespace areg { class Timer; }
 class TimerEventData;
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 
 namespace areg
 {

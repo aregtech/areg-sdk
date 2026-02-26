@@ -36,7 +36,7 @@ class ServerConnection;
 /**
  * \brief   The IPC message receiving thread of server socket.
  **/
-class ServerReceiveThread    : public    DispatcherThread
+class ServerReceiveThread    : public    areg::DispatcherThread
 {
     //!< Number of retries to accept socket connection
     static constexpr uint32_t RETRY_COUNT   { 5 };

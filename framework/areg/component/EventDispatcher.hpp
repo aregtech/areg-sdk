@@ -111,7 +111,7 @@ public:
      * \brief   Return pointer to Dispatcher Thread where current dispatcher
      *          is registered.
      **/
-    inline DispatcherThread * getDispatcherThread() const;
+    inline areg::DispatcherThread * getDispatcherThread() const;
 
 protected:
     /**
@@ -130,7 +130,7 @@ private:
      *          The pointer is set after thread has been created and reset
      *          when it is destroyed.
      **/
-    DispatcherThread *  mDispatcherThread;
+    areg::DispatcherThread *  mDispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.
@@ -143,7 +143,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
-inline DispatcherThread * EventDispatcher::getDispatcherThread() const
+inline areg::DispatcherThread * EventDispatcher::getDispatcherThread() const
 {
     return mDispatcherThread;
 }

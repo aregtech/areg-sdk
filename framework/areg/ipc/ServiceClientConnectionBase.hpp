@@ -90,7 +90,7 @@ public:
                                 , areg::MessageSource msgSource
                                 , ConnectionConsumer& connectionConsumer
                                 , RemoteMessageHandler & messageHandler
-                                , DispatcherThread & messageDispatcher
+                                , areg::DispatcherThread & messageDispatcher
                                 , const areg::String & prefixName);
     /**
      * \brief   Destructor
@@ -410,7 +410,7 @@ protected:
     /**
      * \brief   The thread that makes message dispatching.
      **/
-    DispatcherThread &                      mMessageDispatcher;
+    areg::DispatcherThread &                      mMessageDispatcher;
 
     /**
      * \brief   The connection channel.
@@ -579,7 +579,7 @@ inline bool ServiceClientConnectionBase::sendMessage(const areg::RemoteMessage &
 {
     return SendMessageEvent::sendEvent( SendMessageEventData(data)
                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                                      , static_cast<DispatcherThread &>(mThreadSend)
+                                      , static_cast<areg::DispatcherThread &>(mThreadSend)
                                       , eventPrio);
 }
 
@@ -587,7 +587,7 @@ inline void ServiceClientConnectionBase::disconnectService( Event::EventPriority
 {
     SendMessageEvent::sendEvent( SendMessageEventData()
                                , static_cast<SendMessageEventConsumer &>(mThreadSend)
-                               , static_cast<DispatcherThread &>(mThreadSend)
+                               , static_cast<areg::DispatcherThread &>(mThreadSend)
                                , eventPrio );
 }
 

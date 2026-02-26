@@ -52,7 +52,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     : RemoteMessageHandler        ( )
     , ConnectionConsumer   ( )
     , ConnectionProvider   ( )
-    , DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
+    , areg::DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , ServiceEventConsumer    ( )
     , ConnectionHandler    ( )
 
@@ -327,7 +327,7 @@ bool ServiceCommunicationBase::startConnection()
     if ( result == false )
     {
         LOG_WARN("Remote servicing failed, trigger timer with [ %u ] ms timeout to re-establish remote servicing", areg::DEFAULT_RETRY_CONNECT_TIMEOUT);
-        mTimerConnect.startTimer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
+        mTimerConnect.startTimer( areg::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<areg::DispatcherThread &>(self()), 1);
     }
 
     return result;
@@ -488,13 +488,13 @@ void ServiceCommunicationBase::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        ServiceServerEvent::addListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
-        DispatcherThread::readyForEvents( true );
+        ServiceServerEvent::addListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
+        areg::DispatcherThread::readyForEvents( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        ServiceServerEvent::removeListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        areg::DispatcherThread::readyForEvents( false );
+        ServiceServerEvent::removeListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
     }
 }
 

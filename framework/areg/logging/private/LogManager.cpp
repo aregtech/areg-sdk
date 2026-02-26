@@ -183,7 +183,7 @@ void LogManager::forceEnableLogging()
 // LogManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
+    : areg::DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , LoggingEventConsumer  ( )
 
     , mScopeController  ( )
@@ -192,7 +192,7 @@ LogManager::LogManager()
 
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
-    , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
+    , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<areg::DispatcherThread &>(self()) )
     , mLoggerDatabase   ( mLogConfig )
     , mEventProcessor   ( self() )
 
@@ -281,13 +281,13 @@ void LogManager::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        LoggingEvent::addListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
-        DispatcherThread::readyForEvents( true );
+        LoggingEvent::addListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
+        areg::DispatcherThread::readyForEvents( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        LoggingEvent::removeListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        areg::DispatcherThread::readyForEvents( false );
+        LoggingEvent::removeListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
 
         // When we are here, all loggers should be already closed.
         ASSERT(mLoggerFile.isLoggerOpened() == false);
@@ -370,7 +370,7 @@ bool LogManager::postEvent(Event & eventElem)
 
 inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
+    LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )), eventPrio );
 }
 
 void LogManager::changeScopePriority( const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio )

@@ -173,14 +173,14 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & ro
                                                        , FuncCreateProxy funcCreate
                                                        , const areg::String & ownerThread /*= areg::String::getEmptyString()*/)
 {
-    return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, DispatcherThread::getDispatcherThread(ownerThread) );
+    return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, areg::DispatcherThread::getDispatcherThread(ownerThread) );
 }
 
 std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & roleName
                                                        , const areg::InterfaceData & serviceIfData
                                                        , ProxyListener & connect
                                                        , FuncCreateProxy funcCreate
-                                                       , DispatcherThread & ownerThread )
+                                                       , areg::DispatcherThread & ownerThread )
 {
     LOG_SCOPE(areg_component_ProxyBase_findOrCreateProxy);
 
@@ -234,7 +234,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & ro
 }
 
 
-int32_t ProxyBase::findThreadProxies(DispatcherThread & ownerThread, areg::ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
+int32_t ProxyBase::findThreadProxies(areg::DispatcherThread & ownerThread, areg::ArrayList<std::shared_ptr<ProxyBase>> & threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::thread_proxies().findResource(ownerThread.getName());
     int32_t result = proxyList != nullptr ? static_cast<int32_t>(proxyList->getSize()) : 0;
@@ -263,7 +263,7 @@ areg::RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddr
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyBase::ProxyBase(const areg::String & roleName, const areg::InterfaceData & serviceIfData, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase::ProxyBase(const areg::String & roleName, const areg::InterfaceData & serviceIfData, areg::DispatcherThread * ownerThread /*= nullptr*/ )
 
     : ProxyEventConsumer  ( mProxyAddress )
 
@@ -278,7 +278,7 @@ ProxyBase::ProxyBase(const areg::String & roleName, const areg::InterfaceData & 
 
     , mProxyData        ( serviceIfData )
 
-    , mDispatcherThread ( (ownerThread != nullptr) && (ownerThread->isValid()) ? *ownerThread : DispatcherThread::getDispatcherThread( mProxyAddress.getThread()) )
+    , mDispatcherThread ( (ownerThread != nullptr) && (ownerThread->isValid()) ? *ownerThread : areg::DispatcherThread::getDispatcherThread( mProxyAddress.getThread()) )
     , mConnectionStatus ( areg::ServiceConnectionState::Unknown )
     , mIsConnected      ( false )
 {

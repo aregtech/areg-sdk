@@ -36,7 +36,7 @@ class ServerConnection;
 /**
  * \brief   The IPC message sender thread
  **/
-class ServerSendThread  : public    DispatcherThread
+class ServerSendThread  : public    areg::DispatcherThread
                         , public    SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////

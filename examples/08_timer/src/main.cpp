@@ -39,7 +39,7 @@ DEF_LOG_SCOPE(timer_main_main);
 //!         Indifferent in which thread context the timers are started,
 //!         they all are processed in the context of binding thread.
 //!         The timer should have unique names.
-class TimerDispatcher   : public DispatcherThread
+class TimerDispatcher   : public areg::DispatcherThread
                         , private areg::TimerConsumer
 {
     static constexpr uint32_t TIMEOUT_ONE_TIME{ areg::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
@@ -48,7 +48,7 @@ class TimerDispatcher   : public DispatcherThread
 
 public:
     explicit TimerDispatcher(const areg::String & name)
-        : DispatcherThread( name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+        : areg::DispatcherThread( name, areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
         , areg::TimerConsumer()
         , mOneTime(*this, name + "_one_time")
         , mPeriodic(*this, name + "_periodic")
@@ -63,7 +63,7 @@ public:
         LOG_SCOPE(timer_main_TimerDispatcher_startTimers);
         auto start = [&](areg::Timer & t, uint32_t timeout, int32_t count)
         {
-            if (t.startTimer(timeout, static_cast<DispatcherThread&>(*this), count))
+            if (t.startTimer(timeout, static_cast<areg::DispatcherThread&>(*this), count))
             {
                 LOG_DBG("Timer [ %s ] started, timeout [%u]", t.getName().getString(), t.getTimeout());
 

@@ -145,7 +145,7 @@ public:
      * \param   dispatchThread  The dispatcher object to send event
      * \return  Returns true if successfully sent event. Otherwise returns false.
      **/
-    static bool sendEvent( areg::Timer & timer, DispatcherThread & dispatchThread );
+    static bool sendEvent( areg::Timer & timer, areg::DispatcherThread & dispatchThread );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -171,7 +171,7 @@ private:
     * \param    timer   The Timer object to set in event data.
     * \param    target  The target dispatching thread to process event.
     **/
-   TimerEvent( areg::Timer & timer, DispatcherThread & target );
+   TimerEvent( areg::Timer & timer, areg::DispatcherThread & target );
    /**
     * \brief   Destructor
     **/

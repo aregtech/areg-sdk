@@ -287,7 +287,7 @@ public:
      * \return	If finds, returns pointer to dispatcher thread, which has registered
      *          consumer.
      **/
-    inline DispatcherThread * findEventConsumer( const areg::RuntimeClassID & whichClass ) const;
+    inline areg::DispatcherThread * findEventConsumer( const areg::RuntimeClassID & whichClass ) const;
 
     /**
      * \brief   Returns master thread of component
@@ -390,7 +390,7 @@ inline areg::ComponentThread & Component::getMasterThread()
     return mComponentInfo.getMasterThread();
 }
 
-inline DispatcherThread * Component::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
+inline areg::DispatcherThread * Component::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
 {
     return mComponentInfo.findEventConsumer(whichClass);
 }

@@ -45,7 +45,7 @@ namespace areg
      *          and no component data is shared between several threads.
      *          Every component thread can have several component objects.
      **/
-    class AREG_API ComponentThread  : public    DispatcherThread
+    class AREG_API ComponentThread  : public    areg::DispatcherThread
     {
     //////////////////////////////////////////////////////////////////////////
     // Local types and constants
@@ -209,7 +209,7 @@ namespace areg
          * \return  If found, returns valid pointer of dispatching thread.
          *          Otherwise returns nullptr
          **/
-        DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass ) override;
+        areg::DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass ) override;
 
     /************************************************************************/
     // ThreadConsumer interface overrides

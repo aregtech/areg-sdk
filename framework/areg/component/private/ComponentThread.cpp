@@ -31,7 +31,7 @@ namespace areg
     // Implement runtime
     //////////////////////////////////////////////////////////////////////////
 
-    AREG_IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
+    AREG_IMPLEMENT_RUNTIME(ComponentThread, areg::DispatcherThread)
 
     //////////////////////////////////////////////////////////////////////////
     // Implement static methods
@@ -57,7 +57,7 @@ namespace areg
 
     inline ComponentThread* ComponentThread::_getCurrentComponentThread()
     {
-        return AREG_RUNTIME_CAST( &(DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
+        return AREG_RUNTIME_CAST( &(areg::DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ namespace areg
                                     , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
                                     , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */
                                     , uint32_t maxQueue         /* = areg::IGNORE_VALUE         */ )
-        : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
+        : areg::DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 
         , mCurrentComponent ( nullptr )
         , mWatchdog         ( self(), watchdogTimeout )
@@ -90,7 +90,7 @@ namespace areg
         {
             readyForEvents( true );
             startComponents();
-            result = DispatcherThread::runDispatcher();
+            result = areg::DispatcherThread::runDispatcher();
         }
 
         return result;
@@ -158,9 +158,9 @@ namespace areg
         _shutdownComponents();
     }
 
-    DispatcherThread* ComponentThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
+    areg::DispatcherThread* ComponentThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
     {
-        DispatcherThread* result = hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
+        areg::DispatcherThread* result = hasRegisteredConsumer(whichClass) ? static_cast<areg::DispatcherThread *>(this) : nullptr;
         if (result == nullptr)
         {
             ListComponent::LISTPOS pos = mListComponent.firstPosition();
@@ -200,7 +200,7 @@ namespace areg
             proxy->terminateSelf();
         }
 
-        DispatcherThread::shutdownThread(areg::TIMEOUT_10_MS);
+        areg::DispatcherThread::shutdownThread(areg::TIMEOUT_10_MS);
 
         delete this;
     }
@@ -238,7 +238,7 @@ namespace areg
             comObj->notifyComponentShutdown( self( ) );
         }
 
-        return DispatcherThread::shutdownThread( waitForStopMs );
+        return areg::DispatcherThread::shutdownThread( waitForStopMs );
     }
 
     bool ComponentThread::completionWait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
@@ -251,7 +251,7 @@ namespace areg
             comObj->waitComponentCompletion(waitForCompleteMs);
         }
 
-        return DispatcherThread::completionWait(waitForCompleteMs);
+        return areg::DispatcherThread::completionWait(waitForCompleteMs);
     }
 
     int32_t ComponentThread::onThreadExit()
@@ -259,13 +259,13 @@ namespace areg
         shutdownComponents();
         destroyComponents();
 
-        return DispatcherThread::onThreadExit( );
+        return areg::DispatcherThread::onThreadExit( );
     }
 
     bool ComponentThread::dispatchEvent(Event& eventElem)
     {
         mWatchdog.startGuard();
-        bool result = DispatcherThread::dispatchEvent(eventElem);
+        bool result = areg::DispatcherThread::dispatchEvent(eventElem);
         mWatchdog.stopGuard();
 
         return result;

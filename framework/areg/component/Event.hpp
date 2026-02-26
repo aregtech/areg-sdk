@@ -42,13 +42,13 @@ public:                                                                         
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
     static bool addListener(areg::EventConsumer& eventConsumer, id_type whichThread);                                         \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
-    static bool addListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread);                               \
+    static bool addListener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread);                               \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
     static bool removeListener(areg::EventConsumer& eventConsumer, const areg::String & whichThread = areg::String::getEmptyString());    \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
     static bool removeListener(areg::EventConsumer& eventConsumer, id_type whichThread);                                      \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
-    static bool removeListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread);
+    static bool removeListener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread);
 
 /**
  * \brief   MACRO, implements static functions to add and remove
@@ -60,13 +60,13 @@ public:                                                                         
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
     bool EventClass::addListener(areg::EventConsumer& eventConsumer, id_type whichThread)                                   \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
-    bool EventClass::addListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
+    bool EventClass::addListener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)                         \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }                       \
     bool EventClass::removeListener(areg::EventConsumer& eventConsumer, const areg::String& whichThread)                          \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
     bool EventClass::removeListener(areg::EventConsumer& eventConsumer, id_type whichThread)                                \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
-    bool EventClass::removeListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread)                      \
+    bool EventClass::removeListener(areg::EventConsumer& eventConsumer, areg::DispatcherThread & dispThread)                      \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, dispThread);     }
 
 
@@ -100,7 +100,7 @@ public:                                                                         
  ************************************************************************/
 namespace areg { class EventConsumer; }
 class EventDispatcher;
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 namespace areg { class Thread; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool addListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, areg::DispatcherThread & dispThread);
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -287,7 +287,7 @@ public:
      * \param	dispThread	    The dispatcher thread, which dispatches messages
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool removeListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, areg::DispatcherThread & dispThread);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -391,7 +391,7 @@ public:
      * \return	Returns true if target thread is not nullptr and ready
      *          to dispatch events.
      **/
-    bool registerForThread( DispatcherThread * dispatchThread );
+    bool registerForThread( areg::DispatcherThread * dispatchThread );
 
     /**
      * \brief   Returns true if the target thread has a consumer
@@ -532,7 +532,7 @@ protected:
     /**
      * \brief   Target thread.
      **/
-    DispatcherThread*   mTargetThread;
+    areg::DispatcherThread*   mTargetThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.

@@ -44,7 +44,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , areg::MessageSource msgSource
                                                         , ConnectionConsumer& connectionConsumer
                                                         , RemoteMessageHandler & messageHandler
-                                                        , DispatcherThread & messageDispatcher
+                                                        , areg::DispatcherThread & messageDispatcher
                                                         , const areg::String & prefixName)
     : ConnectionProvider   ( )
     , ServiceEventConsumer    ( )

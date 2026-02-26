@@ -116,7 +116,7 @@ NotificationEvent::NotificationEvent( const NotificationEventData& data )
 void NotificationEvent::setTargetThread()
 {
     const ProxyBase * proxy = mData.getProxy();
-    DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();
+    areg::DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : areg::DispatcherThread::getCurrentDispatcherThread();
     ASSERT(dispThread.isValid());
     registerForThread(&dispThread);
 }

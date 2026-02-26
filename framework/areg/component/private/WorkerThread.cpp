@@ -30,7 +30,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Implement Runtime
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
+    AREG_IMPLEMENT_RUNTIME(WorkerThread, areg::DispatcherThread)
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -41,7 +41,7 @@ namespace areg
                             , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
                             , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
                             , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )
-        : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
+        : areg::DispatcherThread      ( threadName, stackSizeKb, maxQueue )
 
         , mBindingComponent     ( bindingComponent )
         , mWorkerThreadConsumer ( threadConsumer )
@@ -69,18 +69,18 @@ namespace areg
             mWorkerThreadConsumer.unregisterEventConsumers( self( ) );
         }
 
-        DispatcherThread::readyForEvents(isReady);
+        areg::DispatcherThread::readyForEvents(isReady);
     }
 
-    DispatcherThread* WorkerThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
+    areg::DispatcherThread* WorkerThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
     {
-        return (hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
+        return (hasRegisteredConsumer(whichClass) ? static_cast<areg::DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
     }
 
     bool WorkerThread::dispatchEvent(Event& eventElem)
     {
         mWatchdog.startGuard();
-        bool result = DispatcherThread::dispatchEvent(eventElem);
+        bool result = areg::DispatcherThread::dispatchEvent(eventElem);
         mWatchdog.stopGuard();
 
         return result;

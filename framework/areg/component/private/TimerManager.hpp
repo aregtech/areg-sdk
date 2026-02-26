@@ -135,7 +135,7 @@ public:
      *                      event should be dispatched.
      * \return  Returns true if timer was successfully created.
      **/
-    static bool startTimer(areg::Timer &timer, const DispatcherThread & whichThread);
+    static bool startTimer(areg::Timer &timer, const areg::DispatcherThread & whichThread);
 
     /**
      * \brief   Stops the timer.
@@ -204,7 +204,7 @@ private:
      * \param   whichThread The dispatcher thread, where the timer event should be dispatched.
      * \return  Returns true if succeeded to register timer in the map.
      **/
-    bool _registerTimer( areg::Timer & timer, const DispatcherThread & whichThread );
+    bool _registerTimer( areg::Timer & timer, const areg::DispatcherThread & whichThread );
 
     /**
      * \brief   Registers timer in the timer resource map.

@@ -37,7 +37,7 @@ namespace areg { class TimerBase; }
  *          Timer Manager and Watchdog Manager to execute specific tasks.
  *          It requires to run as separate thread.
  **/
-class TimerManagerBase  : protected DispatcherThread
+class TimerManagerBase  : protected areg::DispatcherThread
                         , protected TimerManagerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////

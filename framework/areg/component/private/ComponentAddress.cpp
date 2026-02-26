@@ -77,7 +77,7 @@ ComponentAddress::ComponentAddress( const areg::ThreadAddress & threadAddress, c
 
 ComponentAddress::ComponentAddress( const areg::String & roleName )
     : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( DispatcherThread::getCurrentDispatcherThread().getAddress() )
+    , mThreadAddress( areg::DispatcherThread::getCurrentDispatcherThread().getAddress() )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
@@ -92,7 +92,7 @@ ComponentAddress::ComponentAddress( const areg::String & roleName )
 
 ComponentAddress::ComponentAddress( const areg::String & roleName, const areg::String & nameThread )
     : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( nameThread.isEmpty() != false ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : areg::ThreadAddress::getInvalidThreadAddress())
+    , mThreadAddress( nameThread.isEmpty() != false ? areg::DispatcherThread::getDispatcherThread(nameThread).getAddress() : areg::ThreadAddress::getInvalidThreadAddress())
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);

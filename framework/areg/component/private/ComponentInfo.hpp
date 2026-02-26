@@ -31,7 +31,7 @@
  ************************************************************************/
 namespace areg { class ComponentThread; }
 namespace areg { class WorkerThread; }
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class declaration
@@ -194,7 +194,7 @@ public:
      *          If there is no such Event Consumer registered in Component Thread and in Worker Threads,
      *          it returns nullptr.
      **/
-    DispatcherThread * findEventConsumer( const areg::RuntimeClassID & whichClass ) const;
+    areg::DispatcherThread * findEventConsumer( const areg::RuntimeClassID & whichClass ) const;
 
     /**
      * \brief   Returns pointer of first Worker Thread. On output, threadAddress

@@ -282,7 +282,7 @@ public:                                                                         
     /** \return Returns true if event successfully was sent.                                                                **/             \
     /**                                                                                                                     **/             \
     static inline bool sendEvent( const DATA_CLASS & data                                                                                   \
-                                , DispatcherThread & dispThread                                                                             \
+                                , areg::DispatcherThread & dispThread                                                                             \
                                 , Event::EventPriority eventPrio = Event::DefaultPriority);                                                \
     /**                                                                                                                     **/             \
     /** \brief  Sends event to specified consumer within specified thread.                                                  **/             \
@@ -299,7 +299,7 @@ public:                                                                         
     /**                                                                                                                     **/             \
     static inline bool sendEvent( const DATA_CLASS & data                                                                                   \
                                 , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                                                  \
-                                , DispatcherThread & dispThread                                                                             \
+                                , areg::DispatcherThread & dispThread                                                                             \
                                 , Event::EventPriority eventPrio = Event::DefaultPriority);                                                \
     /**                                                                                                                     **/             \
     /** \brief  Registers Consumer in the worker / component thread                                                         **/             \
@@ -335,7 +335,7 @@ public:                                                                         
     /** \return Returns true if consumer registration succeeded.                                                            **/             \
     /**         Returns false if thread already has consumer registered or registration failed.                             **/             \
     /**                                                                                                                     **/             \
-    static inline bool addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, DispatcherThread & dispThread);                                \
+    static inline bool addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, areg::DispatcherThread & dispThread);                                \
     /**                                                                                                                     **/             \
     /** \brief  Unregisters Consumer from worker / component thread.                                                        **/             \
     /**         Returns true if successfully removed registered consumer                                                    **/             \
@@ -364,7 +364,7 @@ public:                                                                         
     /** \param	dispThread  The dispatcher thread, which dispatches messages                                                **/             \
     /** \return Returns true if consumer is unregistered with success.                                                      **/             \
     /**                                                                                                                     **/             \
-    static inline bool removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, DispatcherThread & dispThread);                             \
+    static inline bool removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, areg::DispatcherThread & dispThread);                             \
     /**                                                                                                                     **/             \
     /* \brief	Returns read-only event data.                                                                               **/             \
     /**                                                                                                                     **/             \
@@ -376,7 +376,7 @@ protected:                                                                      
     DATA_CLASS  mData;                                                                                                                      \
 private:                                                                                                                                    \
     /** Private functions. Registers event for specified worker thread and sends event                                      **/             \
-    static bool _send(DispatcherThread & dispThread, AregImpl_##EventClass<DATA_CLASS> * eventElem);                                               \
+    static bool _send(areg::DispatcherThread & dispThread, AregImpl_##EventClass<DATA_CLASS> * eventElem);                                               \
 private:                                                                                                                                    \
     /*************************************************************************************************************************/             \
     /**       Forbidden calls.                                                                                              **/             \
@@ -459,7 +459,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
                                                  , Event::EventType eventType                                                              \
                                                  , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
-    DispatcherThread* dispThread = DispatcherThread::findEventConsumerThread(_getClassId());                                                \
+    areg::DispatcherThread* dispThread = areg::DispatcherThread::findEventConsumerThread(_getClassId());                                                \
     return (dispThread != nullptr ? _send(*dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(eventType, data, eventPrio)) : false);          \
 }                                                                                                                                           \
 /**                                                                                                                         **/             \
@@ -485,7 +485,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
                                                  , Event::EventType eventType                                                              \
                                                  , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
-    DispatcherThread& dispThread = DispatcherThread::getCurrentDispatcherThread( );                                                         \
+    areg::DispatcherThread& dispThread = areg::DispatcherThread::getCurrentDispatcherThread( );                                                         \
     return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(eventType, data, listener, eventPrio)) : false);  \
 }                                                                                                                                           \
 /**                                                                                                                         **/             \
@@ -495,7 +495,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & data                                                           \
-                                                 , DispatcherThread & dispThread                                                            \
+                                                 , areg::DispatcherThread & dispThread                                                            \
                                                  , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
     return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(EventKind, data, eventPrio)) : false);     \
@@ -509,7 +509,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & dat
 template <class DATA_CLASS>                                                                                                                 \
 inline bool AregImpl_##EventClass<DATA_CLASS>::sendEvent( const DATA_CLASS & data                                                           \
                                                  , AregImpl_##ConsumerClass<DATA_CLASS> & listener                                          \
-                                                 , DispatcherThread & dispThread                                                            \
+                                                 , areg::DispatcherThread & dispThread                                                            \
                                                  , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                            \
 {                                                                                                                                           \
     return (dispThread.isValid() ? _send(dispThread, DEBUG_NEW AregImpl_##EventClass<DATA_CLASS>(EventKind, data, listener, eventPrio)) : false);  \
@@ -536,7 +536,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::addListener(AregImpl_##ConsumerCl
 /** Returns false if failed to register consumer or consumer was already registered for specified event                     **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
-inline bool AregImpl_##EventClass<DATA_CLASS>::addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, DispatcherThread & dispThread)      \
+inline bool AregImpl_##EventClass<DATA_CLASS>::addListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, areg::DispatcherThread & dispThread)      \
 {   return Event::addListener(AregImpl_##EventClass<DATA_CLASS>::_getClassId(), listener, dispThread);                                     }    \
 /**                                                                                                                         **/             \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/             \
@@ -554,7 +554,7 @@ inline bool AregImpl_##EventClass<DATA_CLASS>::removeListener(AregImpl_##Consume
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
-inline bool AregImpl_##EventClass<DATA_CLASS>::removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, DispatcherThread & dispThread)   \
+inline bool AregImpl_##EventClass<DATA_CLASS>::removeListener(AregImpl_##ConsumerClass<DATA_CLASS> & listener, areg::DispatcherThread & dispThread)   \
 {   return Event::removeListener(AregImpl_##EventClass<DATA_CLASS>::_getClassId(), listener, dispThread);                                  }    \
 /**                                                                                                                         **/             \
 /* \brief	Returns read-only event data.                                                                                   **/             \
@@ -566,7 +566,7 @@ inline const DATA_CLASS & AregImpl_##EventClass<DATA_CLASS>::getData() const    
 /** Private static function to forward event. First it will register event for thread (event consumer thread)               **/             \
 /**                                                                                                                         **/             \
 template <class DATA_CLASS>                                                                                                                 \
-bool AregImpl_##EventClass<DATA_CLASS>::_send(DispatcherThread & dispThread, AregImpl_##EventClass<DATA_CLASS> * eventElem)                 \
+bool AregImpl_##EventClass<DATA_CLASS>::_send(areg::DispatcherThread & dispThread, AregImpl_##EventClass<DATA_CLASS> * eventElem)                 \
 {                                                                                                                                           \
     bool result = false;                                                                                                                    \
     if (eventElem != nullptr)                                                                                                               \
@@ -643,7 +643,7 @@ template <class DATA_CLASS>                                                     
 AregImpl_##ConsumerClass##Extended<DATA_CLASS>::AregImpl_##ConsumerClass##Extended()                                                                \
     : AregImpl_##ConsumerClass<DATA_CLASS> ( )                                                                                                      \
 {                                                                                                                                                   \
-    DispatcherThread& dispThread = DispatcherThread::getDispatcherThread(ConsumerThreadName);                                                       \
+    areg::DispatcherThread& dispThread = areg::DispatcherThread::getDispatcherThread(ConsumerThreadName);                                                       \
     VERIFY( dispThread.registerEventConsumer(AregImpl_##EventClass<DATA_CLASS>::_getClassId(), self()) );                                           \
 }                                                                                                                                                   \
 

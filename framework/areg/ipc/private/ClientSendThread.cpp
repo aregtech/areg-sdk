@@ -24,7 +24,7 @@
 DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String& namePrefix )
-    : DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
+    : areg::DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , SendMessageEventConsumer( )
 
     , mRemoteService    ( remoteService )
@@ -41,13 +41,13 @@ void ClientSendThread::readyForEvents( bool isReady )
     if ( isReady )
     {
         LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
-        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        DispatcherThread::readyForEvents( true );
+        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+        areg::DispatcherThread::readyForEvents( true );
     }
     else
     {
-        DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        areg::DispatcherThread::readyForEvents( false );
+        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
         mConnection.closeSocket( );
         LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
     }

@@ -61,10 +61,10 @@ namespace areg
 
     bool Timer::startTimer( uint32_t timeoutInMs, uint32_t eventCount /*= Timer::CONTINUOUSLY*/ )
     {
-        return startTimer(timeoutInMs, DispatcherThread::getCurrentDispatcherThread(), eventCount);
+        return startTimer(timeoutInMs, areg::DispatcherThread::getCurrentDispatcherThread(), eventCount);
     }
 
-    bool Timer::startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount /*= Timer::CONTINUOUSLY*/)
+    bool Timer::startTimer(uint32_t timeoutInMs, areg::DispatcherThread & whichThread, uint32_t eventCount /*= Timer::CONTINUOUSLY*/)
     {
         LOG_SCOPE(areg_component_Timer_startTimer);
 

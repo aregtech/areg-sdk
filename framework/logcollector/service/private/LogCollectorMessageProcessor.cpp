@@ -206,7 +206,7 @@ void LogCollectorMessageProcessor::processNextSaveConfig()
         mPendingSave = mListSaveConfig[0u];
         mListSaveConfig.removeAt(0u, 1u);
         mLoggerService.sendMessage(areg::messageSaveConfiguration(areg::COOKIE_LOGGER, mPendingSave));
-        mLoggerService.mSaveTimer.startTimer(LogCollectorServerService::TIMEOUT_SAVE_CONFIG, static_cast<DispatcherThread &>(mLoggerService), 1);
+        mLoggerService.mSaveTimer.startTimer(LogCollectorServerService::TIMEOUT_SAVE_CONFIG, static_cast<areg::DispatcherThread &>(mLoggerService), 1);
     }
 }
 

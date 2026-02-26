@@ -66,7 +66,7 @@ void PageConnections::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/
     // do nothing
 }
 
-void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread )
+void PageConnections::OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread )
 {
     LOG_SCOPE(chatter_ui_PageConnections_OnServiceNetwork);
 #if AREG_LOGS
@@ -92,7 +92,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
     }
 }
 
-void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * ownerThread )
+void PageConnections::OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread )
 {
     LOG_SCOPE(chatter_ui_PageConnections_OnServiceConnection);
     LOG_DBG("[ %s ] to the service", isConnected ? "CONNECTED" : "DISCONNECTED");
@@ -114,7 +114,7 @@ void PageConnections::OnServiceConnection( bool isConnected, DispatcherThread * 
     }
 }
 
-void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *dispThread )
+void PageConnections::OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread )
 {
     LOG_SCOPE(chatter_ui_PageConnections_OnClientConnection);
     LOG_DBG("A client is [ %s ]", isConnected ? "CONNECTED" : "DISCONNECTED");
@@ -139,7 +139,7 @@ void PageConnections::OnClientConnection( bool isConnected, DispatcherThread *di
     }
 }
 
-void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread * /*dispThread*/)
+void PageConnections::OnClientRegistration( bool isRegistered, areg::DispatcherThread * /*dispThread*/)
 {
     LOG_SCOPE( chatter_ui_PageConnections_OnClientRegistration );
     if ( isRegistered )

@@ -58,7 +58,7 @@ namespace areg
  *          Log Manager and unregistered when destroyed. Before logging, it should 
  *          be started and the configuration should be loaded.
  **/
-class LogManager    : public    DispatcherThread
+class LogManager    : public    areg::DispatcherThread
                     , private   LoggingEventConsumer
 {
     friend class LogEventProcessor;

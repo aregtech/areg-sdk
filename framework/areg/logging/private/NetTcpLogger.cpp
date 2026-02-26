@@ -28,7 +28,7 @@
 
 #if AREG_LOGS
 
-NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread)
+NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, areg::DispatcherThread & dispatchThread)
     : LoggerBase                    (logConfig)
     , ServiceClientConnectionBase   ( areg::COOKIE_LOGGER
                                     , areg::RemoteServiceKind::Logger

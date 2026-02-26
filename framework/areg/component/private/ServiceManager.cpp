@@ -47,7 +47,7 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 // Implement Runtime
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(ServiceManager, DispatcherThread)
+AREG_IMPLEMENT_RUNTIME(ServiceManager, areg::DispatcherThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -98,7 +98,7 @@ void ServiceManager::requestRegisterServer( const areg::StubAddress & whichServe
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerStub(whichServer)
                                   , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+                                  , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::requestUnregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason )
@@ -114,7 +114,7 @@ void ServiceManager::requestUnregisterServer( const areg::StubAddress & whichSer
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterStub(whichServer, reason)
                                   , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+                                  , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
@@ -130,7 +130,7 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerProxy(whichClient)
                                   , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+                                  , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
@@ -145,7 +145,7 @@ void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, 
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterProxy(whichClient, reason)
                                   , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+                                  , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 void ServiceManager::requestRecreateThread(const areg::ComponentThread& whichThread)
@@ -156,7 +156,7 @@ void ServiceManager::requestRecreateThread(const areg::ComponentThread& whichThr
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent(ServiceManagerEventData::terminateComponentThread(whichThread.getName())
                                   , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+                                  , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 bool ServiceManager::_routingServiceConfigure()
@@ -166,7 +166,7 @@ bool ServiceManager::_routingServiceConfigure()
 
     return ServiceManagerEvent::sendEvent( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager) 
-                                         , static_cast<DispatcherThread &>(serviceManager));
+                                         , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 bool ServiceManager::_routingServiceStart( uint32_t connectTypes )
@@ -175,7 +175,7 @@ bool ServiceManager::_routingServiceStart( uint32_t connectTypes )
     ServiceManagerEventData data(ServiceManagerEventData::startConnection(areg::RemoteServiceKind::Router, connectTypes));
     return ServiceManagerEvent::sendEvent( data
                                          , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                         , static_cast<DispatcherThread &>(serviceManager));
+                                         , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 bool ServiceManager::_routingServiceStart( const areg::String & ipAddress, uint16_t portNr )
@@ -186,7 +186,7 @@ bool ServiceManager::_routingServiceStart( const areg::String & ipAddress, uint1
         ServiceManager & serviceManager = ServiceManager::getInstance( );
         result =ServiceManagerEvent::sendEvent( ServiceManagerEventData::startNetConnection( ipAddress, portNr )
                                               , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                              , static_cast<DispatcherThread &>(serviceManager) );
+                                              , static_cast<areg::DispatcherThread &>(serviceManager) );
     }
     return result;
 }
@@ -196,7 +196,7 @@ void ServiceManager::_routingServiceStop()
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::stopConnection()
                                   , static_cast<ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager));
+                                  , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
 bool ServiceManager::_isRoutingServiceStarted()
@@ -219,14 +219,14 @@ void ServiceManager::_requestCreateThread(const areg::String& componentThread)
     ServiceManager& serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::createComponentThread(componentThread)
                                   , static_cast<ServiceManagerEventConsumer&>(serviceManager)
-                                  , static_cast<DispatcherThread&>(serviceManager) );
+                                  , static_cast<areg::DispatcherThread&>(serviceManager) );
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServiceManager::ServiceManager()
-    : DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
+    : areg::DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , ServiceManagerEventConsumer( )
     , ConnectionConsumer         ( )
     , RegistrationConsumer       ( )
@@ -259,14 +259,14 @@ void ServiceManager::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        ServiceManagerEvent::addListener( static_cast<ServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        ServiceManagerEvent::addListener( static_cast<ServiceManagerEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
     }
     else
     {
-        ServiceManagerEvent::removeListener( static_cast<ServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        ServiceManagerEvent::removeListener( static_cast<ServiceManagerEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
     }
 
-    DispatcherThread::readyForEvents( isReady );
+    areg::DispatcherThread::readyForEvents( isReady );
 }
 
 bool ServiceManager::_startServiceManagerThread()
@@ -280,7 +280,7 @@ void ServiceManager::_stopServiceManagerThread(bool waitComplete)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::shutdownServiceManager()
                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                  , static_cast<areg::DispatcherThread &>(self()));
 
     if (waitComplete)
     {
@@ -354,19 +354,19 @@ void ServiceManager::connectedRemoteServiceChannel(const areg::Channel & channel
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerConnection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                  , static_cast<areg::DispatcherThread &>(self()));
 }
 
 void ServiceManager::disconnectedRemoteServiceChannel(const areg::Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterConnection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                  , static_cast<areg::DispatcherThread &>(self()));
 }
 
 void ServiceManager::lostRemoteServiceChannel(const areg::Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::lostConnection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
-                                  , static_cast<DispatcherThread &>(self()));
+                                  , static_cast<areg::DispatcherThread &>(self()));
 }
