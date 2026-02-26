@@ -99,7 +99,7 @@ namespace areg
     int32_t ComponentThread::createComponents()
     {
         int32_t result = 0;
-        const areg::ComponentList& comList = ComponentLoader::findComponentList(getName());
+        const areg::ComponentList& comList = areg::ComponentLoader::findComponentList(getName());
         if (comList.isValid())
         {
             for (uint32_t i = 0; i < comList.mListComponents.getSize(); ++ i)
@@ -128,7 +128,7 @@ namespace areg
             if (mListComponent.removeLast(comObj))
             {
                 ASSERT(comObj != nullptr);
-                const areg::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
+                const areg::ComponentEntry& entry = areg::ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
                 if (entry.isValid() && entry.mFuncDelete != nullptr)
                 {
                     areg::Component::unloadComponent(*comObj, entry);

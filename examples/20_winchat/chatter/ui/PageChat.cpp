@@ -134,11 +134,11 @@ BOOL PageChat::OnInitDialog( )
     ASSERT(mModelName.isEmpty());
 
     areg::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
-    if ( ComponentLoader::isModelLoaded(model.getModelName()) == false )
+    if ( areg::ComponentLoader::isModelLoaded(model.getModelName()) == false )
     {
         mModelName = model.getModelName();
-        ComponentLoader::addModelUnique( model );
-        ComponentLoader::loadComponentModel( mModelName );    
+        areg::ComponentLoader::addModelUnique( model );
+        areg::ComponentLoader::loadComponentModel( mModelName );    
     }
     else
     {
@@ -214,7 +214,7 @@ void PageChat::OnDestroy( )
 
     if (mModelName.isEmpty() == false)
     {
-        ComponentLoader::unloadComponentModel(true, mModelName);
+        areg::ComponentLoader::unloadComponentModel(true, mModelName);
         mModelName.clear();
 
         ChatPrticipantHandler::Invalidate();
@@ -235,7 +235,7 @@ void PageChat::OnClickedButtonCloseChat( )
     }
 
     areg::String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel(true, modelName );
+    areg::ComponentLoader::unloadComponentModel(true, modelName );
 
     ChatPrticipantHandler::Invalidate();
 

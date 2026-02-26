@@ -108,7 +108,7 @@ int main()
     component.setData( data );
     
     // Add created model to the model list.
-    ComponentLoader::addModelUnique(model);
+    areg::ComponentLoader::addModelUnique(model);
 
     // By passing nullptr, load all models to initialize components
     Application::loadModel( nullptr );

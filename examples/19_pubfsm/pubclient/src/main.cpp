@@ -107,7 +107,7 @@ int main()
 
     printf("\n...........................................\n");
 
-    ComponentLoader::setComponentData(_compName, std::make_any<bool>(isEastWest));
+    areg::ComponentLoader::setComponentData(_compName, std::make_any<bool>(isEastWest));
 
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.

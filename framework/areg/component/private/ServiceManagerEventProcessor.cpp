@@ -489,7 +489,7 @@ void ServiceManagerEventProcessor::_startComponentThread( const areg::String & t
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
-    const areg::ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
+    const areg::ComponentThreadEntry & entry = areg::ComponentLoader::findThreadEntry( threadName );
     areg::Thread * thread = areg::Thread::findThreadByName( threadName );
     if ( entry.isValid( ) && (thread == nullptr) )
     {

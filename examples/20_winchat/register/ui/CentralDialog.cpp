@@ -92,7 +92,7 @@ bool CentralDialog::StartConnection( const areg::String & ipAddress, uint16_t po
             CString message;
 
             std::any data = std::make_any<HWND>(dlg->mPageConnections.GetSafeHwnd());
-            ComponentLoader::setComponentData( chat::COMP_NAME_CENTRAL_SERVER, data );
+            areg::ComponentLoader::setComponentData( chat::COMP_NAME_CENTRAL_SERVER, data );
             if ( Application::loadModel( chat::MODEL_NAME_CENTRAL_SERVER ) )
             {
                 message     = _T("Successfully started servicing ...");

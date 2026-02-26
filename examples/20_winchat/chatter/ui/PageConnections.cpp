@@ -353,7 +353,7 @@ inline void PageConnections::cleanService()
     }
     if ( mDirectConnectModel.isEmpty( ) == false )
     {
-        ComponentLoader::removeComponentModel( mDirectConnectModel );
+        areg::ComponentLoader::removeComponentModel( mDirectConnectModel );
         mDirectConnectModel.clear( );
     }
 }
@@ -390,7 +390,7 @@ inline void PageConnections::unloadModel()
 {
     if ( mDirectConnectModel.isEmpty( ) == false )
     {
-        ComponentLoader::removeComponentModel( mDirectConnectModel );
+        areg::ComponentLoader::removeComponentModel( mDirectConnectModel );
     }
     mDirectConnectModel.clear( );
     mDirectConnectService.clear( );
@@ -412,11 +412,11 @@ inline bool PageConnections::loadModel( const areg::String & nickName, const uin
 
         LOG_DBG("Going to load model [ %s ] with service name [ %s ]", model.getModelName().getString(), serviceName.getString() );
 
-        if ( ComponentLoader::addModelUnique( model ) )
+        if ( areg::ComponentLoader::addModelUnique( model ) )
         {
             mDirectConnectModel     = model.getModelName( );
             mDirectConnectService   = serviceName;
-            result = ComponentLoader::loadComponentModel( mDirectConnectModel );
+            result = areg::ComponentLoader::loadComponentModel( mDirectConnectModel );
         }
     }
     else

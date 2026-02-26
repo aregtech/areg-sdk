@@ -118,7 +118,7 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         std::any data = true;
-        ComponentLoader::getInstance().setComponentData(_mainServiceName, data );
+        areg::ComponentLoader::getInstance().setComponentData(_mainServiceName, data );
 
         // load model to initialize components
         Application::loadModel(_modelName);

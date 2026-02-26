@@ -102,13 +102,13 @@ void Application::releaseApplication()
 
     areg::WatchdogManager::stopWatchdogManager(false);
     TimerManager::stopTimerManager(false);
-    ComponentLoader::unloadComponentModel(false, areg::String::EmptyString);
+    areg::ComponentLoader::unloadComponentModel(false, areg::String::EmptyString);
     ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
     areg::stopLogging(false);
 
     areg::WatchdogManager::waitWatchdogManager();
     TimerManager::waitTimerManager();
-    ComponentLoader::waitModelUnload(areg::String::EmptyString);
+    areg::ComponentLoader::waitModelUnload(areg::String::EmptyString);
     ServiceManager::_waitServiceManager();
     areg::waitLoggingEnd();
 
@@ -118,22 +118,22 @@ void Application::releaseApplication()
 
 bool Application::loadModel(const char * modelName /*= nullptr */)
 {
-    return ComponentLoader::loadComponentModel( modelName );
+    return areg::ComponentLoader::loadComponentModel( modelName );
 }
 
 void Application::unloadModel(const char * modelName /*= nullptr */)
 {
-    ComponentLoader::unloadComponentModel(true, modelName);
+    areg::ComponentLoader::unloadComponentModel(true, modelName);
 }
 
 bool Application::isModelLoaded(const char * modelName)
 {
-    return ComponentLoader::isModelLoaded(modelName);
+    return areg::ComponentLoader::isModelLoaded(modelName);
 }
 
 const areg::Model & Application::findModel( const char * modelName )
 {
-    return ComponentLoader::findModel( modelName );
+    return areg::ComponentLoader::findModel( modelName );
 }
 
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
