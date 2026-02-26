@@ -67,7 +67,7 @@ namespace areg { class ServiceResponseEvent; }
 class ServiceManager    : private   areg::DispatcherThread
                         , private   ServiceManagerEventConsumer
                         , private   ConnectionConsumer
-                        , private   RegistrationConsumer
+                        , private   areg::RegistrationConsumer
 {
     friend class Application;
     friend class ServiceManagerEventProcessor;

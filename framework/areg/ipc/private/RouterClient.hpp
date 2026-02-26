@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RegistrationConsumer;
+namespace areg { class RegistrationConsumer; }
 
 //////////////////////////////////////////////////////////////////////////
 // RouterClient class declaration
@@ -56,7 +56,7 @@ public:
      * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
      * \param   registerConsumer    The instance of remote service registration consumer to handle service register notification.
      **/
-    RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
+    RouterClient(ConnectionConsumer& connectionConsumer, areg::RegistrationConsumer & registerConsumer);
     /**
      * \brief   Destructor
      **/
@@ -230,7 +230,7 @@ private:
     /**
      * \brief   The instance of service register consumer.
      **/
-    RegistrationConsumer &     mRegisterConsumer;
+    areg::RegistrationConsumer &     mRegisterConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

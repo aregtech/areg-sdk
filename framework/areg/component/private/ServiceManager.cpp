@@ -229,10 +229,10 @@ ServiceManager::ServiceManager()
     : areg::DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
     , ServiceManagerEventConsumer( )
     , ConnectionConsumer         ( )
-    , RegistrationConsumer       ( )
+    , areg::RegistrationConsumer       ( )
 
     , mEventProcessor   ( self() )
-    , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<RegistrationConsumer&>(self()) )
+    , mServiceClient    ( static_cast<ConnectionConsumer&>(self()), static_cast<areg::RegistrationConsumer&>(self()) )
     , mLock             (  )
 {
 }

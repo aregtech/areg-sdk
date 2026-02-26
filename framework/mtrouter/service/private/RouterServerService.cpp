@@ -38,7 +38,7 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 
 RouterServerService::RouterServerService()
     : ServiceCommunicationBase   ( areg::COOKIE_ROUTER, areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip), areg::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicationBase::ConnectionPolicy::Accept )
-    , RegistrationConsumer ( )
+    , areg::RegistrationConsumer ( )
     , areg::RegistrationProvider ( )
 
     , mServiceRegistry          ( )

@@ -34,7 +34,7 @@
  *          accept service connections.
  **/
 class RouterServerService   : public    ServiceCommunicationBase
-                            , private   RegistrationConsumer
+                            , private   areg::RegistrationConsumer
                             , private   areg::RegistrationProvider
 {
 //////////////////////////////////////////////////////////////////////////
