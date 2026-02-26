@@ -45,7 +45,7 @@ class NotificationConsumer;
 class NotificationEventData;
 namespace areg { class ServiceResponseEvent; }
 class RemoteResponseEvent;
-class ServiceRequestEvent;
+namespace areg { class ServiceRequestEvent; }
 class NotificationEvent;
 class DispatcherThread;
 class EventDataStream;
@@ -673,7 +673,7 @@ protected:
      * \param   reqId   The ID of request call.
      * \return  Return pointer of valid Request event.
      **/
-    virtual ServiceRequestEvent * createRequestEvent( const EventDataStream & args, uint32_t reqId ) = 0;
+    virtual areg::ServiceRequestEvent * createRequestEvent( const EventDataStream & args, uint32_t reqId ) = 0;
 
     /**
      * \brief   Creates event requesting to receive update notification events.
@@ -686,7 +686,7 @@ protected:
      * \param   reqType     The type of request.
      * \return  Returns valid pointer of created service request event object.
      **/
-    virtual ServiceRequestEvent * createNotificationRequestEvent( uint32_t msgId, areg::RequestType reqType ) = 0;
+    virtual areg::ServiceRequestEvent * createNotificationRequestEvent( uint32_t msgId, areg::RequestType reqType ) = 0;
 
     /**
      * \brief   Overwrite method to create response event from streaming object for 

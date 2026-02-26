@@ -92,14 +92,14 @@ protected:
     /**
      * \brief   Triggered to process service request event.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & /*eventElem*/ ) override
+    virtual void processRequestEvent( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 
     /**
      * \brief   Triggered to process attribute update notification event.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & /*eventElem*/ ) override
+    virtual void processAttributeEvent( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 

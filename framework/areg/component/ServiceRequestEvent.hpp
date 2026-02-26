@@ -32,179 +32,182 @@ namespace areg { class StubAddress; }
 class ProxyAddress;
 class ComponentAddress;
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceRequestEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief       The Service Request Event class is a base class for all
- *              requests to send from Proxy to Stub. This is runtime class
- *              and instance of StubEvent class.
- * 
- * \details     To trigger a function call or starting update notification
- *              Stub object is receiving Service Request event, which is
- *              containing message ID (request or attribute ID), request
- *              type (notification or function call). As well as the source
- *              Proxy object and target Stub should be specified.
- *              Derive this class to define custom request objects and/or
- *              set additional data parameter.
- *
- **/
-class AREG_API ServiceRequestEvent : public areg::StubEvent
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Declare as runtime event class
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ServiceRequestEvent)
-
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceRequestEvent class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Creates Service Event object, set source Proxy address, target Stub Address and event info.
-     * \param   proxyAddress    The source Proxy Address, which sent event.
-     * \param   target          The target Stub Address, which should process event
-     * \param   reqId           The request message ID to process.
-     * \param   reqType         The request type.
-     * \param   eventType       The type of event.
+     * \brief       The Service Request Event class is a base class for all
+     *              requests to send from Proxy to Stub. This is runtime class
+     *              and instance of StubEvent class.
+     * 
+     * \details     To trigger a function call or starting update notification
+     *              Stub object is receiving Service Request event, which is
+     *              containing message ID (request or attribute ID), request
+     *              type (notification or function call). As well as the source
+     *              Proxy object and target Stub should be specified.
+     *              Derive this class to define custom request objects and/or
+     *              set additional data parameter.
+     *
      **/
-    ServiceRequestEvent( const ProxyAddress & proxyAddress
-                       , const areg::StubAddress & target
-                       , uint32_t reqId
-                       , areg::RequestType reqType
-                       , Event::EventType eventType );
+    class AREG_API ServiceRequestEvent : public areg::StubEvent
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Declare as runtime event class
+    //////////////////////////////////////////////////////////////////////////
+        AREG_DECLARE_RUNTIME_EVENT(ServiceRequestEvent)
 
-    /**
-     * \brief   Creates event from streaming object and initializes data
-     * \param   stream  The streaming object to read data
-     **/
-    ServiceRequestEvent(const areg::InStream & stream);
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Creates Service Event object, set source Proxy address, target Stub Address and event info.
+         * \param   proxyAddress    The source Proxy Address, which sent event.
+         * \param   target          The target Stub Address, which should process event
+         * \param   reqId           The request message ID to process.
+         * \param   reqType         The request type.
+         * \param   eventType       The type of event.
+         **/
+        ServiceRequestEvent( const ProxyAddress & proxyAddress
+                        , const areg::StubAddress & target
+                        , uint32_t reqId
+                        , areg::RequestType reqType
+                        , Event::EventType eventType );
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~ServiceRequestEvent() = default;
+        /**
+         * \brief   Creates event from streaming object and initializes data
+         * \param   stream  The streaming object to read data
+         **/
+        ServiceRequestEvent(const areg::InStream & stream);
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Return the address of Proxy of event source
-     **/
-    inline const ProxyAddress & getEventSource() const;
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~ServiceRequestEvent() = default;
 
-    /**
-     * \brief   Sets the address of Proxy of event source
-     * \param   addrProxySource The address of Proxy of source
-     **/
-    inline void setEventSource( const ProxyAddress &  addrProxySource );
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Return the address of Proxy of event source
+         **/
+        inline const ProxyAddress & getEventSource() const;
 
-    /**
-     * \brief   Returns request message ID stored in service event
-     **/
-    inline uint32_t getRequestId() const;
+        /**
+         * \brief   Sets the address of Proxy of event source
+         * \param   addrProxySource The address of Proxy of source
+         **/
+        inline void setEventSource( const ProxyAddress &  addrProxySource );
 
-    /**
-     * \brief   Returns request type to process.
-     **/
-    inline areg::RequestType getRequestType() const;
+        /**
+         * \brief   Returns request message ID stored in service event
+         **/
+        inline uint32_t getRequestId() const;
 
-    /**
-     * \brief   Returns sequence number set in info.
-     **/
-    inline const SequenceNumber & getSequenceNumber() const;
+        /**
+         * \brief   Returns request type to process.
+         **/
+        inline areg::RequestType getRequestType() const;
 
-    /**
-     * \brief   Sets new sequence number.
-     **/
-    inline void setSequenceNumber(const SequenceNumber & newSeqNr);
+        /**
+         * \brief   Returns sequence number set in info.
+         **/
+        inline const SequenceNumber & getSequenceNumber() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    const areg::InStream & readStream( const areg::InStream & stream ) override;
+        /**
+         * \brief   Sets new sequence number.
+         **/
+        inline void setSequenceNumber(const SequenceNumber & newSeqNr);
 
-    /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    areg::OutStream & writeStream( areg::OutStream & stream ) const override;
+    //////////////////////////////////////////////////////////////////////////
+    // Operations
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+    /************************************************************************/
+    // StreamableEvent overrides
+    /************************************************************************/
+        /**
+         * \brief   Reads and initialize event data from streaming object.
+         * \param   stream  The streaming object to read out event data
+         * \return  Returns streaming object to read out data.
+         **/
+        const areg::InStream & readStream( const areg::InStream & stream ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Event source Proxy address
-     **/
-    ProxyAddress              mProxySource;
+        /**
+         * \brief   Writes event data to streaming object
+         * \param   stream  The streaming object to write event data.
+         * \return  Returns streaming object to write event data.
+         **/
+        areg::OutStream & writeStream( areg::OutStream & stream ) const override;
 
-    /**
-     * \brief   Request message ID to trigger service call.
-     **/
-    uint32_t                mMessageId;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Event source Proxy address
+         **/
+        ProxyAddress              mProxySource;
 
-    /**
-     * \brief   Request type. Normally, either notification or request call.
-     **/
-    areg::RequestType    mRequestType;
+        /**
+         * \brief   Request message ID to trigger service call.
+         **/
+        uint32_t                mMessageId;
 
-    /**
-     * \brief   Sequence number.
-     **/
-    SequenceNumber              mSequenceNr;
+        /**
+         * \brief   Request type. Normally, either notification or request call.
+         **/
+        areg::RequestType    mRequestType;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden method calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    ServiceRequestEvent() = delete;
-    AREG_NOCOPY_NOMOVE( ServiceRequestEvent );
-};
+        /**
+         * \brief   Sequence number.
+         **/
+        SequenceNumber              mSequenceNr;
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceRequestEvent class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden / Forbidden method calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ServiceRequestEvent() = delete;
+        AREG_NOCOPY_NOMOVE( ServiceRequestEvent );
+    };
 
-inline const ProxyAddress & ServiceRequestEvent::getEventSource() const
-{
-    return mProxySource;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceRequestEvent class inline functions implementation
+    //////////////////////////////////////////////////////////////////////////
 
-inline void ServiceRequestEvent::setEventSource(const ProxyAddress& addrProxySource)
-{
-    mProxySource = addrProxySource;
-}
+    inline const ProxyAddress & ServiceRequestEvent::getEventSource() const
+    {
+        return mProxySource;
+    }
 
-inline uint32_t ServiceRequestEvent::getRequestId() const
-{
-    return mMessageId;
-}
+    inline void ServiceRequestEvent::setEventSource(const ProxyAddress& addrProxySource)
+    {
+        mProxySource = addrProxySource;
+    }
 
-inline areg::RequestType ServiceRequestEvent::getRequestType() const
-{
-    return mRequestType;
-}
+    inline uint32_t ServiceRequestEvent::getRequestId() const
+    {
+        return mMessageId;
+    }
 
-inline const SequenceNumber & ServiceRequestEvent::getSequenceNumber() const
-{
-    return mSequenceNr;
-}
+    inline areg::RequestType ServiceRequestEvent::getRequestType() const
+    {
+        return mRequestType;
+    }
 
-inline void ServiceRequestEvent::setSequenceNumber(const SequenceNumber & newSeqNr )
-{
-    mSequenceNr = newSeqNr;
-}
+    inline const SequenceNumber & ServiceRequestEvent::getSequenceNumber() const
+    {
+        return mSequenceNr;
+    }
 
+    inline void ServiceRequestEvent::setSequenceNumber(const SequenceNumber & newSeqNr )
+    {
+        mSequenceNr = newSeqNr;
+    }
+
+} // namespace areg
 #endif  // AREG_COMPONENT_SERVICEREQUESTEVENT_HPP

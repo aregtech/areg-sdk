@@ -142,7 +142,7 @@ protected:
      * \param   eventElem   Service Request Event object, contains request
      *                      call ID and parameters.
      **/
-    void processRequestEvent( ServiceRequestEvent & eventElem ) override;
+    void processRequestEvent( areg::ServiceRequestEvent & eventElem ) override;
 
     /**
      * \brief   Triggered to process attribute update notification event.
@@ -150,7 +150,7 @@ protected:
      *          process notification request of attribute update.
      * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
-    void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
+    void processAttributeEvent( areg::ServiceRequestEvent & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

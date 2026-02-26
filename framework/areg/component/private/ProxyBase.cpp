@@ -582,7 +582,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& pr
 
 void ProxyBase::sendRequestEvent( uint32_t reqId, const EventDataStream& args, NotificationConsumer *caller )
 {
-    ServiceRequestEvent* evenElem = createRequestEvent(args, reqId);
+    areg::ServiceRequestEvent* evenElem = createRequestEvent(args, reqId);
     if ( evenElem != nullptr )
     {
         uint32_t respId = getProxyData().getResponseId(static_cast<uint32_t>(reqId));
@@ -600,7 +600,7 @@ void ProxyBase::sendRequestEvent( uint32_t reqId, const EventDataStream& args, N
 
 void ProxyBase::sendNotificationRequestEvent( uint32_t msgId, areg::RequestType reqType )
 {
-    ServiceRequestEvent* notifyEvent = createNotificationRequestEvent(msgId, reqType);
+    areg::ServiceRequestEvent* notifyEvent = createNotificationRequestEvent(msgId, reqType);
     if (notifyEvent != nullptr)
     {
         mProxyAddress.deliverServiceEvent( *notifyEvent );

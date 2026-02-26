@@ -35,7 +35,7 @@
  ************************************************************************/
 namespace areg { class StubAddress; }
 class ProxyAddress;
-class ServiceRequestEvent;
+namespace areg { class ServiceRequestEvent; }
 namespace areg { class ServiceResponseEvent; }
 
 //////////////////////////////////////////////////////////////////////////

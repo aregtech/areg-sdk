@@ -88,11 +88,11 @@ void SystemServiceConsole::errorRequest( uint32_t /* msgId */, bool /* msgCancel
 {
 }
 
-void SystemServiceConsole::processRequestEvent( ServiceRequestEvent & /* eventElem */ )
+void SystemServiceConsole::processRequestEvent( areg::ServiceRequestEvent & /* eventElem */ )
 {
 }
 
-void SystemServiceConsole::processAttributeEvent( ServiceRequestEvent & /* eventElem */ )
+void SystemServiceConsole::processAttributeEvent( areg::ServiceRequestEvent & /* eventElem */ )
 {
 }
 

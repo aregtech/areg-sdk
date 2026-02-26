@@ -33,7 +33,7 @@
 namespace areg { class InStream; }
 namespace areg { class StubAddress; }
 class Event;
-class ServiceRequestEvent;
+namespace areg { class ServiceRequestEvent; }
 namespace areg { class ServiceResponseEvent; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -313,7 +313,7 @@ public:
      *          for remote target, the returned boolean value indicates whether event was successfully
      *          queued in the communication channel to deliver.
      **/
-    bool deliverServiceEvent( ServiceRequestEvent & stubEvent ) const;
+    bool deliverServiceEvent( areg::ServiceRequestEvent & stubEvent ) const;
 
     /**
      * \brief   Delivers specified service response event to target Stub

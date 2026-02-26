@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // RequestEvent class, runtime functions implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(RequestEvent, ServiceRequestEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(RequestEvent, areg::ServiceRequestEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // RequestEvent class, Constructors / Destructor
@@ -34,7 +34,7 @@ RequestEvent::RequestEvent( const ProxyAddress & fromSource
                           , const areg::StubAddress & toTarget
                           , uint32_t reqId
                           , Event::EventType eventType )
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
+    : areg::ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
     , mData(reqId, Event::isExternal(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
 {
 }
@@ -45,27 +45,27 @@ RequestEvent::RequestEvent( const EventDataStream & args
                           , uint32_t reqId
                           , Event::EventType eventType
                           , const areg::String & name /*= areg::String::getEmptyString()*/ )
-    : ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
+    : areg::ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
     , mData(reqId, args, name)
 {
 }
 
 RequestEvent::RequestEvent( const areg::InStream & stream )
-    : ServiceRequestEvent( stream )
+    : areg::ServiceRequestEvent( stream )
     , mData( stream )
 {
 }
 
 const areg::InStream & RequestEvent::readStream(const areg::InStream & stream)
 {
-    ServiceRequestEvent::readStream(stream);
+    areg::ServiceRequestEvent::readStream(stream);
     stream >> mData;
     return stream;
 }
 
 areg::OutStream & RequestEvent::writeStream(areg::OutStream & stream) const
 {
-    ServiceRequestEvent::writeStream(stream);
+    areg::ServiceRequestEvent::writeStream(stream);
     stream << mData;
     return stream;
 }
@@ -140,7 +140,7 @@ RemoteRequestEvent::RemoteRequestEvent( const areg::InStream & stream )
 //////////////////////////////////////////////////////////////////////////
 // NotifyRequestEvent class, runtime functions implementation
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(NotifyRequestEvent, ServiceRequestEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(NotifyRequestEvent, areg::ServiceRequestEvent)
 
 //////////////////////////////////////////////////////////////////////////
 // NotifyRequestEvent class, Constructors / Destructor
@@ -150,12 +150,12 @@ NotifyRequestEvent::NotifyRequestEvent( const ProxyAddress & fromProxy
                                       , uint32_t msgId
                                       , areg::RequestType reqType
                                       , Event::EventType eventType)
-    : ServiceRequestEvent ( fromProxy, toStub, msgId, reqType, eventType)
+    : areg::ServiceRequestEvent ( fromProxy, toStub, msgId, reqType, eventType)
 {
 }
 
 NotifyRequestEvent::NotifyRequestEvent(const areg::InStream & stream)
-    : ServiceRequestEvent ( stream )
+    : areg::ServiceRequestEvent ( stream )
 {
 }
 

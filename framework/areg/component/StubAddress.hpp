@@ -29,7 +29,7 @@
  ************************************************************************/
 namespace areg { class InStream; }
 class ProxyAddress;
-class ServiceRequestEvent;
+namespace areg { class ServiceRequestEvent; }
 
 namespace areg
 {
@@ -326,7 +326,7 @@ namespace areg
          * \note    For remote events, it returns true if event is queued to be delivered and returned boolean value does not
          *          indicate that the target component received event.
          **/
-        bool deliverServiceEvent( ServiceRequestEvent & serviceEvent ) const;
+        bool deliverServiceEvent( areg::ServiceRequestEvent & serviceEvent ) const;
 
         /**
          * \brief   Converts Stub address to string as a Address Path, containing

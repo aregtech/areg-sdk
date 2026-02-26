@@ -26,7 +26,7 @@
  * \brief   An event sent by Service Manager to Stub to notify client Proxy connection status.
  *          Triggered by system and delivered to Sub to handle when need to change connection status.
  **/
-class StubConnectEvent  : public    ServiceRequestEvent
+class StubConnectEvent  : public    areg::ServiceRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime Event

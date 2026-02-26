@@ -192,7 +192,7 @@ void ProxyAddress::setThread( const areg::String & threadName )
     }
 }
 
-bool ProxyAddress::deliverServiceEvent(ServiceRequestEvent & stubEvent) const
+bool ProxyAddress::deliverServiceEvent(areg::ServiceRequestEvent & stubEvent) const
 {
     return ProxyAddress::_deliverEvent( static_cast<Event &>(stubEvent), mChannel.getTarget());
 }

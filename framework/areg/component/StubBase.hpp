@@ -392,7 +392,7 @@ namespace areg
          * \param   eventElem   Service Request Event object, contains request
          *                      call ID and parameters.
          **/
-        virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override = 0;
+        virtual void processRequestEvent( areg::ServiceRequestEvent & eventElem ) override = 0;
         
         /**
          * \brief   Triggered to process attribute update notification event.
@@ -400,7 +400,7 @@ namespace areg
          *          process notification request of attribute update.
          * \param   eventElem   Service Request Event object, contains attribute ID.
          **/
-        virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override = 0;
+        virtual void processAttributeEvent( areg::ServiceRequestEvent & eventElem ) override = 0;
 
         /**
          * \brief   Triggered by system when stub is registered in service. The connection status indicated

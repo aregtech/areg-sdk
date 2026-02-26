@@ -179,7 +179,7 @@ bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, co
     {
     case Event::EventType::EventRemoteServiceRequest:
         {
-            const ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceRequestEvent);
+            const areg::ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, areg::ServiceRequestEvent);
             if ( stubEvent != nullptr )
             {
                 eventStreamable.writeStream(stream);
@@ -202,7 +202,7 @@ bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, co
 
     case Event::EventType::EventRemoteNotifyRequest:
         {
-            const ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, ServiceRequestEvent);
+            const areg::ServiceRequestEvent * stubEvent = AREG_RUNTIME_CONST_CAST(&eventStreamable, areg::ServiceRequestEvent);
             if ( stubEvent != nullptr )
             {
                 eventStreamable.writeStream(stream);

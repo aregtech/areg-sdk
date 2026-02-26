@@ -63,7 +63,7 @@
  *          message specific parameter information.
  *
  **/
-class AREG_API RequestEvent    : public ServiceRequestEvent
+class AREG_API RequestEvent    : public areg::ServiceRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.
@@ -353,7 +353,7 @@ private:
  *          to send notification messages like attribute change
  *          or response notification
  **/
-class AREG_API NotifyRequestEvent : public ServiceRequestEvent
+class AREG_API NotifyRequestEvent : public areg::ServiceRequestEvent
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.

@@ -200,7 +200,7 @@ namespace areg
         }
     }
 
-    bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) const
+    bool StubAddress::deliverServiceEvent( areg::ServiceRequestEvent & serviceEvent ) const
     {
         bool result{ false };
 

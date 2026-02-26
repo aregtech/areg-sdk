@@ -47,7 +47,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ServiceRequestEvent;
+namespace areg { class ServiceRequestEvent; }
 class RequestEvent;
 class NotifyRequestEvent;
 class StubConnectEvent;
@@ -211,7 +211,7 @@ namespace areg
          *                      which contains request ID and serialized
          *                      parameters.
          **/
-        virtual void processRequestEvent( ServiceRequestEvent & eventElem ) = 0;
+        virtual void processRequestEvent( areg::ServiceRequestEvent & eventElem ) = 0;
 
         /**
          * \brief	This event processing function is triggered when Stub
@@ -219,7 +219,7 @@ namespace areg
          * \param	eventElem	Service Request event object to process,
          *                      which contains attribute ID.
          **/
-        virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) = 0;
+        virtual void processAttributeEvent( areg::ServiceRequestEvent & eventElem ) = 0;
 
         /**
          * \brief	This function is triggered when component event should

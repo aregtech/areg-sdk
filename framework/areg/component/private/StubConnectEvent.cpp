@@ -18,10 +18,10 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/base/IOStream.hpp"
 
-AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
+AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, areg::ServiceRequestEvent)
 
 StubConnectEvent::StubConnectEvent(const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
-    : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
+    : areg::ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
                             , stubTarget
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , areg::RequestType::ServiceConnection
@@ -31,7 +31,7 @@ StubConnectEvent::StubConnectEvent(const areg::StubAddress & stubTarget, areg::S
 }
 
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
-    : ServiceRequestEvent   ( proxyClient
+    : areg::ServiceRequestEvent   ( proxyClient
                             , stubTarget
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                             , areg::RequestType::ClientConnection
@@ -41,7 +41,7 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const areg:
 }
 
 StubConnectEvent::StubConnectEvent( const areg::InStream & stream )
-    : ServiceRequestEvent   ( stream )
+    : areg::ServiceRequestEvent   ( stream )
     , mConnectionStatus    ( areg::ServiceConnectionState::Unknown )
 {
     stream >> mConnectionStatus;
@@ -49,14 +49,14 @@ StubConnectEvent::StubConnectEvent( const areg::InStream & stream )
 
 const areg::InStream & StubConnectEvent::readStream(const areg::InStream & stream)
 {
-    ServiceRequestEvent::readStream(stream);
+    areg::ServiceRequestEvent::readStream(stream);
     stream >> mConnectionStatus;
     return stream;
 }
 
 areg::OutStream & StubConnectEvent::writeStream(areg::OutStream & stream) const
 {
-    ServiceRequestEvent::writeStream(stream);
+    areg::ServiceRequestEvent::writeStream(stream);
     stream << mConnectionStatus;
     return stream;
 }
