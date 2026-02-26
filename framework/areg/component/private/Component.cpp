@@ -101,7 +101,7 @@ namespace areg
         return Component::resource_map().findResourceObject(magicNum);
     }
 
-    Component* Component::findComponentByAddress( const ComponentAddress& comAddress )
+    Component* Component::findComponentByAddress( const areg::ComponentAddress& comAddress )
     {
         Component* result = Component::resource_map().findResourceObject( static_cast<uint32_t>(comAddress.getRoleName()) );
         return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);

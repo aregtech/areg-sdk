@@ -30,7 +30,7 @@
  ************************************************************************/
 namespace areg { class StubAddress; }
 class ProxyAddress;
-class ComponentAddress;
+namespace areg { class ComponentAddress; }
 
 namespace areg
 {

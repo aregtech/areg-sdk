@@ -35,11 +35,11 @@ RequestEvent::RequestEvent( const ProxyAddress & fromSource
                           , uint32_t reqId
                           , Event::EventType eventType )
     : areg::ServiceRequestEvent(fromSource, toTarget, reqId, areg::RequestType::CallFunction, eventType)
-    , mData(reqId, Event::isExternal(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
+    , mData(reqId, Event::isExternal(eventType) ? areg::EventDataStream::EventDataKind::External : areg::EventDataStream::EventDataKind::Internal)
 {
 }
 
-RequestEvent::RequestEvent( const EventDataStream & args
+RequestEvent::RequestEvent( const areg::EventDataStream & args
                           , const ProxyAddress & fromSource
                           , const areg::StubAddress& toTarget
                           , uint32_t reqId
@@ -87,7 +87,7 @@ LocalRequestEvent::LocalRequestEvent( const ProxyAddress & fromSource, const are
 {
 }
 
-LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
+LocalRequestEvent::LocalRequestEvent( const areg::EventDataStream & args
                                     , const ProxyAddress & fromSource
                                     , const areg::StubAddress & toTarget
                                     , uint32_t reqId
@@ -118,7 +118,7 @@ RemoteRequestEvent::RemoteRequestEvent( const ProxyAddress & fromSource, const a
 {
 }
 
-RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
+RemoteRequestEvent::RemoteRequestEvent( const areg::EventDataStream & args
                                       , const ProxyAddress & fromSource
                                       , const areg::StubAddress & toTarget
                                       , uint32_t reqId

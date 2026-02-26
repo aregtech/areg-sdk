@@ -339,7 +339,7 @@ namespace areg
             errorRequest(attrId, false);
     }
 
-    void StubBase::sendUpdateEvent( uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
+    void StubBase::sendUpdateEvent( uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const
     {
         LOG_SCOPE( areg_component_StubBase_sendUpdateEvent);
         StubBase::StubListenerList listeners;
@@ -357,7 +357,7 @@ namespace areg
         }
     }
 
-    void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
+    void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const
     {
         areg::ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
         if ( eventElem != nullptr )
@@ -366,7 +366,7 @@ namespace areg
         }
     }
 
-    void StubBase::sendResponseEvent( uint32_t respId, const EventDataStream & data )
+    void StubBase::sendResponseEvent( uint32_t respId, const areg::EventDataStream & data )
     {
         StubBase::StubListenerList listeners;
         if (findListeners(respId, listeners) > 0)
@@ -383,7 +383,7 @@ namespace areg
     void StubBase::sendBusyRespone( const Listener & whichListener )
     {
         LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-        areg::ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
+        areg::ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, areg::EventDataStream::empty_data());
         if (eventElem != nullptr)
         {
             LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
@@ -564,7 +564,7 @@ namespace areg
     areg::ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */
                                                 , uint32_t             /* msgId */
                                                 , areg::ResultType   /* result */
-                                                , const EventDataStream &  /* data */ ) const
+                                                , const areg::EventDataStream &  /* data */ ) const
     {
         return nullptr;
     }

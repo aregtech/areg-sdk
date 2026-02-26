@@ -99,7 +99,7 @@ protected:
      *                      local request or remote request type.
      * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
-    RequestEvent( const EventDataStream & args
+    RequestEvent( const areg::EventDataStream & args
                 , const ProxyAddress & fromSource
                 , const areg::StubAddress & toTarget
                 , uint32_t reqId
@@ -227,7 +227,7 @@ protected:
      * \param	reqId	    The ID of request.
      * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
-    LocalRequestEvent( const EventDataStream & args
+    LocalRequestEvent( const areg::EventDataStream & args
                      , const ProxyAddress & fromSource
                      , const areg::StubAddress & toTarget
                      , uint32_t reqId
@@ -293,7 +293,7 @@ protected:
      * \param	reqId	    The ID of request.
      * \param	name	    Optional. Name for event data. Can be nullptr.
      **/
-    RemoteRequestEvent( const EventDataStream & args
+    RemoteRequestEvent( const areg::EventDataStream & args
                       , const ProxyAddress & fromSource
                       , const areg::StubAddress & toTarget
                       , uint32_t reqId

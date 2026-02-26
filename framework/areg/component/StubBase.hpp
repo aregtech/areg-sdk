@@ -41,7 +41,7 @@ class RemoteNotifyRequestEvent;
 namespace areg { class ServiceResponseEvent; }
 class RemoteRequestEvent;
 namespace areg { class ComponentThread; }
-class EventDataStream;
+namespace areg { class EventDataStream; }
 namespace areg { class ResponseEvent; }
 namespace areg { class Component; }
 class RemoteEventFactory;
@@ -362,7 +362,7 @@ namespace areg
          * \param   data    The buffer of data to send to client. Can be Invalid buffer
          * \return  Returns valid pointer to Response event object
          **/
-        virtual areg::ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const EventDataStream & data ) const;
+        virtual areg::ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::EventDataStream & data ) const;
 
         /**
          * \brief   Overwrite method to create remote service request event from streaming object for 
@@ -612,7 +612,7 @@ namespace areg
          * \param   data    The buffer of serialized data to send to proxy. Can be Invalid buffer
          * \param   result  The result to send to proxy objects.
          **/
-        void sendUpdateEvent(uint32_t msgId, const EventDataStream & data, areg::ResultType result) const;
+        void sendUpdateEvent(uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result) const;
 
         /**
          * \brief   Send once the data update notification event to the specified target.
@@ -621,14 +621,14 @@ namespace areg
          * \param   data    The data to send to the target. Can be Invalid buffer
          * \param   result  The result of data update to send to the target object.
          **/
-        void sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const;
+        void sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const;
 
         /**
          * \brief   Sends response event to proxy. The list of proxy listeners is selected by message ID.
          * \param   respId  The ID of response to send to proxy objects
          * \param   data    The buffer of serialized data to send to proxy (should be serialized arguments of response call)
          **/
-        void sendResponseEvent(uint32_t respId, const EventDataStream & data);
+        void sendResponseEvent(uint32_t respId, const areg::EventDataStream & data);
 
         /**
          * \brief   Sends busy response on request from client side. If the stub already processing request, 

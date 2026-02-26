@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2026 Aregtech UG. All rights reserved.
  * \file        areg/component/EventDataStream.hpp
- * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit 
+ * \ingroup     Areg SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Areg Platform, Event data streaming object.
  *              This object is used to serialize and deserialize
@@ -26,6 +26,9 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Stack.hpp"
+
+namespace areg
+{
 
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class declaration
@@ -226,7 +229,7 @@ protected:
     /**
      * \brief	Write data to output stream object from given buffer
      *          and returns the size of written data
-     * \param	buffer	The pointer to buffer to read data and 
+     * \param	buffer	The pointer to buffer to read data and
      *          copy to output stream object
      * \param	size	The size in bytes of data buffer
      * \return	Returns the size in bytes of written data
@@ -235,7 +238,7 @@ protected:
 
     /**
      * \brief	Writes Binary data from Byte Buffer object to Output Stream object
-     *          and returns the size of written data. Overwrite this method if need 
+     *          and returns the size of written data. Overwrite this method if need
      *          to change behavior of streaming buffer.
      * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
      * \return	Returns the size in bytes of written data
@@ -266,7 +269,7 @@ protected:
 
 protected:
     /**
-     * \brief	Returns size in bytes of available data that can be read, 
+     * \brief	Returns size in bytes of available data that can be read,
      *          i.e. remaining readable size.
      *          No necessarily that this size is equal to size of streamable buffer.
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
@@ -275,7 +278,7 @@ protected:
     uint32_t getSizeReadable() const override;
 
     /**
-     * \brief	Returns size in bytes of available space that can be written, 
+     * \brief	Returns size in bytes of available space that can be written,
      *          i.e. remaining writable size.
      *          No necessarily that this size is equal to size of streamable buffer.
      *          For example, if the size of buffer is 'n' and 'x' bytes of data was
@@ -360,5 +363,7 @@ inline areg::OutStream & operator << ( areg::OutStream & stream, const EventData
     stream << output.mDataBuffer;
     return stream;
 }
+
+} // namespace areg
 
 #endif  // AREG_COMPONENT_EVENTDATASTREAM_HPP

@@ -99,7 +99,7 @@ namespace areg
          * \param   seqNr       The call sequence number.
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
-        ResponseEvent( const EventDataStream & args
+        ResponseEvent( const areg::EventDataStream & args
                     , const ProxyAddress & proxyTarget
                     , ResultType result
                     , uint32_t respId
@@ -240,7 +240,7 @@ namespace areg
          * \param   seqNr       The call sequence number.
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
-        LocalResponseEvent( const EventDataStream & args
+        LocalResponseEvent( const areg::EventDataStream & args
                         , const ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
@@ -319,7 +319,7 @@ namespace areg
          * \param   seqNr       The call sequence number.
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
-        RemoteResponseEvent( const EventDataStream & args
+        RemoteResponseEvent( const areg::EventDataStream & args
                         , const ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId

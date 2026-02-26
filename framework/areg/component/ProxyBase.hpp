@@ -48,7 +48,7 @@ namespace areg { class RemoteResponseEvent; }
 namespace areg { class ServiceRequestEvent; }
 class NotificationEvent;
 namespace areg { class DispatcherThread; }
-class EventDataStream;
+namespace areg { class EventDataStream; }
 class ProxyListener;
 class ProxyEvent;
 class ProxyBase;
@@ -673,7 +673,7 @@ protected:
      * \param   reqId   The ID of request call.
      * \return  Return pointer of valid Request event.
      **/
-    virtual areg::ServiceRequestEvent * createRequestEvent( const EventDataStream & args, uint32_t reqId ) = 0;
+    virtual areg::ServiceRequestEvent * createRequestEvent( const areg::EventDataStream & args, uint32_t reqId ) = 0;
 
     /**
      * \brief   Creates event requesting to receive update notification events.
@@ -945,7 +945,7 @@ protected:
      *                  This parameter can be nullptr only if request has not appropriate response.
      *                  Otherwise this should be valid pointer.
      **/
-    void sendRequestEvent( uint32_t reqId, const EventDataStream & args, NotificationConsumer * caller );
+    void sendRequestEvent( uint32_t reqId, const areg::EventDataStream & args, NotificationConsumer * caller );
 
     /**
      * \brief   Sends request events to Stub object to start or stop receiving update notifications.

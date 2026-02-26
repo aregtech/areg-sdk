@@ -148,7 +148,7 @@ namespace areg
          * \return	If found, returns pointer to registered component.
          *          Otherwise returns nullptr.
          **/
-        static Component * findComponentByAddress(const ComponentAddress & comAddress);
+        static Component * findComponentByAddress(const areg::ComponentAddress & comAddress);
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor.
@@ -304,7 +304,7 @@ namespace areg
         /**
          * \brief   Returns address of component
          **/
-        inline const ComponentAddress & getAddress() const;
+        inline const areg::ComponentAddress & getAddress() const;
 
         /**
          * \brief   Returns the list of registered (provided) Server Service list.
@@ -402,7 +402,7 @@ namespace areg
         return mComponentInfo.getRoleName();
     }
 
-    inline const ComponentAddress& Component::getAddress() const
+    inline const areg::ComponentAddress& Component::getAddress() const
     {
         return mComponentInfo.getAddress();
     }

@@ -36,11 +36,11 @@ namespace areg
                                 , Event::EventType eventType
                                 , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/ )
         : areg::ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
-        , mData (respId, Event::isExternal(eventType) ? EventDataStream::EventDataKind::External : EventDataStream::EventDataKind::Internal)
+        , mData (respId, Event::isExternal(eventType) ? areg::EventDataStream::EventDataKind::External : areg::EventDataStream::EventDataKind::Internal)
     {
     }
 
-    areg::ResponseEvent::ResponseEvent( const EventDataStream & args
+    areg::ResponseEvent::ResponseEvent( const areg::EventDataStream & args
                                 , const ProxyAddress & proxyTarget
                                 , areg::ResultType result
                                 , uint32_t respId
@@ -98,7 +98,7 @@ namespace areg
     {
     }
 
-    areg::LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
+    areg::LocalResponseEvent::LocalResponseEvent( const areg::EventDataStream & args
                                         , const ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
@@ -139,7 +139,7 @@ namespace areg
         ASSERT(getData().getDataStream().isExternalDataStream());
     }
 
-    areg::RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
+    areg::RemoteResponseEvent::RemoteResponseEvent( const areg::EventDataStream & args
                                             , const ProxyAddress & proxyTarget
                                             , areg::ResultType result
                                             , uint32_t respId

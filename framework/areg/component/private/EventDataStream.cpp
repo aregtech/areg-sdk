@@ -28,6 +28,9 @@ namespace
 
 }
 
+namespace areg
+{
+
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, static members
 //////////////////////////////////////////////////////////////////////////
@@ -211,3 +214,5 @@ uint32_t EventDataStream::getSizeWritable() const
     ASSERT(false);
     return 0;
 }
+
+} // namespace areg

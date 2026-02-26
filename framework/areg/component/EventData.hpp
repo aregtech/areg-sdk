@@ -63,7 +63,7 @@ public:
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(uint32_t msgId, EventDataStream::EventDataKind dataType, const areg::String & name = areg::String::getEmptyString());
+    EventData(uint32_t msgId, areg::EventDataStream::EventDataKind dataType, const areg::String & name = areg::String::getEmptyString());
 
     /**
      * \brief	Constructor.
@@ -75,7 +75,7 @@ public:
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(uint32_t msgId, const EventDataStream & args, const areg::String & name = areg::String::getEmptyString());
+    EventData(uint32_t msgId, const areg::EventDataStream & args, const areg::String & name = areg::String::getEmptyString());
 
     /**
      * \brief   Copy constructor.
@@ -161,7 +161,7 @@ public:
      * \brief   Returns reference of data container object,
      *          which is a streaming object.
      **/
-    inline const EventDataStream & getDataStream() const;
+    inline const areg::EventDataStream & getDataStream() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -174,7 +174,7 @@ private:
     /**
      * \brief   Streaming object, containing data in binary format.
      **/
-    EventDataStream                 mData;
+    areg::EventDataStream                 mData;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ inline areg::OutStream & EventData::getWriteStream()
     return mData.getStreamForWrite();
 }
 
-inline const EventDataStream & EventData::getDataStream() const
+inline const areg::EventDataStream & EventData::getDataStream() const
 {
     return mData;
 }

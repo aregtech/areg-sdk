@@ -580,7 +580,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& pr
     return map_proxies().findResourceObject(proxyAddress);
 }
 
-void ProxyBase::sendRequestEvent( uint32_t reqId, const EventDataStream& args, NotificationConsumer *caller )
+void ProxyBase::sendRequestEvent( uint32_t reqId, const areg::EventDataStream& args, NotificationConsumer *caller )
 {
     areg::ServiceRequestEvent* evenElem = createRequestEvent(args, reqId);
     if ( evenElem != nullptr )

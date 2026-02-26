@@ -98,7 +98,7 @@ public:
     /**
      * \brief   Returns the address of Component
      **/
-    inline const ComponentAddress & getAddress() const;
+    inline const areg::ComponentAddress & getAddress() const;
 
     /**
      * \brief   Returns the Role Name of Component
@@ -241,7 +241,7 @@ private:
     /**
      * \brief   The address of Component associated with Component Info object
      **/
-    ComponentAddress  mComponentAddress;
+    areg::ComponentAddress  mComponentAddress;
 
     /**
      * \brief   The Master Thread of Component (Component Thread)
@@ -276,7 +276,7 @@ inline areg::ComponentThread& ComponentInfo::getMasterThread() const
     return mMasterThread;
 }
 
-inline const ComponentAddress& ComponentInfo::getAddress() const
+inline const areg::ComponentAddress& ComponentInfo::getAddress() const
 {
     return mComponentAddress;
 }
@@ -304,7 +304,7 @@ inline areg::WorkerThread* ComponentInfo::findWorkerThread( const areg::String &
 
 inline areg::WorkerThread* ComponentInfo::findThreadByPath( const areg::String & componentPath ) const
 {
-    ComponentAddress componentAddress = ComponentAddress::convPathToAddress(componentPath);
+    areg::ComponentAddress componentAddress = areg::ComponentAddress::convPathToAddress(componentPath);
     return findWorkerThread(componentAddress.getThreadAddress());
 }
 
