@@ -46,7 +46,7 @@ struct ObserverEvents;
  *          This object is instantiated as a singleton. It as well contains the pointer to the
  *          structure of callbacks to trigger when an event happens.
  **/
-class LoggerClient  : public    ServiceClientConnectionBase
+class LoggerClient  : public    areg::ServiceClientConnectionBase
                     , public    ConfigListener
                     , protected areg::DispatcherThread
                     , protected ConnectionConsumer

@@ -38,7 +38,7 @@ class RegistrationConsumer;
  *          to read and send message, to dispatch messages and
  *          communicate with service manager.
  **/
-class RouterClient  : public    ServiceClientConnectionBase
+class RouterClient  : public    areg::ServiceClientConnectionBase
                     , public    RegistrationProvider
                     , protected areg::DispatcherThread
                     , private   RemoteMessageHandler

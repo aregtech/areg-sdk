@@ -30,7 +30,7 @@
 
 NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, areg::DispatcherThread & dispatchThread)
     : LoggerBase                    (logConfig)
-    , ServiceClientConnectionBase   ( areg::COOKIE_LOGGER
+    , areg::ServiceClientConnectionBase   ( areg::COOKIE_LOGGER
                                     , areg::RemoteServiceKind::Logger
                                     , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                     , areg::MessageSource::SourceClient

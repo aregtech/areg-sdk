@@ -53,7 +53,7 @@ namespace areg { class SharedBuffer; }
  *          and forwards log messages to the remote service.
  **/
 class NetTcpLogger  : public    LoggerBase
-                    , public    ServiceClientConnectionBase
+                    , public    areg::ServiceClientConnectionBase
                     , private   ConnectionConsumer
                     , private   RemoteMessageHandler
 {

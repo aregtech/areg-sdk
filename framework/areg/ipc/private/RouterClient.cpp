@@ -45,7 +45,7 @@ DEF_LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 //////////////////////////////////////////////////////////////////////////
 
 RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer& registerConsumer)
-    : ServiceClientConnectionBase   ( areg::COOKIE_ROUTER
+    : areg::ServiceClientConnectionBase   ( areg::COOKIE_ROUTER
                                     , areg::RemoteServiceKind::Router
                                     , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                     , areg::MessageSource::SourceClient
@@ -68,7 +68,7 @@ bool RouterClient::connectServiceHost()
     {
         if (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE))
         {
-            result = ServiceClientConnectionBase::connectServiceHost();
+            result = areg::ServiceClientConnectionBase::connectServiceHost();
         }
         else
         {
@@ -77,7 +77,7 @@ bool RouterClient::connectServiceHost()
     }
     else if (mClientConnection.isValid() == false)
     {
-        result = ServiceClientConnectionBase::connectServiceHost();
+        result = areg::ServiceClientConnectionBase::connectServiceHost();
     }
     else
     {
@@ -91,7 +91,7 @@ void RouterClient::disconnectServiceHost()
 {
     if (isRunning())
     {
-        ServiceClientConnectionBase::disconnectServiceHost();
+        areg::ServiceClientConnectionBase::disconnectServiceHost();
         completionWait(areg::WAIT_INFINITE);
         shutdownThread(areg::DO_NOT_WAIT);
     }
@@ -99,14 +99,14 @@ void RouterClient::disconnectServiceHost()
 
 void RouterClient::onServiceExit()
 {
-    ServiceClientConnectionBase::onServiceExit();
+    areg::ServiceClientConnectionBase::onServiceExit();
     triggerExit();
 }
 
 bool RouterClient::isServiceHostPending() const
 {
     Lock lock(mLock);
-    return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting)));
+    return (isRunning() && ((mClientConnection.isValid() == false) || (getConnectionState() == areg::ServiceClientConnectionBase::ConnectionPhase::ConnectionStarting)));
 }
 
 bool RouterClient::registerServiceProvider( const areg::StubAddress & stubService )
@@ -521,12 +521,12 @@ void RouterClient::readyForEvents(bool isReady)
     {
         registerForServiceClientCommands();
         areg::DispatcherThread::readyForEvents(true);
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
+        setConnectionState(areg::ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
     else
     {
         areg::DispatcherThread::readyForEvents(false);
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
+        setConnectionState(areg::ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
         unregisterForServiceClientCommands();
     }
 }

@@ -32,7 +32,7 @@ LoggerClient& LoggerClient::getInstance()
 }
 
 LoggerClient::LoggerClient()
-    : ServiceClientConnectionBase( LoggerClient::TARGET_ID
+    : areg::ServiceClientConnectionBase( LoggerClient::TARGET_ID
                                  , LoggerClient::SERVICE_TYPE
                                  , static_cast<uint32_t>(CONNECT_TYPE)
                                  , LoggerClient::SOURCE_TYPE
@@ -438,12 +438,12 @@ void LoggerClient::readyForEvents(bool isReady)
     {
         registerForServiceClientCommands();
         areg::DispatcherThread::readyForEvents(true);
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
+        setConnectionState(areg::ServiceClientConnectionBase::ConnectionPhase::DisconnectState);
     }
     else
     {
         areg::DispatcherThread::readyForEvents(false);
-        setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
+        setConnectionState(areg::ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
         unregisterForServiceClientCommands();
     }
 }
@@ -455,7 +455,7 @@ bool LoggerClient::connectServiceHost()
     {
         if (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE))
         {
-            result = ServiceClientConnectionBase::connectServiceHost();
+            result = areg::ServiceClientConnectionBase::connectServiceHost();
         }
         else
         {
@@ -490,7 +490,7 @@ void LoggerClient::disconnectServiceHost()
 
         mInstances.clear();
 
-        ServiceClientConnectionBase::disconnectServiceHost();
+        areg::ServiceClientConnectionBase::disconnectServiceHost();
         completionWait(areg::WAIT_INFINITE);
         shutdownThread(areg::DO_NOT_WAIT);
     }
@@ -498,7 +498,7 @@ void LoggerClient::disconnectServiceHost()
 
 void LoggerClient::onServiceExit()
 {
-    ServiceClientConnectionBase::onServiceExit();
+    areg::ServiceClientConnectionBase::onServiceExit();
     triggerExit();
 }
 
