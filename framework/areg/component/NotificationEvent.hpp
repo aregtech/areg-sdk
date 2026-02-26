@@ -289,7 +289,7 @@ private:
  *          Notification Event Consumer to be able to receive and process
  *          notifications from proxies.
  **/
-class AREG_API NotificationConsumer  : public EventConsumer
+class AREG_API NotificationConsumer  : public areg::EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

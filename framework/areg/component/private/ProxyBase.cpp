@@ -291,13 +291,13 @@ ProxyBase::ProxyBase(const areg::String & roleName, const areg::InterfaceData & 
 
 void ProxyBase::registerServiceListeners()
 {
-    ProxyConnectEvent::addListener( static_cast<EventConsumer &>(self( )), mDispatcherThread );
+    ProxyConnectEvent::addListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
 }
 
 void ProxyBase::unregisterServiceListeners()
 {
-    ProxyConnectEvent::removeListener( static_cast<EventConsumer &>(self( )), mDispatcherThread );
-    ProxyBase::ServiceAvailableEvent::removeListener( static_cast<EventConsumer &>(self( )), mDispatcherThread );
+    ProxyConnectEvent::removeListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
+    ProxyBase::ServiceAvailableEvent::removeListener( static_cast<areg::EventConsumer &>(self( )), mDispatcherThread );
 }
 
 void ProxyBase::freeProxy( ProxyListener & connect )
@@ -548,7 +548,7 @@ void ProxyBase::sendNotificationEvent( uint32_t msgId, areg::ResultType resType,
     {
         if (caller != nullptr)
         {
-            eventElem->setEventConsumer(static_cast<EventConsumer *>(caller));
+            eventElem->setEventConsumer(static_cast<areg::EventConsumer *>(caller));
         }
 
         static_cast<Event *>(eventElem)->deliverEvent();

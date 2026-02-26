@@ -88,7 +88,7 @@ areg::OutStream & ProxyEvent::writeStream( areg::OutStream & stream ) const
 // ProxyEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
-    : EventConsumer   ( )
+    : areg::EventConsumer   ( )
     , mProxyAddress     ( proxy )
 {
 }

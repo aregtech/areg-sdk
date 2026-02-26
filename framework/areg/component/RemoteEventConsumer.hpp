@@ -37,7 +37,7 @@ namespace areg { class RemoteResponseEvent; }
  * \brief   The interface of remote event consumer. Derived by Stub object
  *          with type of remote to trigger event processing.
  **/
-class AREG_API RemoteEventConsumer   : public EventConsumer
+class AREG_API RemoteEventConsumer   : public areg::EventConsumer
 {
 protected:
     /**

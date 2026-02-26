@@ -177,7 +177,7 @@ namespace areg
      *          consumer of Stub specific events. It is extended in StubBase
      *          class, which is a base class for all Stub objects.
      **/
-    class AREG_API StubEventConsumer  : public EventConsumer
+    class AREG_API StubEventConsumer  : public areg::EventConsumer
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor

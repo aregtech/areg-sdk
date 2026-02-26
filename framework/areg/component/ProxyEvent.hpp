@@ -159,7 +159,7 @@ private:
  *              function depending on event runtime class ID.
  * 
  **/
-class AREG_API ProxyEventConsumer : public EventConsumer
+class AREG_API ProxyEventConsumer : public areg::EventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

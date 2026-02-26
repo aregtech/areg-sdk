@@ -119,7 +119,7 @@ bool EventDispatcherBase::queueEvent( Event& eventElem )
     return result;
 }
 
-bool EventDispatcherBase::registerEventConsumer( const areg::RuntimeClassID& whichClass, EventConsumer& whichConsumer )
+bool EventDispatcherBase::registerEventConsumer( const areg::RuntimeClassID& whichClass, areg::EventConsumer& whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -141,7 +141,7 @@ bool EventDispatcherBase::registerEventConsumer( const areg::RuntimeClassID& whi
     return result;
 }
 
-bool EventDispatcherBase::unregisterEventConsumer( const areg::RuntimeClassID & whichClass, EventConsumer & whichConsumer )
+bool EventDispatcherBase::unregisterEventConsumer( const areg::RuntimeClassID & whichClass, areg::EventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -170,7 +170,7 @@ bool EventDispatcherBase::unregisterEventConsumer( const areg::RuntimeClassID & 
 }
 
 
-int32_t EventDispatcherBase::removeConsumer( EventConsumer & whichConsumer )
+int32_t EventDispatcherBase::removeConsumer( areg::EventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
@@ -292,7 +292,7 @@ void EventDispatcherBase::postDispatchEvent( Event* eventElem )
 bool EventDispatcherBase::dispatchEvent( Event& eventElem )
 {
     EventConsumerList processingList;
-    EventConsumer* consumer = eventElem.getEventConsumer();
+    areg::EventConsumer* consumer = eventElem.getEventConsumer();
     if ( consumer != nullptr)
     {
         processingList.pushFirst(consumer);

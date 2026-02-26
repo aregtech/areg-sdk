@@ -90,7 +90,7 @@ namespace areg
     // StubEventConsumer class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
     areg::StubEventConsumer::StubEventConsumer( const areg::StubAddress & stubAddress )
-        : EventConsumer   ( )
+        : areg::EventConsumer   ( )
         , mStubAddress      ( stubAddress )
         , mCurEvent         ( nullptr )
     {

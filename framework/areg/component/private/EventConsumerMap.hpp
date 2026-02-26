@@ -32,7 +32,7 @@ class EventConsumerList;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class EventConsumer;
+namespace areg { class EventConsumer; }
 
 /************************************************************************
  * \brief   In this file are declared Event Consumer contain classes:
@@ -45,7 +45,7 @@ class EventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using EventConsumerListBase	= areg::LinkedList<EventConsumer *>;
+using EventConsumerListBase	= areg::LinkedList<areg::EventConsumer *>;
 
 /**
  * \brief   Event Consumer List is a helper class containing 
@@ -104,7 +104,7 @@ public:
      * \param   whichConsumer   The Event Consumer object to add to the list.
      * \return  Returns true if Event Consumer is added to the list.
      **/
-    bool addConsumer( EventConsumer & whichConsumer );
+    bool addConsumer( areg::EventConsumer & whichConsumer );
 
     /**
      * \brief   Removes Event Consumer object from the List. The function will 
@@ -116,7 +116,7 @@ public:
      * \param   whichConsumer   The Event Consumer object to remove from the list.
      * \return  Returns true if Event Consumer was removed from the list.
      **/
-    bool removeConsumer( EventConsumer & whichConsumer );
+    bool removeConsumer( areg::EventConsumer & whichConsumer );
 
     /**
      * \brief   Removes all Event Consumers from the list.
@@ -129,7 +129,7 @@ public:
      * \param   whichConsumer   The Event Consumer object to search.
      * \return  Returns true, if the specified Event Consumer already exists in the list.
      **/
-    inline bool existConsumer( EventConsumer & whichConsumer ) const;
+    inline bool existConsumer( areg::EventConsumer & whichConsumer ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ using EventConsumerMap  = areg::ConcurrentRuntimeResourceMap<EventConsumerList *
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class inline functions
 //////////////////////////////////////////////////////////////////////////
-inline bool EventConsumerList::existConsumer( EventConsumer & whichConsumer ) const
+inline bool EventConsumerList::existConsumer( areg::EventConsumer & whichConsumer ) const
 {
     return EventConsumerListBase::contains( &whichConsumer);
 }

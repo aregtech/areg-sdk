@@ -38,17 +38,17 @@
 #define AREG_DECLARE_EVENT_REGISTRATION(EventClass)                                                                     \
 public:                                                                                                                 \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
-    static bool addListener(EventConsumer& eventConsumer, const areg::String & whichThread = areg::String::getEmptyString());       \
+    static bool addListener(areg::EventConsumer& eventConsumer, const areg::String & whichThread = areg::String::getEmptyString());       \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
-    static bool addListener(EventConsumer& eventConsumer, id_type whichThread);                                         \
+    static bool addListener(areg::EventConsumer& eventConsumer, id_type whichThread);                                         \
     /*  Declare static function to add/register event consumer to start processing event.       */                      \
-    static bool addListener(EventConsumer& eventConsumer, DispatcherThread & dispThread);                               \
+    static bool addListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread);                               \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
-    static bool removeListener(EventConsumer& eventConsumer, const areg::String & whichThread = areg::String::getEmptyString());    \
+    static bool removeListener(areg::EventConsumer& eventConsumer, const areg::String & whichThread = areg::String::getEmptyString());    \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
-    static bool removeListener(EventConsumer& eventConsumer, id_type whichThread);                                      \
+    static bool removeListener(areg::EventConsumer& eventConsumer, id_type whichThread);                                      \
     /*  Declare static function to remove/unregister event consumer to stop processing event.   */                      \
-    static bool removeListener(EventConsumer& eventConsumer, DispatcherThread & dispThread);
+    static bool removeListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread);
 
 /**
  * \brief   MACRO, implements static functions to add and remove
@@ -56,17 +56,17 @@ public:                                                                         
  *          Do not use them directly, instead use AREG_IMPLEMENT_RUNTIME_EVENT
  **/
 #define AREG_IMPLEMENT_EVENT_REGISTRATION(EventClass)                                                                  \
-    bool EventClass::addListener(EventConsumer& eventConsumer, const areg::String & whichThread)                            \
+    bool EventClass::addListener(areg::EventConsumer& eventConsumer, const areg::String & whichThread)                            \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
-    bool EventClass::addListener(EventConsumer& eventConsumer, id_type whichThread)                                   \
+    bool EventClass::addListener(areg::EventConsumer& eventConsumer, id_type whichThread)                                   \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
-    bool EventClass::addListener(EventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
+    bool EventClass::addListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }                       \
-    bool EventClass::removeListener(EventConsumer& eventConsumer, const areg::String& whichThread)                          \
+    bool EventClass::removeListener(areg::EventConsumer& eventConsumer, const areg::String& whichThread)                          \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
-    bool EventClass::removeListener(EventConsumer& eventConsumer, id_type whichThread)                                \
+    bool EventClass::removeListener(areg::EventConsumer& eventConsumer, id_type whichThread)                                \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
-    bool EventClass::removeListener(EventConsumer& eventConsumer, DispatcherThread & dispThread)                      \
+    bool EventClass::removeListener(areg::EventConsumer& eventConsumer, DispatcherThread & dispThread)                      \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, dispThread);     }
 
 
@@ -98,7 +98,7 @@ public:                                                                         
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class EventConsumer;
+namespace areg { class EventConsumer; }
 class EventDispatcher;
 class DispatcherThread;
 namespace areg { class Thread; }
@@ -232,7 +232,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread);
+    static bool addListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, const areg::String & whichThread);
 
     /**
      * \brief	Static method to add the listener to specified thread,
@@ -244,7 +244,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
+    static bool addListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, id_type whichThread );
 
     /**
      * \brief	Static method to add the listener to specified thread,
@@ -256,7 +256,7 @@ public:
      *          Returns false, if failed or specified thread already had specified
      *          consumer registered for specified event class type.
      **/
-    static bool addListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool addListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -267,7 +267,7 @@ public:
      *                          it will use current thread to unregister consumer.
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread);
+    static bool removeListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, const areg::String & whichThread);
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -277,7 +277,7 @@ public:
      * \param	whichThread	    The valid registered thread ID to remove listener.
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
+    static bool removeListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, id_type whichThread );
 
     /**
      * \brief	Static method to remove listener from specified thread,
@@ -287,7 +287,7 @@ public:
      * \param	dispThread	    The dispatcher thread, which dispatches messages
      * \return	Returns true if successfully unregistered.
      **/
-    static bool removeListener(const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
+    static bool removeListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -329,7 +329,7 @@ public:
      * \brief	Dispatch event itself. Overwrite function if needed.
      * \param	consumer	Registered event consumer
      **/
-    virtual void dispatchSelf( EventConsumer * consumer );
+    virtual void dispatchSelf( areg::EventConsumer * consumer );
 
     /**
      * \brief   Delivers the event to target thread. If target thread
@@ -347,7 +347,7 @@ public:
      *          Returns false if failed or target thread already had consumer
      *          registered for current event class.
      **/
-    virtual bool addEventListener( EventConsumer & eventConsumer );
+    virtual bool addEventListener( areg::EventConsumer & eventConsumer );
 
     /**
      * \brief	Removes listener from target thread, i.e. unregisters consumer
@@ -357,7 +357,7 @@ public:
      *                          event class.
      * \return	Returns true if successfully unregistered consumer.
      **/
-    virtual bool removeEventListener( EventConsumer & eventConsumer );
+    virtual bool removeEventListener( areg::EventConsumer & eventConsumer );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -431,12 +431,12 @@ public:
      * \brief   Returns pointer of Event Consumer object.
      *          If nullptr, no Event Consumer is set and the Event cannot be processed.
      **/
-    inline EventConsumer * getEventConsumer();
+    inline areg::EventConsumer * getEventConsumer();
     /**
      * \brief   Sets the Event Consumer object.
      * \param   consumer    The Event Consumer object, which should process event
      **/
-    inline void setEventConsumer( EventConsumer * consumer );
+    inline void setEventConsumer( areg::EventConsumer * consumer );
 
     /**
      * \brief   Checks whether the given event type is internal or not.
@@ -528,7 +528,7 @@ protected:
     /**
      * \brief   Event consumer.
      **/
-    EventConsumer*    mConsumer;
+    areg::EventConsumer*    mConsumer;
     /**
      * \brief   Target thread.
      **/
@@ -557,12 +557,12 @@ inline void Event::setEventType( Event::EventType eventType )
     mEventType = eventType;
 }
 
-inline EventConsumer * Event::getEventConsumer()
+inline areg::EventConsumer * Event::getEventConsumer()
 {
     return mConsumer;
 }
 
-inline void Event::setEventConsumer( EventConsumer * consumer )
+inline void Event::setEventConsumer( areg::EventConsumer * consumer )
 {
     mConsumer = consumer;
 }

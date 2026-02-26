@@ -36,32 +36,32 @@ AREG_IMPLEMENT_RUNTIME_EVENT(Event, areg::RuntimeObject)
  **/
 const Event Event::BAD_EVENT(Event::EventType::EventUnknown);
 
-bool Event::addListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread )
+bool Event::addListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, const areg::String & whichThread )
 {
     return Event::addListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
 }
 
-bool Event::addListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
+bool Event::addListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, id_type whichThread )
 {
     return Event::addListener( classId, eventConsumer, DispatcherThread::getDispatcherThread( whichThread ) );
 }
 
-bool Event::addListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
+bool Event::addListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, DispatcherThread & dispThread )
 {
     return ( dispThread.isRunning() ? dispThread.registerEventConsumer(classId, eventConsumer) : false );
 }
 
-bool Event::removeListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, const areg::String & whichThread )
+bool Event::removeListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, const areg::String & whichThread )
 {
     return Event::removeListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
 }
 
-bool Event::removeListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread )
+bool Event::removeListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, id_type whichThread )
 {
     return Event::removeListener( classId, eventConsumer, DispatcherThread::getDispatcherThread( whichThread ) );
 }
 
-bool Event::removeListener( const areg::RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread )
+bool Event::removeListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, DispatcherThread & dispThread )
 {
     return dispThread.isRunning() ? dispThread.unregisterEventConsumer(classId, eventConsumer) : false;
 }
@@ -148,17 +148,17 @@ bool Event::isEventRegistered() const
     return getDispatcher().hasRegisteredConsumer(getRuntimeClassId());
 }
 
-bool Event::addEventListener( EventConsumer& eventConsumer )
+bool Event::addEventListener( areg::EventConsumer& eventConsumer )
 {
     return getDispatcher().registerEventConsumer(getRuntimeClassId(), eventConsumer);
 }
 
-bool Event::removeEventListener( EventConsumer& eventConsumer )
+bool Event::removeEventListener( areg::EventConsumer& eventConsumer )
 {
     return getDispatcher().unregisterEventConsumer(getRuntimeClassId(), eventConsumer);
 }
 
-void Event::dispatchSelf( EventConsumer* consumer )
+void Event::dispatchSelf( areg::EventConsumer* consumer )
 {
     consumer = consumer != nullptr ? consumer : this->mConsumer;
     if ((consumer != nullptr) && consumer->preprocessEvent(*this) )

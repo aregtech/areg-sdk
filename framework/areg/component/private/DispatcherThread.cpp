@@ -77,9 +77,9 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // Disable consumer registration functionalities
     //////////////////////////////////////////////////////////////////////////
-    virtual bool registerEventConsumer( const areg::RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
-    virtual bool unregisterEventConsumer( const areg::RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
-    virtual int32_t  removeConsumer( EventConsumer & whichConsumer ) override;
+    virtual bool registerEventConsumer( const areg::RuntimeClassID & whichClass, areg::EventConsumer & whichConsumer ) override;
+    virtual bool unregisterEventConsumer( const areg::RuntimeClassID & whichClass, areg::EventConsumer & whichConsumer ) override;
+    virtual int32_t  removeConsumer( areg::EventConsumer & whichConsumer ) override;
     virtual bool hasRegisteredConsumer( const areg::RuntimeClassID & whichClass ) const override;
 
     //////////////////////////////////////////////////////////////////////////
@@ -133,13 +133,13 @@ inline NullDispatcherThread::NullDispatcherThread()
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class. Disable basic functionalities.
 //////////////////////////////////////////////////////////////////////////
-bool NullDispatcherThread::registerEventConsumer( const areg::RuntimeClassID & /* whichClass*/, EventConsumer & /*whichConsumer*/ )
+bool NullDispatcherThread::registerEventConsumer( const areg::RuntimeClassID & /* whichClass*/, areg::EventConsumer & /*whichConsumer*/ )
 {   return false;   }
 
-bool NullDispatcherThread::unregisterEventConsumer( const areg::RuntimeClassID & /*whichClass*/, EventConsumer & /* whichConsumer*/ )
+bool NullDispatcherThread::unregisterEventConsumer( const areg::RuntimeClassID & /*whichClass*/, areg::EventConsumer & /* whichConsumer*/ )
 {   return false;   }
 
-int32_t NullDispatcherThread::removeConsumer( EventConsumer & /* whichConsumer*/ )
+int32_t NullDispatcherThread::removeConsumer( areg::EventConsumer & /* whichConsumer*/ )
 {   return 0;       }
 
 bool NullDispatcherThread::hasRegisteredConsumer( const areg::RuntimeClassID & /* whichClass */ ) const

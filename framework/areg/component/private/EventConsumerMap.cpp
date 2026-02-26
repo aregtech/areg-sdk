@@ -33,7 +33,7 @@ EventConsumerList::~EventConsumerList()
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class, methods
 //////////////////////////////////////////////////////////////////////////
-bool EventConsumerList::addConsumer( EventConsumer& whichConsumer )
+bool EventConsumerList::addConsumer( areg::EventConsumer& whichConsumer )
 {
     bool result = false;
     if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
@@ -45,7 +45,7 @@ bool EventConsumerList::addConsumer( EventConsumer& whichConsumer )
     return result;
 }
 
-bool EventConsumerList::removeConsumer( EventConsumer& whichConsumer )
+bool EventConsumerList::removeConsumer( areg::EventConsumer& whichConsumer )
 {
     bool result = false;
     if ( EventConsumerListBase::removeEntry(&whichConsumer) )
@@ -62,7 +62,7 @@ void EventConsumerList::removeAllConsumers()
     EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
     for (; isValidPosition(pos); pos = nextPosition(pos))
     {
-        EventConsumer* consumer = valueAtPosition(pos);
+        areg::EventConsumer* consumer = valueAtPosition(pos);
         ASSERT(consumer != nullptr);
         consumer->consumerRegistered(false);
     }

@@ -95,7 +95,7 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, Notificati
     if (eventElem != nullptr)
     {
         if (caller != nullptr)
-            eventElem->setEventConsumer(static_cast<EventConsumer *>(caller));
+            eventElem->setEventConsumer(static_cast<areg::EventConsumer *>(caller));
         static_cast<Event *>(eventElem)->deliverEvent();
     }
 }

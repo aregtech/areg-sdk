@@ -129,7 +129,7 @@ template <class DATA_CLASS> class AregImpl_##ConsumerClass##Extended;           
 /** Does nothing, needed for Runtime Object information and declare processEvent() function                                 **/             \
 /*****************************************************************************************************************************/             \
 template <class DATA_CLASS>                                                                                                                 \
-class AregImpl_##ConsumerClass : public    EventConsumer                                                                                         \
+class AregImpl_##ConsumerClass : public    areg::EventConsumer                                                                                         \
 {                                                                                                                                           \
 protected:                                                                                                                                  \
     /**                                                                                                                     **/             \
@@ -405,7 +405,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( const DATA_CLASS & dat
                                           , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
     : Event (EventKind), mData(data)                                                                                                        \
 {                                                                                                                                           \
-    this->setEventConsumer(static_cast<EventConsumer *>(&listener));                                                                      \
+    this->setEventConsumer(static_cast<areg::EventConsumer *>(&listener));                                                                      \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
 /** Constructor implementation, pass DataClass object and event type. By default, the event is external                     **/             \
@@ -425,7 +425,7 @@ AregImpl_##EventClass<DATA_CLASS>::AregImpl_##EventClass( Event::EventType event
                                           , Event::EventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
     : Event (eventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
-    this->setEventConsumer(static_cast<EventConsumer *>(&listener));                                                                      \
+    this->setEventConsumer(static_cast<areg::EventConsumer *>(&listener));                                                                      \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
 /** Constructor implementation, pass DataClass object to Event                                                              **/             \

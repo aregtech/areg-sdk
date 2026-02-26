@@ -136,7 +136,7 @@ public:
      *          If specified consumer is already registered for specified
      *          event class type, it returns false.
      **/
-    virtual bool registerEventConsumer(const areg::RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+    virtual bool registerEventConsumer(const areg::RuntimeClassID& whichClass, areg::EventConsumer& whichConsumer);
 
     /**
      * \brief	Call to unregister specified event consumer previously registered
@@ -145,7 +145,7 @@ public:
      * \param	whichConsumer	Reference to consumer that should be unregistered.
      * \return	Returns true if successfully unregistered event consumer.
      **/
-    virtual bool unregisterEventConsumer(const areg::RuntimeClassID& whichClass, EventConsumer& whichConsumer);
+    virtual bool unregisterEventConsumer(const areg::RuntimeClassID& whichClass, areg::EventConsumer& whichConsumer);
 
     /**
      * \brief	Call to remove specified consumer for all registered event class types,
@@ -153,7 +153,7 @@ public:
      * \param	whichConsumer	Reference to consumer object to unregister.
      * \return	Returns unregister count. If zero, consumer is not registered for any event.
      **/
-    virtual int32_t  removeConsumer(EventConsumer& whichConsumer);
+    virtual int32_t  removeConsumer(areg::EventConsumer& whichConsumer);
 
     /**
      * \brief	Call to check whether specified event class type has any registered consumer.

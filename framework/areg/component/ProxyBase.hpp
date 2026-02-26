@@ -1189,12 +1189,12 @@ inline void ProxyBase::removeListener( uint32_t msgId, const SequenceNumber & se
 
 inline void ProxyBase::registerForEvent( const areg::RuntimeClassID & eventClass )
 {
-    Event::addListener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
+    Event::addListener( eventClass, static_cast<areg::EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
 inline void ProxyBase::unregisterForEvent( const areg::RuntimeClassID & eventClass )
 {
-    Event::removeListener( eventClass, static_cast<EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
+    Event::removeListener( eventClass, static_cast<areg::EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
 inline void ProxyBase::setState( uint32_t msgId, areg::DataState newState )

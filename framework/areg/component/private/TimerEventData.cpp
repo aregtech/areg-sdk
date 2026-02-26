@@ -49,7 +49,7 @@ TimerEvent::TimerEvent(areg::Timer & timer, DispatcherThread & target)
 {
     ASSERT(target.isRunning());
 
-    setEventConsumer(static_cast<EventConsumer *>(&timer.getConsumer()));
+    setEventConsumer(static_cast<areg::EventConsumer *>(&timer.getConsumer()));
     registerForThread(&target);
     timer._queueTimer();
 }
