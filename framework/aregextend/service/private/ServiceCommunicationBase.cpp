@@ -53,7 +53,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , ConnectionConsumer   ( )
     , ConnectionProvider   ( )
     , areg::DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-    , ServiceEventConsumer    ( )
+    , areg::ServiceEventConsumer    ( )
     , ConnectionHandler    ( )
 
     , mConnectBehavior  ( behavior )

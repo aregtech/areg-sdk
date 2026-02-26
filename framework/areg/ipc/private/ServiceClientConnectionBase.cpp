@@ -47,7 +47,7 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
                                                         , areg::DispatcherThread & messageDispatcher
                                                         , const areg::String & prefixName)
     : ConnectionProvider   ( )
-    , ServiceEventConsumer    ( )
+    , areg::ServiceEventConsumer    ( )
 
     , mTarget               (target)
     , mService              (service)
@@ -58,13 +58,13 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mMessageDispatcher    (messageDispatcher)
     , mChannel              ( )
     , mConnectionState      ( ConnectionPhase::ConnectionStopped )
-    , mEventConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
+    , mEventConsumer        ( static_cast<areg::ServiceEventConsumer &>(self()) )
     , mLock                 ( )
 
     , mTimerConnect         ( static_cast<areg::TimerConsumer &>(mTimerConsumer), prefixName + areg::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive        (messageHandler, mClientConnection, prefixName)
     , mThreadSend           (messageHandler, mClientConnection, prefixName)
-    , mTimerConsumer        ( static_cast<ServiceEventConsumer &>(self()) )
+    , mTimerConsumer        ( static_cast<areg::ServiceEventConsumer &>(self()) )
 {
     ASSERT((target > areg::TARGET_LOCAL) && (target < areg::COOKIE_REMOTE_SERVICE));
 }

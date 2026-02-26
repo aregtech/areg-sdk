@@ -44,7 +44,7 @@ class RemoteMessageHandler;
  *          communicate with service manager.
  **/
 class AREG_API ServiceClientConnectionBase  : public    ConnectionProvider
-                                            , public    ServiceEventConsumer
+                                            , public    areg::ServiceEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -425,7 +425,7 @@ protected:
     /**
      * \brief   The Client Service event consumer
      **/
-    ServiceClientConsumer                   mEventConsumer;
+    areg::ServiceClientConsumer                   mEventConsumer;
 
     /**
      * \brief   Data access synchronization object
@@ -455,7 +455,7 @@ private:
     /**
      * \brief   The Client Service event consumer
      **/
-    ReconnectTimerConsumer                  mTimerConsumer;
+    areg::ReconnectTimerConsumer                  mTimerConsumer;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)

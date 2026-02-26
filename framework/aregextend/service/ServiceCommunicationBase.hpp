@@ -46,7 +46,7 @@ class ServiceCommunicationBase  : public    RemoteMessageHandler
                                 , public    ConnectionConsumer
                                 , public    ConnectionProvider
                                 , protected areg::DispatcherThread
-                                , protected ServiceEventConsumer
+                                , protected areg::ServiceEventConsumer
                                 , protected ConnectionHandler
 {
 //////////////////////////////////////////////////////////////////////////
@@ -493,8 +493,8 @@ protected:
     DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     areg::StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
     areg::StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
-    ServiceServerConsumer                   mEventConsumer;     //!< The custom event consumer object
-    ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
+    areg::ServiceServerConsumer                   mEventConsumer;     //!< The custom event consumer object
+    areg::ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
     areg::MapInstances                 mInstanceMap;       //!< The map of connected instance.
     SyncEvent                               mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock                    mLock;              //!< The synchronization object to be accessed from different threads.
