@@ -353,12 +353,12 @@ namespace areg
          * \brief   Sets the target communication channel object.
          * \param   channel     The communication channel to set in remote event.
          **/
-        inline void setTargetChannel( const Channel & channel );
+        inline void setTargetChannel( const areg::Channel & channel );
 
         /**
          * \brief   Returns the event communication channel object.
          **/
-        inline const Channel & getTargetChannel() const;
+        inline const areg::Channel & getTargetChannel() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -401,12 +401,12 @@ namespace areg
     // RemoteResponseEvent class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline void RemoteResponseEvent::setTargetChannel(const Channel & channel)
+    inline void RemoteResponseEvent::setTargetChannel(const areg::Channel & channel)
     {
         mTargetProxyAddress.setChannel(channel);
     }
 
-    inline const Channel & RemoteResponseEvent::getTargetChannel() const
+    inline const areg::Channel & RemoteResponseEvent::getTargetChannel() const
     {
         return mTargetProxyAddress.getChannel();
     }

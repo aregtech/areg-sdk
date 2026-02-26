@@ -257,11 +257,11 @@ public:
     /**
      * \brief   Returns Proxy communication channel object
      **/
-    inline const Channel & getChannel() const;
+    inline const areg::Channel & getChannel() const;
     /**
      * \brief   Sets proxy communication channel
      **/
-    inline void setChannel( const Channel & channel );
+    inline void setChannel( const areg::Channel & channel );
     /**
      * \brief   Returns Proxy cookie value
      **/
@@ -380,7 +380,7 @@ private:
     /**
      * \brief   Communication channel of Proxy.
      **/
-    Channel         mChannel;
+    areg::Channel         mChannel;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -496,12 +496,12 @@ inline const areg::String & ProxyAddress::getThread() const
     return mThreadName;
 }
 
-inline const Channel & ProxyAddress::getChannel() const
+inline const areg::Channel & ProxyAddress::getChannel() const
 {
     return mChannel;
 }
 
-inline void ProxyAddress::setChannel( const Channel & channel )
+inline void ProxyAddress::setChannel( const areg::Channel & channel )
 {
     mChannel = channel;
 }

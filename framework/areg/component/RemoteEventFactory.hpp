@@ -26,7 +26,7 @@
 namespace areg { class RemoteResponseEvent; }
 namespace areg { class StreamableEvent; }
 namespace areg { class RemoteMessage; }
-class Channel;
+namespace areg { class Channel; }
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteEventFactory class declaration
@@ -60,7 +60,7 @@ public:
      *          by runtime casting. Otherwise, if streaming data contains
      *          wrong or unsupported event types, function returns nullptr.
      **/
-    static areg::StreamableEvent * createEventFromStream( const areg::RemoteMessage & stream, const Channel & comChannel );
+    static areg::StreamableEvent * createEventFromStream( const areg::RemoteMessage & stream, const areg::Channel & comChannel );
 
     /**
      * \brief   Call to serialize remote event object to streaming object.
@@ -73,7 +73,7 @@ public:
      * \return  Returns true if successfully recognized remote object and could
      *          serialize to streaming object. Otherwise, it returns false.
      **/
-    static bool createStreamFromEvent( areg::RemoteMessage & stream, const areg::StreamableEvent & eventStreamable, const Channel & comChannel );
+    static bool createStreamFromEvent( areg::RemoteMessage & stream, const areg::StreamableEvent & eventStreamable, const areg::Channel & comChannel );
 
     /**
      * \brief   Call to create request failure remote event. It is called when system failed to processed request.
@@ -81,7 +81,7 @@ public:
      * \param   comChannel      The communication channel object to send event.
      * \return  Returns streamable event object to send to target object.
      **/
-    static areg::StreamableEvent * createRequestFailedEvent( const areg::RemoteMessage & stream, const Channel & comChannel );
+    static areg::StreamableEvent * createRequestFailedEvent( const areg::RemoteMessage & stream, const areg::Channel & comChannel );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Hidden

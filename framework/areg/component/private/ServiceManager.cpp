@@ -350,21 +350,21 @@ void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & prox
     ServiceManager::requestUnregisterClient(proxy, reason);
 }
 
-void ServiceManager::connectedRemoteServiceChannel(const Channel & channel)
+void ServiceManager::connectedRemoteServiceChannel(const areg::Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerConnection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
 }
 
-void ServiceManager::disconnectedRemoteServiceChannel(const Channel & channel)
+void ServiceManager::disconnectedRemoteServiceChannel(const areg::Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::unregisterConnection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
 }
 
-void ServiceManager::lostRemoteServiceChannel(const Channel & channel)
+void ServiceManager::lostRemoteServiceChannel(const areg::Channel & channel)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::lostConnection(channel)
                                   , static_cast<ServiceManagerEventConsumer &>(self())

@@ -30,7 +30,7 @@ DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createStreamFromEvent);
 DEF_LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 
-areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteMessage & stream, const Channel & comChannel )
+areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::RemoteMessage & stream, const areg::Channel & comChannel )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createEventFromStream);
 
@@ -58,8 +58,8 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
                 RemoteRequestEvent * eventRequest = stub->createRemoteRequestEvent(stream);
                 if ( eventRequest != nullptr )
                 {
-                    Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
+                    areg::Channel chTarget( stub->getAddress().getChannel() );
+                    areg::Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
                     eventRequest->setTargetChannel(chTarget);
                     eventRequest->setSourceChannel(chSource);
 
@@ -89,8 +89,8 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
                 RemoteNotifyRequestEvent * eventNotify = stub->createRemoteNotifyRequestEvent(stream);
                 if ( eventNotify != nullptr )
                 {
-                    Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
+                    areg::Channel chTarget( stub->getAddress().getChannel() );
+                    areg::Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
                     eventNotify->setTargetChannel(chTarget);
                     eventNotify->setSourceChannel(chSource);
 
@@ -118,7 +118,7 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
                 areg::RemoteResponseEvent * eventResponse = proxy->createRemoteResponseEvent(stream);
                 if ( eventResponse != nullptr )
                 {
-                    Channel chTarget( proxy->getProxyAddress().getChannel() );
+                    areg::Channel chTarget( proxy->getProxyAddress().getChannel() );
                     eventResponse->setTargetChannel(chTarget);
 
                     LOG_DBG("Created Event::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
@@ -170,7 +170,7 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
     return result;
 }
 
-bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, const areg::StreamableEvent & eventStreamable, const Channel & comChannel )
+bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, const areg::StreamableEvent & eventStreamable, const areg::Channel & comChannel )
 {
     bool result = false;
     stream.invalidate();
@@ -286,7 +286,7 @@ bool RemoteEventFactory::createStreamFromEvent( areg::RemoteMessage & stream, co
     return result;
 }
 
-areg::StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg::RemoteMessage & stream, const Channel & /* comChannel */ )
+areg::StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg::RemoteMessage & stream, const areg::Channel & /* comChannel */ )
 {
     LOG_SCOPE(areg_component_RemoteEventFactory_createRequestFailedEvent);
 

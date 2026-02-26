@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class StreamableEvent; }
-class Channel;
+namespace areg { class Channel; }
 
 //////////////////////////////////////////////////////////////////////////
 // RegistrationConsumer interface declaration

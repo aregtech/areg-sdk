@@ -732,7 +732,7 @@ protected:
      *                      The connection status should be areg::Connected
      *                      To be able to send message to service target from Proxy client.
      **/
-    void serviceConnectionUpdated( const areg::StubAddress & server, const Channel & channel, areg::ServiceConnectionState status ) override;
+    void serviceConnectionUpdated( const areg::StubAddress & server, const areg::Channel & channel, areg::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ProxyBase interface overrides

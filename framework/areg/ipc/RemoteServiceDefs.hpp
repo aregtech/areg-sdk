@@ -32,7 +32,7 @@
 namespace areg { class StubAddress; }
 class ProxyAddress;
 namespace areg { class RemoteMessage; }
-class Channel;
+namespace areg { class Channel; }
 
 //////////////////////////////////////////////////////////////////////////
 // NERemoteService namespace declaration

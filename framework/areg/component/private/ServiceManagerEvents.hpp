@@ -30,7 +30,7 @@
  ************************************************************************/
 class ProxyAddress;
 namespace areg { class StubAddress; }
-class Channel;
+namespace areg { class Channel; }
 namespace areg { class String; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -145,19 +145,19 @@ public:
      * \brief   Creates and returns Service Manager event data with command to register connection
      * \param   channel     The Channel information to set for registered connection
      **/
-    static ServiceManagerEventData registerConnection( const Channel & channel );
+    static ServiceManagerEventData registerConnection( const areg::Channel & channel );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to unregister connection
      * \param   channel     The Channel information to set for unregistered connection
      **/
-    static ServiceManagerEventData unregisterConnection( const Channel & channel );
+    static ServiceManagerEventData unregisterConnection( const areg::Channel & channel );
 
     /**
      * \brief   Creates and returns Service Manager event data with command of lost connection
      * \param   channel     The Channel information to set for lost connection
      **/
-    static ServiceManagerEventData lostConnection( const Channel & channel );
+    static ServiceManagerEventData lostConnection( const areg::Channel & channel );
 
     /**
      * \brief   Creates an event data to terminate component thread.

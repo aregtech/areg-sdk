@@ -319,23 +319,23 @@ protected:
      * \brief   Sets the target communication Channel object
      * \param   channel     The communication channel object to set.
      **/
-    inline void setTargetChannel( const Channel & channel );
+    inline void setTargetChannel( const areg::Channel & channel );
 
     /**
      * \brief   Returns target communication channel object
      **/
-    inline const Channel & getTargetChannel() const;
+    inline const areg::Channel & getTargetChannel() const;
 
     /**
      * \brief   Sets the source communication Channel object.
      * \param   channel     The communication channel object to set.
      **/
-    inline void setSourceChannel( const Channel & channel );
+    inline void setSourceChannel( const areg::Channel & channel );
 
     /**
      * \brief   Returns source communication channel object
      **/
-    inline const Channel & getSourceChannel() const;
+    inline const areg::Channel & getSourceChannel() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -499,23 +499,23 @@ protected:
      * \brief   Sets the target communication Channel object
      * \param   channel     The communication channel object to set.
      **/
-    inline void setTargetChannel( const Channel & channel );
+    inline void setTargetChannel( const areg::Channel & channel );
 
     /**
      * \brief   Returns target communication channel object
      **/
-    inline const Channel & getTargetChannel() const;
+    inline const areg::Channel & getTargetChannel() const;
 
     /**
      * \brief   Sets the source communication Channel object.
      * \param   channel     The communication channel object to set.
      **/
-    inline void setSourceChannel( const Channel & channel );
+    inline void setSourceChannel( const areg::Channel & channel );
 
     /**
      * \brief   Returns source communication channel object
      **/
-    inline const Channel & getSourceChannel() const;
+    inline const areg::Channel & getSourceChannel() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -558,22 +558,22 @@ inline areg::OutStream & RequestEvent::getWriteStream()
 // RemoteRequestEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void RemoteRequestEvent::setTargetChannel(const Channel & channel)
+inline void RemoteRequestEvent::setTargetChannel(const areg::Channel & channel)
 {
     mTargetStubAddress.setChannel(channel);
 }
 
-inline const Channel & RemoteRequestEvent::getTargetChannel() const
+inline const areg::Channel & RemoteRequestEvent::getTargetChannel() const
 {
     return mTargetStubAddress.getChannel();
 }
 
-inline void RemoteRequestEvent::setSourceChannel( const Channel & channel )
+inline void RemoteRequestEvent::setSourceChannel( const areg::Channel & channel )
 {
     mProxySource.setChannel(channel);
 }
 
-inline const Channel & RemoteRequestEvent::getSourceChannel() const
+inline const areg::Channel & RemoteRequestEvent::getSourceChannel() const
 {
     return mProxySource.getChannel();
 }
@@ -582,22 +582,22 @@ inline const Channel & RemoteRequestEvent::getSourceChannel() const
 // RemoteNotifyRequestEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline void RemoteNotifyRequestEvent::setTargetChannel(const Channel & channel)
+inline void RemoteNotifyRequestEvent::setTargetChannel(const areg::Channel & channel)
 {
     mTargetStubAddress.setChannel(channel);
 }
 
-inline const Channel & RemoteNotifyRequestEvent::getTargetChannel() const
+inline const areg::Channel & RemoteNotifyRequestEvent::getTargetChannel() const
 {
     return mTargetStubAddress.getChannel();
 }
 
-inline void RemoteNotifyRequestEvent::setSourceChannel( const Channel & channel )
+inline void RemoteNotifyRequestEvent::setSourceChannel( const areg::Channel & channel )
 {
     mProxySource.setChannel(channel);
 }
 
-inline const Channel & RemoteNotifyRequestEvent::getSourceChannel() const
+inline const areg::Channel & RemoteNotifyRequestEvent::getSourceChannel() const
 {
     return mProxySource.getChannel();
 }

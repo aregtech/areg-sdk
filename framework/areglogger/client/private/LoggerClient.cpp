@@ -502,7 +502,7 @@ void LoggerClient::onServiceExit()
     triggerExit();
 }
 
-void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
+void LoggerClient::connectedRemoteServiceChannel(const areg::Channel& channel)
 {
     FuncServiceConnected callbackConnect{ nullptr };
     FuncObserverStarted callbackStart{ nullptr };
@@ -541,7 +541,7 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
     }
 }
 
-void LoggerClient::disconnectedRemoteServiceChannel(const Channel& /* channel */)
+void LoggerClient::disconnectedRemoteServiceChannel(const areg::Channel& /* channel */)
 {
     FuncServiceConnected callbackConnect{ nullptr };
     FuncObserverStarted callbackStart{ nullptr };
@@ -576,7 +576,7 @@ void LoggerClient::disconnectedRemoteServiceChannel(const Channel& /* channel */
     }
 }
 
-void LoggerClient::lostRemoteServiceChannel(const Channel& /* channel */)
+void LoggerClient::lostRemoteServiceChannel(const areg::Channel& /* channel */)
 {
     FuncObserverStarted callback{ nullptr };
 

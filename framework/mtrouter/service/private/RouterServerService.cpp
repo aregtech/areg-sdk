@@ -488,17 +488,17 @@ void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress &
     }
 }
 
-void RouterServerService::connectedRemoteServiceChannel(const Channel & /* channel */)
+void RouterServerService::connectedRemoteServiceChannel(const areg::Channel & /* channel */)
 {
 
 }
 
-void RouterServerService::disconnectedRemoteServiceChannel(const Channel & /* channel */)
+void RouterServerService::disconnectedRemoteServiceChannel(const areg::Channel & /* channel */)
 {
 
 }
 
-void RouterServerService::lostRemoteServiceChannel(const Channel & /* channel */)
+void RouterServerService::lostRemoteServiceChannel(const areg::Channel & /* channel */)
 {
 }
 

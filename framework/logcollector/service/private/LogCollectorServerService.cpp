@@ -285,17 +285,17 @@ void LogCollectorServerService::onServiceMessageSend(const areg::RemoteMessage &
     }
 }
 
-void LogCollectorServerService::connectedRemoteServiceChannel(const Channel & /* channel */)
+void LogCollectorServerService::connectedRemoteServiceChannel(const areg::Channel & /* channel */)
 {
 
 }
 
-void LogCollectorServerService::disconnectedRemoteServiceChannel(const Channel & /* channel */)
+void LogCollectorServerService::disconnectedRemoteServiceChannel(const areg::Channel & /* channel */)
 {
 
 }
 
-void LogCollectorServerService::lostRemoteServiceChannel(const Channel & /* channel */)
+void LogCollectorServerService::lostRemoteServiceChannel(const areg::Channel & /* channel */)
 {
 }
 

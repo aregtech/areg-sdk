@@ -247,7 +247,7 @@ void ServiceClientConnectionBase::onServiceStop()
 
     mTimerConnect.stopTimer( );
 
-    Channel channel{ mChannel };
+    areg::Channel channel{ mChannel };
     mChannel.invalidate();
 
     mThreadReceive.triggerExit( );
@@ -297,7 +297,7 @@ void ServiceClientConnectionBase::onServiceConnectionStopped()
     setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
     mTimerConnect.stopTimer( );
 
-    Channel channel = mChannel;
+    areg::Channel channel = mChannel;
     mChannel.invalidate();
 
     cancelConnection( );
@@ -319,7 +319,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost()
                 , ServiceClientConnectionBase::getString(getConnectionState()));
 
     setConnectionState(ServiceClientConnectionBase::ConnectionPhase::ConnectionStopped);
-    Channel channel = mChannel;
+    areg::Channel channel = mChannel;
     mChannel.invalidate();
 
     if ( Application::isServicingReady( ) && mTimerConnect.isStopped( ) )

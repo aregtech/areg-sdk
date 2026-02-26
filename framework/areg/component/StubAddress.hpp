@@ -263,12 +263,12 @@ namespace areg
         /**
          * \brief   Returns stub communication channel
          **/
-        inline const Channel & getChannel() const;
+        inline const areg::Channel & getChannel() const;
 
         /**
          * \brief   Sets stub communication channel.
          **/
-        inline void setChannel( const Channel & channel );
+        inline void setChannel( const areg::Channel & channel );
 
         /**
          * \brief   Returns stub cookies value
@@ -371,7 +371,7 @@ namespace areg
         /**
          * \brief   The communication channel.
          **/
-        Channel         mChannel;
+        areg::Channel         mChannel;
 
     private:
         /**
@@ -420,7 +420,7 @@ namespace areg
         {
             static_cast<areg::ServiceAddress &>(*this) = static_cast<const areg::ServiceAddress &>(addrService);
             mThreadName = areg::String::getEmptyString();
-            mChannel    = Channel();
+            mChannel    = areg::Channel();
             mMagicNum   = StubAddress::_magicNumber(*this);
         }
 
@@ -433,7 +433,7 @@ namespace areg
         {
             static_cast<areg::ServiceAddress &>(*this) = static_cast<areg::ServiceAddress &&>(addrService);
             mThreadName = areg::String::getEmptyString();
-            mChannel    = Channel( );
+            mChannel    = areg::Channel( );
             mMagicNum   = StubAddress::_magicNumber( *this );
         }
 
@@ -495,12 +495,12 @@ namespace areg
         return mThreadName;
     }
 
-    inline const Channel & StubAddress::getChannel() const
+    inline const areg::Channel & StubAddress::getChannel() const
     {
         return mChannel;
     }
 
-    inline void StubAddress::setChannel(const Channel & channel)
+    inline void StubAddress::setChannel(const areg::Channel & channel)
     {
         mChannel = channel;
     }

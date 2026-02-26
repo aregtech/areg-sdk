@@ -104,7 +104,7 @@ ServiceManagerEventData ServiceManagerEventData::stopConnection()
     return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection );
 }
 
-ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channel & channel)
+ServiceManagerEventData ServiceManagerEventData::registerConnection(const areg::Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection );
     areg::OutStream & stream = data.getWriteStream();
@@ -112,7 +112,7 @@ ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channe
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterConnection(const Channel & channel)
+ServiceManagerEventData ServiceManagerEventData::unregisterConnection(const areg::Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection );
     areg::OutStream & stream = data.getWriteStream();
@@ -120,7 +120,7 @@ ServiceManagerEventData ServiceManagerEventData::unregisterConnection(const Chan
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & channel)
+ServiceManagerEventData ServiceManagerEventData::lostConnection(const areg::Channel & channel)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection );
     areg::OutStream & stream = data.getWriteStream();

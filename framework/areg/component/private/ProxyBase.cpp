@@ -358,7 +358,7 @@ void ProxyBase::terminateSelf()
     }
 }
 
-void ProxyBase::serviceConnectionUpdated( const areg::StubAddress & server, const Channel & channel, areg::ServiceConnectionState status )
+void ProxyBase::serviceConnectionUpdated( const areg::StubAddress & server, const areg::Channel & channel, areg::ServiceConnectionState status )
 {
     LOG_SCOPE(areg_component_ProxyBase_serviceConnectionUpdated);
 

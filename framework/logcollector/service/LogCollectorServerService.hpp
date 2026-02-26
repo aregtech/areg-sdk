@@ -109,13 +109,13 @@ protected:
      * \brief   Triggered when remote service connection and communication channel is established.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void connectedRemoteServiceChannel( const Channel & channel ) override;
+    void connectedRemoteServiceChannel( const areg::Channel & channel ) override;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void disconnectedRemoteServiceChannel( const Channel & channel ) override;
+    void disconnectedRemoteServiceChannel( const areg::Channel & channel ) override;
 
     /**
      * \brief   Triggered when remote service connection and communication channel is lost.
@@ -123,7 +123,7 @@ protected:
      *          receive data, and it was not stopped by API call.
      * \param   channel     The connection and communication channel of remote service.
      **/
-    void lostRemoteServiceChannel( const Channel & channel ) override;
+    void lostRemoteServiceChannel( const areg::Channel & channel ) override;
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides

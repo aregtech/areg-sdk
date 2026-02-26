@@ -108,7 +108,7 @@ bool NetTcpLogger::isLoggerOpened() const
     return isConnectedState();
 }
 
-void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
+void NetTcpLogger::connectedRemoteServiceChannel(const areg::Channel & channel)
 {
     ASSERT(channel.isValid());
     ASSERT(channel.getCookie() >= areg::COOKIE_REMOTE_SERVICE);
@@ -125,14 +125,14 @@ void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
     }
 }
 
-void NetTcpLogger::disconnectedRemoteServiceChannel(const Channel & /* channel */)
+void NetTcpLogger::disconnectedRemoteServiceChannel(const areg::Channel & /* channel */)
 {
     ASSERT(mChannel.isValid() == false);
     mIsEnabled = false;
     mClientConnection.setCookie(areg::COOKIE_UNKNOWN);
 }
 
-void NetTcpLogger::lostRemoteServiceChannel(const Channel & /* channel */)
+void NetTcpLogger::lostRemoteServiceChannel(const areg::Channel & /* channel */)
 {
     ASSERT(mChannel.isValid() == false);
     mClientConnection.setCookie(areg::COOKIE_UNKNOWN);

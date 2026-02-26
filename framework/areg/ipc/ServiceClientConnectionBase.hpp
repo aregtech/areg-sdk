@@ -415,7 +415,7 @@ protected:
     /**
      * \brief   The connection channel.
      **/
-    Channel                                 mChannel;
+    areg::Channel                                 mChannel;
 
     /**
      * \brief   The sate of connection

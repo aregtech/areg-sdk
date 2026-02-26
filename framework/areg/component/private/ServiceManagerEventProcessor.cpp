@@ -92,7 +92,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
         {
             ProxyAddress  addrProxy;
-            Channel       channel;
+            areg::Channel       channel;
             stream >> addrProxy;
             stream >> channel;
             addrProxy.setChannel( channel );
@@ -103,7 +103,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
         {
             ProxyAddress  addrProxy;
-            Channel       channel;
+            areg::Channel       channel;
             areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
             stream >> addrProxy;
             stream >> channel;
@@ -116,7 +116,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
         {
             areg::StubAddress   addrstub;
-            Channel       channel;
+            areg::Channel       channel;
             stream >> addrstub;
             stream >> channel;
             addrstub.setChannel( channel );
@@ -127,7 +127,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
         {
             areg::StubAddress   addrstub;
-            Channel       channel;
+            areg::Channel       channel;
             areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
             stream >> addrstub;
             stream >> channel;
