@@ -27,6 +27,7 @@
  ************************************************************************/
 namespace areg { class InStream; }
 namespace areg { class OutStream; }
+namespace areg { class ScopeMessage; }
 class LogScope;
 
 //////////////////////////////////////////////////////////////////////////
@@ -44,7 +45,7 @@ class LogMessage  : public areg::LogEntry
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
 //////////////////////////////////////////////////////////////////////////
-    friend class ScopeMessage;    // need to access message log structure
+    friend class areg::ScopeMessage;    // need to access message log structure
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

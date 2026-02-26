@@ -137,7 +137,7 @@
      *          This should be used in the same source file where scope was defined.
      *          The scope object should be defined before it is used.
      **/
-    #define LOG_SCOPE(scope)                            ScopeMessage      _messager( _##scope )
+    #define LOG_SCOPE(scope)                            areg::ScopeMessage      _messager( _##scope )
 
     /**
      * \brief   Use this macro to log Debug priority messages in logging target (file or remote host)
@@ -186,10 +186,10 @@
      *          Call global tracing to use global scope. The global scope is used to make
      *          output generic messages withing single source.
      **/
-    #define GLOBAL_LOG_SCOPE(scope)                   static ScopeMessage & _getGlobalScope()           \
+    #define GLOBAL_LOG_SCOPE(scope)                   static areg::ScopeMessage & _getGlobalScope()           \
                                                         {                                               \
                                                             static LogScope     _##scope(#scope);       \
-                                                            static ScopeMessage  _messager(_##scope);   \
+                                                            static areg::ScopeMessage  _messager(_##scope);   \
                                                             static bool isActivated { false };          \
                                                             if (isActivated == false)                   \
                                                             {                                           \
