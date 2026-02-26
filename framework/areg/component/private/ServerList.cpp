@@ -46,23 +46,23 @@ ServerList::MAPPOS ServerList::findServer(const areg::StubAddress& whichServer) 
     return ServerList::find(server);
 }
 
-ServerList::MAPPOS ServerList::findServer(const ProxyAddress& whichClient) const
+ServerList::MAPPOS ServerList::findServer(const areg::ProxyAddress& whichClient) const
 {
     LOG_SCOPE(areg_component_private_ServerList_findServer);
-    LOG_DBG("Search server based on proxy address [ %s ]", ProxyAddress::convAddressToPath(whichClient).getString());
+    LOG_DBG("Search server based on proxy address [ %s ]", areg::ProxyAddress::convAddressToPath(whichClient).getString());
 
     ServerInfo server(whichClient);
     return ServerList::find(server);
 }
 
-const ServerInfo & ServerList::registerClient( const ProxyAddress & whichClient, ClientInfo & out_client )
+const ServerInfo & ServerList::registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
 {
     LOG_SCOPE(areg_component_private_ServerList_registerClient);
 
     std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(ServerInfo(whichClient), ClientList());
     LOG_DBG("[ %s ] entry for client [ %s ]"
                 , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
-                , ProxyAddress::convAddressToPath(whichClient).getString());
+                , areg::ProxyAddress::convAddressToPath(whichClient).getString());
 
     ServerListBase::MAPPOS pos = added.first;
     ASSERT(ServerListBase::isValidPosition(pos));
@@ -76,7 +76,7 @@ const ServerInfo & ServerList::registerClient( const ProxyAddress & whichClient,
 }
 
 
-ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client )
+ServerInfo ServerList::unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
 {
     LOG_SCOPE(areg_component_private_ServerList_unregisterClient);
 
@@ -88,7 +88,7 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
         result = pos->first;
 
         LOG_DBG("Unregistered client [ %s ] from [ %s ] service [ %s ] with status [ %s ]. There are still [ %d ] registered clients"
-                    , ProxyAddress::convAddressToPath(out_client.getAddress()).getString()
+                    , areg::ProxyAddress::convAddressToPath(out_client.getAddress()).getString()
                     , pos->first.getAddress().isRemoteAddress() ? "REMOTE" : "LOCAL"
                     , areg::StubAddress::convAddressToPath(pos->first.getAddress()).getString()
                     , areg::getString(pos->first.getConnectionStatus())
@@ -105,7 +105,7 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
     }
     else
     {
-        LOG_INFO("No service for client [ %s ], ignore unregister", ProxyAddress::convAddressToPath(whichClient).getString());
+        LOG_INFO("No service for client [ %s ], ignore unregister", areg::ProxyAddress::convAddressToPath(whichClient).getString());
     }
 
     return result;
@@ -194,7 +194,7 @@ bool ServerList::isServerRegistered(const areg::StubAddress & server) const
     return (ServerListBase::isValidPosition(find(ServerInfo(server))));
 }
 
-const ServerInfo * ServerList::findClientServer(const ProxyAddress & whichClient) const
+const ServerInfo * ServerList::findClientServer(const areg::ProxyAddress & whichClient) const
 {
     ServerListBase::MAPPOS pos = findServer( whichClient );
     return ( ServerListBase::isValidPosition(pos) ? &(pos->first) : nullptr);

@@ -78,7 +78,7 @@ public:
      * \brief   Returns true if passed proxy address is already registered.
      * \param   addrProxy   The address of proxy to check.
      **/
-    bool isServiceRegistered( const ProxyAddress & addrProxy ) const;
+    bool isServiceRegistered( const areg::ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   By given remote servicing address finds the address of stub,
@@ -102,7 +102,7 @@ public:
      * \return  If found registered remote Stub address as Proxy target, returns the actual service connection status.
      *          Otherwise, returns unknown service connection status.
      **/
-    areg::ServiceConnectionState getServiceStatus( const ProxyAddress & addrProxy ) const;
+    areg::ServiceConnectionState getServiceStatus( const areg::ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Returns the list of connected proxies address or empty list if no proxy is connected yet.
@@ -119,7 +119,7 @@ public:
      * \return  Returns valid servicing proxy object if found entry registered.
      *          Otherwise, returns invalid object.
      **/
-    const ServiceProxy & getProxyService( const ProxyAddress & addProxy ) const;
+    const ServiceProxy & getProxyService( const areg::ProxyAddress & addProxy ) const;
 
     /**
      * \brief   Registers remote Proxy address and returns the registered Stub and Proxy service object.
@@ -128,7 +128,7 @@ public:
      * \param[out]  out_proxyService    On output, contains data of remote proxy service.
      * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
-    const ServiceStub & registerServiceProxy( const ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
+    const ServiceStub & registerServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
 
     /**
      * \brief   Unregisters remote Proxy address and returns the Stub and Proxy service object.
@@ -137,7 +137,7 @@ public:
      * \param[out]  out_proxyService    On output, contains data of remote proxy service.
      * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
-    const ServiceStub & unregisterServiceProxy( const ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
+    const ServiceStub & unregisterServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
 
     /**
      * \brief   Registers remote Stub address and returns the registered stub service object.
@@ -164,7 +164,7 @@ public:
      * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const;
+    void getServiceList(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
@@ -173,7 +173,7 @@ public:
      * \param[out]  listProviders      On output the list contains stub address objects that have sources of specified cookie.
      * \param[out]  listConsumers    On output the list contains proxy address objects that have sources of specified cookie.
      **/
-    void getServiceSources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers);
+    void getServiceSources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers);
 
     /**
      * \brief   Call to disconnect proxy service specified by proxy address.
@@ -181,7 +181,7 @@ public:
      * \param   addrProxy   The address of proxy to disconnect.
      * \return  Returns instance of valid stub service. Otherwise, the service stub is invalid.
      **/
-    const ServiceStub & disconnectProxy( const ProxyAddress & addrProxy );
+    const ServiceStub & disconnectProxy( const areg::ProxyAddress & addrProxy );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls

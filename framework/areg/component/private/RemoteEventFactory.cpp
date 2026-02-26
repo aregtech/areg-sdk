@@ -65,7 +65,7 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
 
                     LOG_DBG("Created Event::EventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , areg::StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
-                                , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
+                                , areg::ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
                 }
 
                 result = static_cast<areg::StreamableEvent *>(eventRequest);
@@ -96,7 +96,7 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
 
                     LOG_DBG("Created Event::EventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , areg::StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
-                                , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
+                                , areg::ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
                 }
 
                 result = static_cast<areg::StreamableEvent *>(eventNotify);
@@ -107,7 +107,7 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
     case areg::Event::EventType::EventRemoteServiceResponse:
         {
             ProxyBase::lockProxyResource();
-            ProxyAddress addrProxy;
+            areg::ProxyAddress addrProxy;
             stream >> addrProxy;
             if ( comChannel.getCookie() == addrProxy.getCookie() )
                 addrProxy.setCookie( areg::COOKIE_LOCAL );
@@ -122,7 +122,7 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
                     eventResponse->setTargetChannel(chTarget);
 
                     LOG_DBG("Created Event::EventType::EventRemoteServiceResponse for target proxy [ %s ]."
-                                , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
+                                , areg::ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
                 }
 
                 result = static_cast<areg::StreamableEvent *>(eventResponse);
@@ -302,7 +302,7 @@ areg::StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg
         {
             stream.moveToBegin();
             RemoteRequestEvent eventRequest(stream);
-            const ProxyAddress & addrProxy = eventRequest.getEventSource();
+            const areg::ProxyAddress & addrProxy = eventRequest.getEventSource();
             result = static_cast<areg::StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventRequest.getRequestId()
                                                                                          , areg::ResultType::MessageUndelivered
@@ -314,7 +314,7 @@ areg::StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const areg
         {
             stream.moveToBegin();
             RemoteNotifyRequestEvent eventNotify(stream);
-            const ProxyAddress & addrProxy = eventNotify.getEventSource();
+            const areg::ProxyAddress & addrProxy = eventNotify.getEventSource();
             result = static_cast<areg::StreamableEvent *>( ProxyBase::createRequestFailureEvent( addrProxy
                                                                                          , eventNotify.getRequestId()
                                                                                          , areg::ResultType::MessageUndelivered

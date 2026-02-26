@@ -76,7 +76,7 @@ protected:
      * \param   targetProxy The address of target Proxy, which should
      *                      receive and process event.
      **/
-    ProxyEvent( const ProxyAddress & targetProxy, areg::Event::EventType eventType );
+    ProxyEvent( const areg::ProxyAddress & targetProxy, areg::Event::EventType eventType );
 
     /**
      * \brief   Initializes event data from streaming object.
@@ -109,7 +109,7 @@ public:
     /**
      * \brief   Returns target Proxy Address object.
      **/
-    inline const ProxyAddress & getTargetProxy() const;
+    inline const areg::ProxyAddress & getTargetProxy() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -139,7 +139,7 @@ protected:
     /**
      * \brief   The address of target Proxy, which should receive event.
      **/
-    ProxyAddress  mTargetProxyAddress;
+    areg::ProxyAddress  mTargetProxyAddress;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -169,7 +169,7 @@ protected:
      * \brief   Constructor. Sets the Proxy address of event consumer.
      * \param   proxy   The address of proxy object, which is handling consumer
      **/
-    explicit ProxyEventConsumer( const ProxyAddress & proxy );
+    explicit ProxyEventConsumer( const areg::ProxyAddress & proxy );
 
     /**
      * \brief   Destructor.
@@ -257,7 +257,7 @@ private:
     /**
      * \brief   The address of proxy object, which is handling consumer
      **/
-    const ProxyAddress &  mProxyAddress;
+    const areg::ProxyAddress &  mProxyAddress;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -274,7 +274,7 @@ private:
 // ProxyEvent class inline functions implementations
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ProxyEvent::getTargetProxy() const
+inline const areg::ProxyAddress & ProxyEvent::getTargetProxy() const
 {
     return mTargetProxyAddress;
 }

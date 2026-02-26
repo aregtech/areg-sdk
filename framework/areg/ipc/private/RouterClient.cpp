@@ -141,7 +141,7 @@ void RouterClient::unregisterServiceProvider(const areg::StubAddress & stubServi
     }
 }
 
-bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
+bool RouterClient::registerServiceConsumer(const areg::ProxyAddress & proxyService)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_registerServiceConsumer );
     Lock lock( mLock );
@@ -149,7 +149,7 @@ bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
     if ( isConnectionStarted() )
     {
         LOG_DBG("Queuing to send register [ %s ] service client message by connection [ %d ]"
-                   , ProxyAddress::convAddressToPath(proxyService).getString()
+                   , areg::ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
         result = sendMessage(areg::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), areg::Event::EventPriority::HighPrio);
@@ -158,7 +158,7 @@ bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
     return result;
 }
 
-void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, const areg::DisconnectReason reason )
+void RouterClient::unregisterServiceConsumer(const areg::ProxyAddress & proxyService, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 
@@ -166,7 +166,7 @@ void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, 
     if ( isConnectionStarted() )
     {
         LOG_DBG("Queuing to send unregister [ %s ] service client message by connection [ %d ]"
-                   , ProxyAddress::convAddressToPath(proxyService).getString()
+                   , areg::ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
         sendMessage(areg::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie(), areg::COOKIE_ROUTER) );
@@ -304,7 +304,7 @@ void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceiv
                 {
                 case areg::RegistrationAction::RegisterClient:
                     {
-                        ProxyAddress proxy(msgReceived);
+                        areg::ProxyAddress proxy(msgReceived);
                         areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
@@ -336,7 +336,7 @@ void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceiv
 
                 case areg::RegistrationAction::UnregisterClient:
                     {
-                        ProxyAddress proxy(msgReceived);
+                        areg::ProxyAddress proxy(msgReceived);
                         areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );

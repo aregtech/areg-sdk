@@ -66,7 +66,7 @@ bool PublicHelloWorldClient::serviceConnected( areg::ServiceConnectionState stat
         bool connected = SystemShutdownClientBase::isConnected();
         LOG_DBG("Consumer [ %p : %s ] is [ %s ]"
                   , this
-                  , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
+                  , areg::ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
                   , connected ? "CONNECTED" : "DISCONNECTED");
         notifyOnServiceStateUpdate( connected );
     }

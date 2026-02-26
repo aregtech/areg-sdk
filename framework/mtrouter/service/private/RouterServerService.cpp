@@ -58,14 +58,14 @@ void RouterServerService::unregisterServiceProvider(const areg::StubAddress & /*
     LOG_ERR("Method is not implemented, this should not be called");
 }
 
-bool RouterServerService::registerServiceConsumer(const ProxyAddress & /* proxyService */)
+bool RouterServerService::registerServiceConsumer(const areg::ProxyAddress & /* proxyService */)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_registerServiceConsumer);
     LOG_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
-void RouterServerService::unregisterServiceConsumer(const ProxyAddress & /* proxyService */, const areg::DisconnectReason /*reason*/ )
+void RouterServerService::unregisterServiceConsumer(const areg::ProxyAddress & /* proxyService */, const areg::DisconnectReason /*reason*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisterServiceConsumer);
     LOG_ERR("Method is not implemented, this should not be called");
@@ -104,7 +104,7 @@ void RouterServerService::onServiceMessageReceived(const areg::RemoteMessage &ms
 
             case areg::RegistrationAction::RegisterClient:
                 {
-                    ProxyAddress proxyService(msgReceived);
+                    areg::ProxyAddress proxyService(msgReceived);
                     proxyService.setSource(source);
                     registeredRemoteServiceConsumer(proxyService);
                 }
@@ -122,7 +122,7 @@ void RouterServerService::onServiceMessageReceived(const areg::RemoteMessage &ms
 
             case areg::RegistrationAction::UnregisterClient:
                 {
-                    ProxyAddress proxyService(msgReceived);
+                    areg::ProxyAddress proxyService(msgReceived);
                     areg::DisconnectReason reason { areg::DisconnectReason::UndefinedReason };
                     msgReceived >> reason;
                     proxyService.setSource(source);
@@ -145,7 +145,7 @@ void RouterServerService::onServiceMessageReceived(const areg::RemoteMessage &ms
             mServerConnection.closeConnection(cookie);
 
             areg::ArrayList<areg::StubAddress>  listStubs;
-            areg::ArrayList<ProxyAddress> listProxies;
+            areg::ArrayList<areg::ProxyAddress> listProxies;
             mServiceRegistry.getServiceSources(cookie, listStubs, listProxies);
 
             LOG_DBG("Routing service received disconnect message from cookie [ %u ], [ %d ] stubs and [ %d ] proxies are going to be disconnected"
@@ -248,7 +248,7 @@ void RouterServerService::disconnectServices()
     ServiceCommunicationBase::disconnectServices( );
 
     areg::ArrayList<areg::StubAddress>  stubList;
-    areg::ArrayList<ProxyAddress> proxyList;
+    areg::ArrayList<areg::ProxyAddress> proxyList;
     extractRemoteServiceAddresses(areg::COOKIE_ANY, stubList, proxyList);
 
     for ( uint32_t i = 0; i < stubList.getSize(); ++ i )
@@ -264,7 +264,7 @@ void RouterServerService::disconnectServices()
     mServiceRegistry.clear( );
 }
 
-void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<ProxyAddress> & out_lisProxies ) const
+void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<areg::ProxyAddress> & out_lisProxies ) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }
@@ -289,7 +289,7 @@ void RouterServerService::registeredRemoteServiceProvider(const areg::StubAddres
             for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
             {
                 const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
-                const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
+                const areg::ProxyAddress & addrProxy    = proxyService.getServiceAddress();
                 if ( (proxyService.getServiceStatus() == areg::ServiceConnectionState::Connected) && (addrProxy.getSource() != stub.getSource()) )
                 {
                     areg::RemoteMessage msgRegisterProxy = areg::createServiceClientRegisteredNotification(addrProxy, mServerConnection.getChannelId(), stub.getSource());
@@ -327,7 +327,7 @@ void RouterServerService::registeredRemoteServiceProvider(const areg::StubAddres
                      // ignore, it already has registered stub locally or proxy is not connected
                     LOG_DBG("ignoring sending stub registration message, Stub [ %s ] and Proxy [ %s ] have same origin."
                                     , areg::StubAddress::convAddressToPath(stub).getString()
-                                    , ProxyAddress::convAddressToPath(addrProxy).getString());
+                                    , areg::ProxyAddress::convAddressToPath(addrProxy).getString());
                 }
             }
         }
@@ -346,7 +346,7 @@ void RouterServerService::registeredRemoteServiceProvider(const areg::StubAddres
     }
 }
 
-void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
+void RouterServerService::registeredRemoteServiceConsumer(const areg::ProxyAddress & proxy)
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceConsumer);
     if ( mServiceRegistry.getServiceStatus(proxy) != areg::ServiceConnectionState::Connected )
@@ -356,7 +356,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
         const areg::StubAddress & addrStub      = stubService.getServiceAddress();
 
         LOG_DBG("Registered proxy [ %s ], for connection with stub [ %s ], connection status is [ %s ]"
-                    , ProxyAddress::convAddressToPath(proxy).getString()
+                    , areg::ProxyAddress::convAddressToPath(proxy).getString()
                     , areg::StubAddress::convAddressToPath(addrStub).getString()
                     , areg::getString( proxyService.getServiceStatus()));
 
@@ -389,12 +389,12 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
             // ignore, it is done locally
             LOG_DBG("Ignore send stub registration message, Stub [ %s ] and Proxy [ %s ] have same origin."
                             , areg::StubAddress::convAddressToPath(addrStub).getString()
-                            , ProxyAddress::convAddressToPath(proxy).getString());
+                            , areg::ProxyAddress::convAddressToPath(proxy).getString());
         }
     }
     else
     {
-        LOG_DBG("Proxy [ %s ] is already having connected status, ignoring registration", ProxyAddress::convAddressToPath(proxy).getString());
+        LOG_DBG("Proxy [ %s ] is already having connected status, ignoring registration", areg::ProxyAddress::convAddressToPath(proxy).getString());
     }
 }
 
@@ -415,7 +415,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const areg::StubAddr
         for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
         {
             const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
-            const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
+            const areg::ProxyAddress & addrProxy    = proxyService.getServiceAddress();
 
             if ( (cookie == areg::COOKIE_ANY) || (addrProxy.getSource() != cookie) )
             {
@@ -450,11 +450,11 @@ void RouterServerService::unregisteredRemoteServiceProvider(const areg::StubAddr
     }
 }
 
-void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
+void RouterServerService::unregisteredRemoteServiceConsumer(const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ )
 {
     LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceConsumer);
     LOG_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
-                    , ProxyAddress::convAddressToPath(proxy).getString()
+                    , areg::ProxyAddress::convAddressToPath(proxy).getString()
                     , static_cast<uint32_t>(cookie));
 
     areg::RemoteMessage msgRegisterProxy;

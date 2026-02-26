@@ -30,7 +30,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ServiceRequestEvent class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
+    ServiceRequestEvent::ServiceRequestEvent( const areg::ProxyAddress & proxyAddress
                                             , const areg::StubAddress  & target
                                             , uint32_t reqId
                                             , areg::RequestType reqType

@@ -249,7 +249,7 @@ namespace areg
          * \param   proxyAddress    The address of the service consumer proxy.
          * \param   status          The service consumer connection status.
          **/
-        virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, ServiceConnectionState status ) = 0;
+        virtual void processClientConnectEvent( const areg::ProxyAddress & proxyAddress, ServiceConnectionState status ) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods

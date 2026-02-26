@@ -116,7 +116,7 @@ namespace areg
              * \param   seqId   The Sequence number.
              * \param   proxy   The target proxy address.
              **/
-            inline Listener(uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy);
+            inline Listener(uint32_t reqId, const SequenceNumber & seqId, const areg::ProxyAddress & proxy);
 
             /**
              * \brief   Copies listener data from given source.
@@ -170,7 +170,7 @@ namespace areg
             /**
              * \brief   The address of target Proxy object.
              **/
-            ProxyAddress    mProxy;
+            areg::ProxyAddress    mProxy;
         };
 
         //////////////////////////////////////////////////////////////////////////
@@ -316,7 +316,7 @@ namespace areg
          * \param   status  The service consumer connection status.
          * \return  Returns true if connected service consumer is relevant to the provider.
          **/
-        virtual bool clientConnected( const ProxyAddress & client, areg::ServiceConnectionState status );
+        virtual bool clientConnected( const areg::ProxyAddress & client, areg::ServiceConnectionState status );
 
     /************************************************************************/
     // StubBase overrides. Public pure virtual methods 
@@ -362,7 +362,7 @@ namespace areg
          * \param   data    The buffer of data to send to client. Can be Invalid buffer
          * \return  Returns valid pointer to Response event object
          **/
-        virtual areg::ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::EventDataStream & data ) const;
+        virtual areg::ResponseEvent * createResponseEvent( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::EventDataStream & data ) const;
 
         /**
          * \brief   Overwrite method to create remote service request event from streaming object for 
@@ -415,7 +415,7 @@ namespace areg
          * \param   proxyAddress    The address of the service consumer proxy.
          * \param   status          The service consumer connection status.
          **/
-        void processClientConnectEvent( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) override;
+        void processClientConnectEvent( const areg::ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) override;
 
         /**
          * \brief   Triggered to process generic stub event.
@@ -516,7 +516,7 @@ namespace areg
          * \param   notifySource    The address of Proxy source.
          * \return  Returns true if notification listener is already registered in the list of listeners.
          **/
-        bool existNotificationListener( uint32_t msgId, const ProxyAddress & notifySource ) const;
+        bool existNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource ) const;
 
         /**
          * \brief   Adds new notification listener in the list.
@@ -529,7 +529,7 @@ namespace areg
          * \return  Returns true, if list does not contain notification listener entry and new entry was added with success.
          *          Otherwise function returns false.
          **/
-        bool addNotificationListener( uint32_t msgId, const ProxyAddress & notifySource );
+        bool addNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource );
 
         /**
          * \brief   Removes notification listener from the listener list.
@@ -539,7 +539,7 @@ namespace areg
          * \param   msgId           The ID of notification message (normally, either attribute or response message ID).
          * \param   notifySource    The address of Proxy source.
          **/
-        void removeNotificationListener( uint32_t msgId, const ProxyAddress & notifySource );
+        void removeNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource );
 
         /**
          * \brief   Returns all listeners for specified proxy and on output returns
@@ -547,13 +547,13 @@ namespace areg
          * \param   whichProxy  The address of request source proxy to remove.
          * \param   removedIDs  The list of removed request IDs
          **/
-        void clearAllListeners(const ProxyAddress & whichProxy, areg::IntegerArray& removedIDs);
+        void clearAllListeners(const areg::ProxyAddress & whichProxy, areg::IntegerArray& removedIDs);
         /**
          * \brief   Returns all listeners for specified proxy and on output returns
          *          list of remove request IDs.
          * \param   whichProxy  The address of request source proxy to remove.
          **/
-        void clearAllListeners(const ProxyAddress & whichProxy);
+        void clearAllListeners(const areg::ProxyAddress & whichProxy);
 
         /**
          * \brief   Sends attribute notification response to all target proxy objects
@@ -621,7 +621,7 @@ namespace areg
          * \param   data    The data to send to the target. Can be Invalid buffer
          * \param   result  The result of data update to send to the target object.
          **/
-        void sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const;
+        void sendUpdateNotificationOnce( const areg::ProxyAddress & target, uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const;
 
         /**
          * \brief   Sends response event to proxy. The list of proxy listeners is selected by message ID.
@@ -743,25 +743,25 @@ namespace areg
     inline StubBase::Listener::Listener()
         : mMessageId ( 0 )
         , mSequenceNr( 0 )
-        , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
+        , mProxy     ( areg::ProxyAddress::getInvalidProxyAddress() )
     {
     }
 
     inline StubBase::Listener::Listener( uint32_t reqId )
         : mMessageId ( reqId )
         , mSequenceNr( 0 )
-        , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
+        , mProxy     ( areg::ProxyAddress::getInvalidProxyAddress() )
     {
     }
 
     inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId )
         : mMessageId ( reqId )
         , mSequenceNr( seqId )
-        , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
+        , mProxy     ( areg::ProxyAddress::getInvalidProxyAddress() )
     {
     }
 
-    inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress& proxy )
+    inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const areg::ProxyAddress& proxy )
         : mMessageId ( reqId )
         , mSequenceNr( seqId )
         , mProxy     ( proxy )

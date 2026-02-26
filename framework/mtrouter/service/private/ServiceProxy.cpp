@@ -23,13 +23,13 @@ ServiceProxy::ServiceProxy()
 {
 }
 
-ServiceProxy::ServiceProxy( const ProxyAddress & addrProxy )
+ServiceProxy::ServiceProxy( const areg::ProxyAddress & addrProxy )
     : mProxyAddress ( addrProxy )
     , mConnectStatus( addrProxy.isValid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
 }
 
-ServiceProxy::ServiceProxy( ProxyAddress && addrProxy ) noexcept
+ServiceProxy::ServiceProxy( areg::ProxyAddress && addrProxy ) noexcept
     : mProxyAddress ( std::move(addrProxy) )
     , mConnectStatus( mProxyAddress.isValid( ) ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
@@ -75,7 +75,7 @@ ServiceProxy & ServiceProxy::operator = ( ServiceProxy && serviceProxy ) noexcep
     return (*this);
 }
 
-ServiceProxy & ServiceProxy::operator = ( const ProxyAddress & addrProxy )
+ServiceProxy & ServiceProxy::operator = ( const areg::ProxyAddress & addrProxy )
 {
     mProxyAddress   = addrProxy;
     mConnectStatus  = addrProxy.isValid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
@@ -83,7 +83,7 @@ ServiceProxy & ServiceProxy::operator = ( const ProxyAddress & addrProxy )
     return (*this);
 }
 
-ServiceProxy & ServiceProxy::operator = ( ProxyAddress && addrProxy ) noexcept
+ServiceProxy & ServiceProxy::operator = ( areg::ProxyAddress && addrProxy ) noexcept
 {
     mProxyAddress   = std::move(addrProxy);
     mConnectStatus  = mProxyAddress.isValid( ) ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
@@ -96,7 +96,7 @@ bool ServiceProxy::operator == ( const ServiceProxy & serviceProxy ) const
     return ServiceProxy::operator == (serviceProxy.mProxyAddress);
 }
 
-bool ServiceProxy::operator == ( const ProxyAddress & addrProxy ) const
+bool ServiceProxy::operator == ( const areg::ProxyAddress & addrProxy ) const
 {
     return  (static_cast<const areg::ServiceAddress &>(mProxyAddress) == static_cast<const areg::ServiceAddress &>(addrProxy))  && 
             (mProxyAddress.getThread() == addrProxy.getThread()) && 
@@ -121,7 +121,7 @@ void ServiceProxy::_setServiceStatus( areg::ServiceConnectionState newStatus )
     }
 }
 
-void ServiceProxy::_setService( const ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus /*= areg::ServiceConnectionState::Pending*/ )
+void ServiceProxy::_setService( const areg::ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus /*= areg::ServiceConnectionState::Pending*/ )
 {
     mProxyAddress   = addrProxy;
     _setServiceStatus(connectStatus);

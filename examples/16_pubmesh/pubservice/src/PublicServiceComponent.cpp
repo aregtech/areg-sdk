@@ -36,10 +36,10 @@ void PublicServiceComponent::startupComponent( areg::ComponentThread & comThread
     SystemShutdownStub::setServiceState( SystemShutdown::RunState::ServiceReady );
 }
 
-bool PublicServiceComponent::clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status)
+bool PublicServiceComponent::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
-    LOG_INFO("The consumer [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(client).getString(), areg::getString(status));
+    LOG_INFO("The consumer [ %s ] is [ %s ]", areg::ProxyAddress::convAddressToPath(client).getString(), areg::getString(status));
 
     bool result{ true };
     if (SystemShutdownStub::clientConnected(client, status))

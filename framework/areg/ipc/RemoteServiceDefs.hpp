@@ -30,7 +30,7 @@
   * Dependencies
   ************************************************************************/
 namespace areg { class StubAddress; }
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 namespace areg { class RemoteMessage; }
 namespace areg { class Channel; }
 
@@ -189,7 +189,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to register service consumer.
      * \see     createRouterUnregisterClient
      **/
-    AREG_API areg::RemoteMessage createRouterRegisterClient( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API areg::RemoteMessage createRouterRegisterClient( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
 
     /**
      * \brief   areg::createRouterUnregisterClient
@@ -200,7 +200,7 @@ namespace areg
      * \param   target  The ID of the target to send the request message to unregister service consumer.
      * \see     createRouterRegisterClient
      **/
-    AREG_API areg::RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createRouterUnregisterClient( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createServiceRegisteredNotification
@@ -231,7 +231,7 @@ namespace areg
      * \param   target  The ID of the target to send the service consumer is registered notification message.
      * \see     createServiceClientUnregisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceClientRegisteredNotification( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createServiceClientRegisteredNotification( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::createServiceClientUnregisteredNotification
@@ -242,7 +242,7 @@ namespace areg
      * \param   target  The ID of the target to send the service consumer is unregistered notification message.
      * \see     createServiceClientRegisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API areg::RemoteMessage createServiceClientUnregisteredNotification( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
      * \brief   areg::isMessageHelloServer

@@ -58,14 +58,14 @@ public:
      * \param   server          The address of Stub object. If valid, Proxy can send request events.
      * \param   connectStatus   Indicates the connection status.
      **/
-    ProxyConnectEvent( const ProxyAddress & proxy, const areg::StubAddress & server, areg::ServiceConnectionState connectStatus );
+    ProxyConnectEvent( const areg::ProxyAddress & proxy, const areg::StubAddress & server, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Copy constructor.
      * \param   target  The target Proxy address to initialize event.
      * \param   src     The source of data to copy.
      **/
-    ProxyConnectEvent(const ProxyAddress & target, const ProxyConnectEvent & src);
+    ProxyConnectEvent(const areg::ProxyAddress & target, const ProxyConnectEvent & src);
 
     /**
      * \brief   Initialization constructor.

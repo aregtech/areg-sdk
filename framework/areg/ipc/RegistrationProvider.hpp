@@ -22,7 +22,7 @@
 #include "areg/component/ServiceDefs.hpp"
 
 namespace areg { class StubAddress; }
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 
 //////////////////////////////////////////////////////////////////////////
 // RegistrationProvider interface
@@ -79,7 +79,7 @@ public:
      * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceConsumer(const ProxyAddress& proxyService) = 0;
+    virtual bool registerServiceConsumer(const areg::ProxyAddress& proxyService) = 0;
 
     /**
      * \brief   Call to unregister the service consumer from the system and disconnect service provider.
@@ -87,7 +87,7 @@ public:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceConsumer(const ProxyAddress& proxyService, const areg::DisconnectReason reason) = 0;
+    virtual void unregisterServiceConsumer(const areg::ProxyAddress& proxyService, const areg::DisconnectReason reason) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

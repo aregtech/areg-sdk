@@ -74,7 +74,7 @@ namespace areg
         mMagicNum = ServiceAddress::_magicNumber(*this);
     }
 
-    ServiceAddress::ServiceAddress( const ProxyAddress & addrProxy )
+    ServiceAddress::ServiceAddress( const areg::ProxyAddress & addrProxy )
         : areg::ServiceItem   ( static_cast<const areg::ServiceItem &>(addrProxy) )
         , mRoleName     ( addrProxy.getRoleName() )
         , mMagicNum     ( areg::CHECKSUM_IGNORE )

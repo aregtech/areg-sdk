@@ -107,7 +107,7 @@ void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
     responseHelloWorld( theClient.crID );
 }
 
-bool PublicHelloWorldService::clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status)
+bool PublicHelloWorldService::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     return PublicHelloWorldStub::clientConnected(client, status);
 }

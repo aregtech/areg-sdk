@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 namespace areg { class StubAddress; }
 namespace areg { class Channel; }
 namespace areg { class String; }
@@ -92,14 +92,14 @@ public:
     /**
      * \brief   Creates and returns Service Manager event data with command to register Proxy
      **/
-    static ServiceManagerEventData registerProxy( const ProxyAddress & addrProxy );
+    static ServiceManagerEventData registerProxy( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to unregister Proxy
      * \param   addrProxy   The address of the service consumer to unregister.
      * \param   reason      The reason to unregister or disconnect the service consumer.
      **/
-    static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason );
+    static ServiceManagerEventData unregisterProxy( const areg::ProxyAddress & addrProxy, areg::DisconnectReason reason );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register Stub

@@ -117,7 +117,7 @@ void ServiceManager::requestUnregisterServer( const areg::StubAddress & whichSer
                                   , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
+void ServiceManager::requestRegisterClient( const areg::ProxyAddress & whichClient )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
 
@@ -133,7 +133,7 @@ void ServiceManager::requestRegisterClient( const ProxyAddress & whichClient )
                                   , static_cast<areg::DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, const areg::DisconnectReason reason )
+void ServiceManager::requestUnregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason )
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
     LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
@@ -295,7 +295,7 @@ void ServiceManager::_waitServiceManagerThread()
     shutdownThread(areg::DO_NOT_WAIT);
 }
 
-void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<ProxyAddress> & out_lisProxies ) const
+void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<areg::ProxyAddress> & out_lisProxies ) const
 {
     LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
     Lock lock( mLock );
@@ -318,10 +318,10 @@ void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg:
 
         for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
         {
-            const ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
+            const areg::ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
             if ( proxy.isValid() && ((cookie == areg::COOKIE_ANY) || (proxy.getCookie() == cookie)) )
             {
-                LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", ProxyAddress::convAddressToPath(proxy).getString(), cookie);
+                LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", areg::ProxyAddress::convAddressToPath(proxy).getString(), cookie);
                 out_lisProxies.add(proxy);
             }
         }
@@ -335,7 +335,7 @@ void ServiceManager::registeredRemoteServiceProvider( const areg::StubAddress & 
     ServiceManager::requestRegisterServer(stub);
 }
 
-void ServiceManager::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
+void ServiceManager::registeredRemoteServiceConsumer(const areg::ProxyAddress & proxy)
 {
     ServiceManager::requestRegisterClient(proxy);
 }
@@ -345,7 +345,7 @@ void ServiceManager::unregisteredRemoteServiceProvider(const areg::StubAddress &
     ServiceManager::requestUnregisterServer(stub, reason);
 }
 
-void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= areg::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceConsumer(const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= areg::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterClient(proxy, reason);
 }

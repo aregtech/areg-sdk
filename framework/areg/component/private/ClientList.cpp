@@ -25,18 +25,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-bool ClientList::existClient( const ProxyAddress & client ) const
+bool ClientList::existClient( const areg::ProxyAddress & client ) const
 {
     return contains(ClientInfo(client));
 }
 
-const ClientInfo & ClientList::getClient( const ProxyAddress & whichClient ) const
+const ClientInfo & ClientList::getClient( const areg::ProxyAddress & whichClient ) const
 {
     LISTPOS pos = find(ClientInfo(whichClient));
     return (isValidPosition(pos) ? *pos : ClientInfo::getInvalidClientInfo());
 }
 
-const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient, const ServerInfo & server )
+const ClientInfo & ClientList::registerClient( const areg::ProxyAddress & whichClient, const ServerInfo & server )
 {
     ClientInfo clInfo(whichClient);
     LISTPOS pos = find(clInfo);
@@ -53,7 +53,7 @@ const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient,
     return client;
 }
 
-bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client )
+bool ClientList::unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
 {
     bool result{ false };
 

@@ -29,7 +29,7 @@
  * Dependencies.
  ************************************************************************/
 namespace areg { class StubAddress; }
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 namespace areg { class ComponentAddress; }
 
 namespace areg
@@ -70,7 +70,7 @@ namespace areg
          * \param   reqType         The request type.
          * \param   eventType       The type of event.
          **/
-        ServiceRequestEvent( const ProxyAddress & proxyAddress
+        ServiceRequestEvent( const areg::ProxyAddress & proxyAddress
                         , const areg::StubAddress & target
                         , uint32_t reqId
                         , areg::RequestType reqType
@@ -94,13 +94,13 @@ namespace areg
         /**
          * \brief   Return the address of Proxy of event source
          **/
-        inline const ProxyAddress & getEventSource() const;
+        inline const areg::ProxyAddress & getEventSource() const;
 
         /**
          * \brief   Sets the address of Proxy of event source
          * \param   addrProxySource The address of Proxy of source
          **/
-        inline void setEventSource( const ProxyAddress &  addrProxySource );
+        inline void setEventSource( const areg::ProxyAddress &  addrProxySource );
 
         /**
          * \brief   Returns request message ID stored in service event
@@ -150,7 +150,7 @@ namespace areg
         /**
          * \brief   Event source Proxy address
          **/
-        ProxyAddress              mProxySource;
+        areg::ProxyAddress              mProxySource;
 
         /**
          * \brief   Request message ID to trigger service call.
@@ -179,12 +179,12 @@ namespace areg
     // ServiceRequestEvent class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const ProxyAddress & ServiceRequestEvent::getEventSource() const
+    inline const areg::ProxyAddress & ServiceRequestEvent::getEventSource() const
     {
         return mProxySource;
     }
 
-    inline void ServiceRequestEvent::setEventSource(const ProxyAddress& addrProxySource)
+    inline void ServiceRequestEvent::setEventSource(const areg::ProxyAddress& addrProxySource)
     {
         mProxySource = addrProxySource;
     }

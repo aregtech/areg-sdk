@@ -18,19 +18,19 @@
 
 const ServiceProxy     ListServiceProxies::InvalidProxyService;
 
-const ServiceProxy & ListServiceProxies::getService( const ProxyAddress & addrProxy ) const
+const ServiceProxy & ListServiceProxies::getService( const areg::ProxyAddress & addrProxy ) const
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
     return ( isValidPosition(pos) ? static_cast<const ServiceProxy &>(valueAtPosition(pos)) : ListServiceProxies::InvalidProxyService );
 }
 
-ServiceProxy * ListServiceProxies::getService( const ProxyAddress & addrProxy )
+ServiceProxy * ListServiceProxies::getService( const areg::ProxyAddress & addrProxy )
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
     return ( isValidPosition(pos) ? static_cast<ServiceProxy *>(&valueAtPosition(pos)) : nullptr );
 }
 
-ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrProxy )
+ServiceProxy & ListServiceProxies::registerService( const areg::ProxyAddress & addrProxy )
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
     if ( isInvalidPosition(pos) )
@@ -42,7 +42,7 @@ ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrPro
     return static_cast<ServiceProxy &>(valueAtPosition(pos));
 }
 
-ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProxy, const ServiceStub & stubService)
+ServiceProxy & ListServiceProxies::registerService(const areg::ProxyAddress & addrProxy, const ServiceStub & stubService)
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
     if (isInvalidPosition(pos))
@@ -67,7 +67,7 @@ ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProx
     return proxyService;
 }
 
-ServiceProxy ListServiceProxies::unregisterService( const ProxyAddress & addrProxy )
+ServiceProxy ListServiceProxies::unregisterService( const areg::ProxyAddress & addrProxy )
 {
     ServiceProxy result;
     for (ListServiceProxies::LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
@@ -122,7 +122,7 @@ int32_t ListServiceProxies::getSpecificService(ListServiceProxies & out_listProx
     return result;
 }
 
-ListServiceProxies::LISTPOS ListServiceProxies::_findProxy(const ProxyAddress & addrProxy) const
+ListServiceProxies::LISTPOS ListServiceProxies::_findProxy(const areg::ProxyAddress & addrProxy) const
 {
     LISTPOS pos = firstPosition( );
     for ( ; isValidPosition(pos); pos = nextPosition(pos))

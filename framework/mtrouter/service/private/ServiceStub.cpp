@@ -35,7 +35,7 @@ ServiceStub::ServiceStub( areg::StubAddress && addrStub ) noexcept
 {
 }
 
-ServiceStub::ServiceStub( const ProxyAddress & addrProxy )
+ServiceStub::ServiceStub( const areg::ProxyAddress & addrProxy )
     : mStubAddress  ( static_cast<const areg::ServiceItem &>(addrProxy), addrProxy.getRoleName(), "" )
     , mConnectStatus( addrProxy.isValid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown )
 {
@@ -81,7 +81,7 @@ ServiceStub & ServiceStub::operator = ( areg::StubAddress && addrStub ) noexcept
     return (*this);
 }
 
-ServiceStub & ServiceStub::operator = ( const ProxyAddress & addrProxy )
+ServiceStub & ServiceStub::operator = ( const areg::ProxyAddress & addrProxy )
 {
     mStubAddress    = static_cast<const areg::ServiceAddress &>(addrProxy);
     mConnectStatus  = addrProxy.isValid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
@@ -110,7 +110,7 @@ bool ServiceStub::operator == ( const areg::StubAddress & addrStub ) const
     return static_cast<const areg::ServiceAddress &>(mStubAddress) == static_cast<const areg::ServiceAddress &>(addrStub);
 }
 
-bool ServiceStub::operator == (const ProxyAddress & addrProxy) const
+bool ServiceStub::operator == (const areg::ProxyAddress & addrProxy) const
 {
     return static_cast<const areg::ServiceAddress &>(mStubAddress) == static_cast<const areg::ServiceAddress &>(addrProxy);
 }

@@ -43,7 +43,7 @@ ServerInfo::ServerInfo( areg::StubAddress && server )
     setConnectionStatus( areg::ServiceConnectionState::Connected );
 }
 
-ServerInfo::ServerInfo( const ProxyAddress & proxy )
+ServerInfo::ServerInfo( const areg::ProxyAddress & proxy )
     : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), areg::String::getEmptyString() )
     , mServerState  ( areg::ServiceConnectionState::Pending )
 {
@@ -123,7 +123,7 @@ bool ServerInfo::operator == ( const areg::StubAddress & server ) const
     return server.getRoleName() == mServerAddress.getRoleName() && server.isServiceCompatible(mServerAddress.getService());
 }
 
-bool ServerInfo::operator == ( const ProxyAddress & proxy ) const
+bool ServerInfo::operator == ( const areg::ProxyAddress & proxy ) const
 {
     return mServerAddress == proxy;
 }

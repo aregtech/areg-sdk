@@ -24,7 +24,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceStub class declaration
@@ -59,7 +59,7 @@ public:
      * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
      * \param   addrProxy   The Proxy address to extract information.
      **/
-    explicit ServiceStub( const ProxyAddress & addrProxy );
+    explicit ServiceStub( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Copies Stub service data from given source.
@@ -111,7 +111,7 @@ public:
      * \brief   Creates and copies Stub address data out of Proxy address.
      * \param   addrProxy   The Proxy address to generate Stub address information
      **/
-    ServiceStub & operator = ( const ProxyAddress & addrProxy );
+    ServiceStub & operator = ( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Copies data from given source
@@ -136,7 +136,7 @@ public:
      *          Stub and Proxy addresses are equal if they are compatible.
      * \param   addrProxy   The Proxy address to check.
      **/
-    bool operator == ( const ProxyAddress & addrProxy ) const;
+    bool operator == ( const areg::ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Check equality of Stub service objects.

@@ -50,7 +50,7 @@ public:
      * \param   stubTarget      The target Stub address, which receives request
      * \param   connectStatus   The connection status to notify.
      **/
-    StubConnectEvent( const ProxyAddress & proxyClient, const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
+    StubConnectEvent( const areg::ProxyAddress & proxyClient, const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
 
     /**
      * \brief   Constructor. Reads data from streaming object.

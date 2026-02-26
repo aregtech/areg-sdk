@@ -171,7 +171,7 @@ namespace areg
         mMagicNum = StubAddress::_magicNumber(*this);
     }
 
-    bool StubAddress::isProxyCompatible(const ProxyAddress & proxyAddress) const
+    bool StubAddress::isProxyCompatible(const areg::ProxyAddress & proxyAddress) const
     {
         if (isValid() && proxyAddress.isValid())
         {

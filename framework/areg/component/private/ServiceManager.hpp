@@ -34,7 +34,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class StubAddress; }
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 namespace areg { class ServiceRequestEvent; }
 namespace areg { class ServiceResponseEvent; }
 
@@ -128,7 +128,7 @@ public:
      * \param   whichClient     The address of Proxy client object, which has been
      *                          started and requesting registration at Service Manager Module.
      **/
-    static void requestRegisterClient( const ProxyAddress & whichClient );
+    static void requestRegisterClient( const areg::ProxyAddress & whichClient );
 
     /**
      * \brief   Static method to be called when a proxy is shutting down
@@ -142,7 +142,7 @@ public:
      *                          unregistering at Service Manager Module.
      * \param   reason          The reason to unregister the service consumer
      **/
-    static void requestUnregisterClient( const ProxyAddress & whichClient, const areg::DisconnectReason reason );
+    static void requestUnregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason );
 
     /**
      * \brief   Static method to be called globally.
@@ -366,7 +366,7 @@ private:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumer ) const override;
+    void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumer ) const override;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.
@@ -378,7 +378,7 @@ private:
      * \brief   Triggered when a remote service consumer is registered in the system.
      * \param   proxy   The address of remote service consumer that has been registered.
      **/
-    void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
+    void registeredRemoteServiceConsumer( const areg::ProxyAddress & proxy ) override;
 
     /**
      * \brief   Triggered when a remote service provider is unregistered from the system.
@@ -396,7 +396,7 @@ private:
      * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'areg::COOKIE_ANY'.
      **/
-    void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+    void unregisteredRemoteServiceConsumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes

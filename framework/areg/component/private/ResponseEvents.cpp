@@ -30,7 +30,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ResponseEvent class Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    areg::ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
+    areg::ResponseEvent::ResponseEvent( const areg::ProxyAddress & proxyTarget
                                 , areg::ResultType result
                                 , uint32_t respId
                                 , areg::Event::EventType eventType
@@ -41,7 +41,7 @@ namespace areg
     }
 
     areg::ResponseEvent::ResponseEvent( const areg::EventDataStream & args
-                                , const ProxyAddress & proxyTarget
+                                , const areg::ProxyAddress & proxyTarget
                                 , areg::ResultType result
                                 , uint32_t respId
                                 , areg::Event::EventType eventType
@@ -52,7 +52,7 @@ namespace areg
     {
     }
 
-    areg::ResponseEvent::ResponseEvent( const ProxyAddress& proxyTarget, const areg::ResponseEvent& src )
+    areg::ResponseEvent::ResponseEvent( const areg::ProxyAddress& proxyTarget, const areg::ResponseEvent& src )
         : areg::ServiceResponseEvent(proxyTarget, static_cast<const areg::ServiceResponseEvent &>(src))
         , mData (src.mData)
     {
@@ -90,7 +90,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // LocalResponseEvent class Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    areg::LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
+    areg::LocalResponseEvent::LocalResponseEvent( const areg::ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
@@ -99,7 +99,7 @@ namespace areg
     }
 
     areg::LocalResponseEvent::LocalResponseEvent( const areg::EventDataStream & args
-                                        , const ProxyAddress & proxyTarget
+                                        , const areg::ProxyAddress & proxyTarget
                                         , areg::ResultType result
                                         , uint32_t respId
                                         , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
@@ -108,7 +108,7 @@ namespace areg
     {
     }
 
-    areg::LocalResponseEvent::LocalResponseEvent( const ProxyAddress& proxyTarget, const areg::LocalResponseEvent & src )
+    areg::LocalResponseEvent::LocalResponseEvent( const areg::ProxyAddress& proxyTarget, const areg::LocalResponseEvent & src )
         : areg::ResponseEvent(proxyTarget, static_cast<const areg::ResponseEvent &>(src))
     {
     }
@@ -130,7 +130,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // RemoteResponseEvent class Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    areg::RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
+    areg::RemoteResponseEvent::RemoteResponseEvent( const areg::ProxyAddress & proxyTarget
                                             , areg::ResultType result
                                             , uint32_t respId
                                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
@@ -140,7 +140,7 @@ namespace areg
     }
 
     areg::RemoteResponseEvent::RemoteResponseEvent( const areg::EventDataStream & args
-                                            , const ProxyAddress & proxyTarget
+                                            , const areg::ProxyAddress & proxyTarget
                                             , areg::ResultType result
                                             , uint32_t respId
                                             , const SequenceNumber & seqNr  /*= areg::SEQUENCE_NUMBER_NOTIFY*/
@@ -150,7 +150,7 @@ namespace areg
         ASSERT(getData().getDataStream().isExternalDataStream());
     }
 
-    areg::RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress& proxyTarget, const areg::RemoteResponseEvent & src )
+    areg::RemoteResponseEvent::RemoteResponseEvent( const areg::ProxyAddress& proxyTarget, const areg::RemoteResponseEvent & src )
         : areg::ResponseEvent(proxyTarget, static_cast<const areg::ResponseEvent &>(src))
     {
         ASSERT(getData().getDataStream().isExternalDataStream());

@@ -25,7 +25,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 class ServerInfo;
 
 using ClientListBase = areg::LinkedList<ClientInfo>;
@@ -92,7 +92,7 @@ public:
      * \return  Returns true, if there is a Client Info object in the list
      *          with specified Proxy address. Otherwise returns false.
      **/
-    bool existClient( const ProxyAddress & client ) const;
+    bool existClient( const areg::ProxyAddress & client ) const;
 
     /**
      * \brief   Searches in the list Client Info object with specified address,
@@ -105,7 +105,7 @@ public:
      *          of Proxy of client, it will return valid object. Otherwise, it will return
      *          invalid client info object.
      **/
-    const ClientInfo & getClient( const ProxyAddress & whichClient ) const;
+    const ClientInfo & getClient( const areg::ProxyAddress & whichClient ) const;
 
     /**
      * \brief   Registers client in the list by given address of Proxy and Server Info, 
@@ -121,7 +121,7 @@ public:
      *          object. Otherwise, it will create new Client Info entry with initial
      *          number of instances 1.
      **/
-    const ClientInfo & registerClient( const ProxyAddress & whichClient, const ServerInfo & server );
+    const ClientInfo & registerClient( const areg::ProxyAddress & whichClient, const ServerInfo & server );
 
     /**
      * \brief   It searches servicing Client entry in the list by the given address of Proxy.
@@ -132,7 +132,7 @@ public:
      *                      will contains information of unregistered client.
      * \return  Return true if found an entry with specified proxy and operation to unregister client succeeded.
      **/
-    bool unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client );
+    bool unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
 
     /**
      * \brief   Call to notify all pending clients the servicing server availability.

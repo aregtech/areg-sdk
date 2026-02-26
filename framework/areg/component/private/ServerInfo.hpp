@@ -71,7 +71,7 @@ public:
      *          Creates Server Info object, copies server address data from proxy address.
      * \param   proxy   The Proxy address to extract data of Stub address
      **/
-    explicit ServerInfo( const ProxyAddress & proxy );
+    explicit ServerInfo( const areg::ProxyAddress & proxy );
 
     /**
      * \brief   Copy constructor.
@@ -151,7 +151,7 @@ public:
      *          Otherwise returns false.
      * \param   proxy   The Proxy client address to compare
      **/
-    bool operator == ( const ProxyAddress & proxy ) const;
+    bool operator == ( const areg::ProxyAddress & proxy ) const;
 
     /**
      * \brief   Converts Server Info object to unsigned integer.

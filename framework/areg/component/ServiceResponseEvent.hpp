@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 
 namespace areg
 {
@@ -78,7 +78,7 @@ namespace areg
          * \param   eventType   The type of event.
          * \param   seqNr       The sequence number of call.
          **/
-        ServiceResponseEvent( const ProxyAddress & target
+        ServiceResponseEvent( const areg::ProxyAddress & target
                             , areg::ResultType result
                             , uint32_t responseId
                             , areg::Event::EventType eventType
@@ -90,7 +90,7 @@ namespace areg
          * \param   target  The target proxy address
          * \param   src     The service response source to copy data.
          **/
-        ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
+        ServiceResponseEvent(const areg::ProxyAddress & target, const ServiceResponseEvent & src );
 
         /**
          * \brief   Creates event from streaming object and initializes data
@@ -142,7 +142,7 @@ namespace areg
          * \return  Cloned service response event object, which contains specified
          *          target proxy address.
          **/
-        virtual ServiceResponseEvent * cloneForTarget(const ProxyAddress & target) const;
+        virtual ServiceResponseEvent * cloneForTarget(const areg::ProxyAddress & target) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations

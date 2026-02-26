@@ -83,7 +83,7 @@ namespace areg
          * \param   eventType   The event type.
          * \param   seqNr       The call sequence number.
          **/
-        ResponseEvent( const ProxyAddress & proxyTarget
+        ResponseEvent( const areg::ProxyAddress & proxyTarget
                     , const ResultType result
                     , uint32_t respId
                     , areg::Event::EventType eventType
@@ -100,7 +100,7 @@ namespace areg
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
         ResponseEvent( const areg::EventDataStream & args
-                    , const ProxyAddress & proxyTarget
+                    , const areg::ProxyAddress & proxyTarget
                     , ResultType result
                     , uint32_t respId
                     , areg::Event::EventType eventType
@@ -112,7 +112,7 @@ namespace areg
          * \param	proxyTarget	The address of target Proxy
          * \param	src	        The Event source to copy data.
          **/
-        ResponseEvent( const ProxyAddress & proxyTarget, const ResponseEvent & src );
+        ResponseEvent( const areg::ProxyAddress & proxyTarget, const ResponseEvent & src );
 
         /**
          * \brief   Creates event from streaming object and initializes data
@@ -225,7 +225,7 @@ namespace areg
          * \param	respId	    The ID of response. Can also be update ID.
          * \param   seqNr       The call sequence number.
          **/
-        LocalResponseEvent( const ProxyAddress & proxyTarget
+        LocalResponseEvent( const areg::ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY);
@@ -241,7 +241,7 @@ namespace areg
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
         LocalResponseEvent( const areg::EventDataStream & args
-                        , const ProxyAddress & proxyTarget
+                        , const areg::ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY
@@ -252,7 +252,7 @@ namespace areg
          * \param	proxyTarget	The address of target Proxy
          * \param	src	        The Event source to copy data.
          **/
-        LocalResponseEvent(const ProxyAddress & proxyTarget, const LocalResponseEvent & src);
+        LocalResponseEvent(const areg::ProxyAddress & proxyTarget, const LocalResponseEvent & src);
 
         /**
          * \brief   Creates event from streaming object and initializes data
@@ -304,7 +304,7 @@ namespace areg
          * \param	respId	    The ID of response. Can also be update ID.
          * \param   seqNr       The call sequence number.
          **/
-        RemoteResponseEvent( const ProxyAddress & proxyTarget
+        RemoteResponseEvent( const areg::ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY );
@@ -320,7 +320,7 @@ namespace areg
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
         RemoteResponseEvent( const areg::EventDataStream & args
-                        , const ProxyAddress & proxyTarget
+                        , const areg::ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY
@@ -331,7 +331,7 @@ namespace areg
          * \param	proxyTarget	The address of target Proxy
          * \param	src	        The Event source to copy data.
          **/
-        RemoteResponseEvent(const ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
+        RemoteResponseEvent(const areg::ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
 
         /**
          * \brief   Creates event from streaming object and initializes data

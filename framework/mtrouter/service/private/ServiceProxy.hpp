@@ -48,13 +48,13 @@ public:
      * \brief   The remote proxy address to set in object
      * \param   addrProxy   The address of remote proxy object.
      **/
-    ServiceProxy( const ProxyAddress & addrProxy );
+    ServiceProxy( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   The remote proxy address to set in object
      * \param   addrProxy   The address of remote proxy object.
      **/
-    ServiceProxy( ProxyAddress && addrProxy ) noexcept;
+    ServiceProxy( areg::ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Extracts relevant data from given Stub address and initializes Proxy service object.
@@ -106,13 +106,13 @@ public:
      * \brief   Copies remote servicing proxy address data from given source
      * \param   addrProxy   The address of remote proxy object to set in object.
      **/
-    ServiceProxy & operator = ( const ProxyAddress & addrProxy );
+    ServiceProxy & operator = ( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Moves remote servicing proxy address data from given source.
      * \param   addrProxy   The address of remote proxy object to set in object.
      **/
-    ServiceProxy & operator = ( ProxyAddress && addrProxy ) noexcept;
+    ServiceProxy & operator = ( areg::ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Checks equality of 2 service proxy objects.
@@ -130,7 +130,7 @@ public:
      * \param   addrProxy       The address of remote servicing proxy to check.
      * \return  Returns true if 2 objects are equal.
      **/
-    bool operator == ( const ProxyAddress & addrProxy ) const;
+    bool operator == ( const areg::ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Checks equality of service proxy and remote stub objects.
@@ -168,7 +168,7 @@ public:
     /**
      * \brief   Returns the address of remote proxy
      **/
-    inline const ProxyAddress & getServiceAddress() const;
+    inline const areg::ProxyAddress & getServiceAddress() const;
 
     /**
      * \brief   Called when the remote service stub of proxy is available.
@@ -201,7 +201,7 @@ private:
      * \param   addrProxy       The remote servicing proxy address to set.
      * \param   connectStatus   The connection status to update.
      **/
-    void _setService( const ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Pending );
+    void _setService( const areg::ProxyAddress & addrProxy, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Pending );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -210,7 +210,7 @@ private:
     /**
      * \brief   The remote servicing proxy address
      **/
-    ProxyAddress                    mProxyAddress;
+    areg::ProxyAddress                    mProxyAddress;
     /**
      * \brief   The remote servicing connection status.
      **/
@@ -221,7 +221,7 @@ private:
 // ServiceProxy class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const ProxyAddress & ServiceProxy::getServiceAddress() const
+inline const areg::ProxyAddress & ServiceProxy::getServiceAddress() const
 {
     return mProxyAddress;
 }

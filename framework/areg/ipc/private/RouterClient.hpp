@@ -151,7 +151,7 @@ protected:
      * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
+    bool registerServiceConsumer( const areg::ProxyAddress & proxyService ) override;
 
     /**
      * \brief   Call to unregister the service consumer from the system and disconnect service provider.
@@ -159,7 +159,7 @@ protected:
      * \param   proxyService    The address of the service consumer to unregister from the system.
      * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    void unregisterServiceConsumer( const ProxyAddress & proxyService, const areg::DisconnectReason reason ) override;
+    void unregisterServiceConsumer( const areg::ProxyAddress & proxyService, const areg::DisconnectReason reason ) override;
 
 /************************************************************************/
 // EventRouter interface overrides

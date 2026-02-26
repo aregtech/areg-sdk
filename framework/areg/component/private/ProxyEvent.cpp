@@ -33,7 +33,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, areg::StreamableEvent)
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, areg::Event::EventType eventType )
+ProxyEvent::ProxyEvent( const areg::ProxyAddress & targetProxy, areg::Event::EventType eventType )
     : areg::StreamableEvent       (eventType)
     , mTargetProxyAddress   (targetProxy)
 {
@@ -87,7 +87,7 @@ areg::OutStream & ProxyEvent::writeStream( areg::OutStream & stream ) const
 //////////////////////////////////////////////////////////////////////////
 // ProxyEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
+ProxyEventConsumer::ProxyEventConsumer( const areg::ProxyAddress & proxy )
     : areg::EventConsumer   ( )
     , mProxyAddress     ( proxy )
 {
@@ -136,7 +136,7 @@ void ProxyEventConsumer::startEventProcessing( areg::Event & eventElem )
     ProxyEvent * proxyEvent = AREG_RUNTIME_CAST(&eventElem, ProxyEvent);
     if ( proxyEvent != nullptr )
     {
-        const ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
+        const areg::ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
         if ( static_cast<const areg::ServiceAddress &>(addrProxy) == static_cast<const areg::ServiceAddress &>(mProxyAddress) )
         {
             ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, ProxyConnectEvent);

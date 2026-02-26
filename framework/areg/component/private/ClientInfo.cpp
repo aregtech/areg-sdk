@@ -45,15 +45,15 @@ ClientInfo::ClientInfo()
 {
 }
 
-ClientInfo::ClientInfo( const ProxyAddress & client )
+ClientInfo::ClientInfo( const areg::ProxyAddress & client )
     : mClientAddress( client )
     , mClientState  ( areg::ServiceConnectionState::Unknown )
 {
     setConnectionStatus( areg::ServiceConnectionState::Pending);
 }
 
-ClientInfo::ClientInfo( ProxyAddress && client ) noexcept
-    : mClientAddress( static_cast<ProxyAddress &&>(client) )
+ClientInfo::ClientInfo( areg::ProxyAddress && client ) noexcept
+    : mClientAddress( static_cast<areg::ProxyAddress &&>(client) )
     , mClientState  ( areg::ServiceConnectionState::Unknown )
 {
     setConnectionStatus( areg::ServiceConnectionState::Pending );
@@ -91,21 +91,21 @@ ClientInfo & ClientInfo::operator = ( ClientInfo && src ) noexcept
     return (*this);
 }
 
-ClientInfo & ClientInfo::operator = ( const ProxyAddress & client )
+ClientInfo & ClientInfo::operator = ( const areg::ProxyAddress & client )
 {
     mClientAddress  = client;
     setConnectionStatus(areg::ServiceConnectionState::Pending);
     return (*this);
 }
 
-ClientInfo & ClientInfo::operator = ( ProxyAddress && client ) noexcept
+ClientInfo & ClientInfo::operator = ( areg::ProxyAddress && client ) noexcept
 {
     mClientAddress  = std::move(client);
     setConnectionStatus( areg::ServiceConnectionState::Pending );
     return (*this);
 }
 
-bool ClientInfo::operator == (const ProxyAddress & client) const
+bool ClientInfo::operator == (const areg::ProxyAddress & client) const
 {
     return mClientAddress == client;
 }

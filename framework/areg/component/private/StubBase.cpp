@@ -158,7 +158,7 @@ namespace areg
         return out_listners.getSize();
     }
 
-    void StubBase::clearAllListeners( const ProxyAddress & whichProxy, areg::IntegerArray & removedIDs )
+    void StubBase::clearAllListeners( const areg::ProxyAddress & whichProxy, areg::IntegerArray & removedIDs )
     {
         StubListenerList::LISTPOS pos = mListListener.firstPosition();
         while ( mListListener.isValidPosition(pos))
@@ -175,7 +175,7 @@ namespace areg
         }
     }
 
-    void StubBase::clearAllListeners( const ProxyAddress & whichProxy )
+    void StubBase::clearAllListeners( const areg::ProxyAddress & whichProxy )
     {
         StubListenerList::LISTPOS pos = mListListener.firstPosition();
         while ( mListListener.isValidPosition(pos) )
@@ -345,8 +345,8 @@ namespace areg
         StubBase::StubListenerList listeners;
         if (findListeners(msgId, listeners) > 0)
         {
-            const ProxyAddress & proxy = listeners.firstEntry( ).mProxy;
-            LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::convAddressToPath( proxy).getString(), msgId);
+            const areg::ProxyAddress & proxy = listeners.firstEntry( ).mProxy;
+            LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", areg::ProxyAddress::convAddressToPath( proxy).getString(), msgId);
 
             areg::ResponseEvent* eventElem = createResponseEvent(proxy, msgId, result, data);
             if (eventElem != nullptr)
@@ -357,7 +357,7 @@ namespace areg
         }
     }
 
-    void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const
+    void StubBase::sendUpdateNotificationOnce( const areg::ProxyAddress & target, uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const
     {
         areg::ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
         if ( eventElem != nullptr )
@@ -414,7 +414,7 @@ namespace areg
         return result;
     }
 
-    bool StubBase::existNotificationListener( uint32_t msgId, const ProxyAddress & notifySource ) const
+    bool StubBase::existNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource ) const
     {
         bool result = false;
         if ( notifySource.isValid() )
@@ -432,7 +432,7 @@ namespace areg
         return result;
     }
 
-    bool StubBase::addNotificationListener(uint32_t msgId, const ProxyAddress & notifySource)
+    bool StubBase::addNotificationListener(uint32_t msgId, const areg::ProxyAddress & notifySource)
     {
         LOG_SCOPE(areg_component_StubBase_addNotificationListener);
 
@@ -453,7 +453,7 @@ namespace areg
             {
                 LOG_DBG("For the message [ %u ] new listener [ %s ] is added"
                             , msgId
-                            , ProxyAddress::convAddressToPath(notifySource).getString());
+                            , areg::ProxyAddress::convAddressToPath(notifySource).getString());
 
                 mListListener.pushLast(StubBase::Listener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, notifySource));
                 result = true;
@@ -463,7 +463,7 @@ namespace areg
             {
                 LOG_WARN("For the message [ %u ] there is already registered client [ %s ]"
                         , msgId
-                        , ProxyAddress::convAddressToPath(notifySource).getString());
+                        , areg::ProxyAddress::convAddressToPath(notifySource).getString());
             }
     #endif  // AREG_LOGS
         }
@@ -471,7 +471,7 @@ namespace areg
         return result;
     }
 
-    void StubBase::removeNotificationListener( uint32_t msgId, const ProxyAddress & notifySource )
+    void StubBase::removeNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource )
     {
         for (StubListenerList::LISTPOS pos = mListListener.firstPosition(); mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
         {
@@ -484,14 +484,14 @@ namespace areg
         }
     }
 
-    bool StubBase::clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status )
+    bool StubBase::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status )
     {
         bool result{ false };
         if (mAddress == client)
         {
             LOG_SCOPE(areg_component_StubBase_clientConnected);
             LOG_DBG("Service consumer [ %s ] connection event with status [ %s ]"
-                    , ProxyAddress::convAddressToPath(client).getString()
+                    , areg::ProxyAddress::convAddressToPath(client).getString()
                     , areg::getString(status));
 
             result = true;
@@ -504,7 +504,7 @@ namespace areg
         return result;
     }
 
-    void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, areg::ServiceConnectionState status )
+    void StubBase::processClientConnectEvent( const areg::ProxyAddress & proxyAddress, areg::ServiceConnectionState status )
     {
         clientConnected( proxyAddress, status );
     }
@@ -561,7 +561,7 @@ namespace areg
         return mInterface.idAttributeList;
     }
 
-    areg::ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */
+    areg::ResponseEvent * StubBase::createResponseEvent( const areg::ProxyAddress &     /* proxy */
                                                 , uint32_t             /* msgId */
                                                 , areg::ResultType   /* result */
                                                 , const areg::EventDataStream &  /* data */ ) const

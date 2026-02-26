@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class StubAddress; }
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServerList declaration
@@ -85,7 +85,7 @@ public:
      * \param   out_client  [out]   On output, this contain the information of connected service consumer (client).
      * \return  Returns registered Client Info object.
      **/
-    const ServerInfo & registerClient( const ProxyAddress & whichClient, ClientInfo & out_client );
+    const ServerInfo & registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
 
     /**
      * \brief   Unregisters specified Proxy client from Server List.
@@ -101,7 +101,7 @@ public:
      *          Any other value specifies number of existing client related
      *          with Service Interface.
      **/
-    ServerInfo unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client );
+    ServerInfo unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
 
     /**
      * \brief   Registers specified Stub Server in the list, if the address is valid, it sets Server state
@@ -154,7 +154,7 @@ public:
      * \param   whichClient     The instance of client information object to extract data for search.
      * \return  Returns valid pointer if found registered server. Otherwise, it returns null.
      **/
-    const ServerInfo * findClientServer( const ProxyAddress & whichClient ) const;
+    const ServerInfo * findClientServer( const areg::ProxyAddress & whichClient ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -164,7 +164,7 @@ private:
     /**
      * \brief   Find server component by client proxy address.
      **/
-    MAPPOS findServer(const ProxyAddress& whichClient) const;
+    MAPPOS findServer(const areg::ProxyAddress& whichClient) const;
 
     /**
      * \brief   Find server component by service address.

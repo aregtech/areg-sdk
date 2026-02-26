@@ -19,7 +19,7 @@ namespace areg
 {
     AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
 
-    ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
+    ServiceResponseEvent::ServiceResponseEvent( const areg::ProxyAddress & target
                                             , areg::ResultType result
                                             , uint32_t responseId
                                             , areg::Event::EventType eventType
@@ -31,7 +31,7 @@ namespace areg
     {
     }
 
-    ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
+    ServiceResponseEvent::ServiceResponseEvent( const areg::ProxyAddress& target, const ServiceResponseEvent& src )
         : ProxyEvent    (target, src.getEventType())
         , mResponseId   (src.mResponseId)
         , mResult       (src.mResult)
@@ -51,7 +51,7 @@ namespace areg
     }
 
 
-    ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const ProxyAddress & target ) const
+    ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const areg::ProxyAddress & target ) const
     {
         return DEBUG_NEW ServiceResponseEvent(target, *this);
     }

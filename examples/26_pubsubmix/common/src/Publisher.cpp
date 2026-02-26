@@ -60,12 +60,12 @@ Publisher::Publisher( areg::Component & owner )
 {
 }
 
-bool Publisher::clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status)
+bool Publisher::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Publisher_clientConnected);
     bool result = PubSubMixStub::clientConnected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::getString(status), ProxyAddress::convAddressToPath(client).getString());
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::getString(status), areg::ProxyAddress::convAddressToPath(client).getString());
     mClientCount += (areg::isServiceConnected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 

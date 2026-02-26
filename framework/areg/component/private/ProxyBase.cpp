@@ -187,11 +187,11 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & ro
     std::shared_ptr<ProxyBase> proxy{ nullptr };
     if (ownerThread.isValid())
     {
-        ProxyAddress Key(serviceIfData, roleName, ownerThread.getName() );
+        areg::ProxyAddress Key(serviceIfData, roleName, ownerThread.getName() );
         proxy = map_proxies().findResourceObject(Key);
         if (proxy.get() == nullptr )
         {
-            LOG_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
+            LOG_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", areg::ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
             std::shared_ptr<ProxyBase> newProxy{ funcCreate( roleName, &ownerThread ) };
             if ( newProxy.get() != nullptr )
             {
@@ -246,7 +246,7 @@ int32_t ProxyBase::findThreadProxies(areg::DispatcherThread & ownerThread, areg:
     return result;
 }
 
-areg::RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
+areg::RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const areg::ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
 {
     LOG_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
@@ -366,7 +366,7 @@ void ProxyBase::serviceConnectionUpdated( const areg::StubAddress & server, cons
     if ( server.isProxyCompatible( getProxyAddress() ) )
     {
         LOG_DBG("The proxy [ %s ] have got [ %s ] status update notification event from stub [ %s ]"
-                    , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
+                    , areg::ProxyAddress::convAddressToPath(getProxyAddress()).getString()
                     , areg::getString(status)
                     , areg::StubAddress::convAddressToPath(server).getString());
 
@@ -575,7 +575,7 @@ void ProxyBase::processGenericEvent( areg::Event& eventElem )
     }
 }
 
-std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& proxyAddress )
+std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const areg::ProxyAddress& proxyAddress )
 {
     return map_proxies().findResourceObject(proxyAddress);
 }
@@ -652,7 +652,7 @@ areg::RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const areg::InS
     return nullptr;
 }
 
-areg::RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAddress &  /* addrProxy */
+areg::RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const areg::ProxyAddress &  /* addrProxy */
                                                                 , uint32_t          /* msgId */
                                                                 , areg::ResultType/* reason */
                                                                 , const SequenceNumber &/* seqNr */ ) const
@@ -666,7 +666,7 @@ void ProxyBase::stopProxy()
 
     if ( false == mIsStopped )
     {
-        LOG_WARN("Going to stop proxy [ %s ]", ProxyAddress::convAddressToPath(mProxyAddress).getString());
+        LOG_WARN("Going to stop proxy [ %s ]", areg::ProxyAddress::convAddressToPath(mProxyAddress).getString());
 
         for (uint32_t i = 0 ; i < mListConnect.getSize(); ++ i)
         {

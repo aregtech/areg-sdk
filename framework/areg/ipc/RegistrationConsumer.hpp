@@ -68,7 +68,7 @@ public:
      * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
      * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<ProxyAddress> & listConsumers ) const = 0;
+    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const = 0;
 
     /**
      * \brief   Triggered when a remote service provider is registered in the system.
@@ -80,7 +80,7 @@ public:
      * \brief   Triggered when a remote service consumer is registered in the system.
      * \param   proxy   The address of remote service consumer that has been registered.
      **/
-    virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) = 0;
+    virtual void registeredRemoteServiceConsumer( const areg::ProxyAddress & proxy ) = 0;
 
     /**
      * \brief   Triggered when a remote service provider is unregistered from the system.
@@ -98,7 +98,7 @@ public:
      * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'areg::COOKIE_ANY'.
      **/
-    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
+    virtual void unregisteredRemoteServiceConsumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

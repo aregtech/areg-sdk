@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status) override;
+    bool clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

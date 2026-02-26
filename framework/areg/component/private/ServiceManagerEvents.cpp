@@ -34,7 +34,7 @@ ServiceManagerEventData ServiceManagerEventData::shutdownServiceManager()
     return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService );
 }
 
-ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddress & addrProxy)
+ServiceManagerEventData ServiceManagerEventData::registerProxy(const areg::ProxyAddress & addrProxy)
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy );
     areg::OutStream & stream = data.getWriteStream();
@@ -43,7 +43,7 @@ ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddres
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, areg::DisconnectReason reason )
+ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const areg::ProxyAddress & addrProxy, areg::DisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy );
     areg::OutStream & stream = data.getWriteStream();

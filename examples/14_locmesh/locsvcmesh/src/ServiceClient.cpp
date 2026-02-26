@@ -34,7 +34,7 @@ ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & ow
                     , owner.getRoleName().getString()
                     , owner.getMasterThread().getName().getString()
                     , mTimer.getName().getString());
-    LOG_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
+    LOG_DBG("Proxy: [ %s ]", areg::ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
 bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, ProxyBase & proxy)

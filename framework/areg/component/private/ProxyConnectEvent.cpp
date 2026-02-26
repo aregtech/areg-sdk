@@ -27,7 +27,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, areg::ServiceResponseEvent)
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const areg::StubAddress & implAddress, areg::ServiceConnectionState connectStatus )
+ProxyConnectEvent::ProxyConnectEvent( const areg::ProxyAddress & target, const areg::StubAddress & implAddress, areg::ServiceConnectionState connectStatus )
     : areg::ServiceResponseEvent  ( target
                             , areg::ResultType::DataOK
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
@@ -37,7 +37,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const areg::S
 {
 }
 
-ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
+ProxyConnectEvent::ProxyConnectEvent( const areg::ProxyAddress & target, const ProxyConnectEvent & src )
     : areg::ServiceResponseEvent  ( target, static_cast<const areg::ServiceResponseEvent &>(src) )
     , mStubAddress          ( src.mStubAddress )
     , mConnectionStatus     ( src.mConnectionStatus )

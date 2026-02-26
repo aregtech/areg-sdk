@@ -30,7 +30,7 @@
 class ConnectionProvider;
 class RegistrationProvider;
 class ServiceManager;
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 namespace areg { class StubAddress; }
 namespace areg { class InStream; }
 
@@ -109,7 +109,7 @@ private:
       * \param   registerProvider   The service connection object to notify remote application
       *                             about public service connection status.
       **/
-    void _registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider);
+    void _registerClient( const areg::ProxyAddress & whichClient, RegistrationProvider& registerProvider);
 
     /**
      * \brief   The function is called when it is requested to unregister the service consumer.
@@ -120,14 +120,14 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
      *                              about public service connection status.
      **/
-    void _unregisterClient( const ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
 
     /**
      * \brief   Creates and sends predefined service consumer connected notification.
      * \param   client      The address of service consumer to send the event.
      * \param   server      The address of service provider that connected.
      **/
-    void _sendClientConnectedEvent( const ProxyAddress & client, const areg::StubAddress & server ) const;
+    void _sendClientConnectedEvent( const areg::ProxyAddress & client, const areg::StubAddress & server ) const;
 
     /**
      * \brief   Creates and sends predefined service consumer disconnected notification.
@@ -135,7 +135,7 @@ private:
      * \param   server      The address of service provider that disconnected.
      * \param   status      The service connection status.
      **/
-    void _sendClientDisconnectEvent( const ProxyAddress & client, const areg::StubAddress & server, const areg::ServiceConnectionState status ) const;
+    void _sendClientDisconnectEvent( const areg::ProxyAddress & client, const areg::StubAddress & server, const areg::ServiceConnectionState status ) const;
 
     /**
      * \brief   Terminates the component thread. No guarantee that all resources are cleanup.

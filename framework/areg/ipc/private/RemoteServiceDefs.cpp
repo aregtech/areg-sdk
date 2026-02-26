@@ -45,7 +45,7 @@ namespace
     inline static void _createRegisterRequest( areg::RemoteMessage & out_msgRegister
                                              , areg::RegistrationAction reqType
                                              , areg::DisconnectReason reason
-                                             , const ProxyAddress & addrService)
+                                             , const areg::ProxyAddress & addrService)
     {
         if (out_msgRegister.initMessage(areg::getMessageRegisterService().rbHeader) != nullptr)
         {
@@ -73,7 +73,7 @@ namespace
     inline static void _createRegisterNotify( areg::RemoteMessage & out_msgNotify
                                             , areg::RegistrationAction reqType
                                             , areg::DisconnectReason reason
-                                            , const ProxyAddress & addrService)
+                                            , const areg::ProxyAddress & addrService)
     {
         if (out_msgNotify.initMessage(areg::getMessageRegisterNotify().rbHeader) != nullptr)
         {
@@ -278,12 +278,12 @@ AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterService( const areg:
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterClient( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
+AREG_API_IMPL areg::RemoteMessage areg::createRouterRegisterClient( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target )
 {
     areg::RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(source) )
     {
-        ProxyAddress temp( proxy );
+        areg::ProxyAddress temp( proxy );
         temp.setCookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
 
@@ -310,12 +310,12 @@ AREG_API_IMPL areg::RemoteMessage areg::createRouterUnregisterService( const are
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createRouterUnregisterClient( const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::createRouterUnregisterClient( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(source) )
     {
-        ProxyAddress temp( proxy );
+        areg::ProxyAddress temp( proxy );
         temp.setCookie(source);
         _createRegisterRequest(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
 
@@ -390,12 +390,12 @@ AREG_API_IMPL areg::RemoteMessage areg::createServiceRegisteredNotification(cons
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceClientRegisteredNotification(const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::createServiceClientRegisteredNotification(const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(target) )
     {
-        ProxyAddress temp( proxy );
+        areg::ProxyAddress temp( proxy );
         _createRegisterNotify(msgResult, areg::RegistrationAction::RegisterClient, areg::DisconnectReason::UndefinedReason, temp);
 
         msgResult.setSource(source);
@@ -420,12 +420,12 @@ AREG_API_IMPL areg::RemoteMessage areg::createServiceUnregisteredNotification(co
     return msgResult;
 }
 
-AREG_API_IMPL areg::RemoteMessage areg::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
+AREG_API_IMPL areg::RemoteMessage areg::createServiceClientUnregisteredNotification(const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target)
 {
     areg::RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(target) )
     {
-        ProxyAddress temp( proxy );
+        areg::ProxyAddress temp( proxy );
         _createRegisterNotify(msgResult, areg::RegistrationAction::UnregisterClient, reason, temp);
 
         msgResult.setSource(source);

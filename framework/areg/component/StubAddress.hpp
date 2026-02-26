@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class InStream; }
-class ProxyAddress;
+namespace areg { class ProxyAddress; }
 namespace areg { class ServiceRequestEvent; }
 
 namespace areg
@@ -195,7 +195,7 @@ namespace areg
          * \brief   Checks compatibility of stub and proxy addresses and returns true if addresses of objects are compatible.
          * \param   addrProxy   The proxy address to check compatibility.
          **/
-        inline bool operator == ( const ProxyAddress & addrProxy ) const;
+        inline bool operator == ( const areg::ProxyAddress & addrProxy ) const;
 
         /**
          * \brief   Checks inequality of 2 stub address and returns true if objects are not equal.
@@ -317,7 +317,7 @@ namespace areg
          * \param   proxyAddress    The address of proxy to check compatibility
          * \return  Returns true if proxy is compatible with proxy. Otherwise it returns false.
          **/
-        bool isProxyCompatible( const ProxyAddress & proxyAddress ) const;
+        bool isProxyCompatible( const areg::ProxyAddress & proxyAddress ) const;
 
         /**
          * \brief   Triggered to deliver given service event to target. Returns true if event is delivered.
@@ -450,7 +450,7 @@ namespace areg
         return (mMagicNum != other.mMagicNum) || (mChannel.getCookie() != other.mChannel.getCookie());
     }
 
-    inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
+    inline bool StubAddress::operator == ( const areg::ProxyAddress & addrProxy ) const
     {
         return isProxyCompatible(addrProxy);
     }

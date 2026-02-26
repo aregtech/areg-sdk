@@ -91,19 +91,19 @@ public:
      * \brief   Returns true if specified proxy is already registered in the list.
      * \param   addrProxy   The address of proxy service to check.
      **/
-    inline bool isServiceRegistered( const ProxyAddress & addrProxy ) const;
+    inline bool isServiceRegistered( const areg::ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Returns existing service proxy entry. If specified proxy address
      *          is not registered, returns invalid entry, which proxy address is invalid.
      **/
-    const ServiceProxy & getService( const ProxyAddress & addrProxy ) const;
+    const ServiceProxy & getService( const areg::ProxyAddress & addrProxy ) const;
     
     /**
      * \brief   Returns existing service proxy entry. Returns nullptr, if specified proxy address
      *          is not registered.
      **/
-    ServiceProxy * getService( const ProxyAddress & addrProxy );
+    ServiceProxy * getService( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers existing proxy service entry or creates new if
@@ -117,7 +117,7 @@ public:
      * \return  If specified proxy address is valid, returns either existing or 
      *          new proxy service entry. Otherwise, returns invalid service object.
      **/
-    ServiceProxy & registerService( const ProxyAddress & addrProxy );
+    ServiceProxy & registerService( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers existing proxy service entry or creates new if
@@ -132,7 +132,7 @@ public:
      * \return  If specified proxy address is valid, returns either existing or 
      *          new proxy service entry. Otherwise, returns invalid service object.
      **/
-    ServiceProxy & registerService( const ProxyAddress & addrProxy, const ServiceStub & stubService );
+    ServiceProxy & registerService( const areg::ProxyAddress & addrProxy, const ServiceStub & stubService );
 
     /**
      * \brief   Unregisters and removes entry of proxy service with specified
@@ -141,7 +141,7 @@ public:
      * \return  Returns address of unregistered proxy. If proxy was not found
      *          or proxy address was not found, returns invalid proxy service.
      **/
-    ServiceProxy unregisterService( const ProxyAddress & addrProxy );
+    ServiceProxy unregisterService( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Sets all registered proxy services in connected state
@@ -187,14 +187,14 @@ private:
      * \param   addrProxy   Address of proxy to search
      * \return  Returns valid position value if entry found. Otherwise, returns nullptr.
      **/
-    LISTPOS _findProxy( const ProxyAddress & addrProxy ) const;
+    LISTPOS _findProxy( const areg::ProxyAddress & addrProxy ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ListServiceProxies::isServiceRegistered( const ProxyAddress & addrProxy ) const
+inline bool ListServiceProxies::isServiceRegistered( const areg::ProxyAddress & addrProxy ) const
 {
     return ListServiceProxiesBase::isValidPosition(_findProxy(addrProxy));
 }
