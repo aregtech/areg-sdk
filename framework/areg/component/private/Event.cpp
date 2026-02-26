@@ -110,14 +110,14 @@ namespace areg
         delete this;
     }
 
-    EventDispatcher& Event::getDispatcher() const
+    areg::EventDispatcher& Event::getDispatcher() const
     {
         return (mTargetThread != nullptr ? mTargetThread->getEventDispatcher() : areg::DispatcherThread::getCurrentDispatcher());
     }
 
     void Event::deliverEvent()
     {
-        EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
+        areg::EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
         if ((dispatcher == nullptr) || (dispatcher->postEvent(*this) == false))
         {
             destroy();

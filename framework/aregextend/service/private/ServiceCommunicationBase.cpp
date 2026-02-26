@@ -500,7 +500,7 @@ void ServiceCommunicationBase::readyForEvents( bool isReady )
 
 bool ServiceCommunicationBase::postEvent( areg::Event & eventElem )
 {
-    return EventDispatcher::postEvent( eventElem );
+    return areg::EventDispatcher::postEvent( eventElem );
 }
 
 areg::RemoteMessage ServiceCommunicationBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const

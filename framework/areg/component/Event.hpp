@@ -99,7 +99,7 @@ public:                                                                         
  * Dependencies
  ************************************************************************/
 namespace areg { class EventConsumer; }
-class EventDispatcher;
+namespace areg { class EventDispatcher; }
 namespace areg { class DispatcherThread; }
 namespace areg { class Thread; }
 
@@ -504,7 +504,7 @@ namespace areg
          *          If target thread is unknown, this will return dispatcher of
          *          current thread.
          **/
-        EventDispatcher & getDispatcher() const;
+        areg::EventDispatcher & getDispatcher() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods.

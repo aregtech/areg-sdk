@@ -29,7 +29,7 @@ TimerManagerBase::TimerManagerBase(const areg::String& threadName)
 
 bool TimerManagerBase::postEvent(areg::Event& eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
 }
 
 bool TimerManagerBase::runDispatcher()

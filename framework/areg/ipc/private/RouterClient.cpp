@@ -512,7 +512,7 @@ bool RouterClient::postEvent(areg::Event & eventElem)
         eventElem.setEventConsumer( static_cast<RemoteEventConsumer *>(this) );
     }
 
-    return EventDispatcher::postEvent(eventElem);
+    return areg::EventDispatcher::postEvent(eventElem);
 }
 
 void RouterClient::readyForEvents(bool isReady)

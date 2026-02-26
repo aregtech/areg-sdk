@@ -429,7 +429,7 @@ void LoggerClient::onSetupConfiguration( const areg::ListProperties&  /* listRea
 
 bool LoggerClient::postEvent(areg::Event& eventElem)
 {
-    return EventDispatcher::postEvent(eventElem);
+    return areg::EventDispatcher::postEvent(eventElem);
 }
 
 void LoggerClient::readyForEvents(bool isReady)

@@ -80,7 +80,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     bool ComponentThread::postEvent( areg::Event& eventElem )
     {
-        return EventDispatcher::postEvent(eventElem);
+        return areg::EventDispatcher::postEvent(eventElem);
     }
 
     bool ComponentThread::runDispatcher()

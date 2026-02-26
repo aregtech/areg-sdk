@@ -252,7 +252,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
 bool ServiceManager::postEvent(areg::Event & eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
 }
 
 void ServiceManager::readyForEvents( bool isReady )

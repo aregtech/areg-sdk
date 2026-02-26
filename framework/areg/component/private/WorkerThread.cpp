@@ -55,7 +55,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     bool WorkerThread::postEvent( areg::Event& eventElem )
     {
-        return areg::Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
+        return areg::Event::isCustom(eventElem.getEventType()) && areg::EventDispatcher::postEvent(eventElem);
     }
 
     void WorkerThread::readyForEvents( bool isReady )

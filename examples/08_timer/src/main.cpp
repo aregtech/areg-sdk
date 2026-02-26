@@ -105,7 +105,7 @@ protected:
     virtual bool postEvent(areg::Event& eventElem) override
     {
         ASSERT(AREG_RUNTIME_CAST(&eventElem, TimerEvent) != nullptr);    // Make sure that only timer events are passed.
-        return EventDispatcher::postEvent(eventElem);
+        return areg::EventDispatcher::postEvent(eventElem);
     }
 private:
     areg::Timer mOneTime;

@@ -121,7 +121,7 @@ protected:
 
     virtual bool postEvent( areg::Event & eventElem ) override
     {
-        return EventDispatcher::postEvent( eventElem );
+        return areg::EventDispatcher::postEvent( eventElem );
     }
 
 /************************************************************************/

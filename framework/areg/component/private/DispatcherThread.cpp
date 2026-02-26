@@ -208,7 +208,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     DispatcherThread::DispatcherThread (const areg::String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
         : areg::Thread          ( static_cast<areg::ThreadConsumer &>(self()), threadName, stackSizeKb )
-        , EventDispatcher ( threadName, maxQeueue )
+        , areg::EventDispatcher ( threadName, maxQeueue )
 
         , mEventStarted     ( true, false )
     {
@@ -268,13 +268,13 @@ namespace areg
     {
         if ( isReady )
         {
-            EventDispatcher::readyForEvents( true );
+            areg::EventDispatcher::readyForEvents( true );
             mEventStarted.setEvent( );
         }
         else
         {
             mEventStarted.resetEvent( );
-            EventDispatcher::readyForEvents( false );
+            areg::EventDispatcher::readyForEvents( false );
         }
     }
 

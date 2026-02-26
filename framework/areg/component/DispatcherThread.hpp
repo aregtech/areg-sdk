@@ -48,12 +48,12 @@ namespace areg
      *          Worker thread and Component thread.
      **/
     class AREG_API DispatcherThread : public areg::Thread
-                                    , public EventDispatcher
+                                    , public areg::EventDispatcher
     {
         /**
          * \brief   EventDispatcher needs this to access NullDispatcher.
          **/
-        friend class EventDispatcher;
+        friend class areg::EventDispatcher;
 
         /**
          * \brief   DispatcherList
@@ -116,7 +116,7 @@ namespace areg
          *          Dispatcher thread, the Event Dispatcher (invalid dispatcher) of 
          *          NullDispatcher will be returned.
          **/
-        static inline EventDispatcher & getCurrentDispatcher();
+        static inline areg::EventDispatcher & getCurrentDispatcher();
 
         /**
          * \brief   For specified event class ID it searches the appropriate dispatcher thread.
@@ -159,7 +159,7 @@ namespace areg
          * \brief   Returns reference to Event Dispatcher object of the thread.
          *          Every Dispatching Thread has one event dispatcher object.
          **/
-        inline EventDispatcher & getEventDispatcher();
+        inline areg::EventDispatcher & getEventDispatcher();
 
         /**
          * \brief   Returns true if specified event is special exit event.
@@ -312,14 +312,14 @@ namespace areg
         return ( currThread != nullptr ? *currThread : DispatcherThread::_getNullDispatherThread() );
     }
 
-    inline EventDispatcher & DispatcherThread::getCurrentDispatcher()
+    inline areg::EventDispatcher & DispatcherThread::getCurrentDispatcher()
     {
         return getCurrentDispatcherThread().getEventDispatcher();
     }
 
-    inline EventDispatcher & DispatcherThread::getEventDispatcher()
+    inline areg::EventDispatcher & DispatcherThread::getEventDispatcher()
     {
-        return static_cast<EventDispatcher &>(self());
+        return static_cast<areg::EventDispatcher &>(self());
     }
 
     inline DispatcherThread & DispatcherThread::self()

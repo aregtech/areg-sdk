@@ -365,7 +365,7 @@ void LogManager::writeLogMessage( const areg::LogEntry & logMessage )
 
 bool LogManager::postEvent(areg::Event & eventElem)
 {
-    return EventDispatcher::postEvent(eventElem);
+    return areg::EventDispatcher::postEvent(eventElem);
 }
 
 inline void LogManager::sendLogEvent( const LoggingEventData & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
