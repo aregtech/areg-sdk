@@ -37,7 +37,7 @@
  *              - by syntax (quote).
  *          The developers need to setup the options and pass to constructor. If constructor
  *          has no setups, it uses default setup, which is just separating the options as strings.
- *          The default option setup is setup by calling static method `OptionParser::getDefaultOptionSetup()`.
+ *          The default option setup is setup by calling static method `OptionParser::default_option_setup()`.
  *          Note, the default option setup entry must be the first entry in the list.
  *          The option setup includes:
  *              1. Short name of the option, for example "-h";
@@ -72,7 +72,7 @@
  *              7. FREESTYLE_DATA   -- the value of the option is any string, same as STRING_NO_RANGE.
  * 
  *          If parsing an option fails, for example, if the value is out of range or the closing quote ("\"") of the string is missed,
- *          the `inField` field of the InputOption contains error flag, which can be checked by static method `hasInputError(uint32_t flags)`.
+ *          the `inField` field of the InputOption contains error flag, which can be checked by static method `has_input_error(uint32_t flags)`.
  *
  *          Example:   These are examples of setting options:
  *              1. Command line simple options: '-a', '-b', '-c'
@@ -278,75 +278,76 @@ public:
     /**
      * \brief   Returns true if the flag has error field.
      **/
-    static inline bool hasInputError( uint32_t flags );
+    static inline bool has_input_error( uint32_t flags );
 
     /**
-     * \brief   Returns true if the flag has value in range flag
+     * \brief   Returns true if the flag has value in range flag.
      **/
-    static inline bool hasRange( uint32_t flags );
+    static inline bool has_range( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag indicates that option may have data.
      **/
-    static inline bool isEmptyData( uint32_t flags );
+    static inline bool is_empty_data( uint32_t flags );
 
     /**
-     * \brief   Returns true if the flag as field of free-style string
+     * \brief   Returns true if the flag as field of free-style string.
      **/
-    static inline bool isFreestyle( uint32_t flags );
+    static inline bool is_freestyle( uint32_t flags );
 
     /**
-     * \brief   Returns true if the flag indicates that the valid value is integer
+     * \brief   Returns true if the flag indicates that the valid value is integer.
      **/
-    static inline bool isInteger( uint32_t flags );
+    static inline bool is_integer( uint32_t flags );
 
     /**
-     * \brief   Returns true if the flag indicates that the valid value is floating point
+     * \brief   Returns true if the flag indicates that the valid value is floating point.
      **/
-    static inline bool isFloat( uint32_t flags );
+    static inline bool is_float( uint32_t flags );
 
     /**
-     * \brief   Returns true if the flag indicates that the valid value is string or list of string
+     * \brief   Returns true if the flag indicates that the valid value is string or list of string.
      **/
-    static inline bool isString( uint32_t flags );
+    static inline bool is_string( uint32_t flags );
 
     /**
-     * \brief   Returns the option default validation entry.
-     *          If using, set as a first entry in the setup list.
+     * \brief   Returns the option default validation entry. If using, set as a first entry in the
+     *          setup list.
      **/
-    static const OptionParser::OptionSetup getDefaultOptionSetup();
+    static const OptionParser::OptionSetup default_option_setup();
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor. Sets the option default validation entry,
-     *          so that all entries are strings.
+     * \brief   Default constructor. Sets the option default validation entry, so that all entries
+     *          are strings.
      **/
     OptionParser();
 
     /**
-     * \brief   Copies the option validation setup from the given list.
-     *          If empty, creates sets the option default validation entry.
+     * \brief   Copies the option validation setup from the given list. If empty, creates sets the
+     *          option default validation entry.
      **/
     explicit OptionParser( const OptionSetupList & initList );
 
     /**
-     * \brief   Copies the option validation setup from the given list.
-     *          If empty, creates sets the option default validation entry.
+     * \brief   Copies the option validation setup from the given list. If empty, creates sets the
+     *          option default validation entry.
      **/
     explicit OptionParser( const std::vector<OptionSetup> & initList );
 
     /**
-     * \brief   Copies the option validation setup from the given list.
-     *          If empty, creates sets the option default validation entry.
+     * \brief   Copies the option validation setup from the given list. If empty, creates sets the
+     *          option default validation entry.
      **/
     explicit OptionParser( std::vector<OptionSetup> && initList ) noexcept;
 
     /**
-     * \brief   Copies the option validation setup from the given list.
-     *          If empty, creates sets the option default validation entry.
+     * \brief   Copies the option validation setup from the given list. If empty, creates sets the
+     *          option default validation entry.
+     *
      * \param   initEntries     The list of entries.
      * \param   count           The number of entries in the list.
      **/
@@ -372,12 +373,12 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigns entries from the given source
+     * \brief   Assigns entries from the given source.
      **/
     OptionParser & operator = ( const OptionParser & src );
 
     /**
-     * \brief   Moves entries from the given source
+     * \brief   Moves entries from the given source.
      **/
     OptionParser & operator = ( OptionParser && src ) noexcept;
 
@@ -387,71 +388,111 @@ public:
 public:
 
     /**
-     * \brief   Parses the string passed as a command line. Because of this:
-     *           1. the first entry is ignored, assuming it is a binary name;
-     *           2. the parsing completes either when reach 'count' elements or
-     *              if any entry of 'cmdLine' is an empty string, assuming that
-     *              command line options may end with empty string like "".
-     * \param[in]   cmdLine The list of the strings passed as a command line in the binary
-     *                      same as 'argv' parameter in 'main' function.
-     * \param[in]   count   The number of strings in the 'cmdLine' list.
-     * \return  Returns true if succeeded to parse without error.
-     *          Otherwise, returns false.
+     * \brief   Parses the string passed as a command line. Because of this: 1. the first entry is
+     *          ignored, assuming it is a binary name; 2. the parsing completes either when reach
+     *          'count' elements or if any entry of 'cmdLine' is an empty string, assuming that
+     *          command line options may end with empty string like "".
+     *
+     * \param   cmdLine     The list of the strings passed as a command line in the binary same as
+     *                      'argv' parameter in 'main' function.
+     * \param   count       The number of strings in the 'cmdLine' list.
+     * \return  Returns true if succeeded to parse without error. Otherwise, returns false.
      **/
-    bool parseCommandLine( const char ** cmdLine, uint32_t count );
-    bool parseCommandLine( const wchar_t ** cmdLine, uint32_t count );
-    bool parseCommandLine( char** cmdLine, uint32_t count);
-    bool parseCommandLine( wchar_t** cmdLine, uint32_t count);
+    bool parse_command_line( const char ** cmdLine, uint32_t count );
+    /**
+     * \brief   Parses the string passed as a command line. Because of this: 1. the first entry is
+     *          ignored, assuming it is a binary name; 2. the parsing completes either when reach
+     *          'count' elements or if any entry of 'cmdLine' is an empty string, assuming that
+     *          command line options may end with empty string like "".
+     *
+     * \param   cmdLine     The list of the strings passed as a command line in the binary same as
+     *                      'argv' parameter in 'main' function.
+     * \param   count       The number of strings in the 'cmdLine' list.
+     * \return  Returns true if succeeded to parse without error. Otherwise, returns false.
+     **/
+    bool parse_command_line( const wchar_t ** cmdLine, uint32_t count );
+    /**
+     * \brief   Parses the string passed as a command line. Because of this: 1. the first entry is
+     *          ignored, assuming it is a binary name; 2. the parsing completes either when reach
+     *          'count' elements or if any entry of 'cmdLine' is an empty string, assuming that
+     *          command line options may end with empty string like "".
+     *
+     * \param   cmdLine     The list of the strings passed as a command line in the binary same as
+     *                      'argv' parameter in 'main' function.
+     * \param   count       The number of strings in the 'cmdLine' list.
+     * \return  Returns true if succeeded to parse without error. Otherwise, returns false.
+     **/
+    bool parse_command_line( char** cmdLine, uint32_t count);
+    /**
+     * \brief   Parses the string passed as a command line. Because of this: 1. the first entry is
+     *          ignored, assuming it is a binary name; 2. the parsing completes either when reach
+     *          'count' elements or if any entry of 'cmdLine' is an empty string, assuming that
+     *          command line options may end with empty string like "".
+     *
+     * \param   cmdLine     The list of the strings passed as a command line in the binary same as
+     *                      'argv' parameter in 'main' function.
+     * \param   count       The number of strings in the 'cmdLine' list.
+     * \return  Returns true if succeeded to parse without error. Otherwise, returns false.
+     **/
+    bool parse_command_line( wchar_t** cmdLine, uint32_t count);
 
     /**
-     * \brief   Parses the string passed as an options separated by space ' '.
-     *          Useful when wait for input from user and need to parse the input.
-     * \param   optLine The options passed in the string. If a value can be a string with the space
-     *                  the string should be quoted "\"like this\"".
-     * \return  Returns true if succeeded to parse without error.
-     *          Otherwise, returns false.
+     * \brief   Parses the string passed as an options separated by space ' '. Useful when wait for
+     *          input from user and need to parse the input.
+     *
+     * \param   optLine     The options passed in the string. If a value can be a string with the
+     *                      space the string should be quoted "
+     * \return  Returns true if succeeded to parse without error. Otherwise, returns false.
      **/
-    bool parseOptionLine( const char * optLine );
-    bool parseOptionLine( const wchar_t * optLine );
+    bool parse_option_line( const char * optLine );
+    /**
+     * \brief   Parses the string passed as an options separated by space ' '. Useful when wait for
+     *          input from user and need to parse the input.
+     *
+     * \param   optLine     The options passed in the string. If a value can be a string with the
+     *                      space the string should be quoted "
+     * \return  Returns true if succeeded to parse without error. Otherwise, returns false.
+     **/
+    bool parse_option_line( const wchar_t * optLine );
 
     /**
-     * \brief   Parses the list of strings. Each entry is either an option or a value.
-     *          The value(s) should follow the option entry in the list.
-     *          For example, if first entry is an option "-a" and it may have value,
-     *          then the values should immediately follow this option entry before the next option.
-     * \param   optList The list of options and value.
-     * \return  Returns true if succeeded to parse without error.
-     *          Otherwise, returns false.
+     * \brief   Parses the list of strings. Each entry is either an option or a value. The value(s)
+     *          should follow the option entry in the list. For example, if first entry is an option
+     *          "-a" and it may have value, then the values should immediately follow this option
+     *          entry before the next option.
+     *
+     * \param   optList     The list of options and value.
+     * \return  Returns true if succeeded to parse without error. Otherwise, returns false.
      **/
-    bool parseOptions( StrList & optList );
+    bool parse_options( StrList & optList );
 
     /**
-     * \brief   Searches in the command list the option of specified ID.
-     *          Returns valid index if found the option.
-     *          Otherwise, returns invalid index (NECommon::INVALID_POSITION).
-     * \param   optId   The ID of an option to search in list.
-     * \return  Returns valid index if found an option with specified ID.
-     *          Otherwise, returns invalid index (NECommon::INVALID_POSITION).
+     * \brief   Searches in the command list the option of specified ID. Returns valid index if
+     *          found the option. Otherwise, returns invalid index (NECommon::INVALID_POSITION).
+     *
+     * \param   optId       The ID of an option to search in list.
+     * \return  Returns valid index if found an option with specified ID. Otherwise, returns invalid
+     *          index (NECommon::INVALID_POSITION).
      **/
-    uint32_t findOption(int32_t optId) const;
+    uint32_t find_option(int32_t optId) const;
 
     /**
-     * \brief   Sort the entries of options by the ID (value) of commands.
-     *          The method is useful if the command has multiple options and they need to be
-     *          executed by certain priority. Here the priority is set based on command ID,
-     *          so that the command with the lowest ID is listed and can be executed first.
+     * \brief   Sort the entries of options by the ID (value) of commands. The method is useful if
+     *          the command has multiple options and they need to be executed by certain priority.
+     *          Here the priority is set based on command ID, so that the command with the lowest ID
+     *          is listed and can be executed first.
      **/
     void sort();
 
     /**
-     * \ brief  Returns the list of parsed options.
+     * \brief
      **/
-    inline const InputOptionList & getOptions() const;
+    inline const InputOptionList & options() const;
 
     /**
      * \brief   Returns the input string, which was parsed.
      **/
-    inline const String & getInput() const;
+    inline const String & input() const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -460,57 +501,55 @@ private:
 
     /**
      * \brief   Creates and sets up input option structure based on the validity index.
-     * \param   isShort     True, if matches the int16_t name of the option. Otherwise, should be false.
-     * \param   cmdLine     The string that contains an option. With the option, the string may contain value
-     *                      if the value is separated with the '=' equal sign.
+     *
+     * \param   isShort     True, if matches the int16_t name of the option. Otherwise, should be
+     *                      false.
+     * \param   cmdLine     The string that contains an option. With the option, the string may
+     *                      contain value if the value is separated with the '=' equal sign.
      *                      Otherwise, it should contain only the option string.
      * \param   refSetup    The index of option validation entries that had matching.
      **/
-    OptionParser::InputOption _setupInput( bool isShort, String cmdLine, uint32_t refSetup );
+    OptionParser::InputOption _setup_input( bool isShort, String cmdLine, uint32_t refSetup );
 
     /**
      * \brief   Called to set value in the option. Depending on the flags and the validation range
      *          the 'inFlag' may contain error flag.
+     *
      * \param   newValue    The value as a string to set.
      * \param   opt         The option to set the value.
      * \param   refSetup    The index in the option validation setup to look for validation.
      **/
-    void _setInputValue( String & newValue, InputOption & opt, uint32_t refSetup );
+    void _set_input_value( String & newValue, InputOption & opt, uint32_t refSetup );
 
     /**
      * \brief   Sets the integer value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( int32_t newValue, InputOption & opt, const OptionSetup & valid );
+    void _set_value( int32_t newValue, InputOption & opt, const OptionSetup & valid );
 
     /**
      * \brief   Sets the float value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( float newValue, InputOption & opt, const OptionSetup & valid );
+    void _set_value( float newValue, InputOption & opt, const OptionSetup & valid );
 
     /**
      * \brief   Sets the string value in the option. If needed, checks the validation in the range.
      **/
-    void _setValue( const String & newValue, InputOption & opt, const OptionSetup & valid );
+    void _set_value( const String & newValue, InputOption & opt, const OptionSetup & valid );
 
     /**
-     * \brief   Checks the matching of the option. The option should not be
-     *          following of any alpha-numeric symbol. The valid symbols are:
-     *              a. End-of-string ('\0');
-     *              b. Equal symbol ('=')
-     *              c. Space symbol (' ')
-     * \param   input   The option input string to check
-     * \param   optCmd  The command of option to match.
+     * \brief   Checks the matching of the option. The option should not be following of any
+     *          alpha-numeric symbol. The valid symbols are: a. End-of-string ('.
+     *
+     * \param   input       The option input string to check
+     * \param   optCmd      The command of option to match.
      * \return  Returns true if `input` started with `optCmd`.
      **/
-    bool _matchOption( const String & input, const String & optCmd ) const;
+    bool _match_option( const String & input, const String & optCmd ) const;
 
     /**
-     * \brief   Cleans the string from the quotes ('\"').
-     *          If a string has opening quote, it should have closing quote.
-     *          Otherwise, the function returns false and 'data' should be considered
-     *          as a wrong input.
+     * \brief   Cleans the string from the quotes ('.
      **/
-    bool _cleanQuote( String & data ) const;
+    bool _clean_quote( String & data ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -528,48 +567,48 @@ private:
 // OptionParser inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline bool OptionParser::hasInputError( uint32_t flags  )
+inline bool OptionParser::has_input_error( uint32_t flags  )
 {
     return (flags & static_cast<uint32_t>(OptionFlag::Error)) != 0;
 }
 
-inline bool OptionParser::hasRange( uint32_t flags  )
+inline bool OptionParser::has_range( uint32_t flags  )
 {
     return  ((flags & static_cast<uint32_t>(OptionFlag::InRange)) != 0);
 }
 
-inline bool OptionParser::isEmptyData( uint32_t flags )
+inline bool OptionParser::is_empty_data( uint32_t flags )
 {
     return  ((flags & static_cast<uint32_t>(OptionFlag::NoData)) != 0);
 }
 
-inline bool OptionParser::isFreestyle( uint32_t flags )
+inline bool OptionParser::is_freestyle( uint32_t flags )
 {
     return  ((flags & static_cast<uint32_t>(OptionFlag::String))  != 0) &&
             ((flags & static_cast<uint32_t>(OptionFlag::InRange)) == 0);
 }
 
-inline bool OptionParser::isInteger( uint32_t flags )
+inline bool OptionParser::is_integer( uint32_t flags )
 {
     return  ((flags & static_cast<uint32_t>(OptionFlag::Integer)) != 0);
 }
 
-inline bool OptionParser::isFloat( uint32_t flags )
+inline bool OptionParser::is_float( uint32_t flags )
 {
     return  ((flags & static_cast<uint32_t>(OptionFlag::Float)) != 0);
 }
 
-inline bool OptionParser::isString( uint32_t flags )
+inline bool OptionParser::is_string( uint32_t flags )
 {
     return  ((flags & static_cast<uint32_t>(OptionFlag::String)) != 0);
 }
 
-inline const OptionParser::InputOptionList & OptionParser::getOptions() const
+inline const OptionParser::InputOptionList & OptionParser::options() const
 {
     return mInputOptions;
 }
 
-inline const String & OptionParser::getInput() const
+inline const String & OptionParser::input() const
 {
     return mCmdLine;
 }

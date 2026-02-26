@@ -122,7 +122,7 @@ LOGGER_API_IMPL bool logObserverInitialize(const ObserverEvents * callbacks, con
         LoggerClient& client = LoggerClient::instance();
         theObserver.losState = ObserverState::ObserverDisconnected;
         _setCallbacks(theObserver.losEvents, callbacks);
-        client.setCallbacks(&theObserver.losEvents);
+        client.set_callbacks(&theObserver.losEvents);
         Application::init_application(false, false, false, true, false, configFilePath, static_cast<ConfigListener *>(&client));
     }
 
@@ -137,8 +137,8 @@ LOGGER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ip
     if (_isDisconnected(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::instance();
-        client.openLoggingDatabase(dbPath);
-        if (client.startLoggerClient(ipAddress, portNr))
+        client.open_logging_database(dbPath);
+        if (client.start_logger_client(ipAddress, portNr))
         {
             theObserver.losState = ObserverState::ObserverConnected;
         }
@@ -155,8 +155,8 @@ LOGGER_API_IMPL void logObserverDisconnectLogger()
     if (_isConnected(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::instance();
-        client.stopLoggerClient();
-        client.closeLoggingDatabase();
+        client.stop_logger_client();
+        client.close_logging_database();
         theObserver.losState = ObserverState::ObserverDisconnected;
     }
 }
@@ -170,7 +170,7 @@ LOGGER_API_IMPL bool logObserverPauseLogging(bool doPause)
     if (_isConnected(theObserver.losState))
     {
         theObserver.losState = doPause ? ObserverState::ObserverPaused : ObserverState::ObserverConnected;
-        LoggerClient::instance().setPaused(doPause);
+        LoggerClient::instance().set_paused(doPause);
     }
 
     return result;
@@ -187,16 +187,16 @@ LOGGER_API_IMPL bool logObserverStopLogging(bool doStop, const char* dbPath /* =
         if (doStop)
         {
             theObserver.losState = ObserverState::ObserverPaused;
-            client.setPaused(true);
-            client.closeLoggingDatabase();
+            client.set_paused(true);
+            client.close_logging_database();
             result = true;
         }
         else
         {
-            if (client.openLoggingDatabase(dbPath))
+            if (client.open_logging_database(dbPath))
             {
                 theObserver.losState = ObserverState::ObserverConnected;
-                client.setPaused(false);
+                client.set_paused(false);
                 result = true;
             }
         }
@@ -224,8 +224,8 @@ LOGGER_API_IMPL void logObserverRelease()
     if ((theObserver.losCounter == 0) && _isInitialized(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::instance();
-        client.setCallbacks(nullptr);
-        client.stopLoggerClient();
+        client.set_callbacks(nullptr);
+        client.stop_logger_client();
         Application::release_application();
         _setCallbacks(theObserver.losEvents, nullptr);
         theObserver.losState = ObserverState::ObserverUninitialized;
@@ -296,7 +296,7 @@ LOGGER_API_IMPL bool logObserverConfigLoggerEnabled()
     if (_isInitialized(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::instance();
-        result = client.isConfigLoggerConnectEnabled();
+        result = client.is_config_logger_connect_enabled();
     }
 
     return result;
@@ -310,7 +310,7 @@ LOGGER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t s
     if (_isInitialized(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::instance();
-        String addr{ client.getConfigLoggerAddress() };
+        String addr{ client.config_logger_address() };
         if ((addrBuffer != nullptr) && (addr.length() > static_cast<NEString::CharCount>(space)))
         {
             result = NEString::copy_string<char, char>(addrBuffer, static_cast<NEString::CharCount>(space), addr.as_string(), addr.length()) > 0;
@@ -328,7 +328,7 @@ LOGGER_API_IMPL uint16_t logObserverConfigLoggerPort()
     if (_isInitialized(theObserver.losState))
     {
         LoggerClient& client = LoggerClient::instance();
-        result = client.getConfigLoggerPort();
+        result = client.config_logger_port();
     }
 
     return result;
@@ -341,7 +341,7 @@ LOGGER_API_IMPL bool logObserverRequestInstances()
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
     {
-        result = LoggerClient::instance().requestConnectedInstances();
+        result = LoggerClient::instance().request_connected_instances();
     }
 
     return result;
@@ -354,7 +354,7 @@ LOGGER_API_IMPL bool logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
     {
-        result = LoggerClient::instance().requestScopes(target);
+        result = LoggerClient::instance().request_scopes(target);
     }
 
     return result;
@@ -373,7 +373,7 @@ LOGGER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const Sco
             scopeList.add(NELogging::ScopeEntry(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
         }
 
-        result = LoggerClient::instance().requestChangeScopePrio( scopeList, target);
+        result = LoggerClient::instance().request_change_scope_prio( scopeList, target);
     }
 
     return result;
@@ -386,7 +386,7 @@ LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
     {
-        result = LoggerClient::instance().requestSaveConfiguration(target);
+        result = LoggerClient::instance().request_save_configuration(target);
     }
 
     return result;
@@ -394,7 +394,7 @@ LOGGER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED
 
 LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t space)
 {
-    String path{ LoggerClient::instance().getActiveDatabasePath() };
+    String path{ LoggerClient::instance().active_database_path() };
     if ((dbPath != nullptr) && (path.length() > static_cast<NEString::CharCount>(space)))
     {
         return static_cast<int32_t>(NEString::copy_string<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.as_string(), path.length()));
@@ -407,7 +407,7 @@ LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t s
 
 LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t space)
 {
-    String path{ LoggerClient::instance().getInitialDatabasePath() };
+    String path{ LoggerClient::instance().initial_database_path() };
     if ((dbPath != nullptr) && (path.length() > static_cast<NEString::CharCount>(space)))
     {
         return static_cast<int32_t>(NEString::copy_string<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.as_string(), path.length()));
@@ -420,7 +420,7 @@ LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t 
 
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t space)
 {
-    String path{ LoggerClient::instance().getConfigDatabasePath() };
+    String path{ LoggerClient::instance().config_database_path() };
     if ((dbPath != nullptr) && (path.length() > static_cast<NEString::CharCount>(space)))
     {
         return static_cast<int32_t>(NEString::copy_string<char, char>(dbPath, static_cast<NEString::CharCount>(space), path.as_string(), path.length()));
@@ -433,7 +433,7 @@ LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t s
 
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseLocation(char* dbLocation, int32_t space)
 {
-    String location{ LoggerClient::instance().getConfigDatabaseLocation() };
+    String location{ LoggerClient::instance().config_database_location() };
     if ((dbLocation != nullptr) && (location.length() > static_cast<NEString::CharCount>(space)))
     {
         return static_cast<int32_t>(NEString::copy_string<char, char>(dbLocation, static_cast<NEString::CharCount>(space), location.as_string(), location.length()));
@@ -446,12 +446,12 @@ LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseLocation(char* dbLocation, i
 
 LOGGER_API_IMPL bool logObserverSetConfigDatabaseLocation(const char* dbLocation)
 {
-    return LoggerClient::instance().setConfigDatabaseLocation(dbLocation);
+    return LoggerClient::instance().set_config_database_location(dbLocation);
 }
 
 LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseName(char* dbName, int32_t space)
 {
-    String name{ LoggerClient::instance().getConfigDatabaseName() };
+    String name{ LoggerClient::instance().config_database_name() };
     if ((dbName != nullptr) && (name.length() > static_cast<NEString::CharCount>(space)))
     {
         return static_cast<int32_t>(NEString::copy_string<char, char>(dbName, static_cast<NEString::CharCount>(space), name.as_string(), name.length()));
@@ -464,16 +464,16 @@ LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseName(char* dbName, int32_t s
 
 LOGGER_API_IMPL bool logObserverSetConfigDatabaseName(const char* dbName)
 {
-    return LoggerClient::instance().setConfigDatabaseName(dbName);
+    return LoggerClient::instance().set_config_database_name(dbName);
 }
 
 LOGGER_API_IMPL bool logObserverConfigUpdate(const char* address, uint16_t port, const char* dbFilePath, bool makeSave)
 {
     LoggerClient& logger = LoggerClient::instance();
     bool result{ false };
-    if (logger.setConfigLoggerConnection(address, port) && logger.setConfigDatabasePath(dbFilePath, true))
+    if (logger.set_config_logger_connection(address, port) && logger.set_config_database_path(dbFilePath, true))
     {
-        result = makeSave ? logger.requestSaveConfiguration() : true;
+        result = makeSave ? logger.request_save_configuration() : true;
     }
 
     return result;

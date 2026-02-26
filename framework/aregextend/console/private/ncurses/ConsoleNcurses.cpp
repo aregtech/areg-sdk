@@ -34,7 +34,7 @@ namespace
 // Console POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup()
+bool Console::_os_setup()
 {
     if (mIsReady == false)
     {
@@ -50,7 +50,7 @@ bool Console::_osSetup()
     return mIsReady;
 }
 
-void Console::_osRelease()
+void Console::_os_release()
 {
     if (mIsReady)
     {
@@ -66,7 +66,7 @@ void Console::_osRelease()
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const String& text) const
+void Console::_os_output_text(Console::Coord pos, const String& text) const
 {
     Lock lock(mLock);
 
@@ -78,7 +78,7 @@ void Console::_osOutputText(Console::Coord pos, const String& text) const
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
+void Console::_os_output_text(Console::Coord pos, const std::string_view& text) const
 {
     Lock lock(mLock);
 
@@ -90,7 +90,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     }
 }
 
-void Console::_osOutputText(const String& text) const
+void Console::_os_output_text(const String& text) const
 {
     Lock lock(mLock);
 
@@ -101,7 +101,7 @@ void Console::_osOutputText(const String& text) const
     }
 }
 
-void Console::_osOutputText(const std::string_view& text) const
+void Console::_os_output_text(const std::string_view& text) const
 {
     Lock lock(mLock);
 
@@ -112,7 +112,7 @@ void Console::_osOutputText(const std::string_view& text) const
     }
 }
 
-Console::Coord Console::_osGetCursorPosition() const
+Console::Coord Console::_os_get_cursor_position() const
 {
     Lock lock(mLock);
 
@@ -129,7 +129,7 @@ Console::Coord Console::_osGetCursorPosition() const
     return pos;
 }
 
-void Console::_osSetCursorCurPosition(Console::Coord pos) const
+void Console::_os_set_cursor_cur_position(Console::Coord pos) const
 {
     Lock lock(mLock);
 
@@ -140,7 +140,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     }
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size)
+bool Console::_os_wait_input_string(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
     // Use getnstr which operates on stdscr (the standard screen).
@@ -153,7 +153,7 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
     return (NEString::is_empty<char>(buffer) == false);
 }
 
-void Console::_osRefreshScreen() const
+void Console::_os_refresh_screen() const
 {
     if (mContext != 0)
     {
@@ -161,7 +161,7 @@ void Console::_osRefreshScreen() const
     }
 }
 
-void Console::_osClearLine() const
+void Console::_os_clear_line() const
 {
     Lock lock(mLock);
 
@@ -171,7 +171,7 @@ void Console::_osClearLine() const
     }
 }
 
-void Console::_osClearScreen() const
+void Console::_os_clear_screen() const
 {
     Lock lock(mLock);
 
@@ -181,19 +181,19 @@ void Console::_osClearScreen() const
     }
 }
 
-bool Console::_osReadInputList(const char* format, va_list varList) const
+bool Console::_os_read_input_list(const char* format, va_list varList) const
 {
     return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);
 }
 
-void Console::_osSaveCursorPosition() const
+void Console::_os_save_cursor_position() const
 {
     Lock lock(mLock);
-    _cursorPos = _osGetCursorPosition();
+    _cursorPos = _os_get_cursor_position();
     _isSaved = true;
 }
 
-void Console::_osRestoreCursorPosition() const
+void Console::_os_restore_cursor_position() const
 {
     Lock lock(mLock);
 
@@ -209,17 +209,17 @@ void Console::_osRestoreCursorPosition() const
     }
 }
 
-void Console::_osMoveCursorOneLineUp() const
+void Console::_os_move_cursor_one_line_up() const
 {
     Lock lock(mLock);
-    Console::Coord pos = _osGetCursorPosition();
+    Console::Coord pos = _os_get_cursor_position();
     mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
 }
 
-void Console::_osMoveCursorOneLineDown() const
+void Console::_os_move_cursor_one_line_down() const
 {
     Lock lock(mLock);
-    Console::Coord pos = _osGetCursorPosition();
+    Console::Coord pos = _os_get_cursor_position();
     mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
 }
 

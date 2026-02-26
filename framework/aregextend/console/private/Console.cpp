@@ -34,15 +34,15 @@ Console::Console()
     , mEnable   (true, false)
     , mLock     (false)
 {
-    _osSetup();
+    _os_setup();
 }
 
 Console::~Console()
 {
-    _osRelease();
+    _os_release();
 }
 
-String Console::waitForInput(Console::CallBack callback) const
+String Console::wait_for_input(Console::CallBack callback) const
 {
     String result;
 
@@ -54,7 +54,7 @@ String Console::waitForInput(Console::CallBack callback) const
         {
             result.clear();
             char buffer[512]{ 0 };
-            if (Console::_osWaitInputString(buffer, 512))
+            if (Console::_os_wait_input_string(buffer, 512))
             {
                 result = buffer;
                 if ((static_cast<bool>(callback) == false) || callback(result))
@@ -68,29 +68,29 @@ String Console::waitForInput(Console::CallBack callback) const
     return result;
 }
 
-bool Console::readInputs(const char* format, ...) const
+bool Console::read_inputs(const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);
-    bool result = readInputList(format, argptr);
+    bool result = read_input_list(format, argptr);
     va_end(argptr);
 
     return result;
 }
 
-bool Console::readInputList(const char* format, va_list varList) const
+bool Console::read_input_list(const char* format, va_list varList) const
 {
     mEnable.lock(NECommon::WAIT_INFINITE);
-    return _osReadInputList(format, varList);
+    return _os_read_input_list(format, varList);
 }
 
 String Console::read_string() const
 {
     char buffer[512] { 0 };
-    return String(readInputs("%510s", buffer) ? buffer : String::empty_string());
+    return String(read_inputs("%510s", buffer) ? buffer : String::empty_string());
 }
 
-void Console::outputMsg(Console::Coord pos, const char* format, ...) const
+void Console::output_msg(Console::Coord pos, const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);
@@ -99,10 +99,10 @@ void Console::outputMsg(Console::Coord pos, const char* format, ...) const
     text.format_list(format, argptr);
     va_end(argptr);
 
-    outputStr(pos, text);
+    output_str(pos, text);
 }
 
-void Console::printMsg(const char* format, ...) const
+void Console::print_msg(const char* format, ...) const
 {
     va_list argptr;
     va_start(argptr, format);
@@ -111,10 +111,10 @@ void Console::printMsg(const char* format, ...) const
     text.format_list(format, argptr);
     va_end(argptr);
 
-    _osOutputText(text);
+    _os_output_text(text);
 }
 
-bool Console::readConsoleData(char* buffer, uint32_t bufSize)
+bool Console::read_console_data(char* buffer, uint32_t bufSize)
 {
-    return Console::_osWaitInputString(buffer, bufSize);
+    return Console::_os_wait_input_string(buffer, bufSize);
 }

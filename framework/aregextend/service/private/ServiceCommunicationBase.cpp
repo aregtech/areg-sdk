@@ -74,19 +74,19 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
 {
 }
 
-void ServiceCommunicationBase::addInstance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance)
+void ServiceCommunicationBase::add_instance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance)
 {
     Lock lock(mLock);
     mInstanceMap.add_if_unique(cookie, instance);
 }
 
-void ServiceCommunicationBase::removeInstance(const ITEM_ID & cookie)
+void ServiceCommunicationBase::remove_instance(const ITEM_ID & cookie)
 {
     Lock lock(mLock);
     mInstanceMap.remove_at(cookie);
 }
 
-void ServiceCommunicationBase::removeAllInstances()
+void ServiceCommunicationBase::remove_all_instances()
 {
     Lock lock(mLock);
     mInstanceMap.release();
@@ -195,7 +195,7 @@ bool ServiceCommunicationBase::is_host_setup() const
     return mServerConnection.address().is_valid();
 }
 
-bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & clientSocket)
+bool ServiceCommunicationBase::can_accept_connection(const SocketAccepted & clientSocket)
 {
     bool result{ false };
     if ( clientSocket.is_valid( ) && clientSocket.is_alive() )
@@ -210,11 +210,11 @@ bool ServiceCommunicationBase::canAcceptConnection(const SocketAccepted & client
     return result;
 }
 
-void ServiceCommunicationBase::connectionLost( SocketAccepted & clientSocket )
+void ServiceCommunicationBase::connection_lost( SocketAccepted & clientSocket )
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_connectionLost);
     const ITEM_ID & cookie { mServerConnection.cookie(clientSocket) };
-    const ITEM_ID & channel{ mServerConnection.getChannelId() };
+    const ITEM_ID & channel{ mServerConnection.channel_id() };
 
     LOG_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
                 , static_cast<uint32_t>(cookie)
@@ -224,15 +224,15 @@ void ServiceCommunicationBase::connectionLost( SocketAccepted & clientSocket )
 
     if ( cookie != NEService::COOKIE_UNKNOWN )
     {
-        removeInstance(cookie);
+        remove_instance(cookie);
         RemoteMessage msgDisconnect = NERemoteService::create_disconnect_request(cookie, channel);
-        sendCommunicationMessage(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
+        send_communication_message(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
     }
 
     mServerConnection.close_connection(clientSocket);
 }
 
-void ServiceCommunicationBase::connectionFailure()
+void ServiceCommunicationBase::connection_failure()
 {
     if ( is_host_connected())
     {
@@ -240,9 +240,9 @@ void ServiceCommunicationBase::connectionFailure()
     }
 }
 
-void ServiceCommunicationBase::disconnectServices()
+void ServiceCommunicationBase::disconnect_services()
 {
-    removeAllInstances();
+    remove_all_instances();
 }
 
 void ServiceCommunicationBase::on_reconnect_timer()
@@ -275,7 +275,7 @@ void ServiceCommunicationBase::on_service_stop()
 void ServiceCommunicationBase::on_service_restart()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_onServiceRestart);
-    restartConnection();
+    restart_connection();
 }
 
 void ServiceCommunicationBase::on_service_exit()
@@ -308,7 +308,7 @@ bool ServiceCommunicationBase::start_connection()
     if ( mServerConnection.create_socket() )
     {
         LOG_DBG("Created socket [ %d ], going to create send-receive threads", static_cast<uint32_t>(mServerConnection.socket_handle()));
-        if ( startSendThread( ) && startReceiveThread( ) )
+        if ( start_send_thread( ) && start_receive_thread( ) )
         {
             result = true;
             LOG_DBG( "The threads are created. Ready to send-receive messages." );
@@ -333,7 +333,7 @@ bool ServiceCommunicationBase::start_connection()
     return result;
 }
 
-bool ServiceCommunicationBase::restartConnection()
+bool ServiceCommunicationBase::restart_connection()
 {
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_restartConnection);
     LOG_DBG("Going to start connection. Address [ %s ], port [ %d ]"
@@ -351,7 +351,7 @@ void ServiceCommunicationBase::stop_connection()
 
     mThreadReceive.trigger_exit();
 
-    disconnectServices( );
+    disconnect_services( );
     disconnect_service( Event::EventPriority::NormalPrio );
 
     // Wait without triggering exit.
@@ -362,13 +362,13 @@ void ServiceCommunicationBase::stop_connection()
     mThreadReceive.shutdown_thread( NECommon::WAIT_INFINITE );
 }
 
-bool ServiceCommunicationBase::startSendThread()
+bool ServiceCommunicationBase::start_send_thread()
 {
     return mThreadSend.create_thread( NECommon::WAIT_INFINITE ) && 
            mThreadSend.wait_start( NECommon::WAIT_INFINITE );
 }
 
-bool ServiceCommunicationBase::startReceiveThread()
+bool ServiceCommunicationBase::start_receive_thread()
 {
     return mThreadReceive.create_thread( NECommon::WAIT_INFINITE ) &&
            mThreadReceive.wait_start( NECommon::WAIT_INFINITE );
@@ -396,7 +396,7 @@ void ServiceCommunicationBase::failed_send_message(const RemoteMessage& /*msgFai
 
     if ( whichTarget.is_valid())
     {
-        connectionLost( static_cast<SocketAccepted &>(whichTarget) );
+        connection_lost( static_cast<SocketAccepted &>(whichTarget) );
     }
 }
 
@@ -412,7 +412,7 @@ void ServiceCommunicationBase::failed_receive_message(Socket & whichSource)
 
     if (client.is_valid())
     {
-        connectionLost(client);
+        connection_lost(client);
     }
 }
 
@@ -448,10 +448,10 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
             LOG_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
             if ( msgId == NEService::FuncIdRange::SystemServiceDisconnect )
             {
-                removeInstance( cookie );
+                remove_instance( cookie );
             }
 
-            sendCommunicationMessage( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
+            send_communication_message( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
         }
         else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::FuncIdRange::SystemServiceConnect) )
         {
@@ -459,8 +459,8 @@ void ServiceCommunicationBase::process_received_message(const RemoteMessage & ms
             msgReceived >> instance;
             instance.ciTimestamp = static_cast<TIME64>(DateTime::now());
             instance.ciCookie = cookie;
-            addInstance(cookie, instance);
-            RemoteMessage msgConnect(connect_message(mServerConnection.getChannelId(), cookie, NEService::MessageSource::SourceService));
+            add_instance(cookie, instance);
+            RemoteMessage msgConnect(connect_message(mServerConnection.channel_id(), cookie, NEService::MessageSource::SourceService));
             LOG_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                         , NEService::as_string( static_cast<NEService::FuncIdRange>(msgConnect.message_id()))
                         , static_cast<uint32_t>(msgConnect.message_id())

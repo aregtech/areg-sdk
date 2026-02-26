@@ -37,13 +37,13 @@ extern VOID WINAPI _win32ServiceMain(DWORD argc, LPTSTR * argv);
 extern VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 
 #ifdef UNICODE
-    #define     service_name          getServiceNameW
-    #define     getServiceDisplayName   getServiceDisplayNameW
-    #define     getServiceDescription   getServiceDescriptionW
+    #define     service_name          service_name_w
+    #define     getServiceDisplayName   service_display_name_w
+    #define     getServiceDescription   service_description_w
 #else   // UNICODE
-    #define     service_name          getServiceNameA
-    #define     getServiceDisplayName   getServiceDisplayNameA
-    #define     getServiceDescription   getServiceDescriptionA
+    #define     service_name          service_name_a
+    #define     getServiceDisplayName   service_display_name_a
+    #define     getServiceDescription   service_description_a
 #endif  // UNICODE
 
 
@@ -58,12 +58,12 @@ namespace
 // ServiceApplicationBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool ServiceApplicationBase::_osIsValid() const
+bool ServiceApplicationBase::_os_is_valid() const
 {
     return (mSeMHandle != nullptr && mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osFreeResources()
+void ServiceApplicationBase::_os_free_resources()
 {
     if (mSvcHandle != nullptr)
     {
@@ -79,7 +79,7 @@ void ServiceApplicationBase::_osFreeResources()
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService()
+bool ServiceApplicationBase::_os_initialize_service()
 {
     NEMemory::zero_element<SERVICE_STATUS>(_serviceStatus);
     _serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -93,7 +93,7 @@ bool ServiceApplicationBase::_osInitializeService()
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService()
+bool ServiceApplicationBase::_os_open_service()
 {
     if (mSeMHandle == nullptr)
     {
@@ -108,7 +108,7 @@ bool ServiceApplicationBase::_osOpenService()
     return (mSvcHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osCreateService()
+bool ServiceApplicationBase::_os_create_service()
 {
     if (mSeMHandle == nullptr)
     {
@@ -188,7 +188,7 @@ bool ServiceApplicationBase::_osCreateService()
     return (mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osDeleteService()
+void ServiceApplicationBase::_os_delete_service()
 {
     if (mSvcHandle != nullptr)
     {
@@ -196,7 +196,7 @@ void ServiceApplicationBase::_osDeleteService()
     }
 }
 
-bool ServiceApplicationBase::_osRegisterService()
+bool ServiceApplicationBase::_os_register_service()
 {
     if (mSystemServiceOption == NESystemService::ServiceOption::CMD_Service)
     {
@@ -206,7 +206,7 @@ bool ServiceApplicationBase::_osRegisterService()
     return (_statusHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
+bool ServiceApplicationBase::_os_set_state(NESystemService::ServicePhase newState)
 {
     bool result{ true };
 
@@ -270,7 +270,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     return result;
 }
 
-int32_t ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 {
     _serviceTable[0].lpServiceName = service_name();
     _serviceTable[0].lpServiceProc = &::_win32ServiceMain;

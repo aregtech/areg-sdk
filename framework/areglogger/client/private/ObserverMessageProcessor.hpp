@@ -33,7 +33,7 @@ namespace NELogging {
 // ObserverMessageProcessor class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   An object to process all received messages.
+ * \brief   Processor for messages received from the log service.
  **/
 class ObserverMessageProcessor
 {
@@ -41,6 +41,11 @@ class ObserverMessageProcessor
 // Default constructor and destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief
+     *
+     * \param   loggerClient    Reference to the LoggerClient instance to process messages for.
+     **/
     ObserverMessageProcessor(LoggerClient& loggerClient);
     ~ObserverMessageProcessor() = default;
 
@@ -50,50 +55,63 @@ public:
 public:
 
     /**
-     * \brief   Triggered to notify the connection of the service.
-     *          The message contains Cookie ID of the observer.
-     * \param   msgReceived     The buffer with data of the message received when connect to the service.
+     * \brief   Handles service connection notification with the observer's Cookie ID.
+     *
+     * \param   msgReceived     Buffer containing the connection message with the observer's Cookie
+     *                          ID.
      **/
-    void notifyServiceConnection(const RemoteMessage& msgReceived);
+    void notify_service_connection(const RemoteMessage& msgReceived);
 
     /**
-     * \brief   Triggered to notify the list of connected clients.
-     *          This message is sent as a reply on query the connected clients.
-     * \param   msgReceived     The buffer with data of connected clients.
+     * \brief   Handles notification of the list of connected clients in response to a query.
+     *
+     * \param   msgReceived     Buffer containing the data of connected clients.
      **/
-    void notifyConnectedClients(const RemoteMessage& msgReceived);
+    void notify_connected_clients(const RemoteMessage& msgReceived);
 
     /**
-     * \brief   Triggered to notify the list of scopes, scope ID and the scope message priority.
-     *          This message is sent as a reply on query the list of scopes.
-     * \param   msgReceived     The buffer with data of scope names, scope IDs and the message priority.
-     *                          This contains the information of all scopes.
+     * \brief   Handles notification of registered scopes with their IDs and message priorities in
+     *          response to a query.
+     *
+     * \param   msgReceived     Buffer containing scope names, IDs, and message priorities for all
+     *                          scopes.
      **/
-    void notifyLogRegisterScopes(const RemoteMessage& msgReceived);
+    void notify_log_register_scopes(const RemoteMessage& msgReceived);
 
     /**
-     * \brief   Triggered when the observer is notified that the scope priorities are updated.
-     * \param   msgReceived     The buffer with data of scope names, scope IDs and the message priority.
-     *                          This contains the information of all scopes.
+     * \brief   Handles notification that scope priorities have been updated.
+     *
+     * \param   msgReceived     Buffer containing scope names, IDs, and updated message priorities.
      **/
-    void notifyLogUpdateScopes(const RemoteMessage& msgReceived);
+    void notify_log_update_scopes(const RemoteMessage& msgReceived);
 
     /**
-     * \brief   Triggered to notify to log a message.
-     * \param   msgReceived     The buffer with the log message.
+     * \brief   Handles a log message notification.
+     *
+     * \param   msgReceived     Buffer containing the log message.
      **/
-    void notifyLogMessage(const RemoteMessage& msgReceived);
+    void notify_log_message(const RemoteMessage& msgReceived);
 
 private:
 
     //!< Triggered to process client connected message.
-    void _clientsConnected(const RemoteMessage& msgReceived);
+    /**
+     * \brief   Handles notification when clients connect.
+     *
+     * \param   msgReceived     Buffer containing connected client data.
+     **/
+    void _clients_connected(const RemoteMessage& msgReceived);
 
     //!< Triggered to process client disconnected message.
-    void _clientsDisconnected(const RemoteMessage& msgReceived);
+    /**
+     * \brief   Handles notification when clients disconnect.
+     *
+     * \param   msgReceived     Buffer containing disconnected client data.
+     **/
+    void _clients_disconnected(const RemoteMessage& msgReceived);
 
     //!< Initializes the local log message with default values.
-    void _initLocalLogMessage(NELogging::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
+    void _init_local_log_message(NELogging::LogEntry& log, ITEM_ID cookie, TIME64 timestamp = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
@@ -105,6 +123,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ObserverMessageProcessor() = delete;
     AREG_NOCOPY_NOMOVE(ObserverMessageProcessor);
 };

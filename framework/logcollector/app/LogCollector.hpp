@@ -34,9 +34,8 @@ class Console;
 // LogCollector class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The LogCollector service is a separate process, which receives
- *          and collects the log messages from the running applications.
- *          It may save logs in the file or forward to log viewer application..
+ * \brief   Separate process that collects and displays log messages from running applications, with
+ *          options to save to file or forward to a log viewer.
  **/
 class LogCollector : public ServiceApplicationBase
 {
@@ -80,25 +79,24 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns singleton instance of the LogCollector.
+     * \brief   Returns the singleton instance of LogCollector.
      **/
     static LogCollector& instance();
 
     /**
-     * \brief   Outputs the specified message on the console.
-     *          The method is valid only for console application compiled
-     *          with Areg Extended features.
-     *          Otherwise, the method ignores request to output message.
-     * \param   status  The status message to print on console.
+     * \brief   Outputs the specified message on the console for console applications compiled with
+     *          Areg Extended features; ignored otherwise.
+     *
+     * \param   status      The status message to print on the console.
      **/
-    static void printStatus(const String& status);
+    static void print_status(const String& status);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Default constructor and destructor.
+     * \brief
      **/
     LogCollector();
 
@@ -113,103 +111,93 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered to print the help message on console.
-     * \param   isCmdLine   Flag indicating whether it should print the help
-     *                      of using service in command line or help of user input commands.
-     *                      If 'true', the printing message is about using the service in
-     *                      command line. Otherwise, if application expects user inputs, prints
-     *                      the help of command options.
+     * \brief   Prints help message on the console, showing either command-line usage or interactive
+     *          command options.
+     *
+     * \param   isCmdLine       If true, print help for command-line usage; otherwise print help for
+     *                          interactive input commands.
      **/
-    void printHelp( bool isCmdLine ) override;
+    void print_help( bool isCmdLine ) override;
 
     /**
-     * \brief   Triggered to start the console service.
+     * \brief   Starts the console service.
      **/
-    void startConsoleService() override;
+    void start_console_service() override;
 
     /**
-     * \brief   Stops the consoler service.
+     * \brief   Stops the console service.
      **/
-    void stopConsoleService() override;
+    void stop_console_service() override;
 
     /**
-     * \brief   Triggered to receive a function to validate and check the input option values.
+     * \brief   Returns a callback function to validate and check input option values.
      **/
-    Console::CallBack getOptionCheckCallback() const override;
+    Console::CallBack option_check_callback() const override;
 
     /**
-     * \brief   Triggered if need to run console with extended features.
-     *          In extended feature, the console can output message at any position on the screen.
+     * \brief   Runs console with extended features that support output at any screen position.
      **/
-    void runConsoleInputExtended() override;
+    void run_console_input_extended() override;
 
     /**
-     * \brief   Triggered if need to run console with simple (not extended) features.
+     * \brief   Runs console with simple (non-extended) features.
      **/
-    void runConsoleInputSimple() override;
+    void run_console_input_simple() override;
 
     /**
-     * \brief   Run application as a background process without input or output on console. 
+     * \brief   Runs the application as a background process without console input or output.
      **/
-    void runService() override;
+    void run_service() override;
 
 /************************************************************************/
 // ServiceApplicationBase protected overrides
 /************************************************************************/
     /**
-     * \brief   Returns list of the options to validate contained in the pair object,
-     *          where the first entry is the pointer to the list and second entry is
-     *          the number of elements in the list
+     * \brief   Returns a pair containing the pointer to the option list and the count of elements.
      **/
-    std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const override;
+    std::pair<const OptionParser::OptionSetup*, int32_t> app_options() const override;
 
     /**
-     * \brief   Returns the UNICODE name of the service application.
+     * \brief   Returns the Unicode name of the service application.
      **/
-    wchar_t* getServiceNameW() const override;
+    wchar_t* service_name_w() const override;
 
     /**
      * \brief   Returns the ASCII name of the service application.
      **/
-    char* getServiceNameA() const override;
+    char* service_name_a() const override;
 
     /**
-     * \brief   Returns the UNICODE display name of the service application.
-     *          This optional display name could be valid only for specific OS.
-     *          For example, in Windows this name is displayed in the list of services.
+     * \brief   Returns the Unicode display name of the service application; may be shown in system
+     *          service lists on some platforms (e.g., Windows).
      **/
-    wchar_t* getServiceDisplayNameW() const override;
+    wchar_t* service_display_name_w() const override;
 
     /**
-     * \brief   Returns the ASCII display name of the service application.
-     *          This optional display name could be valid only for specific OS.
-     *          For example, in Windows this name is displayed in the list of services.
+     * \brief   Returns the ASCII display name of the service application; may be shown in system
+     *          service lists on some platforms (e.g., Windows).
      **/
-    char* getServiceDisplayNameA() const override;
+    char* service_display_name_a() const override;
 
     /**
-     * \brief   Returns the UNICODE description of the service application.
-     *          This optional service description could be valid only for specific OS.
-     *          For example, in Windows this description is shown in the list of services.
+     * \brief   Returns the Unicode description of the service application; may appear in system
+     *          service lists on some platforms (e.g., Windows).
      **/
-    wchar_t* getServiceDescriptionW() const override;
+    wchar_t* service_description_w() const override;
 
     /**
-     * \brief   Returns the ASCII description of the service application.
-     *          This optional service description could be valid only for specific OS.
-     *          For example, in Windows this description is shown in the list of services.
+     * \brief   Returns the ASCII description of the service application; may appear in system
+     *          service lists on some platforms (e.g., Windows).
      **/
-    char* getServiceDescriptionA() const override;
+    char* service_description_a() const override;
 
     /**
-     * \brief   Returns the type of the remote service.
-     *          Valid only for Areg SDK services.
+     * \brief   Returns the type of the remote service (Areg SDK services only).
      **/
     NERemoteService::RemoteServiceKind service_type() const override;
 
     /**
-     * \brief   Returns the type of the connection of the remote services.
-     *          Valid only for Areg SDK services.
+     * \brief   Returns the connection type of remote services (Areg SDK services only).
      **/
     NERemoteService::ConnectionType connection_type() const override;
 
@@ -218,17 +206,20 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Called by configuration manager when configuration is completed to load data from the file.
-     * \param   config  The instance of configuration manager.
+     * \brief   Called by the configuration manager after loading configuration from file.
+     *
+     * \param   config      The configuration manager instance.
      **/
     void post_read_configuration(ConfigManager& config) override;
 
     /**
-     * \brief   Called by configuration manager after setting read-only and writable properties.
-     *          For example, when the default configuration is set.
+     * \brief   Called by the configuration manager after setting read-only and writable properties
+     *          (e.g., when default configuration is established).
+     *
      * \param   listReadonly    The list of read-only properties to set in the configuration.
-     * \param   listWritable    The list of module / process specific properties to set in the configuration;
-     * \param   config          The instance of configuration manager.
+     * \param   listWritable    The list of module/process-specific properties to set in the
+     *                          configuration.
+     * \param   config          The configuration manager instance.
      **/
     void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
 
@@ -238,98 +229,108 @@ protected:
 private:
 
     /**
-     * \brief   Returns the list of connected instances.
+     * \brief   Returns the map of connected instances.
      **/
-    inline const NEService::MapInstances & getConnetedInstances() const;
+    inline const NEService::MapInstances & connected_instances() const;
 
     /**
-     * \brief   Returns instance of the LogCollector service.
+     * \brief   Returns a reference to this LogCollector instance.
      **/
     inline LogCollector& self();
 
     /**
-     * \brief   Enables or disables local log messages of the current process.
-     *          The method does not enable or disable logging, it only enables logging messages,
-     *          i.e. sets the priority NOTSET.
-     * \param   config  Instance of the configuration manager to enable or disable log messages.
-     * \param   enable  Flag, indicating whether the logs should be enabled or not.
-     *                  If true, the logs are enabled. Otherwise, the logs are disabled.
+     * \brief   Enables or disables local log messages by setting priority to NOTSET when enabled.
+     *
+     * \param   config      The configuration manager instance to control log messages.
+     * \param   enable      If true, enable logs; otherwise disable them.
      **/
-    inline void _enableLocalLogs(ConfigManager& config, bool enable);
+    inline void _enable_local_logs(ConfigManager& config, bool enable);
 
     /**
-     * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
+     * \brief   Returns true if the command is recognized as a valid console command.
+     *
      * \param   cmd     The command typed on the console.
-     * \return  Returns true if command is recognized. Otherwise, returns false.
+     * \return  Returns true if the command is recognized; false otherwise.
      **/
-    static bool _checkCommand(const String& cmd);
+    static bool _check_command(const String& cmd);
 
     /**
-     * \brief   Output on console the title.
+     * \brief   Outputs the title on the console.
      **/
-    static void _outputTitle();
+    static void _output_title();
 
     /**
-     * \brief   Prints info on console.
+     * \brief   Prints information on the console.
+     *
+     * \param   info    The information message to print.
      **/
-    static void _outputInfo( const String & info );
+    static void _output_info( const String & info );
 
     /**
-     * \brief   Outputs on console the information about connected instances.
+     * \brief   Outputs information about connected instances on the console.
+     *
+     * \param   instances       The map of connected instances to display.
      **/
-    static void _outputInstances( const NEService::MapInstances & instances );
+    static void _output_instances( const NEService::MapInstances & instances );
 
     /**
-     * \brief   Sets verbose or silent mode to output data rate.
-     *          The feature is available only if compile with enabled extended features.
-     *          Otherwise, it outputs error message and nothing happens.
+     * \brief   Sets verbose or silent mode for data rate output (available only with extended
+     *          features enabled).
+     *
+     * \param   makeVerbose     If true, set verbose mode; otherwise set silent mode.
      **/
-    static void _setVerboseMode( bool makeVerbose );
+    static void _set_verbose_mode( bool makeVerbose );
 
     /**
-     * \brief   Call to clean all message outputs like help, prompt, etc.
-     *          Normally, help is the largest message.
+     * \brief   Clears all message outputs including help and prompt displays.
      **/
-    static void _cleanHelp();
+    static void _clean_help();
 
     /**
-     * \brief   Triggered to process update scope priority command.
-     * \param   optScope    The option entry that contains scope priority update instruction.
-     *                      If the command contains a list of scopes to update, the should be split by ';'.
+     * \brief   Processes scope priority update commands; scopes should be separated by semicolon.
+     *
+     * \param   optScope    The option entry containing scope priority update instruction; multiple
+     *                      scopes should be separated by ';'.
      **/
-    static void _processUpdateScopes(const OptionParser::InputOption& optScope);
+    static void _process_update_scopes(const OptionParser::InputOption& optScope);
 
     /**
-     * \brief   Triggered to trigger querying the list of registered scopes.
-     * \param   optScope    The option entry that contains query command and list of client application IDs to request scope list.
-     *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
+     * \brief   Processes scope list queries by sending requests to specified client application IDs
+     *          (separated by space or semicolon).
+     *
+     * \param   optScope    The option entry containing query command and list of client application
+     *                      IDs; IDs can be separated by space ' ' or semicolon ';'.
      **/
-    static void _processQueryScopes(const OptionParser::InputOption& optScope);
+    static void _process_query_scopes(const OptionParser::InputOption& optScope);
 
     /**
-     * \brief   Creates a list of remote messages to send to update log scope priorities.
-     *          On output the 'msgList' contains the list of message. Each message contains
-     *          instruction to update single scope or single scope group.
-     * \param[in]   optScope    The option entry that contains scope priority update instruction.
-     *                          If the command contains a list of scopes to update, the should be split by ';'.
-     * \param[out]  msgList     On output it contains a list a messages to send to the targets.
-     *                          If a message is referred to all connected clients, the target is NEService::TARGET_ALL.
+     * \brief   Creates a list of remote messages to update log scope priorities; each message
+     *          contains an instruction for a single scope or scope group.
+     *
+     * \param   optScope    The option entry containing scope priority update instruction; multiple
+     *                      scopes should be separated by ';'.
+     * \param[out] msgList     On output, contains the list of messages to send to targets
+     *                         (NEService::TARGET_ALL if addressed to all clients).
      **/
-    static void _createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage> & msgList);
+    static void _create_scope_message(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage> & msgList);
 
     /**
-     * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.
-     * \param   scope   The scope to normalize.
-     * \return  Returns normalized scope priority string to parse and generate property object with key and value.
+     * \brief   Returns a normalized scope string suitable for generating a property object with key
+     *          and value.
+     *
+     * \param   scope       The scope string to normalize.
+     * \return  Returns the normalized scope priority string to parse and generate a property
+     *          object.
      **/
-    static String _normalizeScopeProperty(const String & scope);
+    static String _normalize_scope_property(const String & scope);
 
     /**
-     * \brief   Creates a scope update message to send to the target client.
-     * \param   scope   The scope priority string to parse and create message.
-     * \return  Returns message to send to the remote target client.
+     * \brief   Returns a scope update message to send to a remote client.
+     *
+     * \param   scope       The scope priority string to parse and create the message from.
+     * \return  Returns the message to send to the remote target client.
      **/
-    static RemoteMessage _createScopeUpdateMessage(const String& scope);
+    static RemoteMessage _create_scope_update_message(const String& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -351,7 +352,7 @@ private:
 // LogCollector class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEService::MapInstances & LogCollector::getConnetedInstances() const
+inline const NEService::MapInstances & LogCollector::connected_instances() const
 {
     return mServiceServer.getInstances( );
 }

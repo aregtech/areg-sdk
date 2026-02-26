@@ -44,7 +44,7 @@ void ServerSendThread::ready_for_events( bool is_ready )
     {
         DispatcherThread::ready_for_events( false );
         SendMessageEvent::remove_listener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        mConnection.closeAllConnections( );
+        mConnection.close_all_connections( );
         mConnection.disable_send( );
     }
 }
@@ -92,7 +92,7 @@ void ServerSendThread::process_event( const SendMessageEventData & data )
     else if (data.is_exit_message() )
     {
         LOG_DBG("Going to quite send message thread");
-        mConnection.closeAllConnections( );
+        mConnection.close_all_connections( );
         mConnection.close_socket( );
         trigger_exit( );
     }

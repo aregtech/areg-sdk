@@ -72,10 +72,13 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor to initialize default values.
-     * \param   serviceId   The unique identifier of the service in the system.
-     * \param   dispatcher  The name of the message dispatcher thread.
-     * \param   behavior    Connection default behavior. By default, all connections are accepted.
+     * \brief   Initializes service communication with the specified service ID, connection types,
+     *          dispatcher thread, and connection policy.
+     *
+     * \param   serviceId       The unique identifier of the service in the system.
+     * \param   dispatcher      The name of the message dispatcher thread.
+     * \param   behavior        Connection default behavior. By default, all connections are
+     *                          accepted.
      **/
     ServiceCommunicationBase( const ITEM_ID & serviceId
                             , NERemoteService::RemoteServiceKind service
@@ -93,81 +96,89 @@ public:
 public:
     /**
      * \brief   Checks whether the specified host address is in the white-list.
-     * \param   addrClient  The object, which contains client host address to check.
+     *
+     * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the white-list.
      **/
-    inline bool isAddressInWhiteList( const NESocket::SocketAddress & addrClient ) const;
+    inline bool is_address_in_white_list( const NESocket::SocketAddress & addrClient ) const;
 
     /**
      * \brief   Checks whether the specified host address is in the black-list.
-     * \param   addrClient  The object, which contains client host address to check.
+     *
+     * \param   addrClient      The object, which contains client host address to check.
      * \return  Returns true if specified host address is in the black-list.
      **/
-    inline bool isAddressInBlackList( const NESocket::SocketAddress & addrClient ) const;
+    inline bool is_address_in_black_list( const NESocket::SocketAddress & addrClient ) const;
 
     /**
      * \brief   Adds specified host address to the white-list.
-     * \param   addrClient  The host address of client to add to list.
+     *
+     * \param   addrClient      The host address of client to add to list.
      **/
-    inline void addWhiteList( const NESocket::SocketAddress & addrClient );
+    inline void add_white_list( const NESocket::SocketAddress & addrClient );
 
     /**
      * \brief   Adds specified host address to black-list.
-     * \param   addrClient  The host address of client to add to list.
+     *
+     * \param   addrClient      The host address of client to add to list.
      **/
-    inline void addBlackList( const NESocket::SocketAddress & addrClient );
+    inline void add_black_list( const NESocket::SocketAddress & addrClient );
 
     /**
      * \brief   Removes specified host address from white-list.
-     * \param   addrClient  The host address of client to remove from list.
+     *
+     * \param   addrClient      The host address of client to remove from list.
      **/
-    inline void removeWhiteList( const NESocket::SocketAddress & addrClient );
+    inline void remove_white_list( const NESocket::SocketAddress & addrClient );
 
     /**
      * \brief   Removes specified host address from black-list.
-     * \param   addrClient  The host address of client to remove from list.
+     *
+     * \param   addrClient      The host address of client to remove from list.
      **/
-    inline void removeBlackList( const NESocket::SocketAddress & addrClient );
+    inline void remove_black_list( const NESocket::SocketAddress & addrClient );
 
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const NEService::MapInstances & getInstances() const;
+    inline const NEService::MapInstances & instances() const;
 
     /**
-     * \brief   Call to wait the service communication thread to complete the job.
-     *          The method should be called when exit the process.
+     * \brief   Call to wait the service communication thread to complete the job. The method should
+     *          be called when exit the process.
      **/
-    inline void waitToComplete( );
+    inline void wait_to_complete( );
 
     /**
-     * \brief   Queues the message for sending
-     * \param   data        The data of the message.
-     * \param   eventPrio   The priority of the message to set.
+     * \brief   Queues the message for sending.
+     *
+     * \param   data            The data of the message.
+     * \param   eventPrio       The priority of the message to set.
      **/
     inline bool send_message(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
-    inline DataRateHelper& getDataRateHelper() const;
+    inline DataRateHelper& data_rate_helper() const;
 
     /**
-     * \brief   Each time querying the bytes sent via network connection returns
-     *          the value after last query.
+     * \brief   Each time querying the bytes sent via network connection returns the value after
+     *          last query.
      **/
     inline uint32_t query_bytes_sent();
 
     /**
-     * \brief   Each time querying the bytes received via network connection returns
-     *          the value after last query.
+     * \brief   Each time querying the bytes received via network connection returns the value after
+     *          last query.
      **/
     inline uint32_t query_bytes_received();
 
     /**
      * \brief   Enable or disable the data rate calculation.
-     * \param   enable  If true, the data rate calculation is enabled.
-     *                  Otherwise, it is disabled.
+     *
+     * \param   enable      If true, the data rate calculation is enabled. Otherwise, it is
+     *                      disabled.
      **/
     inline void enable_data_rate(bool enable);
 
@@ -185,21 +196,23 @@ public:
 /************************************************************************/
     /**
      * \brief   Adds an entry into the list of connected instances.
+     *
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    virtual void addInstance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance );
+    virtual void add_instance(const ITEM_ID & cookie, const NEService::ConnectedInstance & instance );
 
     /**
-     * \brief   Removes connected instance.
+     * \brief   Removes the connected instance identified by the specified cookie.
+     *
      * \param   cookie      The cookie of connected instance.
      **/
-    virtual void removeInstance(const ITEM_ID & cookie );
+    virtual void remove_instance(const ITEM_ID & cookie );
 
     /**
      * \brief   Removes all connected instances from the map.
      **/
-    virtual void removeAllInstances();
+    virtual void remove_all_instances();
 
 /************************************************************************/
 // RemoteMessageHandler interface overrides
@@ -207,21 +220,24 @@ public:
 
     /**
      * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
+     *
+     * \param   msgFailed       The message, which failed to send.
+     * \param   whichTarget     The target socket to send message.
      **/
     void failed_send_message( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
+     *
+     * \param   whichSource     Indicates the failed source socket to receive message.
      **/
     void failed_receive_message( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
+     *
+     * \param   msgReceived     Received message to process.
+     * \param   whichSource     The source socket, which received message.
      **/
     void process_received_message( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
@@ -231,20 +247,23 @@ public:
 
     /**
      * \brief   Triggered when remote service connection and communication channel is established.
+     *
      * \param   channel     The connection and communication channel of remote service.
      **/
     virtual void on_service_channel_connected(const Channel& channel) override = 0;
 
     /**
      * \brief   Triggered when disconnected remote service connection and communication channel.
+     *
      * \param   channel     The connection and communication channel of remote service.
      **/
     virtual void on_service_channel_disconnected(const Channel& channel) override = 0;
 
     /**
-     * \brief   Triggered when remote service connection and communication channel is lost.
-     *          The connection is considered lost if it not possible to read or
-     *          receive data, and it was not stopped by API call.
+     * \brief   Triggered when remote service connection and communication channel is lost. The
+     *          connection is considered lost if it not possible to read or receive data, and it was
+     *          not stopped by API call.
+     *
      * \param   channel     The connection and communication channel of remote service.
      **/
     virtual void on_service_channel_lost(const Channel& channel) override = 0;
@@ -253,11 +272,11 @@ public:
 // ConnectionProvider interface overrides
 /************************************************************************/
     /**
-     * \brief   Call to configure remote service. The passed file name
-     *          can be either absolute or relative path.
-     *          The function will read configuration file and initialize settings.
-     *          If file path is nullptr or empty, Remote Service will have default
-     *          configuration settings.
+     * \brief   Call to configure remote service. The passed file name can be either absolute or
+     *          relative path. The function will read configuration file and initialize settings. If
+     *          file path is nullptr or empty, Remote Service will have default configuration
+     *          settings.
+     *
      * \param   service         The type of service connection to setup.
      * \param   connectTypes    The bitwise set of connections.
      * \return  Returns true if system could configure. Otherwise, it returns false.
@@ -265,9 +284,10 @@ public:
     bool setup_connection_data(NERemoteService::RemoteServiceKind service, uint32_t connectTypes) override;
 
     /**
-     * \brief   Call manually to set router service host name and port number.
-     *          Note, if remote service is already started, this call will change
-     *          data, but will not restart service.
+     * \brief   Call manually to set router service host name and port number. Note, if remote
+     *          service is already started, this call will change data, but will not restart
+     *          service.
+     *
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
@@ -275,14 +295,16 @@ public:
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
+     *
      * \return  Returns true if start service is triggered.
      **/
     bool connect_service_host() override;
 
     /**
-     * \brief   Call to restart remove service. The host name and the port number should be already set.
-     *          If the service had connection, it will be lost and re-connected again. If there was no
-     *          connection, it starts new connection.
+     * \brief   Call to restart remove service. The host name and the port number should be already
+     *          set. If the service had connection, it will be lost and re-connected again. If there
+     *          was no connection, it starts new connection.
+     *
      * \return  Returns true if succeeded to restart service.
      **/
     bool reconnect_service_host() override;
@@ -298,28 +320,32 @@ public:
     bool is_host_connected() const override;
 
     /**
-     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+     * \brief   Returns true, if remote service connection is triggered, not connected yet and in
+     *          pending state.
      **/
     bool is_host_pending() const override;
 
     /**
-     * \brief   Returns true if service is configured and ready to start
+     * \brief   Returns true if service is configured and ready to start.
      **/
     bool is_host_setup() const override;
 
     /**
      * \brief   Creates the service connect request message, sets the message target and the source.
-     * \param   source      The ID of the source that sends connection message request.
-     * \param   target      The ID of the target to send the connection message request.
-     * \param   msgSource   The message source type of the connected client.
+     *
+     * \param   source          The ID of the source that sends connection message request.
+     * \param   target          The ID of the target to send the connection message request.
+     * \param   msgSource       The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
     RemoteMessage connect_message( const ITEM_ID & source, const ITEM_ID & target, NEService::MessageSource msgSource) const override;
 
     /**
-     * \brief   Creates the service disconnect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends the disconnect message request.
-     * \param   target  The ID of the target to send the disconnection message request.
+     * \brief   Creates the service disconnect request message, sets the message target and the
+     *          source.
+     *
+     * \param   source      The ID of the source that sends the disconnect message request.
+     * \param   target      The ID of the target to send the disconnection message request.
      * \return  Returns the created message for remote communication.
      **/
     RemoteMessage disconnect_message( const ITEM_ID & source, const ITEM_ID & target ) const override;
@@ -334,17 +360,17 @@ public:
     void on_reconnect_timer() override;
 
     /**
-     * \brief   Called when need to start the network server connection service. 
+     * \brief   Called when need to start the network server connection service.
      **/
     void on_service_start() override;
 
     /**
-     * \brief   Called when need to stop the network server connection service. 
+     * \brief   Called when need to stop the network server connection service.
      **/
     void on_service_stop() override;
 
     /**
-     * \brief   Called when need to restart the network server connection service. 
+     * \brief   Called when need to restart the network server connection service.
      **/
     void on_service_restart() override;
 
@@ -355,7 +381,8 @@ public:
 
     /**
      * \brief   Called when need to inform the channel connection.
-     * \param   cookie  The channel connection cookie.
+     *
+     * \param   cookie      The channel connection cookie.
      **/
     void on_channel_connected(const ITEM_ID & cookie) override;
 
@@ -364,32 +391,35 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Call to check whether new client connection should be accepted
-     *          or rejected. Once client is accepted, server will start to receive
-     *          messages from client. Otherwise, connection with client is immediately
-     *          closed and communication is stopped.
+     * \brief   Call to check whether new client connection should be accepted or rejected. Once
+     *          client is accepted, server will start to receive messages from client. Otherwise,
+     *          connection with client is immediately closed and communication is stopped.
+     *
      * \param   clientSocket    Accepted client socket object to check.
-     * \return  Returns true if client connection can be accepted. To reject and close
-     *          connection with client, the method should return false.
+     * \return  Returns true if client connection can be accepted. To reject and close connection
+     *          with client, the method should return false.
      **/
-    bool canAcceptConnection( const SocketAccepted & clientSocket ) override;
+    bool can_accept_connection( const SocketAccepted & clientSocket ) override;
 
     /**
-     * \brief   Triggered, when lost connection with client.
-     *          Passed clientSocket parameter specifies client socket, which lost connection.
+     * \brief   Triggered, when lost connection with client. Passed clientSocket parameter specifies
+     *          client socket, which lost connection.
+     *
      * \param   clientSocket    Client socket object, which lost connection.
      **/
-    void connectionLost( SocketAccepted & clientSocket ) override;
+    void connection_lost( SocketAccepted & clientSocket ) override;
 
     /**
-     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
+     * \brief   Triggered, when there is a connection failure. Normally, this should restart the
+     *          connection.
      **/
-    void connectionFailure() override;
+    void connection_failure() override;
 
     /**
-     * \brief   Called when need to disconnect and unregister all service providers and service consumers.
+     * \brief   Called when need to disconnect and unregister all service providers and service
+     *          consumers.
      **/
-    void disconnectServices() override;
+    void disconnect_services() override;
 
 /************************************************************************/
 // ServiceCommunicationBase
@@ -397,6 +427,7 @@ public:
 
     /**
      * \brief   Called to start connection procedure to accept client connections.
+     *
      * \return  Returns true if could start connection.
      **/
     bool start_connection();
@@ -404,7 +435,7 @@ public:
     /**
      * \brief   Call to restart the connection. Returns true if succeeded to reconnect.
      **/
-    bool restartConnection();
+    bool restart_connection();
 
     /**
      * \brief   Called to stop connection. All clients are automatically disconnected.
@@ -414,32 +445,35 @@ public:
     /**
      * \brief   Starts the message sending thread and returns true if succeeded.
      **/
-    bool startSendThread();
+    bool start_send_thread();
 
     /**
      * \brief   Starts the message receiving thread and returns true if succeeded.
      **/
-    bool startReceiveThread();
+    bool start_receive_thread();
 
     /**
      * \brief   Call to send the event to process.
-     * \param   cmd         The command to send and process.
-     * \param   eventPrio   The priority of the event. By default, it is normal.
+     *
+     * \param   cmd             The command to send and process.
+     * \param   eventPrio       The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
     inline bool send_command(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Call to send the event to process.
+     *
      * \param   cmd     The command to send and process.
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommunicationMessage(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool send_communication_message(ServiceEventData::ServiceCommand cmd, const RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
     /**
-     * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
-     * \param   eventPrio   The priority of set to the event.
+     * \brief   Call to send the disconnect event. It disconnects the socket and exits the thread.
+     *
+     * \param   eventPrio       The priority of set to the event.
      **/
     inline void disconnect_service( Event::EventPriority eventPrio );
 
@@ -448,9 +482,10 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events. Override if
+     *          need to make event dispatching preparation job.
+     *
+     * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
     void ready_for_events( bool is_ready ) override;
 
@@ -459,13 +494,12 @@ public:
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Posts event and delivers to its target. Since the Dispatcher Thread is a Base object
+     *          for Worker and Component threads, it does nothing and only destroys event object
+     *          without processing. Override this method or use Worker / Component thread.
+     *
+     * \param   eventElem       Event object to post
+     * \return  In this class it always returns true.
      **/
     bool post_event( Event & eventElem ) override;
 
@@ -503,6 +537,9 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ServiceCommunicationBase() = delete;
     AREG_NOCOPY_NOMOVE( ServiceCommunicationBase );
 };
@@ -516,44 +553,44 @@ inline ServiceCommunicationBase & ServiceCommunicationBase::self()
     return (*this);
 }
 
-inline bool ServiceCommunicationBase::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const
+inline bool ServiceCommunicationBase::is_address_in_white_list(const NESocket::SocketAddress & addrClient) const
 {
     return mWhiteList.contains(addrClient.host_address());
 }
 
-inline bool ServiceCommunicationBase::isAddressInBlackList(const NESocket::SocketAddress & addrClient) const
+inline bool ServiceCommunicationBase::is_address_in_black_list(const NESocket::SocketAddress & addrClient) const
 {
     return mBlackList.contains(addrClient.host_address());
 }
 
-inline void ServiceCommunicationBase::addWhiteList(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::add_white_list(const NESocket::SocketAddress & addrClient)
 {
     mBlackList.remove_elem( addrClient.host_address( ) );
     mWhiteList.add_if_unique( addrClient.host_address( ) );
 }
 
-inline void ServiceCommunicationBase::addBlackList(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::add_black_list(const NESocket::SocketAddress & addrClient)
 {
     mWhiteList.remove_elem( addrClient.host_address( ) );
     mBlackList.add_if_unique( addrClient.host_address( ) );
 }
 
-inline void ServiceCommunicationBase::removeWhiteList(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::remove_white_list(const NESocket::SocketAddress & addrClient)
 {
     mWhiteList.remove_elem( addrClient.host_address(), 0);
 }
 
-inline void ServiceCommunicationBase::removeBlackList(const NESocket::SocketAddress & addrClient)
+inline void ServiceCommunicationBase::remove_black_list(const NESocket::SocketAddress & addrClient)
 {
     mBlackList.remove_elem( addrClient.host_address(), 0);
 }
 
-inline const NEService::MapInstances & ServiceCommunicationBase::getInstances() const
+inline const NEService::MapInstances & ServiceCommunicationBase::instances() const
 {
     return mInstanceMap;
 }
 
-inline void ServiceCommunicationBase::waitToComplete( )
+inline void ServiceCommunicationBase::wait_to_complete( )
 {
     completion_wait( NECommon::WAIT_INFINITE );
     shutdown_thread( NECommon::DO_NOT_WAIT );
@@ -567,7 +604,7 @@ inline bool ServiceCommunicationBase::send_command( ServiceEventData::ServiceCom
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData::ServiceCommand cmd
+inline bool ServiceCommunicationBase::send_communication_message( ServiceEventData::ServiceCommand cmd
                                                                 , const RemoteMessage & msg
                                                                 , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
@@ -585,7 +622,7 @@ inline bool ServiceCommunicationBase::send_message( const RemoteMessage & data, 
                                         , eventPrio );
 }
 
-inline DataRateHelper& ServiceCommunicationBase::getDataRateHelper() const
+inline DataRateHelper& ServiceCommunicationBase::data_rate_helper() const
 {
     return const_cast<DataRateHelper &>(mDataRateHelper);
 }
@@ -602,12 +639,12 @@ inline uint32_t ServiceCommunicationBase::query_bytes_received()
 
 inline void ServiceCommunicationBase::enable_data_rate(bool enable)
 {
-    mDataRateHelper.setVerbose(enable);
+    mDataRateHelper.set_verbose(enable);
 }
 
 inline bool ServiceCommunicationBase::is_data_rate_enabled() const
 {
-    return mDataRateHelper.isVerbose();
+    return mDataRateHelper.is_verbose();
 }
 
 inline void ServiceCommunicationBase::disconnect_service( Event::EventPriority eventPrio )

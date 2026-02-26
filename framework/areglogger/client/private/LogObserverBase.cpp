@@ -79,7 +79,7 @@ bool LogObserverBase::restart(const std::string & dbLocation /*= String::EmptySt
     return logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
 }
 
-bool LogObserverBase::isInitialized() const
+bool LogObserverBase::is_initialized() const
 {
     return logObserverIsInitialized();
 }
@@ -89,177 +89,177 @@ bool LogObserverBase::is_connected() const
     return logObserverIsConnected();
 }
 
-bool LogObserverBase::isStated() const
+bool LogObserverBase::is_stated() const
 {
     return logObserverIsStarted();
 }
 
-const NESocket::SocketAddress& LogObserverBase::getLoggerAddress() const
+const NESocket::SocketAddress& LogObserverBase::logger_address() const
 {
     return LoggerClient::instance().address();
 }
 
-const std::string& LogObserverBase::getLoggerIpAddress() const
+const std::string& LogObserverBase::logger_ip_address() const
 {
     return LoggerClient::instance().address().host_address().data();
 }
 
-const std::string& LogObserverBase::getLoggerHostName() const
+const std::string& LogObserverBase::logger_host_name() const
 {
     return LoggerClient::instance().address().host_name().data();
 }
 
-uint16_t LogObserverBase::getLoggerPort() const
+uint16_t LogObserverBase::logger_port() const
 {
     return LoggerClient::instance().address().host_port();
 }
 
-bool LogObserverBase::getConfigLoggerEnabled() const
+bool LogObserverBase::config_logger_enabled() const
 {
     return logObserverConfigLoggerEnabled();
 }
 
-std::string LogObserverBase::getConfigLoggerAddress() const
+std::string LogObserverBase::config_logger_address() const
 {
-    return LoggerClient::instance().getConfigLoggerAddress().data();
+    return LoggerClient::instance().config_logger_address().data();
 }
 
-void LogObserverBase::setConfigLoggerAddress(const std::string& address)
+void LogObserverBase::set_config_logger_address(const std::string& address)
 {
-    LoggerClient::instance().setConfigLoggerConnection(address, NESocket::InvalidPort);
+    LoggerClient::instance().set_config_logger_connection(address, NESocket::InvalidPort);
 }
 
-uint16_t LogObserverBase::getConfigLoggerPort() const
+uint16_t LogObserverBase::config_logger_port() const
 {
-    return LoggerClient::instance().getConfigLoggerPort();
+    return LoggerClient::instance().config_logger_port();
 }
 
-void LogObserverBase::setConfigLoggerPort(uint16_t portNr)
+void LogObserverBase::set_config_logger_port(uint16_t portNr)
 {
-    LoggerClient::instance().setConfigLoggerConnection(String::EmptyString, portNr);
+    LoggerClient::instance().set_config_logger_connection(String::EmptyString, portNr);
 }
 
-void LogObserverBase::setConfigLoggerConnection(const std::string& address, uint16_t portNr)
+void LogObserverBase::set_config_logger_connection(const std::string& address, uint16_t portNr)
 {
-    LoggerClient::instance().setConfigLoggerConnection(address, portNr);
+    LoggerClient::instance().set_config_logger_connection(address, portNr);
 }
 
-std::string LogObserverBase::getConfigLoggerDatabase() const
+std::string LogObserverBase::config_logger_database() const
 {
-    return LoggerClient::instance().getConfigDatabasePath().data();
+    return LoggerClient::instance().config_database_path().data();
 }
 
-void LogObserverBase::setConfigLoggerDatabase(const std::string& dbFilePath)
+void LogObserverBase::set_config_logger_database(const std::string& dbFilePath)
 {
-    LoggerClient::instance().setConfigDatabasePath(dbFilePath, true);
+    LoggerClient::instance().set_config_database_path(dbFilePath, true);
 }
 
-std::string LogObserverBase::getConfigLoggerDatabaseLocation() const
+std::string LogObserverBase::config_logger_database_location() const
 {
-    return LoggerClient::instance().getConfigDatabaseLocation().data();
+    return LoggerClient::instance().config_database_location().data();
 }
 
-void LogObserverBase::setConfigLoggerDatabaseLocation(const std::string& dbLocation)
+void LogObserverBase::set_config_logger_database_location(const std::string& dbLocation)
 {
-    LoggerClient::instance().setConfigDatabaseLocation(dbLocation);
+    LoggerClient::instance().set_config_database_location(dbLocation);
 }
 
-std::string LogObserverBase::getConfigLoggerDatabaseName() const
+std::string LogObserverBase::config_logger_database_name() const
 {
-    return LoggerClient::instance().getConfigDatabaseName().data();
+    return LoggerClient::instance().config_database_name().data();
 }
 
-void LogObserverBase::setConfigLoggerDatabaseName(const std::string& dbName)
+void LogObserverBase::set_config_logger_database_name(const std::string& dbName)
 {
-    LoggerClient::instance().setConfigDatabaseName(dbName);
+    LoggerClient::instance().set_config_database_name(dbName);
 }
 
-std::string LogObserverBase::getActiveDatabasePath() const
+std::string LogObserverBase::active_database_path() const
 {
-    return LoggerClient::instance().getActiveDatabasePath().data();
+    return LoggerClient::instance().active_database_path().data();
 }
 
-std::string LogObserverBase::getInitDatabasePath() const
+std::string LogObserverBase::init_database_path() const
 {
-    return LoggerClient::instance().getInitialDatabasePath().data();
+    return LoggerClient::instance().initial_database_path().data();
 }
 
-bool LogObserverBase::requestInstances()
+bool LogObserverBase::request_instances()
 {
     return logObserverRequestInstances();
 }
 
-bool LogObserverBase::requestScopes(ITEM_ID target /*= NEService::TARGET_ALL*/)
+bool LogObserverBase::request_scopes(ITEM_ID target /*= NEService::TARGET_ALL*/)
 {
     return logObserverRequestScopes(target);
 }
 
-bool LogObserverBase::requestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
+bool LogObserverBase::request_change_scope_prio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
 {
     return logObserverRequestChangeScopePrio(target, scopes, count);
 }
 
-bool LogObserverBase::requestSaveConfig(ITEM_ID target /*= NEService::TARGET_ALL*/)
+bool LogObserverBase::request_save_config(ITEM_ID target /*= NEService::TARGET_ALL*/)
 {
     return logObserverRequestSaveConfig(target);
 }
 
-void LogObserverBase::saveLoggerConfig()
+void LogObserverBase::save_logger_config()
 {
     LoggerClient::instance().save_configuration();
 }
 
-void LogObserverBase::getLogInstanceNames(std::vector<String>& names)
+void LogObserverBase::log_instance_names(std::vector<String>& names)
 {
-    LoggerClient::instance().getLogInstanceNames(names);
+    LoggerClient::instance().log_instance_names(names);
 }
 
-void LogObserverBase::getLogInstances(std::vector<ITEM_ID>& ids)
+void LogObserverBase::log_instances(std::vector<ITEM_ID>& ids)
 {
-    LoggerClient::instance().getLogInstances(ids);
+    LoggerClient::instance().log_instances(ids);
 }
 
-void LogObserverBase::getLogThreadNames(std::vector<String>& names)
+void LogObserverBase::log_thread_names(std::vector<String>& names)
 {
-    LoggerClient::instance().getLogThreadNames(names);
+    LoggerClient::instance().log_thread_names(names);
 }
 
-void LogObserverBase::getLogThreads(std::vector<ITEM_ID>& ids)
+void LogObserverBase::log_threads(std::vector<ITEM_ID>& ids)
 {
-    LoggerClient::instance().getLogThreads(ids);
+    LoggerClient::instance().log_threads(ids);
 }
 
-void LogObserverBase::getPriorityNames(std::vector<String>& names)
+void LogObserverBase::priority_names(std::vector<String>& names)
 {
-    LoggerClient::instance().getPriorityNames(names);
+    LoggerClient::instance().priority_names(names);
 }
 
-void LogObserverBase::getLogInstanceInfos(std::vector< NEService::ConnectedInstance>& infos)
+void LogObserverBase::log_instance_infos(std::vector< NEService::ConnectedInstance>& infos)
 {
-    LoggerClient::instance().getLogInstanceInfos(infos);
+    LoggerClient::instance().log_instance_infos(infos);
 }
 
-void LogObserverBase::getLogInstScopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId)
+void LogObserverBase::log_inst_scopes(std::vector<NELogging::ScopeEntry>& scopes, ITEM_ID instId)
 {
-    LoggerClient::instance().getLogInstScopes(scopes, instId);
+    LoggerClient::instance().log_inst_scopes(scopes, instId);
 }
 
-void LogObserverBase::getLogMessages(std::vector<SharedBuffer>& messages)
+void LogObserverBase::log_messages(std::vector<SharedBuffer>& messages)
 {
-    LoggerClient::instance().getLogMessages(messages);
+    LoggerClient::instance().log_messages(messages);
 }
 
-void LogObserverBase::getLogInstMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= NEService::COOKIE_ANY*/)
+void LogObserverBase::log_inst_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId /*= NEService::COOKIE_ANY*/)
 {
-    LoggerClient::instance().getLogInstMessages(messages, instId);
+    LoggerClient::instance().log_inst_messages(messages, instId);
 }
 
-void LogObserverBase::getLogScopeMessages(std::vector<SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
+void LogObserverBase::log_scope_messages(std::vector<SharedBuffer>& messages, uint32_t scopeId /*= 0*/)
 {
-    LoggerClient::instance().getLogScopeMessages(messages, scopeId);
+    LoggerClient::instance().log_scope_messages(messages, scopeId);
 }
 
-void LogObserverBase::getLogMessages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
+void LogObserverBase::log_messages(std::vector<SharedBuffer>& messages, ITEM_ID instId, uint32_t scopeId)
 {
-    LoggerClient::instance().getLogMessages(messages, instId, scopeId);
+    LoggerClient::instance().log_messages(messages, instId, scopeId);
 }

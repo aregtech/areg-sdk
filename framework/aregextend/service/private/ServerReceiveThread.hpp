@@ -46,10 +46,12 @@ class ServerReceiveThread    : public    DispatcherThread
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes connection, connection servicing and connection handling objects
-     * \param   connectHandler  The instance of server socket connect / disconnect handling interface
-     * \param   remoteService   The instance of remote servicing handler
-     * \param   connection      The instance of server connection object.
+     * \brief   Initializes connection, connection servicing and connection handling objects.
+     *
+     * \param   connectHandler      The instance of server socket connect / disconnect handling
+     *                              interface
+     * \param   remoteService       The instance of remote servicing handler
+     * \param   connection          The instance of server connection object.
      **/
     ServerReceiveThread( ConnectionHandler & connectHandler, RemoteMessageHandler& remoteService, ServerConnection & connection );
     /**
@@ -62,20 +64,22 @@ public:
 /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulative value of received data size and rests the existing value to zero.
-     *          The operations are atomic. The value can be used to display data rate, for example.
+     * \brief   Returns accumulative value of received data size and resets the existing value to
+     *          zero. The operations are atomic. The value can be used to display data rate, for
+     *          example.
      **/
     inline uint32_t extract_data_receive() const;
 
     /**
-     * \brief   Call to enable or disable the received data calculation.
-     *          It as well resets the existing calculated data.
-     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     * \brief   Call to enable or disable the received data calculation. It also resets the existing
+     *          calculated data.
+     *
+     * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
     inline void set_data_rate_enabled(bool enable);
 
     /**
-     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     * \brief
      **/
     inline bool is_data_rate_enabled() const;
 
@@ -85,11 +89,10 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Triggered when dispatcher starts running. In this function runs main dispatching
+     *          loop. Events are picked and dispatched here. Override if logic should be changed.
+     *
+     * \return  Returns true if Exit Event is signaled.
      **/
     bool run_dispatcher() override;
 
@@ -122,6 +125,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ServerReceiveThread() = delete;
     AREG_NOCOPY_NOMOVE( ServerReceiveThread );
 };

@@ -61,13 +61,14 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes the object, sets threads that the rate can be queried.
-     *          If passed 'verbose' parameter is 'false' on each query it returns zero.
-     *          Otherwise, returns the actual value.
-     * \param   sendThread      The thread that can be queried the data size sent.
-     * \param   receiveThread   The threat that can be queried the data size received.
-     * \param   verbose         The flag, indicating whether the actual size should be
-     *                          computed or should return zero.
+     * \brief   Initializes the object, sets threads that the rate can be queried. If passed
+     *          'verbose' parameter is 'false' on each query it returns zero. Otherwise, returns the
+     *          actual value.
+     *
+     * \param   sendThread          The thread that can be queried the data size sent.
+     * \param   receiveThread       The threat that can be queried the data size received.
+     * \param   verbose             The flag, indicating whether the actual size should be computed
+     *                              or should return zero.
      **/
     DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose);
 
@@ -79,42 +80,50 @@ public:
 public:
 
     /**
-     * \brief   Sets the verbose state of the helper class.
+     * \brief
+     *
      * \param   verbose     The verbose flag to set.
      **/
-    void setVerbose(bool verbose);
+    void set_verbose(bool verbose);
 
     /**
-     * \brief   Returns the verbose flag, indicating whether the data send / receive computation is enabled.
+     * \brief   Returns the verbose flag, indicating whether the data send / receive computation is
+     *          enabled.
      **/
-    bool isVerbose() const;
+    bool is_verbose() const;
 
     /**
-     * \brief   Return the size in bytes of data sent since last query.
-     *          If verbose flag is false, returns zero.
+     * \brief   Return the size in bytes of data sent since last query. If verbose flag is false,
+     *          returns zero.
      **/
     inline uint32_t query_bytes_sent() const;
 
     /**
-     * \brief   Return the size in bytes of data received since last query.
-     *          If verbose flag is false, returns zero.
+     * \brief   Return the size in bytes of data received since last query. If verbose flag is
+     *          false, returns zero.
      **/
     inline uint32_t query_bytes_received() const;
 
     /**
-     * \brief   Return the size of data sent since last query with literal.
-     *          If verbose flag is false, returns zero.
+     * \brief   Return the size of data sent since last query with literal. If verbose flag is
+     *          false, returns zero.
      **/
-    inline DataRate queryBytesSentWithLiterals() const;
+    inline DataRate query_bytes_sent_with_literals() const;
 
     /**
-     * \brief   Return the size of data received since last query with literal.
-     *          If verbose flag is false, returns zero.
+     * \brief   Return the size of data received since last query with literal. If verbose flag is
+     *          false, returns zero.
      **/
-    inline DataRate queryBytesReceivedWithLiterals() const;
+    inline DataRate query_bytes_received_with_literals() const;
 
     //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
-    static DataRate convertDataRateLiterals(uint32_t sizeBytes);
+    /**
+     * \brief   Converts byte size to a formatted DataRate with appropriate units.
+     *
+     * \param   sizeBytes       The size in bytes to convert.
+     * \return  Returns a DataRate object with the converted value and appropriate unit.
+     **/
+    static DataRate convert_data_rate_literals(uint32_t sizeBytes);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
@@ -127,6 +136,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     DataRateHelper() = delete;
     AREG_NOCOPY_NOMOVE(DataRateHelper);
 };
@@ -145,14 +157,14 @@ inline uint32_t DataRateHelper::query_bytes_received() const
     return mReceiveThread.extract_data_receive();
 }
 
-inline DataRateHelper::DataRate DataRateHelper::queryBytesSentWithLiterals() const
+inline DataRateHelper::DataRate DataRateHelper::query_bytes_sent_with_literals() const
 {
-    return DataRateHelper::DataRateHelper::convertDataRateLiterals(query_bytes_sent());
+    return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_sent());
 }
 
-inline DataRateHelper::DataRate DataRateHelper::queryBytesReceivedWithLiterals() const
+inline DataRateHelper::DataRate DataRateHelper::query_bytes_received_with_literals() const
 {
-    return DataRateHelper::DataRateHelper::convertDataRateLiterals(query_bytes_received());
+    return DataRateHelper::DataRateHelper::convert_data_rate_literals(query_bytes_received());
 }
 
 #endif  // AREG_AREGEXTEND_SERVICE_DATARATEHELPER_HPP

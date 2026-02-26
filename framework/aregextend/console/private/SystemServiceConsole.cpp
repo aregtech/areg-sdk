@@ -41,21 +41,21 @@ void SystemServiceConsole::startup_service_interface( Component & holder )
     StubBase::startup_service_interface( holder );
 
     Console & console = Console::instance( );
-    console.lockConsole( );
+    console.lock_console( );
 
-    if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
+    if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
     {
 
-        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.output_msg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.output_msg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
     }
 
     mTimer.start_timer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
 
-    console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
-    console.enableConsoleInput( true );
-    console.refreshScreen( );
-    console.unlockConsole( );
+    console.output_txt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+    console.enable_console_input( true );
+    console.refresh_screen( );
+    console.unlock_console( );
 }
 
 void SystemServiceConsole::shutdown_service_interface( Component & holder )
@@ -73,7 +73,7 @@ void SystemServiceConsole::process_timer(Timer & /*timer*/)
     ASSERT( &timer == &mTimer );
     if ( mTimer.is_active( ) )
     {
-        _outputDataRate( );
+        _output_data_rate( );
     }
 }
 
@@ -96,21 +96,21 @@ void SystemServiceConsole::process_attribute_event( ServiceRequestEvent & /* eve
 {
 }
 
-inline void SystemServiceConsole::_outputDataRate()
+inline void SystemServiceConsole::_output_data_rate()
 {
     Console& console = Console::instance();
-    console.lockConsole( );
-    if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
+    console.lock_console( );
+    if ( (mDataRateHelper != nullptr) && mDataRateHelper->is_verbose())
     {
-        DataRateHelper::DataRate rateSend{ mDataRateHelper->queryBytesSentWithLiterals() };
-        DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
+        DataRateHelper::DataRate rateSend{ mDataRateHelper->query_bytes_sent_with_literals() };
+        DataRateHelper::DataRate rateRecv{ mDataRateHelper->query_bytes_received_with_literals() };
 
-        console.saveCursorPosition( );
-        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
-        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
-        console.restoreCursorPosition( );
-        console.refreshScreen( );
+        console.save_cursor_position( );
+        console.output_msg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
+        console.output_msg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
+        console.restore_cursor_position( );
+        console.refresh_screen( );
     }
 
-    console.unlockConsole( );
+    console.unlock_console( );
 }

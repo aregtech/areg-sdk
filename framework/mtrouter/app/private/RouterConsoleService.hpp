@@ -25,7 +25,7 @@
 // RouterConsoleService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A service to output statistics..
+ * \brief   Console service that outputs router statistics.
  **/
 class RouterConsoleService  : public    SystemServiceConsole
 {
@@ -39,9 +39,10 @@ public:
 public:
 
     /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The instance of the component entry that contains the component information.
-     * \param   owner   The instance of component owner thread.
+     * \brief   Initializes the component with entry information and owner thread.
+     *
+     * \param   entry       The component entry containing component information.
+     * \param   owner       The component owner thread.
      **/
     RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
@@ -54,6 +55,9 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     RouterConsoleService() = delete;
     AREG_NOCOPY_NOMOVE( RouterConsoleService );
 };

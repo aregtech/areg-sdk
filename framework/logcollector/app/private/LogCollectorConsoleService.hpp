@@ -25,7 +25,8 @@
 // LogCollectorConsoleService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A service to output statistics..
+ * \brief   Service component that outputs statistics and provides console interaction for the
+ *          LogCollector application.
  **/
 class LogCollectorConsoleService  : public SystemServiceConsole
 {
@@ -39,10 +40,10 @@ public:
 public:
 
     /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owner thread.
-     * \param   data    The optional component data set in system. Can be empty / no data.
+     * \brief   Instantiates the component with registry entry and owner thread.
+     *
+     * \param   entry       The registry entry that describes the component.
+     * \param   owner       The component owner thread.
      **/
     LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
@@ -55,6 +56,9 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     LogCollectorConsoleService() = delete;
     AREG_NOCOPY_NOMOVE( LogCollectorConsoleService );
 };

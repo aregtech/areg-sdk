@@ -32,7 +32,7 @@ using ListServiceProxiesBase = LinkedList<ServiceProxy>;
 // ListServiceProxies class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The list of remote service proxies registered in network.
+ * \brief   Container for remote service proxies registered in the network.
  **/
 class ListServiceProxies  : public ListServiceProxiesBase
 {
@@ -50,19 +50,21 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor. Creates empty proxy list
+     * \brief
      **/
     ListServiceProxies() = default;
 
     /**
-     * \brief   Copies the list of proxies from the given source.
-     * \param   source  The source of proxy list to copy
+     * \brief   Copy constructor.
+     *
+     * \param   source      The source proxy list to copy.
      **/
     ListServiceProxies( const ListServiceProxies & source ) = default;
 
     /**
-     * \brief   Moves the list of proxies from the given source.
-     * \param   source  The source of proxy list to move.
+     * \brief   Move constructor.
+     *
+     * \param   source      The source proxy list to move.
      **/
     ListServiceProxies( ListServiceProxies && source ) noexcept = default;
 
@@ -76,105 +78,98 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Empties existing list and copies all entries from given source.
-     * \param   source  The source of proxy list to copy
+     * \brief   Copy assignment operator.
+     *
+     * \param   source      The source proxy list to copy.
      **/
     ListServiceProxies & operator = ( const ListServiceProxies & source ) = default;
 
     /**
-     * \brief   Empties existing list and moves all entries from given source.
-     * \param   source  The source of proxy list to move.
+     * \brief   Move assignment operator.
+     *
+     * \param   source      The source proxy list to move.
      **/
     ListServiceProxies & operator = ( ListServiceProxies && source ) noexcept = default;
 
     /**
-     * \brief   Returns true if specified proxy is already registered in the list.
-     * \param   addrProxy   The address of proxy service to check.
+     * \brief   Returns true if the specified proxy is registered in the list.
+     *
+     * \param   addrProxy       The proxy address to check.
      **/
-    inline bool isServiceRegistered( const ProxyAddress & addrProxy ) const;
+    inline bool is_service_registered( const ProxyAddress & addrProxy ) const;
 
     /**
-     * \brief   Returns existing service proxy entry. If specified proxy address
-     *          is not registered, returns invalid entry, which proxy address is invalid.
+     * \brief   Returns the service proxy entry. Returns an invalid entry if the address is not
+     *          registered.
+     *
+     * \param   addrProxy       The proxy address to look up.
      **/
     const ServiceProxy & service( const ProxyAddress & addrProxy ) const;
     
     /**
-     * \brief   Returns existing service proxy entry. Returns nullptr, if specified proxy address
-     *          is not registered.
+     * \brief   Returns pointer to the service proxy entry, or nullptr if not registered.
+     *
+     * \param   addrProxy       The proxy address to look up.
      **/
     ServiceProxy * service( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Registers existing proxy service entry or creates new if
-     *          list does not contain service with specified proxy address.
-     *          If proxy address is not valid, no entry is created and returned
-     *          object is invalid proxy service object.
-     *          The call of method assumes that stub service is not available yet,
-     *          and if proxy address is valid, it set service connection status
-     *          to pending state.
-     * \param   addrProxy   The entry of service with proxy address to search.
-     * \return  If specified proxy address is valid, returns either existing or 
-     *          new proxy service entry. Otherwise, returns invalid service object.
+     * \brief   Registers or retrieves a service proxy entry. Sets connection state to pending if
+     *          the address is valid.
+     *
+     * \param   addrProxy       The proxy address to register or retrieve.
+     * \return  Returns the registered or existing proxy service entry, or an invalid entry if the
+     *          address is invalid.
      **/
-    ServiceProxy & registerService( const ProxyAddress & addrProxy );
+    ServiceProxy & register_service( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Registers existing proxy service entry or creates new if
-     *          list does not contain service with specified proxy address.
-     *          If proxy address is not valid, no entry is created and returned
-     *          object is invalid proxy service object.
-     *          The call of method assumes that stub service is available if
-     *          stub service is valid and state is connected. If stub service is
-     *          connected, it will set proxy service state to connected state.
-     *          Otherwise, the connection status is pending.
-     * \param   addrProxy   The entry of service with proxy address to search.
-     * \return  If specified proxy address is valid, returns either existing or 
-     *          new proxy service entry. Otherwise, returns invalid service object.
+     * \brief   Registers or retrieves a service proxy entry with stub service availability. Sets
+     *          connection state to connected if stub is available and connected.
+     *
+     * \param   addrProxy       The proxy address to register or retrieve.
+     * \param   stubService     The stub service to associate with the proxy.
+     * \return  Returns the registered or existing proxy service entry, or an invalid entry if the
+     *          address is invalid.
      **/
-    ServiceProxy & registerService( const ProxyAddress & addrProxy, const ServiceStub & stubService );
+    ServiceProxy & register_service( const ProxyAddress & addrProxy, const ServiceStub & stubService );
 
     /**
-     * \brief   Unregisters and removes entry of proxy service with specified
-     *          proxy address. If no entry exists, the return service is not valid.
-     * \param   addrProxy   The address of proxy to unregister.
-     * \return  Returns address of unregistered proxy. If proxy was not found
-     *          or proxy address was not found, returns invalid proxy service.
+     * \brief   Unregisters and removes the proxy service entry. Returns an invalid entry if not
+     *          found.
+     *
+     * \param   addrProxy       The proxy address to unregister.
+     * \return  Returns the unregistered proxy service, or an invalid entry if not found.
      **/
-    ServiceProxy unregisterService( const ProxyAddress & addrProxy );
+    ServiceProxy unregister_service( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Sets all registered proxy services in connected state
-     *          and returns number of entries modified in list. If list contains
-     *          no entry, the return value is zero.
-     *          The target address of all proxy service entries will be
-     *          modified and the state of registered services will be connected.
-     * \param   addrStub    Address of stub service, which is available.
-     * \return  If list of proxy services is not empty, the return value is
-     *          not zero. Otherwise, it returns zero.
+     * \brief   Sets all registered proxy services to connected state and returns the number of
+     *          entries modified.
+     *
+     * \param   addrStub    The address of the stub service that is now available.
+     * \return  Returns the number of proxy entries modified; zero if the list is empty.
      **/
-    int32_t stubServiceAvailable( const StubAddress & addrStub );
+    int32_t stub_service_available( const StubAddress & addrStub );
 
     /**
-     * \brief   Sets all registered proxy service in pending state
-     *          and returns number of entries modified in list.
-     *          The target address of all registered proxies will
-     *          be reset and the state will be pending.
-     * \return  If list of proxy services is not empty, the return value is
-     *          not zero. Otherwise, it returns zero.
+     * \brief   Sets all registered proxy services to pending state and returns the number of
+     *          entries modified.
+     *
+     * \return  Returns the number of proxy entries modified; zero if the list is empty.
      **/
-    int32_t stubServiceUnavailable();
+    int32_t stub_service_unavailable();
 
     /**
-     * \brief   Search in the list and collects all proxies, which cookie is equal
-     *          to specified cookie value and adds to out_listProxies list.
-     * \param   out_listProxies The list of proxy service entries, which found in list.
-     *                          The existing entries in the list will not be removed.
-     * \param   cookie          The cookie value to lookup.
-     * \return  Returns number of entries found in the list. If no entry found, 
-     *          return value is zero.
+     * \brief   Searches the list and collects all proxies matching the cookie value into
+     *          out_listProxies.
+     *
+     * \param[out] out_listProxies     Output list that receives the matching proxy service entries.
+     *                                 Existing entries are not removed.
+     * \param   cookie              The cookie value to match.
+     * \return  Returns the number of entries found; zero if no matches.
      **/
-    int32_t getSpecificService( ListServiceProxies & out_listProxies, const ITEM_ID & cookie );
+    int32_t specific_service( ListServiceProxies & out_listProxies, const ITEM_ID & cookie );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -182,21 +177,21 @@ public:
 private:
 
     /**
-     * \brief   Search in list the service proxy entry, which proxy is equal to 
-     *          given proxy address.
-     * \param   addrProxy   Address of proxy to search
-     * \return  Returns valid position value if entry found. Otherwise, returns nullptr.
+     * \brief   Searches the list for a service proxy matching the address.
+     *
+     * \param   addrProxy       The proxy address to search for.
+     * \return  Returns the position of the found entry, or nullptr if not found.
      **/
-    LISTPOS _findProxy( const ProxyAddress & addrProxy ) const;
+    LISTPOS _find_proxy( const ProxyAddress & addrProxy ) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ListServiceProxies::isServiceRegistered( const ProxyAddress & addrProxy ) const
+inline bool ListServiceProxies::is_service_registered( const ProxyAddress & addrProxy ) const
 {
-    return ListServiceProxiesBase::is_valid_position(_findProxy(addrProxy));
+    return ListServiceProxiesBase::is_valid_position(_find_proxy(addrProxy));
 }
 
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_LISTSERVICEPROXIES_HPP

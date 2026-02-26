@@ -34,7 +34,7 @@ class ServerConnection;
 // ServerSendThread class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The IPC message sender thread
+ * \brief   The IPC message sender thread.
  **/
 class ServerSendThread  : public    DispatcherThread
                         , public    SendMessageEventConsumer
@@ -45,8 +45,9 @@ class ServerSendThread  : public    DispatcherThread
 public:
     /**
      * \brief   Initializes connection servicing handler and server connection objects.
-     * \param   remoteService   The instance of remote servicing handle to set.
-     * \param   connection      The instance of server socket connection object.
+     *
+     * \param   remoteService       The instance of remote servicing handle to set.
+     * \param   connection          The instance of server socket connection object.
      **/
     ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection );
 
@@ -60,20 +61,21 @@ public:
 /************************************************************************/
 public:
     /**
-     * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
+     * \brief   Returns accumulative value of sent data size and resets the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
     inline uint32_t extract_data_send() const;
 
     /**
-     * \brief   Call to enable or disable the received data calculation.
-     *          It as well resets the existing calculated data.
-     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     * \brief   Call to enable or disable the received data calculation. It also resets the existing
+     *          calculated data.
+     *
+     * \param   enable      Flag, indicating whether data calculation is enabled or not.
      **/
     inline void set_data_rate_enabled(bool enable);
 
     /**
-     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     * \brief
      **/
     inline bool is_data_rate_enabled() const;
 
@@ -83,9 +85,10 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   is_ready     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events. Override if
+     *          need to make event dispatching preparation job.
+     *
+     * \param   is_ready    The flag to indicate whether the dispatcher is ready for events.
      **/
     void ready_for_events( bool is_ready ) override;
 
@@ -94,13 +97,12 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Posts event and delivers to its target. Since the Dispatcher Thread is a Base object
+     *          for Worker and Component threads, it does nothing and only destroys event object
+     *          without processing. Override this method or use Worker / Component thread.
+     *
+     * \param   eventElem       Event object to post
+     * \return  In this class it always returns true.
      **/
     bool post_event( Event & eventElem ) override;
 
@@ -109,11 +111,11 @@ private:
 // SendMessageEventConsumer class overrides.
 /************************************************************************/
     /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
+     * \brief   Automatically triggered when event is dispatched by registered worker / component
+     *          thread.
+     *
+     * \param   data    The data object passed in event. It should have at least default constructor
+     *                  and assigning operator. This object is not used for IPC.
      **/
     void process_event( const SendMessageEventData & data ) override;
 
@@ -142,6 +144,9 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief
+     **/
     ServerSendThread() = delete;
     AREG_NOCOPY_NOMOVE( ServerSendThread );
 };

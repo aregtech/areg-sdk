@@ -38,15 +38,15 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId, const NESocket::So
 {
 }
 
-void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
+void ServerConnection::reject_connection(SocketAccepted & clientConnection)
 {
-    const ITEM_ID & cookie = cookie(clientConnection.handle());
-    RemoteMessage msgReject = NERemoteService::create_reject_notify(mChannelId, cookie);
+    const ITEM_ID & cookie_id = cookie(clientConnection.handle());
+    RemoteMessage msgReject = NERemoteService::create_reject_notify(mChannelId, cookie_id);
     send_message(msgReject, clientConnection);
     close_connection(clientConnection);
 }
 
-void ServerConnection::closeAllConnections()
+void ServerConnection::close_all_connections()
 {
     Lock lock( mLock );
     RemoteMessage msgByeClient;

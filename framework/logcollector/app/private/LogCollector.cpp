@@ -124,20 +124,20 @@ LogCollector & LogCollector::instance()
 }
 
 #if AREG_EXTENDED
-void LogCollector::printStatus(const String& status)
+void LogCollector::print_status(const String& status)
 {
 
     if (LogCollector::instance().getCurrentOption() == NESystemService::ServiceOption::CMD_Console)
     {
         Console& console{ Console::instance() };
         Console::Coord curPos{ console.getCursorCurPosition() };
-        LogCollector::_outputInfo(status);
+        LogCollector::_output_info(status);
         console.setCursorCurPosition(curPos);
     }
 
 }
 #else   // AREG_EXTENDED
-void LogCollector::printStatus(const String& /* status */)
+void LogCollector::print_status(const String& /* status */)
 {
 }
 #endif  // AREG_EXTENDED
@@ -148,26 +148,26 @@ LogCollector::LogCollector()
 {
 }
 
-Console::CallBack LogCollector::getOptionCheckCallback() const
+Console::CallBack LogCollector::option_check_callback() const
 {
-    return Console::CallBack( LogCollector::_checkCommand );
+    return Console::CallBack( LogCollector::_check_command );
 }
 
-void LogCollector::runConsoleInputExtended()
+void LogCollector::run_console_input_extended()
 {
 #if AREG_EXTENDED
 
     Console & console = Console::instance( );
-    LogCollector::_outputTitle( );
+    LogCollector::_output_title( );
 
     if (getDataRateHelper().isVerbose())
     {
         // Disable to block user input until Console Service is up and running.
         console.enableConsoleInput( false );
-        startConsoleService( );
+        start_console_service( );
         // Blocked until user input
-        console.waitForInput( getOptionCheckCallback( ) );
-        stopConsoleService( );
+        console.waitForInput( option_check_callback( ) );
+        stop_console_service( );
     }
     else
     {
@@ -175,7 +175,7 @@ void LogCollector::runConsoleInputExtended()
         // Set local callback, output message and wait for user input.
         console.enableConsoleInput( true );
         console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
-        console.waitForInput( getOptionCheckCallback( ) );
+        console.waitForInput( option_check_callback( ) );
     }
 
     console.moveCursorOneLineDown( );
@@ -185,13 +185,13 @@ void LogCollector::runConsoleInputExtended()
 #endif   // !AREG_EXTENDED
 }
 
-void LogCollector::runConsoleInputSimple()
+void LogCollector::run_console_input_simple()
 {
     constexpr uint32_t bufSize{ 512 };
     char cmd[bufSize]{ 0 };
     bool quit{ false };
 
-    LogCollector::_outputTitle( );
+    LogCollector::_output_title( );
 
     do
     {
@@ -199,17 +199,17 @@ void LogCollector::runConsoleInputSimple()
         if (inputConsoleData(cmd, bufSize) == false)
             continue;
 
-        quit = LogCollector::_checkCommand( cmd );
+        quit = LogCollector::_check_command( cmd );
 
     } while ( quit == false );
 }
 
-void LogCollector::runService()
+void LogCollector::run_service()
 {
     Application::wait_app_quit(NECommon::WAIT_INFINITE);
 }
 
-std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::getAppOptions() const
+std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::app_options() const
 {
     static  std::pair< const OptionParser::OptionSetup*, int32_t> _opts( std::pair< const OptionParser::OptionSetup*
                                                                     , int32_t>(LogCollector::ValidOptions
@@ -217,32 +217,32 @@ std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::getAppOptions
     return _opts;
 }
 
-wchar_t* LogCollector::getServiceNameW() const
+wchar_t* LogCollector::service_name_w() const
 {
     return NELogCollectorSettings::SERVICE_NAME_WIDE;
 }
 
-char* LogCollector::getServiceNameA() const
+char* LogCollector::service_name_a() const
 {
     return NELogCollectorSettings::SERVICE_NAME_ASCII;
 }
 
-wchar_t* LogCollector::getServiceDisplayNameW() const
+wchar_t* LogCollector::service_display_name_w() const
 {
     return NELogCollectorSettings::SERVICE_DISPLAY_NAME_WIDE;
 }
 
-char* LogCollector::getServiceDisplayNameA() const
+char* LogCollector::service_display_name_a() const
 {
     return NELogCollectorSettings::SERVICE_DISPLAY_NAME_ASCII;
 }
 
-wchar_t* LogCollector::getServiceDescriptionW() const
+wchar_t* LogCollector::service_description_w() const
 {
     return NELogCollectorSettings::SERVICE_DESCRIBE_WIDE;
 }
 
-char* LogCollector::getServiceDescriptionA() const
+char* LogCollector::service_description_a() const
 {
     return NELogCollectorSettings::SERVICE_DESCRIBE_ASCII;
 }
@@ -259,15 +259,15 @@ NERemoteService::ConnectionType LogCollector::connection_type() const
 
 void LogCollector::post_read_configuration(ConfigManager& config)
 {
-    _enableLocalLogs(config, false);
+    _enable_local_logs(config, false);
 }
 
 void LogCollector::on_setup_configuration(const NEPersistence::ListProperties& /* listReadonly */, const NEPersistence::ListProperties& /* listWritable */, ConfigManager& config)
 {
-    _enableLocalLogs(config, false);
+    _enable_local_logs(config, false);
 }
 
-void LogCollector::printHelp( bool /* isCmdLine */ )
+void LogCollector::print_help( bool /* isCmdLine */ )
 {
 #if     AREG_EXTENDED
 
@@ -294,23 +294,23 @@ void LogCollector::printHelp( bool /* isCmdLine */ )
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::startConsoleService()
+void LogCollector::start_console_service()
 {
     Application::load_model( _modelName );
 }
 
-void LogCollector::stopConsoleService()
+void LogCollector::stop_console_service()
 {
     Application::unload_model( _modelName );
 }
 
-bool LogCollector::_checkCommand(const String& cmd)
+bool LogCollector::_check_command(const String& cmd)
 {
     OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
     bool quit{ false };
     bool hasError {false};
 
-    LogCollector::_cleanHelp();
+    LogCollector::_clean_help();
 
     if ( parser.parseOptionLine( cmd ) )
     {
@@ -322,32 +322,32 @@ bool LogCollector::_checkCommand(const String& cmd)
             switch ( static_cast<LoggerOption>(opt.inCommand) )
             {
             case LoggerOption::CMD_LogPause:
-                LogCollector::_outputInfo( "Pausing log collector ..." );
+                LogCollector::_output_info( "Pausing log collector ..." );
                 logger.getCommunicationController().disconnect_service_host( );
                 logger.mServiceServer.waitToComplete( );
-                LogCollector::_outputInfo( "Log collector is paused ..." );
+                LogCollector::_output_info( "Log collector is paused ..." );
                 break;
 
             case LoggerOption::CMD_LogRestart:
-                LogCollector::_outputInfo( "Restarting log collector ..." );
+                LogCollector::_output_info( "Restarting log collector ..." );
                 logger.getCommunicationController( ).connect_service_host( );
-                LogCollector::_outputInfo( "Log collector is restarted ..." );
+                LogCollector::_output_info( "Log collector is restarted ..." );
                 break;
 
             case LoggerOption::CMD_LogInstances:
-                LogCollector::_outputInstances( logger.getConnetedInstances() );
+                LogCollector::_output_instances( logger.connected_instances() );
                 break;
 
             case LoggerOption::CMD_LogVerbose:
-                LogCollector::_setVerboseMode( true );
+                LogCollector::_set_verbose_mode( true );
                 break;
 
             case LoggerOption::CMD_LogSilent:
-                LogCollector::_setVerboseMode( false );
+                LogCollector::_set_verbose_mode( false );
                 break;
 
             case LoggerOption::CMD_LogPrintHelp:
-                logger.printHelp( false );
+                logger.print_help( false );
                 break;
 
             case LoggerOption::CMD_LogQuit:
@@ -359,21 +359,21 @@ bool LogCollector::_checkCommand(const String& cmd)
             case LoggerOption::CMD_LogUninstall:      // fall through
             case LoggerOption::CMD_LogService:        // fall through
             case LoggerOption::CMD_LogLoad:
-                LogCollector::_outputInfo("This command should be used in command line ...");
+                LogCollector::_output_info("This command should be used in command line ...");
                 break;
 
             case LoggerOption::CMD_LogUpdateScope:
-                LogCollector::_processUpdateScopes(opt);
+                LogCollector::_process_update_scopes(opt);
                 break;
 
             case LoggerOption::CMD_LogQueryScopes:
-                LogCollector::_processQueryScopes(opt);
+                LogCollector::_process_query_scopes(opt);
                 break;
 
             case LoggerOption::CMD_LogSaveLogs:       // fall through
             case LoggerOption::CMD_LogSaveConfig:     // fall through
             case LoggerOption::CMD_LogSaveLogsStop:
-                LogCollector::_outputInfo("The feature is not implemented yet!!!");
+                LogCollector::_output_info("The feature is not implemented yet!!!");
                 break;
 
             case LoggerOption::CMD_LogUndefined:
@@ -430,7 +430,7 @@ bool LogCollector::_checkCommand(const String& cmd)
     return quit;
 }
 
-void LogCollector::_outputTitle()
+void LogCollector::_output_title()
 {
 #if AREG_EXTENDED
 
@@ -448,7 +448,7 @@ void LogCollector::_outputTitle()
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::_outputInfo( const String & info )
+void LogCollector::_output_info( const String & info )
 {
 #if AREG_EXTENDED
 
@@ -469,7 +469,7 @@ void LogCollector::_outputInfo( const String & info )
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::_outputInstances( const NEService::MapInstances & instances )
+void LogCollector::_output_instances( const NEService::MapInstances & instances )
 {
     static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
@@ -541,7 +541,7 @@ void LogCollector::_outputInstances( const NEService::MapInstances & instances )
 }
 
 #if AREG_EXTENDED
-void LogCollector::_setVerboseMode( bool makeVerbose )
+void LogCollector::_set_verbose_mode( bool makeVerbose )
 {
 
     static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
@@ -578,7 +578,7 @@ void LogCollector::_setVerboseMode( bool makeVerbose )
 
 #else   // !AREG_EXTENDED
 
-void LogCollector::_setVerboseMode( bool /* makeVerbose */ )
+void LogCollector::_set_verbose_mode( bool /* makeVerbose */ )
 {
     static constexpr std::string_view _unsupported{"This option is available only with extended features"};
     printf( "%s\n", _unsupported.data( ) );
@@ -586,7 +586,7 @@ void LogCollector::_setVerboseMode( bool /* makeVerbose */ )
 
 #endif  // AREG_EXTENDED
 
-void LogCollector::_cleanHelp()
+void LogCollector::_clean_help()
 {
 #if     AREG_EXTENDED
 
@@ -607,18 +607,18 @@ void LogCollector::_cleanHelp()
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::_processUpdateScopes(const OptionParser::InputOption& optScope)
+void LogCollector::_process_update_scopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::instance() };
     ArrayList<RemoteMessage> msgList;
-    _createScopeMessage(optScope, msgList);
+    _create_scope_message(optScope, msgList);
     for (uint32_t i = 0; i < msgList.size(); ++ i)
     {
-        logger.mServiceServer.dispatchAndForwardLoggerMessage(msgList[i]);
+        logger.mServiceServer.dispatch_and_forward_logger_message(msgList[i]);
     }
 }
 
-void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope)
+void LogCollector::_process_query_scopes(const OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::instance() };
     ArrayList<ITEM_ID> listTargets;
@@ -645,11 +645,11 @@ void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope
 
     for (const auto& target : listTargets.data())
     {
-        logger.mServiceServer.dispatchAndForwardLoggerMessage(NELogging::message_query_scopes(NEService::COOKIE_LOGGER, target));
+        logger.mServiceServer.dispatch_and_forward_logger_message(NELogging::message_query_scopes(NEService::COOKIE_LOGGER, target));
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage>& msgList)
+void LogCollector::_create_scope_message(const OptionParser::InputOption& optScope, ArrayList<RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
@@ -660,7 +660,7 @@ void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope
     {
         if (entry == NEPersistence::SYNTAX_END_COMMAND)
         {
-            RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
+            RemoteMessage msg{ LogCollector::_create_scope_update_message(scope) };
             scope.clear();
             if (msg.is_valid() == false)
             {
@@ -680,7 +680,7 @@ void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope
 
     if (scope.is_empty() == false)
     {
-        RemoteMessage msg{ LogCollector::_createScopeUpdateMessage(scope) };
+        RemoteMessage msg{ LogCollector::_create_scope_update_message(scope) };
         if (msg.is_valid() == false)
         {
             msgList.clear();
@@ -692,7 +692,7 @@ void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope
     }
 }
 
-String LogCollector::_normalizeScopeProperty(const String & scope)
+String LogCollector::_normalize_scope_property(const String & scope)
 {
     const NEPersistence::ConfigKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::ConfigEntry::LogScope)] };
     String result;
@@ -728,20 +728,20 @@ String LogCollector::_normalizeScopeProperty(const String & scope)
                 result.insert_at(prop, NEString::START_POS);
             }
 
-            result = _normalizeScopeProperty(result);
+            result = _normalize_scope_property(result);
         }
     }
 
     return result;
 }
 
-RemoteMessage LogCollector::_createScopeUpdateMessage(const String& scope)
+RemoteMessage LogCollector::_create_scope_update_message(const String& scope)
 {
     RemoteMessage result;
 
     if (scope.is_empty() == false)
     {
-        Property prop(LogCollector::_normalizeScopeProperty(scope));
+        Property prop(LogCollector::_normalize_scope_property(scope));
         if (prop.is_valid() && prop.type() == NEPersistence::ConfigEntry::LogScope)
         {
             const PropertyKey& key{ prop.key() };
@@ -759,7 +759,7 @@ RemoteMessage LogCollector::_createScopeUpdateMessage(const String& scope)
     return result;
 }
 
-inline void LogCollector::_enableLocalLogs(ConfigManager& config, bool enable)
+inline void LogCollector::_enable_local_logs(ConfigManager& config, bool enable)
 {
     constexpr NEPersistence::ConfigEntry prioConfKey{ NEPersistence::ConfigEntry::LogScope };
     const NEPersistence::ConfigKey& keyPrio{ NEPersistence::log_scope() };

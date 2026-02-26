@@ -39,48 +39,55 @@ class ServiceStub
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Default constructor, creates invalid Stub service object
+     * \brief   Default constructor, creates invalid Stub service object.
      **/
     ServiceStub();
 
     /**
-     * \brief   Initializes Stub address of remote service
+     * \brief   Initializes Stub address of remote service.
+     *
      * \param   addrStub    The Stub address to set.
      **/
     ServiceStub( const StubAddress & addrStub );
 
     /**
-     * \brief   Initializes Stub address of remote service
+     * \brief   Initializes Stub address of remote service.
+     *
      * \param   addrStub    The Stub address to set.
      **/
     ServiceStub( StubAddress && addrStub ) noexcept;
 
     /**
      * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
-     * \param   addrProxy   The Proxy address to extract information.
+     *
+     * \param   addrProxy       The Proxy address to extract information.
      **/
     explicit ServiceStub( const ProxyAddress & addrProxy );
 
     /**
      * \brief   Copies Stub service data from given source.
+     *
      * \param   stubService     The source of Stub service object to copy data.
      **/
     ServiceStub( const ServiceStub & stubService );
 
     /**
-     * \brief   Copies Stub service data from given source.
-     * \param   stubService     The source of Stub service object to copy data.
+     * \brief   Moves Stub service data from given source.
+     *
+     * \param   stubService     The source of Stub service object to move data.
      **/
     ServiceStub( ServiceStub && stubService ) noexcept;
 
     /**
      * \brief   Initializes Service stub object by copying the service address data.
+     *
      * \param   addrService     Service address that contains data to copy.
      **/
     explicit ServiceStub( const ServiceAddress & addrService );
 
     /**
      * \brief   Initializes Service stub object by moving the service address data.
+     *
      * \param   addrService     Service address that contains data to move.
      **/
     explicit ServiceStub( ServiceAddress && addrService );
@@ -96,56 +103,64 @@ public:
 public:
 
     /**
-     * \brief   Copies Stub address data from given source
+     * \brief   Copies Stub address data from given source.
+     *
      * \param   addrStub    The Stub address data to copy
      **/
     ServiceStub & operator = ( const StubAddress & addrStub );
 
     /**
      * \brief   Moves Stub address data from given source.
+     *
      * \param   addrStub    The Stub address data to move.
      **/
     ServiceStub & operator = ( StubAddress && addrStub ) noexcept;
 
     /**
      * \brief   Creates and copies Stub address data out of Proxy address.
-     * \param   addrProxy   The Proxy address to generate Stub address information
+     *
+     * \param   addrProxy       The Proxy address to generate Stub address information
      **/
     ServiceStub & operator = ( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Copies data from given source
-     * \param   stubService The source of Stub service to copy data.
+     * \brief   Copies data from given source.
+     *
+     * \param   stubService     The source of Stub service to copy data.
      **/
     ServiceStub & operator = ( const ServiceStub & stubService );
 
     /**
-     * \brief   Moves data from given source
-     * \param   stubService The source of Stub service to move data.
+     * \brief   Moves data from given source.
+     *
+     * \param   stubService     The source of Stub service to move data.
      **/
     ServiceStub & operator = ( ServiceStub && stubService ) noexcept;
 
     /**
-     * \brief   Checks equality of address set in Service and given Stub address
+     * \brief   Checks equality of address set in Service and given Stub address.
+     *
      * \param   addrStub    The address of Stub to check
      **/
     bool operator == ( const StubAddress & addrStub ) const;
 
     /**
-     * \brief   Checks equality of Stub address set in service and Proxy address.
-     *          Stub and Proxy addresses are equal if they are compatible.
-     * \param   addrProxy   The Proxy address to check.
+     * \brief   Checks equality of Stub address set in service and Proxy address. Stub and Proxy
+     *          addresses are equal if they are compatible.
+     *
+     * \param   addrProxy       The Proxy address to check.
      **/
     bool operator == ( const ProxyAddress & addrProxy ) const;
 
     /**
      * \brief   Check equality of Stub service objects.
-     * \param   stubService The Stub service object to check equality.
+     *
+     * \param   stubService     The Stub service object to check equality.
      **/
     bool operator == ( const ServiceStub & stubService ) const;
 
     /**
-     * \brief   Coverts data of Stub service object into 32-bit integer value.
+     * \brief   Converts data of Stub service object into 32-bit integer value.
      **/
     explicit operator uint32_t () const;
 
@@ -154,22 +169,22 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Returns true if connection status of Stub service is connected
+     * \brief   Returns true if connection status of Stub service is connected.
      **/
     inline bool is_connected() const;
 
     /**
-     * \brief   Returns true if connection status of Stub service is pending
+     * \brief   Returns true if connection status of Stub service is pending.
      **/
     inline bool is_waiting() const;
 
     /**
-     * \brief   Returns the current connection status of Stub service
+     * \brief   Returns the current connection status of Stub service.
      **/
-    inline NEService::ServiceConnectionState getServiceStatus() const;
+    inline NEService::ServiceConnectionState service_status() const;
 
     /**
-     * \brief   Returns Stub remote address of service
+     * \brief   Returns Stub remote address of service.
      **/
     inline const StubAddress & service_address() const;
 
@@ -179,16 +194,19 @@ public:
     bool is_valid() const;
 
     /**
-     * \brief   Sets new connection status of Stub service
+     * \brief   Sets new connection status of Stub service.
+     *
+     * \param   newStatus       The new connection status to set.
      **/
-    void setServiceStatus( NEService::ServiceConnectionState newStatus );
+    void set_service_status( NEService::ServiceConnectionState newStatus );
 
     /**
      * \brief   Sets service data. Sets Stub address and connection status.
-     * \param   addrStub        The address of remote Stub to set.
-     * \param   connectStatus   The connection status to set.
+     *
+     * \param   addrStub            The address of remote Stub to set.
+     * \param   connectStatus       The connection status to set.
      **/
-    void setService( const StubAddress & addrStub, NEService::ServiceConnectionState connectStatus = NEService::ServiceConnectionState::Connected );
+    void set_service( const StubAddress & addrStub, NEService::ServiceConnectionState connectStatus = NEService::ServiceConnectionState::Connected );
 
 private:
     /**
@@ -244,7 +262,7 @@ inline bool ServiceStub::is_waiting() const
     return ( mConnectStatus == NEService::ServiceConnectionState::Pending );
 }
 
-inline NEService::ServiceConnectionState ServiceStub::getServiceStatus() const
+inline NEService::ServiceConnectionState ServiceStub::service_status() const
 {
     return mConnectStatus;
 }

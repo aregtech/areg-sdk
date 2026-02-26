@@ -31,10 +31,9 @@ class ConnectionProvider;
 // ServiceApplicationBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Brief class to create a process that may run as console application,
- *          as well as system service. It extends the SystemServiceBase
- *          and implements basic methods. As well as it provides interface
- *          of configuration listener.
+ * \brief   Base class to create a process that may run as a console application or as a system
+ *          service. Extends the SystemServiceBase and implements basic methods. Also provides an
+ *          interface for configuration listening.
  **/
 class ServiceApplicationBase    : public    SystemServiceBase
                                 , protected ConfigListener
@@ -46,9 +45,10 @@ protected:
 
     /**
      * \brief   Constructor, initializes the remote service communication instance.
-     * \param   commBase    The instance of the remote service communication object
-     *                      that provides the connection implementation, sends and receives messages.
-     *                      The object is required by base class of the System Service.
+     *
+     * \param   commBase    The instance of the remote service communication object that provides
+     *                      the connection implementation, sends and receives messages. The object
+     *                      is required by base class of the System Service.
      **/
     ServiceApplicationBase(ServiceCommunicationBase& commBase);
 
@@ -61,11 +61,12 @@ public:
 
     /**
      * \brief   Reads data from the console and sets in the buffer.
-     * \param[in,out]   buffer  The buffer to input data from console. Should not be nullptr.
-     * \param[in]       bufSize The size of the buffer. Should not be zero.
-     * \returns Returns true if succeeded to read data from the console.
+     *
+     * \param[in,out] buffer      The buffer to input data from console. Should not be nullptr.
+     * \param   bufSize     The size of the buffer. Should not be zero.
+     * \return  Returns true if succeeded to read data from the console.
      **/
-    bool inputConsoleData(char* buffer, uint32_t bufSize);
+    bool input_console_data(char* buffer, uint32_t bufSize);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -77,59 +78,58 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns list of the options to validate contained in the pair object,
-     *          where the first entry is the pointer to the list and second entry is
-     *          the number of elements in the list
+     * \brief   Returns list of the options to validate contained in the pair object, where the
+     *          first entry is the pointer to the list and second entry is the number of elements in
+     *          the list
      **/
-    virtual std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const = 0;
+    virtual std::pair<const OptionParser::OptionSetup*, int32_t> app_options() const = 0;
 
     /**
      * \brief   Returns the UNICODE name of the service application.
      **/
-    virtual wchar_t* getServiceNameW() const = 0;
-
-     /**
-      * \brief   Returns the ASCII name of the service application.
-      **/
-    virtual char* getServiceNameA() const = 0;
+    virtual wchar_t* service_name_w() const = 0;
 
     /**
-     * \brief   Returns the UNICODE display name of the service application.
-     *          This optional display name could be valid only for specific OS.
-     *          For example, in Windows this name is displayed in the list of services.
+     * \brief   Returns the ASCII name of the service application.
      **/
-    virtual wchar_t* getServiceDisplayNameW() const = 0;
-
-     /**
-      * \brief   Returns the ASCII display name of the service application.
-      *          This optional display name could be valid only for specific OS.
-      *          For example, in Windows this name is displayed in the list of services.
-      **/
-    virtual char* getServiceDisplayNameA() const = 0;
+    virtual char* service_name_a() const = 0;
 
     /**
-     * \brief   Returns the UNICODE description of the service application.
-     *          This optional service description could be valid only for specific OS.
-     *          For example, in Windows this description is shown in the list of services.
+     * \brief   Returns the UNICODE display name of the service application. This optional display
+     *          name could be valid only for specific OS. For example, in Windows this name is
+     *          displayed in the list of services.
      **/
-    virtual wchar_t* getServiceDescriptionW() const = 0;
+    virtual wchar_t* service_display_name_w() const = 0;
 
     /**
-     * \brief   Returns the ASCII description of the service application.
-     *          This optional service description could be valid only for specific OS.
-     *          For example, in Windows this description is shown in the list of services.
+     * \brief   Returns the ASCII display name of the service application. This optional display
+     *          name could be valid only for specific OS. For example, in Windows this name is
+     *          displayed in the list of services.
      **/
-    virtual char* getServiceDescriptionA() const = 0;
+    virtual char* service_display_name_a() const = 0;
 
     /**
-     * \brief   Returns the type of the remote service.
-     *          Valid only for Areg SDK services.
+     * \brief   Returns the UNICODE description of the service application. This optional service
+     *          description could be valid only for specific OS. For example, in Windows this
+     *          description is shown in the list of services.
+     **/
+    virtual wchar_t* service_description_w() const = 0;
+
+    /**
+     * \brief   Returns the ASCII description of the service application. This optional service
+     *          description could be valid only for specific OS. For example, in Windows this
+     *          description is shown in the list of services.
+     **/
+    virtual char* service_description_a() const = 0;
+
+    /**
+     * \brief   Returns the type of the remote service. Valid only for Areg SDK services.
      **/
     virtual NERemoteService::RemoteServiceKind service_type() const = 0;
 
     /**
-     * \brief   Returns the type of the connection of the remote services.
-     *          Valid only for Areg SDK services.
+     * \brief   Returns the type of the connection of the remote services. Valid only for Areg SDK
+     *          services.
      **/
     virtual NERemoteService::ConnectionType connection_type() const = 0;
 
@@ -138,97 +138,110 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Is the main entry point to install, uninstall, register and start service.
-     *          Normally, called from the main() method.
-     * \param   optStartup  Option that is set to start service. Can be ServiceOption::CMD_Undefined
-     *                      if need to run with default option.
-     * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
-     *                      or need to use default value.
+     * \brief   Is the main entry point to install, uninstall, register and start service. Normally,
+     *          called from the main() method.
+     *
+     * \param   optStartup      Option that is set to start service. Can be
+     *                          ServiceOption::CMD_Undefined if need to run with default option.
+     * \param   argument        Option argument. Can be empty or nullptr if no argument is expected
+     *                          or need to use default value.
      * \return  The result of execution.
      **/
-    int32_t serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
+    int32_t service_main(NESystemService::ServiceOption optStartup, const char* argument) override;
 
     /**
      * \brief   Triggered to initialize the service application.
-     * \param   option      The option that was set to run. Can be ServiceOption::CMD_Undefined if unknown or should be ignored.
-     * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
-     * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
+     *
+     * \param   option          The option that was set to run. Can be ServiceOption::CMD_Undefined
+     *                          if unknown or should be ignored.
+     * \param   value           The option value as a string. Can be empty string or nullptr if
+     *                          should be ignored.
+     * \param   fileConfig      The pointer to the configuration file. Can be empty or nullptr if
+     *                          should be ignored.
      * \return  Returns true if succeeded to initialize application and the application can run.
-     *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
+     *          Otherwise, the application run should be interrupted and the failure code 1 is
+     *          returned.
      **/
-    bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
+    bool service_initialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
 
     /**
      * \brief   Triggered when application is going to exit.
      **/
-    void serviceRelease() override;
+    void service_release() override;
 
     /**
      * \brief   Call to install (register) message router service in the system.
+     *
      * \return  Returns true if registration succeeded.
      **/
-    bool serviceInstall() override;
+    bool service_install() override;
 
     /**
      * \brief   Call to uninstall (unregister) message router service in the system.
      **/
-    void serviceUninstall() override;
+    void service_uninstall() override;
 
     /**
      * \brief   Registers system service in the system.
      **/
-    bool registerService() override;
+    bool register_service() override;
 
     /**
      * \brief   Opens operating system service DB for further processing.
+     *
      * \return  Returns true if succeeded.
      **/
-    bool serviceOpen() override;
+    bool service_open() override;
 
     /**
      * \brief   Called to start message router service.
+     *
      * \return  Returns true, if started with success.
      **/
-    bool serviceStart() override;
+    bool service_start() override;
 
     /**
      * \brief   Called to pause message router service.
      **/
-    void servicePause() override;
+    void service_pause() override;
 
     /**
      * \brief   Called to resume paused message router service.
      **/
-    bool serviceContinue() override;
+    bool service_continue() override;
 
     /**
      * \brief   Called to stop message router service.
      **/
-    void serviceStop() override;
+    void service_stop() override;
 
     /**
      * \brief   Called to shutdown the system service.
      **/
-    void serviceShutdown() override;
+    void service_shutdown() override;
 
     /**
      * \brief   Sets the state of message router service.
+     *
+     * \param   newState    The new service state to set.
+     * \return  Returns true if the state was successfully changed.
      **/
     bool set_state( NESystemService::ServicePhase newState ) override;
 
     /**
      * \brief   Run application as a background process without input or output on console.
      **/
-    void runService() override;
+    void run_service() override;
 
     /**
      * \brief   Called to setup service and start service dispatcher.
-     * \return  Returns value indicating the successful state of the operation.
-     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
-     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
-     *          In all other cases it should return RESULT_FAILED_INIT.
+     *
+     * \return  Returns value indicating the successful state of the operation. If returns
+     *          RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related). If
+     *          returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher
+     *          started). In all other cases it should return RESULT_FAILED_INIT.
      **/
-    int32_t startServiceDispatcher() override;
+    int32_t start_service_dispatcher() override;
 
 protected:
 
@@ -238,33 +251,40 @@ protected:
 
     /**
      * \brief   Called by configuration manager before the configuration is saved in the file.
-     * \param   config  The instance of configuration manager.
+     *
+     * \param   config      The instance of configuration manager.
      **/
     void prepare_save_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after the configuration is saved in the file.
-     * \param   config  The instance of configuration manager.
+     *
+     * \param   config      The instance of configuration manager.
      **/
     void post_save_configuration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager before the configuration is loaded from the file.
-     * \param   config  The instance of configuration manager.
+     *
+     * \param   config      The instance of configuration manager.
      **/
     void prepare_read_configuration(ConfigManager& config) override;
 
     /**
-     * \brief   Called by configuration manager when configuration is completed to load data from the file.
-     * \param   config  The instance of configuration manager.
+     * \brief   Called by configuration manager when configuration is completed to load data from
+     *          the file.
+     *
+     * \param   config      The instance of configuration manager.
      **/
     void post_read_configuration(ConfigManager& config) override;
 
     /**
-     * \brief   Called by configuration manager after setting read-only and writable properties.
-     *          For example, when the default configuration is set.
+     * \brief   Called by configuration manager after setting read-only and writable properties. For
+     *          example, when the default configuration is set.
+     *
      * \param   listReadonly    The list of read-only properties to set in the configuration.
-     * \param   listWritable    The list of module / process specific properties to set in the configuration;
+     * \param   listWritable    The list of module / process specific properties to set in the
+     *                          configuration;
      * \param   config          The instance of configuration manager.
      **/
     void on_setup_configuration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
@@ -277,52 +297,56 @@ private:
     /**
      * \brief   OS specific validity check of the service.
      **/
-    bool _osIsValid() const;
+    bool _os_is_valid() const;
 
     /**
      * \brief   Called to free engaged resources.
      **/
-    void _osFreeResources();
+    void _os_free_resources();
 
     /**
      * \brief   OS specific initialization of the service.
      **/
-    bool _osInitializeService();
+    bool _os_initialize_service();
 
     /**
      * \brief   OS specific implementation to open service.
      **/
-    bool _osOpenService();
+    bool _os_open_service();
 
     /**
      * \brief   OS specific implementation to create service.
      **/
-    bool _osCreateService();
+    bool _os_create_service();
 
     /**
      * \brief   OS specific implementation of deleting service.
      **/
-    void _osDeleteService();
+    void _os_delete_service();
 
     /**
-     * \brief   Registers service and returns true if handle is valid.
-     *          The method is valid for Windows OS.
+     * \brief   Registers service and returns true if handle is valid. The method is valid for
+     *          Windows OS.
      **/
-    bool _osRegisterService();
+    bool _os_register_service();
 
     /**
      * \brief   OS specific implementation of changing the state of the log collector service.
+     *
+     * \param   newState    The new service state to set.
+     * \return  Returns true if the state change was successful.
      **/
-    bool _osSetState( NESystemService::ServicePhase newState );
+    bool _os_set_state( NESystemService::ServicePhase newState );
 
     /**
      * \brief   OS specific implementation to setup the service and start the dispatcher.
-     * \return  Returns value indicating the successful state of the operation.
-     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
-     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
-     *          In all other cases it should return RESULT_FAILED_INIT.
+     *
+     * \return  Returns value indicating the successful state of the operation. If returns
+     *          RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related). If
+     *          returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher
+     *          started). In all other cases it should return RESULT_FAILED_INIT.
      **/
-    int32_t _osStartServiceDispatcher();
+    int32_t _os_start_service_dispatcher();
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

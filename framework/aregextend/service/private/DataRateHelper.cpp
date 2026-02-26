@@ -31,18 +31,18 @@ DataRateHelper::DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread
     mReceiveThread.set_data_rate_enabled(verbose);
 }
 
-void DataRateHelper::setVerbose(bool verbose)
+void DataRateHelper::set_verbose(bool verbose)
 {
     mSendThread.set_data_rate_enabled(verbose);
     mReceiveThread.set_data_rate_enabled(verbose);
 }
 
-bool DataRateHelper::isVerbose() const
+bool DataRateHelper::is_verbose() const
 {
     return mSendThread.is_data_rate_enabled() && mReceiveThread.is_data_rate_enabled();
 }
 
-DataRateHelper::DataRate DataRateHelper::convertDataRateLiterals(uint32_t sizeBytes)
+DataRateHelper::DataRate DataRateHelper::convert_data_rate_literals(uint32_t sizeBytes)
 {
     DataRate dataRate{ 0.0f, "" };
 

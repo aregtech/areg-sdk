@@ -53,7 +53,7 @@ LoggerClient::LoggerClient()
 {
 }
 
-bool LoggerClient::startLoggerClient(const String & address /*= String::EmptyString*/, uint16_t portNr /*= NESocket::InvalidPort*/)
+bool LoggerClient::start_logger_client(const String & address /*= String::EmptyString*/, uint16_t portNr /*= NESocket::InvalidPort*/)
 {
     if ((address.is_empty() == false) && (portNr != NESocket::InvalidPort))
     {
@@ -75,7 +75,7 @@ bool LoggerClient::startLoggerClient(const String & address /*= String::EmptyStr
     return connect_service_host();
 }
 
-void LoggerClient::stopLoggerClient()
+void LoggerClient::stop_logger_client()
 {
     do
     {
@@ -86,13 +86,13 @@ void LoggerClient::stopLoggerClient()
     disconnect_service_host();
 }
 
-void LoggerClient::setCallbacks(const ObserverEvents* callbacks)
+void LoggerClient::set_callbacks(const ObserverEvents* callbacks)
 {
     Lock lock(mLock);
     mCallbacks = callbacks;
 }
 
-void LoggerClient::setPaused(bool doPause)
+void LoggerClient::set_paused(bool doPause)
 {
     FuncObserverStarted callback{ nullptr };
     bool is_started{ false };
@@ -107,7 +107,7 @@ void LoggerClient::setPaused(bool doPause)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverStarted(is_started);
+        LogObserverBase::_theLogObserver->on_log_observer_started(is_started);
     }
     else if (callback != nullptr)
     {
@@ -121,19 +121,19 @@ const NESocket::SocketAddress& LoggerClient::address() const
     return mClientConnection.address();
 }
 
-bool LoggerClient::isSqliteEngine() const
+bool LoggerClient::is_sqlite_engine() const
 {
     LogConfiguration config;
     return (config.is_db_logging_enabled() && (config.database_engine() == NELogging::LOGDB_ENGINE_NAME));
 }
 
-bool LoggerClient::isConfigLoggerConnectEnabled() const
+bool LoggerClient::is_config_logger_connect_enabled() const
 {
     ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     return (config.is_configured() && config.connection_enable_flag());
 }
 
-String LoggerClient::getConfigLoggerAddress() const
+String LoggerClient::config_logger_address() const
 {
     ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     if (config.is_configured())
@@ -146,7 +146,7 @@ String LoggerClient::getConfigLoggerAddress() const
     }
 }
 
-uint16_t LoggerClient::getConfigLoggerPort() const
+uint16_t LoggerClient::config_logger_port() const
 {
     ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     if (config.is_configured())
@@ -159,7 +159,7 @@ uint16_t LoggerClient::getConfigLoggerPort() const
     }
 }
 
-bool LoggerClient::setConfigLoggerConnection(const String& address, uint16_t portNr)
+bool LoggerClient::set_config_logger_connection(const String& address, uint16_t portNr)
 {
     bool result{ false };
     ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
@@ -176,7 +176,7 @@ bool LoggerClient::setConfigLoggerConnection(const String& address, uint16_t por
     return result;
 }
 
-bool LoggerClient::requestConnectedInstances()
+bool LoggerClient::request_connected_instances()
 {
     bool result{ false };
     if (mChannel.cookie() != NEService::COOKIE_UNKNOWN)
@@ -187,7 +187,7 @@ bool LoggerClient::requestConnectedInstances()
     return result;
 }
 
-bool LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
+bool LoggerClient::request_scopes(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
@@ -199,7 +199,7 @@ bool LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::TARGET_ALL
     return result;
 }
 
-bool LoggerClient::requestChangeScopePrio(const NELogging::ScopeNames & scopes, const ITEM_ID& target /*= NEService::TARGET_ALL*/)
+bool LoggerClient::request_change_scope_prio(const NELogging::ScopeNames & scopes, const ITEM_ID& target /*= NEService::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
@@ -211,7 +211,7 @@ bool LoggerClient::requestChangeScopePrio(const NELogging::ScopeNames & scopes, 
     return result;
 }
 
-bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
+bool LoggerClient::request_save_configuration(const ITEM_ID& target /*= NEService::TARGET_ALL*/)
 {
     bool result{ false };
     Lock lock(mLock);
@@ -223,20 +223,20 @@ bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService:
     return result;
 }
 
-bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
+bool LoggerClient::open_logging_database(const char* dbPath /*= nullptr*/)
 {
     String filePath (dbPath);
     if (filePath.is_empty())
     {
-        if (isSqliteEngine())
+        if (is_sqlite_engine())
         {
             LogConfiguration config;
-            mLogDatabase.setDatabaseLoggingEnabled(true);
+            mLogDatabase.set_database_logging_enabled(true);
             filePath = File::make_full_path(config.database_location(), config.database_name());
         }
         else
         {
-            mLogDatabase.setDatabaseLoggingEnabled(false);
+            mLogDatabase.set_database_logging_enabled(false);
         }
     }
 
@@ -244,35 +244,35 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     FuncLogDbCreated callback{ mLogDatabase.is_operable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().data());
+        LogObserverBase::_theLogObserver->on_log_db_created(mLogDatabase.database_path().data());
     }
     else if (callback != nullptr)
     {
-        callback(mLogDatabase.getDatabasePath().as_string());
+        callback(mLogDatabase.database_path().as_string());
     }
 
     return result;
 }
 
-void LoggerClient::closeLoggingDatabase()
+void LoggerClient::close_logging_database()
 {
     mLogDatabase.disconnect();
 }
 
-String LoggerClient::getActiveDatabasePath() const
+String LoggerClient::active_database_path() const
 {
-    return mLogDatabase.getDatabasePath();
+    return mLogDatabase.database_path();
 }
 
-String LoggerClient::getInitialDatabasePath() const
+String LoggerClient::initial_database_path() const
 {
-    return mLogDatabase.getInitialDatabasePath();
+    return mLogDatabase.initial_database_path();
 }
 
-String LoggerClient::getConfigDatabasePath() const
+String LoggerClient::config_database_path() const
 {
     String result;
-    if (isSqliteEngine())
+    if (is_sqlite_engine())
     {
         LogConfiguration config;
         result = File::make_full_path(config.database_location().as_string(), config.database_name().as_string());
@@ -281,7 +281,7 @@ String LoggerClient::getConfigDatabasePath() const
     return result;
 }
 
-bool LoggerClient::setConfigDatabasePath(const String& dbPath, bool enable)
+bool LoggerClient::set_config_database_path(const String& dbPath, bool enable)
 {
     bool result{ false };
     LogConfiguration config;
@@ -298,10 +298,10 @@ bool LoggerClient::setConfigDatabasePath(const String& dbPath, bool enable)
     return result;
 }
 
-String LoggerClient::getConfigDatabaseLocation() const
+String LoggerClient::config_database_location() const
 {
     String result;
-    if (isSqliteEngine())
+    if (is_sqlite_engine())
     {
         LogConfiguration config;
         result = File::file_full_path(config.database_location().as_string());
@@ -310,10 +310,10 @@ String LoggerClient::getConfigDatabaseLocation() const
     return result;
 }
 
-bool LoggerClient::setConfigDatabaseLocation(const String& dbLocation)
+bool LoggerClient::set_config_database_location(const String& dbLocation)
 {
     bool result{ false };
-    if (isSqliteEngine())
+    if (is_sqlite_engine())
     {
         LogConfiguration config;
         config.set_database_location(dbLocation, false);
@@ -323,10 +323,10 @@ bool LoggerClient::setConfigDatabaseLocation(const String& dbLocation)
     return result;
 }
 
-String LoggerClient::getConfigDatabaseName() const
+String LoggerClient::config_database_name() const
 {
     String result;
-    if (isSqliteEngine())
+    if (is_sqlite_engine())
     {
         LogConfiguration config;
         result = config.database_name().as_string();
@@ -335,10 +335,10 @@ String LoggerClient::getConfigDatabaseName() const
     return result;
 }
 
-bool LoggerClient::setConfigDatabaseName(const String& dbName)
+bool LoggerClient::set_config_database_name(const String& dbName)
 {
     bool result{ false };
-    if (isSqliteEngine())
+    if (is_sqlite_engine())
     {
         LogConfiguration config;
         config.set_database_name(dbName, false);
@@ -348,7 +348,7 @@ bool LoggerClient::setConfigDatabaseName(const String& dbName)
     return result;
 }
 
-bool LoggerClient::setConfigLoggerConnectEnabled(bool is_enabled)
+bool LoggerClient::set_config_logger_connect_enabled(bool is_enabled)
 {
     bool result{ false };
     LogConfiguration config;
@@ -409,8 +409,8 @@ void LoggerClient::post_read_configuration(ConfigManager& config)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.data(), port);
-        LogObserverBase::_theLogObserver->onLogDbConfigured(config.log_enabled(NELogging::LogTarget::Database), dbName.data(), dbLocation.data(), dbUser.data());
+        LogObserverBase::_theLogObserver->on_log_observer_configured(true, address.data(), port);
+        LogObserverBase::_theLogObserver->on_log_db_configured(config.log_enabled(NELogging::LogTarget::Database), dbName.data(), dbLocation.data(), dbUser.data());
     }
     else
     {
@@ -477,7 +477,7 @@ void LoggerClient::disconnect_service_host()
         FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
         if (LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogServiceDisconnected();
+            LogObserverBase::_theLogObserver->on_log_service_disconnected();
         }
         else if (callback != nullptr)
         {
@@ -529,8 +529,8 @@ void LoggerClient::on_service_channel_connected(const Channel& channel)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogServiceConnected(true, address.data(), port);
-        LogObserverBase::_theLogObserver->onLogObserverStarted(is_started);
+        LogObserverBase::_theLogObserver->on_log_service_connected(true, address.data(), port);
+        LogObserverBase::_theLogObserver->on_log_observer_started(is_started);
     }
     else
     {
@@ -564,8 +564,8 @@ void LoggerClient::on_service_channel_disconnected(const Channel& /* channel */)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverStarted(false);
-        LogObserverBase::_theLogObserver->onLogServiceConnected(false, address.data(), port);
+        LogObserverBase::_theLogObserver->on_log_observer_started(false);
+        LogObserverBase::_theLogObserver->on_log_service_connected(false, address.data(), port);
     }
     else
     {
@@ -589,7 +589,7 @@ void LoggerClient::on_service_channel_lost(const Channel& /* channel */)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverStarted(false);
+        LogObserverBase::_theLogObserver->on_log_observer_started(false);
     }
     else if (callback != nullptr)
     {
@@ -608,7 +608,7 @@ void LoggerClient::failed_send_message(const RemoteMessage& /* msgFailed */, Soc
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogMessagingFailed();
+        LogObserverBase::_theLogObserver->on_log_messaging_failed();
     }
     else if (callback != nullptr)
     {
@@ -627,7 +627,7 @@ void LoggerClient::failed_receive_message(Socket& /* whichSource */)
 
     if (LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogMessagingFailed();
+        LogObserverBase::_theLogObserver->on_log_messaging_failed();
     }
     else if (callback != nullptr)
     {
@@ -647,26 +647,26 @@ void LoggerClient::process_received_message(const RemoteMessage& msgReceived, So
         switch (msgId)
         {
         case NEService::FuncIdRange::SystemServiceNotifyConnection:
-            mMessageProcessor.notifyServiceConnection(msgReceived);
+            mMessageProcessor.notify_service_connection(msgReceived);
             service_connection_event(msgReceived);
             break;
 
         case NEService::FuncIdRange::SystemServiceNotifyInstances:
-            mMessageProcessor.notifyConnectedClients(msgReceived);
+            mMessageProcessor.notify_connected_clients(msgReceived);
             break;
 
         case NEService::FuncIdRange::ServiceLogRegisterScopes:
-            mMessageProcessor.notifyLogRegisterScopes(msgReceived);
+            mMessageProcessor.notify_log_register_scopes(msgReceived);
             break;
 
         case NEService::FuncIdRange::ServiceLogScopesUpdated:
-            mMessageProcessor.notifyLogUpdateScopes(msgReceived);
+            mMessageProcessor.notify_log_update_scopes(msgReceived);
             break;
 
         case NEService::FuncIdRange::ServiceLogMessage:
             if (mIsPaused == false)
             {
-                mMessageProcessor.notifyLogMessage(msgReceived);
+                mMessageProcessor.notify_log_message(msgReceived);
             }
             break;
 

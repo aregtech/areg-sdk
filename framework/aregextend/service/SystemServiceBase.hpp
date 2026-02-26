@@ -95,7 +95,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initializes instance of message router service.
+     * \brief   Initializes instance of message router service with the specified communication
+     *          controller.
+     *
+     * \param   commBase    The communication controller object for the service.
      **/
     SystemServiceBase( ServiceCommunicationBase & commBase );
     /**
@@ -109,130 +112,152 @@ protected:
 public:
 
     /**
-     * \brief   Triggered when the system changes the service control state.
-     *          This is operated via operating system and valid for Windows OS.
-     *          In Linux OS this has no effect.
+     * \brief   Triggered when the system changes the service control state. This is operated via
+     *          operating system and valid for Windows OS. In Linux OS this has no effect.
+     *
      * \param   control     The control triggered by system.
      **/
-    void controlService(SystemServiceBase::ServiceControl control);
+    void control_service(SystemServiceBase::ServiceControl control);
 
 /************************************************************************/
 // SystemServiceBase overrides
 /************************************************************************/
 
     /**
-     * \brief   Parses the NESystemService::ServiceOption options passed
-     *          in the command line and returns true if succeeded.
-     *          Override and implement this method if the options differ than
-     *          NESystemService::ServiceOption
+     * \brief   Parses the NESystemService::ServiceOption options passed in the command line and
+     *          returns true if succeeded. Override and implement this method if the options differ
+     *          than NESystemService::ServiceOption
+     *
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
-     * \return  Returns true if succeeded to parse command line options,
-     *          found no failure and the application can continue working.
-     *          To interrupt the application, return false.
+     * \return  Returns true if succeeded to parse command line options, found no failure and the
+     *          application can continue working. To interrupt the application, return false.
      **/
-    virtual bool parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount );
-    virtual bool parseOptions( int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount);
+    virtual bool parse_options( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount );
+    /**
+     * \brief   Parses the NESystemService::ServiceOption options passed in the command line and
+     *          returns true if succeeded. Override and implement this method if the options differ
+     *          than NESystemService::ServiceOption
+     *
+     * \param   argc    The number of options to parse.
+     * \param   argv    The options to parse.
+     * \return  Returns true if succeeded to parse command line options, found no failure and the
+     *          application can continue working. To interrupt the application, return false.
+     **/
+    virtual bool parse_options( int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount);
 
     /**
-     * \brief   Checks the listed options and prepares to dispatch.
-     *          In case of failure or request to display manual, prints the
-     *          help to use command line options properly.
-     *          Override the method if need extra checkups or preparations.
-     * \param   opts    The list of options. By default, they are
-     *                  type of NESystemService::ServiceOption.
-     * \return  Returns true if found no failure and the application can continue working.
-     *          To interrupt the application, return false.
+     * \brief   Checks the listed options and prepares to dispatch. In case of failure or request to
+     *          display manual, prints the help to use command line options properly. Override the
+     *          method if need extra checkups or preparations.
+     *
+     * \param   opts    The list of options. By default, they are type of
+     *                  NESystemService::ServiceOption.
+     * \return  Returns true if found no failure and the application can continue working. To
+     *          interrupt the application, return false.
      **/
-    virtual bool prepareOptions(const OptionParser::InputOptionList& opts);
+    virtual bool prepare_options(const OptionParser::InputOptionList& opts);
 
     /**
-     * \brief   Dispatches the option, makes basic initialization like setting configuration file or set verbose flag.
+     * \brief   Dispatches the option, makes basic initialization like setting configuration file or
+     *          set verbose flag.
+     *
      * \param   opt     The option to dispatch.
-     * \return  If operation succeeded, returns true. Otherwise, if the option is not recognized or value is unexpected,
-     *          returns false.
+     * \return  If operation succeeded, returns true. Otherwise, if the option is not recognized or
+     *          value is unexpected, returns false.
      **/
-    virtual bool dispatchOption(const OptionParser::InputOption& opt);
+    virtual bool dispatch_option(const OptionParser::InputOption& opt);
 
     /**
-     * \brief   Is the main entry point to install, uninstall, register and start service.
-     *          Normally, called from the main() method.
-     * \param   optStartup  Option that is set to start service. Can be ServiceOption::CMD_Undefined
-     *                      if need to run with default option.
-     * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
-     *                      or need to use default value.
+     * \brief   Is the main entry point to install, uninstall, register and start service. Normally,
+     *          called from the main() method.
+     *
+     * \param   optStartup      Option that is set to start service. Can be
+     *                          ServiceOption::CMD_Undefined if need to run with default option.
+     * \param   argument        Option argument. Can be empty or nullptr if no argument is expected
+     *                          or need to use default value.
      * \return  The result of execution.
      **/
-    virtual int32_t serviceMain(NESystemService::ServiceOption optStartup, const char* argument);
+    virtual int32_t service_main(NESystemService::ServiceOption optStartup, const char* argument);
 
     /**
      * \brief   Sends remote message to the target specified in the message structure.
-     * \param   message     The message to send to the target. The message contains information of the source and target.
+     *
+     * \param   message     The message to send to the target. The message contains information of
+     *                      the source and target.
      **/
-    virtual void sendMessageToTarget(const RemoteMessage& message);
+    virtual void send_message_to_target(const RemoteMessage& message);
 
     /**
      * \brief   Triggered to initialize the service application.
-     * \param   option      The option that was set to run. Can be ServiceOption::CMD_Undefined if unknown or should be ignored.
-     * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
-     * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
+     *
+     * \param   option          The option that was set to run. Can be ServiceOption::CMD_Undefined
+     *                          if unknown or should be ignored.
+     * \param   value           The option value as a string. Can be empty string or nullptr if
+     *                          should be ignored.
+     * \param   fileConfig      The pointer to the configuration file. Can be empty or nullptr if
+     *                          should be ignored.
      * \return  Returns true if succeeded to initialize application and the application can run.
-     *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
+     *          Otherwise, the application run should be interrupted and the failure code 1 is
+     *          returned.
      **/
-    virtual bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) = 0;
+    virtual bool service_initialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) = 0;
 
     /**
      * \brief   Triggered when service application is going to exit.
      **/
-    virtual void serviceRelease() = 0;
+    virtual void service_release() = 0;
 
     /**
      * \brief   Call to create and install the service in the system.
+     *
      * \return  Returns true if registration succeeded.
      **/
-    virtual bool serviceInstall() = 0;
+    virtual bool service_install() = 0;
 
     /**
      * \brief   Call to delete and uninstall the service in the system.
      **/
-    virtual void serviceUninstall() = 0;
+    virtual void service_uninstall() = 0;
 
     /**
      * \brief   Registers system service in the system.
      **/
-    virtual bool registerService() = 0;
+    virtual bool register_service() = 0;
 
     /**
      * \brief   Opens operating system service for further processing.
+     *
      * \return  Returns true if succeeded.
      **/
-    virtual bool serviceOpen() = 0;
+    virtual bool service_open() = 0;
 
     /**
      * \brief   Called to start the system service.
+     *
      * \return  Returns true, if started with success.
      **/
-    virtual bool serviceStart() = 0;
+    virtual bool service_start() = 0;
 
     /**
      * \brief   Called to pause the system service.
      **/
-    virtual void servicePause() = 0;
+    virtual void service_pause() = 0;
 
     /**
      * \brief   Called to resume paused system service.
      **/
-    virtual bool serviceContinue() = 0;
+    virtual bool service_continue() = 0;
 
     /**
      * \brief   Called to stop the system service.
      **/
-    virtual void serviceStop() = 0;
+    virtual void service_stop() = 0;
 
     /**
      * \brief   Called to shutdown the system service.
      **/
-    virtual void serviceShutdown() = 0;
+    virtual void service_shutdown() = 0;
 
     /**
      * \brief   Sets the state of the system service.
@@ -241,12 +266,13 @@ public:
 
     /**
      * \brief   Called to setup service and start service dispatcher.
-     * \return  Returns value indicating the successful state of the operation.
-     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
-     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
-     *          In all other cases it should return RESULT_FAILED_INIT.
+     *
+     * \return  Returns value indicating the successful state of the operation. If returns
+     *          RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related). If
+     *          returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher
+     *          started). In all other cases it should return RESULT_FAILED_INIT.
      **/
-    virtual int32_t startServiceDispatcher() = 0;
+    virtual int32_t start_service_dispatcher() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -255,33 +281,34 @@ public:
     /**
      * \brief   Returns current command of message router service.
      **/
-    inline NESystemService::ServiceOption getCurrentOption() const;
+    inline NESystemService::ServiceOption current_option() const;
 
     /**
      * \brief   Sets the current command of message router service.
-     * \param   optService  The router service command option to set.
+     *
+     * \param   optService      The router service command option to set.
      **/
-    inline void setCurrentOption( NESystemService::ServiceOption optService );
+    inline void set_current_option( NESystemService::ServiceOption optService );
 
     /**
      * \brief   Returns the state of message router service.
      **/
-    inline NESystemService::ServicePhase getState() const;
+    inline NESystemService::ServicePhase state() const;
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
-    inline DataRateHelper& getDataRateHelper() const;
+    inline DataRateHelper& data_rate_helper() const;
 
     /**
      * \brief   Return the instance of the communication controller object.
      **/
-    inline ServiceCommunicationBase& getCommunicationController() const;
+    inline ServiceCommunicationBase& communication_controller() const;
 
     /**
-     * \brief   Resets default options.
+     * \brief   Resets service options to their default values.
      **/
-    void resetDefaultOptions();
+    void reset();
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -294,44 +321,44 @@ protected:
 
     /**
      * \brief   Triggered to print the help message on console.
-     * \param   isCmdLine   Flag indicating whether it should print the help
-     *                      of using service in command line or help of user input commands.
-     *                      If 'true', the printing message is about using the service in
-     *                      command line. Otherwise, if application expects user inputs, prints
-     *                      the help of command options.
+     *
+     * \param   isCmdLine       Flag indicating whether it should print the help of using service in
+     *                          command line or help of user input commands. If 'true', the printing
+     *                          message is about using the service in command line. Otherwise, if
+     *                          application expects user inputs, prints the help of command options.
      **/
-    virtual void printHelp( bool isCmdLine ) = 0;
+    virtual void print_help( bool isCmdLine ) = 0;
 
     /**
      * \brief   Triggered to start the console service.
      **/
-    virtual void startConsoleService() = 0;
+    virtual void start_console_service() = 0;
 
     /**
-     * \brief   Stops the consoler service.
+     * \brief   Stops the console service.
      **/
-    virtual void stopConsoleService() = 0;
+    virtual void stop_console_service() = 0;
 
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    virtual Console::CallBack getOptionCheckCallback() const = 0;
+    virtual Console::CallBack option_check_callback() const = 0;
 
     /**
-     * \brief   Triggered if need to run console with extended features.
-     *          In extended feature, the console can output message at any position on the screen.
+     * \brief   Triggered if need to run console with extended features. In extended feature, the
+     *          console can output message at any position on the screen.
      **/
-    virtual void runConsoleInputExtended() = 0;
+    virtual void run_console_input_extended() = 0;
 
     /**
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
-    virtual void runConsoleInputSimple() = 0;
+    virtual void run_console_input_simple() = 0;
 
     /**
      * \brief   Run application as a background process without input or output on console.
      **/
-    virtual void runService() = 0;
+    virtual void run_service() = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -370,27 +397,27 @@ private:
 // SystemServiceBase class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NESystemService::ServicePhase SystemServiceBase::getState() const
+inline NESystemService::ServicePhase SystemServiceBase::state() const
 {
     return mSystemServiceState;
 }
 
-inline DataRateHelper& SystemServiceBase::getDataRateHelper() const
+inline DataRateHelper& SystemServiceBase::data_rate_helper() const
 {
-    return  mCommunication.getDataRateHelper();
+    return  mCommunication.data_rate_helper();
 }
 
-inline ServiceCommunicationBase& SystemServiceBase::getCommunicationController() const
+inline ServiceCommunicationBase& SystemServiceBase::communication_controller() const
 {
     return const_cast<ServiceCommunicationBase&>(mCommunication);
 }
 
-inline NESystemService::ServiceOption SystemServiceBase::getCurrentOption() const
+inline NESystemService::ServiceOption SystemServiceBase::current_option() const
 {
     return mSystemServiceOption;
 }
 
-inline void SystemServiceBase::setCurrentOption( NESystemService::ServiceOption optService )
+inline void SystemServiceBase::set_current_option( NESystemService::ServiceOption optService )
 {
     mSystemServiceOption = optService;
 }

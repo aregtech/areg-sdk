@@ -74,7 +74,7 @@ bool ServerReceiveThread::run_dispatcher()
                     LOG_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
                     if (++retryCount >= RETRY_COUNT)
                     {
-                        mConnectHandler.connectionFailure();
+                        mConnectHandler.connection_failure();
                         whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit);
                     }
                 }
@@ -94,7 +94,7 @@ bool ServerReceiveThread::run_dispatcher()
                     else
                     {
                         clientSocket = SocketAccepted(hSocket, addrAccepted);
-                        if ( mConnectHandler.canAcceptConnection(clientSocket)  )
+                        if ( mConnectHandler.can_accept_connection(clientSocket)  )
                         {
                             LOG_DBG("Accepting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
@@ -110,7 +110,7 @@ bool ServerReceiveThread::run_dispatcher()
                                             , addrAccepted.host_address().as_string()
                                             , addrAccepted.host_port());
                             
-                            mConnection.rejectConnection(clientSocket);
+                            mConnection.reject_connection(clientSocket);
                             clientSocket.close_socket();
                             continue;
                         }

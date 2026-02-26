@@ -91,7 +91,7 @@ namespace NESystemService
     };
 
     /**
-     * \brief   Returns the human readable string of NESystemService::ServicePhase value
+     * \brief   Returns the human readable string of NESystemService::ServicePhase value.
      **/
     inline const char * as_string( NESystemService::ServicePhase serviceState );
 
@@ -174,14 +174,23 @@ namespace NESystemService
      * \returns Returns argument list of type 'char'
      **/
     template<typename CharType>
-    inline char** convertArguments(CharType** argv, int32_t argc);
+    /**
+     * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'. The memory
+     *          of returned value should be freed by calling 'deleteArgument'.
+     *
+     * \param   argv    The list of arguments received in 'main' function.
+     * \param   argc    The number of arguments in the argument list.
+     * \return  Returns argument list of type 'char'
+     **/
+    inline char** convert_arguments(CharType** argv, int32_t argc);
 
     /**
-     * \brief   Deletes the list of arguments returned by 'convertArguments' function.
-     * \param   argv        The list of arguments returned by 'convertArguments' function.
-     * \param   argc        The number of arguments in the argument list.
+     * \brief   Deletes the list of arguments returned by 'convert_arguments' function.
+     *
+     * \param   argv    The list of arguments returned by 'convert_arguments' function.
+     * \param   argc    The number of arguments in the argument list.
      **/
-    inline void deleteArguments(char** argv, int32_t argc);
+    inline void delete_arguments(char** argv, int32_t argc);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -241,7 +250,7 @@ inline const char * NESystemService::as_string( NESystemService::ServicePhase se
 }
 
 template<typename CharType>
-inline char** NESystemService::convertArguments(CharType** argv, int32_t argc)
+inline char** NESystemService::convert_arguments(CharType** argv, int32_t argc)
 {
     char** result = argc != 0 ? DEBUG_NEW char* [static_cast<uint32_t>(argc)] : nullptr;
     if (result != nullptr)
@@ -260,7 +269,7 @@ inline char** NESystemService::convertArguments(CharType** argv, int32_t argc)
     return result;
 }
 
-inline void NESystemService::deleteArguments(char** argv, int32_t argc)
+inline void NESystemService::delete_arguments(char** argv, int32_t argc)
 {
     if (argv != nullptr)
     {

@@ -45,8 +45,9 @@ class LogCollectorMessageProcessor
 public:
 
     /**
-     * \brief   Initializes the Log Collector  message processor.
-     *          Requires the instance of Log Collector service object.
+     * \brief   Initializes the Log Collector message processor with the given service.
+     *
+     * \param   loggerService       The instance of Log Collector service object.
      **/
     LogCollectorMessageProcessor(LogCollectorServerService & loggerService);
 
@@ -58,119 +59,136 @@ public:
 public:
 
     /**
-     * \brief   Processes the message to query instances. The message is sent by observers to receive
-     *          the list of connected non-observer instances.
+     * \brief   Processes the message to query instances. The message is sent by observers to
+     *          receive the list of connected non-observer instances.
+     *
      * \param   msgReceived     The message to process.
      **/
-    void queryConnectedInstances(const RemoteMessage & msgReceived) const;
+    void query_connected_instances(const RemoteMessage & msgReceived) const;
 
     /**
-     * \brief   Creates a communication message with the information of connected instances
-     *          and sends the notification to the specified observer target. If target is NEService::TARGET_ALL
-     *          the notification is sent to all connected observers. Otherwise, it send to
-     *          the specified exact target.
-     * \param   instances   The list of connected instances to include in the notification message.
-     * \param   target      The ID of the target to send the message. If target is NEService::TARGET_ALL,
-     *                      the notification message is sent to all observers. Otherwise, it is sent to the exact target.
+     * \brief   Creates a communication message with the information of connected instances and
+     *          sends the notification to the specified observer target. If target is
+     *          NEService::TARGET_ALL the notification is sent to all connected observers.
+     *          Otherwise, it send to the specified exact target.
+     *
+     * \param   instances       The list of connected instances to include in the notification
+     *                          message.
+     * \param   target          The ID of the target to send the message. If target is
+     *                          NEService::TARGET_ALL, the notification message is sent to all
+     *                          observers. Otherwise, it is sent to the exact target.
      **/
-    void notifyConnectedInstances(const NEService::MapInstances& instances, const ITEM_ID & target = NEService::TARGET_ALL) const;
+    void notify_connected_instances(const NEService::MapInstances& instances, const ITEM_ID & target = NEService::TARGET_ALL) const;
 
     /**
-     * \brief   Creates a communication message with the IDs of disconnected instances
-     *          and sends the notification to the specified observer target. If target is NEService::TARGET_ALL
-     *          the notification is sent to all connected observers. Otherwise, it send to
-     *          the specified exact target.
-     * \param   listIds     The list of IDs of disconnected instances to include in the notification message.
-     * \param   target      The ID of the target to send the message. If target is NEService::TARGET_ALL,
-     *                      the notification message is sent to all observers. Otherwise, it is sent to the exact target.
+     * \brief   Creates a communication message with the IDs of disconnected instances and sends the
+     *          notification to the specified observer target. If target is NEService::TARGET_ALL
+     *          the notification is sent to all connected observers. Otherwise, it send to the
+     *          specified exact target.
+     *
+     * \param   listIds     The list of IDs of disconnected instances to include in the notification
+     *                      message.
+     * \param   target      The ID of the target to send the message. If target is
+     *                      NEService::TARGET_ALL, the notification message is sent to all
+     *                      observers. Otherwise, it is sent to the exact target.
      **/
-    void notifyDisconnectedInstances(const ArrayList<ITEM_ID> & listIds, const ITEM_ID& target = NEService::TARGET_ALL) const;
+    void notify_disconnected_instances(const ArrayList<ITEM_ID> & listIds, const ITEM_ID& target = NEService::TARGET_ALL) const;
 
     /**
-     * \brief   Called when a connected instance of application requests to register scopes.
-     *          The scopes contain names and message priorities to log.
-     *          The message is forwarded to the all connected observers to register scopes.
+     * \brief   Called when a connected instance of application requests to register scopes. The
+     *          scopes contain names and message priorities to log. The message is forwarded to the
+     *          all connected observers to register scopes.
+     *
      * \param   msgReceived     The message to process.
      **/
-    void registerScopesAtObserver(const RemoteMessage & msgReceived) const;
+    void register_scopes_at_observer(const RemoteMessage & msgReceived) const;
 
     /**
-     * \brief   Called when a connected instance of observer requests to update scopes
-     *          of the certain connected non-observer application.
-     *          The scopes contain names and message priorities to log.
-     *          The message is forwarded to the all connected observers to register scopes.
+     * \brief   Called when a connected instance of observer requests to update scopes of the
+     *          certain connected non-observer application. The scopes contain names and message
+     *          priorities to log. The message is forwarded to the all connected observers to
+     *          register scopes.
+     *
      * \param   msgReceived     The message to process.
      **/
-    void updateLogSourceScopes(const RemoteMessage & msgReceived) const;
+    void update_log_source_scopes(const RemoteMessage & msgReceived) const;
 
     /**
-     * \brief   Called when a connected instance of observer queries the list of scopes.
-     *          The message is forwarded either to all connected non-observer instances
-     *          or to the certain application to receive list of log scope of the application.
+     * \brief   Called when a connected instance of observer queries the list of scopes. The message
+     *          is forwarded either to all connected non-observer instances or to the certain
+     *          application to receive list of log scope of the application.
+     *
      * \param   msgReceived     The message to process.
      **/
-    void queryLogSourceScopes(const RemoteMessage & msgReceived) const;
+    void query_log_source_scopes(const RemoteMessage & msgReceived) const;
 
     /**
-     * \brief   Called when a connected instance of observer requests the clients to save log configuration,
-     *          so that on next start clients start with the actual state (list of active scopes and log priorities).
-     *          The message is forwarded either to all connected non-observer instances
-     *          or to the certain application to save the log configuration.
+     * \brief   Called when a connected instance of observer requests the clients to save log
+     *          configuration, so that on next start clients start with the actual state (list of
+     *          active scopes and log priorities). The message is forwarded either to all connected
+     *          non-observer instances or to the certain application to save the log configuration.
+     *
      * \param   msgReceived     The message to process.
      **/
-    void saveLogSourceConfiguration(const RemoteMessage & msgReceived);
+    void save_log_source_configuration(const RemoteMessage & msgReceived);
 
     /**
      * \brief   Called to forward the log message to the observer application.
+     *
      * \param   msgReceived     The message to process.
      **/
     void log_message(const RemoteMessage& msgReceived) const;
 
     /**
-     * \brief   Called when the connected instance of log source updates the scope priorities.
-     *          The message contains the list of scope names, ID and log priority.
-     *          The message should be forwarded to all connected lob observer instances, so that
-     *          the have information about actual scope state.
+     * \brief   Called when the connected instance of log source updates the scope priorities. The
+     *          message contains the list of scope names, ID and log priority. The message should be
+     *          forwarded to all connected log observer instances, so that the have information
+     *          about actual scope state.
+     *
      * \param   msgReceived     The message to process.
      **/
-    void logSourceScopesUpadated(const RemoteMessage& msgReceived);
+    void log_source_scopes_updated(const RemoteMessage& msgReceived);
 
     /**
-     * \brief   Called when the connected instance of log source saves current configuration.
-     *          It notifies the log observer that the configuration is saved, so that the
-     *          Log Collector may request the other connected instances to start update procedure.
+     * \brief   Called when the connected instance of log source saves current configuration. It
+     *          notifies the log observer that the configuration is saved, so that the Log Collector
+     *          may request the other connected instances to start update procedure.
+     *
      * \param   msgReceived     The message to process.
      **/
-    void logSourceConfigurationSaved(const RemoteMessage& msgReceived);
+    void log_source_configuration_saved(const RemoteMessage& msgReceived);
 
     /**
-     * \brief   Called to process the next log source application in the queue to save configuration.
+     * \brief   Processes the next log source application in the queue to save configuration.
      **/
-    void processNextSaveConfig();
+    void process_next_save_config();
 
     /**
      * \brief   Called when an instance of a log source is disconnected.
+     *
      * \param   cookie      The ID of disconnected application.
      **/
-    void clientDisconnected(const ITEM_ID& cookie);
+    void client_disconnected(const ITEM_ID& cookie);
 
     /**
-     * \brief   Checks whether the specified message source is considered as a log source.
-     *          The log source application as well has list of scopes.
-     *          The clients, test application and simulations are considered as a source of logs.
-     *          Observers and services are not.
-     * \param   msgSource   The source of message to check.
+     * \brief   Checks whether the specified message source is considered as a log source. The log
+     *          source application as well has list of scopes. The clients, test application and
+     *          simulations are considered as a source of logs. Observers and services are not.
+     *
+     * \param   msgSource       The source of message to check.
      * \return  Returns true if the specified type is a source of log messages.
      **/
-    static bool isLogSource(NEService::MessageSource msgSource);
+    static bool is_log_source(NEService::MessageSource msgSource);
 
     /**
-     * \brief   Checks whether the specified message source is considered as an observer.
-     *          The observers can collect logs and send instructions to update log scopes and priorities.
-     * \param   msgSource   The source of message to check.
+     * \brief   Checks whether the specified message source is considered as an observer. The
+     *          observers can collect logs and send instructions to update log scopes and
+     *          priorities.
+     *
+     * \param   msgSource       The source of message to check.
      * \return  Returns true if the specified type is an observer.
      **/
-    static bool isLogObserver(NEService::MessageSource msgSource);
+    static bool is_log_observer(NEService::MessageSource msgSource);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -178,18 +196,21 @@ public:
 private:
 
     /**
-     * \brief   Forwards specified message to the log sources, i.e. clients.
-     *          If the target in the remote message is NEService::TARGET_ALL, the message is sent to all clients.
-     * \param   msgReceived     The remote message received from observer or generated by the Log Collector.
+     * \brief   Forwards specified message to the log sources, i.e. clients. If the target in the
+     *          remote message is NEService::TARGET_ALL, the message is sent to all clients.
+     *
+     * \param   msgReceived     The remote message received from observer or generated by the Log
+     *                          Collector.
      **/
-    inline void _forwardMessageToLogSources(const RemoteMessage& msgReceived) const;
+    inline void _forward_message_to_log_sources(const RemoteMessage& msgReceived) const;
 
     /**
-     * \brief   Forwards specified message to the log observer.
-     *          If the target in the remote message is NEService::TARGET_ALL, the message is sent to all observers.
+     * \brief   Forwards specified message to the log observer. If the target in the remote message
+     *          is NEService::TARGET_ALL, the message is sent to all observers.
+     *
      * \param   msgReceived     The remote message received from a client.
      **/
-    inline void _forwardMessageToObservers(const RemoteMessage& msgReceived) const;
+    inline void _forward_message_to_observers(const RemoteMessage& msgReceived) const;
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -207,6 +228,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Deleted default constructor.
+     **/
     LogCollectorMessageProcessor() = delete;
     AREG_NOCOPY_NOMOVE(LogCollectorMessageProcessor);
 };

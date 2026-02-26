@@ -131,13 +131,13 @@ bool ServiceStub::is_valid() const
     return mStubAddress.is_valid() && (mStubAddress.source() != NEService::SOURCE_UNKNOWN) && (mStubAddress.cookie() != NEService::COOKIE_UNKNOWN);
 }
 
-void ServiceStub::setService( const StubAddress & addrStub, NEService::ServiceConnectionState connectStatus /*= NEService::ServiceConnectionState::Connected */ )
+void ServiceStub::set_service( const StubAddress & addrStub, NEService::ServiceConnectionState connectStatus /*= NEService::ServiceConnectionState::Connected */ )
 {
     mStubAddress    = addrStub;
-    setServiceStatus( connectStatus );
+    set_service_status( connectStatus );
 }
 
-void ServiceStub::setServiceStatus( NEService::ServiceConnectionState newStatus )
+void ServiceStub::set_service_status( NEService::ServiceConnectionState newStatus )
 {
     mConnectStatus  = NEService::ServiceConnectionState::Unknown;
     if ( mStubAddress.is_valid() )

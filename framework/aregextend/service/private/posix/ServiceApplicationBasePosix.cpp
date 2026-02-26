@@ -24,42 +24,42 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
-bool ServiceApplicationBase::_osIsValid() const
+bool ServiceApplicationBase::_os_is_valid() const
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osRegisterService()
+bool ServiceApplicationBase::_os_register_service()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osFreeResources()
+void ServiceApplicationBase::_os_free_resources()
 {
     mSvcHandle = nullptr;
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService()
+bool ServiceApplicationBase::_os_initialize_service()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService()
+bool ServiceApplicationBase::_os_open_service()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osCreateService()
+bool ServiceApplicationBase::_os_create_service()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osDeleteService()
+void ServiceApplicationBase::_os_delete_service()
 {
 }
 
-bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
+bool ServiceApplicationBase::_os_set_state(NESystemService::ServicePhase newState)
 {
     bool result{ true };
 
@@ -98,7 +98,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     return result;
 }
 
-int32_t ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t ServiceApplicationBase::_os_start_service_dispatcher()
 {
     return RESULT_IGNORED;
 }

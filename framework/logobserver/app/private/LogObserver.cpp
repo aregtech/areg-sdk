@@ -93,35 +93,35 @@ LogObserver & LogObserver::instance()
     return _instance;
 }
 
-Console::CallBack LogObserver::getOptionCheckCallback() const
+Console::CallBack LogObserver::option_check_callback() const
 {
-    return Console::CallBack( LogObserver::_checkCommand );
+    return Console::CallBack( LogObserver::_check_command );
 }
 
-void LogObserver::_runConsoleInputExtended()
+void LogObserver::_run_console_input_extended()
 {
     Console & console = Console::instance( );
-    LogObserver::_outputTitle( );
+    LogObserver::_output_title( );
 
     console.enableConsoleInput(true);
     console.outputTxt(NESystemService::COORD_STATUS_MSG, LogObserver::STATUS_INITIALIZED);
     console.outputTxt(NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT);
-    console.waitForInput(getOptionCheckCallback());
+    console.waitForInput(option_check_callback());
 
     console.moveCursorOneLineDown( );
     console.clearScreen( );
     console.uninitialize( );
 }
 
-void LogObserver::callbackObserverConfigured(bool /* is_enabled */, const char* /* address */, uint16_t /* port */)
+void LogObserver::callback_observer_configured(bool /* is_enabled */, const char* /* address */, uint16_t /* port */)
 {
 }
 
-void LogObserver::callbackDatabaseConfigured(bool /* is_enabled */, const char* /* dbName */, const char* /* dbLocation */, const char* /* user */ )
+void LogObserver::callback_database_configured(bool /* is_enabled */, const char* /* dbName */, const char* /* dbLocation */, const char* /* user */ )
 {
 }
 
-void LogObserver::callbackServiceConnected(bool is_connected, const char* address, uint16_t port)
+void LogObserver::callback_service_connected(bool is_connected, const char* address, uint16_t port)
 {
     if (is_connected)
     {
@@ -136,19 +136,19 @@ void LogObserver::callbackServiceConnected(bool is_connected, const char* addres
     }
 }
 
-void LogObserver::callbackObserverStarted(bool /* is_started */)
+void LogObserver::callback_observer_started(bool /* is_started */)
 {
 }
 
-void LogObserver::callbackLogDbCreated(const char* /* dbLocation */)
+void LogObserver::callback_log_db_created(const char* /* dbLocation */)
 {
 }
 
-void LogObserver::callbackMessagingFailed()
+void LogObserver::callback_messaging_failed()
 {
 }
 
-void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint32_t count)
+void LogObserver::callback_connected_instances(const LogInstance* instances, uint32_t count)
 {
     if (count == 0)
     {
@@ -202,7 +202,7 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
     }
 }
 
-void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32_t count)
+void LogObserver::callback_disconnected_instances(const ITEM_ID * instances, uint32_t count)
 {
     for (uint32_t i = 0; i < count; ++i)
     {
@@ -243,7 +243,7 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
     }
 }
 
-void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count)
+void LogObserver::callback_log_scopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count)
 {
     for (uint32_t i = 0; i < _listInstances.size(); ++i)
     {
@@ -284,18 +284,18 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uin
     }
 }
 
-void LogObserver::callbackLogUpdateScopes(ITEM_ID /* cookie */, const ScopeInfo* /* scopes */, uint32_t /* count */)
+void LogObserver::callback_log_update_scopes(ITEM_ID /* cookie */, const ScopeInfo* /* scopes */, uint32_t /* count */)
 {
 }
 
-void LogObserver::callbackLogMessage(const LogEntry* /* log_message */)
+void LogObserver::callback_log_message(const LogEntry* /* log_message */)
 {
 }
 
 #ifdef  DEBUG
-void LogObserver::callbackLogMessageEx(const uint8_t* logBuffer, uint32_t size)
+void LogObserver::callback_log_message_ex(const uint8_t* logBuffer, uint32_t size)
 #else   // DEBUG
-void LogObserver::callbackLogMessageEx(const uint8_t* logBuffer, uint32_t /*size*/)
+void LogObserver::callback_log_message_ex(const uint8_t* logBuffer, uint32_t /*size*/)
 #endif  // DEBUG
 {
     if (logBuffer != nullptr)
@@ -306,22 +306,22 @@ void LogObserver::callbackLogMessageEx(const uint8_t* logBuffer, uint32_t /*size
     }
 }
 
-void LogObserver::logMain( int32_t argc, char ** argv )
+void LogObserver::log_main( int32_t argc, char ** argv )
 {
     ObserverEvents evts
     {
-          &LogObserver::callbackObserverConfigured
-        , &LogObserver::callbackDatabaseConfigured
-        , &LogObserver::callbackServiceConnected
-        , &LogObserver::callbackObserverStarted
-        , &LogObserver::callbackLogDbCreated
-        , &LogObserver::callbackMessagingFailed
-        , &LogObserver::callbackConnectedInstances
-        , &LogObserver::callbackDisconnecteInstances
-        , &LogObserver::callbackLogScopes
-        , &LogObserver::callbackLogUpdateScopes
-        , nullptr       // set nullptr to receive messages via `callbackLogMessageEx` callback
-        , &LogObserver::callbackLogMessageEx
+          &LogObserver::callback_observer_configured
+        , &LogObserver::callback_database_configured
+        , &LogObserver::callback_service_connected
+        , &LogObserver::callback_observer_started
+        , &LogObserver::callback_log_db_created
+        , &LogObserver::callback_messaging_failed
+        , &LogObserver::callback_connected_instances
+        , &LogObserver::callback_disconnected_instances
+        , &LogObserver::callback_log_scopes
+        , &LogObserver::callback_log_update_scopes
+        , nullptr       // set nullptr to receive messages via `callback_log_message_ex` callback
+        , &LogObserver::callback_log_message_ex
     };
 
     Application::set_working_directory(nullptr);
@@ -342,20 +342,20 @@ void LogObserver::logMain( int32_t argc, char ** argv )
 
     ::logObserverInitialize(&evts, fileConfig.as_string());
 
-    _runConsoleInputExtended();
+    _run_console_input_extended();
 
     Application::signal_app_quit();
     ::logObserverDisconnectLogger();
     ::logObserverRelease();
 }
 
-bool LogObserver::_checkCommand(const String& cmd)
+bool LogObserver::_check_command(const String& cmd)
 {
     OptionParser parser( LogObserver::ValidOptions, std::size(LogObserver::ValidOptions) );
     bool quit{ false };
     bool hasError {false};
 
-    LogObserver::_cleanHelp();
+    LogObserver::_clean_help();
     Console& console = Console::instance();
 
     if ( parser.parseOptionLine( cmd ) )
@@ -369,32 +369,32 @@ bool LogObserver::_checkCommand(const String& cmd)
             switch ( static_cast<LogObserver::LoggerOption>(opt.inCommand) )
             {
             case LogObserver::LoggerOption::CMD_LogQueryScopes:
-                processed = LogObserver::_processQueryScopes(opt);
+                processed = LogObserver::_process_query_scopes(opt);
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogQueryScopes)];
                 break;
 
             case LogObserver::LoggerOption::CMD_LogSaveConfig:
-                processed = LogObserver::_processSaveConfig(opt);
+                processed = LogObserver::_process_save_config(opt);
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogSaveConfig)];
                 break;
 
             case LogObserver::LoggerOption::CMD_LogPrintHelp:
-                processed = LogObserver::_processPrintHelp();
+                processed = LogObserver::_process_print_help();
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogPrintHelp)];
                 break;
 
             case LogObserver::LoggerOption::CMD_LogInstances:
-                processed = LogObserver::_processInfoInstances();
+                processed = LogObserver::_process_info_instances();
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogInstances)];
                 break;
 
             case LogObserver::LoggerOption::CMD_LogUpdateScope:
-                processed = LogObserver::_processUpdateScopes(opt);
+                processed = LogObserver::_process_update_scopes(opt);
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogUpdateScope)];
                 break;
 
             case LogObserver::LoggerOption::CMD_LogPause:
-                processed = LogObserver::_processPauseLogging();
+                processed = LogObserver::_process_pause_logging();
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogPause)];
                 break;
 
@@ -403,12 +403,12 @@ bool LogObserver::_checkCommand(const String& cmd)
                 break;
 
             case LogObserver::LoggerOption::CMD_LogRestart:
-                processed = LogObserver::_processStartLogging(true);
+                processed = LogObserver::_process_start_logging(true);
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogRestart)];
                 break;
 
             case LogObserver::LoggerOption::CMD_LogStop:
-                processed = LogObserver::_processStartLogging(false);
+                processed = LogObserver::_process_start_logging(false);
                 status = &_observerStatus[static_cast<uint32_t>(LoggerOption::CMD_LogStop)];
                 break;
 
@@ -469,7 +469,7 @@ bool LogObserver::_checkCommand(const String& cmd)
     return quit;
 }
 
-void LogObserver::_outputTitle()
+void LogObserver::_output_title()
 {
     Console & console = Console::instance( );
     console.lockConsole();
@@ -478,7 +478,7 @@ void LogObserver::_outputTitle()
     console.unlockConsole();
 }
 
-void LogObserver::_outputInfo( const String & info )
+void LogObserver::_output_info( const String & info )
 {
     Console & console = Console::instance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
@@ -491,7 +491,7 @@ void LogObserver::_outputInfo( const String & info )
     console.unlockConsole( );
 }
 
-void LogObserver::_cleanHelp()
+void LogObserver::_clean_help()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::instance();
@@ -508,7 +508,7 @@ void LogObserver::_cleanHelp()
     console.unlockConsole();
 }
 
-bool LogObserver::_processSaveConfig(const OptionParser::InputOption& optSave)
+bool LogObserver::_process_save_config(const OptionParser::InputOption& optSave)
 {
     ArrayList<ITEM_ID> listTargets;
     if (optSave.inString.empty() || (optSave.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
@@ -541,7 +541,7 @@ bool LogObserver::_processSaveConfig(const OptionParser::InputOption& optSave)
     return result;
 }
 
-bool LogObserver::_processPrintHelp()
+bool LogObserver::_process_print_help()
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::instance();
@@ -556,7 +556,7 @@ bool LogObserver::_processPrintHelp()
     return true;
 }
 
-bool LogObserver::_processInfoInstances()
+bool LogObserver::_process_info_instances()
 {
     static constexpr std::string_view _table{ "   Nr. |  Inst. ID  |  Bits |  Scopes  |  name " };
     static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  |  %s " };
@@ -598,7 +598,7 @@ bool LogObserver::_processInfoInstances()
     return true;
 }
 
-bool LogObserver::_processUpdateScopes(const OptionParser::InputOption& optScope)
+bool LogObserver::_process_update_scopes(const OptionParser::InputOption& optScope)
 {
     bool result{ false };
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
@@ -610,7 +610,7 @@ bool LogObserver::_processUpdateScopes(const OptionParser::InputOption& optScope
     {
         if (entry == NEPersistence::SYNTAX_END_COMMAND)
         {
-            LogObserver::_sendScopeUpdateMessage(scope);
+            LogObserver::_send_scope_update_message(scope);
             scope.clear();
         }
         else
@@ -621,18 +621,18 @@ bool LogObserver::_processUpdateScopes(const OptionParser::InputOption& optScope
 
     if (scope.is_empty() == false)
     {
-        result = LogObserver::_sendScopeUpdateMessage(scope);
+        result = LogObserver::_send_scope_update_message(scope);
     }
 
     return result;
 }
 
-bool LogObserver::_processPauseLogging()
+bool LogObserver::_process_pause_logging()
 {
     return ::logObserverPauseLogging(true);
 }
 
-bool LogObserver::_processStartLogging(bool doStart)
+bool LogObserver::_process_start_logging(bool doStart)
 {
     bool result{ true };
     if (doStart)
@@ -661,7 +661,7 @@ bool LogObserver::_processStartLogging(bool doStart)
     return result;
 }
 
-bool LogObserver::_processQueryScopes(const OptionParser::InputOption& optScope)
+bool LogObserver::_process_query_scopes(const OptionParser::InputOption& optScope)
 {
     bool result{ true };
     ArrayList<ITEM_ID> listTargets;
@@ -694,7 +694,7 @@ bool LogObserver::_processQueryScopes(const OptionParser::InputOption& optScope)
     return result;
 }
 
-String LogObserver::_normalizeScopeProperty(const String & scope)
+String LogObserver::_normalize_scope_property(const String & scope)
 {
     const NEPersistence::ConfigKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::ConfigEntry::LogScope)] };
     String result;
@@ -730,20 +730,20 @@ String LogObserver::_normalizeScopeProperty(const String & scope)
                 result.insert_at(prop, NEString::START_POS);
             }
 
-            result = _normalizeScopeProperty(result);
+            result = _normalize_scope_property(result);
         }
     }
 
     return result;
 }
 
-bool LogObserver::_sendScopeUpdateMessage(const String& scope)
+bool LogObserver::_send_scope_update_message(const String& scope)
 {
     bool result{ false };
 
     if (scope.is_empty() == false)
     {
-        Property prop(LogObserver::_normalizeScopeProperty(scope));
+        Property prop(LogObserver::_normalize_scope_property(scope));
         if (prop.is_valid() && prop.type() == NEPersistence::ConfigEntry::LogScope)
         {
             const PropertyKey& key{ prop.key() };
@@ -764,7 +764,7 @@ bool LogObserver::_sendScopeUpdateMessage(const String& scope)
     return result;
 }
 
-inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable */)
+inline void LogObserver::enable_local_logs(ConfigManager& config, bool /* enable */)
 {
     constexpr NEPersistence::ConfigEntry prioConfKey{ NEPersistence::ConfigEntry::LogScope };
     const NEPersistence::ConfigKey& keyPrio{ NEPersistence::log_scope() };
