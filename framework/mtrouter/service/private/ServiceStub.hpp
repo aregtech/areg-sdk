@@ -77,13 +77,13 @@ public:
      * \brief   Initializes Service stub object by copying the service address data.
      * \param   addrService     Service address that contains data to copy.
      **/
-    explicit ServiceStub( const ServiceAddress & addrService );
+    explicit ServiceStub( const areg::ServiceAddress & addrService );
 
     /**
      * \brief   Initializes Service stub object by moving the service address data.
      * \param   addrService     Service address that contains data to move.
      **/
-    explicit ServiceStub( ServiceAddress && addrService );
+    explicit ServiceStub( areg::ServiceAddress && addrService );
 
     /**
      * \brief   Destructor
@@ -215,7 +215,7 @@ namespace std
         //! A function to convert ServiceStub object to uint32_t.
         inline uint32_t operator()(const ServiceStub& key) const
         {
-            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.getServiceAddress()));
+            return static_cast<uint32_t>(static_cast<const areg::ServiceAddress &>(key.getServiceAddress()));
         }
     };
 
@@ -225,7 +225,7 @@ namespace std
         //! A function operator to compare 2 StubAddress objects.
         inline bool operator() (const ServiceStub& key1, const ServiceStub& key2) const
         {
-            return static_cast<const ServiceAddress&>(key1.getServiceAddress()) == static_cast<const ServiceAddress&>(key2.getServiceAddress());
+            return static_cast<const areg::ServiceAddress&>(key1.getServiceAddress()) == static_cast<const areg::ServiceAddress&>(key2.getServiceAddress());
         }
     };
 }

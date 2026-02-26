@@ -86,7 +86,7 @@ public:
      * \param   addrService     The servicing address to check.
      * \return  Returns valid Stub address if it is registered. Otherwise, returns invalid Stub address.
      **/
-    const ServiceStub & getStubService( const ServiceAddress & addrService ) const;
+    const ServiceStub & getStubService( const areg::ServiceAddress & addrService ) const;
 
     /**
      * \brief   By given remote servicing Stub address checks and returns the service connection status.
@@ -110,7 +110,7 @@ public:
      * \return  Returns not empty list if there is any proxy requested connection.
      *          Otherwise, returns empty list.
      **/
-    const ListServiceProxies & getProxyServiceList( const ServiceAddress & addrService ) const;
+    const ListServiceProxies & getProxyServiceList( const areg::ServiceAddress & addrService ) const;
 
     /**
      * \brief   By given Proxy address, searches and returns the registered proxy service object.
@@ -194,7 +194,7 @@ private:
      * \return  Returns valid position value if could find an entry matching given servicing address.
      *          Otherwise, returns nullptr.
      **/
-    MAPPOS findService( const ServiceAddress & addrService ) const;
+    MAPPOS findService( const areg::ServiceAddress & addrService ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

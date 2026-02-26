@@ -27,12 +27,12 @@ PublicHelloWorldService::PublicHelloWorldService( Component & masterComp )
 {
 }
 
-void PublicHelloWorldService::requestRegister( const areg::String & name, const ServiceAddress & service, const areg::String & thread, const areg::String & process )
+void PublicHelloWorldService::requestRegister( const areg::String & name, const areg::ServiceAddress & service, const areg::String & thread, const areg::String & process )
 {
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestRegister );
     LOG_DBG( "Received request to register client [ %s ] with service address [ %s ] and owner thread [ %s ] of process [ %s ]"
         , name.getString( )
-        , ServiceAddress::convAddressToPath( service ).getString( )
+        , areg::ServiceAddress::convAddressToPath( service ).getString( )
         , thread.getString( )
         , process.getString( ) );
 
@@ -56,7 +56,7 @@ void PublicHelloWorldService::requestRegister( const areg::String & name, const 
         LOG_DBG( "Registered [ %u ] new client [ %s ] of service [ %s ] in thread [ %s ] of process [ %s ]"
             , theClient.crID
             , theClient.crName.getString( )
-            , ServiceAddress::convAddressToPath( theClient.crService ).getString( )
+            , areg::ServiceAddress::convAddressToPath( theClient.crService ).getString( )
             , theClient.crThread.getString( )
             , theClient.crProcess.getString( ) );
     }

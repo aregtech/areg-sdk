@@ -44,7 +44,7 @@ namespace areg { class ServiceResponseEvent; }
  *          to identify Proxy. The proxy address is unique and contains 
  *          information of thread, connected component, and the service interface.
  **/
-class AREG_API ProxyAddress   : public    ServiceAddress
+class AREG_API ProxyAddress   : public    areg::ServiceAddress
 {
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -133,13 +133,13 @@ public:
      * \brief   Initializes proxy address by copying service address data.
      * \param   source  The service address source of data to copy.
      **/
-    explicit ProxyAddress(const ServiceAddress & source);
+    explicit ProxyAddress(const areg::ServiceAddress & source);
 
     /**
      * \brief   Initializes proxy address by moving service address data.
      * \param   source  The service address source of data to move.
      **/
-    explicit ProxyAddress(ServiceAddress && source);
+    explicit ProxyAddress(areg::ServiceAddress && source);
 
     /**
      * \brief   Initialize proxy address from streaming object.
@@ -424,7 +424,7 @@ inline ProxyAddress & ProxyAddress::operator = ( const ProxyAddress & source )
 {
     if (this != &source)
     {
-        static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
+        static_cast<areg::ServiceAddress &>(*this) = static_cast<const areg::ServiceAddress &>(source);
         mThreadName = source.mThreadName;
         mChannel    = source.mChannel;
         mMagicNum   = source.mMagicNum;
@@ -437,7 +437,7 @@ inline ProxyAddress & ProxyAddress::operator = ( ProxyAddress && source )noexcep
 {
     if ( this != &source )
     {
-        static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
+        static_cast<areg::ServiceAddress &>(*this) = static_cast<areg::ServiceAddress &&>(source);
         mThreadName = std::move(source.mThreadName);
         mChannel    = std::move(source.mChannel);
         mMagicNum   = source.mMagicNum;

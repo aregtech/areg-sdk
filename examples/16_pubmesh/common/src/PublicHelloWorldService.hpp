@@ -52,7 +52,7 @@ protected:
      * \param   process The name of process. Optional parameter, used to make output in logs.
      * \see     responseRegister
      **/
-    void requestRegister( const areg::String & name, const ServiceAddress & service, const areg::String & thread, const areg::String & process ) override;
+    void requestRegister( const areg::String & name, const areg::ServiceAddress & service, const areg::String & thread, const areg::String & process ) override;
 
     /**
      * \brief   Request call.

@@ -50,7 +50,7 @@ namespace areg
      *              of Stub address before sending event.
      *
      **/
-    class AREG_API StubAddress    : public    ServiceAddress
+    class AREG_API StubAddress    : public    areg::ServiceAddress
     {
     //////////////////////////////////////////////////////////////////////////
     // Static operations
@@ -134,13 +134,13 @@ namespace areg
          * \brief   Initializes stub address by copying service address data.
          * \param   source  The service address source of data to copy.
          **/
-        explicit StubAddress( const ServiceAddress & source );
+        explicit StubAddress( const areg::ServiceAddress & source );
 
         /**
          * \brief   Initializes stub address by moving service address data.
          * \param   source  The service address source of data to move.
          **/
-        explicit StubAddress( ServiceAddress && source );
+        explicit StubAddress( areg::ServiceAddress && source );
 
         /**
          * \brief   Initialize Stub address from stream.
@@ -177,13 +177,13 @@ namespace areg
          * \brief   Copies Stub Address data from given service address.
          * \param   addrService The service address as a source of basic information.
          **/
-        inline StubAddress & operator = ( const ServiceAddress & addrService );
+        inline StubAddress & operator = ( const areg::ServiceAddress & addrService );
 
         /**
          * \brief   Copies Stub Address data from given service address.
          * \param   addrService The service address as a source of basic information.
          **/
-        inline StubAddress & operator = ( ServiceAddress && addrService ) noexcept;
+        inline StubAddress & operator = ( areg::ServiceAddress && addrService ) noexcept;
 
         /**
          * \brief   Checks equality of 2 stub address and returns true if objects are equal.
@@ -392,7 +392,7 @@ namespace areg
     {
         if (this != &source)
         {
-            static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
+            static_cast<areg::ServiceAddress &>(*this) = static_cast<const areg::ServiceAddress &>(source);
             mThreadName = source.mThreadName;
             mChannel    = source.mChannel;
             mMagicNum   = source.mMagicNum;
@@ -405,7 +405,7 @@ namespace areg
     {
         if ( this != &source )
         {
-            static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
+            static_cast<areg::ServiceAddress &>(*this) = static_cast<areg::ServiceAddress &&>(source);
             mThreadName = std::move(source.mThreadName);
             mChannel    = std::move(source.mChannel);
             mMagicNum   = source.mMagicNum;
@@ -414,11 +414,11 @@ namespace areg
         return (*this);
     }
 
-    inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService)
+    inline StubAddress & StubAddress::operator = (const areg::ServiceAddress & addrService)
     {
-        if ( static_cast<const ServiceAddress *>(this) != &addrService)
+        if ( static_cast<const areg::ServiceAddress *>(this) != &addrService)
         {
-            static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
+            static_cast<areg::ServiceAddress &>(*this) = static_cast<const areg::ServiceAddress &>(addrService);
             mThreadName = areg::String::getEmptyString();
             mChannel    = Channel();
             mMagicNum   = StubAddress::_magicNumber(*this);
@@ -427,11 +427,11 @@ namespace areg
         return (*this);
     }
 
-    inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) noexcept
+    inline StubAddress & StubAddress::operator = ( areg::ServiceAddress && addrService ) noexcept
     {
-        if ( static_cast<const ServiceAddress *>(this) != &addrService )
+        if ( static_cast<const areg::ServiceAddress *>(this) != &addrService )
         {
-            static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
+            static_cast<areg::ServiceAddress &>(*this) = static_cast<areg::ServiceAddress &&>(addrService);
             mThreadName = areg::String::getEmptyString();
             mChannel    = Channel( );
             mMagicNum   = StubAddress::_magicNumber( *this );
@@ -556,7 +556,7 @@ namespace std
         //! A function operator to compare 2 StubAddress objects.
         inline bool operator() (const areg::StubAddress& key1, const areg::StubAddress& key2) const
         {
-            return static_cast<const ServiceAddress&>(key1) == static_cast<const ServiceAddress&>(key2);
+            return static_cast<const areg::ServiceAddress&>(key1) == static_cast<const areg::ServiceAddress&>(key2);
         }
     };
 }

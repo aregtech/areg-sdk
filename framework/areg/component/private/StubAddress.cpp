@@ -67,7 +67,7 @@ namespace areg
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     StubAddress::StubAddress()
-        : ServiceAddress( )
+        : areg::ServiceAddress( )
         , mThreadName   ( areg::ThreadAddress::getInvalidThreadAddress().getThreadName() )
         , mChannel      ( )
         , mMagicNum     ( areg::CHECKSUM_IGNORE )
@@ -79,13 +79,13 @@ namespace areg
                             , areg::ServiceType serviceType
                             , const areg::String & roleName
                             , const areg::String & threadName   /*= areg::String::getEmptyString()*/ )
-        : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
+        : areg::ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
         , mThreadName   ( )
         , mChannel      ( )
         , mMagicNum     ( areg::CHECKSUM_IGNORE )
     {
         setThread(threadName); // don't change this to fix channel source.
-        if ( ServiceAddress::isValid() )
+        if ( areg::ServiceAddress::isValid() )
         {
             mChannel.setCookie(areg::COOKIE_LOCAL);
         }
@@ -94,13 +94,13 @@ namespace areg
     }
 
     StubAddress::StubAddress(const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString() */)
-        : ServiceAddress( service, roleName )
+        : areg::ServiceAddress( service, roleName )
         , mThreadName   ( )
         , mChannel      ( )
         , mMagicNum     ( areg::CHECKSUM_IGNORE )
     {
         setThread(threadName); // don't change this to fix channel source.
-        if ( ServiceAddress::isValid() )
+        if ( areg::ServiceAddress::isValid() )
         {
             mChannel.setCookie(areg::COOKIE_LOCAL);
         }
@@ -109,20 +109,20 @@ namespace areg
     }
 
     StubAddress::StubAddress(const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString() */)
-        : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
+        : areg::ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
         , mThreadName   ( )
         , mChannel      ( )
         , mMagicNum     ( areg::CHECKSUM_IGNORE )
     {
         setThread(threadName); // don't change this to fix channel source.
-        if ( ServiceAddress::isValid() )
+        if ( areg::ServiceAddress::isValid() )
             mChannel.setCookie(areg::COOKIE_LOCAL);
 
         mMagicNum = StubAddress::_magicNumber(*this);
     }
 
     StubAddress::StubAddress( const StubAddress & source )
-        : ServiceAddress( static_cast<const ServiceAddress &>(source) )
+        : areg::ServiceAddress( static_cast<const areg::ServiceAddress &>(source) )
         , mThreadName   ( source.mThreadName )
         , mChannel      ( source.mChannel )
         , mMagicNum     ( source.mMagicNum )
@@ -130,42 +130,42 @@ namespace areg
     }
 
     StubAddress::StubAddress( StubAddress && source ) noexcept
-        : ServiceAddress( static_cast<ServiceAddress &&>(source) )
+        : areg::ServiceAddress( static_cast<areg::ServiceAddress &&>(source) )
         , mThreadName   ( std::move(source.mThreadName) )
         , mChannel      ( std::move(source.mChannel) )
         , mMagicNum     ( source.mMagicNum )
     {
     }
 
-    StubAddress::StubAddress(const ServiceAddress & source)
-        : ServiceAddress(static_cast<const ServiceAddress&>(source))
+    StubAddress::StubAddress(const areg::ServiceAddress & source)
+        : areg::ServiceAddress(static_cast<const areg::ServiceAddress&>(source))
         , mThreadName   (areg::ThreadAddress::getInvalidThreadAddress().getThreadName())
         , mChannel      ( )
         , mMagicNum     (static_cast<uint32_t>(source))
     {
-        if (ServiceAddress::isValid())
+        if (areg::ServiceAddress::isValid())
             mChannel.setCookie(areg::COOKIE_LOCAL);
     }
 
-    StubAddress::StubAddress( ServiceAddress && source)
-        : ServiceAddress(std::move(source))
+    StubAddress::StubAddress( areg::ServiceAddress && source)
+        : areg::ServiceAddress(std::move(source))
         , mThreadName   (areg::ThreadAddress::getInvalidThreadAddress().getThreadName())
         , mChannel      ( )
-        , mMagicNum     (static_cast<uint32_t>(static_cast<const ServiceAddress &>(self())))
+        , mMagicNum     (static_cast<uint32_t>(static_cast<const areg::ServiceAddress &>(self())))
     {
-        if (ServiceAddress::isValid())
+        if (areg::ServiceAddress::isValid())
             mChannel.setCookie(areg::COOKIE_LOCAL);
     }
 
     StubAddress::StubAddress( const areg::InStream & stream )
-        : ServiceAddress( stream )
+        : areg::ServiceAddress( stream )
         , mThreadName   ( stream )
         , mChannel      ( )
         , mMagicNum     ( areg::CHECKSUM_IGNORE )
     {
         ITEM_ID cookie = areg::COOKIE_LOCAL;
         stream >> cookie;
-        if ( ServiceAddress::isValid() )
+        if ( areg::ServiceAddress::isValid() )
             mChannel.setCookie(cookie);
 
         mMagicNum = StubAddress::_magicNumber(*this);
@@ -236,7 +236,7 @@ namespace areg
 
         result.append(EXTENTION_STUB)
             .append(areg::COMPONENT_PATH_SEPARATOR)
-            .append(ServiceAddress::convToString())
+            .append(areg::ServiceAddress::convToString())
             .append(areg::COMPONENT_PATH_SEPARATOR)
             .append(mThreadName)
             .append(areg::COMPONENT_PATH_SEPARATOR)
@@ -250,7 +250,7 @@ namespace areg
         const char* strSource = pathStub;
         if ( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_STUB.data() )
         {
-            ServiceAddress::convFromString(strSource, &strSource);
+            areg::ServiceAddress::convFromString(strSource, &strSource);
             mThreadName  = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource);
             mChannel.convFromString( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource).getString() );
 
@@ -280,13 +280,13 @@ namespace areg
 
     bool StubAddress::isValidated() const
     {
-        return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
+        return areg::ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
     }
 
     AREG_API_IMPL const areg::InStream & operator >> ( const areg::InStream & stream, StubAddress & input )
     {
         ITEM_ID cookie = areg::COOKIE_LOCAL;
-        stream >> static_cast<ServiceAddress &>(input);
+        stream >> static_cast<areg::ServiceAddress &>(input);
         stream >> input.mThreadName;
         stream >> cookie;
 
@@ -298,7 +298,7 @@ namespace areg
 
     AREG_API_IMPL areg::OutStream & operator << ( areg::OutStream & stream, const StubAddress & output)
     {
-        stream << static_cast<const ServiceAddress &>(output);
+        stream << static_cast<const areg::ServiceAddress &>(output);
         stream << output.mThreadName;
         stream << output.mChannel.getCookie();
         return stream;

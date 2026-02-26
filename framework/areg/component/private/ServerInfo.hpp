@@ -125,14 +125,14 @@ public:
      *          if specified Stub address is valid. Otherwise, it will set state Undefined.
      * \param   addService  Service address.
      **/
-    ServerInfo & operator = ( const ServiceAddress & addService );
+    ServerInfo & operator = ( const areg::ServiceAddress & addService );
 
     /**
      * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
      *          if specified Stub address is valid. Otherwise, it will set state Undefined.
      * \param   addService  Service address.
      **/
-    ServerInfo & operator = ( ServiceAddress && addService ) noexcept;
+    ServerInfo & operator = ( areg::ServiceAddress && addService ) noexcept;
 
     /**
      * \brief   Returns true, if 2 Server Info objects are equal. Otherwise returns false.
@@ -219,7 +219,7 @@ namespace std
         //! A function to convert ServerInfo object to uint32_t.
         inline uint32_t operator()(const ServerInfo& key) const
         {
-            return static_cast<uint32_t>(static_cast<const ServiceAddress &>(key.getAddress()));
+            return static_cast<uint32_t>(static_cast<const areg::ServiceAddress &>(key.getAddress()));
         }
     };
 
@@ -229,7 +229,7 @@ namespace std
         //! A function operator to compare 2 ServerInfo objects.
         inline bool operator() (const ServerInfo& key1, const ServerInfo& key2) const
         {
-            return static_cast<const ServiceAddress&>(key1.getAddress()) == static_cast<const ServiceAddress&>(key2.getAddress());
+            return static_cast<const areg::ServiceAddress&>(key1.getAddress()) == static_cast<const areg::ServiceAddress&>(key2.getAddress());
         }
     };
 }

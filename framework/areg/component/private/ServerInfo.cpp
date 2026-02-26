@@ -97,7 +97,7 @@ ServerInfo & ServerInfo::operator = ( areg::StubAddress && server ) noexcept
     return (*this);
 }
 
-ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
+ServerInfo & ServerInfo::operator = (const areg::ServiceAddress & addService)
 {
     mServerAddress = addService;
     setConnectionStatus( areg::ServiceConnectionState::Pending );
@@ -105,7 +105,7 @@ ServerInfo & ServerInfo::operator = (const ServiceAddress & addService)
     return (*this);
 }
 
-ServerInfo & ServerInfo::operator = ( ServiceAddress && addService ) noexcept
+ServerInfo & ServerInfo::operator = ( areg::ServiceAddress && addService ) noexcept
 {
     mServerAddress = std::move( addService );
     setConnectionStatus( areg::ServiceConnectionState::Pending );
@@ -130,7 +130,7 @@ bool ServerInfo::operator == ( const ProxyAddress & proxy ) const
 
 ServerInfo::operator uint32_t () const
 {
-    const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mServerAddress);
+    const areg::ServiceAddress & addrService = static_cast<const areg::ServiceAddress &>(mServerAddress);
     return static_cast<uint32_t>( addrService );
 }
 

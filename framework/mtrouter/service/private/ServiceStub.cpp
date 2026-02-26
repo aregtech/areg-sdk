@@ -53,13 +53,13 @@ ServiceStub::ServiceStub( ServiceStub && stubService ) noexcept
 {
 }
 
-ServiceStub::ServiceStub(const ServiceAddress& addrService)
+ServiceStub::ServiceStub(const areg::ServiceAddress& addrService)
     : mStubAddress  (addrService)
     , mConnectStatus(areg::ServiceConnectionState::Unknown)
 {
 }
 
-ServiceStub::ServiceStub( ServiceAddress && addrService)
+ServiceStub::ServiceStub( areg::ServiceAddress && addrService)
     : mStubAddress  (std::move(addrService))
     , mConnectStatus(areg::ServiceConnectionState::Unknown)
 {
@@ -83,7 +83,7 @@ ServiceStub & ServiceStub::operator = ( areg::StubAddress && addrStub ) noexcept
 
 ServiceStub & ServiceStub::operator = ( const ProxyAddress & addrProxy )
 {
-    mStubAddress    = static_cast<const ServiceAddress &>(addrProxy);
+    mStubAddress    = static_cast<const areg::ServiceAddress &>(addrProxy);
     mConnectStatus  = addrProxy.isValid() ? areg::ServiceConnectionState::Pending : areg::ServiceConnectionState::Unknown;
 
     return (*this);
@@ -107,22 +107,22 @@ ServiceStub & ServiceStub::operator = ( ServiceStub && stubService ) noexcept
 
 bool ServiceStub::operator == ( const areg::StubAddress & addrStub ) const
 {
-    return static_cast<const ServiceAddress &>(mStubAddress) == static_cast<const ServiceAddress &>(addrStub);
+    return static_cast<const areg::ServiceAddress &>(mStubAddress) == static_cast<const areg::ServiceAddress &>(addrStub);
 }
 
 bool ServiceStub::operator == (const ProxyAddress & addrProxy) const
 {
-    return static_cast<const ServiceAddress &>(mStubAddress) == static_cast<const ServiceAddress &>(addrProxy);
+    return static_cast<const areg::ServiceAddress &>(mStubAddress) == static_cast<const areg::ServiceAddress &>(addrProxy);
 }
 
 bool ServiceStub::operator == ( const ServiceStub & stubService ) const
 {
-    return static_cast<const ServiceAddress &>(mStubAddress) == static_cast<const ServiceAddress &>(stubService.mStubAddress);
+    return static_cast<const areg::ServiceAddress &>(mStubAddress) == static_cast<const areg::ServiceAddress &>(stubService.mStubAddress);
 }
 
 ServiceStub::operator uint32_t () const
 {
-    const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mStubAddress);
+    const areg::ServiceAddress & addrService = static_cast<const areg::ServiceAddress &>(mStubAddress);
     return static_cast<uint32_t>(addrService);
 }
 

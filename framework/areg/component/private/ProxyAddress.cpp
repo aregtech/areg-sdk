@@ -80,7 +80,7 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 //////////////////////////////////////////////////////////////////////////
 
 ProxyAddress::ProxyAddress()
-    : ServiceAddress( areg::ServiceItem(), INVALID_PROXY_NAME )
+    : areg::ServiceAddress( areg::ServiceItem(), INVALID_PROXY_NAME )
     , mThreadName   ( areg::ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
@@ -92,40 +92,40 @@ ProxyAddress::ProxyAddress( const areg::String & serviceName
                           , areg::ServiceType serviceType
                           , const areg::String & roleName
                           , const areg::String & threadName /*= areg::String::getEmptyString()*/ )
-    : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
+    : areg::ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     setThread( threadName );
-    if ( ServiceAddress::isValid() )
+    if ( areg::ServiceAddress::isValid() )
         mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
 ProxyAddress::ProxyAddress( const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString()*/ )
-    : ServiceAddress( service, roleName )
+    : areg::ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     setThread( threadName );
-    if ( ServiceAddress::isValid() )
+    if ( areg::ServiceAddress::isValid() )
         mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
 ProxyAddress::ProxyAddress(const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName /*= areg::String::getEmptyString()*/)
-    : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
+    : areg::ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     setThread(threadName);
-    if ( ServiceAddress::isValid() )
+    if ( areg::ServiceAddress::isValid() )
         mChannel.setCookie(areg::COOKIE_LOCAL);
 }
 
 ProxyAddress::ProxyAddress( const ProxyAddress & source )
-    : ServiceAddress( static_cast<const ServiceAddress &>(source) )
+    : areg::ServiceAddress( static_cast<const areg::ServiceAddress &>(source) )
     , mThreadName   ( source.mThreadName )
     , mChannel      ( source.mChannel )
     , mMagicNum     ( source.mMagicNum )
@@ -133,38 +133,38 @@ ProxyAddress::ProxyAddress( const ProxyAddress & source )
 }
 
 ProxyAddress::ProxyAddress( ProxyAddress && source ) noexcept
-    : ServiceAddress( static_cast<ServiceAddress &&>(source) )
+    : areg::ServiceAddress( static_cast<areg::ServiceAddress &&>(source) )
     , mThreadName   ( std::move(source.mThreadName) )
     , mChannel      ( std::move(source.mChannel) )
     , mMagicNum     ( source.mMagicNum )
 {
 }
 
-ProxyAddress::ProxyAddress(const ServiceAddress & source)
-    : ServiceAddress(static_cast<const ServiceAddress&>(source))
+ProxyAddress::ProxyAddress(const areg::ServiceAddress & source)
+    : areg::ServiceAddress(static_cast<const areg::ServiceAddress&>(source))
     , mThreadName   ("")
     , mChannel      ( )
     , mMagicNum     (static_cast<uint32_t>(source))
 {
 }
 
-ProxyAddress::ProxyAddress( ServiceAddress && source)
-    : ServiceAddress(std::move(source))
+ProxyAddress::ProxyAddress( areg::ServiceAddress && source)
+    : areg::ServiceAddress(std::move(source))
     , mThreadName   ("")
     , mChannel      ( )
-    , mMagicNum     (static_cast<uint32_t>(static_cast<const ServiceAddress &>(self())))
+    , mMagicNum     (static_cast<uint32_t>(static_cast<const areg::ServiceAddress &>(self())))
 {
 }
 
 ProxyAddress::ProxyAddress( const areg::InStream & stream )
-    : ServiceAddress( stream )
+    : areg::ServiceAddress( stream )
     , mThreadName   ( stream )
     , mChannel      ( )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     ITEM_ID cookie = areg::COOKIE_LOCAL;
     stream >> cookie;
-    if ( ServiceAddress::isValid() )
+    if ( areg::ServiceAddress::isValid() )
         mChannel.setCookie(cookie);
 
     mMagicNum = ProxyAddress::_magicNumber(*this);
@@ -253,7 +253,7 @@ areg::String ProxyAddress::convToString() const
 
     result.append(EXTENTION_PROXY)
           .append(areg::COMPONENT_PATH_SEPARATOR)
-          .append(ServiceAddress::convToString( ))
+          .append(areg::ServiceAddress::convToString( ))
           .append(areg::COMPONENT_PATH_SEPARATOR)
           .append(mThreadName)
           .append(areg::COMPONENT_PATH_SEPARATOR)
@@ -267,7 +267,7 @@ void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextP
     const char* strSource = pathProxy;
     if ( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
     {
-        ServiceAddress::convFromString(strSource, &strSource);
+        areg::ServiceAddress::convFromString(strSource, &strSource);
         mThreadName  = areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
         mChannel.convFromString( areg::String::getSubstring(strSource, areg::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
 
@@ -284,13 +284,13 @@ void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextP
 
 bool ProxyAddress::isValidated() const
 {
-    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
+    return areg::ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != areg::ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
 AREG_API_IMPL const areg::InStream & operator >> ( const areg::InStream & stream, ProxyAddress & input )
 {
     ITEM_ID cookie = areg::COOKIE_LOCAL;
-    stream >> static_cast<ServiceAddress &>(input);
+    stream >> static_cast<areg::ServiceAddress &>(input);
     stream >> input.mThreadName;
     stream >> cookie;
 
@@ -302,7 +302,7 @@ AREG_API_IMPL const areg::InStream & operator >> ( const areg::InStream & stream
 
 AREG_API_IMPL areg::OutStream & operator << ( areg::OutStream & stream, const ProxyAddress & output)
 {
-    stream << static_cast<const ServiceAddress &>(output);
+    stream << static_cast<const areg::ServiceAddress &>(output);
     stream << output.mThreadName;
     stream << output.mChannel.getCookie();
     

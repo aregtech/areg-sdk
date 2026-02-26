@@ -169,7 +169,7 @@ ServerInfo ServerList::unregisterServer( const areg::StubAddress & whichServer, 
         }
         else
         {
-            key = static_cast<const ServiceAddress&>(whichServer);
+            key = static_cast<const areg::ServiceAddress&>(whichServer);
         }
     }
 

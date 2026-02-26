@@ -36,7 +36,7 @@ ServiceProxy::ServiceProxy( ProxyAddress && addrProxy ) noexcept
 }
 
 ServiceProxy::ServiceProxy(const areg::StubAddress & addrStub)
-    : mProxyAddress (static_cast<const ServiceAddress&>(addrStub))
+    : mProxyAddress (static_cast<const areg::ServiceAddress&>(addrStub))
     , mConnectStatus(areg::ServiceConnectionState::Unknown)
 {
 }
@@ -98,14 +98,14 @@ bool ServiceProxy::operator == ( const ServiceProxy & serviceProxy ) const
 
 bool ServiceProxy::operator == ( const ProxyAddress & addrProxy ) const
 {
-    return  (static_cast<const ServiceAddress &>(mProxyAddress) == static_cast<const ServiceAddress &>(addrProxy))  && 
+    return  (static_cast<const areg::ServiceAddress &>(mProxyAddress) == static_cast<const areg::ServiceAddress &>(addrProxy))  && 
             (mProxyAddress.getThread() == addrProxy.getThread()) && 
             (mProxyAddress.getCookie() == addrProxy.getCookie());
 }
 
 bool ServiceProxy::operator == ( const areg::StubAddress & addrStub ) const
 {
-    return static_cast<const ServiceAddress &>(mProxyAddress) == static_cast<const ServiceAddress &>(addrStub);
+    return static_cast<const areg::ServiceAddress &>(mProxyAddress) == static_cast<const areg::ServiceAddress &>(addrStub);
 }
 
 void ServiceProxy::_setServiceStatus( areg::ServiceConnectionState newStatus )

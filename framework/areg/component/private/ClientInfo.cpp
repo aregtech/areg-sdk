@@ -137,7 +137,7 @@ void ClientInfo::setConnectionStatus( areg::ServiceConnectionState newConnection
 
 ClientInfo::operator uint32_t () const
 {
-    const ServiceAddress & addrService = static_cast<const ServiceAddress &>(mClientAddress);
+    const areg::ServiceAddress & addrService = static_cast<const areg::ServiceAddress &>(mClientAddress);
     return static_cast<uint32_t>( addrService );
 }
 

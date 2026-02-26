@@ -137,7 +137,7 @@ void ProxyEventConsumer::startEventProcessing( Event & eventElem )
     if ( proxyEvent != nullptr )
     {
         const ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
-        if ( static_cast<const ServiceAddress &>(addrProxy) == static_cast<const ServiceAddress &>(mProxyAddress) )
+        if ( static_cast<const areg::ServiceAddress &>(addrProxy) == static_cast<const areg::ServiceAddress &>(mProxyAddress) )
         {
             ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, ProxyConnectEvent);
             if ( eventConnect != nullptr )

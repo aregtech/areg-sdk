@@ -47,24 +47,24 @@ bool ServiceRegistry::isServiceRegistered(const areg::StubAddress & addrStub) co
 
 bool ServiceRegistry::isServiceRegistered(const ProxyAddress & addrProxy) const
 {
-    return getProxyServiceList( static_cast<const ServiceAddress &>(addrProxy) ).isServiceRegistered(addrProxy);
+    return getProxyServiceList( static_cast<const areg::ServiceAddress &>(addrProxy) ).isServiceRegistered(addrProxy);
 }
 
-const ServiceStub & ServiceRegistry::getStubService( const ServiceAddress & addrService ) const
+const ServiceStub & ServiceRegistry::getStubService( const areg::ServiceAddress & addrService ) const
 {
     MAPPOS pos = findService( addrService );
     return ( isValidPosition(pos) ? keyAtPosition(pos) : ServiceRegistry::InvalidStubService);
 }
 
-const ListServiceProxies & ServiceRegistry::getProxyServiceList( const ServiceAddress & addrService ) const
+const ListServiceProxies & ServiceRegistry::getProxyServiceList( const areg::ServiceAddress & addrService ) const
 {
-    MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrService) );
+    MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrService) );
     return (isValidPosition(pos) ? valueAtPosition(pos) : ServiceRegistry::EmptyProxiesList );
 }
 
 const ServiceProxy & ServiceRegistry::getProxyService(const ProxyAddress & addProxy) const
 {
-    return getProxyServiceList( static_cast<const ServiceAddress &>(addProxy) ).getService(addProxy);
+    return getProxyServiceList( static_cast<const areg::ServiceAddress &>(addProxy) ).getService(addProxy);
 }
 
 areg::ServiceConnectionState ServiceRegistry::getServiceStatus(const areg::StubAddress & addrStub) const
@@ -108,7 +108,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceProxy);
 
-    MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );
+    MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( isValidPosition(pos) )
     {
         const ServiceStub & stub = keyAtPosition(pos);
@@ -175,7 +175,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddre
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceStub);
 
-    MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrStub) );
+    MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrStub) );
     if ( isValidPosition(pos) )
     {
         ServiceStub & stub = keyAtPosition(pos);
@@ -209,7 +209,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddre
     return (isValidPosition(pos) ? keyAtPosition(pos) : ServiceRegistry::InvalidStubService);
 }
 
-ServiceRegistry::MAPPOS ServiceRegistry::findService( const ServiceAddress & addrService ) const
+ServiceRegistry::MAPPOS ServiceRegistry::findService( const areg::ServiceAddress & addrService ) const
 {
     return find(ServiceStub(addrService));
 }
@@ -310,7 +310,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, areg::ArrayList<
 const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & addrProxy)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
-    MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );
+    MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( isValidPosition(pos) )
     {
         ListServiceProxies & proxies = valueAtPosition(pos);
