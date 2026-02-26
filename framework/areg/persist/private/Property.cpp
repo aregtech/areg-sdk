@@ -33,21 +33,21 @@ Property::Property(const areg::String strProperty)
     parseProperty(strProperty);
 }
 
-Property::Property(const PropertyKey& key, const PropertyValue& value, const areg::String& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
+Property::Property(const PropertyKey& key, const areg::PropertyValue& value, const areg::String& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  (isTemporary)
     , mComment      (comment)
     , mProperty     (key, value)
 {
 }
 
-Property::Property(PropertyKey&& key, PropertyValue&& value, areg::String&& comment)
+Property::Property(PropertyKey&& key, areg::PropertyValue&& value, areg::String&& comment)
     : mIsTemporary  (false)
     , mComment      ( std::move(comment))
     , mProperty     ( std::move(key), std::move(value))
 {
 }
 
-Property::Property(PropertyKey&& key, PropertyValue&& value)
+Property::Property(PropertyKey&& key, areg::PropertyValue&& value)
     : mIsTemporary  (false)
     , mComment      ( )
     , mProperty     ( std::move(key), std::move(value))
@@ -57,21 +57,21 @@ Property::Property(PropertyKey&& key, PropertyValue&& value)
 Property::Property(const areg::String & keySet, const areg::String & valueSet, const areg::String & comment /*= areg::String::EmptyString*/, bool isTemporary /*= false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
+    , mProperty     ( PropertyKey(keySet), areg::PropertyValue(valueSet) )
 {
 }
 
 Property::Property(const char* keySet, const char* valueSet, const char* comment /*= nullptr*/, bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
+    , mProperty     ( PropertyKey(keySet), areg::PropertyValue(valueSet) )
 {
 }
 
 Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(keySet), PropertyValue(valueSet) )
+    , mProperty     ( PropertyKey(keySet), areg::PropertyValue(valueSet) )
 {
 }
 
@@ -84,7 +84,7 @@ Property::Property( const std::string_view& section
                   , bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(section, module, property, position), PropertyValue(value) )
+    , mProperty     ( PropertyKey(section, module, property, position), areg::PropertyValue(value) )
 {
 }
 
@@ -177,22 +177,22 @@ void Property::parseValue(const areg::String & valueSet)
     mProperty.mValue.second.parseValue(valueSet);
 }
 
-void Property::setValue(const PropertyValue & Value)
+void Property::setValue(const areg::PropertyValue & Value)
 {
     mProperty.mValue.second = Value;
 }
 
-void Property::setValue( PropertyValue && Value )
+void Property::setValue( areg::PropertyValue && Value )
 {
     mProperty.mValue.second = std::move(Value);
 }
 
-const PropertyValue & Property::getValue() const
+const areg::PropertyValue & Property::getValue() const
 {
     return mProperty.mValue.second;
 }
 
-PropertyValue& Property::getValue()
+areg::PropertyValue& Property::getValue()
 {
     return mProperty.mValue.second;
 }

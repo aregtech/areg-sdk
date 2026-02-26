@@ -39,7 +39,7 @@ public:
     /**
      * \brief   The definition of type Property, which is a pair of Key and Value
      **/
-    using Entry = areg::KeyValuePair<PropertyKey, PropertyValue>;
+    using Entry = areg::KeyValuePair<PropertyKey, areg::PropertyValue>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -65,13 +65,13 @@ public:
      * \param   comment     The comment to add to the property.
      * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
      **/
-    Property(const PropertyKey& key, const PropertyValue& value, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
+    Property(const PropertyKey& key, const areg::PropertyValue& value, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Moves objects during initialization.
      **/
-    Property(PropertyKey && key, PropertyValue && value, areg::String && comment);
-    Property(PropertyKey&& key, PropertyValue&& value);
+    Property(PropertyKey && key, areg::PropertyValue && value, areg::String && comment);
+    Property(PropertyKey&& key, areg::PropertyValue&& value);
 
     /**
      * \brief   Parses and initializes Key-Value and the comment data from given parameters.
@@ -219,18 +219,18 @@ public:
     /**
      * \brief   Sets Value of the property.
      **/
-    void setValue( const PropertyValue & Value );
+    void setValue( const areg::PropertyValue & Value );
 
     /**
      * \brief   Sets Value of the property.
      **/
-    void setValue( PropertyValue && Value );
+    void setValue( areg::PropertyValue && Value );
 
     /**
      * \brief   Returns Value of the property
      **/
-    const PropertyValue & getValue() const;
-    PropertyValue& getValue();
+    const areg::PropertyValue & getValue() const;
+    areg::PropertyValue& getValue();
 
     /**
      * \brief   Returns Value of Property as a string.

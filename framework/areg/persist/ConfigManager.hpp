@@ -232,7 +232,7 @@ public:
      * \return  Returns valid pointer to property value if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const PropertyValue * getPropertyValue( const areg::String& section
+    inline const areg::PropertyValue * getPropertyValue( const areg::String& section
                                                  , const areg::String& property
                                                  , const areg::String& position = areg::String::EmptyString
                                                  , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
@@ -244,7 +244,7 @@ public:
      * \return  Returns valid pointer to property value if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const PropertyValue * getPropertyValue(const PropertyKey& key) const;
+    inline const areg::PropertyValue * getPropertyValue(const PropertyKey& key) const;
 
     /**
      * \brief   Returns the pointer to the value of the module specific property searched by specified parameters.
@@ -256,11 +256,11 @@ public:
      * \return  Returns valid pointer if succeeded to find a module property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const PropertyValue * getModulePropertyValue( const areg::String& section
+    inline const areg::PropertyValue * getModulePropertyValue( const areg::String& section
                                                        , const areg::String& property
                                                        , const areg::String& position = areg::String::EmptyString
                                                        , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
-    inline PropertyValue * getModulePropertyValue( const areg::String& section
+    inline areg::PropertyValue * getModulePropertyValue( const areg::String& section
                                                  , const areg::String& property
                                                  , const areg::String& position = areg::String::EmptyString
                                                  , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey);
@@ -272,8 +272,8 @@ public:
      * \return  Returns valid pointer if succeeded to find a module property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const PropertyValue* getModulePropertyValue(const PropertyKey& key) const;
-    inline PropertyValue* getModulePropertyValue(const PropertyKey& key);
+    inline const areg::PropertyValue* getModulePropertyValue(const PropertyKey& key) const;
+    inline areg::PropertyValue* getModulePropertyValue(const PropertyKey& key);
 
     /**
      * \brief   Adds new properties to the module configuration.
@@ -889,7 +889,7 @@ inline void ConfigManager::setModuleProperty(const PropertyKey& key, const areg:
     setModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), value, key.getKeyType(), isTemporary);
 }
 
-inline const PropertyValue * ConfigManager::getPropertyValue( const areg::String& section
+inline const areg::PropertyValue * ConfigManager::getPropertyValue( const areg::String& section
                                                             , const areg::String& property
                                                             , const areg::String& position /*= areg::String::EmptyString*/
                                                             , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
@@ -900,17 +900,17 @@ inline const PropertyValue * ConfigManager::getPropertyValue( const areg::String
     return (result != nullptr ? &result->getValue() : nullptr);
 }
 
-inline const PropertyValue* ConfigManager::getPropertyValue(const PropertyKey& key) const
+inline const areg::PropertyValue* ConfigManager::getPropertyValue(const PropertyKey& key) const
 {
     return getPropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline const PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key) const
+inline const areg::PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key) const
 {
     return getModulePropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline const PropertyValue * ConfigManager::getModulePropertyValue( const areg::String& section
+inline const areg::PropertyValue * ConfigManager::getModulePropertyValue( const areg::String& section
                                                                   , const areg::String& property
                                                                   , const areg::String& position /*= areg::String::EmptyString*/
                                                                   , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
@@ -921,12 +921,12 @@ inline const PropertyValue * ConfigManager::getModulePropertyValue( const areg::
     return (result != nullptr ? &result->getValue() : nullptr);
 }
 
-inline PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key)
+inline areg::PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key)
 {
     return getModulePropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline PropertyValue * ConfigManager::getModulePropertyValue( const areg::String& section
+inline areg::PropertyValue * ConfigManager::getModulePropertyValue( const areg::String& section
                                                            , const areg::String& property
                                                            , const areg::String& position /*= areg::String::EmptyString*/
                                                            , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/)
