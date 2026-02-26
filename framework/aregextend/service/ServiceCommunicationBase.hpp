@@ -427,7 +427,7 @@ public:
      * \param   eventPrio   The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommand(ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio);
+    inline bool sendCommand(areg::ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Call to send the event to process.
@@ -435,7 +435,7 @@ public:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommunicationMessage(ServiceEventData::ServiceCommand cmd, const areg::RemoteMessage & msg, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
+    inline bool sendCommunicationMessage(areg::ServiceEventData::ServiceCommand cmd, const areg::RemoteMessage & msg, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
@@ -559,20 +559,20 @@ inline void ServiceCommunicationBase::waitToComplete( )
     shutdownThread( areg::DO_NOT_WAIT );
 }
 
-inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::sendCommand( areg::ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    return ServiceServerEvent::sendEvent( ServiceEventData( cmd )
-                                          , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
+    return areg::ServiceServerEvent::sendEvent( areg::ServiceEventData( cmd )
+                                          , static_cast<areg::ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<areg::DispatcherThread &>(self( ))
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData::ServiceCommand cmd
+inline bool ServiceCommunicationBase::sendCommunicationMessage( areg::ServiceEventData::ServiceCommand cmd
                                                                 , const areg::RemoteMessage & msg
                                                                 , areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
-                                          , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
+    return areg::ServiceServerEvent::sendEvent( areg::ServiceEventData( cmd, msg )
+                                          , static_cast<areg::ServiceServerEventConsumer &>(mEventConsumer)
                                           , static_cast<areg::DispatcherThread &>(self( ))
                                           , eventPrio );
 }

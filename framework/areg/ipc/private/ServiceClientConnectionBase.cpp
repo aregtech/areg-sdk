@@ -95,13 +95,13 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const areg::RemoteMessa
                 ASSERT(cookie == msgReceived.getTarget());
                 mClientConnection.setCookie(cookie);
                 onChannelConnected(cookie);
-                sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceStarted);
+                sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceStarted);
             }
             else
             {
                 cancelConnection();
                 onChannelConnected(areg::COOKIE_UNKNOWN);
-                sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+                sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceLost);
             }
         }
         break;
@@ -112,7 +112,7 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const areg::RemoteMessa
         {
             cancelConnection();
             onChannelConnected(areg::COOKIE_UNKNOWN);
-            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+            sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceLost);
         }
         break;
 
@@ -123,7 +123,7 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const areg::RemoteMessa
         {
             cancelConnection();
             onChannelConnected(areg::COOKIE_UNKNOWN);
-            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceStopped);
+            sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceStopped);
         }
         break;
     }
@@ -169,7 +169,7 @@ bool ServiceClientConnectionBase::connectServiceHost()
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 result = true;
-                sendCommand(ServiceEventData::ServiceCommand::CMD_StartService);
+                sendCommand(areg::ServiceEventData::ServiceCommand::CMD_StartService);
             }
         }
     }
@@ -180,14 +180,14 @@ bool ServiceClientConnectionBase::connectServiceHost()
 bool ServiceClientConnectionBase::reconnectServiceHost()
 {
     disconnectServiceHost( );
-    sendCommand(ServiceEventData::ServiceCommand::CMD_StartService );
+    sendCommand(areg::ServiceEventData::ServiceCommand::CMD_StartService );
 
     return true;
 }
 
 void ServiceClientConnectionBase::disconnectServiceHost()
 {
-    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::Event::EventPriority::NormalPrio);
+    sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::Event::EventPriority::NormalPrio);
 }
 
 bool ServiceClientConnectionBase::isServiceHostConnected() const

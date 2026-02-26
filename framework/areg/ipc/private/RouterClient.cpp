@@ -202,7 +202,7 @@ void RouterClient::failedSendMessage(const areg::RemoteMessage & msgFailed, areg
             {
                 LOG_DBG("Trying to reconnect");
                 cancelConnection( );
-                sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::Event::EventPriority::NormalPrio );
+                sendCommand( areg::ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::Event::EventPriority::NormalPrio );
             }
         }
         else
@@ -229,7 +229,7 @@ void RouterClient::failedReceiveMessage( areg::Socket & whichSource )
                        , whichSource.isValid() ? "VALID" : "INVALID"
                        , whichSource.isAlive() ? "ALIVE" : "DEAD");
             cancelConnection();
-            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::Event::EventPriority::NormalPrio);
+            sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::Event::EventPriority::NormalPrio);
         }
         else
         {

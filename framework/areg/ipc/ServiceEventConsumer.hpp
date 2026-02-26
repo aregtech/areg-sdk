@@ -177,7 +177,7 @@ namespace areg
     /**
      * \brief   Dispatches service client connection event.
      **/
-    class AREG_API ServiceClientConsumer    : public    ServiceClientEventConsumer
+    class AREG_API ServiceClientConsumer    : public    areg::ServiceClientEventConsumer
     {
     public:
         /**
@@ -202,7 +202,7 @@ namespace areg
          *                  default constructor and assigning operator.
          *                  This object is not used for IPC.
          **/
-        void processEvent(const ServiceEventData & data) override;
+        void processEvent(const areg::ServiceEventData & data) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden member variables
@@ -226,7 +226,7 @@ namespace areg
     /**
      * \brief   Dispatches service server connection event.
      **/
-    class AREG_API ServiceServerConsumer : public    ServiceServerEventConsumer
+    class AREG_API ServiceServerConsumer : public    areg::ServiceServerEventConsumer
     {
     public:
         /**
@@ -251,7 +251,7 @@ namespace areg
          *                  default constructor and assigning operator.
          *                  This object is not used for IPC.
          **/
-        void processEvent(const ServiceEventData & data) override;
+        void processEvent(const areg::ServiceEventData & data) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden member variables

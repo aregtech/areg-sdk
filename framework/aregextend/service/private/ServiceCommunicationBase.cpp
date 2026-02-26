@@ -129,7 +129,7 @@ bool ServiceCommunicationBase::connectServiceHost()
         if ( createThread( areg::WAIT_INFINITE ) && waitForDispatcherStart(areg::WAIT_INFINITE) )
         {
             result = true;
-            sendCommand( ServiceEventData::ServiceCommand::CMD_StartService );
+            sendCommand( areg::ServiceEventData::ServiceCommand::CMD_StartService );
         }
 
         LOG_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
@@ -153,7 +153,7 @@ bool ServiceCommunicationBase::reconnectServiceHost()
     {
         if (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE))
         {
-            result = sendCommand( ServiceEventData::ServiceCommand::CMD_RestartService );
+            result = sendCommand( areg::ServiceEventData::ServiceCommand::CMD_RestartService );
         }
 
         LOG_DBG("Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL");
@@ -161,7 +161,7 @@ bool ServiceCommunicationBase::reconnectServiceHost()
     else
     {
         LOG_WARN("The servicing thread is running, restarting servicing.");
-        result = sendCommand( ServiceEventData::ServiceCommand::CMD_RestartService );
+        result = sendCommand( areg::ServiceEventData::ServiceCommand::CMD_RestartService );
     }
 
     return result;
@@ -172,7 +172,7 @@ void ServiceCommunicationBase::disconnectServiceHost()
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
     if ( isRunning() )
     {
-        sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::Event::EventPriority::HighPrio );
+        sendCommand( areg::ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::Event::EventPriority::HighPrio );
         mEventSendStop.lock();
     }
 }
@@ -226,7 +226,7 @@ void ServiceCommunicationBase::connectionLost( areg::SocketAccepted & clientSock
     {
         removeInstance(cookie);
         areg::RemoteMessage msgDisconnect = areg::createDisconnectRequest(cookie, channel);
-        sendCommunicationMessage(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::Event::EventPriority::NormalPrio);
+        sendCommunicationMessage(areg::ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::Event::EventPriority::NormalPrio);
     }
 
     mServerConnection.closeConnection(clientSocket);
@@ -451,7 +451,7 @@ void ServiceCommunicationBase::processReceivedMessage(const areg::RemoteMessage 
                 removeInstance( cookie );
             }
 
-            sendCommunicationMessage( ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
+            sendCommunicationMessage( areg::ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgReceived );
         }
         else if ( (source == areg::SOURCE_UNKNOWN) && (msgId == areg::FuncIdRange::SystemServiceConnect) )
         {
@@ -488,13 +488,13 @@ void ServiceCommunicationBase::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        ServiceServerEvent::addListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
+        areg::ServiceServerEvent::addListener( static_cast<areg::ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
         areg::DispatcherThread::readyForEvents( true );
     }
     else
     {
         areg::DispatcherThread::readyForEvents( false );
-        ServiceServerEvent::removeListener( static_cast<ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
+        areg::ServiceServerEvent::removeListener( static_cast<areg::ServiceServerEventConsumer &>(mEventConsumer), static_cast<areg::DispatcherThread &>(self( )) );
     }
 }
 

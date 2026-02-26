@@ -328,7 +328,7 @@ protected:
      * \param   cmd         The command to send and process.
      * \param   eventPrio   The priority of the event. By default, the priority is normal.
      */
-    inline void sendCommand(ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
+    inline void sendCommand(areg::ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues the message for sending
@@ -521,12 +521,12 @@ inline bool ServiceClientConnectionBase::isDisconnectState() const
 
 inline void ServiceClientConnectionBase::registerForServiceClientCommands()
 {
-    ServiceClientEvent::addListener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+    areg::ServiceClientEvent::addListener(static_cast<areg::ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
 inline void ServiceClientConnectionBase::unregisterForServiceClientCommands()
 {
-    ServiceClientEvent::removeListener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+    areg::ServiceClientEvent::removeListener(static_cast<areg::ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
 }
 
 inline const char * ServiceClientConnectionBase::getString(ServiceClientConnectionBase::ConnectionPhase val)
@@ -566,11 +566,11 @@ inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase:
     return mConnectionState;
 }
 
-inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::ServiceCommand cmd
+inline void ServiceClientConnectionBase::sendCommand( areg::ServiceEventData::ServiceCommand cmd
                                                     , areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    ServiceClientEvent::sendEvent( ServiceEventData( cmd )
-                                 , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
+    areg::ServiceClientEvent::sendEvent( areg::ServiceEventData( cmd )
+                                 , static_cast<areg::ServiceClientEventConsumer &>(mEventConsumer)
                                  , mMessageDispatcher
                                  , eventPrio );
 }

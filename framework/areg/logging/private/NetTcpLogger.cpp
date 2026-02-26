@@ -146,12 +146,12 @@ void NetTcpLogger::failedSendMessage(const areg::RemoteMessage & msgFailed, areg
         mRingStack.push(msgFailed);
     }
 
-    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+    sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedReceiveMessage(areg::Socket & /* whichSource */)
 {
-    sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
+    sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedProcessMessage(const areg::RemoteMessage & /* msgUnprocessed */)
