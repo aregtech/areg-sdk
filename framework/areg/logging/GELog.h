@@ -130,7 +130,7 @@
     /**
      * \brief   Use this macro to define scope in source code. This will create scope variable and set name
      **/
-    #define DEF_LOG_SCOPE(scope)                        static LogScope _##scope( #scope )
+    #define DEF_LOG_SCOPE(scope)                        static areg::LogScope _##scope( #scope )
 
     /**
      * \brief   Use this macro to define message object by passing scope in constructor.
@@ -188,7 +188,7 @@
      **/
     #define GLOBAL_LOG_SCOPE(scope)                   static areg::ScopeMessage & _getGlobalScope()           \
                                                         {                                               \
-                                                            static LogScope     _##scope(#scope);       \
+                                                            static areg::LogScope     _##scope(#scope);       \
                                                             static areg::ScopeMessage  _messager(_##scope);   \
                                                             static bool isActivated { false };          \
                                                             if (isActivated == false)                   \

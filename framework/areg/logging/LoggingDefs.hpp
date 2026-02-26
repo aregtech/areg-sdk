@@ -32,7 +32,7 @@
  * Dependencies
  ************************************************************************/
 class LogDatabaseEngine;
-class LogScope;
+namespace areg { class LogScope; }
 
 //////////////////////////////////////////////////////////////////////////
 // NELogging namespace declaration
@@ -53,7 +53,7 @@ namespace areg
      * \brief   The list of the scopes. It is a pair, where the key is the ID of the scope
      *          and the value is the pointer to the scope.
      **/
-    using ScopeList     = HashMap<uint32_t, LogScope*>;
+    using ScopeList     = HashMap<uint32_t, areg::LogScope*>;
 
     /**
      * \brief   Alias of the map position.
@@ -398,7 +398,7 @@ namespace areg
      *          However, if the configuration specifies a priority other than PrioNotset,
      *          messages within that scope will be logged according to the specified priority.
      **/
-    AREG_API void activateScope( LogScope & logScope );
+    AREG_API void activateScope( areg::LogScope & logScope );
 
     /**
      * \brief   Returns true if logging has been started.

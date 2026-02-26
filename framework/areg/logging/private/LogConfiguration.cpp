@@ -303,7 +303,7 @@ void LogConfiguration::updateScopeConfiguration(const ScopeController& scopeCont
 {
     const auto& scopeList = scopeController.getScopeList();
     uint32_t key{ 0 };
-    LogScope* scope = scopeList.resourceFirstKey(key);
+    areg::LogScope* scope = scopeList.resourceFirstKey(key);
     ScopeRoot root;
     while (scope != nullptr)
     {

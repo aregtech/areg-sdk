@@ -122,7 +122,7 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const areg::RemoteMessage
 
         for (uint32_t i = 0; i < count; ++i)
         {
-            LogScope scope(msgReceived);
+            areg::LogScope scope(msgReceived);
             ScopeInfo& entry{ scopes[i] };
             entry.lsId = scope.getScopeId();
             entry.lsPrio = scope.getPriority();
@@ -178,7 +178,7 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const areg::RemoteMessage& 
 
         for (uint32_t i = 0; i < count; ++i)
         {
-            LogScope scope(msgReceived);
+            areg::LogScope scope(msgReceived);
             ScopeInfo& entry{ scopes[i] };
             entry.lsId = scope.getScopeId();
             entry.lsPrio = scope.getPriority();

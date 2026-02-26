@@ -26,7 +26,7 @@ namespace areg
 {
     #if AREG_LOGS
 
-    ScopeMessage::ScopeMessage( const LogScope & logScope )
+    ScopeMessage::ScopeMessage( const areg::LogScope & logScope )
         : mScopeName( logScope.getScopeName() )
         , mScopeId  ( logScope.mScopeId       )
         , mSessionId( logScope.nextSession()  )
@@ -129,7 +129,7 @@ namespace areg
 
     #else   // AREG_LOGS
 
-    ScopeMessage::ScopeMessage(const LogScope& /*logScope*/)
+    ScopeMessage::ScopeMessage(const areg::LogScope& /*logScope*/)
     {
     }
 

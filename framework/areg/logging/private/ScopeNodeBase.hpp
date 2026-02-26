@@ -28,7 +28,7 @@
   * Dependencies.
   ************************************************************************/
 class ConfigManager;
-class LogScope;
+namespace areg { class LogScope; }
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeNodeBase class declaration
@@ -348,7 +348,7 @@ public:
      * \param   logScope  The logging scope, which contains the scope name and the log priority.
      * \return  Returns the number of nodes created or updated.
      **/
-    uint32_t addChildRecursive( const LogScope & logScope );
+    uint32_t addChildRecursive( const areg::LogScope & logScope );
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members

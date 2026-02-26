@@ -181,7 +181,7 @@ uint32_t ScopeNodeBase::addChildRecursive( areg::String & scopePath, uint32_t pr
     return (node.first.isValid() ? (1 + node.first.addChildRecursive(scopePath, prioStates)) : 0);
 }
 
-uint32_t ScopeNodeBase::addChildRecursive( const LogScope & logScope )
+uint32_t ScopeNodeBase::addChildRecursive( const areg::LogScope & logScope )
 {
     areg::String scopeName( logScope.getScopeName( ) );
     return addChildRecursive( scopeName, logScope.getPriority( ) );

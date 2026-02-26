@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogScope;
+namespace areg { class LogScope; }
 class Property;
 
 //////////////////////////////////////////////////////////////////////////
@@ -37,16 +37,16 @@ class Property;
 //!< Scope hash map
 using MapLogScope   = areg::ScopeList;
 //!< Scope resource map helper
-using ImplLogScope  = areg::ResourceMapImpl<uint32_t, LogScope *>;
+using ImplLogScope  = areg::ResourceMapImpl<uint32_t, areg::LogScope *>;
 //!< The log scope key-value pair.
-using LogScopePair  = std::pair<uint32_t, LogScope *>;
+using LogScopePair  = std::pair<uint32_t, areg::LogScope *>;
 //!< The map of scopes to configure
 using ListScopes    = areg::StringToIntegerHashMap;
     
 /**
  * \brief   Resource map, container of all logging scopes
  **/
-class LogScopeMap   : public areg::ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
+class LogScopeMap   : public areg::ConcurrentResourceMap<uint32_t, areg::LogScope *, MapLogScope, ImplLogScope>
 {
     friend class NetTcpLogger;
     friend class ScopeController;
@@ -98,7 +98,7 @@ public:
      * \return  If found, returns valid pointer of registered Log Scope object;
      *          otherwise, it returns null.
      **/
-    inline const LogScope * getScope( uint32_t scopeId ) const;
+    inline const areg::LogScope * getScope( uint32_t scopeId ) const;
 
     /**
      * \brief   By given unique scope name it returns instance of registered Log Scope object.
@@ -108,7 +108,7 @@ public:
      * \return  If found, returns valid pointer of registered Log Scope object;
      *          otherwise, it returns null.
      **/
-    inline const LogScope * getScope( const char * scopeName ) const;
+    inline const areg::LogScope * getScope( const char * scopeName ) const;
 
     /**
      * \brief   Checks if there is a log scope object registered with the given ID.
@@ -135,13 +135,13 @@ public:
      * \brief   Registers instance of log scope object in Scope Controller.
      * \param   scope   The instance log scope object to register.
      **/
-    void registerScope( LogScope & scope );
+    void registerScope( areg::LogScope & scope );
 
     /**
      * \brief   Unregisters instance of log scope object in Scope Controller.
      * \param   scope   The instance log scope object to unregister.
      **/
-    void unregisterScope( LogScope & scope );
+    void unregisterScope( areg::LogScope & scope );
 
     /**
      * \brief   Searches the log scope object by given ID and sets specified priority.
@@ -328,7 +328,7 @@ public:
      *          No property of specified scope is changed, the priority remains unchanged.
      * \param   logScope  The scope to activate.
      **/
-    void activateScope( LogScope & logScope );
+    void activateScope( areg::LogScope & logScope );
 
     /**
      * \brief   Activates specified scope and sets specified logging priority. 
@@ -336,7 +336,7 @@ public:
      * \param   logScope      The scope to activate and update logging priority.
      * \param   defaultPrio     The default priority to set to the scope.
      **/
-    void activateScope( LogScope & logScope, uint32_t defaultPrio );
+    void activateScope( areg::LogScope & logScope, uint32_t defaultPrio );
 
     /**
      * \brief   Activates or deactivates the scope based on the log scope priority set in the configuration.
@@ -392,12 +392,12 @@ inline const LogScopeMap & ScopeController::getScopeList() const
     return mMapLogScope;
 }
 
-inline const LogScope * ScopeController::getScope( uint32_t scopeId ) const
+inline const areg::LogScope * ScopeController::getScope( uint32_t scopeId ) const
 {
     return mMapLogScope.findResourceObject( scopeId );
 }
 
-inline const LogScope * ScopeController::getScope( const char * scopeName ) const
+inline const areg::LogScope * ScopeController::getScope( const char * scopeName ) const
 {
     return getScope( areg::makeScopeId(scopeName) );
 }

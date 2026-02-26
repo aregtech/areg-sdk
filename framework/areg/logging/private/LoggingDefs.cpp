@@ -99,7 +99,7 @@ namespace
         const auto& list{ scopeList.getData() };
         for (const auto& entry : list)
         {
-            const LogScope* scope = entry.second;
+            const areg::LogScope* scope = entry.second;
             ASSERT(scope != nullptr);
             msgRemote << *scope;
         }
@@ -256,7 +256,7 @@ AREG_API_IMPL void areg::waitLoggingEnd()
     LogManager::waitLoggingEnd();
 }
 
-AREG_API_IMPL void areg::activateScope(LogScope & logScope)
+AREG_API_IMPL void areg::activateScope(areg::LogScope & logScope)
 {
     LogManager::activateLogScope(logScope);
 }
@@ -541,7 +541,7 @@ AREG_API_IMPL void areg::waitLoggingEnd()
 {
 }
 
-AREG_API_IMPL void areg::activateScope(LogScope & /*logScope*/)
+AREG_API_IMPL void areg::activateScope(areg::LogScope & /*logScope*/)
 {
 }
 

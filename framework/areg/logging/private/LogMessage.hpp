@@ -28,7 +28,7 @@
 namespace areg { class InStream; }
 namespace areg { class OutStream; }
 namespace areg { class ScopeMessage; }
-class LogScope;
+namespace areg { class LogScope; }
 
 //////////////////////////////////////////////////////////////////////////
 // LogMessage class declaration
@@ -95,7 +95,7 @@ public:
      *                      The duration is ignored and set to 0 if the scopeStamp is 0.
      * \param   logScope    The log scope object with scope name and ID to set.
      **/
-    LogMessage( areg::LogMessageType msgType, uint32_t sessionid, TIME64 scopeStamp, const LogScope & logScope );
+    LogMessage( areg::LogMessageType msgType, uint32_t sessionid, TIME64 scopeStamp, const areg::LogScope & logScope );
 
     /**
      * \brief   Copies logging message data from given source.

@@ -41,7 +41,7 @@
  * Dependencies
  ************************************************************************/
 class LogDatabaseEngine;
-class LogScope;
+namespace areg { class LogScope; }
 class LogMessage;
 namespace areg
 {
@@ -160,13 +160,13 @@ public:
      * \brief   Registers instance of log scope object in log manager.
      * \param   scope   The instance of log scope object to register.
      **/
-    inline static void registerLogScope( LogScope & scope );
+    inline static void registerLogScope( areg::LogScope & scope );
 
     /**
      * \brief   Unregisters instance of log scope object from log manager.
      * \param   scope   The instance of log scope to unregister.
      **/
-    inline static void unregisterLogScope( LogScope & scope );
+    inline static void unregisterLogScope( areg::LogScope & scope );
 
     /**
      * \brief   Activates log scope. Finds priority in priority list
@@ -174,7 +174,7 @@ public:
      * \param   scope   The instance of log scope object to activate
      *                  and set logging priority.
      **/
-    inline static void activateLogScope( LogScope & scope );
+    inline static void activateLogScope( areg::LogScope & scope );
 
     /**
      * \brief   Returns true if logging has started
@@ -431,7 +431,7 @@ private:
     /**
      * \brief   Returns read-only list of registered scopes.
      **/
-    inline const areg::HashMap<uint32_t, LogScope *> & getScopeList() const;
+    inline const areg::HashMap<uint32_t, areg::LogScope *> & getScopeList() const;
 
     /**
      * \brief   Returns instance of log manager.
@@ -504,17 +504,17 @@ inline void LogManager::waitLoggingEnd()
     getInstance().waitLoggingThreadEnd();
 }
 
-inline void LogManager::registerLogScope(LogScope& scope)
+inline void LogManager::registerLogScope(areg::LogScope& scope)
 {
     getInstance().mScopeController.registerScope(scope);
 }
 
-inline void LogManager::unregisterLogScope( LogScope & scope )
+inline void LogManager::unregisterLogScope( areg::LogScope & scope )
 {
     getInstance( ).mScopeController.unregisterScope( scope );
 }
 
-inline void LogManager::activateLogScope(LogScope& scope)
+inline void LogManager::activateLogScope(areg::LogScope& scope)
 {
     getInstance().mScopeController.activateScope(scope);
 }
@@ -524,7 +524,7 @@ inline const ITEM_ID & LogManager::getConnectionCookie()
     return LogManager::getInstance().mLoggerTcp.getConnectionCookie();
 }
 
-inline const areg::HashMap<uint32_t, LogScope *> & LogManager::getScopeList() const
+inline const areg::HashMap<uint32_t, areg::LogScope *> & LogManager::getScopeList() const
 {
     return mScopeController.getScopeList( );
 }

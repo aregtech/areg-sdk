@@ -25,7 +25,7 @@
 #include <string.h>
 
 #if AREG_LOGS
-LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const LogScope & logScope )
+LogMessage::LogMessage(areg::LogMessageType msgType, uint32_t sessionId, TIME64 scopeStamp, const areg::LogScope & logScope )
     : areg::LogEntry( msgType, logScope.getScopeId(), sessionId, scopeStamp, areg::LogPriority::PrioScope, logScope.getScopeName().getString(), static_cast<uint32_t>(logScope.getScopeName( ).getLength()) )
 {
     // AAvetyan: check that the message type is either ScopeEnter or ScopeExit
@@ -41,7 +41,7 @@ void LogMessage::setMessage(const char * message, int32_t msgLen )
 
 #else   // AREG_LOGS
 
-LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const LogScope& /*logScope*/)
+LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*sessionId*/, TIME64 scopeStamp, const areg::LogScope& /*logScope*/)
     : areg::LogEntry( )
 {
 }

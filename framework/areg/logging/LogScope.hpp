@@ -25,194 +25,285 @@
 
 namespace areg { class ScopeMessage; }
 
-//////////////////////////////////////////////////////////////////////////////
-// LogScope class declaration
-//////////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Log Scope class is used to control the activation and priority of log messages.
- *
- *          Before logging any messages, log scopes must be defined. Each log scope
- *          is automatically registered in the system and has a unique, immutable name.
- *          A log scope has an activation state and a log priority level, which can be
- *          modified at runtime. These attributes filter messages locally on the host
- *          before they are sent to the log collector, allowing for dynamic logging control.
- **/
-class AREG_API LogScope
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////////
-// friend class declaration to access internals
-//////////////////////////////////////////////////////////////////////////////
-    friend class areg::ScopeMessage;
-//////////////////////////////////////////////////////////////////////////////
-// Internal types and constants
-//////////////////////////////////////////////////////////////////////////////
-    using session   = std::atomic_uint32_t;
+    //////////////////////////////////////////////////////////////////////////////
+    // LogScope class declaration
+    //////////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The Log Scope class is used to control the activation and priority of log messages.
+     *
+     *          Before logging any messages, log scopes must be defined. Each log scope
+     *          is automatically registered in the system and has a unique, immutable name.
+     *          A log scope has an activation state and a log priority level, which can be
+     *          modified at runtime. These attributes filter messages locally on the host
+     *          before they are sent to the log collector, allowing for dynamic logging control.
+     **/
+    class AREG_API LogScope
+    {
+    //////////////////////////////////////////////////////////////////////////////
+    // friend class declaration to access internals
+    //////////////////////////////////////////////////////////////////////////////
+        friend class areg::ScopeMessage;
+    //////////////////////////////////////////////////////////////////////////////
+    // Internal types and constants
+    //////////////////////////////////////////////////////////////////////////////
+        using session   = std::atomic_uint32_t;
 
-//////////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Sets the name of scope, which should be unique and cannot be changed,
-     *          and sets message priority. By default, the message priority areg::PrioNotset,
-     *          which means the logging of message is disabled.
-     * \param   scopeName   The unique name of the log scope.
-     * \param   priority    The message priority of log scope.
-     **/
-    LogScope( const char * scopeName, areg::LogPriority priority = areg::LogPriority::PrioNotset );
+    //////////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Sets the name of scope, which should be unique and cannot be changed,
+         *          and sets message priority. By default, the message priority areg::PrioNotset,
+         *          which means the logging of message is disabled.
+         * \param   scopeName   The unique name of the log scope.
+         * \param   priority    The message priority of log scope.
+         **/
+        LogScope( const char * scopeName, areg::LogPriority priority = areg::LogPriority::PrioNotset );
 
-    /**
-     * \brief   Initializes the logging scope object from the stream.
-     * \param   stream  The streaming object that contains the scope attributes.
-     **/
-    LogScope(const areg::InStream & stream);
+        /**
+         * \brief   Initializes the logging scope object from the stream.
+         * \param   stream  The streaming object that contains the scope attributes.
+         **/
+        LogScope(const areg::InStream & stream);
 
-    /**
-     * \brief   Destructor.
-     **/
-    ~LogScope();
+        /**
+         * \brief   Destructor.
+         **/
+        ~LogScope();
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Converts and returns 32-bit integer value of the scope.
-     **/
-    inline operator uint32_t () const;
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Converts and returns 32-bit integer value of the scope.
+         **/
+        inline operator uint32_t () const;
 
-    /**
-     * \brief   Writes the scope data into the stream.
-     * \note    The log scope class does not have operator to deserialize
-     *          the scope object, because of 2 reasons:
-     *              1.  LogScope does not have default constructor. Because it
-     *                  sets empty name, which is not unique;
-     *              2.  The name of the log scope cannot be changed.
-     * \param   stream  The stream object to write data.
-     * \param   output  The scope to write into the stream object.
-     **/
-    inline friend areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output );
+        /**
+         * \brief   Writes the scope data into the stream.
+         * \note    The log scope class does not have operator to deserialize
+         *          the scope object, because of 2 reasons:
+         *              1.  LogScope does not have default constructor. Because it
+         *                  sets empty name, which is not unique;
+         *              2.  The name of the log scope cannot be changed.
+         * \param   stream  The stream object to write data.
+         * \param   output  The scope to write into the stream object.
+         **/
+        inline friend areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output );
 
-//////////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    // Attributes and operations
+    //////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Sets scope log message priority level by integer value.
-     * \param   newPrio     Scope log message priority level to set.
-     **/
-    inline void setPriority( uint32_t newPrio );
+        /**
+         * \brief   Sets scope log message priority level by integer value.
+         * \param   newPrio     Scope log message priority level to set.
+         **/
+        inline void setPriority( uint32_t newPrio );
 
-    /**
-     * \brief   Sets scope log message priority level by name.
-     * \param   newPrio     The name of the log priority level to add.
-     **/
-    inline void setPriority( const char * newPrio );
-    inline void setPriority( const areg::String & newPrio );
+        /**
+         * \brief   Sets scope log message priority level by name.
+         * \param   newPrio     The name of the log priority level to add.
+         **/
+        inline void setPriority( const char * newPrio );
+        inline void setPriority( const areg::String & newPrio );
 
-    /**
-     * \brief   Adds priority level to the existing priority level of the scope.
-     *          The priority level is added bitwise.
-     * \param   addPrio     The log message priority level to add.
-     **/
-    inline void addPriority( areg::LogPriority addPrio );
+        /**
+         * \brief   Adds priority level to the existing priority level of the scope.
+         *          The priority level is added bitwise.
+         * \param   addPrio     The log message priority level to add.
+         **/
+        inline void addPriority( areg::LogPriority addPrio );
 
-    /**
-     * \brief   Adds priority level to the existing priority level of the scope,
-     *          where the priority level is added by name.
-     *          The priority level is added bitwise.
-     * \param   addPrio     The name of the log priority level to add.
-     **/
-    inline void addPriority( const char * addPrio );
-    inline void addPriority( const areg::String & addPrio );
+        /**
+         * \brief   Adds priority level to the existing priority level of the scope,
+         *          where the priority level is added by name.
+         *          The priority level is added bitwise.
+         * \param   addPrio     The name of the log priority level to add.
+         **/
+        inline void addPriority( const char * addPrio );
+        inline void addPriority( const areg::String & addPrio );
 
-    /**
-     * \brief   Removes priority level from the existing priority level of the scope.
-     *          The operation is made bitwise.
-     * \param   remPrio     The log priority level to remove.
-     **/
-    inline void removePriority( areg::LogPriority remPrio );
+        /**
+         * \brief   Removes priority level from the existing priority level of the scope.
+         *          The operation is made bitwise.
+         * \param   remPrio     The log priority level to remove.
+         **/
+        inline void removePriority( areg::LogPriority remPrio );
 
-    /**
-     * \brief   Removes priority level from the existing priority level of the scope,
-     *          where the priority level is passed by name.
-     *          The operation is made bitwise.
-     * \param   remPrio     The name of the log priority level to remove.
-     **/
-    inline void removePriority( const char * remPrio );
-    inline void removePriority( const areg::String & remPrio );
+        /**
+         * \brief   Removes priority level from the existing priority level of the scope,
+         *          where the priority level is passed by name.
+         *          The operation is made bitwise.
+         * \param   remPrio     The name of the log priority level to remove.
+         **/
+        inline void removePriority( const char * remPrio );
+        inline void removePriority( const areg::String & remPrio );
 
-    /**
-     * \brief   Returns the value of log message priority.
-     **/
-    inline uint32_t getPriority() const;
+        /**
+         * \brief   Returns the value of log message priority.
+         **/
+        inline uint32_t getPriority() const;
 
-    /**
-     * \brief   Returns the ID of log scope.
-     **/
-    inline uint32_t getScopeId() const;
+        /**
+         * \brief   Returns the ID of log scope.
+         **/
+        inline uint32_t getScopeId() const;
 
-    /**
-     * \brief   Returns the name of the log scope.
-     **/
-    inline const areg::String & getScopeName() const;
+        /**
+         * \brief   Returns the name of the log scope.
+         **/
+        inline const areg::String & getScopeName() const;
 
-    /**
-     * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
-     **/
-    inline uint32_t getSessionId() const;
+        /**
+         * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
+         **/
+        inline uint32_t getSessionId() const;
 
-//////////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The ID of log scope. It cannot be changed
-     **/
-    const uint32_t  mScopeId;
-    /**
-     * \brief   The log message priority of the scope.
-     **/
-    uint32_t        mScopePrio;
-    /**
-     * \brief   The name of log scope. It cannot be changed
-     **/
-    const areg::String        mScopeName;
-    /**
-     * \brief   The log scope is active or not.
-     **/
-     const bool         mIsRegistered;
-     /**
-      * \brief   The session ID of the log scope, used to identify the scope in the session.
-      **/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-     mutable session    mSessionId;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    //////////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   The ID of log scope. It cannot be changed
+         **/
+        const uint32_t  mScopeId;
+        /**
+         * \brief   The log message priority of the scope.
+         **/
+        uint32_t        mScopePrio;
+        /**
+         * \brief   The name of log scope. It cannot be changed
+         **/
+        const areg::String        mScopeName;
+        /**
+         * \brief   The log scope is active or not.
+         **/
+         const bool         mIsRegistered;
+         /**
+          * \brief   The session ID of the log scope, used to identify the scope in the session.
+          **/
+    #if defined(_MSC_VER) && (_MSC_VER > 1200)
+        #pragma warning(disable: 4251)
+    #endif  // _MSC_VER
+         mutable session    mSessionId;
+    #if defined(_MSC_VER) && (_MSC_VER > 1200)
+        #pragma warning(default: 4251)
+    #endif  // _MSC_VER
 
-//////////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Increases the session ID and returns the value to use in log messages.
-     **/
-    inline uint32_t nextSession() const;
-    /**
-     * \brief   Returns LogScope object
-     **/
-    inline LogScope & self();
+    //////////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Increases the session ID and returns the value to use in log messages.
+         **/
+        inline uint32_t nextSession() const;
+        /**
+         * \brief   Returns LogScope object
+         **/
+        inline LogScope & self();
 
-//////////////////////////////////////////////////////////////////////////////
-// Forbidden methods
-//////////////////////////////////////////////////////////////////////////////
-private:
-    LogScope() = delete;
-    AREG_NOCOPY_NOMOVE( LogScope );
-};
+    //////////////////////////////////////////////////////////////////////////////
+    // Forbidden methods
+    //////////////////////////////////////////////////////////////////////////////
+    private:
+        LogScope() = delete;
+        AREG_NOCOPY_NOMOVE( LogScope );
+    };
+
+    //////////////////////////////////////////////////////////////////////////////
+    // inline functions implementation
+    //////////////////////////////////////////////////////////////////////////////
+
+    inline areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output )
+    {
+        stream << output.mScopeId;
+        stream << output.mScopePrio;
+        stream << output.mScopeName;
+
+        return stream;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // LogScope class inline functions implementation
+    //////////////////////////////////////////////////////////////////////////////
+
+    inline uint32_t LogScope::nextSession() const
+    {
+        return mSessionId.fetch_add(1);
+    }
+
+    inline LogScope & LogScope::self()
+    {
+        return (*this);
+    }
+
+    inline LogScope::operator uint32_t () const
+    {
+        return mScopeId;
+    }
+
+    inline void LogScope::setPriority( uint32_t newPrio )
+    {
+        mScopePrio  = newPrio;
+    }
+
+    inline void LogScope::addPriority( areg::LogPriority addPrio )
+    {
+        mScopePrio  |= static_cast<uint32_t>(addPrio);
+    }
+
+    void LogScope::addPriority( const char * addPrio )
+    {
+        addPriority( areg::stringToLogPrio(addPrio) );
+    }
+
+    void LogScope::addPriority( const areg::String & addPrio )
+    {
+        addPriority( areg::stringToLogPrio(addPrio) );
+    }
+
+    inline void LogScope::removePriority( areg::LogPriority remPrio )
+    {
+        mScopePrio  &= ~static_cast<uint32_t>(remPrio);
+    }
+
+    void LogScope::removePriority( const char * remPrio )
+    {
+        removePriority( areg::stringToLogPrio(remPrio) );
+    }
+
+    void LogScope::removePriority( const areg::String & remPrio )
+    {
+        removePriority( areg::stringToLogPrio(remPrio) );
+    }
+
+    inline uint32_t LogScope::getPriority() const
+    {
+        return mScopePrio;
+    }
+
+    inline uint32_t LogScope::getScopeId() const
+    {
+        return mScopeId;
+    }
+
+    inline const areg::String & LogScope::getScopeName() const
+    {
+        return mScopeName;
+    }
+
+    inline uint32_t LogScope::getSessionId() const
+    {
+        return mSessionId;
+    }
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // Hasher of LogScope class
@@ -223,101 +314,13 @@ private:
 namespace std
 {
     template<>
-    struct hash<LogScope>
+    struct hash<areg::LogScope>
     {
         //! A function to convert LogScope object to uint32_t.
-        inline uint32_t operator()(const LogScope& key) const
+        inline uint32_t operator()(const areg::LogScope& key) const
         {
             return static_cast<uint32_t>(key);
         }
     };
 }
-
-//////////////////////////////////////////////////////////////////////////////
-// inline functions implementation
-//////////////////////////////////////////////////////////////////////////////
-
-inline areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output )
-{
-    stream << output.mScopeId;
-    stream << output.mScopePrio;
-    stream << output.mScopeName;
-
-    return stream;
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// LogScope class inline functions implementation
-//////////////////////////////////////////////////////////////////////////////
-
-inline uint32_t LogScope::nextSession() const
-{
-    return mSessionId.fetch_add(1);
-}
-
-inline LogScope & LogScope::self()
-{
-    return (*this);
-}
-
-inline LogScope::operator uint32_t () const
-{
-    return mScopeId;
-}
-
-inline void LogScope::setPriority( uint32_t newPrio )
-{
-    mScopePrio  = newPrio;
-}
-
-inline void LogScope::addPriority( areg::LogPriority addPrio )
-{
-    mScopePrio  |= static_cast<uint32_t>(addPrio);
-}
-
-void LogScope::addPriority( const char * addPrio )
-{
-    addPriority( areg::stringToLogPrio(addPrio) );
-}
-
-void LogScope::addPriority( const areg::String & addPrio )
-{
-    addPriority( areg::stringToLogPrio(addPrio) );
-}
-
-inline void LogScope::removePriority( areg::LogPriority remPrio )
-{
-    mScopePrio  &= ~static_cast<uint32_t>(remPrio);
-}
-
-void LogScope::removePriority( const char * remPrio )
-{
-    removePriority( areg::stringToLogPrio(remPrio) );
-}
-
-void LogScope::removePriority( const areg::String & remPrio )
-{
-    removePriority( areg::stringToLogPrio(remPrio) );
-}
-
-inline uint32_t LogScope::getPriority() const
-{
-    return mScopePrio;
-}
-
-inline uint32_t LogScope::getScopeId() const
-{
-    return mScopeId;
-}
-
-inline const areg::String & LogScope::getScopeName() const
-{
-    return mScopeName;
-}
-
-inline uint32_t LogScope::getSessionId() const
-{
-    return mSessionId;
-}
-
 #endif  // AREG_LOGGING_LOGSCOPE_HPP

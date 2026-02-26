@@ -24,7 +24,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogScope;
+namespace areg { class LogScope; }
 class LogMessage;
 
 namespace areg
@@ -55,7 +55,7 @@ namespace areg
          *          and sends it to configured logging targets.
          * \param   logScope    Instance of Log Scope object containing log priority values.
          **/
-        ScopeMessage( const LogScope & logScope );
+        ScopeMessage( const areg::LogScope & logScope );
 
         /**
          * \brief   If Scope Priority is enabled for the Log Scope, creates an 

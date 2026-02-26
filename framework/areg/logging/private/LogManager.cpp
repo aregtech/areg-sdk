@@ -132,7 +132,7 @@ bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
 {
     ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
     uint32_t scopeId = areg::makeScopeId( scopeName );
-    const LogScope * scope = ctrScope.getScope( scopeId );
+    const areg::LogScope * scope = ctrScope.getScope( scopeId );
     bool result{ scope != nullptr };
     if ( result && (scope->getPriority() != newPrio))
     {
@@ -153,7 +153,7 @@ uint32_t LogManager::getScopePriority( const char * scopeName )
 {
     ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
     uint32_t scopeId = areg::makeScopeId( scopeName );
-    const LogScope * scope = ctrScope.getScope( scopeId );
+    const areg::LogScope * scope = ctrScope.getScope( scopeId );
     return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
 }
 
