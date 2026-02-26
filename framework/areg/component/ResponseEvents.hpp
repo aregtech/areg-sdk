@@ -132,7 +132,7 @@ namespace areg
         /**
          * \brief   Returns event data object.
          **/
-        inline const EventData & getData() const;
+        inline const areg::EventData & getData() const;
 
         /**
          * \brief   Returns data type of request data
@@ -155,7 +155,7 @@ namespace areg
         /**
          * \brief   Returns data object valid for modification.
          **/
-        inline EventData & getData();
+        inline areg::EventData & getData();
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -185,7 +185,7 @@ namespace areg
         /**
          * \brief   Event data object.
          **/
-        EventData     mData;
+        areg::EventData     mData;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -372,7 +372,7 @@ namespace areg
     // ResponseEvent class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const EventData & ResponseEvent::getData() const
+    inline const areg::EventData & ResponseEvent::getData() const
     {
         return mData;
     }
@@ -382,7 +382,7 @@ namespace areg
         return mData.getDataType();
     }
 
-    inline EventData & ResponseEvent::getData()
+    inline areg::EventData & ResponseEvent::getData()
     {
         return mData;
     }

@@ -19,60 +19,64 @@
 
 #include <utility>
 
-//////////////////////////////////////////////////////////////////////////
-// EventData class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// EventData class Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-EventData::EventData( uint32_t msgId, areg::EventDataStream::EventDataKind dataType, const areg::String & name /*= areg::String::getEmptyString()*/ )
-    : mDataType (areg::getMessageDataType(msgId))
-    , mData     (dataType, name)
+namespace areg
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // EventData class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-EventData::EventData( uint32_t msgId, const areg::EventDataStream & args, const areg::String & name /*= areg::String::getEmptyString()*/ )
-    : mDataType (areg::getMessageDataType(msgId))
-    , mData     (args, name)
-{
-}
-
-EventData::EventData( const EventData& src )
-    : mDataType (src.mDataType)
-    , mData     (src.mData)
-{
-}
-
-EventData::EventData( EventData && src ) noexcept
-    : mDataType ( std::move(src.mDataType) )
-    , mData     ( std::move(src.mData) )
-{
-}
-
-EventData::EventData(const areg::InStream & stream)
-    : mDataType ( areg::MessageDataType::UndefinedData )
-    , mData     ( areg::EventDataStream::EventDataKind::External )
-{
-    stream >> mDataType;
-    stream >> mData;
-    mData.resetCursor();
-}
-
-EventData & EventData::operator = (const EventData & src)
-{
-    mDataType   = src.mDataType;
-    mData       = src.mData;
-    return (*this);
-}
-
-EventData & EventData::operator = ( EventData && src ) noexcept
-{
-    if (this != &src)
+    //////////////////////////////////////////////////////////////////////////
+    // EventData class Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    EventData::EventData( uint32_t msgId, areg::EventDataStream::EventDataKind dataType, const areg::String & name /*= areg::String::getEmptyString()*/ )
+        : mDataType (areg::getMessageDataType(msgId))
+        , mData     (dataType, name)
     {
-        mDataType   = std::move(src.mDataType);
-        mData       = std::move(src.mData);
     }
 
-    return (*this);
-}
+    EventData::EventData( uint32_t msgId, const areg::EventDataStream & args, const areg::String & name /*= areg::String::getEmptyString()*/ )
+        : mDataType (areg::getMessageDataType(msgId))
+        , mData     (args, name)
+    {
+    }
+
+    EventData::EventData( const EventData& src )
+        : mDataType (src.mDataType)
+        , mData     (src.mData)
+    {
+    }
+
+    EventData::EventData( EventData && src ) noexcept
+        : mDataType ( std::move(src.mDataType) )
+        , mData     ( std::move(src.mData) )
+    {
+    }
+
+    EventData::EventData(const areg::InStream & stream)
+        : mDataType ( areg::MessageDataType::UndefinedData )
+        , mData     ( areg::EventDataStream::EventDataKind::External )
+    {
+        stream >> mDataType;
+        stream >> mData;
+        mData.resetCursor();
+    }
+
+    EventData & EventData::operator = (const EventData & src)
+    {
+        mDataType   = src.mDataType;
+        mData       = src.mData;
+        return (*this);
+    }
+
+    EventData & EventData::operator = ( EventData && src ) noexcept
+    {
+        if (this != &src)
+        {
+            mDataType   = std::move(src.mDataType);
+            mData       = std::move(src.mData);
+        }
+
+        return (*this);
+    }
+
+} // namespace areg

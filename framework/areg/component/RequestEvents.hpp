@@ -124,7 +124,7 @@ public:
     /**
      * \brief   Returns event data object.
      **/
-    inline const EventData & getData() const;
+    inline const areg::EventData & getData() const;
 
     /**
      * \brief   Returns data type of request data
@@ -147,7 +147,7 @@ protected:
     /**
      * \brief   Returns data object valid for modification.
      **/
-    inline EventData & getData();
+    inline areg::EventData & getData();
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -177,7 +177,7 @@ private:
     /**
      * \brief   Event data object.
      **/
-    EventData     mData;
+    areg::EventData     mData;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -529,7 +529,7 @@ private:
 // RequestEvent class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline const EventData & RequestEvent::getData() const
+inline const areg::EventData & RequestEvent::getData() const
 {
     return mData;
 }
@@ -539,7 +539,7 @@ inline areg::MessageDataType RequestEvent::getDataType() const
     return mData.getDataType();
 }
 
-inline EventData& RequestEvent::getData()
+inline areg::EventData& RequestEvent::getData()
 {
     return mData;
 }
