@@ -19,21 +19,21 @@
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId )
     : ServerConnectionBase  ( )
-    , SocketConnectionBase  ( )
+    , areg::SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr)
     : ServerConnectionBase  ( hostName, portNr)
-    , SocketConnectionBase  ( )
+    , areg::SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress)
     : ServerConnectionBase  ( serverAddress )
-    , SocketConnectionBase  ( )
+    , areg::SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }

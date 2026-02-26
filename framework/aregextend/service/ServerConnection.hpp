@@ -40,7 +40,7 @@
  *          are specified.
  **/
 class ServerConnection  : public    ServerConnectionBase
-                        , private   SocketConnectionBase
+                        , private   areg::SocketConnectionBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -212,22 +212,22 @@ inline const ITEM_ID & ServerConnection::getChannelId() const
 
 inline int32_t ServerConnection::sendMessage(const areg::RemoteMessage & in_message, const areg::SocketAccepted & clientSocket) const
 {
-    return SocketConnectionBase::sendMessage(in_message, clientSocket);
+    return areg::SocketConnectionBase::sendMessage(in_message, clientSocket);
 }
 
 inline int32_t ServerConnection::sendMessage(const areg::RemoteMessage & in_message, const ITEM_ID & clientCookie) const
 {
-    return SocketConnectionBase::sendMessage(in_message, getClientByCookie(clientCookie) );
+    return areg::SocketConnectionBase::sendMessage(in_message, getClientByCookie(clientCookie) );
 }
 
 inline int32_t ServerConnection::receiveMessage(areg::RemoteMessage & out_message, const areg::SocketAccepted & clientSocket) const
 {
-    return SocketConnectionBase::receiveMessage(out_message, clientSocket);
+    return areg::SocketConnectionBase::receiveMessage(out_message, clientSocket);
 }
 
 inline int32_t ServerConnection::receiveMessage(areg::RemoteMessage & out_message, const ITEM_ID & clientCookie) const
 {
-    return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
+    return areg::SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
 }
 
 #endif  // AREG_AREGEXTEND_SERVICE_SERVERCONNECTION_HPP

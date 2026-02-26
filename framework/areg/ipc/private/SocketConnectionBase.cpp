@@ -20,58 +20,62 @@
 
 #include "areg/logging/GELog.h"
 
-int32_t SocketConnectionBase::sendMessage(const areg::RemoteMessage & in_message, const areg::Socket & clientSocket) const
+namespace areg
 {
-    int32_t result{ -1 };
-    if ( in_message.isValid() && clientSocket.isValid() )
+    int32_t SocketConnectionBase::sendMessage(const areg::RemoteMessage & in_message, const areg::Socket & clientSocket) const
     {
-        in_message.bufferCompletionFix();
-        const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.getByteBuffer() );
-        result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
-        if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
+        int32_t result{ -1 };
+        if ( in_message.isValid() && clientSocket.isValid() )
         {
-            ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
-            // send the aligned length.
-            result += clientSocket.sendData(in_message.getBuffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
-        }
-    }
-
-    return result;
-}
-
-int32_t SocketConnectionBase::receiveMessage(areg::RemoteMessage & out_message, const areg::Socket & clientSocket) const
-{
-    int32_t result{ -1 };
-    if ( clientSocket.isValid() && clientSocket.isAlive() )
-    {
-        areg::MessageHeader msgHeader{};
-
-        out_message.invalidate();
-        result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
-        if ( result == sizeof(areg::MessageHeader) )
-        {
-            result = sizeof(areg::MessageHeader);
-            uint8_t * buffer = out_message.initMessage( msgHeader );
-            if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
+            in_message.bufferCompletionFix();
+            const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.getByteBuffer() );
+            result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
+            if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
             {
-                ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
-
-                // receive aligned length of data.
-                result += clientSocket.receiveData(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
-            }
-
-            out_message.moveToBegin();
-            if ( out_message.isChecksumValid() == false )
-            {
-                result = 0;
-                out_message.invalidate();
+                ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
+                // send the aligned length.
+                result += clientSocket.sendData(in_message.getBuffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
             }
         }
-        else
-        {
-            result = (result > 0) && (result != sizeof(areg::MessageHeader)) ? 0 : result;
-        }
+
+        return result;
     }
 
-    return result;
-}
+    int32_t SocketConnectionBase::receiveMessage(areg::RemoteMessage & out_message, const areg::Socket & clientSocket) const
+    {
+        int32_t result{ -1 };
+        if ( clientSocket.isValid() && clientSocket.isAlive() )
+        {
+            areg::MessageHeader msgHeader{};
+
+            out_message.invalidate();
+            result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
+            if ( result == sizeof(areg::MessageHeader) )
+            {
+                result = sizeof(areg::MessageHeader);
+                uint8_t * buffer = out_message.initMessage( msgHeader );
+                if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
+                {
+                    ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
+
+                    // receive aligned length of data.
+                    result += clientSocket.receiveData(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
+                }
+
+                out_message.moveToBegin();
+                if ( out_message.isChecksumValid() == false )
+                {
+                    result = 0;
+                    out_message.invalidate();
+                }
+            }
+            else
+            {
+                result = (result > 0) && (result != sizeof(areg::MessageHeader)) ? 0 : result;
+            }
+        }
+
+        return result;
+    }
+
+} // namespace areg

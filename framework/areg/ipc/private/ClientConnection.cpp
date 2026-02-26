@@ -20,21 +20,21 @@
 #include "areg/logging/GELog.h"
 
 ClientConnection::ClientConnection()
-    : SocketConnectionBase    ( )
+    : areg::SocketConnectionBase    ( )
     , mClientSocket ( )
     , mCookie       ( areg::COOKIE_UNKNOWN )
 {
 }
 
 ClientConnection::ClientConnection(const areg::String & hostName, uint16_t portNr)
-    : SocketConnectionBase    ( )
+    : areg::SocketConnectionBase    ( )
     , mClientSocket ( hostName, portNr )
     , mCookie       ( areg::COOKIE_UNKNOWN )
 {
 }
 
 ClientConnection::ClientConnection(const areg::SocketAddress & remoteAddress)
-    : SocketConnectionBase    ( )
+    : areg::SocketConnectionBase    ( )
     , mClientSocket ( remoteAddress )
     , mCookie       ( areg::COOKIE_UNKNOWN )
 {

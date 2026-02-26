@@ -34,7 +34,7 @@
  *          Client socket is using only TCP/IP connection. All other types
  *          and protocols are out of scope of this class and are not considered.
  **/
-class AREG_API ClientConnection : private   SocketConnectionBase
+class AREG_API ClientConnection : private   areg::SocketConnectionBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -277,12 +277,12 @@ inline areg::Socket & ClientConnection::getSocket()
 
 inline int32_t ClientConnection::sendMessage(const areg::RemoteMessage & in_message) const
 {
-    return SocketConnectionBase::sendMessage(in_message, mClientSocket);
+    return areg::SocketConnectionBase::sendMessage(in_message, mClientSocket);
 }
 
 inline int32_t ClientConnection::receiveMessage(areg::RemoteMessage & out_message) const
 {
-    return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
+    return areg::SocketConnectionBase::receiveMessage(out_message, mClientSocket);
 }
 
 #endif  // AREG_IPC_CLIENTCONNECTION_HPP
