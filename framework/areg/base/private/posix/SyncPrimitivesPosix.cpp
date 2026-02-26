@@ -251,12 +251,12 @@ bool areg::ResourceLock::_osTryLock()
 
 void areg::SyncTimer::_osCreateTimer( bool /* isSteady */ )
 {
-    mSyncObject= static_cast<void *>(DEBUG_NEW WaitableTimerPosix( mIsAutoReset, "POSIX_WaitableTimer" ));
+    mSyncObject= static_cast<void *>(DEBUG_NEW areg::os::WaitableTimerPosix( mIsAutoReset, "POSIX_WaitableTimer" ));
 }
 
 void areg::SyncTimer::_osReleaseTime()
 {
-    reinterpret_cast<WaitableTimerPosix *>(mSyncObject)->cancelTimer( );
+    reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject)->cancelTimer( );
 }
 
 bool areg::SyncTimer::_osLock( uint32_t timeout )
@@ -266,12 +266,12 @@ bool areg::SyncTimer::_osLock( uint32_t timeout )
 
 bool areg::SyncTimer::_osSetTimer()
 {
-    return reinterpret_cast<WaitableTimerPosix *>(mSyncObject)->setTimer( mTimeout, mIsPeriodic );
+    return reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject)->setTimer( mTimeout, mIsPeriodic );
 }
 
 bool areg::SyncTimer::_osCancelTimer()
 {
-    return reinterpret_cast<WaitableTimerPosix *>(mSyncObject)->cancelTimer( );
+    return reinterpret_cast<areg::os::WaitableTimerPosix *>(mSyncObject)->cancelTimer( );
 }
 
 //////////////////////////////////////////////////////////////////////////

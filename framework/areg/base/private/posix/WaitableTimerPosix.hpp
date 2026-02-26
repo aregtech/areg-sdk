@@ -25,188 +25,192 @@
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
 #include <time.h>
+#include <signal.h>
 
 #ifdef __APPLE__
     #include <dispatch/dispatch.h>
 #endif  // !__APPLE__
 
-//////////////////////////////////////////////////////////////////////////
-// WaitableTimer class declaration.
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The waitable timer object is a synchronization object which state is 
- *          set to signaled when the specified timeout is expired. There are two 
- *          types of waitable timers: manual- or auto-reset.
- **/
-class WaitableTimerPosix : public WaitablePosix
+namespace areg::os
 {
-//////////////////////////////////////////////////////////////////////////
-// Statics and constants
-//////////////////////////////////////////////////////////////////////////
-private:
-#ifndef __APPLE__
+    //////////////////////////////////////////////////////////////////////////
+    // WaitableTimer class declaration.
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   The POSIX timer routing function.
-     * \param   si  The signal processing structure data passed to routine.
+     * \brief   The waitable timer object is a synchronization object which state is 
+     *          set to signaled when the specified timeout is expired. There are two 
+     *          types of waitable timers: manual- or auto-reset.
      **/
-    static void _posixTimerRoutine(union sigval si);
-#endif  // !__APPLE__
+    class WaitableTimerPosix : public WaitablePosix
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Statics and constants
+    //////////////////////////////////////////////////////////////////////////
+    private:
+    #ifndef __APPLE__
+        /**
+         * \brief   The POSIX timer routing function.
+         * \param   si  The signal processing structure data passed to routine.
+         **/
+        static void _posixTimerRoutine(union sigval si);
+    #endif  // !__APPLE__
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Initializes waitable timer, sets the states.
-     * \param   isAutoReset 	Indicates whether the waitable timer is manual- or auto-reset.
-     * \param   name        	The name of waitable timer. Plays no role for POSIX timers.
-     **/
-    explicit WaitableTimerPosix( bool isAutoReset = false, const char * name = nullptr);
-    /**
-     * \brief   Destructor.
-     */
-    virtual ~WaitableTimerPosix();
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initializes waitable timer, sets the states.
+         * \param   isAutoReset 	Indicates whether the waitable timer is manual- or auto-reset.
+         * \param   name        	The name of waitable timer. Plays no role for POSIX timers.
+         **/
+        explicit WaitableTimerPosix( bool isAutoReset = false, const char * name = nullptr);
+        /**
+         * \brief   Destructor.
+         */
+        virtual ~WaitableTimerPosix();
 
-//////////////////////////////////////////////////////////////////////////
-// Operations and attributes
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Operations and attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Starts the timer that runs periodic or only once.
-     * \param   msTimeout   The timer timeout in milliseconds to run.
-     * \param   isPeriodic  If true, the timer is periodic and it runs until stopped.
-     *                      Otherwise, it runs only once.
-     * \return  Returns true if succeeded to start timer.
-     **/
-    bool setTimer( uint32_t msTimeout, bool isPeriodic );
+        /**
+         * \brief   Starts the timer that runs periodic or only once.
+         * \param   msTimeout   The timer timeout in milliseconds to run.
+         * \param   isPeriodic  If true, the timer is periodic and it runs until stopped.
+         *                      Otherwise, it runs only once.
+         * \return  Returns true if succeeded to start timer.
+         **/
+        bool setTimer( uint32_t msTimeout, bool isPeriodic );
 
-    /**
-     * \brief   Stops the running timer.
-     * \return  Returns true if succeeded to stop timer.
-     **/
-    bool stopTimer();
+        /**
+         * \brief   Stops the running timer.
+         * \return  Returns true if succeeded to stop timer.
+         **/
+        bool stopTimer();
 
-    /**
-     * \brief   Cancel and release running timer.
-     * \return  Returns true if succeeded to stop timer.
-     **/
-    bool cancelTimer();
+        /**
+         * \brief   Cancel and release running timer.
+         * \return  Returns true if succeeded to stop timer.
+         **/
+        bool cancelTimer();
 
-/************************************************************************/
-// SyncObjectPosix overrides.
-/************************************************************************/
-    /**
-     * \brief   Returns true if synchronization object is valid.
-     **/
-    bool isValid() const override;
+    /************************************************************************/
+    // SyncObjectPosix overrides.
+    /************************************************************************/
+        /**
+         * \brief   Returns true if synchronization object is valid.
+         **/
+        bool isValid() const override;
 
-//////////////////////////////////////////////////////////////////////////
-// Protected calls
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// WaitablePosix callback overrides.
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Protected calls
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+    /************************************************************************/
+    // WaitablePosix callback overrides.
+    /************************************************************************/
 
-    /**
-     * \brief   Returns true if the object is signaled. Otherwise, returns false.
-     * param    contextThread   The thread ID where lock and check happened.
-     **/
-    bool checkSignaled( pthread_t contextThread ) const override;
+        /**
+         * \brief   Returns true if the object is signaled. Otherwise, returns false.
+         * param    contextThread   The thread ID where lock and check happened.
+         **/
+        bool checkSignaled( pthread_t contextThread ) const override;
 
-    /**
-     * \brief   This callback is triggered when a waiting thread is released to continue to run.
-     * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
-     * \return  Returns true if waitable successfully has taken thread ownership.
-     **/
-    bool notifyRequestOwnership( pthread_t ownerThread ) override;
+        /**
+         * \brief   This callback is triggered when a waiting thread is released to continue to run.
+         * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
+         * \return  Returns true if waitable successfully has taken thread ownership.
+         **/
+        bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
-    /**
-     * \brief   This callback is triggered to when a system needs to know whether waitable
-     *          can signal multiple threads. Returned 'true' value indicates that there can be
-     *          multiple threads can get waitable signaled state. For example, waitable Mutex 
-     *          signals only one thread, when waitable Event can signal multiple threads.
-     **/
-    bool checkCanSignalMultipleThreads() const override;
+        /**
+         * \brief   This callback is triggered to when a system needs to know whether waitable
+         *          can signal multiple threads. Returned 'true' value indicates that there can be
+         *          multiple threads can get waitable signaled state. For example, waitable Mutex 
+         *          signals only one thread, when waitable Event can signal multiple threads.
+         **/
+        bool checkCanSignalMultipleThreads() const override;
 
-    /**
-     * \brief   This callback is called to notify the object the amount of
-     *          threads that were leased when the object is in signaled state.
-     * \param   numThreads  The number of threads that where released when the
-     *                      object is in signaled state. 0 means that no thread
-     *                      was released by the object.
-     **/
-    void notifyReleasedThreads( int32_t numThreads ) override;
+        /**
+         * \brief   This callback is called to notify the object the amount of
+         *          threads that were leased when the object is in signaled state.
+         * \param   numThreads  The number of threads that where released when the
+         *                      object is in signaled state. 0 means that no thread
+         *                      was released by the object.
+         **/
+        void notifyReleasedThreads( int32_t numThreads ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Waitable timer reset information. Either manual- or auto-reset.
-     **/
-    const areg::os::ResetMode mResetInfo;
-#ifdef __APPLE__
-    /**
-     * \brief   GCD dispatch timer source for macOS.
-     **/
-    dispatch_source_t   mTimerSource;
-    /**
-     * \brief   GCD dispatch queue for timer.
-     **/
-    dispatch_queue_t    mTimerQueue;
-#else   // !__APPLE__
-    /**
-     * \brief   POSIX timer ID.
-     **/
-    timer_t         mTimerId;
-#endif  // __APPLE__
-    /**
-     * \brief   Timeout is milliseconds to run.
-     **/
-    uint32_t    mTimeout;
-    /**
-     * \brief   Flag, indicates whether timer is in signaled or non-signaled state.
-     **/
-    bool            mIsSignaled;
-    /**
-     * \brief   Counts how many times the timer was fired. Used by periodic timers.
-     **/
-    uint32_t    mFiredCount;
-    /**
-     * \brief   POSIX timer structure.
-     **/
-    struct timespec mDueTime;
-    /**
-     * \brief   The ID of thread that triggered the timer. Used to notify the asynchronous call when waitable timer expired.
-     **/
-    id_type         mThreadId;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Waitable timer reset information. Either manual- or auto-reset.
+         **/
+        const areg::os::ResetMode mResetInfo;
+    #ifdef __APPLE__
+        /**
+         * \brief   GCD dispatch timer source for macOS.
+         **/
+        dispatch_source_t   mTimerSource;
+        /**
+         * \brief   GCD dispatch queue for timer.
+         **/
+        dispatch_queue_t    mTimerQueue;
+    #else   // !__APPLE__
+        /**
+         * \brief   POSIX timer ID.
+         **/
+        timer_t         mTimerId;
+    #endif  // __APPLE__
+        /**
+         * \brief   Timeout is milliseconds to run.
+         **/
+        uint32_t    mTimeout;
+        /**
+         * \brief   Flag, indicates whether timer is in signaled or non-signaled state.
+         **/
+        bool            mIsSignaled;
+        /**
+         * \brief   Counts how many times the timer was fired. Used by periodic timers.
+         **/
+        uint32_t    mFiredCount;
+        /**
+         * \brief   POSIX timer structure.
+         **/
+        struct timespec mDueTime;
+        /**
+         * \brief   The ID of thread that triggered the timer. Used to notify the asynchronous call when waitable timer expired.
+         **/
+        id_type         mThreadId;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Stops and deletes timer
-     **/
-    inline void _resetTimer();
-    /**
-     * \brief   Called when timer has expired.
-     **/
-    inline void _timerExpired();
-    /**
-     * \brief   Called to stop running timer.
-     **/
-    inline void _stopTimer();
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Stops and deletes timer
+         **/
+        inline void _resetTimer();
+        /**
+         * \brief   Called when timer has expired.
+         **/
+        inline void _timerExpired();
+        /**
+         * \brief   Called to stop running timer.
+         **/
+        inline void _stopTimer();
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( WaitableTimerPosix );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( WaitableTimerPosix );
+    };
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
-
 #endif  // AREG_BASE_PRIVATE_POSIX_WAITABLETIMERIX_HPP

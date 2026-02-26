@@ -40,6 +40,7 @@
   ************************************************************************/
 class WaitablePosix;
 class SyncLockAndWaitPosix;
+namespace areg::os { class WaitableTimerPosix; }
 
 //////////////////////////////////////////////////////////////////////////
 // SyncLockAndWaitPosix class declaration
@@ -132,7 +133,7 @@ class SyncLockAndWaitPosix
 // Friend classes
 //////////////////////////////////////////////////////////////////////////
     friend class TimerManager;
-    friend class WaitableTimerPosix;
+    friend class areg::os::WaitableTimerPosix;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
