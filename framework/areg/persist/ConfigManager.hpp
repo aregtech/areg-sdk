@@ -34,7 +34,7 @@
  * Dependencies.
  ************************************************************************/
 class FileBase;
-class ConfigListener;
+namespace areg { class ConfigListener; }
 
 namespace areg
 {
@@ -336,7 +336,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to read and initialize configuration.
          **/
-        bool readConfig(const areg::String& filePath = areg::String::EmptyString, ConfigListener * listener = nullptr);
+        bool readConfig(const areg::String& filePath = areg::String::EmptyString, areg::ConfigListener * listener = nullptr);
 
         /**
          * \brief   Reads the configuration from the specified configuration file.
@@ -349,7 +349,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to read and initialize configuration.
          **/
-        bool readConfig(const FileBase& file, ConfigListener * listener = nullptr);
+        bool readConfig(const FileBase& file, areg::ConfigListener * listener = nullptr);
 
         /**
          * \brief   Saves the current configuration in the specified file.
@@ -364,7 +364,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to save configuration.
          **/
-        bool saveConfig(const areg::String& filePath = areg::String::EmptyString, ConfigListener * listener = nullptr);
+        bool saveConfig(const areg::String& filePath = areg::String::EmptyString, areg::ConfigListener * listener = nullptr);
 
         /**
          * \brief   Saves the current configuration in the specified file object opened with write access.
@@ -377,7 +377,7 @@ namespace areg
          *                      If nullptr, no notification is triggered.
          * \return  Returns true if succeeded to save configuration.
          **/
-        bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener = nullptr);
+        bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, areg::ConfigListener * listener = nullptr);
 
         /**
          * \brief   Sets the read-only and writable configuration entries.
@@ -386,7 +386,7 @@ namespace areg
          * \param   listener        The pointer to the configuration listener to notify configuration data set/
          *                          If nullptr, no notification is triggered.
          **/
-        void setConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigListener * listener = nullptr);
+        void setConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigListener * listener = nullptr);
 
         /**
          * \brief   Releases all module specific entries.

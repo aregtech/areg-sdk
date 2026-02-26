@@ -37,7 +37,7 @@ namespace areg { class ConnectionProvider; }
  *          of configuration listener.
  **/
 class ServiceApplicationBase    : public    SystemServiceBase
-                                , protected ConfigListener
+                                , protected areg::ConfigListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

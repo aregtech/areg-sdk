@@ -104,7 +104,7 @@ bool ServiceApplicationBase::serviceInitialize(aregext::ServiceOption /*option*/
                                 , true
                                 , false
                                 , fileConfig
-                                , static_cast<ConfigListener*>(this));
+                                , static_cast<areg::ConfigListener*>(this));
     return _osInitializeService();
 }
 

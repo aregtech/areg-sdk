@@ -54,7 +54,7 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , bool startTimer     /*= true */
                                   , bool startWatchdog  /*= true */
                                   , const char * configFile /*= areg::DEFAULT_CONFIG_FILE */
-                                  , ConfigListener* configListener /*= nullptr*/)
+                                  , areg::ConfigListener* configListener /*= nullptr*/)
 {
     Application::_setAppState(areg::AppState::Initializing);
     Application::_osSetupHandlers();
@@ -350,7 +350,7 @@ areg::ConfigManager& Application::getConfigManager()
     return Application::getInstance().mConfigManager;
 }
 
-bool Application::loadConfiguration(const char* fileName /*= nullptr*/, ConfigListener * listener /*= nullptr*/)
+bool Application::loadConfiguration(const char* fileName /*= nullptr*/, areg::ConfigListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     bool result{ true };
@@ -363,13 +363,13 @@ bool Application::loadConfiguration(const char* fileName /*= nullptr*/, ConfigLi
     return result;
 }
 
-bool Application::saveConfiguration(const char* fileName /*= nullptr*/, ConfigListener * /*listener*/ /*= nullptr*/)
+bool Application::saveConfiguration(const char* fileName /*= nullptr*/, areg::ConfigListener * /*listener*/ /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     return theApp.mConfigManager.saveConfig(fileName);
 }
 
-void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullptr*/)
+void Application::setupDefaultConfiguration(areg::ConfigListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     const areg::String& module = areg::Process::getInstance().getAppName();

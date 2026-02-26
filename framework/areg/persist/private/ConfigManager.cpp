@@ -392,7 +392,7 @@ namespace areg
         }
     }
 
-    bool ConfigManager::readConfig(const areg::String& filePath /*= areg::String::EmptyString*/, ConfigListener * listener /*= nullptr*/)
+    bool ConfigManager::readConfig(const areg::String& filePath /*= areg::String::EmptyString*/, areg::ConfigListener * listener /*= nullptr*/)
     {
         Lock lock(mLock);
         if (mIsConfigured == false)
@@ -422,7 +422,7 @@ namespace areg
         return mIsConfigured;
     }
 
-    bool ConfigManager::readConfig(const FileBase& file, ConfigListener * listener /*= nullptr*/)
+    bool ConfigManager::readConfig(const FileBase& file, areg::ConfigListener * listener /*= nullptr*/)
     {
         Lock lock(mLock);
         if (mIsConfigured == false)
@@ -445,7 +445,7 @@ namespace areg
         return mIsConfigured;
     }
 
-    bool ConfigManager::saveConfig(const areg::String& filePath, ConfigListener * listener /*= nullptr*/)
+    bool ConfigManager::saveConfig(const areg::String& filePath, areg::ConfigListener * listener /*= nullptr*/)
     {
         Lock lock(mLock);
         bool result{ false };
@@ -503,7 +503,7 @@ namespace areg
         return result;
     }
 
-    bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, ConfigListener * listener /*= nullptr*/)
+    bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, areg::ConfigListener * listener /*= nullptr*/)
     {
         Lock lock(mLock);
         if (listener != nullptr)
@@ -521,7 +521,7 @@ namespace areg
         return result;
     }
 
-    void ConfigManager::setConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigListener* listener /*= nullptr*/)
+    void ConfigManager::setConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigListener* listener /*= nullptr*/)
     {
         Lock lock(mLock);
 

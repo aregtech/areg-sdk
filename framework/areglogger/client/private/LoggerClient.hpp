@@ -47,7 +47,7 @@ struct ObserverEvents;
  *          structure of callbacks to trigger when an event happens.
  **/
 class LoggerClient  : public    areg::ServiceClientConnectionBase
-                    , public    ConfigListener
+                    , public    areg::ConfigListener
                     , protected areg::DispatcherThread
                     , protected areg::ConnectionConsumer
                     , protected areg::RemoteMessageHandler

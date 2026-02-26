@@ -31,7 +31,7 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class ConfigListener;
+namespace areg { class ConfigListener; }
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
@@ -104,7 +104,7 @@ public:
                                 , bool startTimer     = true
                                 , bool startWatchdog  = false
                                 , const char * configFile = areg::DEFAULT_CONFIG_FILE.data()
-                                , ConfigListener * configListener = nullptr);
+                                , areg::ConfigListener * configListener = nullptr);
 
     /**
      * \brief   Call to stop all components, unload models, stop services and release resources.
@@ -359,7 +359,7 @@ public:
      * \return  Returns true if succeeded to load configuration.
      *          If fails, loads default configuration and returns false.
      **/
-    static bool loadConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
+    static bool loadConfiguration(const char * fileName = nullptr, areg::ConfigListener * listener = nullptr);
 
     /**
      * \brief   Saves current configuration in the given file.
@@ -374,7 +374,7 @@ public:
      * \return  Returns true if succeeded to save configuration.
      *          Otherwise, returns false.
      **/
-    static bool saveConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
+    static bool saveConfiguration(const char * fileName = nullptr, areg::ConfigListener * listener = nullptr);
 
     /**
      * \brief   Loads default configuration properties defined in areg::DefaultReadonlyProperties
@@ -383,7 +383,7 @@ public:
      * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered if default
      *                      configuration is set. If listener is null, no notification is triggered.
      **/
-    static void setupDefaultConfiguration(ConfigListener * listener = nullptr);
+    static void setupDefaultConfiguration(areg::ConfigListener * listener = nullptr);
 
     /**
      * \brief   Returns true if the application is already configured.
