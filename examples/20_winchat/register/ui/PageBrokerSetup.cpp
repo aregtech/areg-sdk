@@ -167,7 +167,7 @@ BOOL PageBrokerSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
+    areg::ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
     uint8_t field0, field1, field2, field3;
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {

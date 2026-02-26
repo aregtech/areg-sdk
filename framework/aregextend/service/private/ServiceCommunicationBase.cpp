@@ -99,7 +99,7 @@ bool ServiceCommunicationBase::setupServiceConnectionData(areg::RemoteServiceKin
     {
         if ((mConnectTypes & static_cast<uint32_t>(areg::ConnectionType::Tcpip)) != 0)
         {
-            ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
+            areg::ConnectionConfiguration config(mService, areg::ConnectionType::Tcpip);
             if (config.isConfigured() && config.getConnectionEnableFlag())
             {
                 areg::String address{ config.getConnectionAddress() };

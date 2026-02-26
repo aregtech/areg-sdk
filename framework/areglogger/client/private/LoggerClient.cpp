@@ -65,7 +65,7 @@ bool LoggerClient::startLoggerClient(const areg::String & address /*= areg::Stri
     {
         Lock lock(mLock);
         mIsPaused = false;
-        ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+        areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
         if (config.isConfigured())
         {
             applyServiceConnectionData(config.getConnectionAddress(), config.getConnectionPort());
@@ -129,13 +129,13 @@ bool LoggerClient::isSqliteEngine() const
 
 bool LoggerClient::isConfigLoggerConnectEnabled() const
 {
-    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     return (config.isConfigured() && config.getConnectionEnableFlag());
 }
 
 areg::String LoggerClient::getConfigLoggerAddress() const
 {
-    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     if (config.isConfigured())
     {
         return config.getConnectionAddress();
@@ -148,7 +148,7 @@ areg::String LoggerClient::getConfigLoggerAddress() const
 
 uint16_t LoggerClient::getConfigLoggerPort() const
 {
-    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     if (config.isConfigured())
     {
         return config.getConnectionPort();
@@ -162,7 +162,7 @@ uint16_t LoggerClient::getConfigLoggerPort() const
 bool LoggerClient::setConfigLoggerConnection(const areg::String& address, uint16_t portNr)
 {
     bool result{ false };
-    ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
+    areg::ConnectionConfiguration config(LoggerClient::SERVICE_TYPE, LoggerClient::CONNECT_TYPE);
     if (config.isConfigured())
     {
         if (address.isEmpty() == false)
