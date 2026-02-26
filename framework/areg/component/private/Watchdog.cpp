@@ -29,7 +29,7 @@ namespace areg
         return (++_id);
     }
 
-    Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+    Watchdog::Watchdog(areg::ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
         : areg::TimerBase         (areg::TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, areg::TimerBase::ONE_TIME)
         , mGuardId          (_generateId())
         , mSequence         (0u)

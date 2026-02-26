@@ -23,7 +23,7 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 
-ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component         ( entry, owner )
     , HelloUnblockStub  ( static_cast<Component &>(self()) )
     , areg::TimerConsumer   ( )

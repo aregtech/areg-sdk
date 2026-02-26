@@ -24,7 +24,7 @@
  /************************************************************************
   * Dependencies.
   ************************************************************************/
-class ComponentThread;
+namespace areg { class ComponentThread; }
 namespace areg { class WorkerThread; }
 
 namespace areg
@@ -91,7 +91,7 @@ namespace areg
          * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
          *                      The timeout with value zero disables Watchdog
          **/
-        Watchdog(ComponentThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
+        Watchdog(areg::ComponentThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
 
         /**
          * \brief   The watchdog object bind with Worker Thread. Should not be instantiated
@@ -142,7 +142,7 @@ namespace areg
          *          If watchdog belongs to worker thread, it returns the thread of owning component.
          *          The component thread of the watchdog is always valid.
          **/
-        inline const ComponentThread& getComponentThread() const;
+        inline const areg::ComponentThread& getComponentThread() const;
 
         /**
          * \brief   Out of Guard ID and Sequence number generates watchdog ID.
@@ -200,7 +200,7 @@ namespace areg
         /**
          * \brief   The valid instance of the component thread to trigger restart if timeout expired.
          **/
-        ComponentThread &   mComponentThread;
+        areg::ComponentThread &   mComponentThread;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -229,7 +229,7 @@ namespace areg
         return mSequence;
     }
 
-    inline const ComponentThread& Watchdog::getComponentThread() const
+    inline const areg::ComponentThread& Watchdog::getComponentThread() const
     {
         return mComponentThread;
     }

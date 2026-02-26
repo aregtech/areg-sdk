@@ -39,7 +39,7 @@ public:
      * \param   entry   The entry of registry, which describes the component.
      * \param   owner   The component owning thread.
      **/
-    ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

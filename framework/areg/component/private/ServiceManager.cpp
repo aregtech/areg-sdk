@@ -148,7 +148,7 @@ void ServiceManager::requestUnregisterClient( const ProxyAddress & whichClient, 
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
+void ServiceManager::requestRecreateThread(const areg::ComponentThread& whichThread)
 {
     LOG_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
     LOG_DBG("Request to re-create component thread [ %s ]", whichThread.getName().getString());

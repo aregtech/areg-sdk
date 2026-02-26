@@ -48,7 +48,7 @@ public:
      * \param   entry   The entry of registry, which describes the component.
      * \param   owner   The component owning thread.
      **/
-    ServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+    ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
         : Component         ( entry.mRoleName, owner )
         , mLocalService     ( static_cast<Component &>(self()) )
         , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), ServiceComponent::MAIN_TIMEOUT   )

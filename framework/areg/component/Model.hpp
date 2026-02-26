@@ -72,7 +72,7 @@ namespace areg
  ************************************************************************/
 class Component;
 namespace areg { class WorkerThread; }
-class ComponentThread;
+namespace areg { class ComponentThread; }
 namespace areg { class WorkerThreadConsumer; }
 
 /************************************************************************
@@ -89,7 +89,7 @@ namespace areg { class WorkerThreadConsumer; }
  *      return new MyComponent(entry, ownerThread);
  *  }
  **/
-using  FuncCreateComponent  = std::function<Component* (const areg::ComponentEntry& /*entry*/, ComponentThread& /*ownerThread*/)>;
+using  FuncCreateComponent  = std::function<Component* (const areg::ComponentEntry& /*entry*/, areg::ComponentThread& /*ownerThread*/)>;
 
 /**
  * \brief   Type of Component Unload Function. Called to stop and delete component
@@ -2022,7 +2022,7 @@ template<typename ComponentType>
 inline areg::ComponentEntry& areg::ComponentThreadEntry::addComponent(const areg::String& roleName)
 {
     return addComponent(roleName
-        , [](const areg::ComponentEntry& entry, ComponentThread& owner) -> Component* {
+        , [](const areg::ComponentEntry& entry, areg::ComponentThread& owner) -> Component* {
             return new ComponentType(entry, owner);
         }
         , [](Component& comp, const areg::ComponentEntry& /*entry*/) -> void {

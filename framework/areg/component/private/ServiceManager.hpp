@@ -153,7 +153,7 @@ public:
      * 
      * \param   whichThread     The instance of valid component thread.
      */
-    static void requestRecreateThread( const ComponentThread & whichThread );
+    static void requestRecreateThread( const areg::ComponentThread & whichThread );
 
     /**
      * \brief   The function returns true, if Service Manager is running and ready to

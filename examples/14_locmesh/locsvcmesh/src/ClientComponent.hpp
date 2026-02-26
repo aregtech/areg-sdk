@@ -25,7 +25,7 @@ class ClientComponent : public Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ClientComponent(const areg::ComponentEntry & entry, ComponentThread & owner);
+    ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 private:
 //////////////////////////////////////////////////////////////////////////

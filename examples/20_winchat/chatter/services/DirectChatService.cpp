@@ -54,7 +54,7 @@ areg::Model DirectChatService::GetModel( const DirectMessager::Participant & ini
     return model;
 }
 
-DirectChatService::DirectChatService( const areg::ComponentEntry & entry, ComponentThread & ownerThread)
+DirectChatService::DirectChatService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
     : Component           ( entry, ownerThread )
     , DirectMessagerStub  ( static_cast<Component &>(self()) )
 
@@ -69,7 +69,7 @@ DirectChatService::~DirectChatService()
     _clearList();
 }
 
-void DirectChatService::startupComponent( ComponentThread & comThread )
+void DirectChatService::startupComponent( areg::ComponentThread & comThread )
 {
     LOG_SCOPE( chatter_DirectChatService_StartupComponent );
     Component::startupComponent(comThread);
@@ -89,7 +89,7 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
     }
 }
 
-void DirectChatService::shutdownComponent( ComponentThread & comThread )
+void DirectChatService::shutdownComponent( areg::ComponentThread & comThread )
 {
     LOG_SCOPE( chatter_DirectChatService_ShutdownComponent );
     mPaticipantsHandler->SetConnectionService( nullptr );

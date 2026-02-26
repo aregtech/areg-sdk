@@ -40,7 +40,7 @@ Component::MapComponentResource& Component::resource_map()
     return _mapResource;
 }
 
-Component* Component::loadComponent(const areg::ComponentEntry &entry, ComponentThread & componentThread )
+Component* Component::loadComponent(const areg::ComponentEntry &entry, areg::ComponentThread & componentThread )
 {
     ASSERT(entry.mFuncCreate != nullptr);
 
@@ -111,9 +111,9 @@ bool Component::existComponent( const areg::String & roleName )
     return Component::resource_map().existResource(areg::crc32Calculate(roleName.getString()));
 }
 
-ComponentThread& Component::_getCurrentComponentThread()
+areg::ComponentThread& Component::_getCurrentComponentThread()
 {
-    ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
+    areg::ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), areg::ComponentThread);
     ASSERT(result != nullptr);
     return *result;
 }
@@ -121,7 +121,7 @@ ComponentThread& Component::_getCurrentComponentThread()
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor 
 //////////////////////////////////////////////////////////////////////////
-Component::Component( const areg::String & roleName, ComponentThread & ownerThread )
+Component::Component( const areg::String & roleName, areg::ComponentThread & ownerThread )
     : areg::RuntimeObject ( )
 
     , mComponentInfo( ownerThread, roleName )
@@ -131,7 +131,7 @@ Component::Component( const areg::String & roleName, ComponentThread & ownerThre
     Component::resource_map().registerResourceObject(mMagicNum, this);
 }
 
-Component::Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread )
+Component::Component( const areg::ComponentEntry & regEntry, areg::ComponentThread & ownerThread )
     : areg::RuntimeObject ( )
 
     , mComponentInfo( ownerThread, regEntry.mRoleName)
@@ -162,7 +162,7 @@ Component::~Component()
 //////////////////////////////////////////////////////////////////////////
 areg::WorkerThread* Component::createWorkerThread(  const areg::String & threadName
                                             , areg::WorkerThreadConsumer& consumer
-                                            , ComponentThread & /* ownerThread */
+                                            , areg::ComponentThread & /* ownerThread */
                                             , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE */
                                             , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT */
                                             , uint32_t maxQeueue        /* = areg::IGNORE_VALUE */)
@@ -199,7 +199,7 @@ void Component::deleteWorkerThread( const areg::String & threadName )
     }
 }
 
-void Component::startupComponent( ComponentThread& /* comThread */ )
+void Component::startupComponent( areg::ComponentThread& /* comThread */ )
 {
     for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
     {
@@ -210,7 +210,7 @@ void Component::startupComponent( ComponentThread& /* comThread */ )
     }
 }
 
-void Component::shutdownComponent( ComponentThread& /* comThread */ )
+void Component::shutdownComponent( areg::ComponentThread& /* comThread */ )
 {
     _shutdownServices();
 
@@ -223,7 +223,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     }
 }
 
-void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
+void Component::notifyComponentShutdown( areg::ComponentThread& /*comThread */ )
 {
     areg::ThreadAddress addrThread;
     areg::WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);

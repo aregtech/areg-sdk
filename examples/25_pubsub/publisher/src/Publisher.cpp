@@ -76,7 +76,7 @@ const OptionParser::OptionSetup Publisher::ValidOptions[]
 // Publisher class methods
 //////////////////////////////////////////////////////////////////////////
 
-Publisher::Publisher( const areg::ComponentEntry & entry, ComponentThread & owner )
+Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component         ( entry, owner )
     , PubSubStub        ( static_cast<Component &>(self()) )
     , areg::TimerConsumer   ( )
@@ -97,13 +97,13 @@ Publisher::Publisher( const areg::ComponentEntry & entry, ComponentThread & owne
 {
 }
 
-void Publisher::startupComponent(ComponentThread & comThread)
+void Publisher::startupComponent(areg::ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
     mConsoleThread.createThread(areg::WAIT_INFINITE);
 }
 
-void Publisher::shutdownComponent(ComponentThread & comThread)
+void Publisher::shutdownComponent(areg::ComponentThread & comThread)
 {
     mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
     Component::shutdownComponent(comThread);

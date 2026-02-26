@@ -29,7 +29,7 @@
  ************************************************************************/
 
 #define FUNC_CREATE_COMP(CompType)                                                                          \
-                    ([](const areg::ComponentEntry& e, ComponentThread& t) -> Component * {           \
+                    ([](const areg::ComponentEntry& e, areg::ComponentThread& t) -> Component * {           \
                         return new CompType(e, t);})
 
 #define FUNC_DELETE_COMP                                                                                    \
@@ -281,7 +281,7 @@
  * Dependencies
  ************************************************************************/
 class Component;
-class ComponentThread;
+namespace areg { class ComponentThread; }
 namespace areg { class Thread; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -365,7 +365,7 @@ class AREG_API ComponentLoader
 // Friend classes to access protected members
 /************************************************************************/
     friend class ModelDataCreator;
-    friend class ComponentThread;
+    friend class areg::ComponentThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Local types and constants

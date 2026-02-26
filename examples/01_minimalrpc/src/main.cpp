@@ -23,7 +23,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     {   }
@@ -45,7 +45,7 @@ class ServiceConsumer   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const areg::ComponentEntry & entry, ComponentThread & owner)
+    ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
 		: Component             ( entry, owner )
 		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }

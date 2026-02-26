@@ -264,7 +264,7 @@ namespace areg
         mCurrListener   = mListListener.invalidPosition();
     }
 
-    ComponentThread & StubBase::getComponentThread() const
+    areg::ComponentThread & StubBase::getComponentThread() const
     {
         return mComponent.getMasterThread();
     }

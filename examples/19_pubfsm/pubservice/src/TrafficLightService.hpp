@@ -40,7 +40,7 @@ public:
     /**
      * \brief   Constructor, initializes servicing objects from registry entry.
      **/
-    TrafficLightService( const areg::ComponentEntry & entry, ComponentThread & owner );
+    TrafficLightService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
     /**
      * \brief   Destructor
      **/
@@ -132,7 +132,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -140,7 +140,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( areg::ComponentThread & comThread ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

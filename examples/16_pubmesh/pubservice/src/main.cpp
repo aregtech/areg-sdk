@@ -33,7 +33,7 @@ class LocalServiceComponent : public Component
     static constexpr uint32_t TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
 
 public:
-    LocalServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+    LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
         : Component         ( entry, owner )
         , mLocalService     ( static_cast<Component &>(self()) )
         , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )

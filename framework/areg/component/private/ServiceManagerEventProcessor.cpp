@@ -470,7 +470,7 @@ bool ServiceManagerEventProcessor::_terminateComponentThread( const areg::String
     bool result{ false };
 
     areg::Thread * thread = areg::Thread::findThreadByName( threadName );
-    ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
+    areg::ComponentThread * compThread = AREG_RUNTIME_CAST( thread, areg::ComponentThread );
     if ( compThread != nullptr )
     {
         LOG_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );
@@ -493,7 +493,7 @@ void ServiceManagerEventProcessor::_startComponentThread( const areg::String & t
     areg::Thread * thread = areg::Thread::findThreadByName( threadName );
     if ( entry.isValid( ) && (thread == nullptr) )
     {
-        ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
+        areg::ComponentThread * compThread = DEBUG_NEW areg::ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
         if ( (compThread != nullptr) && compThread->createThread( areg::WAIT_INFINITE ) )
         {
             LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );

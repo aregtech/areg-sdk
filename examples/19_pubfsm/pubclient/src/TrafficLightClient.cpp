@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastSouthNorth);
 DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_broadcastEastWest);
 DEF_LOG_SCOPE(pubclient_src_TrafficLightClient_serviceConnected);
 
-TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, ComponentThread & owner)
+TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component                     ( entry, owner )
     , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)
     , mIsEastWest                   (std::any_cast<bool>(entry.getData()))

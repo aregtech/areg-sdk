@@ -28,7 +28,7 @@ public:
     inline void SetOwnerData(const areg::String & nickName, uint32_t cookie );
 
 public:
-    DirectConnectionService( const areg::ComponentEntry & entry, ComponentThread & ownerThread );
+    DirectConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
     virtual ~DirectConnectionService();
 
 //////////////////////////////////////////////////////////////////////////

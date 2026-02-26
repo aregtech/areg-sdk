@@ -40,7 +40,7 @@ public:
     static constexpr std::string_view PatientServiceWorkerThread { "PatientServiceWorkerThread" };
 
 public:
-    PatientService( const areg::ComponentEntry & entry, ComponentThread & owner );
+    PatientService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 protected:
 

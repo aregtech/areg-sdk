@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-ClientComponent::ClientComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
+ClientComponent::ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component             ( entry, owner )
     , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.getString(), owner )
 {

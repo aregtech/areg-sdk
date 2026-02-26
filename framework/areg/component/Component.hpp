@@ -32,7 +32,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class WorkerThreadConsumer; }
-class ComponentThread;
+namespace areg { class ComponentThread; }
 namespace areg { class WorkerThread; }
 namespace areg { class StubBase; }
 
@@ -103,7 +103,7 @@ public:
      * \param   componentThread The thread, which is loading component and dispatching messages
      * \return  Returns pointer to instantiated component.
      **/
-    static Component * loadComponent( const areg::ComponentEntry & entry, ComponentThread & componentThread);
+    static Component * loadComponent( const areg::ComponentEntry & entry, areg::ComponentThread & componentThread);
 
     /**
      * \brief   This function is unloading component.
@@ -157,14 +157,14 @@ public:
      * \param	roleName	Unique role name of the component.
      * \param	ownerThread The instance of the thread, which owns the component.
      **/
-    Component( const areg::String & roleName, ComponentThread & ownerThread );
+    Component( const areg::String & roleName, areg::ComponentThread & ownerThread );
 
     /**
      * \brief	Instantiates the component object and dispatches the events in the specified thread.
      * \param	regEntry	The registry entry object with the role name of the component.
      * \param	ownerThread The instance of the thread, which owns the component.
      **/
-    Component( const areg::ComponentEntry & regEntry, ComponentThread & ownerThread );
+    Component( const areg::ComponentEntry & regEntry, areg::ComponentThread & ownerThread );
 
     /**
      * \brief	Instantiates the component object and dispatches the events in the current thread.
@@ -187,7 +187,7 @@ public:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    virtual void startupComponent( ComponentThread & comThread );
+    virtual void startupComponent( areg::ComponentThread & comThread );
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -195,7 +195,7 @@ public:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void shutdownComponent( ComponentThread & comThread );
+    virtual void shutdownComponent( areg::ComponentThread & comThread );
 
     /**
      * \brief	This function is triggered when the master thread of component is notified
@@ -203,7 +203,7 @@ public:
      *          Service Manager is notified to stop job and unload components
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    virtual void notifyComponentShutdown( ComponentThread & comThread );
+    virtual void notifyComponentShutdown( areg::ComponentThread & comThread );
 
     /**
      * \brief   Waits until component completes job. 
@@ -249,7 +249,7 @@ public:
      **/
     areg::WorkerThread * createWorkerThread( const areg::String & threadName
                                      , areg::WorkerThreadConsumer & consumer
-                                     , ComponentThread & ownerThread
+                                     , areg::ComponentThread & ownerThread
                                      , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
                                      , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
                                      , uint32_t maxQeueue       = areg::IGNORE_VALUE);
@@ -292,7 +292,7 @@ public:
     /**
      * \brief   Returns master thread of component
      **/
-    inline ComponentThread & getMasterThread();
+    inline areg::ComponentThread & getMasterThread();
 
     /**
      * \brief   Returns the role name of component
@@ -345,7 +345,7 @@ private:
     /**
      * \brief   Static method. Returns the component thread of current component.
      **/
-    static ComponentThread & _getCurrentComponentThread();
+    static areg::ComponentThread & _getCurrentComponentThread();
 
     /**
      * \brief   Calculates the number of specified component object.
@@ -385,7 +385,7 @@ private:
 // Component class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentThread & Component::getMasterThread()
+inline areg::ComponentThread & Component::getMasterThread()
 {
     return mComponentInfo.getMasterThread();
 }

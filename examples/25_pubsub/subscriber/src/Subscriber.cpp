@@ -42,7 +42,7 @@ namespace
     constexpr Console::Coord    _coordString    { 0, 6 };
 }
 
-Subscriber::Subscriber( const areg::ComponentEntry & entry, ComponentThread & owner )
+Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component         ( entry, owner )
     , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
     , mOldInteger       ( 0 )

@@ -33,7 +33,7 @@ class PublicServiceComponent    : public    Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PublicServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner );
+    PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -46,7 +46,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.

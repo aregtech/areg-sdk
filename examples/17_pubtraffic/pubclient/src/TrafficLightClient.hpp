@@ -25,7 +25,7 @@ class TrafficLightClient    : public    Component
 // Statics and constants.
 //////////////////////////////////////////////////////////////////////////
 public:
-    TrafficLightClient(const areg::ComponentEntry & entry, ComponentThread & owner);
+    TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members.

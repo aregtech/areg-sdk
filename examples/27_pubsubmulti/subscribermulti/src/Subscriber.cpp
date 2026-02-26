@@ -17,7 +17,7 @@
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
-Subscriber::Subscriber( const areg::ComponentEntry & entry, ComponentThread & owner )
+Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component         (entry, owner)
     , SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
     , mStateEventCount  ( 0 )

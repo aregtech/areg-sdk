@@ -405,7 +405,7 @@ bool ComponentLoader::loadModel( areg::Model & whichModel ) const
             const areg::ComponentThreadEntry& entry = thrList.mListThreads[i];
             if ( entry.isValid( ) && areg::Thread::findThreadByName( entry.mThreadName ) == nullptr )
             {
-                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
+                areg::ComponentThread* thrObject = DEBUG_NEW areg::ComponentThread( entry.mThreadName, entry.mWatchdogTimeout, entry.mStackSizeKB, entry.mMaxQueue );
                 if ( thrObject != nullptr )
                 {
                     if ( thrObject->createThread( areg::WAIT_INFINITE ) == false )
@@ -465,7 +465,7 @@ void ComponentLoader::unloadModel( bool waitComplete, areg::Model & whichModel )
             areg::Thread * compThread = areg::Thread::findThreadByName(modelThreads.mListThreads.getAt( i ).mThreadName);
             if (compThread != nullptr)
             {
-                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread));
+                ASSERT(AREG_RUNTIME_CAST(compThread, areg::ComponentThread));
                 threadList.add(compThread);
             }
         }
@@ -512,7 +512,7 @@ void ComponentLoader::waitModelThreads(areg::Model & whichModel)
             areg::Thread * compThread = areg::Thread::findThreadByName(modelThreads.mListThreads.getAt(i).mThreadName);
             if (compThread != nullptr)
             {
-                ASSERT(AREG_RUNTIME_CAST(compThread, ComponentThread) != nullptr);
+                ASSERT(AREG_RUNTIME_CAST(compThread, areg::ComponentThread) != nullptr);
                 threadList.add(compThread);
             }
         }

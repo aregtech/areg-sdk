@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ComponentThread;
+namespace areg { class ComponentThread; }
 namespace areg { class WorkerThread; }
 
 namespace areg
@@ -100,7 +100,7 @@ namespace areg
          * \param   workThread      The Worker Thread object to notify startup
          * \param   masterThread    The component thread, which owns worker thread.
          **/
-        virtual void registerEventConsumers( areg::WorkerThread & workThread, ComponentThread & masterThread ) = 0;
+        virtual void registerEventConsumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) = 0;
 
         /**
          * \brief   Triggered by Worker Thread when stops running.

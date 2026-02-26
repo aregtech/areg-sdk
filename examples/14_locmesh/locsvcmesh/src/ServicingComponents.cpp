@@ -19,7 +19,7 @@
 // ControllerComponent implementations
 //////////////////////////////////////////////////////////////////////////
 
-ControllerComponent::ControllerComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+ControllerComponent::ControllerComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component ( entry, owner )
     , mService  ( static_cast<Component &>(self( )), entry.getData().has_value() && std::any_cast<bool>(entry.getData( )) )
 {
@@ -29,7 +29,7 @@ ControllerComponent::ControllerComponent( const areg::ComponentEntry & entry, Co
 // SecondaryComponent implementations
 //////////////////////////////////////////////////////////////////////////
 
-SecondaryComponent::SecondaryComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+SecondaryComponent::SecondaryComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component         ( entry, owner )
     , mService          ( static_cast<Component &>(self( )), entry.getData().has_value() && std::any_cast<bool>(entry.getData()) )
     , mClientMain       ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self( )) )

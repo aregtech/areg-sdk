@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 class Component;
-class ComponentThread;
+namespace areg { class ComponentThread; }
 namespace areg { class WorkerThreadConsumer; }
 
 namespace areg
@@ -122,7 +122,7 @@ namespace areg
         /**
          * \brief   Returns binding component thread object
          **/
-        ComponentThread & getBindingComponentThread() const;
+        areg::ComponentThread & getBindingComponentThread() const;
 
         /**
          * \brief   Call to make emergency termination of worker thread.

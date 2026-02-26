@@ -53,7 +53,7 @@ protected:
      * \param   entry       The component entry object set in the model.
      * \param   owner       The instance of component owner thread.
      **/
-    SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner );
+    SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
     /**
      * \brief   Destructor.

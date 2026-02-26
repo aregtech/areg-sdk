@@ -23,7 +23,7 @@
 class ControllerComponent   : public    Component
 {
 public:
-    ControllerComponent( const areg::ComponentEntry & entry, ComponentThread & owner );
+    ControllerComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -53,7 +53,7 @@ private:
 class SecondaryComponent    : public    Component
 {
 public:
-    SecondaryComponent( const areg::ComponentEntry & entry, ComponentThread & owner );
+    SecondaryComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 private:
 //////////////////////////////////////////////////////////////////////////

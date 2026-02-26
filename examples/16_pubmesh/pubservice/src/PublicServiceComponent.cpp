@@ -18,7 +18,7 @@ DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_clientConne
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
 
-PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component                 ( entry, owner )
     , SystemShutdownStub        ( static_cast<Component &>(self()) )
     , PublicHelloWorldService   ( static_cast<Component &>(self()) )
@@ -28,7 +28,7 @@ PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & ent
     SystemShutdownStub::invalidateServiceState( );
 }
 
-void PublicServiceComponent::startupComponent( ComponentThread & comThread )
+void PublicServiceComponent::startupComponent( areg::ComponentThread & comThread )
 {
     Component::startupComponent( comThread );
 

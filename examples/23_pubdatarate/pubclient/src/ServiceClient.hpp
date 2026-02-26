@@ -59,7 +59,7 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 protected:
 
@@ -72,7 +72,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief   Server broadcast.

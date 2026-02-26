@@ -45,7 +45,7 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    PatientClient(const areg::ComponentEntry & entry, ComponentThread & owner);
+    PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

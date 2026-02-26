@@ -40,7 +40,7 @@ using SessionID = uint32_t;
 class RemoteNotifyRequestEvent;
 namespace areg { class ServiceResponseEvent; }
 class RemoteRequestEvent;
-class ComponentThread;
+namespace areg { class ComponentThread; }
 class EventDataStream;
 namespace areg { class ResponseEvent; }
 class Component;
@@ -228,7 +228,7 @@ namespace areg
         /**
          * \brief   Returns Component Master thread object.
          **/
-        ComponentThread & getComponentThread() const;
+        areg::ComponentThread & getComponentThread() const;
 
         /**
          * \brief   Returns the address of Stub object.

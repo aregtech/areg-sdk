@@ -36,7 +36,7 @@ class ServicingComponent    : public    Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests

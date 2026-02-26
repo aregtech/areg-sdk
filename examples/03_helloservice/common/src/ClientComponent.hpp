@@ -15,7 +15,7 @@ class ClientComponent   : public    Component
                         , protected HelloServiceClientBase
 {
 public:
-    ClientComponent(const areg::ComponentEntry & entry, ComponentThread & owner);
+    ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 protected:
 /************************************************************************

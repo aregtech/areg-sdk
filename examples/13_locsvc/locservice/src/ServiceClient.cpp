@@ -17,7 +17,7 @@ DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_broadcastReachedMaximum);
 DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_processTimer);
 
-ServiceClient::ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner)
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component             ( entry, owner )
     , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
     , areg::TimerConsumer       ( )

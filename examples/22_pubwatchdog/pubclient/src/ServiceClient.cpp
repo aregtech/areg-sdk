@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_requestStartSleepFailed );
 DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_requestStopServiceFailed);
 DEF_LOG_SCOPE(examples_22_pubclient_ServiceClient_requestShutdownServiceFailed);
 
-ServiceClient::ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner)
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component              ( entry, owner )
     , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
 

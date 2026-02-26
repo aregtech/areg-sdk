@@ -29,7 +29,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ComponentThread;
+namespace areg { class ComponentThread; }
 namespace areg { class WorkerThread; }
 class DispatcherThread;
 
@@ -79,7 +79,7 @@ public:
      * \param   ownerThread The Master Thread of Component (Component Thread)
      * \param   roleName    The Role Name of component, must not be empty
      **/
-    ComponentInfo( ComponentThread & ownerThread, const areg::String & roleName );
+    ComponentInfo( areg::ComponentThread & ownerThread, const areg::String & roleName );
 
     /**
      * \brief   Destructor
@@ -93,7 +93,7 @@ public:
     /**
      * \brief   Returns Component Thread object
      **/
-    inline ComponentThread & getMasterThread() const;
+    inline areg::ComponentThread & getMasterThread() const;
 
     /**
      * \brief   Returns the address of Component
@@ -246,7 +246,7 @@ private:
     /**
      * \brief   The Master Thread of Component (Component Thread)
      **/
-    ComponentThread & mMasterThread;
+    areg::ComponentThread & mMasterThread;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
@@ -271,7 +271,7 @@ private:
 // ComponentInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ComponentThread& ComponentInfo::getMasterThread() const
+inline areg::ComponentThread& ComponentInfo::getMasterThread() const
 {
     return mMasterThread;
 }

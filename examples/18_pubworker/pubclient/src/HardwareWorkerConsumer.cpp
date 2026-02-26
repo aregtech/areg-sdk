@@ -22,7 +22,7 @@ inline HardwareWorkerConsumer & HardwareWorkerConsumer::self()
     return (*this);
 }
 
-void HardwareWorkerConsumer::registerEventConsumers(areg::WorkerThread & workThread, ComponentThread & /* masterThread */ )
+void HardwareWorkerConsumer::registerEventConsumers(areg::WorkerThread & workThread, areg::ComponentThread & /* masterThread */ )
 {
     PatientInfoEvent::addListener( static_cast<IEPatientInfoEventConsumer &>(self()), static_cast<DispatcherThread &>(workThread) );
 

@@ -50,7 +50,7 @@ void ServicingComponent::ServicingTimerConsumer::processTimer( areg::Timer & tim
 // ServicingComponent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component         ( entry, owner )
     , LargeDataStub     ( static_cast<Component &>(self()) )
     , areg::ThreadConsumer  ( )

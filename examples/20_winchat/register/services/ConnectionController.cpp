@@ -40,7 +40,7 @@ namespace
     ConnectionController* _thisService{ nullptr };
 }
 
-ConnectionController::ConnectionController( const areg::ComponentEntry & entry, ComponentThread & ownerThread )
+ConnectionController::ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
     : Component             ( entry, ownerThread )
     , ConnectionManagerStub ( static_cast<Component &>(self()) )
     , CentralMessagerStub   ( static_cast<Component &>(self()) )

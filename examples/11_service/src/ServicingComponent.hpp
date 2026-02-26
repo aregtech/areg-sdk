@@ -33,7 +33,7 @@ private:
 
 public:
     //!< Init component object.
-    ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & ownerThread);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread);
 
 protected:
 /************************************************************************/

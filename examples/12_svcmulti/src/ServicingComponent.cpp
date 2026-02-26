@@ -19,7 +19,7 @@ DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_shutdownServiceIntrface);
 DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_processTimer);
 
-ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & ownerThread)
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
     : Component ( entry, ownerThread )
     , areg::StubBase  ( self(), areg::getEmptyInterface() )
 

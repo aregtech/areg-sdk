@@ -10,7 +10,7 @@
 #include "examples/20_winchat/services/ConnectionManagerStub.hpp"
 #include "examples/20_winchat/services/CentralMessagerStub.hpp"
 
-class ComponentThread;
+namespace areg { class ComponentThread; }
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionController class implementation
@@ -24,7 +24,7 @@ class ConnectionController  : public    Component
                             , public    CentralMessagerStub
 {
 public:
-    ConnectionController( const areg::ComponentEntry & entry, ComponentThread & ownerThread );
+    ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
     virtual ~ConnectionController();
 
 //////////////////////////////////////////////////////////////////////////

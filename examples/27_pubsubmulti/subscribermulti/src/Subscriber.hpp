@@ -38,7 +38,7 @@ class Subscriber: public    Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Subscriber( const areg::ComponentEntry & entry, ComponentThread & owner );
+    Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

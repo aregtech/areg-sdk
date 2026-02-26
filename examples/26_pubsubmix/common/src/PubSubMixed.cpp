@@ -12,7 +12,7 @@
 
 #include "areg/component/Model.hpp"
 
-PubSubMixed::PubSubMixed(const areg::ComponentEntry & entry, ComponentThread & owner)
+PubSubMixed::PubSubMixed(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component (entry, owner)
 
     , mPubSubMixedPublisher (static_cast<Component &>(self()))
@@ -21,13 +21,13 @@ PubSubMixed::PubSubMixed(const areg::ComponentEntry & entry, ComponentThread & o
 {
 }
 
-void PubSubMixed::startupComponent(ComponentThread & comThread)
+void PubSubMixed::startupComponent(areg::ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
     mPubSubMixedPublisher.start();
 }
 
-void PubSubMixed::shutdownComponent(ComponentThread & comThread)
+void PubSubMixed::shutdownComponent(areg::ComponentThread & comThread)
 {
     mPubSubMixedPublisher.stop();
     Component::shutdownComponent(comThread);

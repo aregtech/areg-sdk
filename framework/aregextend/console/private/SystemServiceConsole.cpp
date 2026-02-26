@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, ComponentThread & owner)
+SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component         ( entry, owner )
     , areg::StubBase          ( self( ), areg::getEmptyInterface( ) )
     , areg::TimerConsumer   ( )

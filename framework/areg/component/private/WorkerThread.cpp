@@ -86,7 +86,7 @@ namespace areg
         return result;
     }
 
-    ComponentThread & WorkerThread::getBindingComponentThread() const
+    areg::ComponentThread & WorkerThread::getBindingComponentThread() const
     {
         return mBindingComponent.getMasterThread();
     }

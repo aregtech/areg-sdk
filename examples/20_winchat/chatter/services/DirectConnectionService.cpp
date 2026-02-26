@@ -53,7 +53,7 @@ areg::Model DirectConnectionService::GetModel( const areg::String & nickName, ui
     return model;
 }
 
-DirectConnectionService::DirectConnectionService( const areg::ComponentEntry & entry, ComponentThread & ownerThread )
+DirectConnectionService::DirectConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
     : Component             ( entry, ownerThread )
     , DirectConnectionStub  ( static_cast<Component &>(self()) )
 

@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface)
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStartSleep);
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStopService);
 
-ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component         ( entry, owner )
     , HelloWatchdogStub ( static_cast<Component &>(self()) )
 {

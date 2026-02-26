@@ -53,7 +53,7 @@ const OptionParser::OptionSetup PubSubController::ValidOptions[]
 // PubSubController class methods
 //////////////////////////////////////////////////////////////////////////
 
-PubSubController::PubSubController( const areg::ComponentEntry & entry, ComponentThread & owner )
+PubSubController::PubSubController( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component         ( entry, owner )
     , Publisher         ( static_cast<Component &>(self()) )
     , areg::ThreadConsumer  ( )
@@ -64,13 +64,13 @@ PubSubController::PubSubController( const areg::ComponentEntry & entry, Componen
 {
 }
 
-void PubSubController::startupComponent(ComponentThread & comThread)
+void PubSubController::startupComponent(areg::ComponentThread & comThread)
 {
     Component::startupComponent(comThread);
     mConsoleThread.createThread(areg::WAIT_INFINITE);
 }
 
-void PubSubController::shutdownComponent(ComponentThread & comThread)
+void PubSubController::shutdownComponent(areg::ComponentThread & comThread)
 {
     mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
     Component::shutdownComponent(comThread);

@@ -44,7 +44,7 @@ public:
      * \param   owner   The component owner thread.
      * \param   data    The optional component data set in system. Can be empty / no data.
      **/
-    LogCollectorConsoleService( const areg::ComponentEntry & entry, ComponentThread & owner );
+    LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
     /**
      * \brief   Destructor.

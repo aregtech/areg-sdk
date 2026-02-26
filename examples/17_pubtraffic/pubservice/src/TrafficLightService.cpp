@@ -44,7 +44,7 @@ void TrafficLightService::TrafficLightTimerConsumer::processTimer( areg::Timer &
 // TrafficLightService class implementation
 //////////////////////////////////////////////////////////////////////////
 
-TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, ComponentThread & owner)
+TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component                 ( entry, owner )
     , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )
 

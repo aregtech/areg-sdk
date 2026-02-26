@@ -20,7 +20,7 @@
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServicingComponent_requestStartSleep);
 
-ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component         ( entry, owner )
     , HelloWatchdogStub ( static_cast<Component &>(self()) )
 {

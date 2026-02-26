@@ -10,7 +10,7 @@
  ************************************************************************/
 #include "locsvcmesh/src/ClientComponent.hpp"
 
-ClientComponent::ClientComponent(const areg::ComponentEntry & entry, ComponentThread & owner)
+ClientComponent::ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component         ( entry, owner )
 
     , mClientMain       ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )

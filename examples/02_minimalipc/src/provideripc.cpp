@@ -27,7 +27,7 @@ class ServiceProvider   : public    Component
                         , protected HelloServiceStub
 {
 public:
-    ServiceProvider(const areg::ComponentEntry& entry, ComponentThread& owner)
+    ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
         : Component(entry, owner)
         , HelloServiceStub(static_cast<Component&>(self()))
     {   }

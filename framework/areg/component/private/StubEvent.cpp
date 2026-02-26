@@ -99,7 +99,7 @@ namespace areg
     inline void areg::StubEventConsumer::_localProcessRequestEvent( RequestEvent & requestEvent )
     {
         Component *curComponent   = Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
-        ComponentThread::setCurrentComponent(curComponent);
+        areg::ComponentThread::setCurrentComponent(curComponent);
 
         if (areg::isRequestId(requestEvent.getRequestId()))
         {
@@ -110,13 +110,13 @@ namespace areg
             processStubEvent(static_cast<StubEvent&>(requestEvent));
         }
 
-        ComponentThread::setCurrentComponent(nullptr);
+        areg::ComponentThread::setCurrentComponent(nullptr);
     }
 
     inline void areg::StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
     {
         Component *curComponent   = Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
-        ComponentThread::setCurrentComponent(curComponent);
+        areg::ComponentThread::setCurrentComponent(curComponent);
 
         uint32_t reqId = notifyRequest.getRequestId();
         if (areg::isAttributeId(reqId) || areg::isResponseId(reqId))
@@ -128,7 +128,7 @@ namespace areg
             processStubEvent( static_cast<StubEvent &>(notifyRequest) );
         }
 
-        ComponentThread::setCurrentComponent(nullptr);
+        areg::ComponentThread::setCurrentComponent(nullptr);
     }
 
     inline void areg::StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )

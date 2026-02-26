@@ -40,13 +40,13 @@ namespace
     static constexpr std::string_view   NullDispatcherName{ "_NullDispatcherThread_" };
 }
 
-class AREG_API NullDispatcherThread    : public ComponentThread
+class AREG_API NullDispatcherThread    : public areg::ComponentThread
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes
 //////////////////////////////////////////////////////////////////////////
     friend class DispatcherThread;
-    friend class ComponentThread;
+    friend class areg::ComponentThread;
     friend class Component;
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,13 +121,13 @@ NullDispatcherThread   NullDispatcherThread::sSelfNullDispatcher;
 //////////////////////////////////////////////////////////////////////////
 // Runtime information to identify NullDispatcher object
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
+AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, areg::ComponentThread)
 
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread()
-    : ComponentThread(NullDispatcherName)
+    : areg::ComponentThread(NullDispatcherName)
 {                   }
 
 //////////////////////////////////////////////////////////////////////////

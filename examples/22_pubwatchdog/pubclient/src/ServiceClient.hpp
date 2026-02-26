@@ -39,7 +39,7 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 protected:
 

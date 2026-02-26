@@ -23,7 +23,7 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_requestHelloUblockFailed );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_onHelloServiceStateUpdate );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceClient_processTimer );
 
-ServiceClient::ServiceClient( const areg::ComponentEntry & entry, ComponentThread & owner )
+ServiceClient::ServiceClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
     : Component             ( entry, owner )
     , HelloUnblockClientBase( entry.mDependencyServices[0], static_cast<Component &>(self()) )
     , areg::TimerConsumer       ( )

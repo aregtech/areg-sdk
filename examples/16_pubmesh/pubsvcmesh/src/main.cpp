@@ -38,7 +38,7 @@ class LocalServiceComponent : public Component
 //////////////////////////////////////////////////////////////////////////
 public:
     //!< Initializes the local component
-    LocalServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+    LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
         : Component                 ( entry, owner )
         , mLocalService             ( static_cast<Component &>(self()) )
         , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
@@ -69,7 +69,7 @@ class PublicServiceComponent : public Component
 
 public:
 
-    PublicServiceComponent( const areg::ComponentEntry & entry, ComponentThread & owner )
+    PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
         : Component                 ( entry, owner )
         , mPublicService            ( static_cast<Component &>(self()) )
         , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )

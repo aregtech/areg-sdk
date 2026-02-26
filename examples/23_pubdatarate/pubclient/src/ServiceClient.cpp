@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastImageBlockAcquired);
 DEF_LOG_SCOPE(examples_23_clientdatarate_ServiceClient_broadcastServiceStopping);
 
-ServiceClient::ServiceClient(const areg::ComponentEntry & entry, ComponentThread & owner)
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : Component             ( entry, owner )
     , LargeDataClientBase   ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
     , areg::TimerConsumer       ( )
@@ -32,7 +32,7 @@ ServiceClient::ServiceClient(const areg::ComponentEntry & entry, ComponentThread
 {
 }
 
-void ServiceClient::startupComponent(ComponentThread& /* comThread */)
+void ServiceClient::startupComponent(areg::ComponentThread& /* comThread */)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_startupComponent);
     LOG_DBG("The component [ %s ] has been started", getRoleName().getString());

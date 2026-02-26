@@ -30,19 +30,19 @@ areg::Model ChatParticipantService::GetModel( const DirectMessager::Participant 
     return model;
 }
 
-ChatParticipantService::ChatParticipantService( const areg::ComponentEntry & entry, ComponentThread & ownerThread )
+ChatParticipantService::ChatParticipantService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
     : Component         ( entry, ownerThread )
 
     , mChatParticipant  ( static_cast<Component &>(self()), entry.mDependencyServices[0].mRoleName, std::any_cast<ChatPrticipantHandler*>(entry.getData()) )
 {
 }
 
-void ChatParticipantService::startupComponent( ComponentThread & comThread )
+void ChatParticipantService::startupComponent( areg::ComponentThread & comThread )
 {
     Component::startupComponent(comThread);
 }
 
-void ChatParticipantService::shutdownComponent( ComponentThread & comThread )
+void ChatParticipantService::shutdownComponent( areg::ComponentThread & comThread )
 {
     Component::shutdownComponent(comThread);
 }

@@ -12,7 +12,7 @@
 #include "pubclient/src/PatientClient.hpp"
 #include "areg/appbase/Application.hpp"
 
-PatientClient::PatientClient(const areg::ComponentEntry & entry, ComponentThread & /* owner */)
+PatientClient::PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & /* owner */)
     : Component                     ( entry.mRoleName )
     , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
 
