@@ -39,7 +39,7 @@ public:
     /**
      * \brief   The definition of type Property, which is a pair of Key and Value
      **/
-    using Entry = areg::KeyValuePair<PropertyKey, areg::PropertyValue>;
+    using Entry = areg::KeyValuePair<areg::PropertyKey, areg::PropertyValue>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -65,13 +65,13 @@ public:
      * \param   comment     The comment to add to the property.
      * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
      **/
-    Property(const PropertyKey& key, const areg::PropertyValue& value, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
+    Property(const areg::PropertyKey& key, const areg::PropertyValue& value, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
 
     /**
      * \brief   Moves objects during initialization.
      **/
-    Property(PropertyKey && key, areg::PropertyValue && value, areg::String && comment);
-    Property(PropertyKey&& key, areg::PropertyValue&& value);
+    Property(areg::PropertyKey && key, areg::PropertyValue && value, areg::String && comment);
+    Property(areg::PropertyKey&& key, areg::PropertyValue&& value);
 
     /**
      * \brief   Parses and initializes Key-Value and the comment data from given parameters.
@@ -185,18 +185,18 @@ public:
      * \brief   Sets the key of property.
      * \param   Key     The key value to set.
      **/
-    void setKey( const PropertyKey & Key );
+    void setKey( const areg::PropertyKey & Key );
 
     /**
      * \brief   Sets the key of property.
      * \param   Key     The key value to set.
      **/
-    void setKey( PropertyKey && Key );
+    void setKey( areg::PropertyKey && Key );
 
     /**
      * \brief   Returns Key value of the property
      **/
-    const PropertyKey & getKey() const;
+    const areg::PropertyKey & getKey() const;
 
     /**
      * \brief   Returns the property key type value.

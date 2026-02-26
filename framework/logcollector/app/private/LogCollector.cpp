@@ -744,7 +744,7 @@ areg::RemoteMessage LogCollector::_createScopeUpdateMessage(const areg::String& 
         Property prop(LogCollector::_normalizeScopeProperty(scope));
         if (prop.isValid() && prop.getPropertyType() == areg::ConfigEntry::LogScope)
         {
-            const PropertyKey& key{ prop.getKey() };
+            const areg::PropertyKey& key{ prop.getKey() };
             ITEM_ID target{ key.isAllModules() ? areg::COOKIE_ANY : key.getModule().toUInt32() };
             if (target >= areg::COOKIE_ANY)
             {

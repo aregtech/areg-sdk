@@ -120,7 +120,7 @@ public:
      * \brief   Returns true if the specified property exists.
      * \param   key     The property key to check.
      **/
-    bool existProperty(const PropertyKey& key) const;
+    bool existProperty(const areg::PropertyKey& key) const;
 
     /**
      * \brief   Returns true if there is a property with specified parameters for current module.
@@ -160,7 +160,7 @@ public:
      * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const Property * getProperty(const PropertyKey& key) const;
+    inline const Property * getProperty(const areg::PropertyKey& key) const;
 
     /**
      * \brief   Returns the pointer of the module specific property searched by specified parameters.
@@ -186,7 +186,7 @@ public:
      * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const Property* getModuleProperty(const PropertyKey& key) const;
+    inline const Property* getModuleProperty(const areg::PropertyKey& key) const;
 
     /**
      * \brief   Adds new or updates the existing configuration entry. The searching is done only
@@ -220,7 +220,7 @@ public:
      * \param   isTemporary Flag, indicating whether the change can be saved in the configuration file
      *                      or should be ignored.
      **/
-    inline void setModuleProperty( const PropertyKey& key, const areg::String& value, bool isTemporary = false);
+    inline void setModuleProperty( const areg::PropertyKey& key, const areg::String& value, bool isTemporary = false);
 
     /**
      * \brief   Returns the pointer to the value of the property searched by specified parameters.
@@ -244,7 +244,7 @@ public:
      * \return  Returns valid pointer to property value if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const areg::PropertyValue * getPropertyValue(const PropertyKey& key) const;
+    inline const areg::PropertyValue * getPropertyValue(const areg::PropertyKey& key) const;
 
     /**
      * \brief   Returns the pointer to the value of the module specific property searched by specified parameters.
@@ -272,8 +272,8 @@ public:
      * \return  Returns valid pointer if succeeded to find a module property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const areg::PropertyValue* getModulePropertyValue(const PropertyKey& key) const;
-    inline areg::PropertyValue* getModulePropertyValue(const PropertyKey& key);
+    inline const areg::PropertyValue* getModulePropertyValue(const areg::PropertyKey& key) const;
+    inline areg::PropertyValue* getModulePropertyValue(const areg::PropertyKey& key);
 
     /**
      * \brief   Adds new properties to the module configuration.
@@ -305,7 +305,7 @@ public:
      *          The search of the entry is done by specified parameters.
      * \param   key     The key value of the property containing section, property and position information to search.
      **/
-    inline void removeModuleProperty(const PropertyKey& key);
+    inline void removeModuleProperty(const areg::PropertyKey& key);
 
     /**
      * \brief   Removes all configuration entries from the writable list matching the specified section and property.
@@ -871,20 +871,20 @@ inline bool ConfigManager::isLocked() const
 
 inline bool ConfigManager::existProperty(const areg::String& section, const areg::String& property, const areg::String& position) const
 {
-    return existProperty(PropertyKey(section, mModule, property, position));
+    return existProperty(areg::PropertyKey(section, mModule, property, position));
 }
 
-inline const Property* ConfigManager::getProperty(const PropertyKey& key) const
+inline const Property* ConfigManager::getProperty(const areg::PropertyKey& key) const
 {
     return getProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline const Property* ConfigManager::getModuleProperty(const PropertyKey& key) const
+inline const Property* ConfigManager::getModuleProperty(const areg::PropertyKey& key) const
 {
     return getModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline void ConfigManager::setModuleProperty(const PropertyKey& key, const areg::String& value, bool isTemporary)
+inline void ConfigManager::setModuleProperty(const areg::PropertyKey& key, const areg::String& value, bool isTemporary)
 {
     setModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), value, key.getKeyType(), isTemporary);
 }
@@ -900,12 +900,12 @@ inline const areg::PropertyValue * ConfigManager::getPropertyValue( const areg::
     return (result != nullptr ? &result->getValue() : nullptr);
 }
 
-inline const areg::PropertyValue* ConfigManager::getPropertyValue(const PropertyKey& key) const
+inline const areg::PropertyValue* ConfigManager::getPropertyValue(const areg::PropertyKey& key) const
 {
     return getPropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline const areg::PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key) const
+inline const areg::PropertyValue* ConfigManager::getModulePropertyValue(const areg::PropertyKey& key) const
 {
     return getModulePropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
@@ -921,7 +921,7 @@ inline const areg::PropertyValue * ConfigManager::getModulePropertyValue( const 
     return (result != nullptr ? &result->getValue() : nullptr);
 }
 
-inline areg::PropertyValue* ConfigManager::getModulePropertyValue(const PropertyKey& key)
+inline areg::PropertyValue* ConfigManager::getModulePropertyValue(const areg::PropertyKey& key)
 {
     return getModulePropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
@@ -960,7 +960,7 @@ inline void ConfigManager::replaceModuleProperty(const areg::ListProperties& lis
     mWritableProperties = listProperties;
 }
 
-inline void ConfigManager::removeModuleProperty(const PropertyKey& key)
+inline void ConfigManager::removeModuleProperty(const areg::PropertyKey& key)
 {
     removeModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }

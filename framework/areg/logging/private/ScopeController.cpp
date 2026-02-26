@@ -184,7 +184,7 @@ void ScopeController::activateDefaults()
 
 void ScopeController::configureScopes( const Property & prop )
 {
-    const PropertyKey & Key = prop.getKey( );
+    const areg::PropertyKey & Key = prop.getKey( );
     const areg::PropertyValue & Value = prop.getValue( );
     ASSERT( Key.isValid( ) );
     ASSERT( Key.getKeyType() == areg::ConfigEntry::LogScope );

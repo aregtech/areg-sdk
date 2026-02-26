@@ -33,21 +33,21 @@ Property::Property(const areg::String strProperty)
     parseProperty(strProperty);
 }
 
-Property::Property(const PropertyKey& key, const areg::PropertyValue& value, const areg::String& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
+Property::Property(const areg::PropertyKey& key, const areg::PropertyValue& value, const areg::String& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  (isTemporary)
     , mComment      (comment)
     , mProperty     (key, value)
 {
 }
 
-Property::Property(PropertyKey&& key, areg::PropertyValue&& value, areg::String&& comment)
+Property::Property(areg::PropertyKey&& key, areg::PropertyValue&& value, areg::String&& comment)
     : mIsTemporary  (false)
     , mComment      ( std::move(comment))
     , mProperty     ( std::move(key), std::move(value))
 {
 }
 
-Property::Property(PropertyKey&& key, areg::PropertyValue&& value)
+Property::Property(areg::PropertyKey&& key, areg::PropertyValue&& value)
     : mIsTemporary  (false)
     , mComment      ( )
     , mProperty     ( std::move(key), std::move(value))
@@ -57,21 +57,21 @@ Property::Property(PropertyKey&& key, areg::PropertyValue&& value)
 Property::Property(const areg::String & keySet, const areg::String & valueSet, const areg::String & comment /*= areg::String::EmptyString*/, bool isTemporary /*= false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(keySet), areg::PropertyValue(valueSet) )
+    , mProperty     ( areg::PropertyKey(keySet), areg::PropertyValue(valueSet) )
 {
 }
 
 Property::Property(const char* keySet, const char* valueSet, const char* comment /*= nullptr*/, bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(keySet), areg::PropertyValue(valueSet) )
+    , mProperty     ( areg::PropertyKey(keySet), areg::PropertyValue(valueSet) )
 {
 }
 
 Property::Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment /*= areg::String::EmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(keySet), areg::PropertyValue(valueSet) )
+    , mProperty     ( areg::PropertyKey(keySet), areg::PropertyValue(valueSet) )
 {
 }
 
@@ -84,7 +84,7 @@ Property::Property( const std::string_view& section
                   , bool isTemporary /* = false*/)
     : mIsTemporary  ( isTemporary )
     , mComment      ( comment )
-    , mProperty     ( PropertyKey(section, module, property, position), areg::PropertyValue(value) )
+    , mProperty     ( areg::PropertyKey(section, module, property, position), areg::PropertyValue(value) )
 {
 }
 
@@ -147,17 +147,17 @@ void Property::parseKey(const areg::String & keySet)
     mProperty.mValue.first.parseKey(keySet);
 }
 
-void Property::setKey(const PropertyKey & Key)
+void Property::setKey(const areg::PropertyKey & Key)
 {
     mProperty.mValue.first = Key;
 }
 
-void Property::setKey( PropertyKey && Key )
+void Property::setKey( areg::PropertyKey && Key )
 {
     mProperty.mValue.first = std::move(Key);
 }
 
-const PropertyKey & Property::getKey() const
+const areg::PropertyKey & Property::getKey() const
 {
     return mProperty.mValue.first;
 }
@@ -334,7 +334,7 @@ void Property::resetData()
 
 bool Property::isModuleProperty(const areg::String& module) const
 {
-    const PropertyKey& key = mProperty.mValue.first;
+    const areg::PropertyKey& key = mProperty.mValue.first;
     return ((module == key.getModule()) || key.isAllModules());
 }
 

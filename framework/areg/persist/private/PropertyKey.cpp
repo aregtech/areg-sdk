@@ -19,418 +19,422 @@
 
 #include <utility>
 
-PropertyKey::PropertyKey( const PropertyKey & source )
-    : mSection  ( source.mSection   )
-    , mModule   ( source.mModule    )
-    , mProperty ( source.mProperty  )
-    , mPosition ( source.mPosition  )
-    , mKeyType  ( source.mKeyType   )
+namespace areg
 {
-}
 
-PropertyKey::PropertyKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position)
-    : mSection  ( section   )
-    , mModule   ( module    )
-    , mProperty ( property  )
-    , mPosition ( position  )
-    , mKeyType  ( PropertyKey::_findKey(mSection, mModule, mProperty, mPosition))
-{
-}
-
-PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position)
-    : mSection  ( section   )
-    , mModule   ( module    )
-    , mProperty ( property  )
-    , mPosition ( position  )
-    , mKeyType  ( PropertyKey::_findKey(mSection, mModule, mProperty, mPosition))
-{
-}
-
-PropertyKey::PropertyKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position, areg::ConfigEntry keyType)
-    : mSection  ( section   )
-    , mModule   ( module    )
-    , mProperty ( property  )
-    , mPosition ( position  )
-    , mKeyType  ( keyType == areg::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
-{
-}
-
-PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, areg::ConfigEntry keyType)
-    : mSection  ( section   )
-    , mModule   ( module    )
-    , mProperty ( property  )
-    , mPosition ( position  )
-    , mKeyType  ( keyType == areg::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
-{
-}
-
-PropertyKey::PropertyKey( PropertyKey && source ) noexcept
-    : mSection  ( std::move(source.mSection)    )
-    , mModule   ( std::move(source.mModule)     )
-    , mProperty ( std::move(source.mProperty)   )
-    , mPosition ( std::move(source.mPosition)   )
-    , mKeyType  ( source.mKeyType               )
-{
-}
-
-PropertyKey::PropertyKey()
-    : mSection  ( )
-    , mModule   ( )
-    , mProperty ( )
-    , mPosition ( )
-    , mKeyType  ( areg::ConfigEntry::Invalid )
-{
-}
-
-PropertyKey::PropertyKey( const areg::String & key )
-    : mSection  ( )
-    , mModule   ( )
-    , mProperty ( )
-    , mPosition ( )
-    , mKeyType  ( areg::ConfigEntry::Invalid )
-{
-    parseKey( key );
-}
-
-PropertyKey::PropertyKey( areg::String && key )
-    : mSection  ( )
-    , mModule   ( )
-    , mProperty ( )
-    , mPosition ( )
-    , mKeyType  (areg::ConfigEntry::Invalid)
-{
-    parseKey( std::move(key) );
-}
-
-PropertyKey & PropertyKey::operator = ( const PropertyKey & source )
-{
-    if ( static_cast<const PropertyKey *>(this) != &source )
+    PropertyKey::PropertyKey( const PropertyKey & source )
+        : mSection  ( source.mSection   )
+        , mModule   ( source.mModule    )
+        , mProperty ( source.mProperty  )
+        , mPosition ( source.mPosition  )
+        , mKeyType  ( source.mKeyType   )
     {
-        mSection    = source.mSection;
-        mModule     = source.mModule;
-        mProperty   = source.mProperty;
-        mPosition   = source.mPosition;
+    }
+
+    PropertyKey::PropertyKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position)
+        : mSection  ( section   )
+        , mModule   ( module    )
+        , mProperty ( property  )
+        , mPosition ( position  )
+        , mKeyType  ( PropertyKey::_findKey(mSection, mModule, mProperty, mPosition))
+    {
+    }
+
+    PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position)
+        : mSection  ( section   )
+        , mModule   ( module    )
+        , mProperty ( property  )
+        , mPosition ( position  )
+        , mKeyType  ( PropertyKey::_findKey(mSection, mModule, mProperty, mPosition))
+    {
+    }
+
+    PropertyKey::PropertyKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position, areg::ConfigEntry keyType)
+        : mSection  ( section   )
+        , mModule   ( module    )
+        , mProperty ( property  )
+        , mPosition ( position  )
+        , mKeyType  ( keyType == areg::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    {
+    }
+
+    PropertyKey::PropertyKey(const std::string_view& section, const std::string_view& module, const std::string_view& property, const std::string_view& position, areg::ConfigEntry keyType)
+        : mSection  ( section   )
+        , mModule   ( module    )
+        , mProperty ( property  )
+        , mPosition ( position  )
+        , mKeyType  ( keyType == areg::ConfigEntry::AnyKey ? _findKey(mSection, mModule, mProperty, mPosition) : keyType )
+    {
+    }
+
+    PropertyKey::PropertyKey( PropertyKey && source ) noexcept
+        : mSection  ( std::move(source.mSection)    )
+        , mModule   ( std::move(source.mModule)     )
+        , mProperty ( std::move(source.mProperty)   )
+        , mPosition ( std::move(source.mPosition)   )
+        , mKeyType  ( source.mKeyType               )
+    {
+    }
+
+    PropertyKey::PropertyKey()
+        : mSection  ( )
+        , mModule   ( )
+        , mProperty ( )
+        , mPosition ( )
+        , mKeyType  ( areg::ConfigEntry::Invalid )
+    {
+    }
+
+    PropertyKey::PropertyKey( const areg::String & key )
+        : mSection  ( )
+        , mModule   ( )
+        , mProperty ( )
+        , mPosition ( )
+        , mKeyType  ( areg::ConfigEntry::Invalid )
+    {
+        parseKey( key );
+    }
+
+    PropertyKey::PropertyKey( areg::String && key )
+        : mSection  ( )
+        , mModule   ( )
+        , mProperty ( )
+        , mPosition ( )
+        , mKeyType  (areg::ConfigEntry::Invalid)
+    {
+        parseKey( std::move(key) );
+    }
+
+    PropertyKey & PropertyKey::operator = ( const PropertyKey & source )
+    {
+        if ( static_cast<const PropertyKey *>(this) != &source )
+        {
+            mSection    = source.mSection;
+            mModule     = source.mModule;
+            mProperty   = source.mProperty;
+            mPosition   = source.mPosition;
+            mKeyType    = source.mKeyType;
+        }
+
+        return (*this);
+    }
+
+    PropertyKey & PropertyKey::operator = ( PropertyKey && source ) noexcept
+    {
+        mSection    = std::move(source.mSection);
+        mModule     = std::move(source.mModule);
+        mProperty   = std::move(source.mProperty);
+        mPosition   = std::move(source.mPosition);
         mKeyType    = source.mKeyType;
+
+        return (*this);
     }
 
-    return (*this);
-}
-
-PropertyKey & PropertyKey::operator = ( PropertyKey && source ) noexcept
-{
-    mSection    = std::move(source.mSection);
-    mModule     = std::move(source.mModule);
-    mProperty   = std::move(source.mProperty);
-    mPosition   = std::move(source.mPosition);
-    mKeyType    = source.mKeyType;
-
-    return (*this);
-}
-
-PropertyKey & PropertyKey::operator = ( const areg::String & source )
-{
-    parseKey(source);
-    return (*this);
-}
-
-PropertyKey & PropertyKey::operator = ( areg::String && source )
-{
-    parseKey(std::move(source));
-    return (*this);
-}
-
-bool PropertyKey::operator == ( const PropertyKey & other ) const
-{
-    bool result = false;
-    if ( this != &other )
+    PropertyKey & PropertyKey::operator = ( const areg::String & source )
     {
-        if (mSection == other.mSection)
+        parseKey(source);
+        return (*this);
+    }
+
+    PropertyKey & PropertyKey::operator = ( areg::String && source )
+    {
+        parseKey(std::move(source));
+        return (*this);
+    }
+
+    bool PropertyKey::operator == ( const PropertyKey & other ) const
+    {
+        bool result = false;
+        if ( this != &other )
         {
-            if ((mModule == other.mModule) || (mModule == areg::SYNTAX_ALL_MODULES) || (other.mModule == areg::SYNTAX_ALL_MODULES))
+            if (mSection == other.mSection)
             {
-                result = mProperty == other.mProperty ? mPosition == other.mPosition : other.mSection.isEmpty() && PropertyKey::_isCompatible(mProperty, other.mProperty);
-            }
-        }
-    }
-    else
-    {
-        result = true;
-    }
-
-    return result;
-}
-
-bool PropertyKey::operator != ( const PropertyKey & other ) const
-{
-    return (*this == other ? false : true);
-}
-
-PropertyKey::operator uint32_t () const
-{
-    uint32_t result{ areg::CHECKSUM_IGNORE };
-    if (mSection.isEmpty() == false)
-    {
-        result = areg::crc32Init();
-        result = areg::crc32Start(result, mSection.getString());
-        result = areg::crc32Start(result, mModule.getString());
-        result = areg::crc32Start(result, mProperty.getString());
-        result = areg::crc32Start(result, mPosition.getString());
-        result = areg::crc32Finish(result);
-    }
-
-    return result;
-}
-
-bool PropertyKey::parseKey( const areg::String & key )
-{
-    areg::String temp(key);
-    temp.trimAll();
-    if ( temp.isEmpty() == false )
-    {
-        _parseKey(temp);
-    }
-
-    return isValid();
-}
-
-bool PropertyKey::parseKey( areg::String && key )
-{
-    areg::String temp(std::move(key));
-    temp.trimAll();
-    if ( temp.isEmpty() == false )
-    {
-        _parseKey(temp);
-    }
-
-    return isValid();
-}
-
-areg::String PropertyKey::convToString() const
-{
-    areg::String result(static_cast<uint32_t>(0xFF));
-    if ( isValid() )
-    {
-        result.append(mSection)
-              .append(areg::SYNTAX_OBJECT_SEPARATOR)
-              .append(mModule)
-              .append(areg::SYNTAX_OBJECT_SEPARATOR)
-              .append(mProperty);
-
-        if (mPosition.isEmpty() == false)
-        {
-            result.append(areg::SYNTAX_OBJECT_SEPARATOR).append(mPosition);
-        }
-    }
-
-    return result;
-}
-
-bool PropertyKey::isExactModule(const areg::String& section, const areg::String& module) const
-{
-    return (isValid() && (mSection == section) && (mModule == module));
-}
-
-bool PropertyKey::isExactProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const
-{
-    return  (isValid() && (mSection == section) && (mModule == module) && (mProperty == property) && (mPosition == position));
-}
-
-bool PropertyKey::isModuleProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const
-{
-    bool result{ false };
-
-    if (isValid() && (mSection == section) && (mProperty == property) && (module.isEmpty() == false))
-    {
-        if ((mModule == module) || (mModule == areg::SYNTAX_ALL_MODULES) || (module == areg::SYNTAX_ALL_MODULES))
-        {
-            result = PropertyKey::_isCompatible(mPosition, position);
-        }
-    }
-
-    return result;
-}
-
-bool PropertyKey::isModuleSection(const areg::String& section, const areg::String& module) const
-{
-    bool result{ false };
-
-    if (isValid() && (mSection == section) && (module.isEmpty() == false))
-    {
-        result = ((mModule == module) || (mModule == areg::SYNTAX_ALL_MODULES) || (module == areg::SYNTAX_ALL_MODULES));
-    }
-
-    return result;
-}
-
-void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
-{
-    mSection    = section != nullptr ? section  : areg::String::EmptyString;
-    mModule     = module  != nullptr ? module   : areg::SYNTAX_ALL_MODULES;
-    mProperty   = property!= nullptr ? property : areg::String::EmptyString;
-    mPosition   = position!= nullptr ? position : areg::String::EmptyString;
-    mKeyType    = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
-}
-
-void PropertyKey::setValues(const areg::String& section, const areg::String& property, const areg::String& module, const areg::String& position)
-{
-    mSection    = section;
-    mModule     = module;
-    mProperty   = property;
-    mPosition   = position;
-    mKeyType    = PropertyKey::_findKey(section, module, property, position);
-}
-
-void PropertyKey::setValues(const areg::String& section, const areg::String& property, const areg::String& module, const areg::String& position, areg::ConfigEntry keyType)
-{
-    mSection    = section;
-    mModule     = module;
-    mProperty   = property;
-    mPosition   = position;
-    mKeyType    = keyType;
-}
-
-const areg::String & PropertyKey::getSection() const
-{
-    return mSection;
-}
-
-const areg::String & PropertyKey::getProperty() const
-{
-    return mProperty;
-}
-
-const areg::String & PropertyKey::getModule() const
-{
-    return mModule;
-}
-
-const areg::String & PropertyKey::getPosition() const
-{
-    return mPosition;
-}
-
-areg::ConfigEntry PropertyKey::getKeyType() const
-{
-    return mKeyType;
-}
-
-bool PropertyKey::isValid() const
-{
-    return ( mSection.isEmpty() == false && mModule.isEmpty() == false && mProperty.isEmpty() == false );
-}
-
-bool PropertyKey::hasModule() const
-{
-    return mModule.isEmpty() == false;
-}
-
-bool PropertyKey::hasProperty() const
-{
-    return (mProperty.isEmpty() == false);
-}
-
-bool PropertyKey::isAllModules() const
-{
-    return (mModule == areg::SYNTAX_ALL_MODULES);
-}
-
-bool PropertyKey::isGroupProperty() const
-{
-    return mPosition.endsWith(areg::SYNTAX_GROUP) || mProperty.endsWith(areg::SYNTAX_GROUP);
-}
-
-bool PropertyKey::hasSection() const
-{
-    return (mSection.isEmpty() == false);
-}
-
-bool PropertyKey::hasPosition() const
-{
-    return mPosition.isEmpty() == false;
-}
-
-void PropertyKey::resetKey()
-{
-    mSection.clear();
-    mProperty.clear();
-    mModule.clear();
-    mPosition.clear();
-    mKeyType = areg::ConfigEntry::Invalid;
-}
-
-inline void PropertyKey::_parseKey(const areg::String& key)
-{
-    std::vector<areg::StringBase<char>> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
-    resetKey();
-
-    if (list.size() != 0)
-    {
-        mSection = list[0];
-        if (list.size() > 1)
-        {
-            mModule = list[1];
-            if (list.size() > 2)
-            {
-                mProperty = list[2];
-                if (list.size() > 3)
+                if ((mModule == other.mModule) || (mModule == areg::SYNTAX_ALL_MODULES) || (other.mModule == areg::SYNTAX_ALL_MODULES))
                 {
-                    mPosition = list[3];
+                    result = mProperty == other.mProperty ? mPosition == other.mPosition : other.mSection.isEmpty() && PropertyKey::_isCompatible(mProperty, other.mProperty);
                 }
-                else
-                {
-                    mPosition = areg::String::EmptyString;
-                }
-            }
-            else
-            {
-                mProperty = areg::SYNTAX_ALL_MODULES;
             }
         }
         else
         {
-            mModule = areg::SYNTAX_ALL_MODULES;
+            result = true;
         }
 
-        mKeyType = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
+        return result;
     }
-}
 
-inline bool PropertyKey::_isCompatible(const areg::String& left, const areg::String& right) 
-{
-    bool result{ true };
-    if (left != right)
+    bool PropertyKey::operator != ( const PropertyKey & other ) const
     {
-        const char* lval = left;
-        const char* rval = right;
-        while ((*lval != areg::String::EmptyChar) && (*rval != areg::String::EmptyChar) && (*lval == *rval))
-        {
-            ++lval;
-            ++rval;
-        }
-
-        result = ((*lval == areg::String::EmptyChar) && (*rval == areg::String::EmptyChar)) ||
-                 ((*lval == areg::SYNTAX_ANY_VALUE) || (*rval == areg::SYNTAX_ANY_VALUE));
+        return (*this == other ? false : true);
     }
 
-    return result;
-}
-
-inline areg::ConfigEntry PropertyKey::_findKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position)
-{
-    areg::ConfigEntry result{ areg::ConfigEntry::Invalid };
-
-    for (int i = static_cast<int>(areg::ConfigEntry::ConfigVersion); i <= static_cast<int>(areg::ConfigEntry::AnyKey); ++i)
+    PropertyKey::operator uint32_t () const
     {
-        const auto& key = areg::DefaultPropertyKeys[i];
-        if (((areg::SYNTAX_ALL_MODULES == key.section) || (section == key.section))  &&
-            ((areg::SYNTAX_ALL_MODULES == key.module)  || (module == key.module))    &&
-            ((areg::SYNTAX_ALL_MODULES == key.property)|| (property == key.property))&&
-            ((areg::SYNTAX_ALL_MODULES == key.position)|| (position == key.position)))
+        uint32_t result{ areg::CHECKSUM_IGNORE };
+        if (mSection.isEmpty() == false)
         {
-            result = static_cast<areg::ConfigEntry>(i);
-            break;
+            result = areg::crc32Init();
+            result = areg::crc32Start(result, mSection.getString());
+            result = areg::crc32Start(result, mModule.getString());
+            result = areg::crc32Start(result, mProperty.getString());
+            result = areg::crc32Start(result, mPosition.getString());
+            result = areg::crc32Finish(result);
+        }
+
+        return result;
+    }
+
+    bool PropertyKey::parseKey( const areg::String & key )
+    {
+        areg::String temp(key);
+        temp.trimAll();
+        if ( temp.isEmpty() == false )
+        {
+            _parseKey(temp);
+        }
+
+        return isValid();
+    }
+
+    bool PropertyKey::parseKey( areg::String && key )
+    {
+        areg::String temp(std::move(key));
+        temp.trimAll();
+        if ( temp.isEmpty() == false )
+        {
+            _parseKey(temp);
+        }
+
+        return isValid();
+    }
+
+    areg::String PropertyKey::convToString() const
+    {
+        areg::String result(static_cast<uint32_t>(0xFF));
+        if ( isValid() )
+        {
+            result.append(mSection)
+                  .append(areg::SYNTAX_OBJECT_SEPARATOR)
+                  .append(mModule)
+                  .append(areg::SYNTAX_OBJECT_SEPARATOR)
+                  .append(mProperty);
+
+            if (mPosition.isEmpty() == false)
+            {
+                result.append(areg::SYNTAX_OBJECT_SEPARATOR).append(mPosition);
+            }
+        }
+
+        return result;
+    }
+
+    bool PropertyKey::isExactModule(const areg::String& section, const areg::String& module) const
+    {
+        return (isValid() && (mSection == section) && (mModule == module));
+    }
+
+    bool PropertyKey::isExactProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const
+    {
+        return  (isValid() && (mSection == section) && (mModule == module) && (mProperty == property) && (mPosition == position));
+    }
+
+    bool PropertyKey::isModuleProperty(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position) const
+    {
+        bool result{ false };
+
+        if (isValid() && (mSection == section) && (mProperty == property) && (module.isEmpty() == false))
+        {
+            if ((mModule == module) || (mModule == areg::SYNTAX_ALL_MODULES) || (module == areg::SYNTAX_ALL_MODULES))
+            {
+                result = PropertyKey::_isCompatible(mPosition, position);
+            }
+        }
+
+        return result;
+    }
+
+    bool PropertyKey::isModuleSection(const areg::String& section, const areg::String& module) const
+    {
+        bool result{ false };
+
+        if (isValid() && (mSection == section) && (module.isEmpty() == false))
+        {
+            result = ((mModule == module) || (mModule == areg::SYNTAX_ALL_MODULES) || (module == areg::SYNTAX_ALL_MODULES));
+        }
+
+        return result;
+    }
+
+    void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
+    {
+        mSection    = section != nullptr ? section  : areg::String::EmptyString;
+        mModule     = module  != nullptr ? module   : areg::SYNTAX_ALL_MODULES;
+        mProperty   = property!= nullptr ? property : areg::String::EmptyString;
+        mPosition   = position!= nullptr ? position : areg::String::EmptyString;
+        mKeyType    = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
+    }
+
+    void PropertyKey::setValues(const areg::String& section, const areg::String& property, const areg::String& module, const areg::String& position)
+    {
+        mSection    = section;
+        mModule     = module;
+        mProperty   = property;
+        mPosition   = position;
+        mKeyType    = PropertyKey::_findKey(section, module, property, position);
+    }
+
+    void PropertyKey::setValues(const areg::String& section, const areg::String& property, const areg::String& module, const areg::String& position, areg::ConfigEntry keyType)
+    {
+        mSection    = section;
+        mModule     = module;
+        mProperty   = property;
+        mPosition   = position;
+        mKeyType    = keyType;
+    }
+
+    const areg::String & PropertyKey::getSection() const
+    {
+        return mSection;
+    }
+
+    const areg::String & PropertyKey::getProperty() const
+    {
+        return mProperty;
+    }
+
+    const areg::String & PropertyKey::getModule() const
+    {
+        return mModule;
+    }
+
+    const areg::String & PropertyKey::getPosition() const
+    {
+        return mPosition;
+    }
+
+    areg::ConfigEntry PropertyKey::getKeyType() const
+    {
+        return mKeyType;
+    }
+
+    bool PropertyKey::isValid() const
+    {
+        return ( mSection.isEmpty() == false && mModule.isEmpty() == false && mProperty.isEmpty() == false );
+    }
+
+    bool PropertyKey::hasModule() const
+    {
+        return mModule.isEmpty() == false;
+    }
+
+    bool PropertyKey::hasProperty() const
+    {
+        return (mProperty.isEmpty() == false);
+    }
+
+    bool PropertyKey::isAllModules() const
+    {
+        return (mModule == areg::SYNTAX_ALL_MODULES);
+    }
+
+    bool PropertyKey::isGroupProperty() const
+    {
+        return mPosition.endsWith(areg::SYNTAX_GROUP) || mProperty.endsWith(areg::SYNTAX_GROUP);
+    }
+
+    bool PropertyKey::hasSection() const
+    {
+        return (mSection.isEmpty() == false);
+    }
+
+    bool PropertyKey::hasPosition() const
+    {
+        return mPosition.isEmpty() == false;
+    }
+
+    void PropertyKey::resetKey()
+    {
+        mSection.clear();
+        mProperty.clear();
+        mModule.clear();
+        mPosition.clear();
+        mKeyType = areg::ConfigEntry::Invalid;
+    }
+
+    inline void PropertyKey::_parseKey(const areg::String& key)
+    {
+        std::vector<areg::StringBase<char>> list = key.split(areg::SYNTAX_OBJECT_SEPARATOR);
+        resetKey();
+
+        if (list.size() != 0)
+        {
+            mSection = list[0];
+            if (list.size() > 1)
+            {
+                mModule = list[1];
+                if (list.size() > 2)
+                {
+                    mProperty = list[2];
+                    if (list.size() > 3)
+                    {
+                        mPosition = list[3];
+                    }
+                    else
+                    {
+                        mPosition = areg::String::EmptyString;
+                    }
+                }
+                else
+                {
+                    mProperty = areg::SYNTAX_ALL_MODULES;
+                }
+            }
+            else
+            {
+                mModule = areg::SYNTAX_ALL_MODULES;
+            }
+
+            mKeyType = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
         }
     }
 
-    return result;
-}
+    inline bool PropertyKey::_isCompatible(const areg::String& left, const areg::String& right) 
+    {
+        bool result{ true };
+        if (left != right)
+        {
+            const char* lval = left;
+            const char* rval = right;
+            while ((*lval != areg::String::EmptyChar) && (*rval != areg::String::EmptyChar) && (*lval == *rval))
+            {
+                ++lval;
+                ++rval;
+            }
+
+            result = ((*lval == areg::String::EmptyChar) && (*rval == areg::String::EmptyChar)) ||
+                     ((*lval == areg::SYNTAX_ANY_VALUE) || (*rval == areg::SYNTAX_ANY_VALUE));
+        }
+
+        return result;
+    }
+
+    inline areg::ConfigEntry PropertyKey::_findKey(const areg::String& section, const areg::String& module, const areg::String& property, const areg::String& position)
+    {
+        areg::ConfigEntry result{ areg::ConfigEntry::Invalid };
+
+        for (int i = static_cast<int>(areg::ConfigEntry::ConfigVersion); i <= static_cast<int>(areg::ConfigEntry::AnyKey); ++i)
+        {
+            const auto& key = areg::DefaultPropertyKeys[i];
+            if (((areg::SYNTAX_ALL_MODULES == key.section) || (section == key.section))  &&
+                ((areg::SYNTAX_ALL_MODULES == key.module)  || (module == key.module))    &&
+                ((areg::SYNTAX_ALL_MODULES == key.property)|| (property == key.property))&&
+                ((areg::SYNTAX_ALL_MODULES == key.position)|| (position == key.position)))
+            {
+                result = static_cast<areg::ConfigEntry>(i);
+                break;
+            }
+        }
+
+        return result;
+    }
+} // namespace areg

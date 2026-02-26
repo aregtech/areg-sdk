@@ -746,7 +746,7 @@ bool LogObserver::_sendScopeUpdateMessage(const areg::String& scope)
         Property prop(LogObserver::_normalizeScopeProperty(scope));
         if (prop.isValid() && prop.getPropertyType() == areg::ConfigEntry::LogScope)
         {
-            const PropertyKey& key{ prop.getKey() };
+            const areg::PropertyKey& key{ prop.getKey() };
             ITEM_ID target{ key.isAllModules() ? areg::TARGET_ALL : key.getModule().toUInt32() };
             if (target >= areg::TARGET_ALL)
             {

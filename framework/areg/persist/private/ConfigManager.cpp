@@ -40,7 +40,7 @@ namespace
 
         for (uint32_t pos = startAt; pos < count; ++ pos)
         {
-            const PropertyKey& key = propList[pos].getKey();
+            const areg::PropertyKey& key = propList[pos].getKey();
             if ((configKey == areg::ConfigEntry::AnyKey) || (configKey == key.getKeyType()))
             {
                 if ((exact && key.isExactProperty(section, module, property, position)) ||
@@ -82,7 +82,7 @@ namespace
             }
             else
             {
-                writeList.add(Property(PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
+                writeList.add(Property(areg::PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
             }
         }
         else
@@ -96,7 +96,7 @@ namespace
                 }
                 else
                 {
-                    writeList.add(Property(PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
+                    writeList.add(Property(areg::PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
                 }
             }
             else if (writePos != areg::INVALID_POSITION)
@@ -136,7 +136,7 @@ namespace
                 if (newProperty.parseProperty(line))
                 {
                     // add new entry if unique. otherwise, update existing.
-                    const PropertyKey& Key = newProperty.getKey();
+                    const areg::PropertyKey& Key = newProperty.getKey();
                     if (Key.isAllModules())
                     {
                         listReadonly.add(newProperty);
@@ -205,7 +205,7 @@ namespace
                     }
                     else
                     {
-                        const PropertyKey& key{ newProperty.getKey() };
+                        const areg::PropertyKey& key{ newProperty.getKey() };
                         const Property* prop = _getProperty(listWritable, key.getSection(), module, key.getProperty(), key.getPosition(), key.getKeyType(), true);
                         if ((prop != nullptr) && prop->isTemporary())
                         {
@@ -242,7 +242,7 @@ ConfigManager::ConfigManager()
 {
 }
 
-bool ConfigManager::existProperty(const PropertyKey& key) const
+bool ConfigManager::existProperty(const areg::PropertyKey& key) const
 {
     Lock lock(mLock);
     bool result = _findPosition(  mWritableProperties
@@ -351,7 +351,7 @@ int32_t ConfigManager::removeModuleProperties(const areg::String& section, const
     uint32_t i{ 0 };
     while (i < mWritableProperties.getSize())
     {
-        const PropertyKey& key = mWritableProperties[i].getKey();
+        const areg::PropertyKey& key = mWritableProperties[i].getKey();
         if ((keyType == areg::ConfigEntry::AnyKey) || (keyType == key.getKeyType()))
         {
             if ((section == key.getSection()) && (property == key.getProperty()))
@@ -808,7 +808,7 @@ uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& scopeList) con
     const auto& listRead{ mReadonlyProperties.getData() };
     for (const auto& entry : listRead)
     {
-        const PropertyKey& key = entry.getKey();
+        const areg::PropertyKey& key = entry.getKey();
         if ((key.getKeyType() == areg::ConfigEntry::LogScope) && key.isAllModules())
         {
             scopeList.push_back(entry);
@@ -818,7 +818,7 @@ uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& scopeList) con
     const auto& listWrite{ mWritableProperties.getData() };
     for (const auto& entry : listWrite)
     {
-        const PropertyKey& key = entry.getKey();
+        const areg::PropertyKey& key = entry.getKey();
         if (key.getKeyType() == areg::ConfigEntry::LogScope)
         {
             ASSERT(key.getModule() == mModule);
