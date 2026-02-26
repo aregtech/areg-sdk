@@ -96,7 +96,7 @@ namespace areg
     {
     }
 
-    inline void areg::StubEventConsumer::_localProcessRequestEvent( RequestEvent & requestEvent )
+    inline void areg::StubEventConsumer::_localProcessRequestEvent( areg::RequestEvent & requestEvent )
     {
         areg::Component *curComponent   = areg::Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
         areg::ComponentThread::setCurrentComponent(curComponent);
@@ -113,7 +113,7 @@ namespace areg
         areg::ComponentThread::setCurrentComponent(nullptr);
     }
 
-    inline void areg::StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
+    inline void areg::StubEventConsumer::_localProcessNotifyRequestEvent( areg::NotifyRequestEvent & notifyRequest )
     {
         areg::Component *curComponent   = areg::Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
         areg::ComponentThread::setCurrentComponent(curComponent);
@@ -161,14 +161,14 @@ namespace areg
         {
             if ( stubEvent->getTargetStub() == mStubAddress )
             {
-                RequestEvent* reqEvent = AREG_RUNTIME_CAST(stubEvent, RequestEvent);
+                areg::RequestEvent* reqEvent = AREG_RUNTIME_CAST(stubEvent, areg::RequestEvent);
                 if (reqEvent != nullptr)
                 {
                     _localProcessRequestEvent(*reqEvent);
                 }
                 else
                 {
-                    NotifyRequestEvent * notifyRequest = AREG_RUNTIME_CAST(stubEvent, NotifyRequestEvent);
+                    areg::NotifyRequestEvent * notifyRequest = AREG_RUNTIME_CAST(stubEvent, areg::NotifyRequestEvent);
                     if ( notifyRequest != nullptr )
                     {
                         _localProcessNotifyRequestEvent(*notifyRequest);

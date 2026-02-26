@@ -25,8 +25,8 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class RemoteRequestEvent;
-class RemoteNotifyRequestEvent;
+namespace areg { class RemoteRequestEvent; }
+namespace areg { class RemoteNotifyRequestEvent; }
 namespace areg { class RemoteResponseEvent; }
 
 namespace areg
@@ -60,7 +60,7 @@ namespace areg
          * \brief   Triggered when the Stub receives remote request event to process.
          * \param   requestEvent        The remote request event to be processed.
          **/
-        virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) = 0;
+        virtual void processRemoteRequestEvent( areg::RemoteRequestEvent & requestEvent ) = 0;
 
         /**
          * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -68,7 +68,7 @@ namespace areg
          *          sending attribute update notifications.
          * \param   requestNotifyEvent  The remote notification request event to be processed.
          **/
-        virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
+        virtual void processRemoteNotifyRequestEvent( areg::RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
 
         /**
          * \brief   Triggered when the Stub receives remote response request event to process.

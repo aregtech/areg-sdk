@@ -28,6 +28,8 @@
 
 namespace areg { class LocalResponseEvent; }
 namespace areg { class RemoteResponseEvent; }
+namespace areg { class LocalRequestEvent; }
+namespace areg { class RemoteRequestEvent; }
 
 namespace areg
 {
@@ -48,8 +50,8 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // List of friend classes to access protected members
     //////////////////////////////////////////////////////////////////////////
-        friend class LocalRequestEvent;
-        friend class RemoteRequestEvent;
+        friend class areg::LocalRequestEvent;
+        friend class areg::RemoteRequestEvent;
         friend class areg::LocalResponseEvent;
         friend class areg::RemoteResponseEvent;
 

@@ -420,7 +420,7 @@ void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceiv
 }
 
 
-void RouterClient::processRemoteRequestEvent( RemoteRequestEvent & requestEvent)
+void RouterClient::processRemoteRequestEvent( areg::RemoteRequestEvent & requestEvent)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteRequestEvent);
 
@@ -448,7 +448,7 @@ void RouterClient::processRemoteRequestEvent( RemoteRequestEvent & requestEvent)
     }
 }
 
-void RouterClient::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent )
+void RouterClient::processRemoteNotifyRequestEvent( areg::RemoteNotifyRequestEvent & requestNotifyEvent )
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteNotifyRequestEvent);
 

@@ -23,7 +23,7 @@ namespace areg
     {
         if ( areg::Event::isRemote(eventElem.getEventType()) )
         {
-            RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
+            areg::RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteRequestEvent);
             if ( requestEvent != nullptr )
             {
                 processRemoteRequestEvent(*requestEvent);
@@ -37,7 +37,7 @@ namespace areg
                 }
                 else
                 {
-                    RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
+                    areg::RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteNotifyRequestEvent);
                     if (requestNotifyEvent != nullptr)
                     {
                         processRemoteNotifyRequestEvent(*requestNotifyEvent);

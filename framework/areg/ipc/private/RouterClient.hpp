@@ -184,7 +184,7 @@ protected:
      * \brief   Triggered when the Stub receives remote request event to process.
      * \param   requestEvent        The remote request event to be processed.
      **/
-    void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
+    void processRemoteRequestEvent( areg::RemoteRequestEvent & requestEvent ) override;
 
     /**
      * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -192,7 +192,7 @@ protected:
      *          sending attribute update notifications.
      * \param   requestNotifyEvent  The remote notification request event to be processed.
      **/
-    void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
+    void processRemoteNotifyRequestEvent( areg::RemoteNotifyRequestEvent & requestNotifyEvent ) override;
 
     /**
      * \brief   Triggered when the Stub receives remote response request event to process.

@@ -37,9 +37,9 @@ using SessionID = uint32_t;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteNotifyRequestEvent;
+namespace areg { class RemoteNotifyRequestEvent; }
 namespace areg { class ServiceResponseEvent; }
-class RemoteRequestEvent;
+namespace areg { class RemoteRequestEvent; }
 namespace areg { class ComponentThread; }
 namespace areg { class EventDataStream; }
 namespace areg { class ResponseEvent; }
@@ -371,7 +371,7 @@ namespace areg
          * \return  If operation succeeds, returns valid pointer to Service Request event object.
          *          Otherwise, it returns nullptr.
          **/
-        virtual RemoteRequestEvent * createRemoteRequestEvent( const areg::InStream & stream ) const;
+        virtual areg::RemoteRequestEvent * createRemoteRequestEvent( const areg::InStream & stream ) const;
 
         /**
          * \brief   Overwrite method to create remote notify request event from streaming object for 
@@ -380,7 +380,7 @@ namespace areg
          * \return  If operation succeeds, returns valid pointer to Service Request event object.
          *          Otherwise, it returns nullptr.
          **/
-        virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const areg::InStream & stream ) const;
+        virtual areg::RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const areg::InStream & stream ) const;
 
     /************************************************************************/
     // StubEventConsumer interface overrides.

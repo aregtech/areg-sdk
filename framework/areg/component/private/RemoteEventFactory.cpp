@@ -58,7 +58,7 @@ namespace areg
                 if ( stub != nullptr )
                 {
                     stream.moveToBegin();
-                    RemoteRequestEvent * eventRequest = stub->createRemoteRequestEvent(stream);
+                    areg::RemoteRequestEvent * eventRequest = stub->createRemoteRequestEvent(stream);
                     if ( eventRequest != nullptr )
                     {
                         areg::Channel chTarget( stub->getAddress().getChannel() );
@@ -89,7 +89,7 @@ namespace areg
                 if ( stub != nullptr )
                 {
                     stream.moveToBegin();
-                    RemoteNotifyRequestEvent * eventNotify = stub->createRemoteNotifyRequestEvent(stream);
+                    areg::RemoteNotifyRequestEvent * eventNotify = stub->createRemoteNotifyRequestEvent(stream);
                     if ( eventNotify != nullptr )
                     {
                         areg::Channel chTarget( stub->getAddress().getChannel() );
@@ -304,7 +304,7 @@ namespace areg
         case areg::Event::EventType::EventRemoteServiceRequest:
             {
                 stream.moveToBegin();
-                RemoteRequestEvent eventRequest(stream);
+                areg::RemoteRequestEvent eventRequest(stream);
                 const areg::ProxyAddress & addrProxy = eventRequest.getEventSource();
                 result = static_cast<areg::StreamableEvent *>( areg::ProxyBase::createRequestFailureEvent( addrProxy
                                                                                             , eventRequest.getRequestId()
@@ -316,7 +316,7 @@ namespace areg
         case areg::Event::EventType::EventRemoteNotifyRequest:
             {
                 stream.moveToBegin();
-                RemoteNotifyRequestEvent eventNotify(stream);
+                areg::RemoteNotifyRequestEvent eventNotify(stream);
                 const areg::ProxyAddress & addrProxy = eventNotify.getEventSource();
                 result = static_cast<areg::StreamableEvent *>( areg::ProxyBase::createRequestFailureEvent( addrProxy
                                                                                             , eventNotify.getRequestId()

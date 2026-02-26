@@ -569,12 +569,12 @@ namespace areg
         return nullptr;
     }
 
-    RemoteRequestEvent * StubBase::createRemoteRequestEvent( const areg::InStream & /* stream */ ) const
+    areg::RemoteRequestEvent * StubBase::createRemoteRequestEvent( const areg::InStream & /* stream */ ) const
     {
         return nullptr;
     }
 
-    RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const areg::InStream & /* stream */ ) const
+    areg::RemoteNotifyRequestEvent * StubBase::createRemoteNotifyRequestEvent( const areg::InStream & /* stream */ ) const
     {
         return nullptr;
     }
