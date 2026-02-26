@@ -40,7 +40,7 @@ namespace areg
      **/
     class AREG_API EventDispatcher  : public    EventDispatcherBase
                                     , public    areg::ThreadConsumer
-                                    , public    EventRouter
+                                    , public    areg::EventRouter
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor

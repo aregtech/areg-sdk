@@ -25,47 +25,50 @@
  ************************************************************************/
 namespace areg { class Event; }
 
-//////////////////////////////////////////////////////////////////////////
-// EventRouter class declarations
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Event Route interface. Defines class, which is delivering
- *          Event to its target thread.
- * 
- *          Dispatcher classes are instances of EventRouter and
- *          have implemented post method to find target thread and
- *          delivery event for further processing.
- *
- **/
-class AREG_API EventRouter
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor. Protected
-//////////////////////////////////////////////////////////////////////////
-protected:
+    //////////////////////////////////////////////////////////////////////////
+    // EventRouter class declarations
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Protected constructor and destructor.
+     * \brief   Event Route interface. Defines class, which is delivering
+     *          Event to its target thread.
+     * 
+     *          Dispatcher classes are instances of EventRouter and
+     *          have implemented post method to find target thread and
+     *          delivery event for further processing.
+     *
      **/
-    EventRouter() = default;
-    virtual ~EventRouter() = default;
+    class AREG_API EventRouter
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor. Protected
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Protected constructor and destructor.
+         **/
+        EventRouter() = default;
+        virtual ~EventRouter() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief	Posts event and delivers to its target thread / process.
-     * \param	eventElem	Event object to post.
-     * \return	Returns true if target was found and the event
-     *          delivered with success. Otherwise it returns false.
-     **/
-    virtual bool postEvent( areg::Event & eventElem ) = 0;
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief	Posts event and delivers to its target thread / process.
+         * \param	eventElem	Event object to post.
+         * \return	Returns true if target was found and the event
+         *          delivered with success. Otherwise it returns false.
+         **/
+        virtual bool postEvent( areg::Event & eventElem ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( EventRouter );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( EventRouter );
+    };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_EVENTROUTER_HPP

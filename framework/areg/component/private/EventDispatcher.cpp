@@ -30,7 +30,7 @@ namespace areg
     EventDispatcher::EventDispatcher( const areg::String & name, uint32_t maxQeueue )
         : EventDispatcherBase   ( name, maxQeueue )
         , areg::ThreadConsumer      (  )
-        , EventRouter         (  )
+        , areg::EventRouter         (  )
 
         , mDispatcherThread     ( nullptr )
     {
