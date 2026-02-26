@@ -39,7 +39,7 @@
  *          To synchronize communication, there are send and receive threads
  *          are specified.
  **/
-class ServerConnection  : public    ServerConnectionBase
+class ServerConnection  : public    areg::ServerConnectionBase
                         , private   areg::SocketConnectionBase
 {
 //////////////////////////////////////////////////////////////////////////

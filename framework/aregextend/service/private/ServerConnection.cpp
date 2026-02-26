@@ -18,21 +18,21 @@
 #include "areg/base/RemoteMessage.hpp"
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId )
-    : ServerConnectionBase  ( )
+    : areg::ServerConnectionBase  ( )
     , areg::SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, uint16_t portNr)
-    : ServerConnectionBase  ( hostName, portNr)
+    : areg::ServerConnectionBase  ( hostName, portNr)
     , areg::SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
 ServerConnection::ServerConnection(const ITEM_ID & channelId, const areg::SocketAddress & serverAddress)
-    : ServerConnectionBase  ( serverAddress )
+    : areg::ServerConnectionBase  ( serverAddress )
     , areg::SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
