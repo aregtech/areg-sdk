@@ -46,7 +46,7 @@ namespace areg
      *          to read and send message, to dispatch messages and
      *          communicate with service manager.
      **/
-    class AREG_API ServiceClientConnectionBase  : public    ConnectionProvider
+    class AREG_API ServiceClientConnectionBase  : public    areg::ConnectionProvider
                                                 , public    areg::ServiceEventConsumer
     {
     //////////////////////////////////////////////////////////////////////////

@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ConnectionProvider;
+namespace areg { class ConnectionProvider; }
 namespace areg { class RegistrationProvider; }
 class ServiceManager;
 namespace areg { class ProxyAddress; }
@@ -67,7 +67,7 @@ public:
      **/
     void processServiceEvent( ServiceManagerEventData::ServiceManagerCommand cmdService
                             , const areg::InStream & stream
-                            , ConnectionProvider& connectProvider
+                            , areg::ConnectionProvider& connectProvider
                             , areg::RegistrationProvider & registerProvider );
 
     /**

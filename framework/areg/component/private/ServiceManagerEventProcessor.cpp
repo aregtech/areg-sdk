@@ -50,7 +50,7 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 
 void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
                                                         , const areg::InStream& stream
-                                                        , ConnectionProvider& connectProvider
+                                                        , areg::ConnectionProvider& connectProvider
                                                         , areg::RegistrationProvider& registerProvider )
 {
     switch ( cmdService )

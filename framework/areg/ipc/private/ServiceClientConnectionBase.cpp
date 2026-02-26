@@ -49,7 +49,7 @@ namespace areg
                                                             , areg::RemoteMessageHandler & messageHandler
                                                             , areg::DispatcherThread & messageDispatcher
                                                             , const areg::String & prefixName)
-        : ConnectionProvider   ( )
+        : areg::ConnectionProvider   ( )
         , areg::ServiceEventConsumer    ( )
 
         , mTarget               (target)

@@ -25,7 +25,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ConnectionProvider;
+namespace areg { class ConnectionProvider; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class declaration

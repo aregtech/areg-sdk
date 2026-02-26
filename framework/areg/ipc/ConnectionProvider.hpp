@@ -29,116 +29,119 @@
  ************************************************************************/
 namespace areg { class String; }
 
-//////////////////////////////////////////////////////////////////////////
-// ConnectionProvider interface
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   This is an interface of Remote Service Connection, which should be implemented
- *          on client and server side to handle remote service functionalities
- *          like configuring service, start and stop, registering and
- *          unregistering services and its clients.
- **/
-class AREG_API ConnectionProvider
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    //////////////////////////////////////////////////////////////////////////
+    // ConnectionProvider interface
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default constructor. Protected.
+     * \brief   This is an interface of Remote Service Connection, which should be implemented
+     *          on client and server side to handle remote service functionalities
+     *          like configuring service, start and stop, registering and
+     *          unregistering services and its clients.
      **/
-    ConnectionProvider() = default;
+    class AREG_API ConnectionProvider
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Default constructor. Protected.
+         **/
+        ConnectionProvider() = default;
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ConnectionProvider() = default;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~ConnectionProvider() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// ConnectionProvider interface overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // ConnectionProvider interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Call to configure remote service. The passed file name
-     *          can be either absolute or relative path.
-     *          The function will read configuration file and initialize settings.
-     *          If file path is nullptr or empty, Remote Service will have default 
-     *          configuration settings.
-     * \param   service         The service module name of the configuration to extract connection information.
-     * \param   connectTypes    The bitwise set of connection types like 'tcpip' or 'udp'.
-     * \return  Returns true if system could configure. Otherwise, it returns false.
-     **/
-    virtual bool setupServiceConnectionData( areg::RemoteServiceKind service, uint32_t connectTypes ) = 0;
+        /**
+         * \brief   Call to configure remote service. The passed file name
+         *          can be either absolute or relative path.
+         *          The function will read configuration file and initialize settings.
+         *          If file path is nullptr or empty, Remote Service will have default 
+         *          configuration settings.
+         * \param   service         The service module name of the configuration to extract connection information.
+         * \param   connectTypes    The bitwise set of connection types like 'tcpip' or 'udp'.
+         * \return  Returns true if system could configure. Otherwise, it returns false.
+         **/
+        virtual bool setupServiceConnectionData( areg::RemoteServiceKind service, uint32_t connectTypes ) = 0;
 
-    /**
-     * \brief   Call manually to set router service host name and port number.
-     *          Note, if remote service is already started, this call will change
-     *          data, but will not restart service.
-     * \param   hostName    IP-address or host name of routing service to connect.
-     * \param   portNr      Port number of routing service to connect.
-     **/
-    virtual void applyServiceConnectionData( const areg::String & hostName, uint16_t portNr ) = 0;
+        /**
+         * \brief   Call manually to set router service host name and port number.
+         *          Note, if remote service is already started, this call will change
+         *          data, but will not restart service.
+         * \param   hostName    IP-address or host name of routing service to connect.
+         * \param   portNr      Port number of routing service to connect.
+         **/
+        virtual void applyServiceConnectionData( const areg::String & hostName, uint16_t portNr ) = 0;
 
-    /**
-     * \brief   Call to start remote service. The host name and port number should be already set.
-     * \return  Returns true if start service is triggered.
-     **/
-    virtual bool connectServiceHost() = 0;
+        /**
+         * \brief   Call to start remote service. The host name and port number should be already set.
+         * \return  Returns true if start service is triggered.
+         **/
+        virtual bool connectServiceHost() = 0;
 
-    /**
-     * \brief   Call to restart remove service. The host name and the port number should be already set.
-     *          If the service had connection, it will be lost and re-connected again. If there was no
-     *          connection, it starts new connection.
-     * \return  Returns true if succeeded to restart service.
-     **/
-    virtual bool reconnectServiceHost() = 0;
+        /**
+         * \brief   Call to restart remove service. The host name and the port number should be already set.
+         *          If the service had connection, it will be lost and re-connected again. If there was no
+         *          connection, it starts new connection.
+         * \return  Returns true if succeeded to restart service.
+         **/
+        virtual bool reconnectServiceHost() = 0;
 
-    /**
-     * \brief   Call to stop service. No more remote communication should be possible.
-     **/
-    virtual void disconnectServiceHost() = 0;
+        /**
+         * \brief   Call to stop service. No more remote communication should be possible.
+         **/
+        virtual void disconnectServiceHost() = 0;
 
-    /**
-     * \brief   Returns true, if remote service is started and ready to operate.
-     **/
-    virtual bool isServiceHostConnected() const = 0;
+        /**
+         * \brief   Returns true, if remote service is started and ready to operate.
+         **/
+        virtual bool isServiceHostConnected() const = 0;
 
-    /**
-     * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
-     **/
-    virtual bool isServiceHostPending() const = 0;
+        /**
+         * \brief   Returns true, if remote service connection is triggered, not connected yet and in pending state.
+         **/
+        virtual bool isServiceHostPending() const = 0;
 
-    /**
-     * \brief   Returns true if service is configured and ready to start
-     **/
-    virtual bool isServiceHostSetup() const = 0;
+        /**
+         * \brief   Returns true if service is configured and ready to start
+         **/
+        virtual bool isServiceHostSetup() const = 0;
 
-    /**
-     * \brief   Creates the service connect request message, sets the message target and the source.
-     * \param   source      The ID of the source that sends connection message request.
-     * \param   target      The ID of the target to send the connection message request.
-     * \param   msgSource   The message source type of the connected client.
-     * \return  Returns the created message for remote communication.
-     **/
-    virtual areg::RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
+        /**
+         * \brief   Creates the service connect request message, sets the message target and the source.
+         * \param   source      The ID of the source that sends connection message request.
+         * \param   target      The ID of the target to send the connection message request.
+         * \param   msgSource   The message source type of the connected client.
+         * \return  Returns the created message for remote communication.
+         **/
+        virtual areg::RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
 
-    /**
-     * \brief   Creates the service disconnect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends the disconnect message request.
-     * \param   target  The ID of the target to send the disconnection message request.
-     * \return  Returns the created message for remote communication.
-     **/
-    virtual areg::RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+        /**
+         * \brief   Creates the service disconnect request message, sets the message target and the source.
+         * \param   source  The ID of the source that sends the disconnect message request.
+         * \param   target  The ID of the target to send the disconnection message request.
+         * \return  Returns the created message for remote communication.
+         **/
+        virtual areg::RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ConnectionProvider );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( ConnectionProvider );
+    };
 
+} // namespace areg
 #endif  // AREG_IPC_CONNECTIONPROVIDER_HPP

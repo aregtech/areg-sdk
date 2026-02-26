@@ -51,7 +51,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
     : areg::RemoteMessageHandler        ( )
     , ConnectionConsumer   ( )
-    , ConnectionProvider   ( )
+    , areg::ConnectionProvider   ( )
     , areg::DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
     , areg::ServiceEventConsumer    ( )
     , ConnectionHandler    ( )

@@ -405,7 +405,7 @@ private:
     /**
      * \brief   Returns the instance of remote servicing handler.
      **/
-    inline ConnectionProvider& getServiceConnectionProvider();
+    inline areg::ConnectionProvider& getServiceConnectionProvider();
 
     /**
      * \brief   Returns the instance of remote servicing handler.
@@ -467,9 +467,9 @@ private:
 // ServiceManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ConnectionProvider& ServiceManager::getServiceConnectionProvider()
+inline areg::ConnectionProvider& ServiceManager::getServiceConnectionProvider()
 {
-    return static_cast<ConnectionProvider&>(mServiceClient);
+    return static_cast<areg::ConnectionProvider&>(mServiceClient);
 }
 
 inline areg::RegistrationProvider& ServiceManager::getServiceRegisterProvider()

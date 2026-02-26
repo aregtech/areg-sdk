@@ -44,7 +44,7 @@
  **/
 class ServiceCommunicationBase  : public    areg::RemoteMessageHandler
                                 , public    ConnectionConsumer
-                                , public    ConnectionProvider
+                                , public    areg::ConnectionProvider
                                 , protected areg::DispatcherThread
                                 , protected areg::ServiceEventConsumer
                                 , protected ConnectionHandler
