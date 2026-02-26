@@ -36,12 +36,12 @@ namespace areg::os
 
     WaitablePosix::~WaitablePosix()
     {
-        ASSERT(SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
+        ASSERT(areg::os::SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
     }
 
     void WaitablePosix::freeResources()
     {
-        SyncLockAndWaitPosix::eventRemove(*this);
+        areg::os::SyncLockAndWaitPosix::eventRemove(*this);
     }
 
 } // namespace areg::os

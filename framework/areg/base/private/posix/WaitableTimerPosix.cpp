@@ -162,7 +162,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            SyncLockAndWaitPosix::eventSignaled(*this);
+            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
         }
 
         return true;
@@ -185,7 +185,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            SyncLockAndWaitPosix::eventSignaled(*this);
+            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
         }
 
         return true;
@@ -306,8 +306,8 @@ namespace areg::os
 
         if (sendSignal)
         {
-            SyncLockAndWaitPosix::eventSignaled(*this);
-            SyncLockAndWaitPosix::notifyAsyncSignal(mThreadId);
+            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
+            areg::os::SyncLockAndWaitPosix::notifyAsyncSignal(mThreadId);
         }
     }
 

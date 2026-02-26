@@ -64,7 +64,7 @@ bool WaitableEventPosix::setEvent()
 
     if (sendSignal)
     {
-        SyncLockAndWaitPosix::eventSignaled(*this);
+        areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
     }
 
     return result;
@@ -112,7 +112,7 @@ void WaitableEventPosix::pulseEvent()
                 mIsSignaled = true;
                 lock.unlock();
 
-                SyncLockAndWaitPosix::eventSignaled(*this);
+                areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
 
                 lock.lock();
                 mIsSignaled = false;

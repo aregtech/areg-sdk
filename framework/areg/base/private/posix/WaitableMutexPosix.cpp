@@ -79,7 +79,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            SyncLockAndWaitPosix::eventSignaled(*this);
+            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
         }
         return result;
     }

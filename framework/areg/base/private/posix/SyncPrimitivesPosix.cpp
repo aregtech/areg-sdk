@@ -68,7 +68,7 @@ bool areg::Mutex::_osLockMutex( uint32_t timeout )
     bool result{ false };
     areg::os::WaitableMutexPosix * syncMutex{ reinterpret_cast<areg::os::WaitableMutexPosix *>(mSyncObject) };
 
-    if ( static_cast<int32_t>(areg::os::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject(*syncMutex, timeout) )
+    if ( static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::waitForSingleObject(*syncMutex, timeout) )
     {
         mOwnerThreadId.store(areg::convToNum<id_type, pthread_t>(syncMutex->getOwningThreadId()));
         result = true;
@@ -108,7 +108,7 @@ bool areg::SyncEvent::_osUnlockEvent( void * eventHandle )
 bool areg::SyncEvent::_osLockEvent(uint32_t timeout)
 {
     WaitableEventPosix * syncEvent{ reinterpret_cast<WaitableEventPosix *>(mSyncObject) };
-    return (static_cast<int32_t>(areg::os::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject(*syncEvent, timeout));
+    return (static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::waitForSingleObject(*syncEvent, timeout));
 }
 
 bool areg::SyncEvent::_osSetEvent()
@@ -143,7 +143,7 @@ void areg::Semaphore::_osReleaseSemaphore()
 bool areg::Semaphore::_osLock( uint32_t timeout )
 {
     areg::os::WaitableSemaphorePosix * syncSemaphore{ static_cast<areg::os::WaitableSemaphorePosix *>(mSyncObject) };
-    return (static_cast<int32_t>(areg::os::SyncSignal::First)  == SyncLockAndWaitPosix::waitForSingleObject( *syncSemaphore, timeout ));
+    return (static_cast<int32_t>(areg::os::SyncSignal::First)  == areg::os::SyncLockAndWaitPosix::waitForSingleObject( *syncSemaphore, timeout ));
 }
 
 bool areg::Semaphore::_osUnlock()
@@ -261,7 +261,7 @@ void areg::SyncTimer::_osReleaseTime()
 
 bool areg::SyncTimer::_osLock( uint32_t timeout )
 {
-    return (static_cast<int32_t>(areg::os::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject( *reinterpret_cast<areg::os::WaitablePosix *>(mSyncObject), timeout ));
+    return (static_cast<int32_t>(areg::os::SyncSignal::First) == areg::os::SyncLockAndWaitPosix::waitForSingleObject( *reinterpret_cast<areg::os::WaitablePosix *>(mSyncObject), timeout ));
 }
 
 bool areg::SyncTimer::_osSetTimer()
@@ -289,7 +289,7 @@ int32_t areg::MultiLock::_osLock(uint32_t timeout /* = areg::WAIT_INFINITE */, b
     int32_t index = areg::MultiLock::LOCK_INDEX_INVALID;
     do
     {
-        int32_t result = SyncLockAndWaitPosix::waitForMultipleObjects(syncHandles, mSizeCount, waitForAll, timeout);
+        int32_t result = areg::os::SyncLockAndWaitPosix::waitForMultipleObjects(syncHandles, mSizeCount, waitForAll, timeout);
 
         switch (result)
         {
