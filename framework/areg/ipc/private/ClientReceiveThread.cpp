@@ -23,7 +23,7 @@
 
 DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
-ClientReceiveThread::ClientReceiveThread(areg::RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String & namePrefix)
+ClientReceiveThread::ClientReceiveThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String & namePrefix)
     : areg::DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )

@@ -404,7 +404,7 @@ namespace areg
         /**
          * \brief   Client connection object
          **/
-        ClientConnection                        mClientConnection;
+        areg::ClientConnection                        mClientConnection;
         /**
          * \brief   Instance of remote servicing consumer to handle message.
          **/

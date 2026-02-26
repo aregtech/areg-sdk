@@ -27,7 +27,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class RemoteMessageHandler; }
-class ClientConnection;
+namespace areg { class ClientConnection; }
 
 //////////////////////////////////////////////////////////////////////////
 // ClientConnection class declaration
@@ -50,7 +50,7 @@ public:
      * \param   namePrefix      The prefix to add to the areg::CLIENT_RECEIVE_MESSAGE_THREAD
      *                          to have unique thread names.
      **/
-    ClientReceiveThread(areg::RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String & namePrefix);
+    ClientReceiveThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String & namePrefix);
 
     /**
      * \brief   Destructor.
@@ -104,7 +104,7 @@ private:
     /**
      * \brief   The instance of connection to receive messages from remote routing service.
      **/
-    ClientConnection &          mConnection;
+    areg::ClientConnection &          mConnection;
 
     /**
      * \brief   Accumulative value of received data size.
