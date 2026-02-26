@@ -42,7 +42,7 @@ class RouterClient  : public    ServiceClientConnectionBase
                     , public    RegistrationProvider
                     , protected areg::DispatcherThread
                     , private   RemoteMessageHandler
-                    , private   RemoteEventConsumer
+                    , private   areg::RemoteEventConsumer
 {
 private:
     //! The prefix to add to the send and receive message threads.

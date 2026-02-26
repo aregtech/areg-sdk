@@ -29,76 +29,79 @@ class RemoteRequestEvent;
 class RemoteNotifyRequestEvent;
 namespace areg { class RemoteResponseEvent; }
 
-//////////////////////////////////////////////////////////////////////////
-// RemoteEventConsumer class declaration
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   The interface of remote event consumer. Derived by Stub object
- *          with type of remote to trigger event processing.
- **/
-class AREG_API RemoteEventConsumer   : public areg::EventConsumer
+namespace areg
 {
-protected:
-    /**
-     * \brief   Default constructor. Protected
-     **/
-    RemoteEventConsumer() = default;
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~RemoteEventConsumer() = default;
-
-public:
-/************************************************************************/
-// RemoteEventConsumer interface overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // RemoteEventConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Triggered when the Stub receives remote request event to process.
-     * \param   requestEvent        The remote request event to be processed.
+     * \brief   The interface of remote event consumer. Derived by Stub object
+     *          with type of remote to trigger event processing.
      **/
-    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) = 0;
+    class AREG_API RemoteEventConsumer   : public areg::EventConsumer
+    {
+    protected:
+        /**
+         * \brief   Default constructor. Protected
+         **/
+        RemoteEventConsumer() = default;
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~RemoteEventConsumer() = default;
 
-    /**
-     * \brief   Triggered when the Stub receives remote notification request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          sending attribute update notifications.
-     * \param   requestNotifyEvent  The remote notification request event to be processed.
-     **/
-    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
+    public:
+    /************************************************************************/
+    // RemoteEventConsumer interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Triggered when the Stub receives remote response request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          to subscribe on information or response sent by Stub.
-     * \param   responseEvent  The remote response event on the request to processed.
-     **/
-    virtual void processRemoteResponseEvent( areg::RemoteResponseEvent & responseEvent ) = 0;
+        /**
+         * \brief   Triggered when the Stub receives remote request event to process.
+         * \param   requestEvent        The remote request event to be processed.
+         **/
+        virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Override operations
-//////////////////////////////////////////////////////////////////////////
-private:
-/************************************************************************/
-// EventConsumer interface overrides
-/************************************************************************/
+        /**
+         * \brief   Triggered when the Stub receives remote notification request event to process.
+         *          For example, send by Proxy and processed by Stub when need to start or stop
+         *          sending attribute update notifications.
+         * \param   requestNotifyEvent  The remote notification request event to be processed.
+         **/
+        virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
 
-    /**
-     * \brief   Triggered by Dispatcher object when starts dispatch event.
-     *          This pure virtual method should be overwritten by child
-     *          class to process event.
-     * \param   eventElem   Event object, which currently dispatcher is
-     *                      processing. As soon as event is finished processing
-     *                      it will be destroyed.
-     **/
-    void startEventProcessing( areg::Event & eventElem ) override;
+        /**
+         * \brief   Triggered when the Stub receives remote response request event to process.
+         *          For example, send by Proxy and processed by Stub when need to start or stop
+         *          to subscribe on information or response sent by Stub.
+         * \param   responseEvent  The remote response event on the request to processed.
+         **/
+        virtual void processRemoteResponseEvent( areg::RemoteResponseEvent & responseEvent ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( RemoteEventConsumer );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Override operations
+    //////////////////////////////////////////////////////////////////////////
+    private:
+    /************************************************************************/
+    // EventConsumer interface overrides
+    /************************************************************************/
 
+        /**
+         * \brief   Triggered by Dispatcher object when starts dispatch event.
+         *          This pure virtual method should be overwritten by child
+         *          class to process event.
+         * \param   eventElem   Event object, which currently dispatcher is
+         *                      processing. As soon as event is finished processing
+         *                      it will be destroyed.
+         **/
+        void startEventProcessing( areg::Event & eventElem ) override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( RemoteEventConsumer );
+    };
+
+} // namespace areg
 #endif  // AREG_COMPONENT_REMOTEEVENTCONSUMER_HPP

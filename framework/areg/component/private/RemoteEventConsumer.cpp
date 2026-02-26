@@ -17,30 +17,34 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 
-void RemoteEventConsumer::startEventProcessing(areg::Event & eventElem)
+namespace areg
 {
-    if ( areg::Event::isRemote(eventElem.getEventType()) )
+    void RemoteEventConsumer::startEventProcessing(areg::Event & eventElem)
     {
-        RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
-        if ( requestEvent != nullptr )
+        if ( areg::Event::isRemote(eventElem.getEventType()) )
         {
-            processRemoteRequestEvent(*requestEvent);
-        }
-        else
-        {
-            areg::RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteResponseEvent);
-            if ( responseEvent != nullptr )
+            RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
+            if ( requestEvent != nullptr )
             {
-                processRemoteResponseEvent(*responseEvent);
+                processRemoteRequestEvent(*requestEvent);
             }
             else
             {
-                RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
-                if (requestNotifyEvent != nullptr)
+                areg::RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteResponseEvent);
+                if ( responseEvent != nullptr )
                 {
-                    processRemoteNotifyRequestEvent(*requestNotifyEvent);
+                    processRemoteResponseEvent(*responseEvent);
+                }
+                else
+                {
+                    RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
+                    if (requestNotifyEvent != nullptr)
+                    {
+                        processRemoteNotifyRequestEvent(*requestNotifyEvent);
+                    }
                 }
             }
         }
     }
-}
+
+} // namespace areg

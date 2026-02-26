@@ -55,7 +55,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
                                     , RouterClient::PREFIX_THREAD)
     , RegistrationProvider     ( )
     , areg::DispatcherThread              (areg::String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
-    , RemoteEventConsumer         ( )
+    , areg::RemoteEventConsumer         ( )
 
     , mRegisterConsumer (registerConsumer)
 {
@@ -509,7 +509,7 @@ bool RouterClient::postEvent(areg::Event & eventElem)
 {
     if ( eventElem.isRemote() )
     {
-        eventElem.setEventConsumer( static_cast<RemoteEventConsumer *>(this) );
+        eventElem.setEventConsumer( static_cast<areg::RemoteEventConsumer *>(this) );
     }
 
     return areg::EventDispatcher::postEvent(eventElem);
