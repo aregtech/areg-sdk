@@ -743,7 +743,7 @@ bool LogObserver::_sendScopeUpdateMessage(const areg::String& scope)
 
     if (scope.isEmpty() == false)
     {
-        Property prop(LogObserver::_normalizeScopeProperty(scope));
+        areg::Property prop(LogObserver::_normalizeScopeProperty(scope));
         if (prop.isValid() && prop.getPropertyType() == areg::ConfigEntry::LogScope)
         {
             const areg::PropertyKey& key{ prop.getKey() };

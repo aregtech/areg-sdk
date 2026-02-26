@@ -146,7 +146,7 @@ public:
      * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    const Property * getProperty( const areg::String& section
+    const areg::Property * getProperty( const areg::String& section
                                 , const areg::String& property
                                 , const areg::String& position
                                 , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
@@ -160,7 +160,7 @@ public:
      * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const Property * getProperty(const areg::PropertyKey& key) const;
+    inline const areg::Property * getProperty(const areg::PropertyKey& key) const;
 
     /**
      * \brief   Returns the pointer of the module specific property searched by specified parameters.
@@ -172,7 +172,7 @@ public:
      * \return  Returns valid pointer if succeeded to find a module property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    const Property * getModuleProperty( const areg::String& section
+    const areg::Property * getModuleProperty( const areg::String& section
                                       , const areg::String& property
                                       , const areg::String& position
                                       , areg::ConfigEntry keyType = areg::ConfigEntry::AnyKey) const;
@@ -186,7 +186,7 @@ public:
      * \return  Returns valid pointer if succeeded to find a property matching specified parameters.
      *          Otherwise, returns 'nullptr'.
      **/
-    inline const Property* getModuleProperty(const areg::PropertyKey& key) const;
+    inline const areg::Property* getModuleProperty(const areg::PropertyKey& key) const;
 
     /**
      * \brief   Adds new or updates the existing configuration entry. The searching is done only
@@ -569,14 +569,14 @@ public:
     /**
      * \brief   Returns the list of log scope properties of the module.
      **/
-    inline std::vector<Property> getModuleLogScopes() const;
+    inline std::vector<areg::Property> getModuleLogScopes() const;
 
     /**
      * \brief   Gets the list of log scope properties of the module.
      * \param[out]  scopeList   On output this contains the list of log scopes properties of the module.
      * \return  The number scopes in the list.
      **/
-    uint32_t getModuleLogScopes(std::vector<Property>& scopeList) const;
+    uint32_t getModuleLogScopes(std::vector<areg::Property>& scopeList) const;
 
     /**
      * \brief   Adds the list of scopes properties to the existing list of the module.
@@ -585,7 +585,7 @@ public:
      *                      If true, searches the scope property, and if found, replaces the existing.
      *                      Otherwise, it adds a scope property to the module list.
      **/
-    void addModuletLogScopes(const std::vector<Property>& scopeList, bool search);
+    void addModuletLogScopes(const std::vector<areg::Property>& scopeList, bool search);
 
     /**
      * \brief   Adds a property of a scope with the priority value to the existing list of scope of the module.
@@ -874,12 +874,12 @@ inline bool ConfigManager::existProperty(const areg::String& section, const areg
     return existProperty(areg::PropertyKey(section, mModule, property, position));
 }
 
-inline const Property* ConfigManager::getProperty(const areg::PropertyKey& key) const
+inline const areg::Property* ConfigManager::getProperty(const areg::PropertyKey& key) const
 {
     return getProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline const Property* ConfigManager::getModuleProperty(const areg::PropertyKey& key) const
+inline const areg::Property* ConfigManager::getModuleProperty(const areg::PropertyKey& key) const
 {
     return getModuleProperty(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
@@ -896,7 +896,7 @@ inline const areg::PropertyValue * ConfigManager::getPropertyValue( const areg::
 {
     Lock lock(mLock);
 
-    const Property* result{ getProperty(section, property, position, keyType)};
+    const areg::Property* result{ getProperty(section, property, position, keyType)};
     return (result != nullptr ? &result->getValue() : nullptr);
 }
 
@@ -917,7 +917,7 @@ inline const areg::PropertyValue * ConfigManager::getModulePropertyValue( const 
 {
     Lock lock(mLock);
 
-    const Property* result{ getModuleProperty(section, property, position, keyType) };
+    const areg::Property* result{ getModuleProperty(section, property, position, keyType) };
     return (result != nullptr ? &result->getValue() : nullptr);
 }
 
@@ -933,15 +933,15 @@ inline areg::PropertyValue * ConfigManager::getModulePropertyValue( const areg::
 {
     Lock lock(mLock);
 
-    const Property* result{ getModuleProperty(section, property, position, keyType) };
-    return (result != nullptr ? &const_cast<Property *>(result)->getValue() : nullptr);
+    const areg::Property* result{ getModuleProperty(section, property, position, keyType) };
+    return (result != nullptr ? &const_cast<areg::Property *>(result)->getValue() : nullptr);
 }
 
 inline int32_t ConfigManager::addModuleProperties(const areg::ListProperties& propList)
 {
     int32_t result{ 0 };
     Lock lock(mLock);
-    const std::vector<Property>& list = propList.getData();
+    const std::vector<areg::Property>& list = propList.getData();
     for (const auto& prop : list)
     {
         if (existProperty(prop.getKey()) == false)
@@ -1017,9 +1017,9 @@ inline void ConfigManager::setLogFileLocation(const areg::String& newValue, bool
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-inline std::vector<Property> ConfigManager::getModuleLogScopes() const
+inline std::vector<areg::Property> ConfigManager::getModuleLogScopes() const
 {
-    std::vector<Property> result;
+    std::vector<areg::Property> result;
     getModuleLogScopes(result);
     return result;
 }

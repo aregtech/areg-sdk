@@ -169,8 +169,8 @@ namespace areg
         /**
          * \brief   Gets and sets module (process) specific log scopes.
          **/
-        uint32_t getModuleScopes(std::vector<Property>& scopeList);
-        void setModuleScopes(const std::vector<Property>& scopeList);
+        uint32_t getModuleScopes(std::vector<areg::Property>& scopeList);
+        void setModuleScopes(const std::vector<areg::Property>& scopeList);
 
         /**
          * \brief   Gets and sets the name of database engine such as `sqlite`.

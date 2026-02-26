@@ -182,7 +182,7 @@ void ScopeController::activateDefaults()
     }
 }
 
-void ScopeController::configureScopes( const Property & prop )
+void ScopeController::configureScopes( const areg::Property & prop )
 {
     const areg::PropertyKey & Key = prop.getKey( );
     const areg::PropertyValue & Value = prop.getValue( );
@@ -207,9 +207,9 @@ void ScopeController::configureScopes( const areg::String & scopeName, uint32_t 
 
 void ScopeController::configureScopes()
 {
-    std::vector<Property> scopes;
+    std::vector<areg::Property> scopes;
     Application::getConfigManager().getModuleLogScopes(scopes);
-    for (const Property& prop : scopes)
+    for (const areg::Property& prop : scopes)
     {
         configureScopes(prop);
     }

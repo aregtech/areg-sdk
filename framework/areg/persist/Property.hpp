@@ -23,327 +23,335 @@
 #include "areg/persist/PropertyValue.hpp"
 #include "areg/base/KeyValuePair.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/Containers.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// Property class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Property object of persistence, which consists of key and value pairs.
- **/
-class AREG_API Property
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Types and constants
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Property class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   The definition of type Property, which is a pair of Key and Value
+     * \brief   The Property object of persistence, which consists of key and value pairs.
      **/
-    using Entry = areg::KeyValuePair<areg::PropertyKey, areg::PropertyValue>;
+    class AREG_API Property
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Types and constants
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   The definition of type Property, which is a pair of Key and Value
+         **/
+        using Entry = KeyValuePair<PropertyKey, PropertyValue>;
 
-//////////////////////////////////////////////////////////////////////////
-// Constructors / destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Default constructor
-     **/
-    Property();
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor
+         **/
+        Property();
 
-    /**
-     * \brief   Initializes property key and value by parsing passed string.
-     * \param   strProperty     The string to parse. It should contain key and value.
-     *                          Otherwise, the property remains invalid.
-     **/
-    Property(const areg::String strProperty);
+        /**
+         * \brief   Initializes property key and value by parsing passed string.
+         * \param   strProperty     The string to parse. It should contain key and value.
+         *                          Otherwise, the property remains invalid.
+         **/
+        Property(const String strProperty);
 
-    /**
-     * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
-     *          property can be saved in the configuration for the next session or not.
-     * \param   key         The key of the property.
-     * \param   value       The value of the property.
-     * \param   comment     The comment to add to the property.
-     * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
-     **/
-    Property(const areg::PropertyKey& key, const areg::PropertyValue& value, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
+        /**
+         * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
+         *          property can be saved in the configuration for the next session or not.
+         * \param   key         The key of the property.
+         * \param   value       The value of the property.
+         * \param   comment     The comment to add to the property.
+         * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
+         **/
+        Property(const PropertyKey& key, const PropertyValue& value, const String & comment = String::EmptyString, bool isTemporary = false);
 
-    /**
-     * \brief   Moves objects during initialization.
-     **/
-    Property(areg::PropertyKey && key, areg::PropertyValue && value, areg::String && comment);
-    Property(areg::PropertyKey&& key, areg::PropertyValue&& value);
+        /**
+         * \brief   Moves objects during initialization.
+         **/
+        Property(PropertyKey && key, PropertyValue && value, String && comment);
+        Property(PropertyKey&& key, PropertyValue&& value);
 
-    /**
-     * \brief   Parses and initializes Key-Value and the comment data from given parameters.
-     * \param   keySet      The Key as a string to parse.
-     * \param   valueSet    The Value as a string to parse.
-     * \param   comment     The optional comment for the property.
-     **/
-    Property( const areg::String & keySet, const areg::String & valueSet, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
+        /**
+         * \brief   Parses and initializes Key-Value and the comment data from given parameters.
+         * \param   keySet      The Key as a string to parse.
+         * \param   valueSet    The Value as a string to parse.
+         * \param   comment     The optional comment for the property.
+         **/
+        Property( const String & keySet, const String & valueSet, const String & comment = String::EmptyString, bool isTemporary = false);
 
-    /**
-     * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
-     *          property can be saved in the configuration for the next session or not.
-     * \param   keySet      The key of the property.
-     * \param   valueSet    The value of the property.
-     * \param   comment     The comment to add to the property.
-     * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
-     **/
-    Property(const char* keySet, const char* valueSet, const char* comment = nullptr, bool isTemporary = false);
-    Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment = areg::String::EmptyString, bool isTemporary = false);
+        /**
+         * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
+         *          property can be saved in the configuration for the next session or not.
+         * \param   keySet      The key of the property.
+         * \param   valueSet    The value of the property.
+         * \param   comment     The comment to add to the property.
+         * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
+         **/
+        Property(const char* keySet, const char* valueSet, const char* comment = nullptr, bool isTemporary = false);
+        Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment = String::EmptyString, bool isTemporary = false);
 
-    /**
-     * \brief   Initializes the property, sets all data and the optional flag to indicate whether the
-     *          property can be saved in the configuration for the next session or not.
-     * \param   section     The section part of the property key.
-     * \param   module      The module part of the property key.
-     * \param   property    The property part of the property key.
-     * \param   position    The position part of the property key.
-     * \param   value       The value of the property.
-     * \param   comment     The comment to add to the property.
-     * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
-     **/
-    Property( const std::string_view& section
-            , const std::string_view& module
-            , const std::string_view& property
-            , const std::string_view& position
-            , const std::string_view& value
-            , const std::string_view& comment = areg::String::EmptyString
-            , bool isTemporary = false);
+        /**
+         * \brief   Initializes the property, sets all data and the optional flag to indicate whether the
+         *          property can be saved in the configuration for the next session or not.
+         * \param   section     The section part of the property key.
+         * \param   module      The module part of the property key.
+         * \param   property    The property part of the property key.
+         * \param   position    The position part of the property key.
+         * \param   value       The value of the property.
+         * \param   comment     The comment to add to the property.
+         * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
+         **/
+        Property( const std::string_view& section
+                , const std::string_view& module
+                , const std::string_view& property
+                , const std::string_view& position
+                , const std::string_view& value
+                , const std::string_view& comment = String::EmptyString
+                , bool isTemporary = false);
 
-    /**
-     * \brief   Initializes Key, value and the comment.
-     * \param   newProperty The property as a key and value pair to set.
-     * \param   comment     The optional comment for the property.
-     **/
-    Property( const Property::Entry & newProperty, const areg::String & comment = areg::String::EmptyString, bool isTemporary = false);
+        /**
+         * \brief   Initializes Key, value and the comment.
+         * \param   newProperty The property as a key and value pair to set.
+         * \param   comment     The optional comment for the property.
+         **/
+        Property( const Property::Entry & newProperty, const String & comment = String::EmptyString, bool isTemporary = false);
 
-    /**
-     * \brief   Copies data from given source
-     * \param   source  The source to copy data
-     **/
-    Property( const Property & source );
+        /**
+         * \brief   Copies data from given source
+         * \param   source  The source to copy data
+         **/
+        Property( const Property & source );
 
-    /**
-     * \brief   Moves data from given source
-     * \param   source  The source to move data
-     **/
-    Property( Property && source ) noexcept;
+        /**
+         * \brief   Moves data from given source
+         * \param   source  The source to move data
+         **/
+        Property( Property && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
-    ~Property() = default;
+        /**
+         * \brief   Destructor
+         **/
+        ~Property() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies property data from given source
-     * \param   source  The source to copy data.
-     **/
-    Property & operator = ( const Property & source );
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Copies property data from given source
+         * \param   source  The source to copy data.
+         **/
+        Property & operator = ( const Property & source );
 
-    /**
-     * \brief   Moves property data from given source
-     * \param   source  The source to move data.
-     **/
-    Property & operator = ( Property && source ) noexcept;
+        /**
+         * \brief   Moves property data from given source
+         * \param   source  The source to move data.
+         **/
+        Property & operator = ( Property && source ) noexcept;
 
-    /**
-     * \brief   Checks equality of two property objects.
-     * \param   other   The property object to check.
-     * \return  Returns true if property objects are equal.
-     **/
-    bool operator == ( const Property & other ) const;
+        /**
+         * \brief   Checks equality of two property objects.
+         * \param   other   The property object to check.
+         * \return  Returns true if property objects are equal.
+         **/
+        bool operator == ( const Property & other ) const;
 
-    /**
-     * \brief   Checks inequality of two property objects.
-     * \param   other   The property object to check.
-     * \return  Returns true if property objects are not equal.
-     **/
-    bool operator != ( const Property & other ) const;
+        /**
+         * \brief   Checks inequality of two property objects.
+         * \param   other   The property object to check.
+         * \return  Returns true if property objects are not equal.
+         **/
+        bool operator != ( const Property & other ) const;
 
-    /**
-     * \brief   Converts and returns 32-bit integer value of Property object.
-     **/
-    operator uint32_t () const;
+        /**
+         * \brief   Converts and returns 32-bit integer value of Property object.
+         **/
+        operator uint32_t () const;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations and properties
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Operations and properties
+    //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Sets and parses the key, which consists of several parts
-     *          separated by key-separator symbol
-     * \param   keySet  The key as a string to set and parse.
-     **/
-    void parseKey( const areg::String & keySet );
+        /**
+         * \brief   Sets and parses the key, which consists of several parts
+         *          separated by key-separator symbol
+         * \param   keySet  The key as a string to set and parse.
+         **/
+        void parseKey( const String & keySet );
 
-    /**
-     * \brief   Sets the key of property.
-     * \param   Key     The key value to set.
-     **/
-    void setKey( const areg::PropertyKey & Key );
+        /**
+         * \brief   Sets the key of property.
+         * \param   Key     The key value to set.
+         **/
+        void setKey( const PropertyKey & Key );
 
-    /**
-     * \brief   Sets the key of property.
-     * \param   Key     The key value to set.
-     **/
-    void setKey( areg::PropertyKey && Key );
+        /**
+         * \brief   Sets the key of property.
+         * \param   Key     The key value to set.
+         **/
+        void setKey( PropertyKey && Key );
 
-    /**
-     * \brief   Returns Key value of the property
-     **/
-    const areg::PropertyKey & getKey() const;
+        /**
+         * \brief   Returns Key value of the property
+         **/
+        const PropertyKey & getKey() const;
 
-    /**
-     * \brief   Returns the property key type value.
-     **/
-    areg::ConfigEntry getPropertyType() const;
+        /**
+         * \brief   Returns the property key type value.
+         **/
+        ConfigEntry getPropertyType() const;
 
-    /**
-     * \brief   Returns string value of the Key. 
-     *          If Key consists of several sections, they are concatenated 
-     *          and separated by key-separators symbol
-     **/
-    areg::String getKeyString() const;
+        /**
+         * \brief   Returns string value of the Key. 
+         *          If Key consists of several sections, they are concatenated 
+         *          and separated by key-separators symbol
+         **/
+        String getKeyString() const;
 
-    /**
-     * \brief   Sets and parses the value of property.
-     * \param   valueSet    The value as a string to set and parse.
-     **/
-    void parseValue( const areg::String & valueSet );
+        /**
+         * \brief   Sets and parses the value of property.
+         * \param   valueSet    The value as a string to set and parse.
+         **/
+        void parseValue( const String & valueSet );
 
-    /**
-     * \brief   Sets Value of the property.
-     **/
-    void setValue( const areg::PropertyValue & Value );
+        /**
+         * \brief   Sets Value of the property.
+         **/
+        void setValue( const PropertyValue & Value );
 
-    /**
-     * \brief   Sets Value of the property.
-     **/
-    void setValue( areg::PropertyValue && Value );
+        /**
+         * \brief   Sets Value of the property.
+         **/
+        void setValue( PropertyValue && Value );
 
-    /**
-     * \brief   Returns Value of the property
-     **/
-    const areg::PropertyValue & getValue() const;
-    areg::PropertyValue& getValue();
+        /**
+         * \brief   Returns Value of the property
+         **/
+        const PropertyValue & getValue() const;
+        PropertyValue& getValue();
 
-    /**
-     * \brief   Returns Value of Property as a string.
-     *          If Value consists of several perts, all parts are concatenated by value-separator symbol.
-     **/
-    areg::String getValueString() const;
+        /**
+         * \brief   Returns Value of Property as a string.
+         *          If Value consists of several perts, all parts are concatenated by value-separator symbol.
+         **/
+        String getValueString() const;
 
-    /**
-     * \brief   Sets property comment, which is optional.
-     **/
-    void setComment( const areg::String & comment );
+        /**
+         * \brief   Sets property comment, which is optional.
+         **/
+        void setComment( const String & comment );
 
-    /**
-     * \brief   Adds comment to the property
-     **/
-    void addComment( const areg::String & comment );
+        /**
+         * \brief   Adds comment to the property
+         **/
+        void addComment( const String & comment );
 
-    /**
-     * \brief   Returns comment of the property
-     **/
-    const areg::String & getComment() const;
+        /**
+         * \brief   Returns comment of the property
+         **/
+        const String & getComment() const;
 
-    /**
-     * \brief   Sets the Key-Value pair of the property.
-     * \param   newPair The Key-Value pair to set
-     **/
-    void setPropertyPair( const Property::Entry & newPair );
+        /**
+         * \brief   Sets the Key-Value pair of the property.
+         * \param   newPair The Key-Value pair to set
+         **/
+        void setPropertyPair( const Property::Entry & newPair );
 
-    /**
-     * \brief   Sets the Key-Value pair of the property.
-     * \param   newPair The Key-Value pair to set
-     **/
-    void setPropertyPair( Property::Entry && newPair );
+        /**
+         * \brief   Sets the Key-Value pair of the property.
+         * \param   newPair The Key-Value pair to set
+         **/
+        void setPropertyPair( Property::Entry && newPair );
 
-    /**
-     * \brief   Returns Key-Value pair of the property.
-     **/
-    const Property::Entry & getPropertyPair() const;
+        /**
+         * \brief   Returns Key-Value pair of the property.
+         **/
+        const Property::Entry & getPropertyPair() const;
 
-    /**
-     * \brief   Returns true if Property is valid.
-     *          Valid property does not have empty Key.
-     **/
-    bool isValid() const;
+        /**
+         * \brief   Returns true if Property is valid.
+         *          Valid property does not have empty Key.
+         **/
+        bool isValid() const;
 
-    /**
-     * \brief   Parses given string, extracts Key and Value parts
-     *          and initializes Property
-     * \param   strProperties   The string, which contains data to set for Key and Value.
-     * \return  Returns true if parsing succeeded and could extract property data.
-     **/
-    bool parseProperty( const areg::String & strProperties );
+        /**
+         * \brief   Parses given string, extracts Key and Value parts
+         *          and initializes Property
+         * \param   strProperties   The string, which contains data to set for Key and Value.
+         * \return  Returns true if parsing succeeded and could extract property data.
+         **/
+        bool parseProperty( const String & strProperties );
 
-    /**
-     * \brief   Converts Key-Value pair data to the string.
-     **/
-    areg::String convToString() const;
+        /**
+         * \brief   Converts Key-Value pair data to the string.
+         **/
+        String convToString() const;
 
-    /**
-     * \brief   Resets and invalidates Property
-     **/
-    void resetData();
+        /**
+         * \brief   Resets and invalidates Property
+         **/
+        void resetData();
 
-    /**
-     * \brief   Returns true if the property is applicable to the specified module (process),
-     *          i.e. either it is global and belongs to all modules or it belongs
-     *          only to the specified module.
-     * \param   module  The name of the module to check the property.
-     * \return  Returns true if the property is global or the module of the property key is equal
-     *          to the specified module. Otherwise, returns false.
-     **/
-    bool isModuleProperty(const areg::String& module) const;
+        /**
+         * \brief   Returns true if the property is applicable to the specified module (process),
+         *          i.e. either it is global and belongs to all modules or it belongs
+         *          only to the specified module.
+         * \param   module  The name of the module to check the property.
+         * \return  Returns true if the property is global or the module of the property key is equal
+         *          to the specified module. Otherwise, returns false.
+         **/
+        bool isModuleProperty(const String& module) const;
 
-    /**
-     * \brief   Sets or resets the temporary flag of the property.
-     *          The properties with the temporary flag are not saved in the configuration file.
-     *          Only properties with the specified module names are saved in the configuration file.
-     * \param   isTemporary     If true, the property is temporary.
-     **/
-    void setTemporary(bool isTemporary);
+        /**
+         * \brief   Sets or resets the temporary flag of the property.
+         *          The properties with the temporary flag are not saved in the configuration file.
+         *          Only properties with the specified module names are saved in the configuration file.
+         * \param   isTemporary     If true, the property is temporary.
+         **/
+        void setTemporary(bool isTemporary);
 
-    /**
-     * \brief   Returns true if the property is temporary.
-     **/
-    bool isTemporary() const;
+        /**
+         * \brief   Returns true if the property is temporary.
+         **/
+        bool isTemporary() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   The flag indicating whether the property is temporary or not.
-     **/
-    bool                mIsTemporary;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   The flag indicating whether the property is temporary or not.
+         **/
+        bool                mIsTemporary;
 
-    /**
-     * \brief   Comment of Property
-     **/
-    areg::String              mComment;
+        /**
+         * \brief   Comment of Property
+         **/
+        String              mComment;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
+    #if defined(_MSC_VER) && (_MSC_VER > 1200)
+        #pragma warning(disable: 4251)
+    #endif  // _MSC_VER
 
-    /**
-     * \brief   Key-Value pair of the Property
-     **/
-    Property::Entry     mProperty;
+        /**
+         * \brief   Key-Value pair of the Property
+         **/
+        Property::Entry     mProperty;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
-};
+    #if defined(_MSC_VER) && (_MSC_VER > 1200)
+        #pragma warning(default: 4251)
+    #endif  // _MSC_VER
+    };
+
+    //!< The type to initialize list of properties.
+    using ListProperties = ArrayList<Property>;
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // Hasher of Property class
@@ -354,23 +362,13 @@ protected:
 namespace std
 {
     template<>
-    struct hash<Property>
+    struct hash<areg::Property>
     {
         //! A function to convert Property object to uint32_t.
-        inline uint32_t operator()(const Property& key) const
+        inline uint32_t operator()(const areg::Property& key) const
         {
             return static_cast<uint32_t>(key);
         }
     };
 }
-
-#include "areg/base/Containers.hpp"
-
-// Declaration of ListProperties within areg namespace
-namespace areg
-{
-    //!< The type to initialize list of properties.
-    using ListProperties = areg::ArrayList<Property>;
-}
-
 #endif  // AREG_PERSIST_PROPERTY_HPP

@@ -741,7 +741,7 @@ areg::RemoteMessage LogCollector::_createScopeUpdateMessage(const areg::String& 
 
     if (scope.isEmpty() == false)
     {
-        Property prop(LogCollector::_normalizeScopeProperty(scope));
+        areg::Property prop(LogCollector::_normalizeScopeProperty(scope));
         if (prop.isValid() && prop.getPropertyType() == areg::ConfigEntry::LogScope)
         {
             const areg::PropertyKey& key{ prop.getKey() };

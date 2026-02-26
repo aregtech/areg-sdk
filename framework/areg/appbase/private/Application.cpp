@@ -378,7 +378,7 @@ void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullpt
     areg::ListProperties defReadonly(countReadonly);
     for (const auto & entry : areg::DefaultReadonlyProperties)
     {
-        defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, areg::String::EmptyString));
+        defReadonly.add(areg::Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, areg::String::EmptyString));
     }
 
     areg::ListProperties defWritable;
@@ -386,7 +386,7 @@ void Application::setupDefaultConfiguration(ConfigListener * listener /*= nullpt
     {
         if (module == entry.configKey.module)
         {
-            defWritable.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, areg::String::EmptyString, false));
+            defWritable.add(areg::Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, areg::String::EmptyString, false));
         }
     }
 

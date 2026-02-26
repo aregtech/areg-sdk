@@ -190,13 +190,13 @@ namespace areg
         Application::getConfigManager().setLogEnabled(areg::LogTarget::Database, prop, isTemporary);
     }
 
-    uint32_t LogConfiguration::getModuleScopes(std::vector<Property>& scopeList)
+    uint32_t LogConfiguration::getModuleScopes(std::vector<areg::Property>& scopeList)
     {
         scopeList = Application::getConfigManager().getModuleLogScopes();
         return static_cast<uint32_t>(scopeList.size());
     }
 
-    void LogConfiguration::setModuleScopes(const std::vector<Property>& scopeList)
+    void LogConfiguration::setModuleScopes(const std::vector<areg::Property>& scopeList)
     {
         Application::getConfigManager().removeModuleScopes();
         Application::getConfigManager().addModuletLogScopes(scopeList, true);

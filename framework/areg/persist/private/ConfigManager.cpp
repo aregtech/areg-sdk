@@ -25,7 +25,7 @@
 
 namespace
 {
-    inline uint32_t _findPosition( const areg::ArrayList<Property>& propList
+    inline uint32_t _findPosition( const areg::ArrayList<areg::Property>& propList
                                  , uint32_t startAt
                                  , const areg::String& section
                                  , const areg::String& module
@@ -56,8 +56,8 @@ namespace
     }
 
     template <typename Type>
-    inline void _setPositionValue( areg::ArrayList<Property>& writeList
-                                 , const areg::ArrayList<Property>& readList
+    inline void _setPositionValue( areg::ArrayList<areg::Property>& writeList
+                                 , const areg::ArrayList<areg::Property>& readList
                                  , const areg::String& section
                                  , const areg::String& module
                                  , const areg::String& property
@@ -82,7 +82,7 @@ namespace
             }
             else
             {
-                writeList.add(Property(areg::PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
+                writeList.add(areg::Property(areg::PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
             }
         }
         else
@@ -96,7 +96,7 @@ namespace
                 }
                 else
                 {
-                    writeList.add(Property(areg::PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
+                    writeList.add(areg::Property(areg::PropertyKey(section, module, property, position, confKey), areg::PropertyValue(newValue), areg::String::EmptyString, isTemporary));
                 }
             }
             else if (writePos != areg::INVALID_POSITION)
@@ -106,7 +106,7 @@ namespace
         }
     }
 
-    inline const Property* _getProperty( const areg::ListProperties& list
+    inline const areg::Property* _getProperty( const areg::ListProperties& list
                                        , const areg::String& section
                                        , const areg::String& module
                                        , const areg::String& property
@@ -129,7 +129,7 @@ namespace
             file.moveToBegin();
 
             areg::String line;
-            Property newProperty;
+            areg::Property newProperty;
 
             while (file.readLine(line) > 0)
             {
@@ -195,7 +195,7 @@ namespace
             else
             {
                 areg::String line;
-                Property newProperty;
+                areg::Property newProperty;
 
                 while (srcFile.readLine(line) > 0)
                 {
@@ -206,7 +206,7 @@ namespace
                     else
                     {
                         const areg::PropertyKey& key{ newProperty.getKey() };
-                        const Property* prop = _getProperty(listWritable, key.getSection(), module, key.getProperty(), key.getPosition(), key.getKeyType(), true);
+                        const areg::Property* prop = _getProperty(listWritable, key.getSection(), module, key.getProperty(), key.getPosition(), key.getKeyType(), true);
                         if ((prop != nullptr) && prop->isTemporary())
                         {
                             dstFile.writeLine(line);
@@ -298,7 +298,7 @@ areg::ListProperties ConfigManager::getSectionProperties(const areg::String& sec
     return result;
 }
 
-const Property* ConfigManager::getProperty( const areg::String& section
+const areg::Property* ConfigManager::getProperty( const areg::String& section
                                           , const areg::String& property
                                           , const areg::String& position
                                           , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
@@ -306,11 +306,11 @@ const Property* ConfigManager::getProperty( const areg::String& section
     Lock lock(mLock);
 
     keyType = keyType == areg::ConfigEntry::Invalid ? areg::ConfigEntry::AnyKey : keyType;
-    const Property* result{ _getProperty(mWritableProperties, section, mModule, property, position, keyType, true)};
+    const areg::Property* result{ _getProperty(mWritableProperties, section, mModule, property, position, keyType, true)};
     return (result != nullptr ? result : _getProperty(mReadonlyProperties, section, areg::SYNTAX_ALL_MODULES, property, position, keyType, false));
 }
 
-const Property * ConfigManager::getModuleProperty( const areg::String& section
+const areg::Property * ConfigManager::getModuleProperty( const areg::String& section
                                                  , const areg::String& property
                                                  , const areg::String& position
                                                  , areg::ConfigEntry keyType /*= areg::ConfigEntry::AnyKey*/) const
@@ -540,7 +540,7 @@ areg::Version ConfigManager::getConfigVersion() const
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::ConfigVersion;
     const areg::ConfigKey& key = areg::getConfigVersion();
 
-    const Property* prop = _getProperty(mReadonlyProperties, key.section, areg::SYNTAX_ALL_MODULES, key.property, key.position, confKey, true);
+    const areg::Property* prop = _getProperty(mReadonlyProperties, key.section, areg::SYNTAX_ALL_MODULES, key.property, key.position, confKey, true);
 
     areg::Version result;
     if (prop != nullptr)
@@ -562,7 +562,7 @@ std::vector<areg::Identifier> ConfigManager::getServiceList() const
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::ServiceList;
     const areg::ConfigKey& key = areg::getServiceList();
 
-    const Property* prop = getProperty(key.section, key.property, key.position, confKey);
+    const areg::Property* prop = getProperty(key.section, key.property, key.position, confKey);
 
     std::vector<areg::Identifier> result;
     if (prop != nullptr)
@@ -579,7 +579,7 @@ std::vector<areg::Identifier> ConfigManager::getLogTargets() const
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::LogTarget;
     const areg::ConfigKey& key = areg::getLogTarget();
 
-    const Property* prop = getProperty(key.section, key.property, key.position, confKey);
+    const areg::Property* prop = getProperty(key.section, key.property, key.position, confKey);
 
     std::vector<areg::Identifier> result;
     if (prop != nullptr)
@@ -801,7 +801,7 @@ void ConfigManager::setLogLayoutExit(const areg::String& newValue, bool isTempor
     setModuleProperty(key.section, key.property, key.position, newValue, confKey, isTemporary);
 }
 
-uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& scopeList) const
+uint32_t ConfigManager::getModuleLogScopes(std::vector<areg::Property>& scopeList) const
 {
     Lock lock(mLock);
 
@@ -829,7 +829,7 @@ uint32_t ConfigManager::getModuleLogScopes(std::vector<Property>& scopeList) con
     return static_cast<uint32_t>(scopeList.size());
 }
 
-void ConfigManager::addModuletLogScopes(const std::vector<Property>& scopeList, bool search)
+void ConfigManager::addModuletLogScopes(const std::vector<areg::Property>& scopeList, bool search)
 {
     Lock lock(mLock);
 
@@ -1073,7 +1073,7 @@ uint32_t ConfigManager::getDefaultBufferBlockSize(const areg::String& whichModul
 {
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::DefaultBufferBlock;
     const areg::ConfigKey& key = areg::getDefaultBufferBlockSize();
-    const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
+    const areg::Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
     return (prop != nullptr ? prop->getValue().getInteger() : 0u);
 }
 
@@ -1081,6 +1081,6 @@ uint32_t ConfigManager::getDefaultMessageQueueSize(const areg::String& whichModu
 {
     constexpr areg::ConfigEntry confKey = areg::ConfigEntry::DefaultMessageQueue;
     const areg::ConfigKey& key = areg::getDefaultMessageQueueSize();
-    const Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
+    const areg::Property* prop = _getProperty(mReadonlyProperties, key.section, whichModule.isEmpty() ? areg::SYNTAX_ALL_MODULES : whichModule, key.property, key.position, confKey, true);
     return ( prop != nullptr ? prop->getValue().getInteger() : std::numeric_limits<uint32_t>::max() );
 }

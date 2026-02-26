@@ -29,7 +29,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class LogScope; }
-class Property;
+namespace areg { class Property; }
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeController::LogScopeMap class declaration
@@ -308,7 +308,7 @@ public:
      * \param   prop    The property, which contains the scope name to search
      *                  and priority information to set.
      **/
-    void configureScopes( const Property & prop );
+    void configureScopes( const areg::Property & prop );
 
     /**
      * \brief   Sets the log message priority to the log scope or scope group.
