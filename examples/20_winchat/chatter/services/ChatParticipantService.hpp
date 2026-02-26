@@ -12,7 +12,7 @@
 
 namespace areg { class ComponentThread; }
 
-class ChatParticipantService  : private   Component
+class ChatParticipantService  : private   areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component

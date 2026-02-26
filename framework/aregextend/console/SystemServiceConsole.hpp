@@ -38,7 +38,7 @@ class DataRateHelper;
  *          This service provider does not contain requests.
  *          It has a time with timeout 1 second to grab the data and output data rate.
  **/
-class SystemServiceConsole  : public    Component
+class SystemServiceConsole  : public    areg::Component
                             , protected areg::StubBase
                             , protected areg::TimerConsumer
 {
@@ -75,7 +75,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -83,7 +83,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( areg::Component & holder ) override;
 
 /************************************************************************/
 // TimerConsumer class overrides.

@@ -41,7 +41,7 @@ PageMessaging::~PageMessaging()
     cleanService( );
 }
 
-void PageMessaging::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/)
+void PageMessaging::OnServiceStartup( bool /*isStarted*/, areg::Component* /*owner*/)
 {
     // do nothing
 }

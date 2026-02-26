@@ -38,7 +38,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout     The timeout in milliseconds to trigger the request to output message
      **/
-    PublicHelloWorldClient( const areg::DependencyEntry & dependency, Component & owner, uint32_t timeout );
+    PublicHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout );
 
     /**
      * \brief   Destructor
@@ -112,7 +112,7 @@ private:
         return (*this);
     }
 
-    inline areg::String timerName( Component & owner ) const;
+    inline areg::String timerName( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

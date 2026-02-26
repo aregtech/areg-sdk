@@ -76,7 +76,7 @@ namespace areg
 
 
 
-    StubBase::StubBase( Component & masterComp, const areg::InterfaceData & siData )
+    StubBase::StubBase( areg::Component & masterComp, const areg::InterfaceData & siData )
         : areg::StubEventConsumer   ( mAddress )
 
         , mComponent            (masterComp)
@@ -274,7 +274,7 @@ namespace areg
         return map_providers().findResourceObject(address);
     }
 
-    void StubBase::startupServiceInterface( Component&  holder )
+    void StubBase::startupServiceInterface( areg::Component&  holder )
     {
         LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
         LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", getServiceRole( ).getString( ), getServiceName( ).getString( ) );
@@ -282,7 +282,7 @@ namespace areg
         StubConnectEvent::addListener( static_cast<areg::StubEventConsumer &>(self()), holder.getMasterThread() );
     }
 
-    void StubBase::shutdownServiceInterface( Component & holder )
+    void StubBase::shutdownServiceInterface( areg::Component & holder )
     {
         LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
         LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );

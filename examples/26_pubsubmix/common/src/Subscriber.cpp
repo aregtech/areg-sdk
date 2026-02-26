@@ -24,7 +24,7 @@ DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
 
-Subscriber::Subscriber(const areg::DependencyEntry & entry, Component & owner, int32_t position)
+Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & owner, int32_t position)
     : PubSubMixClientBase   ( entry, owner )
     , mOldInteger   ( {0, entry.mRoleName } )
     , mOldState     ( false )

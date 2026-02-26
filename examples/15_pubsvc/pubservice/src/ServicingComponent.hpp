@@ -26,7 +26,7 @@
  *              b. Request without response;
  *              c. Broadcasts with a parameter;
  **/
-class ServicingComponent    : public    Component
+class ServicingComponent    : public    areg::Component
                             , protected HelloWorldStub
 {
     //!< The type of list of connected clients.

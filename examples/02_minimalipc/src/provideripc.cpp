@@ -23,13 +23,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Service Provider: ServiceProvider declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceProvider   : public    Component
+class ServiceProvider   : public    areg::Component
                         , protected HelloServiceStub
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+        : areg::Component(entry, owner)
+        , HelloServiceStub(static_cast<areg::Component&>(self()))
     {   }
 
 //////////////////////////////////////////////////////////////////////////

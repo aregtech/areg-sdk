@@ -81,7 +81,7 @@ ComponentAddress::ComponentAddress( const areg::String & roleName )
     , mMagicNum     ( areg::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
-    Component* comp = Component::findComponentByName(roleName);
+    areg::Component* comp = areg::Component::findComponentByName(roleName);
     if (comp != nullptr)
     {
         mThreadAddress = comp->getAddress( ).getThreadAddress( );

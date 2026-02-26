@@ -28,7 +28,7 @@
  *          Start multiple instances of the client to make sure that all clients properly
  *          receive requests.
  **/
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , private   HelloUnblockClientBase
                     , private   areg::TimerConsumer
 {

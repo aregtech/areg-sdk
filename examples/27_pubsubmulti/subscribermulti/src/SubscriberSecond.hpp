@@ -33,7 +33,7 @@ public:
      * \param   entry   The dependency entry.
      * \param   owner   The owning component.
      **/
-    SubscriberSecond(const areg::DependencyEntry & entry, Component & owner);
+    SubscriberSecond(const areg::DependencyEntry & entry, areg::Component & owner);
 
     virtual ~SubscriberSecond() = default;
 

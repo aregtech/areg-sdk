@@ -55,12 +55,12 @@ areg::Model DirectChatService::GetModel( const DirectMessager::Participant & ini
 }
 
 DirectChatService::DirectChatService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
-    : Component           ( entry, ownerThread )
-    , DirectMessagerStub  ( static_cast<Component &>(self()) )
+    : areg::Component           ( entry, ownerThread )
+    , DirectMessagerStub  ( static_cast<areg::Component &>(self()) )
 
     , mPaticipantsHandler   (std::any_cast<ChatPrticipantHandler*>(entry.getData()))
     , mListClients          ( )
-    , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, mPaticipantsHandler)
+    , mChatParticipant      ( static_cast<areg::Component &>(self()), entry.mRoleName, mPaticipantsHandler)
 {
 }
 
@@ -72,7 +72,7 @@ DirectChatService::~DirectChatService()
 void DirectChatService::startupComponent( areg::ComponentThread & comThread )
 {
     LOG_SCOPE( chatter_DirectChatService_StartupComponent );
-    Component::startupComponent(comThread);
+    areg::Component::startupComponent(comThread);
     mPaticipantsHandler->SetConnectionService( this );
 
     const DirectConnection::sInitiator & initiator = mPaticipantsHandler->GetInitiator();
@@ -83,7 +83,7 @@ void DirectChatService::startupComponent( areg::ComponentThread & comThread )
         const DirectConnection::Participant & target = listParticipants[i];
         if ( target != initiator )
         {
-            DirectConnectionClient * client = new DirectConnectionClient( static_cast<Component &>(self( )), mPaticipantsHandler, target );
+            DirectConnectionClient * client = new DirectConnectionClient( static_cast<areg::Component &>(self( )), mPaticipantsHandler, target );
             mListClients.add( client );
         }
     }
@@ -95,10 +95,10 @@ void DirectChatService::shutdownComponent( areg::ComponentThread & comThread )
     mPaticipantsHandler->SetConnectionService( nullptr );
     
     _clearList();    
-    Component::shutdownComponent(comThread);
+    areg::Component::shutdownComponent(comThread);
 }
 
-void DirectChatService::startupServiceInterface( Component & holder )
+void DirectChatService::startupServiceInterface( areg::Component & holder )
 {
     DirectMessagerStub::startupServiceInterface(holder);
     setChatParticipants( DirectMessager::ListParticipants() );

@@ -13,8 +13,8 @@
 #include "areg/appbase/Application.hpp"
 
 PatientClient::PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & /* owner */)
-    : Component                     ( entry.mRoleName )
-    , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+    : areg::Component                     ( entry.mRoleName )
+    , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
 
     , mHwWorker ( entry.mWorkerThreads[0].mConsumerName )
 {
@@ -33,7 +33,7 @@ areg::WorkerThreadConsumer * PatientClient::workerThreadConsumer(const areg::Str
     }
     else
     {
-        return Component::workerThreadConsumer(consumerName, workerThreadName);
+        return areg::Component::workerThreadConsumer(consumerName, workerThreadName);
     }
 }
 

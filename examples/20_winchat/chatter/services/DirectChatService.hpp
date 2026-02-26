@@ -17,7 +17,7 @@
 class DirectConnectionClient;
 class ChatPrticipantHandler;
 
-class DirectChatService : public Component
+class DirectChatService : public areg::Component
                         , public DirectMessagerStub
                           
 {
@@ -109,7 +109,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
     
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

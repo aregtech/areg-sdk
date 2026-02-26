@@ -31,7 +31,7 @@ protected:
      * \param   entry   The dependency entry.
      * \param   owner   The owning component.
      **/
-    SubscriberBase(const areg::DependencyEntry & entry, Component & owner, areg::Coord coordInt, areg::Coord coordStr);
+    SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr);
 
     virtual ~SubscriberBase() = default;
 

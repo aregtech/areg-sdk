@@ -23,12 +23,12 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceConsumer declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceConsumer   : public    Component
+class ServiceConsumer   : public    areg::Component
                         , protected HelloServiceClientBase
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-		: Component             ( entry, owner )
+		: areg::Component             ( entry, owner )
 		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 

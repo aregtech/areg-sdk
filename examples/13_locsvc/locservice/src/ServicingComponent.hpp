@@ -20,7 +20,7 @@
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 //! \brief   A demo of servicing component with requests, response and broadcasts.
-class ServicingComponent    : public    Component
+class ServicingComponent    : public    areg::Component
                             , protected HelloWorldStub
 {
 //////////////////////////////////////////////////////////////////////////

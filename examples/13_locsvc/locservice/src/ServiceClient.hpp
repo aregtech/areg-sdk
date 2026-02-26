@@ -21,7 +21,7 @@
 
 //! \brief  A client component to call request, and process response and broadcast.
 //!         The requests are triggered on each timer timeout.
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , protected HelloWorldClientBase
                     , private   areg::TimerConsumer
 {

@@ -24,8 +24,8 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 
 ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : Component         ( entry, owner )
-    , HelloUnblockStub  ( static_cast<Component &>(self()) )
+    : areg::Component         ( entry, owner )
+    , HelloUnblockStub  ( static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer   ( )
 
     , mSessionList      ( )
@@ -34,7 +34,7 @@ ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::Co
     setHelloServiceState( HelloUnblock::RunState::ServiceUndefined );
 }
 
-void ServiceComponent::startupServiceInterface( Component & holder )
+void ServiceComponent::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_startupServiceInterface );
 

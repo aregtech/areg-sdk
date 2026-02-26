@@ -28,18 +28,18 @@ DEF_LOG_SCOPE( chatter_ConnectionService_CreateComponent );
 DEF_LOG_SCOPE( chatter_ConnectionService_DeleteComponent );
 
 ConnectionService::ConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
-    : Component       ( entry, ownerThread )
+    : areg::Component       ( entry, ownerThread )
 {
 }
 
 void ConnectionService::startupComponent( areg::ComponentThread & comThread )
 {
-    Component::startupComponent(comThread);
+    areg::Component::startupComponent(comThread);
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
 }
 
 void ConnectionService::shutdownComponent( areg::ComponentThread & comThread )
 {
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 0, 0 );
-    Component::shutdownComponent(comThread);
+    areg::Component::shutdownComponent(comThread);
 }

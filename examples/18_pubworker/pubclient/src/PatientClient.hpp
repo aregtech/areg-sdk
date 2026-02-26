@@ -24,7 +24,7 @@
  *          of worker thread, and the communication between servicing component and
  *          the worker thread via custom events.
  **/
-class PatientClient : public    Component
+class PatientClient : public    areg::Component
                     , protected PatientInformationClientBase
 {
 

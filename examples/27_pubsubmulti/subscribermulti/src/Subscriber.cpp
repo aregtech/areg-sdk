@@ -18,10 +18,10 @@ DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : Component         (entry, owner)
-    , SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
+    : areg::Component         (entry, owner)
+    , SubscriberBase    (entry.mDependencyServices[0], static_cast<areg::Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
     , mStateEventCount  ( 0 )
-    , mSecond           ( entry.mDependencyServices[1], static_cast<Component &>(self()) )
+    , mSecond           ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()) )
 {
 }
 

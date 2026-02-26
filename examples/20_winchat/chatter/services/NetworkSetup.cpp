@@ -10,7 +10,7 @@
 DEF_LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 DEF_LOG_SCOPE(chatter_NetworkSetup_responseConnect);
 
-NetworkSetup::NetworkSetup( const char * roleName, Component & owner, ConnectionHandler & handlerConnection )
+NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase (roleName, owner.getMasterThread() )
 
     , mConnectionHandler( handlerConnection )

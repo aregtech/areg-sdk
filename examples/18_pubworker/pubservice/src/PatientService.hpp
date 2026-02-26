@@ -21,7 +21,7 @@
 /**
  * \brief   The servicing object.
  **/
-class PatientService    : public    Component
+class PatientService    : public    areg::Component
                         , private   PatientInformationStub
 {
 //////////////////////////////////////////////////////////////////////////

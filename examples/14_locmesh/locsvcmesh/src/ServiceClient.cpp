@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
 
-ServiceClient::ServiceClient(const areg::String & roleName, Component & owner)
+ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & owner)
     : HelloWorldClientBase  ( roleName, owner )
     , areg::TimerConsumer       ( )
 
@@ -79,7 +79,7 @@ void ServiceClient::processTimer(areg::Timer & timer)
     requestHelloWorld(timer.getName());
 }
 
-inline areg::String ServiceClient::timerName( Component & /* owner */ ) const
+inline areg::String ServiceClient::timerName( areg::Component & /* owner */ ) const
 {
     ASSERT( getProxy( ) != nullptr );
     areg::String result = "";

@@ -29,12 +29,12 @@
  ************************************************************************/
 
 #define FUNC_CREATE_COMP(CompType)                                                                          \
-                    ([](const areg::ComponentEntry& e, areg::ComponentThread& t) -> Component * {           \
+                    ([](const areg::ComponentEntry& e, areg::ComponentThread& t) -> areg::Component * {           \
                         return new CompType(e, t);})
 
 #define FUNC_DELETE_COMP                                                                                    \
-                    ([](Component& c, const areg::ComponentEntry& /*e*/) -> void {                    \
-                                        delete static_cast<Component *>(&c);})
+                    ([](areg::Component& c, const areg::ComponentEntry& /*e*/) -> void {                    \
+                                        delete static_cast<areg::Component *>(&c);})
 
 /**
  * \brief   Modeling of application should start by declaration of model
@@ -280,7 +280,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
+namespace areg { class Component; }
 namespace areg { class ComponentThread; }
 namespace areg { class Thread; }
 

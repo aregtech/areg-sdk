@@ -26,7 +26,7 @@
  *          terminates the thread and components and restarts again.
  *          After reaching certain amount of restarts, the application quits.
  **/
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , protected HelloWatchdogClientBase
 {
 private:

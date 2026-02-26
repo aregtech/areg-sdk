@@ -48,7 +48,7 @@ public:
      * \brief   Instantiates the component object.
      * \param   owner   The service owning component.
      **/
-    Publisher( Component & owner );
+    Publisher( areg::Component & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations

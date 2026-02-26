@@ -13,8 +13,8 @@
 #include "areg/appbase/Application.hpp"
 
 TrafficLightClient::TrafficLightClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : Component                     ( entry, owner )
-    , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
+    : areg::Component                     ( entry, owner )
+    , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
 
     , mTrafficDirection             ( std::any_cast<traffic::TrafficDirection>(entry.getData()) )
 {

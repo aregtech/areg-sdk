@@ -16,7 +16,7 @@
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
 
-SubscriberSecond::SubscriberSecond( const areg::DependencyEntry & entry, Component & owner )
+SubscriberSecond::SubscriberSecond( const areg::DependencyEntry & entry, areg::Component & owner )
     : SubscriberBase    ( entry, owner, pubsub::Coord2Integer, pubsub::Coord2String )
 {
 }

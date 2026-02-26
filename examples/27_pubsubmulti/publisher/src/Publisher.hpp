@@ -38,7 +38,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Publisher : public    Component
+class Publisher : public    areg::Component
                 , protected PubSubStub
                 , private   areg::TimerConsumer
                 , private   areg::ThreadConsumer

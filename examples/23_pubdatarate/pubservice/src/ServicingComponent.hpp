@@ -46,7 +46,7 @@ AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  *          and sends to the clients. This demo show the data rate when generates data
  *          and when sends data to the clients.
  **/
-class ServicingComponent    : public    Component
+class ServicingComponent    : public    areg::Component
                             , protected LargeDataStub
                             , protected areg::ThreadConsumer
 {
@@ -206,7 +206,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -214,7 +214,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( areg::Component & holder ) override;
 
 /************************************************************************/
 // StubBase overrides

@@ -45,8 +45,8 @@ void TrafficLightService::TrafficLightTimerConsumer::processTimer( areg::Timer &
 //////////////////////////////////////////////////////////////////////////
 
 TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : Component                 ( entry, owner )
-    , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )
+    : areg::Component                 ( entry, owner )
+    , SimpleTrafficLightStub    ( static_cast<areg::Component &>(self()) )
 
     , mTimer                    ( static_cast<areg::TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
     , mPrevState                ( SimpleTrafficLight::TrafficLight::LightOff )
@@ -123,13 +123,13 @@ void TrafficLightService::onTimerExpired()
     }
 }
 
-void TrafficLightService::startupServiceInterface(Component & holder)
+void TrafficLightService::startupServiceInterface(areg::Component & holder)
 {
     SimpleTrafficLightStub::startupServiceInterface(holder);
     TrafficSwitchEvent::addListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
 }
 
-void TrafficLightService::shutdownServiceInterface(Component & holder)
+void TrafficLightService::shutdownServiceInterface(areg::Component & holder)
 {
     SimpleTrafficLightStub::shutdownServiceInterface(holder);
     TrafficSwitchEvent::removeListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );

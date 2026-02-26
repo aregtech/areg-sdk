@@ -121,7 +121,7 @@ public:
      * \param   roleName    The role name of the power controller service.
      * \param   owner       The client owning component.
      **/
-    PowerControllerClient( const char* roleName, Component & owner );
+    PowerControllerClient( const char* roleName, areg::Component & owner );
     /**
      * \brief   Destructor.
      **/

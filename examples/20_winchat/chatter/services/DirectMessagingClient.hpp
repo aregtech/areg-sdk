@@ -14,7 +14,7 @@ class ChatPrticipantHandler;
 class DirectMessagingClient   : public DirectMessagerClientBase
 {
 public:
-    DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler * handlerParticipants );
+    DirectMessagingClient( areg::Component & owner, const char * roleName, ChatPrticipantHandler * handlerParticipants );
     virtual ~DirectMessagingClient() = default;
 
     /**

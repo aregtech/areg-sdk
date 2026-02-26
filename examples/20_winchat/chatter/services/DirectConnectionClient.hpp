@@ -13,7 +13,7 @@ class ChatPrticipantHandler;
 class DirectConnectionClient  : public DirectConnectionClientBase
 {
 public:
-    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
+    DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
     virtual ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////

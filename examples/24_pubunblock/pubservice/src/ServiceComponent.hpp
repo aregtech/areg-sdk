@@ -28,7 +28,7 @@
  *          Start multiple instance of client to make sure that all responses
  *          are properly replied.
  **/
-class ServiceComponent  : public  Component
+class ServiceComponent  : public  areg::Component
                         , private HelloUnblockStub
                         , private areg::TimerConsumer
 {
@@ -59,7 +59,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   Request call.

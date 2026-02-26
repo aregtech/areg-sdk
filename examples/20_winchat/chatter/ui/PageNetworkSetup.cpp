@@ -67,7 +67,7 @@ bool PageNetworkSetup::isServiceConnected() const
 }
 
 
-void PageNetworkSetup::OnServiceStartup( bool isStarted, Component * owner )
+void PageNetworkSetup::OnServiceStartup( bool isStarted, areg::Component * owner )
 {
     mConnectionHandler.SetConnected( false);
     if ( isStarted )

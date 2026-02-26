@@ -19,7 +19,7 @@ namespace areg { class ComponentThread; }
  * \brief   Connection manager, server component implementation
  *          to register all client applications connections.
  **/
-class ConnectionController  : public    Component
+class ConnectionController  : public    areg::Component
                             , public    ConnectionManagerStub
                             , public    CentralMessagerStub
 {
@@ -120,7 +120,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

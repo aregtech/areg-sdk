@@ -46,7 +46,7 @@ private:
 AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
-class TrafficLightService   : public    Component
+class TrafficLightService   : public    areg::Component
                             , protected SimpleTrafficLightStub
 {
     friend class TrafficSwitchConsumer;
@@ -152,7 +152,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -160,7 +160,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( areg::Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.

@@ -18,7 +18,7 @@
 #include "common/TrafficDefs.hpp"
 
 //! The simple service client, which receives data update notifications.
-class TrafficLightClient    : public    Component
+class TrafficLightClient    : public    areg::Component
                             , protected SimpleTrafficLightClientBase
 {
 //////////////////////////////////////////////////////////////////////////

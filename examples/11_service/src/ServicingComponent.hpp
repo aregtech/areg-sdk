@@ -20,7 +20,7 @@
 #include "areg/component/Timer.hpp"
 
 //! \brief   A demo of simple servicing component with timer without component servicing (request) methods.
-class ServicingComponent    : public    Component
+class ServicingComponent    : public    areg::Component
                             , protected areg::StubBase
                             , protected areg::TimerConsumer
 {
@@ -44,13 +44,13 @@ protected:
      * \brief   This function is triggered by Component when starts up.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( areg::Component & holder ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.

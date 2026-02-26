@@ -13,8 +13,8 @@
 #include "areg/component/ComponentThread.hpp"
 
 PatientService::PatientService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : Component             ( entry, owner )
-    , PatientInformationStub( static_cast<Component &>(self()) )
+    : areg::Component             ( entry, owner )
+    , PatientInformationStub( static_cast<areg::Component &>(self()) )
 
     , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationStub &>(self()) )
 {
@@ -33,6 +33,6 @@ areg::WorkerThreadConsumer * PatientService::workerThreadConsumer(const areg::St
     }
     else
     {
-        return Component::workerThreadConsumer(consumerName, workerThreadName);
+        return areg::Component::workerThreadConsumer(consumerName, workerThreadName);
     }
 }

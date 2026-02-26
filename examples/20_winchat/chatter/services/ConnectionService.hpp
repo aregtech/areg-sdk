@@ -7,7 +7,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 
-class ConnectionService    : public  Component
+class ConnectionService    : public  areg::Component
 {
 public:
     ConnectionService(const areg::ComponentEntry& entry, areg::ComponentThread& ownerThread);

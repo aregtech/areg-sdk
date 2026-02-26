@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorl
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
 
-LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & dependency, Component & owner, uint32_t timeout)
+LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
     : LocalHelloWorldClientBase ( dependency, owner )
     , areg::TimerConsumer           ( )
 
@@ -71,7 +71,7 @@ void LocalHelloWorldClient::processTimer(areg::Timer & timer)
     requestHelloWorld( timer.getName( ) );
 }
 
-inline areg::String LocalHelloWorldClient::timerName( Component & owner ) const
+inline areg::String LocalHelloWorldClient::timerName( areg::Component & owner ) const
 {
     areg::String result;
     result.append("Local_")

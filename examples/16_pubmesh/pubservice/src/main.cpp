@@ -28,15 +28,15 @@
 #endif // _MSC_VER
 
 //!<\brief  The local service component.
-class LocalServiceComponent : public Component
+class LocalServiceComponent : public areg::Component
 {
     static constexpr uint32_t TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
 
 public:
     LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-        : Component         ( entry, owner )
-        , mLocalService     ( static_cast<Component &>(self()) )
-        , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
+        : areg::Component         ( entry, owner )
+        , mLocalService     ( static_cast<areg::Component &>(self()) )
+        , mControllerClient ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
     {
     }
 

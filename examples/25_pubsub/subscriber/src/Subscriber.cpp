@@ -43,8 +43,8 @@ namespace
 }
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : Component         ( entry, owner )
-    , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<Component &>(self()) )
+    : areg::Component         ( entry, owner )
+    , PubSubClientBase  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()) )
     , mOldInteger       ( 0 )
     , mOldState         ( false )
     , mOldString        (_invalid )

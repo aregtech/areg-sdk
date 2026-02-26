@@ -8,7 +8,7 @@
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 
- DirectConnectionClient::DirectConnectionClient( Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
+ DirectConnectionClient::DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler * participantsHandler, const DirectConnection::Participant & target )
     : DirectConnectionClientBase  ( NEDistributedApp::getConnectionServiceRole(target.nickName, target.cookie).getString(), owner )
 
     , mParticipantsHandler          ( participantsHandler )

@@ -30,7 +30,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
+namespace areg { class Component; }
 
 namespace areg
 {
@@ -55,7 +55,7 @@ namespace areg
          * \brief   ComponentThread::ListComponent;
          *          Linked List of instantiated components in the Component Thread.
          **/
-        using ListComponent     = areg::LinkedList<Component*>;
+        using ListComponent     = areg::LinkedList<areg::Component*>;
 
     //////////////////////////////////////////////////////////////////////////
     // Declare as Runtime instance
@@ -75,7 +75,7 @@ namespace areg
          *          current Component set in the thread, it will return nullptr.
          * \return  Returns the current Component object of current Component Thread.
          **/
-        static Component * getCurrentComponent();
+        static areg::Component * getCurrentComponent();
 
         /**
          * \brief   Sets current Component object of current Component Thread.
@@ -88,7 +88,7 @@ namespace areg
          * \return  The function returns true if current Thread is Component Thread.
          *          Otherwise, current Component is not set and function returns false.
          **/
-        static bool setCurrentComponent( Component * curComponent );
+        static bool setCurrentComponent( areg::Component * curComponent );
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -307,7 +307,7 @@ namespace areg
         /**
          * \brief   Current component of Component Thread.
          **/
-        Component *     mCurrentComponent;
+        areg::Component *     mCurrentComponent;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables.

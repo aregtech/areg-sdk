@@ -42,7 +42,7 @@ namespace
 // Publisher class methods
 //////////////////////////////////////////////////////////////////////////
 
-Publisher::Publisher( Component & owner )
+Publisher::Publisher( areg::Component & owner )
     : PubSubMixStub     ( owner )
     , areg::TimerConsumer   ( )
 

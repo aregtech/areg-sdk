@@ -27,7 +27,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber: public    Component
+class Subscriber: public    areg::Component
                 , protected PubSubClientBase
 {
 //////////////////////////////////////////////////////////////////////////

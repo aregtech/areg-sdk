@@ -4,7 +4,7 @@
 #include "chatter/res/resource.h"
 #include "examples/20_winchat/services/ConnectionManager.hpp"
 
-class Component;
+namespace areg { class Component; }
 class NetworkSetup;
 namespace areg { class DispatcherThread; }
 class ConnectionHandler;
@@ -24,7 +24,7 @@ public:
 
 public:
 
-    void OnServiceStartup( bool isStarted, Component * owner );
+    void OnServiceStartup( bool isStarted, areg::Component * owner );
     void OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread );
     void OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread );
     void OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread );

@@ -19,7 +19,7 @@
 /**
  * \brief   The main component that controls application shutdown.
  **/
-class ClientComponent : public Component
+class ClientComponent : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

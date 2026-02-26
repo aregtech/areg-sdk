@@ -32,7 +32,7 @@ public:
      * \brief   Instantiates the component object.
      * \param   masterComp  The service owner component, required by LocalHelloWorldStub.
      **/
-    LocalHelloWorldService( Component & masterComp );
+    LocalHelloWorldService( areg::Component & masterComp );
 
     virtual ~LocalHelloWorldService() = default;
 

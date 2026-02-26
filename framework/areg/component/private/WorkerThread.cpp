@@ -36,7 +36,7 @@ namespace areg
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
     WorkerThread::WorkerThread( const areg::String & threadName
-                            , Component & bindingComponent
+                            , areg::Component & bindingComponent
                             , areg::WorkerThreadConsumer & threadConsumer
                             , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
                             , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */

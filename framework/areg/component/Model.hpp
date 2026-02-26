@@ -70,7 +70,7 @@ namespace areg
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
+namespace areg { class Component; }
 namespace areg { class WorkerThread; }
 namespace areg { class ComponentThread; }
 namespace areg { class WorkerThreadConsumer; }
@@ -89,7 +89,7 @@ namespace areg { class WorkerThreadConsumer; }
  *      return new MyComponent(entry, ownerThread);
  *  }
  **/
-using  FuncCreateComponent  = std::function<Component* (const areg::ComponentEntry& /*entry*/, areg::ComponentThread& /*ownerThread*/)>;
+using  FuncCreateComponent  = std::function<areg::Component* (const areg::ComponentEntry& /*entry*/, areg::ComponentThread& /*ownerThread*/)>;
 
 /**
  * \brief   Type of Component Unload Function. Called to stop and delete component
@@ -100,7 +100,7 @@ using  FuncCreateComponent  = std::function<Component* (const areg::ComponentEnt
  *      delete &comp;
  *  }
  **/
-using FuncDeleteComponent   = std::function<void (Component& /*comp*/, const areg::ComponentEntry& /*entry*/)>;
+using FuncDeleteComponent   = std::function<void (areg::Component& /*comp*/, const areg::ComponentEntry& /*entry*/)>;
 
 //////////////////////////////////////////////////////////////////////////
 // NERegistry namespace declaration
@@ -2022,10 +2022,10 @@ template<typename ComponentType>
 inline areg::ComponentEntry& areg::ComponentThreadEntry::addComponent(const areg::String& roleName)
 {
     return addComponent(roleName
-        , [](const areg::ComponentEntry& entry, areg::ComponentThread& owner) -> Component* {
+        , [](const areg::ComponentEntry& entry, areg::ComponentThread& owner) -> areg::Component* {
             return new ComponentType(entry, owner);
         }
-        , [](Component& comp, const areg::ComponentEntry& /*entry*/) -> void {
+        , [](areg::Component& comp, const areg::ComponentEntry& /*entry*/) -> void {
             ComponentType* tmp = static_cast<ComponentType *>(&comp);
             delete tmp;
         });

@@ -28,7 +28,7 @@
 #endif // _MSC_VER
 
 //!<\brief  Local service component
-class LocalServiceComponent : public Component
+class LocalServiceComponent : public areg::Component
 {
     static constexpr uint32_t   PUBLIC_CLIENT_TIMEOUT   { 1'000 };  //!< The timeout to send request to public service
     static constexpr uint32_t   LOCAL_CLIENT_TIMEOUT    {   500 };  //!< The timeout to send request to local service
@@ -39,10 +39,10 @@ class LocalServiceComponent : public Component
 public:
     //!< Initializes the local component
     LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-        : Component                 ( entry, owner )
-        , mLocalService             ( static_cast<Component &>(self()) )
-        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
-        , mLocServiceClient         ( entry.mDependencyServices[1], static_cast<Component &>(self( )), LOCAL_CLIENT_TIMEOUT )
+        : areg::Component                 ( entry, owner )
+        , mLocalService             ( static_cast<areg::Component &>(self()) )
+        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self( )), PUBLIC_CLIENT_TIMEOUT )
+        , mLocServiceClient         ( entry.mDependencyServices[1], static_cast<areg::Component &>(self( )), LOCAL_CLIENT_TIMEOUT )
     {
     }
 
@@ -60,7 +60,7 @@ private:
 
 
 //!<\brief  A public service component
-class PublicServiceComponent : public Component
+class PublicServiceComponent : public areg::Component
 {
     static constexpr uint32_t   TIMEOUT_CONTROLLER_SERVICE_CLIENT   {   700 };
     static constexpr uint32_t   TIMEOUT_PUBLIC_SERVICE_CLIENT       { 1'000 };
@@ -70,12 +70,12 @@ class PublicServiceComponent : public Component
 public:
 
     PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-        : Component                 ( entry, owner )
-        , mPublicService            ( static_cast<Component &>(self()) )
-        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
-        , mPublicServiceClient      ( entry.mDependencyServices[1], static_cast<Component &>(self()), TIMEOUT_PUBLIC_SERVICE_CLIENT )
-        , mLocalServiceClient1      ( entry.mDependencyServices[2], static_cast<Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_1 )
-        , mLocalServiceClient2      ( entry.mDependencyServices[3], static_cast<Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_2 )
+        : areg::Component                 ( entry, owner )
+        , mPublicService            ( static_cast<areg::Component &>(self()) )
+        , mControllerServiceClient  ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
+        , mPublicServiceClient      ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()), TIMEOUT_PUBLIC_SERVICE_CLIENT )
+        , mLocalServiceClient1      ( entry.mDependencyServices[2], static_cast<areg::Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_1 )
+        , mLocalServiceClient2      ( entry.mDependencyServices[3], static_cast<areg::Component &>(self()), TIMEOUT_LOCAL_SERVICE_CLIENT_2 )
     {
     }
 

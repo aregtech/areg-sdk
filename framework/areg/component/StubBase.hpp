@@ -43,7 +43,7 @@ class RemoteRequestEvent;
 namespace areg { class ComponentThread; }
 class EventDataStream;
 namespace areg { class ResponseEvent; }
-class Component;
+namespace areg { class Component; }
 class RemoteEventFactory;
 
 namespace areg
@@ -213,7 +213,7 @@ namespace areg
          * \param   siData          The service interface data, containing service name
          *                          service version and service type
          **/
-        StubBase( Component & masterComp, const areg::InterfaceData & siData );
+        StubBase( areg::Component & masterComp, const areg::InterfaceData & siData );
 
         /**
          * \brief   Destructor.
@@ -279,7 +279,7 @@ namespace areg
          * \param   holder  The holder component of service interface of Stub,
          *                  which started up.
          **/
-        virtual void startupServiceInterface(Component& holder);
+        virtual void startupServiceInterface(areg::Component& holder);
 
         /**
          * \brief   This function is triggered by Component when shuts down.
@@ -287,7 +287,7 @@ namespace areg
          * \param   holder  The holder component of service interface of Stub,
          *                  which shuts down.
          **/
-        virtual void shutdownServiceInterface(Component& holder);
+        virtual void shutdownServiceInterface(areg::Component& holder);
 
     /************************************************************************/
     // StubBase overrides. 
@@ -657,7 +657,7 @@ namespace areg
         /**
          * \brief   Holder component object reference.
          **/
-        Component &                         mComponent;
+        areg::Component &                         mComponent;
 
         /**
          * \brief   Instance of Servicing interface data.

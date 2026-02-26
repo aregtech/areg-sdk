@@ -25,7 +25,7 @@
  *          thread and waits for input the command. If user inputs the command to quit,
  *          it changes the state of the service, so that all processes quit as well.
  **/
-class PubSubController  : public    Component
+class PubSubController  : public    areg::Component
                         , private   Publisher
                         , private   areg::ThreadConsumer
 {

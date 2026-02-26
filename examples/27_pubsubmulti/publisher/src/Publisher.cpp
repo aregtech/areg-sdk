@@ -77,8 +77,8 @@ const OptionParser::OptionSetup Publisher::ValidOptions[]
 //////////////////////////////////////////////////////////////////////////
 
 Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : Component         ( entry, owner )
-    , PubSubStub        ( static_cast<Component &>(self()) )
+    : areg::Component         ( entry, owner )
+    , PubSubStub        ( static_cast<areg::Component &>(self()) )
     , areg::TimerConsumer   ( )
     , areg::ThreadConsumer  ( )
 
@@ -99,14 +99,14 @@ Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread 
 
 void Publisher::startupComponent(areg::ComponentThread & comThread)
 {
-    Component::startupComponent(comThread);
+    areg::Component::startupComponent(comThread);
     mConsoleThread.createThread(areg::WAIT_INFINITE);
 }
 
 void Publisher::shutdownComponent(areg::ComponentThread & comThread)
 {
     mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
-    Component::shutdownComponent(comThread);
+    areg::Component::shutdownComponent(comThread);
 }
 
 bool Publisher::clientConnected(const ProxyAddress & client, areg::ServiceConnectionState status)

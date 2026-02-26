@@ -26,7 +26,7 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStartTraffi
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_responseStopTrafficLight);
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_PowerControllerClient_onThreadRuns);
 
-PowerControllerClient::PowerControllerClient(const char* roleName, Component & owner)
+PowerControllerClient::PowerControllerClient(const char* roleName, areg::Component & owner)
     : PowerManagerClientBase        (roleName, owner)
     , areg::ThreadConsumer              ( )
     , IEPowerControllerEventConsumer( )

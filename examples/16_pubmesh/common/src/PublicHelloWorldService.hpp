@@ -31,7 +31,7 @@ public:
      * \param   masterComp  The master component object, which is initializing service Stub.
      * \note    Before constructor is called, the instance of Component must be already initialized.
      **/
-    PublicHelloWorldService(Component & masterComp);
+    PublicHelloWorldService(areg::Component & masterComp);
 
     /**
      * \brief   Destructor.

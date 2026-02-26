@@ -21,8 +21,8 @@ DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : Component     ( entry, owner )
-    , HelloWorldStub( static_cast<Component &>(self()) )
+    : areg::Component     ( entry, owner )
+    , HelloWorldStub( static_cast<areg::Component &>(self()) )
     , mClientList   ( )
     , mRemainRequest( HelloWorld::MaxMessages )
 {

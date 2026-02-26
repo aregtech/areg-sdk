@@ -61,7 +61,7 @@ BEGIN_MESSAGE_MAP(PageConnections, CPropertyPage)
     ON_WM_DESTROY( )
 END_MESSAGE_MAP()
 
-void PageConnections::OnServiceStartup( bool /*isStarted*/, Component* /*owner*/)
+void PageConnections::OnServiceStartup( bool /*isStarted*/, areg::Component* /*owner*/)
 {
     // do nothing
 }

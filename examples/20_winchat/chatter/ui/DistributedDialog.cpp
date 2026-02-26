@@ -241,7 +241,7 @@ LRESULT DistributedDialog::OnCmdServiceStartup( WPARAM wParam, LPARAM lParam )
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceStartup);
     if ( (wParam == 1) && (lParam != 0))
     {
-        Component* owner = reinterpret_cast<Component*>(lParam);
+        areg::Component* owner = reinterpret_cast<areg::Component*>(lParam);
         LOG_DBG("Service has been start up, component [ %s ]", owner->getRoleName().getString());
         mPageSetup.OnServiceStartup( true, owner );
         mPageConnections.OnServiceStartup( true, owner );

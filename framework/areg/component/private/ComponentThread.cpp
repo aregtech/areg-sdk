@@ -36,13 +36,13 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Implement static methods
     //////////////////////////////////////////////////////////////////////////
-    Component* ComponentThread::getCurrentComponent()
+    areg::Component* ComponentThread::getCurrentComponent()
     {
         ComponentThread* comThread = ComponentThread::_getCurrentComponentThread();
         return (comThread != nullptr ? comThread->mCurrentComponent : nullptr);
     }
 
-    bool ComponentThread::setCurrentComponent( Component* curComponent )
+    bool ComponentThread::setCurrentComponent( areg::Component* curComponent )
     {
         ComponentThread* comThread = ComponentThread::_getCurrentComponentThread();
         if (comThread != nullptr)
@@ -107,7 +107,7 @@ namespace areg
                 const areg::ComponentEntry& entry = comList.mListComponents[i];
                 if (entry.isValid() && entry.mFuncCreate != nullptr)
                 {
-                    Component *comObj = Component::loadComponent(entry, self());
+                    areg::Component *comObj = areg::Component::loadComponent(entry, self());
                     if (comObj != nullptr)
                     {
                         mListComponent.pushLast(comObj);
@@ -124,14 +124,14 @@ namespace areg
     {
         while (mListComponent.isEmpty() == false)
         {
-            Component* comObj = nullptr;
+            areg::Component* comObj = nullptr;
             if (mListComponent.removeLast(comObj))
             {
                 ASSERT(comObj != nullptr);
                 const areg::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
                 if (entry.isValid() && entry.mFuncDelete != nullptr)
                 {
-                    Component::unloadComponent(*comObj, entry);
+                    areg::Component::unloadComponent(*comObj, entry);
                 }
                 else
                 {
@@ -146,7 +146,7 @@ namespace areg
         ListComponent::LISTPOS pos = mListComponent.lastPosition();
         while (mListComponent.isValidPosition(pos))
         {
-            Component* comObj = mListComponent.getPrev(pos);
+            areg::Component* comObj = mListComponent.getPrev(pos);
             ASSERT(comObj != nullptr);
             comObj->startupComponent(self());
         }
@@ -166,7 +166,7 @@ namespace areg
             ListComponent::LISTPOS pos = mListComponent.firstPosition();
             while (mListComponent.isValidPosition(pos) && (result == nullptr))
             {
-                Component* comObj = mListComponent.getNext(pos);
+                areg::Component* comObj = mListComponent.getNext(pos);
                 ASSERT(comObj != nullptr);
                 result = comObj->findEventConsumer(whichClass);
             }
@@ -185,7 +185,7 @@ namespace areg
 
         while (mListComponent.isEmpty() == false)
         {
-            Component* component{ nullptr };
+            areg::Component* component{ nullptr };
             mListComponent.removeLast(component);
             ASSERT(component != nullptr);
             component->terminateSelf();
@@ -222,7 +222,7 @@ namespace areg
         ListComponent::LISTPOS pos = mListComponent.firstPosition();
         while (mListComponent.isValidPosition(pos))
         {
-            Component* comObj = mListComponent.getNext(pos);
+            areg::Component* comObj = mListComponent.getNext(pos);
             ASSERT(comObj != nullptr);
             comObj->shutdownComponent(self());
         }
@@ -233,7 +233,7 @@ namespace areg
         ListComponent::LISTPOS pos = mListComponent.firstPosition( );
         while ( mListComponent.isValidPosition( pos ) )
         {
-            Component * comObj = mListComponent.getNext( pos );
+            areg::Component * comObj = mListComponent.getNext( pos );
             ASSERT( comObj != nullptr );
             comObj->notifyComponentShutdown( self( ) );
         }
@@ -246,7 +246,7 @@ namespace areg
         ListComponent::LISTPOS pos = mListComponent.firstPosition();
         while ( mListComponent.isValidPosition(pos) )
         {
-            Component* comObj = mListComponent.getNext(pos);
+            areg::Component* comObj = mListComponent.getNext(pos);
             ASSERT(comObj != nullptr);
             comObj->waitComponentCompletion(waitForCompleteMs);
         }

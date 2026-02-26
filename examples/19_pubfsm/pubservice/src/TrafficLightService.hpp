@@ -31,7 +31,7 @@
  *          It is designed to demonstrate the features and the use of FSM with the
  *          help of Areg framework.
  **/
-class TrafficLightService   : public    Component
+class TrafficLightService   : public    areg::Component
                             , protected PowerManagerStub
                             , protected TrafficControllerStub
                             , protected TrafficLightActionHandler

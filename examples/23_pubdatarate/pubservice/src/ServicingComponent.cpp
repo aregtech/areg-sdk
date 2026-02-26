@@ -51,8 +51,8 @@ void ServicingComponent::ServicingTimerConsumer::processTimer( areg::Timer & tim
 //////////////////////////////////////////////////////////////////////////
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : Component         ( entry, owner )
-    , LargeDataStub     ( static_cast<Component &>(self()) )
+    : areg::Component         ( entry, owner )
+    , LargeDataStub     ( static_cast<areg::Component &>(self()) )
     , areg::ThreadConsumer  ( )
 
     , mBitmap           ( )
@@ -81,7 +81,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
     mOptions.mFlags     = static_cast<uint32_t>(areg::OptionFlag::CmdStop);
 }
 
-void ServicingComponent::startupServiceInterface( Component & holder )
+void ServicingComponent::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_startupServiceInterface);
 
@@ -115,7 +115,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     LargeDataStub::startupServiceInterface(holder);
 }
 
-void ServicingComponent::shutdownServiceInterface(Component& holder)
+void ServicingComponent::shutdownServiceInterface(areg::Component& holder)
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_shutdownServiceIntrface);
 

@@ -20,7 +20,7 @@ DEF_LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestRegiste
 DEF_LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestUnregister );
 DEF_LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 
-PublicHelloWorldService::PublicHelloWorldService( Component & masterComp )
+PublicHelloWorldService::PublicHelloWorldService( areg::Component & masterComp )
     : PublicHelloWorldStub  ( masterComp )
     , mClientList           ( )
     , mNumMessages          ( 0 )

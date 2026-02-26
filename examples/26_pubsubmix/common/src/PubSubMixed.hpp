@@ -24,7 +24,7 @@
  *          application exit to complete the job and exit the process.
  *          In this example, this component is instantiated twice and run in 2 different threads.
  **/
-class PubSubMixed   : public Component
+class PubSubMixed   : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

@@ -34,7 +34,7 @@ public:
      * \param   roleName    The role name of the component.
      * \param   owner       The component owning thread.
      **/
-    ServiceClient( const areg::String & roleName, Component & owner );
+    ServiceClient( const areg::String & roleName, areg::Component & owner );
 
     virtual ~ServiceClient() = default;
 
@@ -99,7 +99,7 @@ private:
     /**
      * \brief   Generates unique timer name.
      **/
-    inline areg::String timerName( Component & owner ) const;
+    inline areg::String timerName( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

@@ -12,7 +12,7 @@
 #include <iostream>
 
 ClientComponent::ClientComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : Component             ( entry, owner )
+    : areg::Component             ( entry, owner )
     , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.getString(), owner )
 {
 }

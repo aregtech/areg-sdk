@@ -50,7 +50,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
         friend class DispatcherThread;
         friend class areg::ComponentThread;
-        friend class Component;
+        friend class areg::Component;
 
     //////////////////////////////////////////////////////////////////////////
     // Static members

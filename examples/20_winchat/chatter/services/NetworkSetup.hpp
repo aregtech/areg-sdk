@@ -1,13 +1,13 @@
 #pragma once
 #include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
 
-class Component;
+namespace areg { class Component; }
 class ConnectionHandler;
 
 class NetworkSetup :  public ConnectionManagerClientBase
 {
 public:
-    NetworkSetup( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
+    NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection );
     virtual ~NetworkSetup( ) = default;
 
     void DisconnectServicing();

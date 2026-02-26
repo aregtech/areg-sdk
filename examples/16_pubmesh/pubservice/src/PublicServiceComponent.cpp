@@ -19,10 +19,10 @@ DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHell
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
 
 PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-    : Component                 ( entry, owner )
-    , SystemShutdownStub        ( static_cast<Component &>(self()) )
-    , PublicHelloWorldService   ( static_cast<Component &>(self()) )
-    , mLocalClient              ( entry.mDependencyServices[0], static_cast<Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
+    : areg::Component                 ( entry, owner )
+    , SystemShutdownStub        ( static_cast<areg::Component &>(self()) )
+    , PublicHelloWorldService   ( static_cast<areg::Component &>(self()) )
+    , mLocalClient              ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
 {
     // initially set invalid that the connected clients ignore the value.
     SystemShutdownStub::invalidateServiceState( );
@@ -30,7 +30,7 @@ PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & ent
 
 void PublicServiceComponent::startupComponent( areg::ComponentThread & comThread )
 {
-    Component::startupComponent( comThread );
+    areg::Component::startupComponent( comThread );
 
     // Notify service is available and ready to operate.
     SystemShutdownStub::setServiceState( SystemShutdown::RunState::ServiceReady );

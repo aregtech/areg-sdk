@@ -19,7 +19,7 @@
  * \brief   Traffic light controller client, i.e. the lights.
  *          It receives the state of lights to display (output on console).
  **/
-class TrafficLightClient    : public    Component
+class TrafficLightClient    : public    areg::Component
                             , private   TrafficControllerClientBase
 {
 public:

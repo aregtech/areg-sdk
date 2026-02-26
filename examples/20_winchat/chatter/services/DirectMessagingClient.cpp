@@ -24,7 +24,7 @@ DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantJoined );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastParticipantLeft );
 DEF_LOG_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
 
-DirectMessagingClient::DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler* handlerParticipants )
+DirectMessagingClient::DirectMessagingClient( areg::Component & owner, const char * roleName, ChatPrticipantHandler* handlerParticipants )
     : DirectMessagerClientBase  ( roleName, owner )
     , mParticipantsHandler      ( handlerParticipants )
     , mJoinedChat               (false)

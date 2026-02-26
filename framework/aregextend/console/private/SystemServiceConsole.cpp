@@ -27,7 +27,7 @@
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
 SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-    : Component         ( entry, owner )
+    : areg::Component         ( entry, owner )
     , areg::StubBase          ( self( ), areg::getEmptyInterface( ) )
     , areg::TimerConsumer   ( )
 
@@ -36,7 +36,7 @@ SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg:
 {
 }
 
-void SystemServiceConsole::startupServiceInterface( Component & holder )
+void SystemServiceConsole::startupServiceInterface( areg::Component & holder )
 {
     areg::StubBase::startupServiceInterface( holder );
 
@@ -58,7 +58,7 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
     console.unlockConsole( );
 }
 
-void SystemServiceConsole::shutdownServiceInterface( Component & holder )
+void SystemServiceConsole::shutdownServiceInterface( areg::Component & holder )
 {
     mTimer.stopTimer( );
     areg::StubBase::shutdownServiceInterface( holder );

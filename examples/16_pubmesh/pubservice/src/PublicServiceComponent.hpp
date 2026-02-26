@@ -20,7 +20,7 @@
 
 //!<\ brief     The public service component, which controls
 //!             the service start and shutdown states.
-class PublicServiceComponent    : public    Component
+class PublicServiceComponent    : public    areg::Component
                                 , private   SystemShutdownStub
                                 , private   PublicHelloWorldService
 {

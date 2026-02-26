@@ -19,13 +19,13 @@
 #endif // _MSC_VER
 
 //!< Service Provider: ServiceProvider declaration
-class ServiceProvider   : public    Component
+class ServiceProvider   : public    areg::Component
                         , protected HelloServiceStub
 {
 public:
     ServiceProvider(const areg::ComponentEntry& entry, areg::ComponentThread& owner)
-        : Component(entry, owner)
-        , HelloServiceStub(static_cast<Component&>(self()))
+        : areg::Component(entry, owner)
+        , HelloServiceStub(static_cast<areg::Component&>(self()))
     {   }
 
     //!< The request method of the HelloService Interface
@@ -41,12 +41,12 @@ private:
 };
 
 //!< ServiceConsumer declaration
-class ServiceConsumer   : public    Component
+class ServiceConsumer   : public    areg::Component
                         , protected HelloServiceClientBase
 {
 public:
     ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
-		: Component             ( entry, owner )
+		: areg::Component             ( entry, owner )
 		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 

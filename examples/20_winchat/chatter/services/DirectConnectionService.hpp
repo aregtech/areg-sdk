@@ -11,7 +11,7 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
 
-class DirectConnectionService   : public Component
+class DirectConnectionService   : public areg::Component
                                 , public DirectConnectionStub
 {
 //////////////////////////////////////////////////////////////////////////

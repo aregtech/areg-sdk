@@ -41,9 +41,9 @@ namespace
 }
 
 ConnectionController::ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
-    : Component             ( entry, ownerThread )
-    , ConnectionManagerStub ( static_cast<Component &>(self()) )
-    , CentralMessagerStub   ( static_cast<Component &>(self()) )
+    : areg::Component             ( entry, ownerThread )
+    , ConnectionManagerStub ( static_cast<areg::Component &>(self()) )
+    , CentralMessagerStub   ( static_cast<areg::Component &>(self()) )
 
     , mWnd                  ( std::any_cast<HWND>(entry.getData()) )
     , mCookies              ( ConnectionManager::InvalidCookie )
@@ -57,7 +57,7 @@ ConnectionController::~ConnectionController()
     mWnd    =   0;
 }
 
-void ConnectionController::startupServiceInterface( Component & holder )
+void ConnectionController::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE( centralapp_ConnectionController_startupServiceInterface );
     ConnectionManagerStub::startupServiceInterface( holder );

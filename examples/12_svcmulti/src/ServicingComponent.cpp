@@ -20,7 +20,7 @@ DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_shutdownServiceIntrface);
 DEF_LOG_SCOPE(examples_12_svcmulti_ServicingComponent_processTimer);
 
 ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
-    : Component ( entry, ownerThread )
+    : areg::Component ( entry, ownerThread )
     , areg::StubBase  ( self(), areg::getEmptyInterface() )
 
     , mTimer    ( self(), entry.mRoleName )
@@ -28,7 +28,7 @@ ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg:
 {
 }
 
-void ServicingComponent::startupServiceInterface(Component & holder)
+void ServicingComponent::startupServiceInterface(areg::Component & holder)
 {
     LOG_SCOPE(examples_12_svcmulti_ServicingComponent_startupServiceInterface);
     LOG_INFO("The service [ %s ] of component [ %s ] has been started", areg::StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
@@ -39,7 +39,7 @@ void ServicingComponent::startupServiceInterface(Component & holder)
     printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
-void ServicingComponent::shutdownServiceInterface(Component & holder)
+void ServicingComponent::shutdownServiceInterface(areg::Component & holder)
 {
     LOG_SCOPE(examples_12_svcmulti_ServicingComponent_shutdownServiceIntrface);
     LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", areg::StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());

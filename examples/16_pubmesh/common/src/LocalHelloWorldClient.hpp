@@ -35,7 +35,7 @@ public:
      * \param   owner       The component owning thread.
      * \param   timeout The timeout in milliseconds to trigger the request to output message
      **/
-    LocalHelloWorldClient( const areg::DependencyEntry & dependency, Component & owner, uint32_t timeout );
+    LocalHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout );
 
     virtual ~LocalHelloWorldClient() = default;
 
@@ -85,7 +85,7 @@ private:
     }
 
     //!< Generated unique timer name.
-    inline areg::String timerName( Component & owner ) const;
+    inline areg::String timerName( areg::Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables

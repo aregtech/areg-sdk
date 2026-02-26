@@ -32,7 +32,7 @@ public:
      * \param   isMain      The flag indicating whether it is a main controller
      *                      that can trigger application shutdown or not.
      **/
-    ServiceHelloWorld( Component & masterComp, bool isMain );
+    ServiceHelloWorld( areg::Component & masterComp, bool isMain );
 
     /**
      * \brief   Destructor.

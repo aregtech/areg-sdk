@@ -31,7 +31,7 @@
  *          generated image data. It outputs the statistics of received
  *          data and item blocks.
  **/
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , protected LargeDataClientBase
                     , protected areg::TimerConsumer
 {

@@ -98,7 +98,7 @@ namespace areg
 
     inline void areg::StubEventConsumer::_localProcessRequestEvent( RequestEvent & requestEvent )
     {
-        Component *curComponent   = Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
+        areg::Component *curComponent   = areg::Component::findComponentByName(requestEvent.getTargetStub().getRoleName());
         areg::ComponentThread::setCurrentComponent(curComponent);
 
         if (areg::isRequestId(requestEvent.getRequestId()))
@@ -115,7 +115,7 @@ namespace areg
 
     inline void areg::StubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest )
     {
-        Component *curComponent   = Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
+        areg::Component *curComponent   = areg::Component::findComponentByName(notifyRequest.getTargetStub().getRoleName());
         areg::ComponentThread::setCurrentComponent(curComponent);
 
         uint32_t reqId = notifyRequest.getRequestId();

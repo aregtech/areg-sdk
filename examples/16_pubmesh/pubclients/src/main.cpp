@@ -28,7 +28,7 @@
 #endif // _MSC_VER
 
 //!<\brief   A local service component. It also contains service client object.
-class ServiceComponent : public Component
+class ServiceComponent : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -49,12 +49,12 @@ public:
      * \param   owner   The component owning thread.
      **/
     ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
-        : Component         ( entry.mRoleName, owner )
-        , mLocalService     ( static_cast<Component &>(self()) )
-        , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), ServiceComponent::MAIN_TIMEOUT   )
-        , mSecondClient     ( entry.mDependencyServices[1], static_cast<Component &>(self()), ServiceComponent::SECOND_TIMEOUT )
-        , mThirdClient      ( entry.mDependencyServices[2], static_cast<Component &>(self()), ServiceComponent::THIRD_TIMEOUT  )
-        , mLocalClient      ( entry.mDependencyServices[3], static_cast<Component &>(self()), ServiceComponent::LOCAL_TIMEOUT  )
+        : areg::Component         ( entry.mRoleName, owner )
+        , mLocalService     ( static_cast<areg::Component &>(self()) )
+        , mControllerClient ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), ServiceComponent::MAIN_TIMEOUT   )
+        , mSecondClient     ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()), ServiceComponent::SECOND_TIMEOUT )
+        , mThirdClient      ( entry.mDependencyServices[2], static_cast<areg::Component &>(self()), ServiceComponent::THIRD_TIMEOUT  )
+        , mLocalClient      ( entry.mDependencyServices[3], static_cast<areg::Component &>(self()), ServiceComponent::LOCAL_TIMEOUT  )
     {
     }
 private:

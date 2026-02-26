@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Component;
+namespace areg { class Component; }
 namespace areg { class ComponentThread; }
 namespace areg { class WorkerThreadConsumer; }
 
@@ -99,7 +99,7 @@ namespace areg
          *                              Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          **/
         WorkerThread( const areg::String & threadName
-                    , Component & bindingComponent
+                    , areg::Component & bindingComponent
                     , areg::WorkerThreadConsumer & threadConsumer
                     , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
                     , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
@@ -117,7 +117,7 @@ namespace areg
         /**
          * \brief   Returns Binding (master) component object
          **/
-        inline Component & getBindingComponent() const;
+        inline areg::Component & getBindingComponent() const;
 
         /**
          * \brief   Returns binding component thread object
@@ -198,7 +198,7 @@ namespace areg
         /**
          * \brief   Binding (master) component object
          **/
-        Component &               mBindingComponent;
+        areg::Component &               mBindingComponent;
 
         /**
          * \brief   Worker Thread Consumer object
@@ -231,9 +231,9 @@ namespace areg
     // WorkerThread class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline Component& WorkerThread::getBindingComponent() const
+    inline areg::Component& WorkerThread::getBindingComponent() const
     {
-        return static_cast<Component &>(mBindingComponent);
+        return static_cast<areg::Component &>(mBindingComponent);
     }
 
     inline WorkerThread& WorkerThread::self()

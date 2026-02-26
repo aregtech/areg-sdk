@@ -26,7 +26,7 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_broadcastService
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
 
-PublicHelloWorldClient::PublicHelloWorldClient( const areg::DependencyEntry & dependency, Component & owner, uint32_t timeout)
+PublicHelloWorldClient::PublicHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
     : PublicHelloWorldClientBase( dependency, owner )
     , SystemShutdownClientBase  ( mesh::PublicControllerService, owner )
     , areg::TimerConsumer             ( )
@@ -196,7 +196,7 @@ void PublicHelloWorldClient::processTimer(areg::Timer & timer)
     }
 }
 
-inline areg::String PublicHelloWorldClient::timerName( Component & owner ) const
+inline areg::String PublicHelloWorldClient::timerName( areg::Component & owner ) const
 {
     areg::String result;
     result.append("Public_")
