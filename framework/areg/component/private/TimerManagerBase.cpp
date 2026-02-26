@@ -27,7 +27,7 @@ TimerManagerBase::TimerManagerBase(const areg::String& threadName)
 {
 }
 
-bool TimerManagerBase::postEvent(Event& eventElem)
+bool TimerManagerBase::postEvent(areg::Event& eventElem)
 {
     return (AREG_RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }
@@ -44,8 +44,8 @@ bool TimerManagerBase::runDispatcher()
     do
     {
         whichEvent = multiLock.lock(areg::WAIT_INFINITE, false, true);
-        Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-        if (static_cast<const Event*>(eventElem) != static_cast<const Event*>(&exitEvent))
+        areg::Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+        if (static_cast<const areg::Event*>(eventElem) != static_cast<const areg::Event*>(&exitEvent))
         {
             if (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue))
             {

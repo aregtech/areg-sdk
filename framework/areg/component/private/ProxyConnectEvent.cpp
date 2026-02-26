@@ -31,7 +31,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const areg::S
     : areg::ServiceResponseEvent  ( target
                             , areg::ResultType::DataOK
                             , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
-                            , Event::EventType::EventLocalProxyConnect )
+                            , areg::Event::EventType::EventLocalProxyConnect )
     , mStubAddress          ( implAddress )
     , mConnectionStatus     ( connectStatus )
 {

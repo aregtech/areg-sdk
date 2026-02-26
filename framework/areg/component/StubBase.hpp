@@ -426,7 +426,7 @@ namespace areg
         /**
          * \brief   Triggered to process generic event. Usually is not triggered.
          **/
-        void processGenericEvent(Event & eventElem) override;
+        void processGenericEvent(areg::Event & eventElem) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes and operations. Protected.

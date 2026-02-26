@@ -35,7 +35,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // StubEvent class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    StubEvent::StubEvent( const areg::StubAddress& toTarget, Event::EventType eventType )
+    StubEvent::StubEvent( const areg::StubAddress& toTarget, areg::Event::EventType eventType )
         : areg::StreamableEvent   (eventType)
         , mTargetStubAddress(toTarget)
     {
@@ -153,7 +153,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // StubEventConsumer class, methods
     //////////////////////////////////////////////////////////////////////////
-    void areg::StubEventConsumer::startEventProcessing( Event & eventElem )
+    void areg::StubEventConsumer::startEventProcessing( areg::Event & eventElem )
     {
         mCurEvent = &eventElem;
         StubEvent* stubEvent = AREG_RUNTIME_CAST(&eventElem, StubEvent);

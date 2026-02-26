@@ -24,7 +24,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
+namespace areg { class Event; }
 
 namespace areg
 {
@@ -70,7 +70,7 @@ namespace areg
          *                      processing. As soon as event is finished processing
          *                      it will be destroyed.
          **/
-        virtual void startEventProcessing( Event & eventElem ) = 0;
+        virtual void startEventProcessing( areg::Event & eventElem ) = 0;
 
         /**
          * \brief   Triggered, when consumer has been registered / unregistered.
@@ -88,7 +88,7 @@ namespace areg
          *          Returns false if Event processing should be interrupted and
          *          the Event object should be dropped.
          **/
-        virtual bool preprocessEvent( Event & eventElem );
+        virtual bool preprocessEvent( areg::Event & eventElem );
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden method calls.

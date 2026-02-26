@@ -29,7 +29,7 @@ namespace areg
     {
     }
 
-    bool EventConsumer::preprocessEvent( Event & /* eventElem */ )
+    bool EventConsumer::preprocessEvent( areg::Event & /* eventElem */ )
     {
         return true;
     }

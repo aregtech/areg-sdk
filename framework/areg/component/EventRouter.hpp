@@ -23,7 +23,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
+namespace areg { class Event; }
 
 //////////////////////////////////////////////////////////////////////////
 // EventRouter class declarations
@@ -59,7 +59,7 @@ public:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    virtual bool postEvent( Event & eventElem ) = 0;
+    virtual bool postEvent( areg::Event & eventElem ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

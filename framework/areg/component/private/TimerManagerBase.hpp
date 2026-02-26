@@ -70,7 +70,7 @@ protected:
      * \return	Returns true if target was found and the event
      *          delivered with success. Otherwise it returns false.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool postEvent( areg::Event & eventElem ) override;
 
     /**
      * \brief	Triggered when dispatcher starts running. 

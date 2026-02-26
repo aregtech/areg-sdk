@@ -312,7 +312,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool postEvent( areg::Event & eventElem ) override;
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -418,7 +418,7 @@ private:
      * \brief   Sends log event with the preferred priority.
      *          By default, it the priority is Normal.
      **/
-    void sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
+    void sendLogEvent( const LoggingEventData & data, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Changes the scope priority. It can be either a single scope or scope group.

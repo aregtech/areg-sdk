@@ -34,7 +34,7 @@ namespace areg
                                             , const areg::StubAddress  & target
                                             , uint32_t reqId
                                             , areg::RequestType reqType
-                                            , Event::EventType eventType)
+                                            , areg::Event::EventType eventType)
         : areg::StubEvent     (target, eventType)
         , mProxySource  (proxyAddress)
         , mMessageId    (reqId)

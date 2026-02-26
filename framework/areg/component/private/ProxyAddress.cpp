@@ -194,15 +194,15 @@ void ProxyAddress::setThread( const areg::String & threadName )
 
 bool ProxyAddress::deliverServiceEvent(areg::ServiceRequestEvent & stubEvent) const
 {
-    return ProxyAddress::_deliverEvent( static_cast<Event &>(stubEvent), mChannel.getTarget());
+    return ProxyAddress::_deliverEvent( static_cast<areg::Event &>(stubEvent), mChannel.getTarget());
 }
 
 bool ProxyAddress::deliverServiceEvent(areg::ServiceResponseEvent & proxyEvent) const
 {
-    return ProxyAddress::_deliverEvent( static_cast<Event &>(proxyEvent), mChannel.getSource());
+    return ProxyAddress::_deliverEvent( static_cast<areg::Event &>(proxyEvent), mChannel.getSource());
 }
 
-bool ProxyAddress::_deliverEvent(Event & serviceEvent, const ITEM_ID & idTarget)
+bool ProxyAddress::_deliverEvent(areg::Event & serviceEvent, const ITEM_ID & idTarget)
 {
     bool result{ false };
     areg::Thread* thread = idTarget != areg::TARGET_UNKNOWN ? areg::Thread::findThreadById(static_cast<id_type>(idTarget)) : nullptr;

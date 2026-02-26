@@ -84,7 +84,7 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, areg::Event)
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
@@ -96,7 +96,7 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, Notificati
     {
         if (caller != nullptr)
             eventElem->setEventConsumer(static_cast<areg::EventConsumer *>(caller));
-        static_cast<Event *>(eventElem)->deliverEvent();
+        static_cast<areg::Event *>(eventElem)->deliverEvent();
     }
 }
 
@@ -104,7 +104,7 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, Notificati
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : Event (Event::EventType::EventNotifyClient)
+    : areg::Event (areg::Event::EventType::EventNotifyClient)
     , mData (data)
 {
     setTargetThread();
@@ -128,7 +128,7 @@ void NotificationEvent::setTargetThread()
 //////////////////////////////////////////////////////////////////////////
 // NotificationConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-void NotificationConsumer::startEventProcessing( Event& eventElem )
+void NotificationConsumer::startEventProcessing( areg::Event& eventElem )
 {
     NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
     if (eventNotify != nullptr)

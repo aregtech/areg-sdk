@@ -363,12 +363,12 @@ void LogManager::writeLogMessage( const areg::LogEntry & logMessage )
     }
 }
 
-bool LogManager::postEvent(Event & eventElem)
+bool LogManager::postEvent(areg::Event & eventElem)
 {
     return EventDispatcher::postEvent(eventElem);
 }
 
-inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline void LogManager::sendLogEvent( const LoggingEventData & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )), eventPrio );
 }

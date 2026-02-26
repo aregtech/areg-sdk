@@ -201,7 +201,7 @@ private:
  *          The state-machines as well use internal notification events
  *          when generate event to trigger in state-machine.
  **/
-class AREG_API NotificationEvent   : public Event
+class AREG_API NotificationEvent   : public areg::Event
 {
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, Declare Runtime Event
@@ -335,7 +335,7 @@ private:
      *          This function is filtering out notification events
      *          and triggers notification event processing function.
      **/
-    void startEventProcessing( Event & eventElem ) override;
+    void startEventProcessing( areg::Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls

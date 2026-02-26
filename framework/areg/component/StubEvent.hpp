@@ -102,7 +102,7 @@ namespace areg
          * \param	toTarget    The address of target Stub
          * \param	eventType   The type of event.
          **/
-        StubEvent(const areg::StubAddress & toTarget, Event::EventType eventType );
+        StubEvent(const areg::StubAddress & toTarget, areg::Event::EventType eventType );
 
         /**
          * \brief   Destructor.
@@ -197,7 +197,7 @@ namespace areg
         /**
          * \brief   Returns the pointer to the currently processing event object.
          **/
-        inline const Event* getCurrentEvent() const;
+        inline const areg::Event* getCurrentEvent() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides, event processing functions.
@@ -234,7 +234,7 @@ namespace areg
          *          should be processed
          * \param	eventElem	Generic Event object to process.
          **/
-        virtual void processGenericEvent( Event & eventElem ) = 0;
+        virtual void processGenericEvent( areg::Event & eventElem ) = 0;
 
         /**
          * \brief   Triggered by system when stub is registered in service. The connection status indicated
@@ -265,7 +265,7 @@ namespace areg
          *          dispatcher.
          * \param   eventElem   Event object to start processing.
          **/
-        void startEventProcessing( Event & eventElem ) override;
+        void startEventProcessing( areg::Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden operations
@@ -294,7 +294,7 @@ namespace areg
         //!< The address of stub object, which is handling consumer.
         const areg::StubAddress & mStubAddress;
         //!< The pointer to the currently processing event object.
-        Event *             mCurEvent;
+        areg::Event *             mCurEvent;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -317,7 +317,7 @@ namespace areg
         return mTargetStubAddress;
     }
 
-    inline const Event* StubEventConsumer::getCurrentEvent() const
+    inline const areg::Event* StubEventConsumer::getCurrentEvent() const
     {
         return mCurEvent;
     }

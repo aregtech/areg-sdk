@@ -583,7 +583,7 @@ namespace areg
     {
     }
 
-    void StubBase::processGenericEvent(Event & /* eventElem */)
+    void StubBase::processGenericEvent(areg::Event & /* eventElem */)
     {
     }
 

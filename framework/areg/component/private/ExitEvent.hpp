@@ -25,7 +25,7 @@
  *          The exit event is a singleton object, which is shared by more than thread.
  *          Normally, used to exit thread.
  **/
-class ExitEvent : public Event
+class ExitEvent : public areg::Event
 {
 //////////////////////////////////////////////////////////////////////////
 // Declare Event runtime information.

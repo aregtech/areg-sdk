@@ -174,7 +174,7 @@ protected:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool postEvent( areg::Event & eventElem ) override;
 
 /************************************************************************/
 // RemoteEventConsumer interface overrides

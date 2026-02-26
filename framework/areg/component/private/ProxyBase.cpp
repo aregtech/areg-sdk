@@ -136,10 +136,10 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 // ProxyBase::ServiceAvailableEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, areg::Event)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & consumer )
-    : Event             ( Event::EventType::EventExternal )
+    : areg::Event             ( areg::Event::EventType::EventExternal )
     , mNotifyConsumer   ( consumer )
     , mDelayConnectEvent( 0 )
 {
@@ -551,7 +551,7 @@ void ProxyBase::sendNotificationEvent( uint32_t msgId, areg::ResultType resType,
             eventElem->setEventConsumer(static_cast<areg::EventConsumer *>(caller));
         }
 
-        static_cast<Event *>(eventElem)->deliverEvent();
+        static_cast<areg::Event *>(eventElem)->deliverEvent();
     }
 }
 
@@ -566,7 +566,7 @@ void ProxyBase::processProxyEvent( ProxyEvent& /*eventElem*/ )
 }
 #endif  // DEBUG
 
-void ProxyBase::processGenericEvent( Event& eventElem )
+void ProxyBase::processGenericEvent( areg::Event& eventElem )
 {
     ProxyBase::ServiceAvailableEvent * serviceEvent = AREG_RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
     if ( serviceEvent != nullptr )

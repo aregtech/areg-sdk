@@ -328,14 +328,14 @@ protected:
      * \param   cmd         The command to send and process.
      * \param   eventPrio   The priority of the event. By default, the priority is normal.
      */
-    inline void sendCommand(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline void sendCommand(ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Queues the message for sending
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool sendMessage(const areg::RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool sendMessage(const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Called to start client socket connection. Returns true if connected.
@@ -362,7 +362,7 @@ protected:
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
      * \param   eventPrio   The priority of set to the event.
      **/
-    inline void disconnectService( Event::EventPriority eventPrio );
+    inline void disconnectService( areg::Event::EventPriority eventPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -567,7 +567,7 @@ inline ServiceClientConnectionBase::ConnectionPhase ServiceClientConnectionBase:
 }
 
 inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::ServiceCommand cmd
-                                                    , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+                                                    , areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     ServiceClientEvent::sendEvent( ServiceEventData( cmd )
                                  , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
@@ -575,7 +575,7 @@ inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::ServiceC
                                  , eventPrio );
 }
 
-inline bool ServiceClientConnectionBase::sendMessage(const areg::RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceClientConnectionBase::sendMessage(const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData(data)
                                       , static_cast<SendMessageEventConsumer &>(mThreadSend)
@@ -583,7 +583,7 @@ inline bool ServiceClientConnectionBase::sendMessage(const areg::RemoteMessage &
                                       , eventPrio);
 }
 
-inline void ServiceClientConnectionBase::disconnectService( Event::EventPriority eventPrio )
+inline void ServiceClientConnectionBase::disconnectService( areg::Event::EventPriority eventPrio )
 {
     SendMessageEvent::sendEvent( SendMessageEventData()
                                , static_cast<SendMessageEventConsumer &>(mThreadSend)

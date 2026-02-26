@@ -30,7 +30,7 @@ AREG_IMPLEMENT_RUNTIME(TimerEvent, TimerEventBase)
 // TimerEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 TimerEvent::TimerEvent( const TimerEventData & data )
-    : TimerEventBase(Event::EventType::EventCustomExternal, data)
+    : TimerEventBase(areg::Event::EventType::EventCustomExternal, data)
 {
     if (mData.mTimer != nullptr)
     {
@@ -39,13 +39,13 @@ TimerEvent::TimerEvent( const TimerEventData & data )
 }
 
 TimerEvent::TimerEvent( areg::Timer &timer )
-    : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
+    : TimerEventBase(areg::Event::EventType::EventCustomExternal, TimerEventData(timer))
 {
     timer._queueTimer();
 }
 
 TimerEvent::TimerEvent(areg::Timer & timer, areg::DispatcherThread & target)
-    : TimerEventBase(Event::EventType::EventCustomExternal, TimerEventData(timer))
+    : TimerEventBase(areg::Event::EventType::EventCustomExternal, TimerEventData(timer))
 {
     ASSERT(target.isRunning());
 
@@ -79,7 +79,7 @@ bool TimerEvent::sendEvent(areg::Timer & timer, areg::DispatcherThread & dispatc
         TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);
         if (timerEvent != nullptr)
         {
-            static_cast<Event *>(timerEvent)->deliverEvent();
+            static_cast<areg::Event *>(timerEvent)->deliverEvent();
             result = true;
         }
     }

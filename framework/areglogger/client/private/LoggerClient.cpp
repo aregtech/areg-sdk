@@ -427,7 +427,7 @@ void LoggerClient::onSetupConfiguration( const areg::ListProperties&  /* listRea
 {
 }
 
-bool LoggerClient::postEvent(Event& eventElem)
+bool LoggerClient::postEvent(areg::Event& eventElem)
 {
     return EventDispatcher::postEvent(eventElem);
 }

@@ -40,7 +40,7 @@ namespace areg
      *          created and used directly. Instead, one of derived classes
      *          should be used.
      **/
-    class AREG_API StreamableEvent : public Event
+    class AREG_API StreamableEvent : public areg::Event
     {
     //////////////////////////////////////////////////////////////////////////
     // friend classes
@@ -59,7 +59,7 @@ namespace areg
          * \brief   Creates streamable event and defines event type.
          * \param   eventType   The type of event.
          **/
-        explicit StreamableEvent( Event::EventType eventType );
+        explicit StreamableEvent( areg::Event::EventType eventType );
 
         /**
          * \brief   Creates streamable event and initialize data

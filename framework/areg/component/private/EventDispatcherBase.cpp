@@ -48,9 +48,9 @@ EventDispatcherBase::~EventDispatcherBase()
 // EventDispatcherBase class, methods
 //////////////////////////////////////////////////////////////////////////
 
-bool EventDispatcherBase::isExitEvent( const Event * anEvent ) const
+bool EventDispatcherBase::isExitEvent( const areg::Event * anEvent ) const
 {
-    return (anEvent == static_cast<const Event *>(&ExitEvent::getExitEvent( )));
+    return (anEvent == static_cast<const areg::Event *>(&ExitEvent::getExitEvent( )));
 }
 
 void EventDispatcherBase::signalEvent( uint32_t eventCount )
@@ -98,18 +98,18 @@ void EventDispatcherBase::shutdownDispatcher()
     mExternalEvents.unlockQueue( );
 }
 
-bool EventDispatcherBase::queueEvent( Event& eventElem )
+bool EventDispatcherBase::queueEvent( areg::Event& eventElem )
 {
     bool result{ false };
     if ( mHasStarted )
     {
-        Event::EventType eventType = eventElem.getEventType();
-        if (Event::isInternal(eventType))
+        areg::Event::EventType eventType = eventElem.getEventType();
+        if (areg::Event::isInternal(eventType))
         {
             mInternalEvents.pushEvent(eventElem, nullptr);
             result = true;
         }
-        else if (Event::isExternal(eventType))
+        else if (areg::Event::isExternal(eventType))
         {
             mExternalEvents.pushEvent(eventElem, nullptr);
             result = true;
@@ -216,8 +216,8 @@ bool EventDispatcherBase::runDispatcher()
     do 
     {
         whichEvent = multiLock.lock(areg::WAIT_INFINITE, false);
-        Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-        if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
+        areg::Event* eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+        if ( static_cast<const areg::Event *>(eventElem) != static_cast<const areg::Event *>(&exitEvent) )
         {
             if ( whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
             {
@@ -271,17 +271,17 @@ void EventDispatcherBase::readyForEvents( bool isReady )
     mExternalEvents.unlockQueue( );
 }
 
-Event* EventDispatcherBase::pickEvent()
+areg::Event* EventDispatcherBase::pickEvent()
 {
     return mExternalEvents.popEvent();
 }
 
-bool EventDispatcherBase::prepareDispatchEvent( Event* eventElem )
+bool EventDispatcherBase::prepareDispatchEvent( areg::Event* eventElem )
 {
     return (eventElem != nullptr);
 }
 
-void EventDispatcherBase::postDispatchEvent( Event* eventElem )
+void EventDispatcherBase::postDispatchEvent( areg::Event* eventElem )
 {
     if (eventElem != nullptr)
     {
@@ -289,7 +289,7 @@ void EventDispatcherBase::postDispatchEvent( Event* eventElem )
     }
 }
 
-bool EventDispatcherBase::dispatchEvent( Event& eventElem )
+bool EventDispatcherBase::dispatchEvent( areg::Event& eventElem )
 {
     EventConsumerList processingList;
     areg::EventConsumer* consumer = eventElem.getEventConsumer();

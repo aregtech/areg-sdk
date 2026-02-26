@@ -330,7 +330,7 @@ protected:
      *          This event is used to be able to notify client within component
      *          thread context even if client was instantiated in other thread.
      **/
-    class AREG_API ServiceAvailableEvent   : public Event
+    class AREG_API ServiceAvailableEvent   : public areg::Event
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime internals
@@ -722,7 +722,7 @@ protected:
      *          Proxy Event and should be processed by Proxy object.
      * \param   eventElem   Event object to process.
      **/
-    void processGenericEvent( Event & eventElem ) override;
+    void processGenericEvent( areg::Event & eventElem ) override;
 
     /**
      * \brief   Triggered, when received server connection status changed.
@@ -1189,12 +1189,12 @@ inline void ProxyBase::removeListener( uint32_t msgId, const SequenceNumber & se
 
 inline void ProxyBase::registerForEvent( const areg::RuntimeClassID & eventClass )
 {
-    Event::addListener( eventClass, static_cast<areg::EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
+    areg::Event::addListener( eventClass, static_cast<areg::EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
 inline void ProxyBase::unregisterForEvent( const areg::RuntimeClassID & eventClass )
 {
-    Event::removeListener( eventClass, static_cast<areg::EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
+    areg::Event::removeListener( eventClass, static_cast<areg::EventConsumer &>(self( )), mProxyAddress.getThread( ).getString( ) );
 }
 
 inline void ProxyBase::setState( uint32_t msgId, areg::DataState newState )

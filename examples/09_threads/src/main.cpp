@@ -109,7 +109,7 @@ protected:
 /************************************************************************/
 // EventRouter interface overrides
 /************************************************************************/
-    bool dispatchEvent(Event & eventElem) override
+    bool dispatchEvent(areg::Event & eventElem) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
         LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().getString());
@@ -119,7 +119,7 @@ protected:
         return true; // prevent processTimer()
     }
 
-    virtual bool postEvent( Event & eventElem ) override
+    virtual bool postEvent( areg::Event & eventElem ) override
     {
         return EventDispatcher::postEvent( eventElem );
     }

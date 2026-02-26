@@ -172,7 +172,7 @@ void ServiceCommunicationBase::disconnectServiceHost()
     LOG_SCOPE(areg_aregextend_service_ServiceCommunicatonBase_disconnectServiceHost);
     if ( isRunning() )
     {
-        sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceExit, Event::EventPriority::HighPrio );
+        sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceExit, areg::Event::EventPriority::HighPrio );
         mEventSendStop.lock();
     }
 }
@@ -226,7 +226,7 @@ void ServiceCommunicationBase::connectionLost( areg::SocketAccepted & clientSock
     {
         removeInstance(cookie);
         areg::RemoteMessage msgDisconnect = areg::createDisconnectRequest(cookie, channel);
-        sendCommunicationMessage(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, Event::EventPriority::NormalPrio);
+        sendCommunicationMessage(ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg, msgDisconnect, areg::Event::EventPriority::NormalPrio);
     }
 
     mServerConnection.closeConnection(clientSocket);
@@ -352,7 +352,7 @@ void ServiceCommunicationBase::stopConnection()
     mThreadReceive.triggerExit();
 
     disconnectServices( );
-    disconnectService( Event::EventPriority::NormalPrio );
+    disconnectService( areg::Event::EventPriority::NormalPrio );
 
     // Wait without triggering exit.
     mThreadSend.completionWait( areg::WAIT_INFINITE );
@@ -498,7 +498,7 @@ void ServiceCommunicationBase::readyForEvents( bool isReady )
     }
 }
 
-bool ServiceCommunicationBase::postEvent( Event & eventElem )
+bool ServiceCommunicationBase::postEvent( areg::Event & eventElem )
 {
     return EventDispatcher::postEvent( eventElem );
 }

@@ -33,7 +33,7 @@ AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, areg::StreamableEvent)
 //////////////////////////////////////////////////////////////////////////
 // ProxyEvent class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType )
+ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, areg::Event::EventType eventType )
     : areg::StreamableEvent       (eventType)
     , mTargetProxyAddress   (targetProxy)
 {
@@ -131,7 +131,7 @@ inline void ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & e
     }
 }
 
-void ProxyEventConsumer::startEventProcessing( Event & eventElem )
+void ProxyEventConsumer::startEventProcessing( areg::Event & eventElem )
 {
     ProxyEvent * proxyEvent = AREG_RUNTIME_CAST(&eventElem, ProxyEvent);
     if ( proxyEvent != nullptr )

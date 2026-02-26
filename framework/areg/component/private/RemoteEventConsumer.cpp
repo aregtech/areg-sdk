@@ -17,9 +17,9 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 
-void RemoteEventConsumer::startEventProcessing(Event & eventElem)
+void RemoteEventConsumer::startEventProcessing(areg::Event & eventElem)
 {
-    if ( Event::isRemote(eventElem.getEventType()) )
+    if ( areg::Event::isRemote(eventElem.getEventType()) )
     {
         RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
         if ( requestEvent != nullptr )

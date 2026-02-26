@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
+namespace areg { class Event; }
 namespace areg { class RuntimeClassID; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ public:
      *                              and the parameter is not nullptr, it will return 
      *                              the removed Event object.
      **/
-    void pushEvent( Event & evendElem, Event** removedEvent);
+    void pushEvent( areg::Event & evendElem, areg::Event** removedEvent);
 
     /**
      * \brief   Pops Event object from Queue and notifies Event Listener if
@@ -102,7 +102,7 @@ public:
      *          If Queue was not empty, it will return valid pointer.
      *          If Queue was empty, it will return nullptr.
      **/
-    Event * popEvent();
+    areg::Event * popEvent();
 
     /**
      * \brief   Removes all Event elements from the Queue and if keepSpecials is true,

@@ -78,7 +78,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Methods
     //////////////////////////////////////////////////////////////////////////
-    bool ComponentThread::postEvent( Event& eventElem )
+    bool ComponentThread::postEvent( areg::Event& eventElem )
     {
         return EventDispatcher::postEvent(eventElem);
     }
@@ -262,7 +262,7 @@ namespace areg
         return areg::DispatcherThread::onThreadExit( );
     }
 
-    bool ComponentThread::dispatchEvent(Event& eventElem)
+    bool ComponentThread::dispatchEvent(areg::Event& eventElem)
     {
         mWatchdog.startGuard();
         bool result = areg::DispatcherThread::dispatchEvent(eventElem);

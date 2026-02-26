@@ -86,7 +86,7 @@ protected:
     RequestEvent( const ProxyAddress & fromSource
                 , const areg::StubAddress & toTarget
                 , uint32_t reqId
-                , Event::EventType eventType);
+                , areg::Event::EventType eventType);
 
     /**
      * \brief	Creates event with data. Initializes event source, target information,  and message ID.
@@ -103,7 +103,7 @@ protected:
                 , const ProxyAddress & fromSource
                 , const areg::StubAddress & toTarget
                 , uint32_t reqId
-                , Event::EventType eventType
+                , areg::Event::EventType eventType
                 , const areg::String & name = areg::String::getEmptyString());
 
     /**
@@ -376,7 +376,7 @@ protected:
                       , const areg::StubAddress & toStub
                       , uint32_t msgId
                       , areg::RequestType reqType
-                      , Event::EventType eventType );
+                      , areg::Event::EventType eventType );
 
     /**
      * \brief   Initializes object data from streaming object.

@@ -145,7 +145,7 @@ public:
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool sendMessage(const areg::RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool sendMessage(const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
@@ -427,7 +427,7 @@ public:
      * \param   eventPrio   The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommand(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
+    inline bool sendCommand(ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio);
 
     /**
      * \brief   Call to send the event to process.
@@ -435,13 +435,13 @@ public:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommunicationMessage(ServiceEventData::ServiceCommand cmd, const areg::RemoteMessage & msg, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
+    inline bool sendCommunicationMessage(ServiceEventData::ServiceCommand cmd, const areg::RemoteMessage & msg, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
 
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
      * \param   eventPrio   The priority of set to the event.
      **/
-    inline void disconnectService( Event::EventPriority eventPrio );
+    inline void disconnectService( areg::Event::EventPriority eventPrio );
 
 /************************************************************************/
 // DispatcherThread overrides
@@ -467,7 +467,7 @@ public:
      * \param	eventElem	Event object to post
      * \return	In this class it always returns true.
      **/
-    bool postEvent( Event & eventElem ) override;
+    bool postEvent( areg::Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -559,7 +559,7 @@ inline void ServiceCommunicationBase::waitToComplete( )
     shutdownThread( areg::DO_NOT_WAIT );
 }
 
-inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -569,7 +569,7 @@ inline bool ServiceCommunicationBase::sendCommand( ServiceEventData::ServiceComm
 
 inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData::ServiceCommand cmd
                                                                 , const areg::RemoteMessage & msg
-                                                                , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+                                                                , areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return ServiceServerEvent::sendEvent( ServiceEventData( cmd, msg )
                                           , static_cast<ServiceServerEventConsumer &>(mEventConsumer)
@@ -577,7 +577,7 @@ inline bool ServiceCommunicationBase::sendCommunicationMessage( ServiceEventData
                                           , eventPrio );
 }
 
-inline bool ServiceCommunicationBase::sendMessage( const areg::RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+inline bool ServiceCommunicationBase::sendMessage( const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData( data )
                                         , static_cast<SendMessageEventConsumer &>(mThreadSend)
@@ -610,7 +610,7 @@ inline bool ServiceCommunicationBase::isCalculateDataRateEnabled() const
     return mDataRateHelper.isVerbose();
 }
 
-inline void ServiceCommunicationBase::disconnectService( Event::EventPriority eventPrio )
+inline void ServiceCommunicationBase::disconnectService( areg::Event::EventPriority eventPrio )
 {
     SendMessageEvent::sendEvent( SendMessageEventData( )
                                  , static_cast<SendMessageEventConsumer &>(mThreadSend)

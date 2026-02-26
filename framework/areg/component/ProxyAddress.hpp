@@ -32,7 +32,7 @@
  ************************************************************************/
 namespace areg { class InStream; }
 namespace areg { class StubAddress; }
-class Event;
+namespace areg { class Event; }
 namespace areg { class ServiceRequestEvent; }
 namespace areg { class ServiceResponseEvent; }
 
@@ -362,7 +362,7 @@ private:
      * \param   serviceEvent    The service event to deliver
      * \param   idTarget        The ID of target service to deliver event
      **/
-    static bool _deliverEvent( Event & serviceEvent, const ITEM_ID & idTarget );
+    static bool _deliverEvent( areg::Event & serviceEvent, const ITEM_ID & idTarget );
 
     /**
      * \brief   Returns the calculated hash-key value of specified proxy address object.

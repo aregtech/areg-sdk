@@ -118,7 +118,7 @@ public:
      * \return  Returns true, if Event was queued. Otherwise, it was not queued
      *          and the object should be deleted.
      **/
-    virtual bool queueEvent(Event& eventElem);
+    virtual bool queueEvent(areg::Event& eventElem);
 
     /**
      * \brief   Call to register specified event consumer for the specified
@@ -205,7 +205,7 @@ public:
      * \param   anEvent     A pointer to the event object to check.
      * \return  Returns true, if dispatcher should complete the job and exit the thread.
      **/
-    bool isExitEvent( const Event * anEvent ) const;
+    bool isExitEvent( const areg::Event * anEvent ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected overrides
@@ -236,7 +236,7 @@ protected:
      * \return	Returns true if at least one consumer processed event.
      *          Otherwise it returns false.
      **/
-    virtual bool dispatchEvent( Event & eventElem );
+    virtual bool dispatchEvent( areg::Event & eventElem );
     /**
      * \brief   The method is triggered after picking up event from event queue.
      *          Before starting dispatching, this function is called and if it
@@ -245,7 +245,7 @@ protected:
      * \return  Return true if event should be forwarded for dispatching.
      *          Return false if event should be ignored / dropped.
      **/
-    virtual bool prepareDispatchEvent( Event * eventElem );
+    virtual bool prepareDispatchEvent( areg::Event * eventElem );
     /**
      * \brief	All events after being processed are forwarded
      *          to this method. All cleanup operations should be provided
@@ -253,7 +253,7 @@ protected:
      * \param	eventElem	Pointer to Event element, which has been finished
      *                      to be dispatched.
      **/
-    virtual void postDispatchEvent( Event * eventElem );
+    virtual void postDispatchEvent( areg::Event * eventElem );
 
     /**
      * \brief	Triggered when dispatcher starts running. 
@@ -275,7 +275,7 @@ protected:
      *          and forwards to be dispatched.
      * \return	Return pointer to event element to be dispatched.
      **/
-    virtual Event * pickEvent();
+    virtual areg::Event * pickEvent();
 
     /**
      * \brief   Call if need to set exit event in the dispatcher

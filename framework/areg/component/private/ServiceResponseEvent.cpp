@@ -22,7 +22,7 @@ namespace areg
     ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                             , areg::ResultType result
                                             , uint32_t responseId
-                                            , Event::EventType eventType
+                                            , areg::Event::EventType eventType
                                             , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
         : ProxyEvent    (target, eventType)
         , mResponseId   (responseId)

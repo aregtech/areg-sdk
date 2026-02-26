@@ -120,7 +120,7 @@ bool RouterClient::registerServiceProvider( const areg::StubAddress & stubServic
                    , areg::StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage(areg::createRouterRegisterService(stubService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), Event::EventPriority::HighPrio );
+        result = sendMessage(areg::createRouterRegisterService(stubService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), areg::Event::EventPriority::HighPrio );
     }
 
     return result;
@@ -152,7 +152,7 @@ bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage(areg::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), Event::EventPriority::HighPrio);
+        result = sendMessage(areg::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), areg::COOKIE_ROUTER), areg::Event::EventPriority::HighPrio);
     }
 
     return result;
@@ -202,7 +202,7 @@ void RouterClient::failedSendMessage(const areg::RemoteMessage & msgFailed, areg
             {
                 LOG_DBG("Trying to reconnect");
                 cancelConnection( );
-                sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio );
+                sendCommand( ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::Event::EventPriority::NormalPrio );
             }
         }
         else
@@ -229,7 +229,7 @@ void RouterClient::failedReceiveMessage( areg::Socket & whichSource )
                        , whichSource.isValid() ? "VALID" : "INVALID"
                        , whichSource.isAlive() ? "ALIVE" : "DEAD");
             cancelConnection();
-            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost, Event::EventPriority::NormalPrio);
+            sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost, areg::Event::EventPriority::NormalPrio);
         }
         else
         {
@@ -505,7 +505,7 @@ void RouterClient::processRemoteResponseEvent(areg::RemoteResponseEvent & respon
     }
 }
 
-bool RouterClient::postEvent(Event & eventElem)
+bool RouterClient::postEvent(areg::Event & eventElem)
 {
     if ( eventElem.isRemote() )
     {

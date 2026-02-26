@@ -97,7 +97,7 @@ namespace areg
          * \brief	Triggered when dispatcher starts to dispatch Timer Event.
          * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
          **/
-        void startEventProcessing( Event & eventElem) override;
+        void startEventProcessing( areg::Event & eventElem) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

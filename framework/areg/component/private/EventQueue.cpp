@@ -38,14 +38,14 @@ EventQueue::EventQueue( QueueListener & eventListener, SortedEventStack & eventQ
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, methods
 //////////////////////////////////////////////////////////////////////////
-void EventQueue::pushEvent( Event& evendElem, Event** removedEvent )
+void EventQueue::pushEvent( areg::Event& evendElem, areg::Event** removedEvent )
 {
     mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem, removedEvent) );
 }
 
-Event* EventQueue::popEvent()
+areg::Event* EventQueue::popEvent()
 {
-    Event* result{ nullptr };
+    areg::Event* result{ nullptr };
     uint32_t size = mEventQueue.popEvent(&result);
     if (size == 0)
     {
@@ -63,7 +63,7 @@ void EventQueue::removeAllEvents()
 
 void EventQueue::removeEvents( bool keepSpecials /*= false*/ )
 {
-    uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? Event::EventPriority::HighPrio : Event::EventPriority::CriticalPrio);
+    uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? areg::Event::EventPriority::HighPrio : areg::Event::EventPriority::CriticalPrio);
     mEventListener.signalEvent(remain);
 }
 

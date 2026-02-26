@@ -25,7 +25,7 @@
 #include <algorithm>
 
 SortedEventStack::SortedEventStack(uint32_t maxQueue)
-    : areg::ConcurrentStack<Event*>( )
+    : areg::ConcurrentStack<areg::Event*>( )
     , mMaxQueueSize      (SortedEventStack::_calcQueueSize(maxQueue))
 {
 }
@@ -46,20 +46,20 @@ void SortedEventStack::deleteAllEvents()
 
     while ( mValueList.empty( ) == false )
     {
-        Event * evt = mValueList.back( );
+        areg::Event * evt = mValueList.back( );
         ASSERT( evt != nullptr );
         evt->destroy( );
         mValueList.pop_back( );
     }
 }
 
-uint32_t SortedEventStack::deleteAllLowerPriority(Event::EventPriority eventPrio)
+uint32_t SortedEventStack::deleteAllLowerPriority(areg::Event::EventPriority eventPrio)
 {
     Lock lock(mSyncObject);
 
     while (mValueList.empty() == false)
     {
-        Event* evt = mValueList.back();
+        areg::Event* evt = mValueList.back();
         ASSERT(evt != nullptr);
         if (evt->getEventPriority() < eventPrio)
         {
@@ -83,7 +83,7 @@ uint32_t SortedEventStack::deleteAllExceptClass(const areg::RuntimeClassID& even
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
+        if ((*it)->getEventPriority() == areg::Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
@@ -101,14 +101,14 @@ uint32_t SortedEventStack::deleteAllExceptClass(const areg::RuntimeClassID& even
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::deleteAllMatchPriority(Event::EventPriority eventPrio)
+uint32_t SortedEventStack::deleteAllMatchPriority(areg::Event::EventPriority eventPrio)
 {
     Lock lock(mSyncObject);
 
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
+        if ((*it)->getEventPriority() == areg::Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
@@ -133,7 +133,7 @@ uint32_t SortedEventStack::deleteAllMatchClass(const areg::RuntimeClassID& event
     auto end = mValueList.end();
     for (auto it = mValueList.begin(); it != end; )
     {
-        if ((*it)->getEventPriority() == Event::EventPriority::ExitPrio)
+        if ((*it)->getEventPriority() == areg::Event::EventPriority::ExitPrio)
         {
             it = std::next(it);
         }
@@ -151,13 +151,13 @@ uint32_t SortedEventStack::deleteAllMatchClass(const areg::RuntimeClassID& event
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
+uint32_t SortedEventStack::pushEvent(areg::Event * newEvent, areg::Event** removedEvent)
 {
     ASSERT(newEvent != nullptr);
     Lock lock(mSyncObject);
     switch (newEvent->getEventPriority())
     {
-    case Event::EventPriority::LowPrio:
+    case areg::Event::EventPriority::LowPrio:
         if (mValueList.size() < mMaxQueueSize)
         {
             _insertAtEnd(newEvent);
@@ -172,11 +172,11 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
         }
         break;
 
-    case Event::EventPriority::NormalPrio:
+    case areg::Event::EventPriority::NormalPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
-            Event* removed = mValueList.back();
+            areg::Event* removed = mValueList.back();
             mValueList.pop_back();
             if (removedEvent != nullptr)
             {
@@ -188,14 +188,14 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertAfterPrio(newEvent, Event::EventPriority::NormalPrio);
+        _insertAfterPrio(newEvent, areg::Event::EventPriority::NormalPrio);
         break;
 
-    case Event::EventPriority::HighPrio:
+    case areg::Event::EventPriority::HighPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
-            Event* removed = mValueList.back();
+            areg::Event* removed = mValueList.back();
             mValueList.pop_back();
             if (removedEvent != nullptr)
             {
@@ -207,14 +207,14 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertBeforePrio(newEvent, Event::EventPriority::NormalPrio);
+        _insertBeforePrio(newEvent, areg::Event::EventPriority::NormalPrio);
         break;
 
-    case Event::EventPriority::CriticalPrio:
+    case areg::Event::EventPriority::CriticalPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
-            Event* removed = mValueList.back();
+            areg::Event* removed = mValueList.back();
             mValueList.pop_back();
             if (removedEvent != nullptr)
             {
@@ -226,14 +226,14 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
             }
         }
 
-        _insertBeforePrio(newEvent, Event::EventPriority::HighPrio);
+        _insertBeforePrio(newEvent, areg::Event::EventPriority::HighPrio);
         break;
 
-    case Event::EventPriority::ExitPrio:
+    case areg::Event::EventPriority::ExitPrio:
         if (mValueList.size() >= mMaxQueueSize)
         {
             ASSERT(mValueList.empty() == false);
-            Event* removed = mValueList.back();
+            areg::Event* removed = mValueList.back();
             mValueList.pop_back();
             if (removedEvent != nullptr)
             {
@@ -248,8 +248,8 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
         _insertAtBegin(newEvent);
         break;
 
-    case Event::EventPriority::UndefinedPrio: // fall through
-    case Event::EventPriority::IgnorePrio:    // fall through
+    case areg::Event::EventPriority::UndefinedPrio: // fall through
+    case areg::Event::EventPriority::IgnorePrio:    // fall through
     default:
         ASSERT(false);
         break;
@@ -258,7 +258,7 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent, Event** removedEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-uint32_t  SortedEventStack::popEvent(Event** stackEvent)
+uint32_t  SortedEventStack::popEvent(areg::Event** stackEvent)
 {
     ASSERT(stackEvent != nullptr);
 
@@ -276,12 +276,12 @@ uint32_t  SortedEventStack::popEvent(Event** stackEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline void SortedEventStack::_insertAtEnd(Event* newEvent)
+inline void SortedEventStack::_insertAtEnd(areg::Event* newEvent)
 {
     mValueList.push_back(newEvent);
 }
 
-inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::EventPriority eventPrio)
+inline void SortedEventStack::_insertAfterPrio(areg::Event* newEvent, areg::Event::EventPriority eventPrio)
 {
     auto it = mValueList.end();
     if (mValueList.empty() == false)
@@ -302,7 +302,7 @@ inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::EventPrio
     mValueList.insert(it, newEvent);
 }
 
-inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::EventPriority eventPrio)
+inline void SortedEventStack::_insertBeforePrio(areg::Event* newEvent, areg::Event::EventPriority eventPrio)
 {
     auto it = mValueList.begin();
     if (mValueList.empty() == false)
@@ -317,7 +317,7 @@ inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::EventPri
     mValueList.insert(it, newEvent);
 }
 
-inline void SortedEventStack::_insertAtBegin(Event* newEvent)
+inline void SortedEventStack::_insertAtBegin(areg::Event* newEvent)
 {
     mValueList.push_front(newEvent);
 }

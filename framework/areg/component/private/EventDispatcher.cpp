@@ -70,7 +70,7 @@ int32_t EventDispatcher::onThreadExit()
     return static_cast<int32_t>(areg::ThreadConsumer::ExitCode::Normal);
 }
 
-bool EventDispatcher::postEvent( Event& eventElem )
+bool EventDispatcher::postEvent( areg::Event& eventElem )
 {
     return queueEvent(eventElem);
 }

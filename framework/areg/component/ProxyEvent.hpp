@@ -33,7 +33,7 @@ class ProxyEventConsumer;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
+namespace areg { class Event; }
 class ProxyEvent;
 namespace areg { class StubAddress; }
 namespace areg { class ServiceResponseEvent; }
@@ -76,7 +76,7 @@ protected:
      * \param   targetProxy The address of target Proxy, which should
      *                      receive and process event.
      **/
-    ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType );
+    ProxyEvent( const ProxyAddress & targetProxy, areg::Event::EventType eventType );
 
     /**
      * \brief   Initializes event data from streaming object.
@@ -202,7 +202,7 @@ protected:
     /**
      * \brief   Triggered to process generic event
      **/
-    virtual void processGenericEvent( Event & eventElem ) = 0;
+    virtual void processGenericEvent( areg::Event & eventElem ) = 0;
 
     /**
      * \brief   Triggered, when received server connection status changed.
@@ -230,7 +230,7 @@ private:
      *          Event processing function
      * \param   eventElem   The generic Event object to process.
      **/
-    void startEventProcessing( Event & eventElem ) override;
+    void startEventProcessing( areg::Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations

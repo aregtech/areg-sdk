@@ -88,7 +88,7 @@ namespace areg
         //////////////////////////////////////////////////////////////////////////
         // Disable post event
         //////////////////////////////////////////////////////////////////////////
-        virtual bool postEvent( Event & eventElem ) override;
+        virtual bool postEvent( areg::Event & eventElem ) override;
 
         //////////////////////////////////////////////////////////////////////////
         // Disable running function and return error on exit.
@@ -148,7 +148,7 @@ namespace areg
     bool NullDispatcherThread::hasRegisteredConsumer( const areg::RuntimeClassID & /* whichClass */ ) const
     {   return false;   }
 
-    bool NullDispatcherThread::postEvent( Event& eventElem )
+    bool NullDispatcherThread::postEvent( areg::Event& eventElem )
     {
         eventElem.destroy();
         ASSERT(false);
@@ -217,7 +217,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // DispatcherThread class Methods
     //////////////////////////////////////////////////////////////////////////
-    bool DispatcherThread::postEvent( Event& eventElem )
+    bool DispatcherThread::postEvent( areg::Event& eventElem )
     {
         eventElem.destroy();
         ASSERT(false);  // <= this should not be called.
@@ -283,9 +283,9 @@ namespace areg
         return mEventStarted.lock(waitTimeout);
     }
 
-    bool DispatcherThread::isExitEvent(const Event * checkEvent) const
+    bool DispatcherThread::isExitEvent(const areg::Event * checkEvent) const
     {
-        return ( checkEvent == static_cast<const Event *>(&ExitEvent::getExitEvent()) );
+        return ( checkEvent == static_cast<const areg::Event *>(&ExitEvent::getExitEvent()) );
     }
 
     DispatcherThread * DispatcherThread::findEventConsumerThread( const areg::RuntimeClassID & whichClass )

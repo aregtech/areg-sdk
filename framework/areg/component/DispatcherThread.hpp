@@ -164,7 +164,7 @@ namespace areg
         /**
          * \brief   Returns true if specified event is special exit event.
          **/
-        bool isExitEvent( const Event * checkEvent ) const;
+        bool isExitEvent( const areg::Event * checkEvent ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations and overrides.
@@ -218,7 +218,7 @@ namespace areg
          * \param	eventElem	Event object to post
          * \return	In this class it always returns true.
          **/
-        bool postEvent( Event & eventElem ) override;
+        bool postEvent( areg::Event & eventElem ) override;
 
     /************************************************************************/
     // DispatcherThread overrides

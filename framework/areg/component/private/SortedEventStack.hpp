@@ -48,7 +48,7 @@ namespace areg { class RuntimeClassID; }
  *          by other developers. The "Exit" events should be immediately processed and they are not removed from the 
  *          stack until they are not processed by thread dispatcher.
  **/
-class SortedEventStack  : protected areg::ConcurrentStack<Event *>
+class SortedEventStack  : protected areg::ConcurrentStack<areg::Event *>
 {
     //!< The maximum size of the event queue stack
     static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };
@@ -77,7 +77,7 @@ public:
      *                      to remove all events. Only "Exit" events are untouched if they are present.
      * \return  Returns number of elements in the stack. Returns zero if empty.
      **/
-    uint32_t deleteAllLowerPriority(Event::EventPriority eventPrio);
+    uint32_t deleteAllLowerPriority(areg::Event::EventPriority eventPrio);
 
     /**
      * \brief   Deletes all events, except those that are with the specified class ID, except "Exit" event.
@@ -91,7 +91,7 @@ public:
      * \param   eventPrio   The priority of events to delete.
      * \return  Returns number of elements in the stack. Returns zero if empty.
      **/
-    uint32_t deleteAllMatchPriority(Event::EventPriority eventPrio);
+    uint32_t deleteAllMatchPriority(areg::Event::EventPriority eventPrio);
 
     /**
      * \brief   Deletes all events, which match the specified class ID.
@@ -107,7 +107,7 @@ public:
      * \param[out]  removedEvent    The address of pointer to receive the removed event.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t pushEvent(Event * newEvent, Event** removedEvent);
+    uint32_t pushEvent(areg::Event * newEvent, areg::Event** removedEvent);
 
     /**
      * \brief   Pops the event from the FIFO stack.
@@ -115,7 +115,7 @@ public:
      *                          This parameter must not be nullptr, but it may point to the nullptr object.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t popEvent(Event** stackEvent);
+    uint32_t popEvent(areg::Event** stackEvent);
 
     /**
      * \brief   Returns the maximum size of the stack.
@@ -151,7 +151,7 @@ private:
      * \brief   Inserts the event at the end of the stack. No priority is considered.
      *          For example, the events with low priority are inserted at the end of the stack.
      **/
-    inline void _insertAtEnd(Event * newEvent);
+    inline void _insertAtEnd(areg::Event * newEvent);
 
     /**
      * \brief   Inserts the event object at the end of the event elements list of specified priority.
@@ -161,7 +161,7 @@ private:
      * \param   newEvent    The event object to insert.
      * \param   eventPrio   The priority of event to search in the stack.
      **/
-    inline void _insertAfterPrio(Event * newEvent, Event::EventPriority eventPrio);
+    inline void _insertAfterPrio(areg::Event * newEvent, areg::Event::EventPriority eventPrio);
 
     /**
      * \brief   Inserts the event object before the elements of specified are queued.
@@ -171,13 +171,13 @@ private:
      * \param   newEvent    The event object to insert.
      * \param   eventPrio   The priority of event to search in the stack.
      **/
-    inline void _insertBeforePrio(Event * newEvent, Event::EventPriority eventPrio);
+    inline void _insertBeforePrio(areg::Event * newEvent, areg::Event::EventPriority eventPrio);
 
     /**
      * \brief   Inserts the event element at the very begin of the stack, so that it is
      *          processed as soon as possible.
      **/
-    inline void _insertAtBegin(Event * newEvent);
+    inline void _insertAtBegin(areg::Event * newEvent);
 
     inline static constexpr uint32_t _calcQueueSize(uint32_t requestedSize);
 

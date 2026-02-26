@@ -92,7 +92,7 @@ private:
      *                      processing. As soon as event is finished processing
      *                      it will be destroyed.
      **/
-    void startEventProcessing( Event & eventElem ) override;
+    void startEventProcessing( areg::Event & eventElem ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

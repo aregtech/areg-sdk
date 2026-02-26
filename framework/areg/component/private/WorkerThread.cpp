@@ -53,9 +53,9 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Methods
     //////////////////////////////////////////////////////////////////////////
-    bool WorkerThread::postEvent( Event& eventElem )
+    bool WorkerThread::postEvent( areg::Event& eventElem )
     {
-        return Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
+        return areg::Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
     }
 
     void WorkerThread::readyForEvents( bool isReady )
@@ -77,7 +77,7 @@ namespace areg
         return (hasRegisteredConsumer(whichClass) ? static_cast<areg::DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
     }
 
-    bool WorkerThread::dispatchEvent(Event& eventElem)
+    bool WorkerThread::dispatchEvent(areg::Event& eventElem)
     {
         mWatchdog.startGuard();
         bool result = areg::DispatcherThread::dispatchEvent(eventElem);

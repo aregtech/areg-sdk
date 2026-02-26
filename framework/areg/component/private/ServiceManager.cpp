@@ -250,7 +250,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
     mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnectionProvider( ), getServiceRegisterProvider() );
 }
 
-bool ServiceManager::postEvent(Event & eventElem)
+bool ServiceManager::postEvent(areg::Event & eventElem)
 {
     return (AREG_RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }

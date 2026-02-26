@@ -74,7 +74,7 @@ namespace areg
                         , const areg::StubAddress & target
                         , uint32_t reqId
                         , areg::RequestType reqType
-                        , Event::EventType eventType );
+                        , areg::Event::EventType eventType );
 
         /**
          * \brief   Creates event from streaming object and initializes data

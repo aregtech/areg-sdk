@@ -149,7 +149,7 @@ namespace areg
          *          destroyed.
          * \param   eventElem   The event object to post.
          **/
-        bool postEvent( Event & eventElem ) override;
+        bool postEvent( areg::Event & eventElem ) override;
 
     protected:
     /************************************************************************/
@@ -189,7 +189,7 @@ namespace areg
          * \return	Returns true if at least one consumer processed event.
          *          Otherwise it returns false.
          **/
-        bool dispatchEvent( Event & eventElem ) override;
+        bool dispatchEvent( areg::Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables

@@ -86,7 +86,7 @@ namespace areg
         ResponseEvent( const ProxyAddress & proxyTarget
                     , const ResultType result
                     , uint32_t respId
-                    , Event::EventType eventType
+                    , areg::Event::EventType eventType
                     , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY );
 
         /**
@@ -103,7 +103,7 @@ namespace areg
                     , const ProxyAddress & proxyTarget
                     , ResultType result
                     , uint32_t respId
-                    , Event::EventType eventType
+                    , areg::Event::EventType eventType
                     , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY
                     , const String & name = String::getEmptyString() );
 

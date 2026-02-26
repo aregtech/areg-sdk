@@ -181,7 +181,7 @@ namespace areg
          * \param   eventElem   The event object to push in the queue.
          * \return  Returns true if successfully pushed event in the queue.
          **/
-        bool postEvent( Event & eventElem ) override;
+        bool postEvent( areg::Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides. Protected
@@ -272,7 +272,7 @@ namespace areg
          * \return	Returns true if at least one consumer processed event.
          *          Otherwise it returns false.
          **/
-        bool dispatchEvent( Event & eventElem ) override;
+        bool dispatchEvent( areg::Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods

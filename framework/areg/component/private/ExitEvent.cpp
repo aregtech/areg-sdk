@@ -17,12 +17,12 @@
  ************************************************************************/
 #include "areg/component/private/ExitEvent.hpp"
 
-AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
+AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, areg::Event)
 
 ExitEvent::ExitEvent()
-    : Event   ( Event::EventType::EventExternal )
+    : areg::Event   ( areg::Event::EventType::EventExternal )
 {
-    mEventPrio = Event::EventPriority::ExitPrio;
+    mEventPrio = areg::Event::EventPriority::ExitPrio;
 }
 
 ExitEvent & ExitEvent::getExitEvent()
