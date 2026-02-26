@@ -453,7 +453,7 @@ private:
     /**
      * \brief   Logging configuration
      **/
-    LogConfiguration    mLogConfig;
+    areg::LogConfiguration    mLogConfig;
     /**
      * \brief   File logging  object, to output logs in the file.
      **/

@@ -20,7 +20,7 @@
 
 #if AREG_LOGS
 
-FileLogger::FileLogger( LogConfiguration & logConfig)
+FileLogger::FileLogger( areg::LogConfiguration & logConfig)
     : LoggerBase(logConfig)
     , mLogFile  ( )
 {

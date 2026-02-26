@@ -50,7 +50,7 @@ public:
       * \param  logConfig   An instance of the log configuration object containing
       *                     settings for initialization and message output.
       **/
-    explicit DatabaseLogger(LogConfiguration & logConfig);
+    explicit DatabaseLogger(areg::LogConfiguration & logConfig);
 
     virtual ~DatabaseLogger();
 

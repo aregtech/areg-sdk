@@ -45,7 +45,7 @@ public:
      * \param   logConfig   An instance of the log configuration object containing
      *                      settings for initialization and message output.
      **/
-    explicit FileLogger( LogConfiguration & logConfig );
+    explicit FileLogger( areg::LogConfiguration & logConfig );
 
     /**
      * \brief   Destructor

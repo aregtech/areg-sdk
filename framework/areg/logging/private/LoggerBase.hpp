@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogConfiguration;
+namespace areg { class LogConfiguration; }
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class declaration
@@ -67,7 +67,7 @@ protected:
      * \param   logConfig   An instance of the log configuration object containing
      *                      settings for initialization and message output.
      **/
-    explicit LoggerBase(LogConfiguration& logConfig);
+    explicit LoggerBase(areg::LogConfiguration& logConfig);
 
     /**
      * \brief   Destructor
@@ -122,7 +122,7 @@ public:
     /**
      * \brief   Return instance of log configuration object.
      **/
-    inline const LogConfiguration & getLogConfiguration() const;
+    inline const areg::LogConfiguration & getLogConfiguration() const;
 
     /**
      * \return  Returns the layout object to print messages.
@@ -161,7 +161,7 @@ protected:
     /**
      * \brief   The instance of log configurations object.
      **/
-    LogConfiguration &  mLogConfiguration;
+    areg::LogConfiguration &  mLogConfiguration;
 
 private:
     /**
@@ -194,7 +194,7 @@ inline bool LoggerBase::reopenLogger()
     return openLogger();
 }
 
-inline const LogConfiguration & LoggerBase::getLogConfiguration() const
+inline const areg::LogConfiguration & LoggerBase::getLogConfiguration() const
 {
     return mLogConfiguration;
 }

@@ -49,7 +49,7 @@ public:
      * \param   logConfig   An instance of the log configuration object containing
      *                      settings for initialization and message output.
      **/
-    explicit DebugOutputLogger( LogConfiguration & logConfig);
+    explicit DebugOutputLogger( areg::LogConfiguration & logConfig);
 
     /**
      * \brief   Destructor

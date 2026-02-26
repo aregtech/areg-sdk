@@ -90,7 +90,7 @@ void LogManager::updateScopeConfiguration()
     LogManager& logManager = LogManager::getInstance();
     Lock lock(logManager.mLock);
 
-    LogConfiguration config;
+    areg::LogConfiguration config;
     config.updateScopeConfiguration(logManager.mScopeController);
 }
 

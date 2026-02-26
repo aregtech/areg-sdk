@@ -27,7 +27,7 @@
  * Dependencies
  ************************************************************************/
 class LogManager;
-class LogConfiguration;
+namespace areg { class LogConfiguration; }
 class LoggerBase;
 namespace areg { class InStream; }
 

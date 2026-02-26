@@ -40,7 +40,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class DispatcherThread; }
-class LogConfiguration;
+namespace areg { class LogConfiguration; }
 class ScopeController;
 namespace areg { class SharedBuffer; }
 
@@ -77,7 +77,7 @@ public:
      * \param   scopeController The scope controller object, which contains and controls the scopes in application.
      * \param   dispatchThread  The dispatcher thread to dispatch events and messages.
      **/
-    NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, areg::DispatcherThread & dispatchThread);
+    NetTcpLogger(areg::LogConfiguration & logConfig, ScopeController & scopeController, areg::DispatcherThread & dispatchThread);
 
     /**
      * \brief   Destructor.

@@ -123,7 +123,7 @@ const areg::SocketAddress& LoggerClient::getAddress() const
 
 bool LoggerClient::isSqliteEngine() const
 {
-    LogConfiguration config;
+    areg::LogConfiguration config;
     return (config.isDatabaseLoggingEnabled() && (config.getDatabaseEngine() == areg::LOGDB_ENGINE_NAME));
 }
 
@@ -230,7 +230,7 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     {
         if (isSqliteEngine())
         {
-            LogConfiguration config;
+            areg::LogConfiguration config;
             mLogDatabase.setDatabaseLoggingEnabled(true);
             filePath = areg::File::makeFileFullPath(config.getDatabaseLocation(), config.getDatabaseName());
         }
@@ -274,7 +274,7 @@ areg::String LoggerClient::getConfigDatabasePath() const
     areg::String result;
     if (isSqliteEngine())
     {
-        LogConfiguration config;
+        areg::LogConfiguration config;
         result = areg::File::makeFileFullPath(config.getDatabaseLocation().getString(), config.getDatabaseName().getString());
     }
 
@@ -284,7 +284,7 @@ areg::String LoggerClient::getConfigDatabasePath() const
 bool LoggerClient::setConfigDatabasePath(const areg::String& dbPath, bool enable)
 {
     bool result{ false };
-    LogConfiguration config;
+    areg::LogConfiguration config;
     if (config.getDatabaseEngine() == areg::LOGDB_ENGINE_NAME)
     {
         areg::String dbLocation = areg::File::getFileDirectory(dbPath.getString());
@@ -303,7 +303,7 @@ areg::String LoggerClient::getConfigDatabaseLocation() const
     areg::String result;
     if (isSqliteEngine())
     {
-        LogConfiguration config;
+        areg::LogConfiguration config;
         result = areg::File::getFileFullPath(config.getDatabaseLocation().getString());
     }
 
@@ -315,7 +315,7 @@ bool LoggerClient::setConfigDatabaseLocation(const areg::String& dbLocation)
     bool result{ false };
     if (isSqliteEngine())
     {
-        LogConfiguration config;
+        areg::LogConfiguration config;
         config.setDatabaseLocation(dbLocation, false);
         result = true;
     }
@@ -328,7 +328,7 @@ areg::String LoggerClient::getConfigDatabaseName() const
     areg::String result;
     if (isSqliteEngine())
     {
-        LogConfiguration config;
+        areg::LogConfiguration config;
         result = config.getDatabaseName().getString();
     }
 
@@ -340,7 +340,7 @@ bool LoggerClient::setConfigDatabaseName(const areg::String& dbName)
     bool result{ false };
     if (isSqliteEngine())
     {
-        LogConfiguration config;
+        areg::LogConfiguration config;
         config.setDatabaseName(dbName, false);
         result = true;
     }
@@ -351,7 +351,7 @@ bool LoggerClient::setConfigDatabaseName(const areg::String& dbName)
 bool LoggerClient::setConfigLoggerConnectEnabled(bool isEnabled)
 {
     bool result{ false };
-    LogConfiguration config;
+    areg::LogConfiguration config;
     if (config.getDatabaseEngine() == areg::LOGDB_ENGINE_NAME)
     {
         config.setDatabaseEnable(isEnabled, false);
@@ -363,7 +363,7 @@ bool LoggerClient::setConfigLoggerConnectEnabled(bool isEnabled)
 
 void LoggerClient::saveConfiguration()
 {
-    LogConfiguration config;
+    areg::LogConfiguration config;
     config.saveConfiguration();
 }
 

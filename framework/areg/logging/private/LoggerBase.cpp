@@ -17,7 +17,7 @@
 
 #if AREG_LOGS
 
-LoggerBase::LoggerBase( LogConfiguration & logConfig)
+LoggerBase::LoggerBase( areg::LogConfiguration & logConfig)
     : mLogConfiguration (logConfig)
     , mLayoutsMessage   ( )
     , mLayoutsScopeEnter( )

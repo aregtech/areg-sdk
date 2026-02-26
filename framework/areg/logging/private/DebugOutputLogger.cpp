@@ -27,7 +27,7 @@
 
 #if AREG_LOGS
 
-DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
+DebugOutputLogger::DebugOutputLogger( areg::LogConfiguration & logConfig)
     : LoggerBase        ( logConfig )
     , areg::OutStream       ( )
 

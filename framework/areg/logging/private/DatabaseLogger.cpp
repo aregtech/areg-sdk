@@ -27,7 +27,7 @@
 
 #if AREG_LOGS
 
-DatabaseLogger::DatabaseLogger(LogConfiguration& logConfig)
+DatabaseLogger::DatabaseLogger(areg::LogConfiguration& logConfig)
     : LoggerBase    (logConfig)
     , mDatabase     (nullptr)
     , mLock         (false)
