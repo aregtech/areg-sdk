@@ -20,84 +20,87 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// DatabaseEngine class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Interface of database engine.
- **/
-class AREG_API DatabaseEngine
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-    DatabaseEngine();
-
-    virtual ~DatabaseEngine();
-
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// DatabaseEngine interface overrides.
-/************************************************************************/
-
+    //////////////////////////////////////////////////////////////////////////
+    // DatabaseEngine class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Returns true if database engine is opened and operable.
-     *          Otherwise, returns false.
+     * \brief   Interface of database engine.
      **/
-    virtual bool isOperable() const = 0;
+    class AREG_API DatabaseEngine
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        DatabaseEngine();
 
-    /**
-     * \brief   Connects to the specified database.
-     * \param   dbPath      The path to the database. If needed, the path may contain
-     *                      file path or URL, user name and password. It is up to
-     *                      Database engine to parse the path and initialize the connection.
-     *                      If the parameter is empty, it should take the data from the
-     *                      'areg.init' configuration file.
-     * \param   readOnly    If true, the database engine should connect in read-only mode.
-     * \return  Returns true if succeeded to connect. Otherwise, returns false.
-     **/
-    virtual bool connect(const areg::String & dbPath, bool readOnly) = 0;
+        virtual ~DatabaseEngine();
 
-    /**
-     * \brief   Disconnects connected database.
-     **/
-    virtual void disconnect() = 0;
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // DatabaseEngine interface overrides.
+    /************************************************************************/
 
-    /**
-     * \brief   Execute the SQL script.
-     * \param   sql     The SQL script to execute.
-     * \return  Returns true if succeeds to execute the SQL script.
-     **/
-    virtual bool execute(const areg::String & sql) = 0;
+        /**
+         * \brief   Returns true if database engine is opened and operable.
+         *          Otherwise, returns false.
+         **/
+        virtual bool isOperable() const = 0;
 
-    /**
-     * \brief   Call if need to make multiple operation. This call starts the transaction,
-     *          that is required either commit or rollback call to complete the transaction.
-     **/
-    virtual bool begin() = 0;
+        /**
+         * \brief   Connects to the specified database.
+         * \param   dbPath      The path to the database. If needed, the path may contain
+         *                      file path or URL, user name and password. It is up to
+         *                      Database engine to parse the path and initialize the connection.
+         *                      If the parameter is empty, it should take the data from the
+         *                      'areg.init' configuration file.
+         * \param   readOnly    If true, the database engine should connect in read-only mode.
+         * \return  Returns true if succeeded to connect. Otherwise, returns false.
+         **/
+        virtual bool connect(const areg::String & dbPath, bool readOnly) = 0;
 
-    /**
-     * \brief   Commits or rolls back the database changes and returns true if succeeded.
-     * \param   doCommit    If true, the database engine should commit the changes.
-     *                      Otherwise, the database engine should rollback the changes.
-     * \return  Returns true if operation succeeded. Otherwise, returns false.
-     **/
-    virtual bool commit(bool doCommit) = 0;
+        /**
+         * \brief   Disconnects connected database.
+         **/
+        virtual void disconnect() = 0;
 
-    /**
-     * \brief   Rolls back the database changes and returns true if succeeded.
-     **/
-    virtual bool rollback() = 0;
+        /**
+         * \brief   Execute the SQL script.
+         * \param   sql     The SQL script to execute.
+         * \return  Returns true if succeeds to execute the SQL script.
+         **/
+        virtual bool execute(const areg::String & sql) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE(DatabaseEngine);
-};
+        /**
+         * \brief   Call if need to make multiple operation. This call starts the transaction,
+         *          that is required either commit or rollback call to complete the transaction.
+         **/
+        virtual bool begin() = 0;
 
+        /**
+         * \brief   Commits or rolls back the database changes and returns true if succeeded.
+         * \param   doCommit    If true, the database engine should commit the changes.
+         *                      Otherwise, the database engine should rollback the changes.
+         * \return  Returns true if operation succeeded. Otherwise, returns false.
+         **/
+        virtual bool commit(bool doCommit) = 0;
+
+        /**
+         * \brief   Rolls back the database changes and returns true if succeeded.
+         **/
+        virtual bool rollback() = 0;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE(DatabaseEngine);
+    };
+
+} // namespace areg
 #endif  // AREG_PERSIST_DATABASEENGINE_HPP

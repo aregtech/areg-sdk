@@ -38,7 +38,7 @@ namespace areg
     /**
      * \brief   The interface to logging database engine used to save messages in the database.
      **/
-    class AREG_API LogDatabaseEngine  : public DatabaseEngine
+    class AREG_API LogDatabaseEngine  : public areg::DatabaseEngine
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / destructor

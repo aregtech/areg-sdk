@@ -41,14 +41,14 @@ namespace
 }
 
 SqliteDatabase::SqliteDatabase()
-    : DatabaseEngine  ( )
+    : areg::DatabaseEngine  ( )
     , mDbPath           ( )
     , mDbObject         ( nullptr )
 {
 }
 
 SqliteDatabase::SqliteDatabase(const areg::String& dbPath, bool open)
-    : DatabaseEngine  ( )
+    : areg::DatabaseEngine  ( )
     , mDbPath           ( )
     , mDbObject         ( nullptr )
 {

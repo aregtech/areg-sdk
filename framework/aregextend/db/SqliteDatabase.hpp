@@ -27,7 +27,7 @@
 /**
  * \brief   The SQLite Database engine.
  **/
-class SqliteDatabase  : public DatabaseEngine
+class SqliteDatabase  : public areg::DatabaseEngine
 {
     friend class SqliteStatement;
 //////////////////////////////////////////////////////////////////////////
