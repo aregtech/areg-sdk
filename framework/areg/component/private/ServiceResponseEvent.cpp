@@ -17,14 +17,14 @@
 
 namespace areg
 {
-    AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
+    AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, areg::ProxyEvent)
 
     ServiceResponseEvent::ServiceResponseEvent( const areg::ProxyAddress & target
                                             , areg::ResultType result
                                             , uint32_t responseId
                                             , areg::Event::EventType eventType
                                             , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-        : ProxyEvent    (target, eventType)
+        : areg::ProxyEvent    (target, eventType)
         , mResponseId   (responseId)
         , mResult       (result)
         , mSequenceNr   (seqNr)
@@ -32,7 +32,7 @@ namespace areg
     }
 
     ServiceResponseEvent::ServiceResponseEvent( const areg::ProxyAddress& target, const ServiceResponseEvent& src )
-        : ProxyEvent    (target, src.getEventType())
+        : areg::ProxyEvent    (target, src.getEventType())
         , mResponseId   (src.mResponseId)
         , mResult       (src.mResult)
         , mSequenceNr   (src.mSequenceNr)
@@ -40,7 +40,7 @@ namespace areg
     }
 
     ServiceResponseEvent::ServiceResponseEvent(const areg::InStream & stream)
-        : ProxyEvent    ( stream )
+        : areg::ProxyEvent    ( stream )
         , mResponseId   ( areg::INVALID_MESSAGE_ID )
         , mResult       ( areg::ResultType::Undefined )
         , mSequenceNr   ( areg::SEQUENCE_NUMBER_ANY )
@@ -58,7 +58,7 @@ namespace areg
 
     const areg::InStream & ServiceResponseEvent::readStream( const areg::InStream & stream )
     {
-        ProxyEvent::readStream(stream);
+        areg::ProxyEvent::readStream(stream);
         stream >> mResponseId;
         stream >> mResult;
         stream >> mSequenceNr;
@@ -67,7 +67,7 @@ namespace areg
 
     areg::OutStream & ServiceResponseEvent::writeStream( areg::OutStream & stream ) const
     {
-        ProxyEvent::writeStream(stream);
+        areg::ProxyEvent::writeStream(stream);
         stream << mResponseId;
         stream << mResult;
         stream << mSequenceNr;

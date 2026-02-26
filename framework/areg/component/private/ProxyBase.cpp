@@ -267,7 +267,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     ProxyBase::ProxyBase(const areg::String & roleName, const areg::InterfaceData & serviceIfData, areg::DispatcherThread * ownerThread /*= nullptr*/ )
 
-        : ProxyEventConsumer  ( mProxyAddress )
+        : areg::ProxyEventConsumer  ( mProxyAddress )
 
         , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : areg::String::getEmptyString() )
         , mStubAddress      ( areg::StubAddress::getInvalidStubAddress() )
@@ -558,12 +558,12 @@ namespace areg
     }
 
     #ifdef  DEBUG
-    void ProxyBase::processProxyEvent( ProxyEvent& eventElem )
+    void ProxyBase::processProxyEvent( areg::ProxyEvent& eventElem )
     {
         ASSERT(eventElem.getTargetProxy() == getProxyAddress());
     }
     #else   // !DEBUG
-    void ProxyBase::processProxyEvent( ProxyEvent& /*eventElem*/ )
+    void ProxyBase::processProxyEvent( areg::ProxyEvent& /*eventElem*/ )
     {
     }
     #endif  // DEBUG

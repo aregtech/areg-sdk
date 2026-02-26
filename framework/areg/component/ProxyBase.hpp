@@ -50,7 +50,7 @@ namespace areg { class NotificationEvent; }
 namespace areg { class DispatcherThread; }
 namespace areg { class EventDataStream; }
 class ProxyListener;
-class ProxyEvent;
+namespace areg { class ProxyEvent; }
 class ProxyBase;
 namespace areg { class Version; }
 namespace areg { class ProxyBase; }
@@ -92,7 +92,7 @@ namespace areg
      *          of client in the same thread.
      *
      **/
-    class AREG_API ProxyBase  : public    ProxyEventConsumer
+    class AREG_API ProxyBase  : public    areg::ProxyEventConsumer
     {
         friend class ::RemoteEventFactory;
     //////////////////////////////////////////////////////////////////////////
@@ -719,7 +719,7 @@ namespace areg
          *          and should processed by proxy object.
          * \param   eventElem   Proxy event to process
          **/
-        void processProxyEvent( ProxyEvent & eventElem ) override;
+        void processProxyEvent( areg::ProxyEvent & eventElem ) override;
 
         /**
          * \brief   Triggered, when current dispatching event is not an instance of
