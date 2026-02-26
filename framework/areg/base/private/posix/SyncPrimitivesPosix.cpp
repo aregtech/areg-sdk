@@ -60,13 +60,13 @@ void areg::SyncObject::_osDestroySyncObject()
 
 void areg::Mutex::_osCreateMutex( bool initLock )
 {
-    mSyncObject = DEBUG_NEW WaitableMutexPosix(initLock, "POSIX_Mutex");
+    mSyncObject = DEBUG_NEW areg::os::WaitableMutexPosix(initLock, "POSIX_Mutex");
 }
 
 bool areg::Mutex::_osLockMutex( uint32_t timeout )
 {
     bool result{ false };
-    WaitableMutexPosix * syncMutex{ reinterpret_cast<WaitableMutexPosix *>(mSyncObject) };
+    areg::os::WaitableMutexPosix * syncMutex{ reinterpret_cast<areg::os::WaitableMutexPosix *>(mSyncObject) };
 
     if ( static_cast<int32_t>(areg::os::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject(*syncMutex, timeout) )
     {
@@ -80,7 +80,7 @@ bool areg::Mutex::_osLockMutex( uint32_t timeout )
 bool areg::Mutex::_osUnlockMutex()
 {
     bool result{ false };
-    WaitableMutexPosix * syncMutex{ reinterpret_cast<WaitableMutexPosix *>(mSyncObject) };
+    areg::os::WaitableMutexPosix * syncMutex{ reinterpret_cast<areg::os::WaitableMutexPosix *>(mSyncObject) };
 
     if ( syncMutex->releaseMutex() )
     {

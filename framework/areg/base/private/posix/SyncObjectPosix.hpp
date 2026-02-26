@@ -34,7 +34,7 @@ class SyncObjectPosix;
     class MutexPosix;
         class WaitableBaseIX;
             class WaitableEventPosix;
-            class WaitableMutexPosix;
+            namespace areg::os { class WaitableMutexPosix; }
 
 //////////////////////////////////////////////////////////////////////////
 // SyncObjectPosix class declaration
