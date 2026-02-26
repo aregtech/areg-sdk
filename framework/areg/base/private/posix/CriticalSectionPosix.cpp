@@ -23,43 +23,46 @@
 
 #include <pthread.h>
 
-//////////////////////////////////////////////////////////////////////////
-// CriticalSectionPosix class implementation.
-//////////////////////////////////////////////////////////////////////////
-CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
-    : areg::os::SyncObjectPosix   ( areg::os::SyncKind::SoSpinLock, "CriticalSection" )
-
-    , mSpinLock             ( )
+namespace areg::os
 {
-    if (initLock)
+    //////////////////////////////////////////////////////////////////////////
+    // CriticalSectionPosix class implementation.
+    //////////////////////////////////////////////////////////////////////////
+    CriticalSectionPosix::CriticalSectionPosix( bool initLock /*= false*/ )
+        : areg::os::SyncObjectPosix   ( areg::os::SyncKind::SoSpinLock, "CriticalSection" )
+
+        , mSpinLock             ( )
     {
-        mSpinLock.lock();
+        if (initLock)
+        {
+            mSpinLock.lock();
+        }
     }
-}
 
-bool CriticalSectionPosix::lock() const
-{
-    return mSpinLock.lock();
-}
+    bool CriticalSectionPosix::lock() const
+    {
+        return mSpinLock.lock();
+    }
 
-void CriticalSectionPosix::unlock() const
-{
-    mSpinLock.unlock();
-}
+    void CriticalSectionPosix::unlock() const
+    {
+        mSpinLock.unlock();
+    }
 
-bool CriticalSectionPosix::tryLock() const
-{
-    return mSpinLock.tryLock();
-}
+    bool CriticalSectionPosix::tryLock() const
+    {
+        return mSpinLock.tryLock();
+    }
 
-bool CriticalSectionPosix::isValid() const
-{
-    return mSpinLock.isValid();
-}
+    bool CriticalSectionPosix::isValid() const
+    {
+        return mSpinLock.isValid();
+    }
 
-void CriticalSectionPosix::freeResources()
-{
-    mSpinLock.freeResources();
-}
+    void CriticalSectionPosix::freeResources()
+    {
+        mSpinLock.freeResources();
+    }
 
+} // namespace areg::os
 #endif  //  defined(_POSIX) || defined(POSIX)

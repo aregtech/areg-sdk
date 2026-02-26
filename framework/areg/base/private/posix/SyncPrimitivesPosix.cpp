@@ -158,7 +158,7 @@ bool areg::Semaphore::_osUnlock()
 
 void areg::CriticalSection::_osCreateCriticalSection()
 {
-    mSyncObject = static_cast<void *>( DEBUG_NEW CriticalSectionPosix(false) );
+    mSyncObject = static_cast<void *>( DEBUG_NEW areg::os::CriticalSectionPosix(false) );
 }
 
 void areg::CriticalSection::_osReleaseCriticalSection()
@@ -168,18 +168,18 @@ void areg::CriticalSection::_osReleaseCriticalSection()
 
 bool areg::CriticalSection::_osLock()
 {
-    return reinterpret_cast<CriticalSectionPosix *>(mSyncObject)->lock();
+    return reinterpret_cast<areg::os::CriticalSectionPosix *>(mSyncObject)->lock();
 }
 
 bool areg::CriticalSection::_osUnlock()
 {
-    reinterpret_cast<CriticalSectionPosix *>(mSyncObject)->unlock( );
+    reinterpret_cast<areg::os::CriticalSectionPosix *>(mSyncObject)->unlock( );
     return true;
 }
 
 bool areg::CriticalSection::_osTryLock()
 {
-    return reinterpret_cast<CriticalSectionPosix *>(mSyncObject)->tryLock();
+    return reinterpret_cast<areg::os::CriticalSectionPosix *>(mSyncObject)->tryLock();
 }
 
 //////////////////////////////////////////////////////////////////////////
