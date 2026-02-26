@@ -54,7 +54,7 @@ namespace areg { class ProxyEvent; }
 class ProxyBase;
 namespace areg { class Version; }
 namespace areg { class ProxyBase; }
-class RemoteEventFactory;
+namespace areg { class RemoteEventFactory; }
 
 /************************************************************************
  * Global types
@@ -94,7 +94,7 @@ namespace areg
      **/
     class AREG_API ProxyBase  : public    areg::ProxyEventConsumer
     {
-        friend class ::RemoteEventFactory;
+        friend class areg::RemoteEventFactory;
     //////////////////////////////////////////////////////////////////////////
     // Internal classes, types and constants
     //////////////////////////////////////////////////////////////////////////

@@ -44,7 +44,7 @@ namespace areg { class ComponentThread; }
 namespace areg { class EventDataStream; }
 namespace areg { class ResponseEvent; }
 namespace areg { class Component; }
-class RemoteEventFactory;
+namespace areg { class RemoteEventFactory; }
 
 namespace areg
 {
@@ -62,7 +62,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // friend classes
     //////////////////////////////////////////////////////////////////////////
-        friend class ::RemoteEventFactory;
+        friend class areg::RemoteEventFactory;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal constants and definitions

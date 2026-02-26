@@ -191,7 +191,7 @@ void RouterClient::failedSendMessage(const areg::RemoteMessage & msgFailed, areg
                        , whichTarget.isAlive() ? "ALIVE" : "DEAD");
 
             msgFailed.moveToBegin();
-            areg::StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
+            areg::StreamableEvent * eventError = areg::RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
             if ( eventError != nullptr )
             {
                 LOG_DBG("Replying with failure event [ %s ]", eventError->getRuntimeClassName().getString());
@@ -257,11 +257,11 @@ void RouterClient::failedProcessMessage( const areg::RemoteMessage & msgUnproces
                       , msgUnprocessed.getSource());
 
             msgUnprocessed.moveToBegin();
-            areg::StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
+            areg::StreamableEvent * eventError = areg::RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
             if ( eventError != nullptr )
             {
                 areg::RemoteMessage data;
-                if ( RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
+                if ( areg::RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
                 {
                     sendMessage(data);
                 }
@@ -393,7 +393,7 @@ void RouterClient::processReceivedMessage( const areg::RemoteMessage & msgReceiv
             {
                 if ( areg::isExecutableId(static_cast<uint32_t>(msgId)) )
                 {
-                    areg::StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
+                    areg::StreamableEvent * eventRemote = areg::RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
                     if ( eventRemote != nullptr )
                     {
                         eventRemote->deliverEvent();
@@ -427,7 +427,7 @@ void RouterClient::processRemoteRequestEvent( RemoteRequestEvent & requestEvent)
     if ( requestEvent.isRemote() )
     {
         areg::RemoteMessage data;
-        if ( RemoteEventFactory::createStreamFromEvent( data, requestEvent, mChannel) )
+        if ( areg::RemoteEventFactory::createStreamFromEvent( data, requestEvent, mChannel) )
         {
             LOG_DBG("Sending [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
                       , requestEvent.getRuntimeClassName().getString()
@@ -455,7 +455,7 @@ void RouterClient::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & r
     if ( requestNotifyEvent.isRemote() )
     {
         areg::RemoteMessage data;
-        if ( RemoteEventFactory::createStreamFromEvent( data, requestNotifyEvent, mChannel) )
+        if ( areg::RemoteEventFactory::createStreamFromEvent( data, requestNotifyEvent, mChannel) )
         {
             LOG_DBG("Send [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
                       , requestNotifyEvent.getRuntimeClassName().getString()
@@ -484,7 +484,7 @@ void RouterClient::processRemoteResponseEvent(areg::RemoteResponseEvent & respon
     if ( responseEvent.isRemote() )
     {
         areg::RemoteMessage data;
-        if ( RemoteEventFactory::createStreamFromEvent( data, responseEvent, mChannel) )
+        if ( areg::RemoteEventFactory::createStreamFromEvent( data, responseEvent, mChannel) )
         {
             LOG_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
                       , responseEvent.getRuntimeClassName().getString()

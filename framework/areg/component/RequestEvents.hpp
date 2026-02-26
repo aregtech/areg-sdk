@@ -265,7 +265,7 @@ private:
  **/
 class AREG_API RemoteRequestEvent : public    RequestEvent
 {
-    friend class RemoteEventFactory;
+    friend class areg::RemoteEventFactory;
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.
 //////////////////////////////////////////////////////////////////////////
@@ -457,7 +457,7 @@ private:
  **/
 class AREG_API RemoteNotifyRequestEvent    : public    NotifyRequestEvent
 {
-    friend class RemoteEventFactory;
+    friend class areg::RemoteEventFactory;
 //////////////////////////////////////////////////////////////////////////
 // Declare event as runtime to support runtime casting.
 //////////////////////////////////////////////////////////////////////////

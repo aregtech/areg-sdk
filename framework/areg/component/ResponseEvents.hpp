@@ -26,7 +26,7 @@
 /************************************************************************
  * List of declared classes:
  ************************************************************************/
-class RemoteEventFactory;
+namespace areg { class RemoteEventFactory; }
 
 // ServiceRequestEvent;
 namespace areg{ class ResponseEvent; }        
@@ -286,7 +286,7 @@ namespace areg
      **/
     class AREG_API RemoteResponseEvent: public    ResponseEvent
     {
-        friend class ::RemoteEventFactory;
+        friend class areg::RemoteEventFactory;
     //////////////////////////////////////////////////////////////////////////
     // Declare event as runtime to support runtime casting.
     //////////////////////////////////////////////////////////////////////////
