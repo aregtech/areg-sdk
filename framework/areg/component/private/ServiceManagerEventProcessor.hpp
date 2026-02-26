@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 class ConnectionProvider;
-class RegistrationProvider;
+namespace areg { class RegistrationProvider; }
 class ServiceManager;
 namespace areg { class ProxyAddress; }
 namespace areg { class StubAddress; }
@@ -68,7 +68,7 @@ public:
     void processServiceEvent( ServiceManagerEventData::ServiceManagerCommand cmdService
                             , const areg::InStream & stream
                             , ConnectionProvider& connectProvider
-                            , RegistrationProvider & registerProvider );
+                            , areg::RegistrationProvider & registerProvider );
 
     /**
      * \brief   Returns the list of registered service providers that contain the list of service consumers.
@@ -88,7 +88,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
      *                              about public service connection status.
      **/
-    void _registerServer( const areg::StubAddress & whichServer, RegistrationProvider& registerProvider );
+    void _registerServer( const areg::StubAddress & whichServer, areg::RegistrationProvider& registerProvider );
 
     /**
       * \brief   The function is called when it is requested to unregister the service provider.
@@ -99,7 +99,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
       *                             about public service connection status.
      **/
-    void _unregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider);
 
      /**
       * \brief   The function is called when it is requested to register the service consumer.
@@ -109,7 +109,7 @@ private:
       * \param   registerProvider   The service connection object to notify remote application
       *                             about public service connection status.
       **/
-    void _registerClient( const areg::ProxyAddress & whichClient, RegistrationProvider& registerProvider);
+    void _registerClient( const areg::ProxyAddress & whichClient, areg::RegistrationProvider& registerProvider);
 
     /**
      * \brief   The function is called when it is requested to unregister the service consumer.
@@ -120,7 +120,7 @@ private:
      * \param   registerProvider    The service connection object to notify remote application
      *                              about public service connection status.
      **/
-    void _unregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider);
+    void _unregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider);
 
     /**
      * \brief   Creates and sends predefined service consumer connected notification.

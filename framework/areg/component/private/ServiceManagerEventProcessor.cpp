@@ -51,7 +51,7 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
                                                         , const areg::InStream& stream
                                                         , ConnectionProvider& connectProvider
-                                                        , RegistrationProvider& registerProvider )
+                                                        , areg::RegistrationProvider& registerProvider )
 {
     switch ( cmdService )
     {
@@ -278,7 +278,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     }
 }
 
-void ServiceManagerEventProcessor::_registerServer( const areg::StubAddress & whichServer, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_registerServer( const areg::StubAddress & whichServer, areg::RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
 
@@ -309,7 +309,7 @@ void ServiceManagerEventProcessor::_registerServer( const areg::StubAddress & wh
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
@@ -345,7 +345,7 @@ void ServiceManagerEventProcessor::_unregisterServer( const areg::StubAddress & 
     }
 }
 
-void ServiceManagerEventProcessor::_registerClient( const areg::ProxyAddress & whichClient, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_registerClient( const areg::ProxyAddress & whichClient, areg::RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
 
@@ -372,7 +372,7 @@ void ServiceManagerEventProcessor::_registerClient( const areg::ProxyAddress & w
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason, RegistrationProvider& registerProvider)
+void ServiceManagerEventProcessor::_unregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider)
 {
     LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 

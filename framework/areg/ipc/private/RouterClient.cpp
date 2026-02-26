@@ -53,7 +53,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
                                     , static_cast<areg::RemoteMessageHandler &>(self())
                                     , static_cast<areg::DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
-    , RegistrationProvider     ( )
+    , areg::RegistrationProvider     ( )
     , areg::DispatcherThread              (areg::String(RouterClient::PREFIX_THREAD) + areg::CLIENT_DISPATCH_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
     , areg::RemoteEventConsumer         ( )
 

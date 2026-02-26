@@ -24,76 +24,79 @@
 namespace areg { class StubAddress; }
 namespace areg { class ProxyAddress; }
 
-//////////////////////////////////////////////////////////////////////////
-// RegistrationProvider interface
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   This is an interface to register and register the public
- *          service providers and service consumers.
- **/
-class AREG_API RegistrationProvider
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Protected default constructor and destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    //////////////////////////////////////////////////////////////////////////
+    // RegistrationProvider interface
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Protected constructor.
+     * \brief   This is an interface to register and register the public
+     *          service providers and service consumers.
      **/
-    RegistrationProvider() = default;
+    class AREG_API RegistrationProvider
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Protected default constructor and destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Protected constructor.
+         **/
+        RegistrationProvider() = default;
 
-    /**
-     * \brief   Protected destructor.
-     **/
-    virtual ~RegistrationProvider() = default;
+        /**
+         * \brief   Protected destructor.
+         **/
+        virtual ~RegistrationProvider() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// RegistrationProvider interface overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // RegistrationProvider interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Call to register the remote service provider in the system and connect with service consumers.
-     *          When service provider is registered, the service provider and all waiting service consumers
-     *          receive appropriate connection notifications.
-     * \param   stubService     The address of service provider to register in the system.
-     * \return  Returns true if succeeded registration.
-     **/
-    virtual bool registerServiceProvider(const areg::StubAddress& stubService) = 0;
+        /**
+         * \brief   Call to register the remote service provider in the system and connect with service consumers.
+         *          When service provider is registered, the service provider and all waiting service consumers
+         *          receive appropriate connection notifications.
+         * \param   stubService     The address of service provider to register in the system.
+         * \return  Returns true if succeeded registration.
+         **/
+        virtual bool registerServiceProvider(const areg::StubAddress& stubService) = 0;
 
-    /**
-     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
-     *          All connected service consumers automatically receive disconnect notifications.
-     * \param   stubService     The address of service provider to unregister in the system.
-     * \param   reason          The reason to unregister and disconnect the service provider.
-     **/
-    virtual void unregisterServiceProvider(const areg::StubAddress& stubService, const areg::DisconnectReason reason) = 0;
+        /**
+         * \brief   Call to unregister the service provider from the system and disconnect service consumers.
+         *          All connected service consumers automatically receive disconnect notifications.
+         * \param   stubService     The address of service provider to unregister in the system.
+         * \param   reason          The reason to unregister and disconnect the service provider.
+         **/
+        virtual void unregisterServiceProvider(const areg::StubAddress& stubService, const areg::DisconnectReason reason) = 0;
 
-    /**
-     * \brief   Call to register the remote service consumer in the system and connect to service provider.
-     *          If the service provider is already available, the service consumer and the service provider
-     *          receive a connection notification.
-     * \param   proxyService    The address of the service consumer to register in system.
-     * \return  Returns true if registration process started with success. Otherwise, it returns false.
-     **/
-    virtual bool registerServiceConsumer(const areg::ProxyAddress& proxyService) = 0;
+        /**
+         * \brief   Call to register the remote service consumer in the system and connect to service provider.
+         *          If the service provider is already available, the service consumer and the service provider
+         *          receive a connection notification.
+         * \param   proxyService    The address of the service consumer to register in system.
+         * \return  Returns true if registration process started with success. Otherwise, it returns false.
+         **/
+        virtual bool registerServiceConsumer(const areg::ProxyAddress& proxyService) = 0;
 
-    /**
-     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
-     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
-     * \param   proxyService    The address of the service consumer to unregister from the system.
-     * \param   reason          The reason to unregister and disconnect the service consumer.
-     **/
-    virtual void unregisterServiceConsumer(const areg::ProxyAddress& proxyService, const areg::DisconnectReason reason) = 0;
+        /**
+         * \brief   Call to unregister the service consumer from the system and disconnect service provider.
+         *          Both, the service provider and the service consumer receive appropriate disconnect notification.
+         * \param   proxyService    The address of the service consumer to unregister from the system.
+         * \param   reason          The reason to unregister and disconnect the service consumer.
+         **/
+        virtual void unregisterServiceConsumer(const areg::ProxyAddress& proxyService, const areg::DisconnectReason reason) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE(RegistrationProvider);
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE(RegistrationProvider);
+    };
 
+} // namespace areg
 #endif // AREG_IPC_REGISTRATIONPROVIDER_HPP

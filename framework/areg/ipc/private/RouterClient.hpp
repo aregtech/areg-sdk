@@ -39,7 +39,7 @@ class RegistrationConsumer;
  *          communicate with service manager.
  **/
 class RouterClient  : public    areg::ServiceClientConnectionBase
-                    , public    RegistrationProvider
+                    , public    areg::RegistrationProvider
                     , protected areg::DispatcherThread
                     , private   areg::RemoteMessageHandler
                     , private   areg::RemoteEventConsumer

@@ -35,7 +35,7 @@
  **/
 class RouterServerService   : public    ServiceCommunicationBase
                             , private   RegistrationConsumer
-                            , private   RegistrationProvider
+                            , private   areg::RegistrationProvider
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

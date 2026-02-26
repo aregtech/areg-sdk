@@ -410,7 +410,7 @@ private:
     /**
      * \brief   Returns the instance of remote servicing handler.
      **/
-    inline RegistrationProvider& getServiceRegisterProvider();
+    inline areg::RegistrationProvider& getServiceRegisterProvider();
 
     /**
      * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
@@ -472,9 +472,9 @@ inline ConnectionProvider& ServiceManager::getServiceConnectionProvider()
     return static_cast<ConnectionProvider&>(mServiceClient);
 }
 
-inline RegistrationProvider& ServiceManager::getServiceRegisterProvider()
+inline areg::RegistrationProvider& ServiceManager::getServiceRegisterProvider()
 {
-    return static_cast<RegistrationProvider&>(mServiceClient);
+    return static_cast<areg::RegistrationProvider&>(mServiceClient);
 }
 
 inline ServiceManager & ServiceManager::self()
