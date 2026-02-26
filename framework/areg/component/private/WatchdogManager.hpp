@@ -28,7 +28,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class TimerPosix;
+namespace areg::os { class TimerPosix; }
 
 namespace areg
 {
@@ -200,7 +200,7 @@ namespace areg
          * \brief   macOS timer callback function. Triggered when one of watchdog timers is expired.
          * \param   timerPtr        The pointer to the TimerPosix object that expired.
          **/
-        static void _posixWatchdogExpiredRoutine( TimerPosix* timerPtr );
+        static void _posixWatchdogExpiredRoutine( areg::os::TimerPosix* timerPtr );
     #else   // !__APPLE__
         /**
          * \brief   POSIX timer routine function. Triggered, when one of timer is expired.

@@ -36,7 +36,7 @@
 
 void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 {
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
+    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(handle);
     if (posixTimer != nullptr)
     {
         posixTimer->stopTimer();
@@ -46,7 +46,7 @@ void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
 {
     bool result = false;
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
+    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(watchdog.getHandle());
     if (posixTimer != nullptr)
     {
         areg::Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
@@ -60,7 +60,7 @@ bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
 }
 
 #ifdef __APPLE__
-void areg::WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
+void areg::WatchdogManager::_posixWatchdogExpiredRoutine(areg::os::TimerPosix* posixTimer)
 {
     areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
     ASSERT(posixTimer != nullptr);
@@ -80,7 +80,7 @@ void areg::WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
 void areg::WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
 {
     areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT(posixTimer != nullptr);
     areg::Watchdog::WATCHDOG_ID watchdogId = static_cast<areg::Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
     areg::Watchdog::GUARD_ID guardId  = areg::Watchdog::makeGuardId(watchdogId);

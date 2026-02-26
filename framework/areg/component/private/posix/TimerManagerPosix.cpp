@@ -35,7 +35,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef __APPLE__
-void TimerManager::_posixTimerExpiredRoutine( TimerPosix* posixTimer )
+void TimerManager::_posixTimerExpiredRoutine( areg::os::TimerPosix* posixTimer )
 {
     TimerManager & timerManager = TimerManager::getInstance( );
     ASSERT( posixTimer != nullptr );
@@ -53,7 +53,7 @@ void TimerManager::_posixTimerExpiredRoutine( TimerPosix* posixTimer )
 void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
 {
     TimerManager & timerManager = TimerManager::getInstance( );
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT( posixTimer != nullptr );
     areg::Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
@@ -69,7 +69,7 @@ void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
 
 void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
     {
         posixTimer->stopTimer();
@@ -79,7 +79,7 @@ void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 bool TimerManager::_osSystemTimerStart( areg::Timer & timer )
 {
     bool result{ false };
-    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());
+    areg::os::TimerPosix * posixTimer   = reinterpret_cast<areg::os::TimerPosix *>(timer.getHandle());
     ASSERT(posixTimer != nullptr);
 
     struct timespec startTime;
