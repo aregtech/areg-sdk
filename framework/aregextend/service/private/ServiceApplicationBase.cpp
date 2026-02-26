@@ -242,25 +242,25 @@ int32_t ServiceApplicationBase::startServiceDispatcher()
     return result;
 }
 
-void ServiceApplicationBase::prepareSaveConfiguration(ConfigManager& /* config */)
+void ServiceApplicationBase::prepareSaveConfiguration(areg::ConfigManager& /* config */)
 {
 }
 
-void ServiceApplicationBase::postSaveConfiguration(ConfigManager& /* config */)
+void ServiceApplicationBase::postSaveConfiguration(areg::ConfigManager& /* config */)
 {
 }
 
-void ServiceApplicationBase::prepareReadConfiguration(ConfigManager& /* config */)
+void ServiceApplicationBase::prepareReadConfiguration(areg::ConfigManager& /* config */)
 {
 }
 
-void ServiceApplicationBase::postReadConfiguration(ConfigManager& /* config */)
+void ServiceApplicationBase::postReadConfiguration(areg::ConfigManager& /* config */)
 {
 }
 
 void ServiceApplicationBase::onSetupConfiguration( const areg::ListProperties& /* listReadonly */
                                                  , const areg::ListProperties& /* listWritable */
-                                                 , ConfigManager& /* config */)
+                                                 , areg::ConfigManager& /* config */)
 {
 }
 

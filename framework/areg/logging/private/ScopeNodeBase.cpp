@@ -170,7 +170,7 @@ uint32_t ScopeNodeBase::groupChildNodes()
     return 0;
 }
 
-uint32_t ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const areg::String& /*parentPath*/) const
+uint32_t ScopeNodeBase::updateConfigNode(areg::ConfigManager& /*config*/, const areg::String& /*parentPath*/) const
 {
     return 0;
 }

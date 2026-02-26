@@ -116,7 +116,7 @@ TEST( LogScopeTest, LoadSavedLogConfiguration )
 
     do
     {
-        ConfigManager config;
+        areg::ConfigManager config;
         config.readConfig(testConfig);
         Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
 
@@ -389,7 +389,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     } while ( false );
 
-    ConfigManager config;
+    areg::ConfigManager config;
     config.readConfig(testConfig);
     Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
 

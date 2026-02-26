@@ -348,7 +348,7 @@ public:
      * \brief   Returns the instance of application configuration initializer object
      *          to read or write configuration properties
      **/
-    static ConfigManager& getConfigManager();
+    static areg::ConfigManager& getConfigManager();
 
     /**
      * \brief   Loads the configuration from the given file.
@@ -405,7 +405,7 @@ private:
     /**
      * \brief   The object to read and save application configuration properties.
      **/
-    ConfigManager   mConfigManager;
+    areg::ConfigManager   mConfigManager;
     /**
      * \brief   Exit application event.
      **/

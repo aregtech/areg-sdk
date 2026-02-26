@@ -345,7 +345,7 @@ const areg::String & Application::getMachineName()
     return areg::getHostname();
 }
 
-ConfigManager& Application::getConfigManager()
+areg::ConfigManager& Application::getConfigManager()
 {
     return Application::getInstance().mConfigManager;
 }

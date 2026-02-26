@@ -55,7 +55,7 @@ areg::String ScopeLeaf::makeScopePath( const areg::String & prefix ) const
     return result;
 }
 
-uint32_t ScopeLeaf::updateConfigNode(ConfigManager& config, const areg::String & parentPath ) const
+uint32_t ScopeLeaf::updateConfigNode(areg::ConfigManager& config, const areg::String & parentPath ) const
 {
     config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
     return 1;
@@ -255,7 +255,7 @@ uint32_t ScopeNode::groupChildNodes()
     return result;
 }
 
-uint32_t ScopeNode::updateConfigNode( ConfigManager & config, const areg::String & parentPath ) const
+uint32_t ScopeNode::updateConfigNode( areg::ConfigManager & config, const areg::String & parentPath ) const
 {
     uint32_t result{ 0 };
     areg::String thisScope = makeScopePath( parentPath );
@@ -382,7 +382,7 @@ areg::String ScopeRoot::makeScopePath( const areg::String & /*prefix*/ ) const
     return areg::String::EmptyString;
 }
 
-uint32_t ScopeRoot::updateConfigNode( ConfigManager & config, const areg::String & /*parentPath*/ ) const
+uint32_t ScopeRoot::updateConfigNode( areg::ConfigManager & config, const areg::String & /*parentPath*/ ) const
 {
     uint32_t result{ 0 };
 

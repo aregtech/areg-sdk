@@ -38,31 +38,31 @@ namespace areg
 
     bool LogConfiguration::isRemoteLoggingEnabled() const
     {
-        ConfigManager& config = Application::getConfigManager();
+        areg::ConfigManager& config = Application::getConfigManager();
         return config.getLogEnabled(areg::LogTarget::Remote);
     }
 
     bool LogConfiguration::isFileLoggingEnabled() const
     {
-        ConfigManager& config = Application::getConfigManager();
+        areg::ConfigManager& config = Application::getConfigManager();
         return config.getLogEnabled(areg::LogTarget::File);
     }
 
     bool LogConfiguration::isDatabaseLoggingEnabled() const
     {
-        ConfigManager& config = Application::getConfigManager();
+        areg::ConfigManager& config = Application::getConfigManager();
         return config.getLogEnabled(areg::LogTarget::Database);
     }
 
     bool LogConfiguration::isDebugOutputLoggingEnabled() const
     {
-        ConfigManager& config = Application::getConfigManager();
+        areg::ConfigManager& config = Application::getConfigManager();
         return config.getLogEnabled(areg::LogTarget::Debug);
     }
 
     void LogConfiguration::setLogEnabled(areg::LogTarget logType, bool isEnabled)
     {
-        ConfigManager& config = Application::getConfigManager();
+        areg::ConfigManager& config = Application::getConfigManager();
         if (isEnabled && config.getLoggingStatus() == false)
         {
             config.setLoggingStatus(true);
@@ -315,7 +315,7 @@ namespace areg
         }
 
         root.groupRecursive();
-        ConfigManager & config = Application::getConfigManager();
+        areg::ConfigManager & config = Application::getConfigManager();
         config.removeModuleScopes();
         root.updateConfigNode(config, areg::String::EmptyString);
     }

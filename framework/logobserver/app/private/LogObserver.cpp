@@ -764,7 +764,7 @@ bool LogObserver::_sendScopeUpdateMessage(const areg::String& scope)
     return result;
 }
 
-inline void LogObserver::enableLocalLogs(ConfigManager& config, bool /* enable */)
+inline void LogObserver::enableLocalLogs(areg::ConfigManager& config, bool /* enable */)
 {
     constexpr areg::ConfigEntry prioConfKey{ areg::ConfigEntry::LogScope };
     const areg::ConfigKey& keyPrio{ areg::getLogScope() };

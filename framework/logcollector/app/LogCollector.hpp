@@ -221,7 +221,7 @@ protected:
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    void postReadConfiguration(ConfigManager& config) override;
+    void postReadConfiguration(areg::ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -230,7 +230,7 @@ protected:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) override;
+    void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigManager& config) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -255,7 +255,7 @@ private:
      * \param   enable  Flag, indicating whether the logs should be enabled or not.
      *                  If true, the logs are enabled. Otherwise, the logs are disabled.
      **/
-    inline void _enableLocalLogs(ConfigManager& config, bool enable);
+    inline void _enableLocalLogs(areg::ConfigManager& config, bool enable);
 
     /**
      * \brief   Checks the command typed on console. Relevant only if it runs as a console application.

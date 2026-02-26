@@ -367,19 +367,19 @@ void LoggerClient::saveConfiguration()
     config.saveConfiguration();
 }
 
-void LoggerClient::prepareSaveConfiguration(ConfigManager& /* config */)
+void LoggerClient::prepareSaveConfiguration(areg::ConfigManager& /* config */)
 {
 }
 
-void LoggerClient::postSaveConfiguration(ConfigManager& /* config */)
+void LoggerClient::postSaveConfiguration(areg::ConfigManager& /* config */)
 {
 }
 
-void LoggerClient::prepareReadConfiguration(ConfigManager& /* config */)
+void LoggerClient::prepareReadConfiguration(areg::ConfigManager& /* config */)
 {
 }
 
-void LoggerClient::postReadConfiguration(ConfigManager& config)
+void LoggerClient::postReadConfiguration(areg::ConfigManager& config)
 {
     FuncObserverConfigured callbackConf{ nullptr };
     FuncLogDbConfigured callbackConfDb{ nullptr };
@@ -423,7 +423,7 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
 
 void LoggerClient::onSetupConfiguration( const areg::ListProperties&  /* listReadonly */
                                         , const areg::ListProperties& /* listWritable */
-                                        , ConfigManager& /* config */)
+                                        , areg::ConfigManager& /* config */)
 {
 }
 

@@ -257,12 +257,12 @@ areg::ConnectionType LogCollector::getConnectionType() const
     return areg::ConnectionType::Tcpip;
 }
 
-void LogCollector::postReadConfiguration(ConfigManager& config)
+void LogCollector::postReadConfiguration(areg::ConfigManager& config)
 {
     _enableLocalLogs(config, false);
 }
 
-void LogCollector::onSetupConfiguration(const areg::ListProperties& /* listReadonly */, const areg::ListProperties& /* listWritable */, ConfigManager& config)
+void LogCollector::onSetupConfiguration(const areg::ListProperties& /* listReadonly */, const areg::ListProperties& /* listWritable */, areg::ConfigManager& config)
 {
     _enableLocalLogs(config, false);
 }
@@ -759,7 +759,7 @@ areg::RemoteMessage LogCollector::_createScopeUpdateMessage(const areg::String& 
     return result;
 }
 
-inline void LogCollector::_enableLocalLogs(ConfigManager& config, bool enable)
+inline void LogCollector::_enableLocalLogs(areg::ConfigManager& config, bool enable)
 {
     constexpr areg::ConfigEntry prioConfKey{ areg::ConfigEntry::LogScope };
     const areg::ConfigKey& keyPrio{ areg::getLogScope() };

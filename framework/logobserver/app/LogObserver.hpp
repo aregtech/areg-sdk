@@ -282,7 +282,7 @@ private:
      * \param   enable  Flag, indicating whether the logs should be enabled or not.
      *                  If true, the logs are enabled. Otherwise, the logs are disabled.
      **/
-    inline void enableLocalLogs(ConfigManager& config, bool enable);
+    inline void enableLocalLogs(areg::ConfigManager& config, bool enable);
 
     /**
      * \brief   Checks the command typed on console. Relevant only if it runs as a console application.

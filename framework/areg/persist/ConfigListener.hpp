@@ -25,7 +25,7 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-class ConfigManager;
+namespace areg { class ConfigManager; }
 
 //////////////////////////////////////////////////////////////////////////
 // ConfigListener interface declaration
@@ -60,25 +60,25 @@ public:
      * \brief   Called by configuration manager before the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void prepareSaveConfiguration(ConfigManager& config) = 0;
+    virtual void prepareSaveConfiguration(areg::ConfigManager& config) = 0;
 
     /**
      * \brief   Called by configuration manager after the configuration is saved in the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void postSaveConfiguration(ConfigManager& config) = 0;
+    virtual void postSaveConfiguration(areg::ConfigManager& config) = 0;
 
     /**
      * \brief   Called by configuration manager before the configuration is loaded from the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void prepareReadConfiguration(ConfigManager& config) = 0;
+    virtual void prepareReadConfiguration(areg::ConfigManager& config) = 0;
 
     /**
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
      * \param   config  The instance of configuration manager.
      **/
-    virtual void postReadConfiguration(ConfigManager& config) = 0;
+    virtual void postReadConfiguration(areg::ConfigManager& config) = 0;
 
     /**
      * \brief   Called by configuration manager after setting read-only and writable properties.
@@ -87,7 +87,7 @@ public:
      * \param   listWritable    The list of module / process specific properties to set in the configuration;
      * \param   config          The instance of configuration manager.
      **/
-    virtual void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, ConfigManager& config) = 0;
+    virtual void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigManager& config) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

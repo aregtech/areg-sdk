@@ -29,7 +29,7 @@
 class ScopeLeaf;
 class ScopeNode;
 class ScopeRoot;
-class ConfigManager;
+namespace areg { class ConfigManager; }
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeLeaf class declaration
@@ -95,7 +95,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    uint32_t updateConfigNode( ConfigManager & config, const areg::String & parentPath ) const override;
+    uint32_t updateConfigNode( areg::ConfigManager & config, const areg::String & parentPath ) const override;
 
 };
 
@@ -238,7 +238,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    uint32_t updateConfigNode(ConfigManager& config, const areg::String & parentPath ) const override;
+    uint32_t updateConfigNode(areg::ConfigManager& config, const areg::String & parentPath ) const override;
 
     /**
      * \brief   Recursively groups child nodes. The grouping starts from the last node in the
@@ -343,7 +343,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    uint32_t updateConfigNode(ConfigManager& config, const areg::String & parentPath ) const override;
+    uint32_t updateConfigNode(areg::ConfigManager& config, const areg::String & parentPath ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
