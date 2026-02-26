@@ -261,7 +261,7 @@ void areg::SyncTimer::_osReleaseTime()
 
 bool areg::SyncTimer::_osLock( uint32_t timeout )
 {
-    return (static_cast<int32_t>(areg::os::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject( *reinterpret_cast<WaitablePosix *>(mSyncObject), timeout ));
+    return (static_cast<int32_t>(areg::os::SyncSignal::First) == SyncLockAndWaitPosix::waitForSingleObject( *reinterpret_cast<areg::os::WaitablePosix *>(mSyncObject), timeout ));
 }
 
 bool areg::SyncTimer::_osSetTimer()
@@ -280,10 +280,10 @@ bool areg::SyncTimer::_osCancelTimer()
 
 int32_t areg::MultiLock::_osLock(uint32_t timeout /* = areg::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/)
 {
-    WaitablePosix * syncHandles[areg::MAXIMUM_WAITING_OBJECTS];
+    areg::os::WaitablePosix * syncHandles[areg::MAXIMUM_WAITING_OBJECTS];
     for ( int i = 0; i < mSizeCount; ++ i )
     {
-        syncHandles[i] = reinterpret_cast<WaitablePosix *>(mSyncObjArray[i]->getHandle( ));
+        syncHandles[i] = reinterpret_cast<areg::os::WaitablePosix *>(mSyncObjArray[i]->getHandle( ));
     }
 
     int32_t index = areg::MultiLock::LOCK_INDEX_INVALID;

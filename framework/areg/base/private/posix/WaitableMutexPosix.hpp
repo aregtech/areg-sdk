@@ -38,7 +38,7 @@
  *          state. The released state of Mute is considered as signaled and the thread
  *          owning state is non-signaled if it has mutex owning thread.
  **/
-class WaitableMutexPosix : public WaitablePosix
+class WaitableMutexPosix : public areg::os::WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.

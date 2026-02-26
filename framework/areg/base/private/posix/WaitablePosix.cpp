@@ -23,23 +23,27 @@
 
 #include "areg/base/private/posix/SyncLockAndWaitPosix.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// SyncWaitable class implementation
-//////////////////////////////////////////////////////////////////////////
-
-WaitablePosix::WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
-    : MutexPosix     ( syncType, isRecursive, asciiName )
+namespace areg::os
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // SyncWaitable class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-WaitablePosix::~WaitablePosix()
-{
-    ASSERT(SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
-}
+    WaitablePosix::WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
+        : MutexPosix     ( syncType, isRecursive, asciiName )
+    {
+    }
 
-void WaitablePosix::freeResources()
-{
-    SyncLockAndWaitPosix::eventRemove(*this);
-}
+    WaitablePosix::~WaitablePosix()
+    {
+        ASSERT(SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
+    }
+
+    void WaitablePosix::freeResources()
+    {
+        SyncLockAndWaitPosix::eventRemove(*this);
+    }
+
+} // namespace areg::os
 
 #endif  //  defined(_POSIX) || defined(POSIX)

@@ -31,7 +31,7 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
 
     WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCount /*= 0*/, const char * asciiName /*= nullptr */)
-        : WaitablePosix  ( areg::os::SyncKind::SoWaitSemaphore, true, asciiName )
+        : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitSemaphore, true, asciiName )
 
         , mMaxCount         ( maxCount  )
         , mCurCount         ( initCount )

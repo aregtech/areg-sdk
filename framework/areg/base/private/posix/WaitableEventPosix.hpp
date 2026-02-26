@@ -48,7 +48,7 @@
  *
  * \see     SyncLockAndWaitPosix
  **/
-class WaitableEventPosix : public WaitablePosix
+class WaitableEventPosix : public areg::os::WaitablePosix
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor.

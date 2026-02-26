@@ -41,13 +41,13 @@ SyncLockAndWaitPosix::SyncResourceMapIX & SyncLockAndWaitPosix::_mapSyncResource
     return _theSyncResourceMapIX;
 }
 
-int32_t SyncLockAndWaitPosix::waitForSingleObject( WaitablePosix & syncWait, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
+int32_t SyncLockAndWaitPosix::waitForSingleObject( areg::os::WaitablePosix & syncWait, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
 {
-    WaitablePosix * list[] = { &syncWait };
+    areg::os::WaitablePosix * list[] = { &syncWait };
     return waitForMultipleObjects(list, 1, true, msTimeout);
 }
 
-int32_t SyncLockAndWaitPosix::waitForMultipleObjects( WaitablePosix ** listWaitables, int32_t count, bool waitAll /* = false */, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
+int32_t SyncLockAndWaitPosix::waitForMultipleObjects( areg::os::WaitablePosix ** listWaitables, int32_t count, bool waitAll /* = false */, uint32_t msTimeout /* = areg::WAIT_INFINITE */ )
 {
     int32_t result = static_cast<int32_t>(areg::os::SyncSignal::Invalid);
     if ( (listWaitables != nullptr) && (count > 0) )
@@ -88,7 +88,7 @@ int32_t SyncLockAndWaitPosix::waitForMultipleObjects( WaitablePosix ** listWaita
     return result;
 }
 
-int32_t SyncLockAndWaitPosix::eventSignaled( WaitablePosix & syncWaitable )
+int32_t SyncLockAndWaitPosix::eventSignaled( areg::os::WaitablePosix & syncWaitable )
 {
     int32_t result = 0;
 
@@ -153,7 +153,7 @@ int32_t SyncLockAndWaitPosix::eventSignaled( WaitablePosix & syncWaitable )
     return result;
 }
 
-void SyncLockAndWaitPosix::eventRemove( WaitablePosix & syncWaitable )
+void SyncLockAndWaitPosix::eventRemove( areg::os::WaitablePosix & syncWaitable )
 {
     SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_mapSyncResources() };
     mapResource.lock( );
@@ -188,7 +188,7 @@ void SyncLockAndWaitPosix::eventRemove( WaitablePosix & syncWaitable )
     mapResource.unlock( );
 }
 
-void SyncLockAndWaitPosix::eventFailed( WaitablePosix & syncWaitable )
+void SyncLockAndWaitPosix::eventFailed( areg::os::WaitablePosix & syncWaitable )
 {
     SyncResourceMapIX & mapResource { SyncLockAndWaitPosix::_mapSyncResources() };
     mapResource.lock( );
@@ -217,7 +217,7 @@ void SyncLockAndWaitPosix::eventFailed( WaitablePosix & syncWaitable )
     mapResource.unlock( );
 }
 
-bool SyncLockAndWaitPosix::isWaitableRegistered( WaitablePosix & syncWaitable )
+bool SyncLockAndWaitPosix::isWaitableRegistered( areg::os::WaitablePosix & syncWaitable )
 {
     bool result = false;
 
@@ -256,7 +256,7 @@ bool SyncLockAndWaitPosix::notifyAsyncSignal( id_type threadId )
     return result;
 }
 
-SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
+SyncLockAndWaitPosix::SyncLockAndWaitPosix(   areg::os::WaitablePosix ** listWaitables
                                             , int32_t count
                                             , areg::os::WaitCondition matchCondition
                                             , uint32_t msTimeout )
@@ -287,7 +287,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
         {
             for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
-                WaitablePosix * syncWaitable = *listWaitables;
+                areg::os::WaitablePosix * syncWaitable = *listWaitables;
                 if (syncWaitable != nullptr)
                 {
                     ASSERT( (static_cast<uint32_t>(syncWaitable->getSyncType()) & static_cast<uint32_t>(areg::os::SyncKind::SoWaitable)) != 0);
@@ -325,7 +325,7 @@ SyncLockAndWaitPosix::SyncLockAndWaitPosix(   WaitablePosix ** listWaitables
 
             for ( uint32_t i = 0; i < static_cast<uint32_t>(count); ++ i, ++ listWaitables )
             {
-                WaitablePosix * syncWaitable = *listWaitables;
+                areg::os::WaitablePosix * syncWaitable = *listWaitables;
                 if ( syncWaitable != nullptr )
                 {
                     mapResources.registerResourceObject(syncWaitable, this);
@@ -476,7 +476,7 @@ inline int32_t SyncLockAndWaitPosix::_waitCondition()
     }
 }
 
-inline int32_t SyncLockAndWaitPosix::_getWaitableIndex( const WaitablePosix & syncWaitable ) const
+inline int32_t SyncLockAndWaitPosix::_getWaitableIndex( const areg::os::WaitablePosix & syncWaitable ) const
 {
     int32_t result = areg::INVALID_INDEX;
     for ( uint32_t i = 0; i < mWaitingList.getSize(); ++ i )
@@ -491,7 +491,7 @@ inline int32_t SyncLockAndWaitPosix::_getWaitableIndex( const WaitablePosix & sy
     return result;
 }
 
-int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_checkEventFired( WaitablePosix & syncObject )
+int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_checkEventFired( areg::os::WaitablePosix & syncObject )
 {
     int32_t result = static_cast<int32_t>(areg::os::SyncSignal::Invalid);
 
@@ -511,7 +511,7 @@ int32_t SyncLockAndWaitPosix::SyncLockAndWaitPosix::_checkEventFired( WaitablePo
 #ifdef _DEBUG
             for ( ; i < mWaitingList.getSize(); ++ i)
             {
-                WaitablePosix *waitable = mWaitingList[i];
+                areg::os::WaitablePosix *waitable = mWaitingList[i];
                 ASSERT(waitable != nullptr);
                 if (waitable->checkSignaled(mContext) == false)
                 {
@@ -554,7 +554,7 @@ bool SyncLockAndWaitPosix::_requestOwnership( int32_t firedEvent )
     if ( firedEvent != static_cast<int32_t>(areg::os::SyncSignal::All) )
     {
         ASSERT(mWaitingList.getSize() > static_cast<uint32_t>(firedEvent));
-        WaitablePosix *waitable = mWaitingList[firedEvent];
+        areg::os::WaitablePosix *waitable = mWaitingList[firedEvent];
         
 #ifdef DEBUG
         if (waitable == nullptr)
@@ -584,7 +584,7 @@ bool SyncLockAndWaitPosix::_requestOwnership( int32_t firedEvent )
         result = true;
         for (uint32_t i = 0; (i < mWaitingList.getSize()) && result; ++ i)
         {
-            WaitablePosix *waitable = mWaitingList[i];
+            areg::os::WaitablePosix *waitable = mWaitingList[i];
             ASSERT(waitable != nullptr);
             result = waitable->notifyRequestOwnership(mContext);
 

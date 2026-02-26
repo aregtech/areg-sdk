@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
-    : WaitablePosix  ( areg::os::SyncKind::SoWaitEvent, true, asciiName )
+    : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitEvent, true, asciiName )
 
     , mEventReset       ( isAutoReset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
     , mIsSignaled       ( isInitSignaled )

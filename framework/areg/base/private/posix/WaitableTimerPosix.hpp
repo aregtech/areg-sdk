@@ -41,7 +41,7 @@ namespace areg::os
      *          set to signaled when the specified timeout is expired. There are two 
      *          types of waitable timers: manual- or auto-reset.
      **/
-    class WaitableTimerPosix : public WaitablePosix
+    class WaitableTimerPosix : public areg::os::WaitablePosix
     {
     //////////////////////////////////////////////////////////////////////////
     // Statics and constants

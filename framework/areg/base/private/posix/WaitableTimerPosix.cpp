@@ -47,7 +47,7 @@ namespace areg::os
     #endif
 
     WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
-        : WaitablePosix  ( areg::os::SyncKind::SoWaitTimer, false, name )
+        : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitTimer, false, name )
 
         , mResetInfo        ( isAutoReset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
     #ifdef __APPLE__

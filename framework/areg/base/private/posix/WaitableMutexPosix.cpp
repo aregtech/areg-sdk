@@ -28,7 +28,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
-    : WaitablePosix  ( areg::os::SyncKind::SoWaitMutex, true, asciiName             )
+    : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitMutex, true, asciiName             )
 
     , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
     , mLockCount        ( initOwned ? 1 : 0                                      )
