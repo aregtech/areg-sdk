@@ -17,122 +17,126 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ProxyBase.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// NotificationEventData class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// NotificationEventData class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
-    : mProxy        (&proxy)
-    , mNotifyType   (notifyType)
-    , mNotifyId     (notifyId)
-    , mSequenceNr   (seqNr)
+namespace areg
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationEventData class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-NotificationEventData::NotificationEventData( const NotificationEventData& src )
-    : mProxy        (src.mProxy)
-    , mNotifyType   (src.mNotifyType)
-    , mNotifyId     (src.mNotifyId)
-    , mSequenceNr   (src.mSequenceNr)
-{
-}
-
-NotificationEventData::NotificationEventData( NotificationEventData && src ) noexcept
-    : mProxy        ( src.mProxy )
-    , mNotifyType   ( src.mNotifyType )
-    , mNotifyId     ( src.mNotifyId )
-    , mSequenceNr   ( src.mSequenceNr )
-{
-    src.mProxy = nullptr;
-}
-
-NotificationEventData & NotificationEventData::operator = ( const NotificationEventData & src )
-{
-    if ( this != &src )
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationEventData class, constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    areg::NotificationEventData::NotificationEventData( const ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
+        : mProxy        (&proxy)
+        , mNotifyType   (notifyType)
+        , mNotifyId     (notifyId)
+        , mSequenceNr   (seqNr)
     {
-        mProxy      = src.mProxy;
-        mNotifyType = src.mNotifyType;
-        mNotifyId   = src.mNotifyId;
-        mSequenceNr = src.mSequenceNr;
     }
 
-    return (*this);
-}
-
-NotificationEventData & NotificationEventData::operator = ( NotificationEventData && src ) noexcept
-{
-    if ( this != &src )
+    areg::NotificationEventData::NotificationEventData( const areg::NotificationEventData& src )
+        : mProxy        (src.mProxy)
+        , mNotifyType   (src.mNotifyType)
+        , mNotifyId     (src.mNotifyId)
+        , mSequenceNr   (src.mSequenceNr)
     {
-        mProxy      = src.mProxy;
-        mNotifyType = src.mNotifyType;
-        mNotifyId   = src.mNotifyId;
-        mSequenceNr = src.mSequenceNr;
-
-        src.mProxy  = nullptr;
     }
 
-    return (*this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// NotificationEvent class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// NotificationEvent class, implement runtime
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, areg::Event)
-
-//////////////////////////////////////////////////////////////////////////
-// NotificationEvent class, static methods
-//////////////////////////////////////////////////////////////////////////
-void NotificationEvent::sendEvent( const NotificationEventData& data, NotificationConsumer* caller /*= nullptr*/ )
-{
-    NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
-    if (eventElem != nullptr)
+    areg::NotificationEventData::NotificationEventData( areg::NotificationEventData && src ) noexcept
+        : mProxy        ( src.mProxy )
+        , mNotifyType   ( src.mNotifyType )
+        , mNotifyId     ( src.mNotifyId )
+        , mSequenceNr   ( src.mSequenceNr )
     {
-        if (caller != nullptr)
-            eventElem->setEventConsumer(static_cast<areg::EventConsumer *>(caller));
-        static_cast<areg::Event *>(eventElem)->deliverEvent();
+        src.mProxy = nullptr;
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// NotificationEvent class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : areg::Event (areg::Event::EventType::EventNotifyClient)
-    , mData (data)
-{
-    setTargetThread();
-}
-
-//////////////////////////////////////////////////////////////////////////
-// NotificationEvent class, methods
-//////////////////////////////////////////////////////////////////////////
-void NotificationEvent::setTargetThread()
-{
-    const ProxyBase * proxy = mData.getProxy();
-    areg::DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : areg::DispatcherThread::getCurrentDispatcherThread();
-    ASSERT(dispThread.isValid());
-    registerForThread(&dispThread);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// NotificationConsumer class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// NotificationConsumer class, methods
-//////////////////////////////////////////////////////////////////////////
-void NotificationConsumer::startEventProcessing( areg::Event& eventElem )
-{
-    NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
-    if (eventNotify != nullptr)
+    areg::NotificationEventData & areg::NotificationEventData::operator = ( const areg::NotificationEventData & src )
     {
-        processNotificationEvent(*eventNotify);
+        if ( this != &src )
+        {
+            mProxy      = src.mProxy;
+            mNotifyType = src.mNotifyType;
+            mNotifyId   = src.mNotifyId;
+            mSequenceNr = src.mSequenceNr;
+        }
+
+        return (*this);
     }
-}
+
+    areg::NotificationEventData & areg::NotificationEventData::operator = ( areg::NotificationEventData && src ) noexcept
+    {
+        if ( this != &src )
+        {
+            mProxy      = src.mProxy;
+            mNotifyType = src.mNotifyType;
+            mNotifyId   = src.mNotifyId;
+            mSequenceNr = src.mSequenceNr;
+
+            src.mProxy  = nullptr;
+        }
+
+        return (*this);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationEvent class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationEvent class, implement runtime
+    //////////////////////////////////////////////////////////////////////////
+    AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, areg::Event)
+
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationEvent class, static methods
+    //////////////////////////////////////////////////////////////////////////
+    void NotificationEvent::sendEvent( const areg::NotificationEventData& data, areg::NotificationConsumer* caller /*= nullptr*/ )
+    {
+        NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
+        if (eventElem != nullptr)
+        {
+            if (caller != nullptr)
+                eventElem->setEventConsumer(static_cast<areg::EventConsumer *>(caller));
+            static_cast<areg::Event *>(eventElem)->deliverEvent();
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationEvent class, constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    NotificationEvent::NotificationEvent( const areg::NotificationEventData& data )
+        : areg::Event (areg::Event::EventType::EventNotifyClient)
+        , mData (data)
+    {
+        setTargetThread();
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationEvent class, methods
+    //////////////////////////////////////////////////////////////////////////
+    void NotificationEvent::setTargetThread()
+    {
+        const ProxyBase * proxy = mData.getProxy();
+        areg::DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : areg::DispatcherThread::getCurrentDispatcherThread();
+        ASSERT(dispThread.isValid());
+        registerForThread(&dispThread);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationConsumer class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // NotificationConsumer class, methods
+    //////////////////////////////////////////////////////////////////////////
+    void areg::NotificationConsumer::startEventProcessing( areg::Event& eventElem )
+    {
+        NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
+        if (eventNotify != nullptr)
+        {
+            processNotificationEvent(*eventNotify);
+        }
+    }
+
+} // namespace areg

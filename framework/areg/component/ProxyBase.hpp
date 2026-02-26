@@ -41,12 +41,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class NotificationConsumer;
-class NotificationEventData;
+namespace areg { class NotificationConsumer; }
+namespace areg { class NotificationEventData; }
 namespace areg { class ServiceResponseEvent; }
 namespace areg { class RemoteResponseEvent; }
 namespace areg { class ServiceRequestEvent; }
-class NotificationEvent;
+namespace areg { class NotificationEvent; }
 namespace areg { class DispatcherThread; }
 namespace areg { class EventDataStream; }
 class ProxyListener;
@@ -135,7 +135,7 @@ private:
          * \param   seqNr   Sequence Number
          * \param   caller  Client listener pointer 
          **/
-        Listener(uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller);
+        Listener(uint32_t msgId, const SequenceNumber & seqNr, areg::NotificationConsumer * caller);
 
         /**
          * \brief   Copies data from given source.
@@ -193,7 +193,7 @@ private:
         /**
          * \brief   Pointer to notification event listener object, which should be instance of Proxy client.
          **/
-        NotificationConsumer *   mListener;
+        areg::NotificationConsumer *   mListener;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -343,7 +343,7 @@ protected:
         /**
          * \brief   Sets event consumer object to deliver notification.
          **/
-        explicit ServiceAvailableEvent( NotificationConsumer & consumer );
+        explicit ServiceAvailableEvent( areg::NotificationConsumer & consumer );
         /**
          * \brief   Destructor
          **/
@@ -356,7 +356,7 @@ protected:
         /**
          * \brief   Returns instance of consumer to send notification
          **/
-        inline NotificationConsumer & getConsumer() const
+        inline areg::NotificationConsumer & getConsumer() const
         {
             return mNotifyConsumer;
         }
@@ -397,7 +397,7 @@ protected:
         /**
          * \brief   Instance of consumer to send service available notification.
          **/
-        NotificationConsumer &   mNotifyConsumer;
+        areg::NotificationConsumer &   mNotifyConsumer;
 
         /**
          * \brief   The time in milliseconds to delay service available event.
@@ -648,7 +648,7 @@ protected:
      * \param   consumer    The instance of consumer, which receives service available event.
      * \return  If succeeds, returns valid pointer to service available event object.
      **/
-    virtual ProxyBase::ServiceAvailableEvent * createServiceAvailableEvent( NotificationConsumer & consumer ) = 0;
+    virtual ProxyBase::ServiceAvailableEvent * createServiceAvailableEvent( areg::NotificationConsumer & consumer ) = 0;
 
     /**
      * \brief   Creates notification event to send to client objects. 
@@ -661,7 +661,7 @@ protected:
      *                  notification information.
      * \return  Returns new created notification event object.
      **/
-    virtual NotificationEvent * createNotificationEvent( const NotificationEventData & data ) const = 0;
+    virtual areg::NotificationEvent * createNotificationEvent( const areg::NotificationEventData & data ) const = 0;
 
     /**
      * \brief   Create Request event to send to Stub object. 
@@ -745,7 +745,7 @@ protected:
      * \param   consumer    The instance of consumer to process service available event.
      * \param   delayEvent  The timeout in milliseconds to delay when processing the service available event.
      **/
-    virtual void processServiceAvailableEvent( NotificationConsumer & consumer, uint32_t delayEvent );
+    virtual void processServiceAvailableEvent( areg::NotificationConsumer & consumer, uint32_t delayEvent );
 
     /**
      * \brief	Unregisters listener and removes from list, clear all
@@ -771,7 +771,7 @@ protected:
      *          If no more listener object in Listener List, it will create
      *          event object and send to Stop with stop notification flag.
      **/
-    virtual void unregisterListener( NotificationConsumer * consumer );
+    virtual void unregisterListener( areg::NotificationConsumer * consumer );
 
     /**
      * \brief	Sends the notification event.
@@ -786,7 +786,7 @@ protected:
      * \param	seqNr	    Sequence number to use for listener searching
      * \param	caller	    Pointer to Listener object to be notified.
      **/
-    virtual void sendNotificationEvent( uint32_t msgId, areg::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer * caller );
+    virtual void sendNotificationEvent( uint32_t msgId, areg::ResultType resType, const SequenceNumber & seqNr, areg::NotificationConsumer * caller );
 
     /**
      * \brief   Called to register all servicing listeners. It is called when proxy is instantiated.
@@ -861,7 +861,7 @@ protected:
      * \param   seqNr       The sequence number of listener to remove.
      * \param   caller      Notification Event consumer.
      **/
-    inline void removeListener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller );
+    inline void removeListener( uint32_t msgId, const SequenceNumber & seqNr, areg::NotificationConsumer * caller );
 
     /**
      * \brief   Add Proxy Listener entry to listener list.
@@ -874,7 +874,7 @@ protected:
      * \return  Returns true if new listener has been added.
      *          If listener already exists, returns false.
      **/
-    inline bool addListener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer * caller, bool unique );
+    inline bool addListener( uint32_t msgId, const SequenceNumber & seqNr, areg::NotificationConsumer * caller, bool unique );
 
     /**
      * \brief   Sets Data state of specified message ID in Proxy Data object
@@ -900,14 +900,14 @@ protected:
      * \param   alwaysNotify    The flag indicating whether notification message
      *                          should be sent if the notification already is pending.
      **/
-    void setNotification( uint32_t msgId, NotificationConsumer * caller, bool alwaysNotify = false );
+    void setNotification( uint32_t msgId, areg::NotificationConsumer * caller, bool alwaysNotify = false );
 
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
      * \param   msgId   The Notification Message ID
      * \param   caller  The pointer of Notification Event Consumer.
      **/
-    void clearNotification( uint32_t msgId, NotificationConsumer * caller );
+    void clearNotification( uint32_t msgId, areg::NotificationConsumer * caller );
 
     /**
      * \brief   Sends notification events to notification listeners.
@@ -945,7 +945,7 @@ protected:
      *                  This parameter can be nullptr only if request has not appropriate response.
      *                  Otherwise this should be valid pointer.
      **/
-    void sendRequestEvent( uint32_t reqId, const areg::EventDataStream & args, NotificationConsumer * caller );
+    void sendRequestEvent( uint32_t reqId, const areg::EventDataStream & args, areg::NotificationConsumer * caller );
 
     /**
      * \brief   Sends request events to Stub object to start or stop receiving update notifications.
@@ -959,7 +959,7 @@ protected:
     /**
      * \brief   Returns true if specified consumer is registered in the listener list.
      **/
-    bool isServiceListenerRegistered( NotificationConsumer & caller ) const;
+    bool isServiceListenerRegistered( areg::NotificationConsumer & caller ) const;
 
     /**
      * \brief   Called to instantiate service available event to send to client.
@@ -1167,7 +1167,7 @@ inline areg::ProxyData & ProxyBase::getProxyData()
     return mProxyData;
 }
 
-inline bool ProxyBase::addListener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller, bool unique)
+inline bool ProxyBase::addListener( uint32_t msgId, const SequenceNumber & seqNr, areg::NotificationConsumer* caller, bool unique)
 {
     ProxyBase::Listener listener( msgId, seqNr, caller );
     if (unique)
@@ -1181,7 +1181,7 @@ inline bool ProxyBase::addListener( uint32_t msgId, const SequenceNumber & seqNr
     }
 }
 
-inline void ProxyBase::removeListener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller )
+inline void ProxyBase::removeListener( uint32_t msgId, const SequenceNumber & seqNr, areg::NotificationConsumer* caller )
 {
     static_cast<void>(mListenerList.removeElem( ProxyBase::Listener( msgId, seqNr, caller ) ));
 }

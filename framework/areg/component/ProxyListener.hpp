@@ -32,7 +32,7 @@
  *          and sends to all its clients. The client objects are instances
  *          of Proxy Listener to receive those notification events.
  **/
-class AREG_API ProxyListener  : public NotificationConsumer
+class AREG_API ProxyListener  : public areg::NotificationConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -77,7 +77,7 @@ public:
      *          event is going to be processed.
      * \param   eventElem   The notification event object to process.
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem ) override = 0;
+    virtual void processNotificationEvent( areg::NotificationEvent & eventElem ) override = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

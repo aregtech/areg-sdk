@@ -37,7 +37,7 @@ namespace areg { class Event; }
 class ProxyEvent;
 namespace areg { class StubAddress; }
 namespace areg { class ServiceResponseEvent; }
-class NotificationConsumer;
+namespace areg { class NotificationConsumer; }
 namespace areg { class Channel; }
 namespace areg { class ResponseEvent; }
 class ProxyConnectEvent;

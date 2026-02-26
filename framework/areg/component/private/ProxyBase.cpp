@@ -83,7 +83,7 @@ ProxyBase::Listener::Listener( uint32_t msgId, const SequenceNumber & seqNr )
 {
 }
 
-ProxyBase::Listener::Listener( uint32_t msgId, const SequenceNumber & seqNr, NotificationConsumer* caller )
+ProxyBase::Listener::Listener( uint32_t msgId, const SequenceNumber & seqNr, areg::NotificationConsumer* caller )
     : mMessageId    (msgId)
     , mSequenceNr   (seqNr)
     , mListener     (caller)
@@ -138,7 +138,7 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 
 AREG_IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, areg::Event)
 
-ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( NotificationConsumer & consumer )
+ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( areg::NotificationConsumer & consumer )
     : areg::Event             ( areg::Event::EventType::EventExternal )
     , mNotifyConsumer   ( consumer )
     , mDelayConnectEvent( 0 )
@@ -209,7 +209,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & ro
 
                 static_cast<void>(proxy->addListener( static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                                                     , areg::SEQUENCE_NUMBER_NOTIFY
-                                                    , static_cast<NotificationConsumer *>(&connect), true ));
+                                                    , static_cast<areg::NotificationConsumer *>(&connect), true ));
                 ++ proxy->mProxyInstCount;
                 proxy->mIsStopped = false;
 
@@ -311,7 +311,7 @@ void ProxyBase::freeProxy( ProxyListener & connect )
 
     removeListener( static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
                   , areg::SEQUENCE_NUMBER_NOTIFY
-                  , static_cast<NotificationConsumer *>(&connect));
+                  , static_cast<areg::NotificationConsumer *>(&connect));
 
     std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress( mProxyAddress );
 
@@ -419,7 +419,7 @@ void ProxyBase::serviceConnectionUpdated( const areg::StubAddress & server, cons
     }
 }
 
-void ProxyBase::setNotification( uint32_t msgId, NotificationConsumer* caller, bool alwaysNotify /*= false*/ )
+void ProxyBase::setNotification( uint32_t msgId, areg::NotificationConsumer* caller, bool alwaysNotify /*= false*/ )
 {
     if (isConnected())
     {
@@ -465,7 +465,7 @@ void ProxyBase::setNotification( uint32_t msgId, NotificationConsumer* caller, b
     }
 }
 
-void ProxyBase::clearNotification( uint32_t msgId, NotificationConsumer* caller )
+void ProxyBase::clearNotification( uint32_t msgId, areg::NotificationConsumer* caller )
 {
     removeListener(msgId, areg::SEQUENCE_NUMBER_NOTIFY, caller);
     if (hasNotificationListener(msgId) == false)
@@ -475,7 +475,7 @@ void ProxyBase::clearNotification( uint32_t msgId, NotificationConsumer* caller 
     }
 }
 
-void ProxyBase::unregisterListener( NotificationConsumer *consumer )
+void ProxyBase::unregisterListener( areg::NotificationConsumer *consumer )
 {
     LOG_SCOPE(areg_component_ProxyBase_unregisterListener);
     LOG_DBG("Unregisters proxy client [ %p ]", consumer);
@@ -540,10 +540,10 @@ void ProxyBase::notifyListeners( uint32_t respId, areg::ResultType result, const
     }
 }
 
-void ProxyBase::sendNotificationEvent( uint32_t msgId, areg::ResultType resType, const SequenceNumber & seqNr, NotificationConsumer* caller )
+void ProxyBase::sendNotificationEvent( uint32_t msgId, areg::ResultType resType, const SequenceNumber & seqNr, areg::NotificationConsumer* caller )
 {
-    NotificationEventData data(self(), resType, msgId, seqNr);
-    NotificationEvent* eventElem = createNotificationEvent(data);
+    areg::NotificationEventData data(self(), resType, msgId, seqNr);
+    areg::NotificationEvent* eventElem = createNotificationEvent(data);
     if (eventElem != nullptr)
     {
         if (caller != nullptr)
@@ -580,7 +580,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& pr
     return map_proxies().findResourceObject(proxyAddress);
 }
 
-void ProxyBase::sendRequestEvent( uint32_t reqId, const areg::EventDataStream& args, NotificationConsumer *caller )
+void ProxyBase::sendRequestEvent( uint32_t reqId, const areg::EventDataStream& args, areg::NotificationConsumer *caller )
 {
     areg::ServiceRequestEvent* evenElem = createRequestEvent(args, reqId);
     if ( evenElem != nullptr )
@@ -618,7 +618,7 @@ void ProxyBase::sendServiceAvailableEvent( ProxyBase::ServiceAvailableEvent * ev
     }
 }
 
-bool ProxyBase::isServiceListenerRegistered( NotificationConsumer & caller ) const
+bool ProxyBase::isServiceListenerRegistered( areg::NotificationConsumer & caller ) const
 {
     bool result = false;
     for (uint32_t i = 0; i < mListenerList.getSize(); ++i)
@@ -634,7 +634,7 @@ bool ProxyBase::isServiceListenerRegistered( NotificationConsumer & caller ) con
     return result;
 }
 
-void ProxyBase::processServiceAvailableEvent( NotificationConsumer & consumer, uint32_t delayEvent)
+void ProxyBase::processServiceAvailableEvent( areg::NotificationConsumer & consumer, uint32_t delayEvent)
 {
     if (isConnected() && isServiceListenerRegistered( consumer ) )
     {
