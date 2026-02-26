@@ -39,7 +39,7 @@ namespace areg { class StubAddress; }
 namespace areg { class ServiceResponseEvent; }
 class NotificationConsumer;
 class Channel;
-class ResponseEvent;
+namespace areg { class ResponseEvent; }
 class ProxyConnectEvent;
 
 /**
@@ -240,7 +240,7 @@ private:
      * \brief   Triggered, when processing response event
      * \param   eventResponse   Response event to process
      **/
-    void _localProcessResponseEvent( ResponseEvent & eventResponse);
+    void _localProcessResponseEvent( areg::ResponseEvent & eventResponse);
 
     /**
      * \brief   Triggered, when processing connection event.

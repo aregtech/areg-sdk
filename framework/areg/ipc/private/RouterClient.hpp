@@ -200,7 +200,7 @@ protected:
      *          to subscribe on information or response sent by Stub.
      * \param   responseEvent   The remote response event sent on processed request.
      **/
-    void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
+    void processRemoteResponseEvent( areg::RemoteResponseEvent & responseEvent ) override;
 
 /************************************************************************/
 // DispatcherThread overrides

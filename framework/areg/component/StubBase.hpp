@@ -42,7 +42,7 @@ namespace areg { class ServiceResponseEvent; }
 class RemoteRequestEvent;
 class ComponentThread;
 class EventDataStream;
-class ResponseEvent;
+namespace areg { class ResponseEvent; }
 class Component;
 class RemoteEventFactory;
 
@@ -362,7 +362,7 @@ namespace areg
          * \param   data    The buffer of data to send to client. Can be Invalid buffer
          * \return  Returns valid pointer to Response event object
          **/
-        virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const EventDataStream & data ) const;
+        virtual areg::ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const EventDataStream & data ) const;
 
         /**
          * \brief   Overwrite method to create remote service request event from streaming object for 

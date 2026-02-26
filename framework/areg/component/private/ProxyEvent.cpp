@@ -96,7 +96,7 @@ ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
 //////////////////////////////////////////////////////////////////////////
 // ProxyEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eventResponse)
+inline void ProxyEventConsumer::_localProcessResponseEvent(areg::ResponseEvent & eventResponse)
 {
     switch (eventResponse.getDataType() )
     {
@@ -146,7 +146,7 @@ void ProxyEventConsumer::startEventProcessing( Event & eventElem )
             }
             else if ( addrProxy.getChannel() == mProxyAddress.getChannel() )
             {
-                ResponseEvent * eventResponse = AREG_RUNTIME_CAST(&eventElem, ResponseEvent);
+                areg::ResponseEvent * eventResponse = AREG_RUNTIME_CAST(&eventElem, areg::ResponseEvent);
                 if ( eventResponse != nullptr )
                 {
                     _localProcessResponseEvent(*eventResponse);

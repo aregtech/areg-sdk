@@ -477,7 +477,7 @@ void RouterClient::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & r
 }
 
 
-void RouterClient::processRemoteResponseEvent(RemoteResponseEvent & responseEvent)
+void RouterClient::processRemoteResponseEvent(areg::RemoteResponseEvent & responseEvent)
 {
     LOG_SCOPE(areg_ipc_private_RouterClient_processRemoteResponseEvent);
 

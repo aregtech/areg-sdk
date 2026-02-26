@@ -25,6 +25,10 @@
 #include "areg/component/EventDataStream.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
+
+namespace areg { class LocalResponseEvent; }
+namespace areg { class RemoteResponseEvent; }
+
 //////////////////////////////////////////////////////////////////////////
 // EventData class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -44,8 +48,8 @@ class AREG_API EventData
 //////////////////////////////////////////////////////////////////////////
     friend class LocalRequestEvent;
     friend class RemoteRequestEvent;
-    friend class LocalResponseEvent;
-    friend class RemoteResponseEvent;
+    friend class areg::LocalResponseEvent;
+    friend class areg::RemoteResponseEvent;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

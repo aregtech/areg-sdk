@@ -115,7 +115,7 @@ areg::StreamableEvent * RemoteEventFactory::createEventFromStream( const areg::R
             if ( proxy != nullptr )
             {
                 stream.moveToBegin();
-                RemoteResponseEvent * eventResponse = proxy->createRemoteResponseEvent(stream);
+                areg::RemoteResponseEvent * eventResponse = proxy->createRemoteResponseEvent(stream);
                 if ( eventResponse != nullptr )
                 {
                     Channel chTarget( proxy->getProxyAddress().getChannel() );

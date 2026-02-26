@@ -28,7 +28,7 @@ void RemoteEventConsumer::startEventProcessing(Event & eventElem)
         }
         else
         {
-            RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
+            areg::RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteResponseEvent);
             if ( responseEvent != nullptr )
             {
                 processRemoteResponseEvent(*responseEvent);

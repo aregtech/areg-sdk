@@ -27,7 +27,7 @@
  ************************************************************************/
 class RemoteRequestEvent;
 class RemoteNotifyRequestEvent;
-class RemoteResponseEvent;
+namespace areg { class RemoteResponseEvent; }
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteEventConsumer class declaration
@@ -74,7 +74,7 @@ public:
      *          to subscribe on information or response sent by Stub.
      * \param   responseEvent  The remote response event on the request to processed.
      **/
-    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) = 0;
+    virtual void processRemoteResponseEvent( areg::RemoteResponseEvent & responseEvent ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations

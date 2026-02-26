@@ -348,7 +348,7 @@ namespace areg
             const ProxyAddress & proxy = listeners.firstEntry( ).mProxy;
             LOG_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::convAddressToPath( proxy).getString(), msgId);
 
-            ResponseEvent* eventElem = createResponseEvent(proxy, msgId, result, data);
+            areg::ResponseEvent* eventElem = createResponseEvent(proxy, msgId, result, data);
             if (eventElem != nullptr)
             {
                 sendUpdateNotification(listeners, *eventElem);
@@ -359,7 +359,7 @@ namespace areg
 
     void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, areg::ResultType result ) const
     {
-        ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
+        areg::ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
         if ( eventElem != nullptr )
         {
             sendServiceResponse( *eventElem );
@@ -371,7 +371,7 @@ namespace areg
         StubBase::StubListenerList listeners;
         if (findListeners(respId, listeners) > 0)
         {
-            ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, areg::ResultType::RequestOK, data);
+            areg::ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, areg::ResultType::RequestOK, data);
             if (eventElem != nullptr)
             {
                 sendResponseNotification(listeners, *eventElem);
@@ -383,7 +383,7 @@ namespace areg
     void StubBase::sendBusyRespone( const Listener & whichListener )
     {
         LOG_SCOPE(areg_component_StubBase_sendBusyRespone);
-        ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
+        areg::ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, areg::ResultType::RequestBusy, EventDataStream::empty_data());
         if (eventElem != nullptr)
         {
             LOG_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
@@ -561,7 +561,7 @@ namespace areg
         return mInterface.idAttributeList;
     }
 
-    ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */
+    areg::ResponseEvent * StubBase::createResponseEvent( const ProxyAddress &     /* proxy */
                                                 , uint32_t             /* msgId */
                                                 , areg::ResultType   /* result */
                                                 , const EventDataStream &  /* data */ ) const

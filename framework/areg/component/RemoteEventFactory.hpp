@@ -23,7 +23,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteResponseEvent;
+namespace areg { class RemoteResponseEvent; }
 namespace areg { class StreamableEvent; }
 namespace areg { class RemoteMessage; }
 class Channel;

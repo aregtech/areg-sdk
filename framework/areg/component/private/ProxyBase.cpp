@@ -246,11 +246,11 @@ int32_t ProxyBase::findThreadProxies(DispatcherThread & ownerThread, areg::Array
     return result;
 }
 
-RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
+areg::RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, uint32_t msgId, areg::ResultType errCode, const SequenceNumber & seqNr)
 {
     LOG_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
-    RemoteResponseEvent * result = nullptr;
+    areg::RemoteResponseEvent * result = nullptr;
     std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress(target);
     if (proxy.get() != nullptr)
     {
@@ -647,12 +647,12 @@ void ProxyBase::processServiceAvailableEvent( NotificationConsumer & consumer, u
     }
 }
 
-RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const areg::InStream & /* stream */) const
+areg::RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const areg::InStream & /* stream */) const
 {
     return nullptr;
 }
 
-RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAddress &  /* addrProxy */
+areg::RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAddress &  /* addrProxy */
                                                                 , uint32_t          /* msgId */
                                                                 , areg::ResultType/* reason */
                                                                 , const SequenceNumber &/* seqNr */ ) const
