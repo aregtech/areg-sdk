@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessageHandler;
+namespace areg { class RemoteMessageHandler; }
 class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ public:
      * \param   remoteService   The instance of remote servicing handle to set.
      * \param   connection      The instance of server socket connection object.
      **/
-    ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection );
+    ServerSendThread(areg::RemoteMessageHandler& remoteService, ServerConnection & connection );
 
     /**
      * \brief   Destructor
@@ -124,7 +124,7 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    RemoteMessageHandler&     mRemoteService;
+    areg::RemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/

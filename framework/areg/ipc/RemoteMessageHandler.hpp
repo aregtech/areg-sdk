@@ -26,67 +26,70 @@
 namespace areg { class RemoteMessage; }
 namespace areg { class Socket; }
 
-//////////////////////////////////////////////////////////////////////////
-// RemoteMessageHandler interface declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The interface of object to handler remote servicing.
- *          It contains callbacks, which are triggered either then succeeded to send data
- *          or an error occurred when running.
- **/
-class AREG_API RemoteMessageHandler
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Protected constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    //////////////////////////////////////////////////////////////////////////
+    // RemoteMessageHandler interface declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default constructor
+     * \brief   The interface of object to handler remote servicing.
+     *          It contains callbacks, which are triggered either then succeeded to send data
+     *          or an error occurred when running.
      **/
-    RemoteMessageHandler() = default;
+    class AREG_API RemoteMessageHandler
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Protected constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Default constructor
+         **/
+        RemoteMessageHandler() = default;
 
-    virtual ~RemoteMessageHandler() = default;
+        virtual ~RemoteMessageHandler() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// RemoteMessageHandler interface overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // RemoteMessageHandler interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
-     **/
-    virtual void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) = 0;
+        /**
+         * \brief   Triggered, when failed to send message.
+         * \param   msgFailed   The message, which failed to send.
+         * \param   whichTarget The target socket to send message.
+         **/
+        virtual void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) = 0;
 
-    /**
-     * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
-     **/
-    virtual void failedReceiveMessage( areg::Socket & whichSource ) = 0;
+        /**
+         * \brief   Triggered, when failed to receive message.
+         * \param   whichSource Indicates the failed source socket to receive message.
+         **/
+        virtual void failedReceiveMessage( areg::Socket & whichSource ) = 0;
 
-    /**
-     * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
-     *          In case of request message processing, the source should receive error notification.
-     * \param   msgUnprocessed  Unprocessed message data.
-     **/
-    virtual void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) = 0;
+        /**
+         * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
+         *          In case of request message processing, the source should receive error notification.
+         * \param   msgUnprocessed  Unprocessed message data.
+         **/
+        virtual void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) = 0;
 
-    /**
-     * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
-     **/
-    virtual void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) = 0;
+        /**
+         * \brief   Triggered, when need to process received message.
+         * \param   msgReceived Received message to process.
+         * \param   whichSource The source socket, which received message.
+         **/
+        virtual void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( RemoteMessageHandler );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( RemoteMessageHandler );
+    };
 
+} // namespace areg
 #endif  // AREG_IPC_REMOTEMESSAGEHANDLER_HPP

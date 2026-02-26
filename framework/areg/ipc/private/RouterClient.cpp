@@ -50,7 +50,7 @@ RouterClient::RouterClient(ConnectionConsumer& connectionConsumer, RegistrationC
                                     , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                     , areg::MessageSource::SourceClient
                                     , connectionConsumer
-                                    , static_cast<RemoteMessageHandler &>(self())
+                                    , static_cast<areg::RemoteMessageHandler &>(self())
                                     , static_cast<areg::DispatcherThread &>(self())
                                     , RouterClient::PREFIX_THREAD)
     , RegistrationProvider     ( )

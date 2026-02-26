@@ -50,7 +50,7 @@ class LoggerClient  : public    areg::ServiceClientConnectionBase
                     , public    ConfigListener
                     , protected areg::DispatcherThread
                     , protected ConnectionConsumer
-                    , protected RemoteMessageHandler
+                    , protected areg::RemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend class

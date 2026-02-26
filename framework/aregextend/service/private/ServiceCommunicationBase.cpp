@@ -49,7 +49,7 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
                                                 , uint32_t connectTypes
                                                 , const areg::String & dispatcher
                                                 , ServiceCommunicationBase::ConnectionPolicy behavior /*= ServiceCommunicationBase::ConnectionPolicy::Accept*/ )
-    : RemoteMessageHandler        ( )
+    : areg::RemoteMessageHandler        ( )
     , ConnectionConsumer   ( )
     , ConnectionProvider   ( )
     , areg::DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
@@ -61,8 +61,8 @@ ServiceCommunicationBase::ServiceCommunicationBase( const ITEM_ID & serviceId
     , mConnectTypes     ( connectTypes )
     , mServerConnection ( serviceId )
     , mTimerConnect     ( static_cast<areg::TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
-    , mThreadSend       ( static_cast<RemoteMessageHandler&>(self()), mServerConnection )
-    , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<RemoteMessageHandler&>(self()), mServerConnection )
+    , mThreadSend       ( static_cast<areg::RemoteMessageHandler&>(self()), mServerConnection )
+    , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<areg::RemoteMessageHandler&>(self()), mServerConnection )
     , mDataRateHelper   ( mThreadSend, mThreadReceive, aregext::DEFAULT_VERBOSE )
     , mWhiteList        ( )
     , mBlackList        ( )

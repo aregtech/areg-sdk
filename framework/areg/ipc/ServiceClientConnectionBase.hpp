@@ -34,7 +34,7 @@
  * Dependencies
  ************************************************************************/
 class ConnectionConsumer;
-class RemoteMessageHandler;
+namespace areg { class RemoteMessageHandler; }
 
 namespace areg
 {
@@ -92,7 +92,7 @@ namespace areg
                                     , uint32_t connectTypes
                                     , areg::MessageSource msgSource
                                     , ConnectionConsumer& connectionConsumer
-                                    , RemoteMessageHandler & messageHandler
+                                    , areg::RemoteMessageHandler & messageHandler
                                     , areg::DispatcherThread & messageDispatcher
                                     , const areg::String & prefixName);
         /**

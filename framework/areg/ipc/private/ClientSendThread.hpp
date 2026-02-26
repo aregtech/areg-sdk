@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class RemoteMessageHandler;
+namespace areg { class RemoteMessageHandler; }
 class ClientConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ public:
      * \param   namePrefix      The prefix to add to the areg::CLIENT_SEND_MESSAGE_THREAD
      *                          to have unique thread names.
      **/
-    ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String & namePrefix );
+    ClientSendThread(areg::RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String & namePrefix );
     /**
      * \brief   Destructor
      **/
@@ -126,7 +126,7 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    RemoteMessageHandler&     mRemoteService;
+    areg::RemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/

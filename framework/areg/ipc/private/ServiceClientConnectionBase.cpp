@@ -46,7 +46,7 @@ namespace areg
                                                             , uint32_t connectTypes
                                                             , areg::MessageSource msgSource
                                                             , ConnectionConsumer& connectionConsumer
-                                                            , RemoteMessageHandler & messageHandler
+                                                            , areg::RemoteMessageHandler & messageHandler
                                                             , areg::DispatcherThread & messageDispatcher
                                                             , const areg::String & prefixName)
         : ConnectionProvider   ( )

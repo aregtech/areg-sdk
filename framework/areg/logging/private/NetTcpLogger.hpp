@@ -55,7 +55,7 @@ namespace areg { class SharedBuffer; }
 class NetTcpLogger  : public    LoggerBase
                     , public    areg::ServiceClientConnectionBase
                     , private   ConnectionConsumer
-                    , private   RemoteMessageHandler
+                    , private   areg::RemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.

@@ -42,7 +42,7 @@
  * \brief   The server side base connection service. Used by message router to
  *          accept service connections.
  **/
-class ServiceCommunicationBase  : public    RemoteMessageHandler
+class ServiceCommunicationBase  : public    areg::RemoteMessageHandler
                                 , public    ConnectionConsumer
                                 , public    ConnectionProvider
                                 , protected areg::DispatcherThread
