@@ -104,7 +104,7 @@ private:
     /**
      * \brief   The Critical Section object, which has implementation of recursive spin lock.
      **/
-    mutable SpinLockPosix  mSpinLock;
+    mutable areg::os::SpinLockPosix  mSpinLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -255,7 +255,7 @@ namespace areg::os
         /**
          * \brief   Synchronization object.
          */
-        mutable SpinLockPosix      mLock;
+        mutable areg::os::SpinLockPosix      mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.

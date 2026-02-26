@@ -190,28 +190,28 @@ bool areg::CriticalSection::_osTryLock()
 areg::SpinLock::SpinLock()
     : areg::Lockable( areg::SyncObject::SyncKind::SoSpinlock )
 {
-    mSyncObject    = DEBUG_NEW SpinLockPosix( );
+    mSyncObject    = DEBUG_NEW areg::os::SpinLockPosix( );
 }
 
 areg::SpinLock::~areg::SpinLock()
 {
-    delete reinterpret_cast<SpinLockPosix *>(mSyncObject);
+    delete reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject);
     mSyncObject = nullptr;
 }
 
 bool areg::SpinLock::lock( uint32_t /*timeout = areg::WAIT_INFINITE*/ )
 {
-    return reinterpret_cast<SpinLockPosix *>(mSyncObject)->lock();
+    return reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject)->lock();
 }
 
 bool areg::SpinLock::unlock()
 {
-    return reinterpret_cast<SpinLockPosix *>(mSyncObject)->unlock( );
+    return reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject)->unlock( );
 }
 
 bool areg::SpinLock::tryLock()
 {
-    return reinterpret_cast<SpinLockPosix *>(mSyncObject)->tryLock( );
+    return reinterpret_cast<areg::os::SpinLockPosix *>(mSyncObject)->tryLock( );
 }
 #endif //0
 
