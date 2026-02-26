@@ -25,7 +25,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(RemoteMessageHandler& remoteService, ServerConnection & connection)
     : areg::DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
-    , SendMessageEventConsumer( )
+    , areg::SendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
     , mBytesSend                ( 0 )
@@ -37,19 +37,19 @@ void ServerSendThread::readyForEvents( bool isReady )
 {
     if ( isReady )
     {
-        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+        areg::SendMessageEvent::addListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
         areg::DispatcherThread::readyForEvents( true );
     }
     else
     {
         areg::DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+        areg::SendMessageEvent::removeListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
         mConnection.closeAllConnections( );
         mConnection.disableSend( );
     }
 }
 
-void ServerSendThread::processEvent( const SendMessageEventData & data )
+void ServerSendThread::processEvent( const areg::SendMessageEventData & data )
 {
     LOG_SCOPE( areg_aregextend_service_ServerSendThread_processEvent );
     if (data.isForwardMessage())
@@ -100,5 +100,5 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
 
 bool ServerSendThread::postEvent(areg::Event & eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, areg::SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
 }

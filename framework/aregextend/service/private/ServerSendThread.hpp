@@ -37,7 +37,7 @@ class ServerConnection;
  * \brief   The IPC message sender thread
  **/
 class ServerSendThread  : public    areg::DispatcherThread
-                        , public    SendMessageEventConsumer
+                        , public    areg::SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -115,7 +115,7 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    void processEvent( const SendMessageEventData & data ) override;
+    void processEvent( const areg::SendMessageEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

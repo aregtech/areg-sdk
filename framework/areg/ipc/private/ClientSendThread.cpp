@@ -25,7 +25,7 @@ DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
 ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const areg::String& namePrefix )
     : areg::DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
-    , SendMessageEventConsumer( )
+    , areg::SendMessageEventConsumer( )
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -41,19 +41,19 @@ void ClientSendThread::readyForEvents( bool isReady )
     if ( isReady )
     {
         LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
-        SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+        areg::SendMessageEvent::addListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
         areg::DispatcherThread::readyForEvents( true );
     }
     else
     {
         areg::DispatcherThread::readyForEvents( false );
-        SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+        areg::SendMessageEvent::removeListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
         mConnection.closeSocket( );
         LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
     }
 }
 
-void ClientSendThread::processEvent( const SendMessageEventData & data )
+void ClientSendThread::processEvent( const areg::SendMessageEventData & data )
 {
     if ( data.isForwardMessage() )
     {
@@ -80,5 +80,5 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
 
 bool ClientSendThread::postEvent(areg::Event & eventElem)
 {
-    return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
+    return (AREG_RUNTIME_CAST(&eventElem, areg::SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
 }

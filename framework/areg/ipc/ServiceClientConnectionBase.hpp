@@ -580,16 +580,16 @@ namespace areg
 
     inline bool ServiceClientConnectionBase::sendMessage(const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
     {
-        return SendMessageEvent::sendEvent( SendMessageEventData(data)
-                                        , static_cast<SendMessageEventConsumer &>(mThreadSend)
+        return areg::SendMessageEvent::sendEvent( areg::SendMessageEventData(data)
+                                        , static_cast<areg::SendMessageEventConsumer &>(mThreadSend)
                                         , static_cast<areg::DispatcherThread &>(mThreadSend)
                                         , eventPrio);
     }
 
     inline void ServiceClientConnectionBase::disconnectService( areg::Event::EventPriority eventPrio )
     {
-        SendMessageEvent::sendEvent( SendMessageEventData()
-                                , static_cast<SendMessageEventConsumer &>(mThreadSend)
+        areg::SendMessageEvent::sendEvent( areg::SendMessageEventData()
+                                , static_cast<areg::SendMessageEventConsumer &>(mThreadSend)
                                 , static_cast<areg::DispatcherThread &>(mThreadSend)
                                 , eventPrio );
     }

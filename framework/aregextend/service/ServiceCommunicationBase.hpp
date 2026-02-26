@@ -579,8 +579,8 @@ inline bool ServiceCommunicationBase::sendCommunicationMessage( areg::ServiceEve
 
 inline bool ServiceCommunicationBase::sendMessage( const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
 {
-    return SendMessageEvent::sendEvent( SendMessageEventData( data )
-                                        , static_cast<SendMessageEventConsumer &>(mThreadSend)
+    return areg::SendMessageEvent::sendEvent( areg::SendMessageEventData( data )
+                                        , static_cast<areg::SendMessageEventConsumer &>(mThreadSend)
                                         , static_cast<areg::DispatcherThread &>(mThreadSend)
                                         , eventPrio );
 }
@@ -612,8 +612,8 @@ inline bool ServiceCommunicationBase::isCalculateDataRateEnabled() const
 
 inline void ServiceCommunicationBase::disconnectService( areg::Event::EventPriority eventPrio )
 {
-    SendMessageEvent::sendEvent( SendMessageEventData( )
-                                 , static_cast<SendMessageEventConsumer &>(mThreadSend)
+    areg::SendMessageEvent::sendEvent( areg::SendMessageEventData( )
+                                 , static_cast<areg::SendMessageEventConsumer &>(mThreadSend)
                                  , static_cast<areg::DispatcherThread &>(mThreadSend)
                                  , eventPrio );
 }

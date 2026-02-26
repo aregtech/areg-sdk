@@ -38,7 +38,7 @@ class ClientConnection;
  *          are queued in message sender thread. 
  **/
 class ClientSendThread  : public    areg::DispatcherThread
-                        , public    SendMessageEventConsumer
+                        , public    areg::SendMessageEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -117,7 +117,7 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    void processEvent( const SendMessageEventData & data ) override;
+    void processEvent( const areg::SendMessageEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
