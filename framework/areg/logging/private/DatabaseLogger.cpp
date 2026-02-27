@@ -28,7 +28,7 @@
 #if AREG_LOGS
 
 DatabaseLogger::DatabaseLogger(areg::LogConfiguration& logConfig)
-    : LoggerBase    (logConfig)
+    : areg::LoggerBase    (logConfig)
     , mDatabase     (nullptr)
     , mLock         (false)
 {

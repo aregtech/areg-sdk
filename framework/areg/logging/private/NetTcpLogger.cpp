@@ -32,7 +32,7 @@ namespace areg
     #if AREG_LOGS
 
     NetTcpLogger::NetTcpLogger(areg::LogConfiguration & logConfig, areg::ScopeController & scopeController, areg::DispatcherThread & dispatchThread)
-        : LoggerBase                    (logConfig)
+        : areg::LoggerBase                    (logConfig)
         , areg::ServiceClientConnectionBase   ( areg::COOKIE_LOGGER
                                         , areg::RemoteServiceKind::Logger
                                         , static_cast<uint32_t>(areg::ConnectionType::Tcpip)

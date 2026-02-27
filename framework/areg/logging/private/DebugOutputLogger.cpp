@@ -28,7 +28,7 @@
 #if AREG_LOGS
 
 DebugOutputLogger::DebugOutputLogger( areg::LogConfiguration & logConfig)
-    : LoggerBase        ( logConfig )
+    : areg::LoggerBase        ( logConfig )
     , areg::OutStream       ( )
 
     , mIsOpened         ( false )
@@ -51,7 +51,7 @@ bool DebugOutputLogger::openLogger()
                 areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
                 areg::String::formatString( logMsgHello.logMessage
                                     , areg::LOG_MESSAGE_IZE
-                                    , LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                    , areg::LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , areg::Process::getString(curProcess.getEnvironment())
                                     , curProcess.getFullPath().getString()
                                     , logMsgHello.logModuleId);
@@ -74,7 +74,7 @@ void DebugOutputLogger::closeLogger()
         areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
         areg::String::formatString( logMsgGoodbye.logMessage
                             , areg::LOG_MESSAGE_IZE
-                            , LoggerBase::FORMAT_MESSAGE_BYE.data()
+                            , areg::LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , areg::Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
                             , logMsgGoodbye.logModuleId);

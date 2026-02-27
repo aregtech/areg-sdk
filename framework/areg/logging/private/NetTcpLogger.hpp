@@ -54,7 +54,7 @@ namespace areg
      *          The object uses TCP/IP connection to the remote log collector service
      *          and forwards log messages to the remote service.
      **/
-    class NetTcpLogger  : public    LoggerBase
+    class NetTcpLogger  : public    areg::LoggerBase
                         , public    areg::ServiceClientConnectionBase
                         , private   areg::ConnectionConsumer
                         , private   areg::RemoteMessageHandler

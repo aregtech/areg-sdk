@@ -35,7 +35,7 @@
  *          At the moment the output logger supports only ASCII messages
  *          and any Unicode character might output wrong.
  **/
-class DebugOutputLogger : public    LoggerBase
+class DebugOutputLogger : public    areg::LoggerBase
                         , private   areg::OutStream
 {
 //////////////////////////////////////////////////////////////////////////

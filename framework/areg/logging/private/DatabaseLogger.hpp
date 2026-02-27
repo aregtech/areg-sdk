@@ -39,7 +39,7 @@ namespace areg { class LogDatabaseEngine; }
  *          the database, should be manually set. This class is forwarding
  *          the log messages to database engine handle for further processing.
  **/
-class DatabaseLogger : public LoggerBase
+class DatabaseLogger : public areg::LoggerBase
 {
 public:
      /**

@@ -28,7 +28,7 @@
  ************************************************************************/
 namespace areg { class LogManager; }
 namespace areg { class LogConfiguration; }
-class LoggerBase;
+namespace areg { class LoggerBase; }
 namespace areg { class InStream; }
 
 //////////////////////////////////////////////////////////////////////////

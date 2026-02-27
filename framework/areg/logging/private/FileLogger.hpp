@@ -33,7 +33,7 @@
  *          At the moment the output logger supports only ASCII messages
  *          and any Unicode character might output wrong.
  **/
-class FileLogger    : public    LoggerBase
+class FileLogger    : public    areg::LoggerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
