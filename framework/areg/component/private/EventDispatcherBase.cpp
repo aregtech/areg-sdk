@@ -127,10 +127,10 @@ namespace areg
         mConsumerMap.lock();
 
         bool result = false;
-        EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
+        areg::EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
         if (listConsumers == nullptr)
         {
-            listConsumers   = DEBUG_NEW EventConsumerList();
+            listConsumers   = DEBUG_NEW areg::EventConsumerList();
             if (listConsumers != nullptr)
                 mConsumerMap.registerResourceObject(whichClass, listConsumers);
         }
@@ -149,7 +149,7 @@ namespace areg
         mConsumerMap.lock();
 
         bool result = false;
-        EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
+        areg::EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
         if (listConsumers != nullptr)
         {
             result = listConsumers->removeConsumer(whichConsumer);
@@ -180,7 +180,7 @@ namespace areg
         int32_t result = 0;
         areg::LinkedList<areg::RuntimeClassID> removedList;
         areg::RuntimeClassID     Key(areg::RuntimeClassID::createEmptyClassID());
-        EventConsumerList* Value = nullptr;
+        areg::EventConsumerList* Value = nullptr;
 
         Value = mConsumerMap.resourceFirstKey(Key);
         while (Value != nullptr)
@@ -294,7 +294,7 @@ namespace areg
 
     bool EventDispatcherBase::dispatchEvent( areg::Event& eventElem )
     {
-        EventConsumerList processingList;
+        areg::EventConsumerList processingList;
         areg::EventConsumer* consumer = eventElem.getEventConsumer();
         if ( consumer != nullptr)
         {
@@ -305,7 +305,7 @@ namespace areg
             // Lock resource, before get any information
             mConsumerMap.lock();
 
-            EventConsumerList* listConsumers = mConsumerMap.findResourceObject(eventElem.getRuntimeClassId());
+            areg::EventConsumerList* listConsumers = mConsumerMap.findResourceObject(eventElem.getRuntimeClassId());
             if (listConsumers != nullptr)
                 processingList = *listConsumers;
 
@@ -314,7 +314,7 @@ namespace areg
             mConsumerMap.unlock();
         }
 
-        EventConsumerList::LISTPOS pos = processingList.firstPosition();
+        areg::EventConsumerList::LISTPOS pos = processingList.firstPosition();
         while (processingList.isValidPosition(pos))
         {
             consumer = processingList.getNext(pos);
@@ -338,7 +338,7 @@ namespace areg
         while (mConsumerMap.isEmpty() == false)
         {
             mConsumerMap.resourceFirstKey(Key);
-            EventConsumerList* Value =  mConsumerMap.unregisterResourceObject(Key);
+            areg::EventConsumerList* Value =  mConsumerMap.unregisterResourceObject(Key);
             Value->removeAllConsumers();
             delete Value;
         }

@@ -324,7 +324,7 @@ namespace areg
         /**
          * \brief   Map of registered consumers.
          **/
-        EventConsumerMap    mConsumerMap;
+        areg::EventConsumerMap    mConsumerMap;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
