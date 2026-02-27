@@ -48,9 +48,6 @@ class AREG_API ServiceEventConsumer
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     ServiceEventConsumer() = default;
     virtual ~ServiceEventConsumer() = default;
 
@@ -218,9 +215,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief
-     **/
     ServiceClientConsumer() = delete;
     AREG_NOCOPY_NOMOVE(ServiceClientConsumer);
 };
@@ -269,9 +263,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief
-     **/
     ServiceServerConsumer() = delete;
     AREG_NOCOPY_NOMOVE(ServiceServerConsumer);
 };

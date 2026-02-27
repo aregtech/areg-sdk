@@ -56,9 +56,6 @@ class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogS
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     LogScopeMap() = default;
     ~LogScopeMap() = default;
 
@@ -80,9 +77,6 @@ class ScopeController
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ScopeController() = default;
     ~ScopeController() = default;
 

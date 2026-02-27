@@ -225,9 +225,6 @@ namespace NESocket
     // Constructors
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief
-         **/
         UserData();
 
         /**
@@ -284,9 +281,6 @@ namespace NESocket
          **/
         bool operator != (const NESocket::UserData & other);
 
-        /**
-         * \brief
-         **/
         const String& user() const;
 
         /**
@@ -296,9 +290,6 @@ namespace NESocket
          **/
         void set_user(const String& user);
 
-        /**
-         * \brief
-         **/
         const String& password() const;
 
         /**

@@ -115,14 +115,8 @@ public:
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief
-     **/
     inline bool is_empty() const;
 
-    /**
-     * \brief
-     **/
     inline bool is_valid() const;
 
     /**
@@ -198,9 +192,6 @@ public:
      **/
     uint32_t length() const override;
 
-    /**
-     * \brief
-     **/
     bool is_opened() const override;
 
     /**

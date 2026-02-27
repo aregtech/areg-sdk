@@ -335,9 +335,6 @@ public:
 // Forbidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ModelDataCreator( ) = delete;
     AREG_NOCOPY_NOMOVE( ModelDataCreator );
 };
@@ -499,9 +496,6 @@ public:
 // Hidden constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ComponentLoader();
 
     /**

@@ -49,9 +49,6 @@ private:
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ListServiceProxies() = default;
 
     /**

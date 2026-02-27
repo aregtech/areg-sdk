@@ -209,9 +209,6 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     FileBase();
 
     /**

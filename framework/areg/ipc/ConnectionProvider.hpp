@@ -41,9 +41,6 @@ class AREG_API ConnectionProvider
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     ConnectionProvider() = default;
 
     /**

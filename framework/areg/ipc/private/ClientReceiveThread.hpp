@@ -117,9 +117,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ClientReceiveThread() = delete;
     AREG_NOCOPY_NOMOVE( ClientReceiveThread );
 };

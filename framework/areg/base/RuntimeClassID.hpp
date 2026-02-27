@@ -75,9 +75,6 @@ public:
      **/
     explicit RuntimeClassID( const String& className );
 
-    /**
-     * \brief
-     **/
     RuntimeClassID( const RuntimeClassID & src );
 
     /**

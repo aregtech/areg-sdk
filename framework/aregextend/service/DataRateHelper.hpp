@@ -136,9 +136,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     DataRateHelper() = delete;
     AREG_NOCOPY_NOMOVE(DataRateHelper);
 };

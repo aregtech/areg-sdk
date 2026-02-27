@@ -243,9 +243,6 @@ private:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     BufferStreamBase() = delete;
     AREG_NOCOPY_NOMOVE( BufferStreamBase );
 };

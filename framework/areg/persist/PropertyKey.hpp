@@ -35,9 +35,6 @@ class AREG_API PropertyKey
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     PropertyKey();
     
     /**

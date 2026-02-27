@@ -42,9 +42,6 @@ class AREG_API QueueListener
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     QueueListener() = default;
     virtual ~QueueListener() = default;
 

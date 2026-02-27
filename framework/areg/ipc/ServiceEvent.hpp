@@ -135,9 +135,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServiceEventData();
 };
 

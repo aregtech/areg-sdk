@@ -113,9 +113,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     WorkerThreadConsumer() = delete;
     AREG_NOCOPY_NOMOVE( WorkerThreadConsumer );
 };

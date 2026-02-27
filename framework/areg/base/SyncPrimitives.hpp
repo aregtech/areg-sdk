@@ -91,9 +91,6 @@ protected:
     Lockable( SyncObject::SyncKind syncObjectType );
 
 public:
-    /**
-     * \brief   
-     **/
     virtual ~Lockable() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,9 +110,6 @@ public:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     Lockable() = delete;
     AREG_NOCOPY_NOMOVE( Lockable );
 };
@@ -521,9 +515,6 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     Semaphore() = delete;
     AREG_NOCOPY_NOMOVE( Semaphore );
 };
@@ -1006,9 +997,6 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     SyncTimer() = delete;
     AREG_NOCOPY_NOMOVE( SyncTimer );
 };
@@ -1116,9 +1104,6 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     Lock() = delete;
     AREG_NOCOPY_NOMOVE( Lock );
 };
@@ -1322,9 +1307,6 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     Wait();
     ~Wait();
 

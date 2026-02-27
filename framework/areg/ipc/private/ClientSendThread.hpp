@@ -140,9 +140,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ClientSendThread() = delete;
     AREG_NOCOPY_NOMOVE( ClientSendThread );
 };

@@ -108,9 +108,6 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     FileLogger() = delete;
     AREG_NOCOPY_NOMOVE( FileLogger );
 };

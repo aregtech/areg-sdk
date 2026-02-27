@@ -271,9 +271,6 @@ private:
      **/
     static LogManager& instance();
 
-    /**
-     * \brief
-     **/
     LogManager();
 
     /**

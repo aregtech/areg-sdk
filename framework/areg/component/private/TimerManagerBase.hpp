@@ -122,9 +122,6 @@ private:
 //  Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     TimerManagerBase() = delete;
     AREG_NOCOPY_NOMOVE( TimerManagerBase );
 };

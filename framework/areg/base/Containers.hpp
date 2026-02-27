@@ -279,9 +279,6 @@ class IntegerMap : public OrderedMap<uint32_t, VALUE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     IntegerMap() = default;
 
     /**
@@ -326,9 +323,6 @@ class IdMap : public OrderedMap<id_type, VALUE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     IdMap() = default;
 
     /**
@@ -369,9 +363,6 @@ class StringMap : public OrderedMap<String, VALUE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     StringMap() = default;
 
     /**
@@ -409,9 +400,6 @@ class PtrMap: public OrderedMap<void *, VALUE>
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     PtrMap() = default;
 
     /**

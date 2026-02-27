@@ -492,17 +492,8 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RingStackBase() = delete;
-    /**
-     * \brief
-     **/
     RingStackBase( const RingStackBase<VALUE> & /*src*/ ) = delete;
-    /**
-     * \brief
-     **/
     RingStackBase( RingStackBase<VALUE> && /*src*/ ) noexcept = delete;
 };
 

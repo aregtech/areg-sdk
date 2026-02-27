@@ -53,9 +53,6 @@ private:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     LogCollectorServerService();
     /**
      * \brief   Destructor
@@ -66,9 +63,6 @@ public:
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     inline const NEService::MapInstances & observers() const;
 
     /**
@@ -192,9 +186,6 @@ protected:
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     inline LogCollectorServerService & self();
 
 //////////////////////////////////////////////////////////////////////////////

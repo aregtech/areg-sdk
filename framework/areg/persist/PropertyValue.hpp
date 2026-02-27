@@ -36,9 +36,6 @@ class AREG_API PropertyValue
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     PropertyValue() = default;
     /**
      * \brief   Initializes the value from a C-string.

@@ -62,9 +62,6 @@ public:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     Cursor() = default;
     /**
      * \brief   Destructor

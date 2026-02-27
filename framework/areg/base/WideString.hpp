@@ -73,9 +73,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief
-     **/
     WideString() = default;
 
     /**
@@ -83,14 +80,8 @@ public:
      **/
     ~WideString() = default;
 
-    /**
-     * \brief
-     **/
     WideString(const WideString& source) = default;
 
-    /**
-     * \brief
-     **/
     WideString(WideString&& source) noexcept = default;
 
     /**

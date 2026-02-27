@@ -109,9 +109,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     StubConnectEvent() = delete;
     AREG_NOCOPY_NOMOVE( StubConnectEvent );
 };

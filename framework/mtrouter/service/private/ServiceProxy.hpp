@@ -39,9 +39,6 @@ class ServiceProxy
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ServiceProxy();
 
     /**

@@ -123,9 +123,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ObserverMessageProcessor() = delete;
     AREG_NOCOPY_NOMOVE(ObserverMessageProcessor);
 };

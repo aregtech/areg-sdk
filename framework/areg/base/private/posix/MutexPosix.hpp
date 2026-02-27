@@ -216,9 +216,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ObjectLockPosix() = delete;
     AREG_NOCOPY_NOMOVE( ObjectLockPosix );
 };

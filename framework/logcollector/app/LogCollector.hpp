@@ -95,9 +95,6 @@ public:
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LogCollector();
 
     virtual ~LogCollector() = default;

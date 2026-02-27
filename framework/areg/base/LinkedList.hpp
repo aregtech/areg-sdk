@@ -69,19 +69,10 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     LinkedList() = default;
     
-    /**
-     * \brief
-     **/
     LinkedList( const LinkedList<VALUE> & src ) = default;
     
-    /**
-     * \brief
-     **/
     LinkedList( LinkedList<VALUE> && src ) noexcept = default;
 
     /**
@@ -220,14 +211,8 @@ public:
 // Attributes
 /************************************************************************/
 
-    /**
-     * \brief
-     **/
     inline bool is_empty() const;
 
-    /**
-     * \brief
-     **/
     inline uint32_t size() const;
 
     /**

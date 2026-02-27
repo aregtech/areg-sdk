@@ -32,9 +32,6 @@ class AREG_API DatabaseEngine
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     DatabaseEngine();
 
     virtual ~DatabaseEngine();

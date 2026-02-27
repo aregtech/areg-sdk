@@ -347,9 +347,6 @@ class AREG_API IOStream  : public InStream
                            , public OutStream
 {
 protected:
-    /**
-     * \brief
-     **/
     IOStream() = default;
 
 public:

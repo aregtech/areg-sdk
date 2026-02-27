@@ -56,9 +56,6 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LogCollectorConsoleService() = delete;
     AREG_NOCOPY_NOMOVE( LogCollectorConsoleService );
 };

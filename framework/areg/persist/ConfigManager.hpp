@@ -49,9 +49,6 @@ class AREG_API ConfigManager
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ConfigManager();
 
     ~ConfigManager() = default;

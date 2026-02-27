@@ -78,9 +78,6 @@ public:
      **/
     inline void set_data_rate_enabled(bool enable);
 
-    /**
-     * \brief
-     **/
     inline bool is_data_rate_enabled() const;
 
 protected:
@@ -125,9 +122,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServerReceiveThread() = delete;
     AREG_NOCOPY_NOMOVE( ServerReceiveThread );
 };

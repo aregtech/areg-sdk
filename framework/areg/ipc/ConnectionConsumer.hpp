@@ -37,9 +37,6 @@ class AREG_API ConnectionConsumer
 // Protected constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     ConnectionConsumer() = default;
 
     virtual ~ConnectionConsumer() = default;

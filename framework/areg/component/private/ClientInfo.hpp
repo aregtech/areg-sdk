@@ -44,9 +44,6 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ClientInfo();
     /**
      * \brief   Initializes the object with the given proxy address.

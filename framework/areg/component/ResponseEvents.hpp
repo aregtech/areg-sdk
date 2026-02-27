@@ -181,9 +181,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ResponseEvent() = delete;
     AREG_NOCOPY_NOMOVE( ResponseEvent );
 };
@@ -267,9 +264,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LocalResponseEvent() = delete;
     AREG_NOCOPY_NOMOVE( LocalResponseEvent );
 };
@@ -371,9 +365,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RemoteResponseEvent() = delete;
     AREG_NOCOPY_NOMOVE( RemoteResponseEvent );
 };

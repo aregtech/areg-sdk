@@ -41,9 +41,6 @@ class RouterServerService   : public    ServiceCommunicationBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     RouterServerService();
     /**
      * \brief   Destructor

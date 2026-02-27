@@ -83,9 +83,6 @@ public:
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ServiceItem();
 
     /**

@@ -327,9 +327,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ComponentThread() = delete;
     AREG_NOCOPY_NOMOVE( ComponentThread );
 };

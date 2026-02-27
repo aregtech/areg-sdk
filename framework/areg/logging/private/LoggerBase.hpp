@@ -181,9 +181,6 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LoggerBase() = delete;
     AREG_NOCOPY_NOMOVE( LoggerBase );
 };

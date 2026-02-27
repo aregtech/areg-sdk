@@ -147,9 +147,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ProxyEvent() = delete;
     AREG_NOCOPY_NOMOVE( ProxyEvent );
 };
@@ -274,9 +271,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ProxyEventConsumer() = delete;
     AREG_NOCOPY_NOMOVE( ProxyEventConsumer );
 };

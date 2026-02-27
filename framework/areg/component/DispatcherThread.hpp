@@ -283,9 +283,6 @@ protected:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     DispatcherThread() = delete;
     AREG_NOCOPY_NOMOVE( DispatcherThread );
 };

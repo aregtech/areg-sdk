@@ -47,9 +47,6 @@ class AREG_API LogConfiguration
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     LogConfiguration() = default;
     ~LogConfiguration() = default;
 

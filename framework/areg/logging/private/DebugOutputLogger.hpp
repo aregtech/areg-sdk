@@ -169,9 +169,6 @@ private:
 // Hidden / Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     DebugOutputLogger() = delete;
     AREG_NOCOPY_NOMOVE( DebugOutputLogger );
 };

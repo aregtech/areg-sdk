@@ -251,18 +251,9 @@ public:
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Major version number
-     **/
-    uint32_t    mMajor;
-    /**
-     * \brief   Minor version number
-     **/
-    uint32_t    mMinor;
-    /**
-     * \brief   Patching version number
-     **/
-    uint32_t    mPatch;
+    uint32_t    mMajor; //!< Major version number
+    uint32_t    mMinor; //!< Minor version number
+    uint32_t    mPatch; //!< Patching version number
 };
 
 //////////////////////////////////////////////////////////////////////////

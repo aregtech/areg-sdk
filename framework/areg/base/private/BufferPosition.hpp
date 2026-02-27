@@ -106,9 +106,6 @@ private:
 // Hidden / Disabled methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     BufferPosition() = delete;
     AREG_NOCOPY_NOMOVE( BufferPosition );
 };

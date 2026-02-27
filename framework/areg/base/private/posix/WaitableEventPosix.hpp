@@ -143,9 +143,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     WaitableEventPosix() = delete;
     AREG_NOCOPY_NOMOVE( WaitableEventPosix );
 };

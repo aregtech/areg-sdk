@@ -130,9 +130,6 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     EventDispatcher() = delete;
     AREG_NOCOPY_NOMOVE( EventDispatcher );
 };

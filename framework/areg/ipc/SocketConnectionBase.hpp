@@ -39,9 +39,6 @@ class AREG_API SocketConnectionBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     SocketConnectionBase() = default;
     /**
      * \brief   Destructor

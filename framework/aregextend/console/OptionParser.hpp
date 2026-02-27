@@ -484,9 +484,6 @@ public:
      **/
     void sort();
 
-    /**
-     * \brief
-     **/
     inline const InputOptionList & options() const;
 
     /**

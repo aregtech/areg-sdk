@@ -70,9 +70,6 @@ public:
 // Hidden constructor / destructor.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     Console();
     ~Console();
 

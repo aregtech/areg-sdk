@@ -264,9 +264,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServiceManagerEventData() = delete;
 };
 

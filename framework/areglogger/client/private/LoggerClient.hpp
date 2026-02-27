@@ -91,9 +91,6 @@ public:
 // Hidden constructor and destructor.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LoggerClient();
     virtual ~LoggerClient() = default;
 

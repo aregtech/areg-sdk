@@ -223,18 +223,12 @@ private:
      * \brief   Increments the session ID and returns the new value to use in log messages.
      **/
     inline uint32_t next_session() const;
-    /**
-     * \brief
-     **/
     inline LogScope & self();
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LogScope() = delete;
     AREG_NOCOPY_NOMOVE( LogScope );
 };

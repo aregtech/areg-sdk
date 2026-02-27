@@ -166,9 +166,6 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     StubEvent() = delete;
     AREG_NOCOPY_NOMOVE( StubEvent );
 };
@@ -305,9 +302,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     StubEventConsumer() = delete;
     AREG_NOCOPY_NOMOVE( StubEventConsumer );
 };

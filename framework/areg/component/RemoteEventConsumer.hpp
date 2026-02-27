@@ -40,9 +40,6 @@ class RemoteResponseEvent;
 class AREG_API RemoteEventConsumer   : public EventConsumer
 {
 protected:
-    /**
-     * \brief
-     **/
     RemoteEventConsumer() = default;
     /**
      * \brief   Destructor.

@@ -1339,9 +1339,6 @@ namespace NERegistry
     // NERegistry::ComponentThreadEntry class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief
-         **/
         ComponentThreadEntry();
 
         /**
@@ -1602,9 +1599,6 @@ namespace NERegistry
         //!< The base class of component thread list.
         using ComponentThreadListBase = ArrayList< NERegistry::ComponentThreadEntry>;
 
-        /**
-         * \brief
-         **/
         ComponentThreadList() = default;
 
         /**
@@ -1754,13 +1748,7 @@ namespace NERegistry
          **/
         Model( const String & modelName, const ComponentThreadList & threadList );
 
-        /**
-         * \brief
-         **/
         Model( const Model & src ) = default;
-        /**
-         * \brief
-         **/
         Model( Model && src ) noexcept = default;
 
         /**
@@ -1772,13 +1760,7 @@ namespace NERegistry
     // NERegistry::Model class, Operators
     //////////////////////////////////////////////////////////////////////////
 
-        /**
-         * \brief
-         **/
         NERegistry::Model & operator = ( const NERegistry::Model & src ) = default;
-        /**
-         * \brief
-         **/
         NERegistry::Model & operator = ( NERegistry::Model && src ) noexcept = default;
 
         /**

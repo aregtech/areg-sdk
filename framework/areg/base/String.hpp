@@ -73,9 +73,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief
-     **/
     String() = default;
 
     /**
@@ -83,14 +80,8 @@ public:
      **/
     ~String() = default;
 
-    /**
-     * \brief
-     **/
     String(const String& source) = default;
 
-    /**
-     * \brief
-     **/
     String(String&& source) noexcept = default;
 
     /**

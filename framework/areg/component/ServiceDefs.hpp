@@ -765,9 +765,6 @@ namespace NEService
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        /**
-         * \brief
-         **/
         StateArray() = delete;
         AREG_NOCOPY_NOMOVE(StateArray);
     };
@@ -1050,9 +1047,6 @@ namespace NEService
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        /**
-         * \brief
-         **/
         ParameterArray() = delete;
         AREG_NOCOPY( ParameterArray );
     };
@@ -1171,9 +1165,6 @@ namespace NEService
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        /**
-         * \brief
-         **/
         ProxyData() = delete;
         AREG_NOCOPY_NOMOVE( ProxyData );
     };

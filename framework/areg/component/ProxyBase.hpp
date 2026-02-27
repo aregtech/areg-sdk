@@ -93,9 +93,6 @@ private:
     // ProxyBase::Listener class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
     public:
-        /**
-         * \brief
-         **/
         Listener();
 
         /**
@@ -398,9 +395,6 @@ protected:
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
     private:
-        /**
-         * \brief
-         **/
         ServiceAvailableEvent() = delete;
         AREG_NOCOPY_NOMOVE( ServiceAvailableEvent );
     };

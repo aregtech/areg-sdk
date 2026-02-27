@@ -189,9 +189,6 @@ class AREG_API RuntimeObject    : private   RuntimeBase   // Base Runtime class,
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     RuntimeObject() = default;
 
     /**

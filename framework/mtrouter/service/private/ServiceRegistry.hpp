@@ -54,9 +54,6 @@ class ServiceRegistry   : public ServiceRegistryBase
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ServiceRegistry() = default;
     /**
      * \brief   Destructor

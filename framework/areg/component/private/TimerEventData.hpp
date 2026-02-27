@@ -186,9 +186,6 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     TimerEvent() = delete;
     AREG_NOCOPY_NOMOVE( TimerEvent );
 };

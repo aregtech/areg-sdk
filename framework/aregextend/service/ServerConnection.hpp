@@ -203,9 +203,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServerConnection() = delete;
     AREG_NOCOPY_NOMOVE( ServerConnection );
 };

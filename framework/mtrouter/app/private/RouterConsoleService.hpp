@@ -55,9 +55,6 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RouterConsoleService() = delete;
     AREG_NOCOPY_NOMOVE( RouterConsoleService );
 };

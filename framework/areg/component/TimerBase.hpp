@@ -220,9 +220,6 @@ protected:
     ResourceLock        mLock;
 
 private:
-    /**
-     * \brief
-     **/
     TimerBase() = delete;
     AREG_NOCOPY_NOMOVE(TimerBase);
 };

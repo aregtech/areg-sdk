@@ -91,9 +91,6 @@ public:
      * \param   threadName      The String object containing the thread name.
      **/
     explicit ThreadAddress( const String & threadName );
-    /**
-     * \brief
-     **/
     ThreadAddress( const ThreadAddress & src );
     /**
      * \brief

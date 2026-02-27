@@ -181,9 +181,6 @@ private:
 // Hidden / Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     NotificationEventData() = delete;
 };
 
@@ -269,9 +266,6 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     NotificationEvent() = delete;
     AREG_NOCOPY_NOMOVE( NotificationEvent );
 };
@@ -289,9 +283,6 @@ class AREG_API NotificationConsumer  : public EventConsumer
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     NotificationConsumer() = default;
 
     /**

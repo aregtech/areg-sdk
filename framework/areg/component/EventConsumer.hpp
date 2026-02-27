@@ -39,9 +39,6 @@ class AREG_API EventConsumer
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     EventConsumer() = default;
     virtual ~EventConsumer() = default;
 

@@ -275,25 +275,10 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ResourceListMapBase() = delete;
-    /**
-     * \brief
-     **/
     ResourceListMapBase( const ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & operator = ( const ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     ResourceListMapBase( ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> && /*src*/ ) noexcept = delete;
-    /**
-     * \brief
-     **/
     ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> & operator = ( ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> && /*src*/ ) noexcept = delete;
 };
 
@@ -328,9 +313,6 @@ class ResourceListMap  : public ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJEC
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ResourceListMap();
     /**
      * \brief   Destructor
@@ -383,9 +365,6 @@ class ConcurrentResourceListMap    : public ResourceListMapBase<RESOURCE_KEY, RE
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ConcurrentResourceListMap();
     /**
      * \brief   Destructor

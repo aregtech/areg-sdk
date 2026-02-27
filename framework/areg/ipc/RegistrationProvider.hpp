@@ -36,9 +36,6 @@ class AREG_API RegistrationProvider
 // Protected default constructor and destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     RegistrationProvider() = default;
 
     /**

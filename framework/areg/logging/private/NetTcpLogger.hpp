@@ -202,9 +202,6 @@ private:
 /************************************************************************/
 
     //!< Wrapper of 'this' pointer.
-    /**
-     * \brief
-     **/
     inline NetTcpLogger& self();
 
 //////////////////////////////////////////////////////////////////////////
@@ -222,9 +219,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     NetTcpLogger() = delete;
     AREG_NOCOPY_NOMOVE(NetTcpLogger);
 };

@@ -39,9 +39,6 @@ class AREG_API RemoteMessageHandler
 // Protected constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     RemoteMessageHandler() = default;
 
     virtual ~RemoteMessageHandler() = default;

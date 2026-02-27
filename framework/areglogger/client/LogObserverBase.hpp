@@ -53,9 +53,6 @@ class LOGGER_API LogObserverBase
 // Protected constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     LogObserverBase();
     virtual ~LogObserverBase();
 

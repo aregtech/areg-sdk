@@ -186,9 +186,6 @@ private:
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ThreadLocalStorage() = delete;
     AREG_NOCOPY_NOMOVE( ThreadLocalStorage );
 };

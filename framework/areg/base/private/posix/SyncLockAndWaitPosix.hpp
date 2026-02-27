@@ -417,9 +417,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     SyncLockAndWaitPosix() = delete;
     AREG_NOCOPY_NOMOVE( SyncLockAndWaitPosix );
 };

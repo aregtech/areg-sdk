@@ -43,9 +43,6 @@ class AREG_API RegistrationConsumer
 // Protected constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     RegistrationConsumer() = default;
     /**
      * \brief   Destructor

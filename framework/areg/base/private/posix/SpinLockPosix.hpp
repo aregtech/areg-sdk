@@ -204,9 +204,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     SpinAutolockPosix() = delete;
     AREG_NOCOPY_NOMOVE( SpinAutolockPosix );
 };

@@ -38,9 +38,6 @@ class AREG_API EventRouter
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     EventRouter() = default;
     virtual ~EventRouter() = default;
 

@@ -537,9 +537,6 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServiceCommunicationBase() = delete;
     AREG_NOCOPY_NOMOVE( ServiceCommunicationBase );
 };

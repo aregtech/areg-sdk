@@ -189,9 +189,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     Watchdog() = delete;
     AREG_NOCOPY_NOMOVE(Watchdog);
 };

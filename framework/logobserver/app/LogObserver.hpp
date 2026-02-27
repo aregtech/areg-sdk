@@ -145,9 +145,6 @@ public:
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LogObserver() = default;
     ~LogObserver() = default;
 

@@ -45,9 +45,6 @@ class AREG_API ConfigListener
 // Protected constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     ConfigListener() = default;
     virtual ~ConfigListener() = default;
 

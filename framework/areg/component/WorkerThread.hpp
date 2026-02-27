@@ -182,9 +182,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     WorkerThread() = delete;
     AREG_NOCOPY_NOMOVE( WorkerThread );
 };

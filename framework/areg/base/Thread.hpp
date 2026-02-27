@@ -682,9 +682,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     Thread() = delete;
     AREG_NOCOPY_NOMOVE( Thread );
 };

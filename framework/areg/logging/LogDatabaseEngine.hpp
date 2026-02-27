@@ -42,9 +42,6 @@ class AREG_API LogDatabaseEngine  : public DatabaseEngine
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     LogDatabaseEngine();
     virtual ~LogDatabaseEngine();
 

@@ -73,9 +73,6 @@ public:
      **/
     explicit SortedLinkedList(bool sortAscending = true);
 
-    /**
-     * \brief
-     **/
     SortedLinkedList(const SortedLinkedList<VALUE>& src) = default;
 
     /**

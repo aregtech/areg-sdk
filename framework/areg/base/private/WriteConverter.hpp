@@ -214,9 +214,6 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     WriteConverter() = delete;
     AREG_NOCOPY_NOMOVE( WriteConverter );
 };

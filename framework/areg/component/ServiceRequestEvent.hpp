@@ -166,9 +166,6 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServiceRequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( ServiceRequestEvent );
 };

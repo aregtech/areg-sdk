@@ -74,21 +74,9 @@ public:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RuntimeHashMap(const RuntimeHashMap<RUNTIME_DELEGATE> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     RuntimeHashMap<RUNTIME_DELEGATE> & operator = (const RuntimeHashMap<RUNTIME_DELEGATE> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     RuntimeHashMap( RuntimeHashMap<RUNTIME_DELEGATE> && /*src*/ ) noexcept = delete;
-    /**
-     * \brief
-     **/
     RuntimeHashMap<RUNTIME_DELEGATE> & operator = ( RuntimeHashMap<RUNTIME_DELEGATE> && /*src*/ ) noexcept = delete;
 };
 
@@ -133,25 +121,10 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RuntimeResourceMapBase() = delete;
-    /**
-     * \brief
-     **/
     RuntimeResourceMapBase(const RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & operator = (const RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     RuntimeResourceMapBase( RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
-    /**
-     * \brief
-     **/
     RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> & operator = ( RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
 };
 
@@ -201,21 +174,9 @@ private:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RuntimeResourceMap(const RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     RuntimeResourceMap( RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
-    /**
-     * \brief
-     **/
     RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = ( RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/) noexcept = delete;
 };
 
@@ -263,21 +224,9 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ConcurrentRuntimeResourceMap(const ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = (const ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     ConcurrentRuntimeResourceMap( ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
-    /**
-     * \brief
-     **/
     ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> & operator = ( ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, Deleter> && /*src*/ ) noexcept = delete;
 };
 

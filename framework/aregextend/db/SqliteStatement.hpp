@@ -378,9 +378,6 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief
-     **/
     SqliteStatement() = delete; //!< Default constructor is not allowed.
     AREG_NOCOPY_NOMOVE(SqliteStatement); //!< No copy or move allowed.
 };

@@ -34,9 +34,6 @@ class AREG_API SocketClient   : public    Socket
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     SocketClient() = default;
 
     /**

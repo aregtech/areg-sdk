@@ -55,9 +55,6 @@ class AREG_API TimerConsumer : public  TimerEventConsumerBase
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     TimerConsumer() = default;
     /**
      * \brief   Destructor

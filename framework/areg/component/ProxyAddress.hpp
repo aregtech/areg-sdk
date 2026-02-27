@@ -375,9 +375,6 @@ protected:
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     inline ProxyAddress& self();
     /**
      * \brief   Delivers a service event to a target.

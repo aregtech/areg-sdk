@@ -368,9 +368,6 @@ protected:
     bool is_validated() const;
 
 private:
-    /**
-     * \brief
-     **/
     inline StubAddress& self();
     /**
      * \brief   Computes a hash value for a stub address.

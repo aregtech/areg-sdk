@@ -39,9 +39,6 @@ class ConnectionHandler
 // Protected constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     ConnectionHandler() = default;
     /**
      * \brief   Destructor

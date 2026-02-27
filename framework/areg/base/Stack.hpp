@@ -207,14 +207,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    /**
-     * \brief
-     **/
     inline uint32_t size() const;
 
-    /**
-     * \brief
-     **/
     inline bool is_empty() const;
 
     /**
@@ -233,9 +227,6 @@ public:
      **/
     inline bool is_last_position(const STACKPOS pos) const;
 
-    /**
-     * \brief
-     **/
     STACKPOS invalid_position() const;
 
     /**
@@ -282,28 +273,16 @@ public:
      **/
     inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
 
-    /**
-     * \brief
-     **/
     inline const std::deque<VALUE>& data() const;
 
 /************************************************************************/
 // Operations
 /************************************************************************/
 
-    /**
-     * \brief
-     **/
     inline void clear();
 
-    /**
-     * \brief
-     **/
     inline void free_extra();
 
-    /**
-     * \brief
-     **/
     inline void release();
 
     /**
@@ -415,9 +394,6 @@ public:
      **/
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
 
-    /**
-     * \brief
-     **/
     inline STACKPOS first_position() const;
 
     /**
@@ -504,17 +480,8 @@ protected:
 // Hidden / Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     StackBase() = delete;
-    /**
-     * \brief
-     **/
     StackBase( const StackBase<VALUE> & /* source */ ) = delete;
-    /**
-     * \brief
-     **/
     StackBase( StackBase<VALUE> && /* source */ ) = delete;
 };
 

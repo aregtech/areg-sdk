@@ -125,9 +125,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LogEventProcessor() = delete;
     AREG_NOCOPY_NOMOVE( LogEventProcessor );
 };

@@ -179,9 +179,6 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ReadConverter() = delete;
     AREG_NOCOPY_NOMOVE( ReadConverter );
 };

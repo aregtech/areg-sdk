@@ -132,9 +132,6 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ProxyConnectEvent() = delete;
     AREG_NOCOPY_NOMOVE( ProxyConnectEvent );
 };

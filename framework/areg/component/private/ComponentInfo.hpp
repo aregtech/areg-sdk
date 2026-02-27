@@ -241,9 +241,6 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ComponentInfo() = delete;
     AREG_NOCOPY_NOMOVE( ComponentInfo );
 };

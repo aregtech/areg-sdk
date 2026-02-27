@@ -128,9 +128,6 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     SyncObjectPosix() = delete;
     AREG_NOCOPY_NOMOVE( SyncObjectPosix );
 };

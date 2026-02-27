@@ -146,9 +146,6 @@ protected:
 // Hidden / forbidden function calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     SyncObject() = delete;
     AREG_NOCOPY_NOMOVE( SyncObject );
 };

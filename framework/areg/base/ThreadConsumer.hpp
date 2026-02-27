@@ -62,9 +62,6 @@ public:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    /**
-     * \brief
-     **/
     ThreadConsumer() = default;
 
     /**

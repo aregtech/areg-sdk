@@ -195,9 +195,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServiceResponseEvent() = delete;
     AREG_NOCOPY_NOMOVE( ServiceResponseEvent );
 };

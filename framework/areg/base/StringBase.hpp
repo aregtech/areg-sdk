@@ -320,29 +320,11 @@ public:
      * \return  Returns true if existing string is more than given.
      **/
     inline bool operator >= (const CharType* other) const;
-    /**
-     * \brief
-     **/
     inline bool operator >= (const std::basic_string<CharType>& other) const;
-    /**
-     * \brief
-     **/
     inline bool operator >= (const std::basic_string_view<CharType>& other) const;
-    /**
-     * \brief
-     **/
     inline bool operator <= (const StringBase<CharType>& other) const;
-    /**
-     * \brief
-     **/
     inline bool operator <= (const CharType* other) const;
-    /**
-     * \brief
-     **/
     inline bool operator <= (const std::basic_string<CharType>& other) const;
-    /**
-     * \brief
-     **/
     inline bool operator <= (const std::basic_string_view<CharType>& other) const;
 
     /**
@@ -422,24 +404,12 @@ public:
      **/
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT rhs);
     template<typename CT>
-    /**
-     * \brief
-     **/
     friend inline StringBase<CT> operator + (const std::basic_string<CT>& lhs, const StringBase<CT>& rhs);
     template<typename CT>
-    /**
-     * \brief
-     **/
     friend inline StringBase<CT> operator + (const std::basic_string_view<CT>& lhs, const StringBase<CT>& rhs);
     template<typename CT>
-    /**
-     * \brief
-     **/
     friend inline StringBase<CT> operator + (const CT* lhs, const StringBase<CT>& rhs);
     template<typename CT>
-    /**
-     * \brief
-     **/
     friend inline StringBase<CT> operator + (const CT lhs, const StringBase<CT>& rhs);
 
     /**

@@ -231,144 +231,60 @@ namespace NEPersistence
             , {"*"      , "*"   , "*"       , "*"               }   //! 29  , Indicates any key type.
         };
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& config_version();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_version();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_target();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_status();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_enable();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_file_location();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_file_append();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& remote_queue_size();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_layout_enter();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_layout_message();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_layout_exit();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_scope();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& service_list();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& service_name();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& service_connection();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& service_enable();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& service_address();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& service_port();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_engine();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_name();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_location();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_driver();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_address();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_port();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_user();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& log_database_password();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& buffer_block_size();
 
-    /**
-     * \brief
-     **/
     inline const NEPersistence::ConfigKey& message_queue_size();
 }
 

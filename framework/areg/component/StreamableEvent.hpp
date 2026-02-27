@@ -90,9 +90,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     StreamableEvent() = delete;
     AREG_NOCOPY_NOMOVE( StreamableEvent );
 };

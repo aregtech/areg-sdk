@@ -236,25 +236,10 @@ private:
 // Hidden / Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ResourceMapBase() = delete;
-    /**
-     * \brief
-     **/
     ResourceMapBase( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/) = delete;
-    /**
-     * \brief
-     **/
     ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( const ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & /*src*/ ) = delete;
-    /**
-     * \brief
-     **/
     ResourceMapBase( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
-    /**
-     * \brief
-     **/
     ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> & operator = ( ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> && /*src*/ ) noexcept = delete;
 };
 
@@ -284,9 +269,6 @@ class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_O
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ConcurrentResourceMap();
     /**
      * \brief   Destructor
@@ -334,9 +316,6 @@ class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapCo
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ResourceMap();
     /**
      * \brief   Destructor

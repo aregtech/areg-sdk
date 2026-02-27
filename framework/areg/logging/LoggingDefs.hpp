@@ -66,9 +66,6 @@ namespace NELogging
      **/
     struct ScopeEntry
     {
-        /**
-         * \brief
-         **/
         inline ScopeEntry();
 
         /**

@@ -179,9 +179,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( RequestEvent );
 };
@@ -246,9 +243,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LocalRequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( LocalRequestEvent );
 };
@@ -346,9 +340,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RemoteRequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( RemoteRequestEvent );
 };
@@ -404,9 +395,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     NotifyRequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( NotifyRequestEvent );
 };
@@ -460,9 +448,6 @@ protected:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     LocalNotifyRequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( LocalNotifyRequestEvent );
 };
@@ -547,9 +532,6 @@ protected:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RemoteNotifyRequestEvent() = delete;
     AREG_NOCOPY_NOMOVE( RemoteNotifyRequestEvent );
 };

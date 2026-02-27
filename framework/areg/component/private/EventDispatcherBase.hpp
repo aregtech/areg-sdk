@@ -359,9 +359,6 @@ private:
 // Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     EventDispatcherBase() = delete;
     AREG_NOCOPY_NOMOVE( EventDispatcherBase );
 };

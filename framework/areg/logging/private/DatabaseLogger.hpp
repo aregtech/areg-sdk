@@ -157,9 +157,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     DatabaseLogger() = delete;
     AREG_NOCOPY_NOMOVE(DatabaseLogger);
 };

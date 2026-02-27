@@ -245,9 +245,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     RouterClient() = delete;
     AREG_NOCOPY_NOMOVE( RouterClient );
 };

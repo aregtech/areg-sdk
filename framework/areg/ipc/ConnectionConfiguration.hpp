@@ -148,9 +148,6 @@ private:
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ConnectionConfiguration() = delete;
     AREG_NOCOPY_NOMOVE( ConnectionConfiguration );
 };

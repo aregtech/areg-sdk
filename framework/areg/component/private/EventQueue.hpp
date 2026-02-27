@@ -132,9 +132,6 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     EventQueue() = delete;
     AREG_NOCOPY_NOMOVE( EventQueue );
 };
@@ -182,9 +179,6 @@ private:
 // Forbidden method calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ExternalEventQueue() = delete;
     AREG_NOCOPY_NOMOVE( ExternalEventQueue );
 };

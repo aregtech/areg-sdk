@@ -479,9 +479,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief
-     **/
     ServiceClientConnectionBase() = delete;
     AREG_NOCOPY_NOMOVE( ServiceClientConnectionBase );
 };

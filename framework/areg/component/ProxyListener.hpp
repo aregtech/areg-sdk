@@ -33,9 +33,6 @@ class AREG_API ProxyListener  : public NotificationConsumer
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief
-     **/
     ProxyListener() = default;
 
 public:
