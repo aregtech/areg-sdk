@@ -22,450 +22,454 @@
 
 #include <utility>
 
-#if AREG_LOGS
-
-//////////////////////////////////////////////////////////////////////////
-// LogLayout interface implementation
-//////////////////////////////////////////////////////////////////////////
-
-LogLayout::LogLayout(const areg::LayoutToken layout)
-    : mLayout   ( layout )
+namespace areg
 {
-}
+    #if AREG_LOGS
 
-//////////////////////////////////////////////////////////////////////////
-// TickCountLayout class implementation
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // LogLayout interface implementation
+    //////////////////////////////////////////////////////////////////////////
 
-TickCountLayout::TickCountLayout()
-    : LogLayout     ( areg::LayoutToken::TickCount )
-{
-}
-
-TickCountLayout::TickCountLayout( const TickCountLayout & /*src*/ )
-    : LogLayout     ( areg::LayoutToken::TickCount )
-{
-}
-
-TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
-    : LogLayout     ( areg::LayoutToken::TickCount )
-{
-}
-
-void TickCountLayout::logMessage( const areg::LogEntry & /*msgLog*/, areg::OutStream & stream ) const
-{
-#ifdef _BIT64
-    constexpr char fmt[]{ "%llu" };
-#else   // _BIT32
-    constexpr char fmt[]{ "%u" };
-#endif  // _BIT64
-
-    char buffer[128];
-    uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>( areg::DateTime::getProcessTickCount() )));
-    stream.write(reinterpret_cast<const uint8_t *>(buffer), len);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// DayTimeLayout class declaration
-//////////////////////////////////////////////////////////////////////////
-
-
-DayTimeLayout::DayTimeLayout()
-    : LogLayout ( areg::LayoutToken::DayTime )
-{
-}
-
-DayTimeLayout::DayTimeLayout( const DayTimeLayout & /*src*/ )
-    : LogLayout ( areg::LayoutToken::DayTime )
-{
-}
-
-DayTimeLayout::DayTimeLayout( DayTimeLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::DayTime )
-{
-}
-
-void DayTimeLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    if ( msgLog.logTimestamp != 0 )
+    areg::LogLayout::LogLayout(const areg::LayoutToken layout)
+        : mLayout   ( layout )
     {
-        areg::String timestamp;
-        areg::DateTime::formatTime(areg::DateTime(msgLog.logTimestamp), timestamp, areg::TIME_FORMAT_ISO8601_OUTPUT);
-        stream.write( reinterpret_cast<const uint8_t *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// ModuleIdLayout class declaration
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // TickCountLayout class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-ModuleIdLayout::ModuleIdLayout()
-    : LogLayout      ( areg::LayoutToken::ExecutableId )
-{
-}
-
-ModuleIdLayout::ModuleIdLayout(const ModuleIdLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::ExecutableId )
-{
-}
-
-ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::ExecutableId )
-{
-}
-
-void ModuleIdLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    static const ITEM_ID _moduleId{ areg::Process::getInstance().getId() };
-#ifdef _BIT64
-    static const areg::String  _moduleName{ areg::String::makeString(static_cast<uint64_t>(_moduleId), areg::Radix::Hexadecimal) };
-#else   // _BIT32
-    static const areg::String  _moduleName{ areg::String::makeString(static_cast<uint32_t>(_moduleId), areg::Radix::Hexadecimal) };
-#endif  // _BIT64
-
-    if (msgLog.logModuleId != 0)
+    areg::TickCountLayout::TickCountLayout()
+        : areg::LogLayout     ( areg::LayoutToken::TickCount )
     {
-        if (msgLog.logModuleId == _moduleId)
+    }
+
+    areg::TickCountLayout::TickCountLayout( const areg::TickCountLayout & /*src*/ )
+        : areg::LogLayout     ( areg::LayoutToken::TickCount )
+    {
+    }
+
+    areg::TickCountLayout::TickCountLayout( areg::TickCountLayout && /*src*/ ) noexcept
+        : areg::LogLayout     ( areg::LayoutToken::TickCount )
+    {
+    }
+
+    void areg::TickCountLayout::logMessage( const areg::LogEntry & /*msgLog*/, areg::OutStream & stream ) const
+    {
+    #ifdef _BIT64
+        constexpr char fmt[]{ "%llu" };
+    #else   // _BIT32
+        constexpr char fmt[]{ "%u" };
+    #endif  // _BIT64
+
+        char buffer[128];
+        uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>( areg::DateTime::getProcessTickCount() )));
+        stream.write(reinterpret_cast<const uint8_t *>(buffer), len);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // DayTimeLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+
+    areg::DayTimeLayout::DayTimeLayout()
+        : areg::LogLayout ( areg::LayoutToken::DayTime )
+    {
+    }
+
+    areg::DayTimeLayout::DayTimeLayout( const areg::DayTimeLayout & /*src*/ )
+        : areg::LogLayout ( areg::LayoutToken::DayTime )
+    {
+    }
+
+    areg::DayTimeLayout::DayTimeLayout( areg::DayTimeLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::DayTime )
+    {
+    }
+
+    void areg::DayTimeLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        if ( msgLog.logTimestamp != 0 )
         {
-            stream.write(reinterpret_cast<const uint8_t*>(_moduleName.getBuffer()), static_cast<uint32_t>(_moduleName.getLength()));
+            areg::String timestamp;
+            areg::DateTime::formatTime(areg::DateTime(msgLog.logTimestamp), timestamp, areg::TIME_FORMAT_ISO8601_OUTPUT);
+            stream.write( reinterpret_cast<const uint8_t *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
         }
-        else
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // ModuleIdLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+    areg::ModuleIdLayout::ModuleIdLayout()
+        : areg::LogLayout      ( areg::LayoutToken::ExecutableId )
+    {
+    }
+
+    areg::ModuleIdLayout::ModuleIdLayout(const areg::ModuleIdLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::ExecutableId )
+    {
+    }
+
+    areg::ModuleIdLayout::ModuleIdLayout( areg::ModuleIdLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::ExecutableId )
+    {
+    }
+
+    void areg::ModuleIdLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        static const ITEM_ID _moduleId{ areg::Process::getInstance().getId() };
+    #ifdef _BIT64
+        static const areg::String  _moduleName{ areg::String::makeString(static_cast<uint64_t>(_moduleId), areg::Radix::Hexadecimal) };
+    #else   // _BIT32
+        static const areg::String  _moduleName{ areg::String::makeString(static_cast<uint32_t>(_moduleId), areg::Radix::Hexadecimal) };
+    #endif  // _BIT64
+
+        if (msgLog.logModuleId != 0)
         {
-#ifdef _BIT64
-            constexpr char fmt[]{ "0x%llX" };
-#else   // _BIT32
-            constexpr char fmt[]{ "0x%X" };
-#endif  // _BIT64
+            if (msgLog.logModuleId == _moduleId)
+            {
+                stream.write(reinterpret_cast<const uint8_t*>(_moduleName.getBuffer()), static_cast<uint32_t>(_moduleName.getLength()));
+            }
+            else
+            {
+    #ifdef _BIT64
+                constexpr char fmt[]{ "0x%llX" };
+    #else   // _BIT32
+                constexpr char fmt[]{ "0x%X" };
+    #endif  // _BIT64
+                char buffer[128];
+                uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
+                stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // MessageLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+    areg::MessageLayout::MessageLayout()
+        : areg::LogLayout ( areg::LayoutToken::Message )
+    {
+    }
+
+    areg::MessageLayout::MessageLayout(const areg::MessageLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::Message )
+    {
+    }
+
+    areg::MessageLayout::MessageLayout( areg::MessageLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::Message )
+    {
+    }
+
+    void areg::MessageLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        uint32_t count{ static_cast<uint32_t>(areg::getStringLength<char>(msgLog.logMessage)) };
+        stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), count);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // EndOfLineLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+    areg::EndOfLineLayout::EndOfLineLayout()
+        : areg::LogLayout ( areg::LayoutToken::EndOfLine )
+    {
+    }
+
+    areg::EndOfLineLayout::EndOfLineLayout(const areg::EndOfLineLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::EndOfLine )
+    {
+    }
+
+    areg::EndOfLineLayout::EndOfLineLayout( areg::EndOfLineLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::EndOfLine )
+    {
+    }
+
+    void areg::EndOfLineLayout::logMessage( const areg::LogEntry & /*msgLog*/, areg::OutStream & stream ) const
+    {
+        stream.write(reinterpret_cast<const uint8_t*>(&areg::EndOfLine), 1);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // PriorityLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+    areg::PriorityLayout::PriorityLayout()
+        : areg::LogLayout ( areg::LayoutToken::Priority )
+    {
+    }
+
+    areg::PriorityLayout::PriorityLayout(const areg::PriorityLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::Priority )
+    {
+    }
+
+    areg::PriorityLayout::PriorityLayout( areg::PriorityLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::Priority )
+    {
+    }
+
+    void areg::PriorityLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        const areg::String& prio{ areg::logPrioToString(msgLog.logMessagePrio) };
+        stream.write(reinterpret_cast<const uint8_t *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // ScopeIdLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+    areg::ScopeIdLayout::ScopeIdLayout()
+        : areg::LogLayout ( areg::LayoutToken::ScopeId )
+    {
+    }
+
+    areg::ScopeIdLayout::ScopeIdLayout(const areg::ScopeIdLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::ScopeId )
+    {
+    }
+
+    areg::ScopeIdLayout::ScopeIdLayout( areg::ScopeIdLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::ScopeId )
+    {
+    }
+
+    void areg::ScopeIdLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        if ( msgLog.logScopeId != 0 )
+        {
             char buffer[128];
-            uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
-            stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
+            uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, "%u", msgLog.logScopeId));
+            stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
         }
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// MessageLayout class declaration
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // ThreadIdLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
 
-MessageLayout::MessageLayout()
-    : LogLayout ( areg::LayoutToken::Message )
-{
-}
-
-MessageLayout::MessageLayout(const MessageLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::Message )
-{
-}
-
-MessageLayout::MessageLayout( MessageLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::Message )
-{
-}
-
-void MessageLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    uint32_t count{ static_cast<uint32_t>(areg::getStringLength<char>(msgLog.logMessage)) };
-    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), count);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// EndOfLineLayout class declaration
-//////////////////////////////////////////////////////////////////////////
-
-EndOfLineLayout::EndOfLineLayout()
-    : LogLayout ( areg::LayoutToken::EndOfLine )
-{
-}
-
-EndOfLineLayout::EndOfLineLayout(const EndOfLineLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::EndOfLine )
-{
-}
-
-EndOfLineLayout::EndOfLineLayout( EndOfLineLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::EndOfLine )
-{
-}
-
-void EndOfLineLayout::logMessage( const areg::LogEntry & /*msgLog*/, areg::OutStream & stream ) const
-{
-    stream.write(reinterpret_cast<const uint8_t*>(&areg::EndOfLine), 1);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// PriorityLayout class declaration
-//////////////////////////////////////////////////////////////////////////
-
-PriorityLayout::PriorityLayout()
-    : LogLayout ( areg::LayoutToken::Priority )
-{
-}
-
-PriorityLayout::PriorityLayout(const PriorityLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::Priority )
-{
-}
-
-PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::Priority )
-{
-}
-
-void PriorityLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    const areg::String& prio{ areg::logPrioToString(msgLog.logMessagePrio) };
-    stream.write(reinterpret_cast<const uint8_t *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ScopeIdLayout class declaration
-//////////////////////////////////////////////////////////////////////////
-
-ScopeIdLayout::ScopeIdLayout()
-    : LogLayout ( areg::LayoutToken::ScopeId )
-{
-}
-
-ScopeIdLayout::ScopeIdLayout(const ScopeIdLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::ScopeId )
-{
-}
-
-ScopeIdLayout::ScopeIdLayout( ScopeIdLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::ScopeId )
-{
-}
-
-void ScopeIdLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    if ( msgLog.logScopeId != 0 )
+    areg::ThreadIdLayout::ThreadIdLayout()
+        : areg::LogLayout ( areg::LayoutToken::ThreadId )
     {
-        char buffer[128];
-        uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, "%u", msgLog.logScopeId));
-        stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// ThreadIdLayout class declaration
-//////////////////////////////////////////////////////////////////////////
-
-ThreadIdLayout::ThreadIdLayout()
-    : LogLayout ( areg::LayoutToken::ThreadId )
-{
-}
-
-ThreadIdLayout::ThreadIdLayout(const ThreadIdLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::ThreadId )
-{
-}
-
-ThreadIdLayout::ThreadIdLayout( ThreadIdLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::ThreadId )
-{
-}
-
-void ThreadIdLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    if ( msgLog.logThreadId != 0 )
+    areg::ThreadIdLayout::ThreadIdLayout(const areg::ThreadIdLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::ThreadId )
     {
-#ifdef _BIT64
-        constexpr char fmt[]{ "%06llu" };
-#else   // _BIT32
-        constexpr char fmt[]{ "%06u" };
-#endif  // _BIT64
-
-        char buffer[128];
-        uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
-        stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// ModuleNameLayout class declaration
-//////////////////////////////////////////////////////////////////////////
-
-ModuleNameLayout::ModuleNameLayout()
-    : LogLayout ( areg::LayoutToken::ExecutableName )
-{
-}
-
-ModuleNameLayout::ModuleNameLayout(const ModuleNameLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::ExecutableName )
-{
-}
-
-ModuleNameLayout::ModuleNameLayout( ModuleNameLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::ExecutableName )
-{
-}
-
-void ModuleNameLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    if (msgLog.logDataType == areg::LogDataType::Local)
+    areg::ThreadIdLayout::ThreadIdLayout( areg::ThreadIdLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::ThreadId )
     {
-        static const areg::String& _module{ areg::Process::getInstance().getAppName() };
-        stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
     }
-    else
+
+    void areg::ThreadIdLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
     {
-        if (msgLog.logCookie == areg::COOKIE_LOCAL)
+        if ( msgLog.logThreadId != 0 )
+        {
+    #ifdef _BIT64
+            constexpr char fmt[]{ "%06llu" };
+    #else   // _BIT32
+            constexpr char fmt[]{ "%06u" };
+    #endif  // _BIT64
+
+            char buffer[128];
+            uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
+            stream.write( reinterpret_cast<const uint8_t *>(buffer), len );
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // ModuleNameLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+    areg::ModuleNameLayout::ModuleNameLayout()
+        : areg::LogLayout ( areg::LayoutToken::ExecutableName )
+    {
+    }
+
+    areg::ModuleNameLayout::ModuleNameLayout(const areg::ModuleNameLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::ExecutableName )
+    {
+    }
+
+    areg::ModuleNameLayout::ModuleNameLayout( areg::ModuleNameLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::ExecutableName )
+    {
+    }
+
+    void areg::ModuleNameLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        if (msgLog.logDataType == areg::LogDataType::Local)
         {
             static const areg::String& _module{ areg::Process::getInstance().getAppName() };
             stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
         }
-        else if ((msgLog.logCookie != areg::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
+        else
         {
-            stream.write(reinterpret_cast<const uint8_t*>(msgLog.logModule), msgLog.logModuleLen);
+            if (msgLog.logCookie == areg::COOKIE_LOCAL)
+            {
+                static const areg::String& _module{ areg::Process::getInstance().getAppName() };
+                stream.write(reinterpret_cast<const uint8_t*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
+            }
+            else if ((msgLog.logCookie != areg::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
+            {
+                stream.write(reinterpret_cast<const uint8_t*>(msgLog.logModule), msgLog.logModuleLen);
+            }
+            else
+            {
+                static constexpr std::string_view _unknown{ "Unknown_Module" };
+                stream.write(reinterpret_cast<const uint8_t*>(_unknown.data()), static_cast<uint32_t>(_unknown.length()));
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // ThreadNameLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
+
+    areg::ThreadNameLayout::ThreadNameLayout()
+        : areg::LogLayout ( areg::LayoutToken::ThreadName )
+    {
+    }
+
+    areg::ThreadNameLayout::ThreadNameLayout(const areg::ThreadNameLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::ThreadName )
+    {
+    }
+
+    areg::ThreadNameLayout::ThreadNameLayout( areg::ThreadNameLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::ThreadName )
+    {
+    }
+
+    void areg::ThreadNameLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        const char* name{ nullptr };
+        uint32_t len{ 0 };
+
+        if (msgLog.logDataType == areg::LogDataType::Local)
+        {
+            const areg::String& thread{ areg::Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
+            name = thread.getString();
+            len  = static_cast<uint32_t>(thread.getLength());
         }
         else
         {
-            static constexpr std::string_view _unknown{ "Unknown_Module" };
-            stream.write(reinterpret_cast<const uint8_t*>(_unknown.data()), static_cast<uint32_t>(_unknown.length()));
+            name = msgLog.logThread;
+            len = msgLog.logThreadLen;
+        }
+
+        if (len != 0)
+        {
+            stream.write(reinterpret_cast<const uint8_t*>(name), len);
+        }
+        else
+        {
+            static constexpr std::string_view _unknownThread{ "Unknown_Thread" };
+            stream.write(reinterpret_cast<const uint8_t*>(_unknownThread.data()), static_cast<uint32_t>(_unknownThread.length()));
         }
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// ThreadNameLayout class declaration
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // ScopeNameLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
 
-ThreadNameLayout::ThreadNameLayout()
-    : LogLayout ( areg::LayoutToken::ThreadName )
-{
-}
-
-ThreadNameLayout::ThreadNameLayout(const ThreadNameLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::ThreadName )
-{
-}
-
-ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::ThreadName )
-{
-}
-
-void ThreadNameLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    const char* name{ nullptr };
-    uint32_t len{ 0 };
-
-    if (msgLog.logDataType == areg::LogDataType::Local)
+    areg::ScopeNameLayout::ScopeNameLayout()
+        : areg::LogLayout ( areg::LayoutToken::ScopeName )
     {
-        const areg::String& thread{ areg::Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
-        name = thread.getString();
-        len  = static_cast<uint32_t>(thread.getLength());
-    }
-    else
-    {
-        name = msgLog.logThread;
-        len = msgLog.logThreadLen;
     }
 
-    if (len != 0)
+    areg::ScopeNameLayout::ScopeNameLayout(const areg::ScopeNameLayout & /*src*/)
+        : areg::LogLayout ( areg::LayoutToken::ScopeName )
     {
-        stream.write(reinterpret_cast<const uint8_t*>(name), len);
     }
-    else
+
+    areg::ScopeNameLayout::ScopeNameLayout( areg::ScopeNameLayout && /*src*/ ) noexcept
+        : areg::LogLayout ( areg::LayoutToken::ScopeName )
     {
-        static constexpr std::string_view _unknownThread{ "Unknown_Thread" };
-        stream.write(reinterpret_cast<const uint8_t*>(_unknownThread.data()), static_cast<uint32_t>(_unknownThread.length()));
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// ScopeNameLayout class declaration
-//////////////////////////////////////////////////////////////////////////
+    void areg::ScopeNameLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
+    {
+        stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), msgLog.logMessageLen);
+    }
 
-ScopeNameLayout::ScopeNameLayout()
-    : LogLayout ( areg::LayoutToken::ScopeName )
-{
-}
+    //////////////////////////////////////////////////////////////////////////
+    // ScopeNameLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
 
-ScopeNameLayout::ScopeNameLayout(const ScopeNameLayout & /*src*/)
-    : LogLayout ( areg::LayoutToken::ScopeName )
-{
-}
+    areg::AnyTextLayout::AnyTextLayout()
+        : areg::LogLayout      ( areg::LayoutToken::AnyText )
+        , mTextMessage  ( )
+    {
+    }
 
-ScopeNameLayout::ScopeNameLayout( ScopeNameLayout && /*src*/ ) noexcept
-    : LogLayout ( areg::LayoutToken::ScopeName )
-{
-}
+    areg::AnyTextLayout::AnyTextLayout(const areg::AnyTextLayout & src)
+        : areg::LogLayout      ( areg::LayoutToken::AnyText )
+        , mTextMessage  ( src.mTextMessage )
+    {
+    }
 
-void ScopeNameLayout::logMessage( const areg::LogEntry & msgLog, areg::OutStream & stream ) const
-{
-    stream.write(reinterpret_cast<const uint8_t *>(msgLog.logMessage), msgLog.logMessageLen);
-}
+    areg::AnyTextLayout::AnyTextLayout( areg::AnyTextLayout && src ) noexcept
+        : areg::LogLayout      ( areg::LayoutToken::AnyText )
+        , mTextMessage  ( std::move(src.mTextMessage) )
+    {
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// ScopeNameLayout class declaration
-//////////////////////////////////////////////////////////////////////////
+    areg::AnyTextLayout::AnyTextLayout(const areg::String & anyMessage)
+        : areg::LogLayout      ( areg::LayoutToken::AnyText )
+        , mTextMessage  ( anyMessage )
+    {
+    }
 
-AnyTextLayout::AnyTextLayout()
-    : LogLayout      ( areg::LayoutToken::AnyText )
-    , mTextMessage  ( )
-{
-}
+    areg::AnyTextLayout::AnyTextLayout(const char * anyMessage)
+        : areg::LogLayout      ( areg::LayoutToken::AnyText )
+        , mTextMessage  ( anyMessage != nullptr ? anyMessage : areg::EmptyStringA )
+    {
+    }
 
-AnyTextLayout::AnyTextLayout(const AnyTextLayout & src)
-    : LogLayout      ( areg::LayoutToken::AnyText )
-    , mTextMessage  ( src.mTextMessage )
-{
-}
+    void areg::AnyTextLayout::logMessage( const areg::LogEntry & /*msgLog*/, areg::OutStream & stream ) const
+    {
+        stream.write( reinterpret_cast<const uint8_t *>(mTextMessage.getString()), static_cast<uint32_t>(mTextMessage.getLength()) );
+    }
 
-AnyTextLayout::AnyTextLayout( AnyTextLayout && src ) noexcept
-    : LogLayout      ( areg::LayoutToken::AnyText )
-    , mTextMessage  ( std::move(src.mTextMessage) )
-{
-}
+    //////////////////////////////////////////////////////////////////////////
+    // CookieIdLayout class declaration
+    //////////////////////////////////////////////////////////////////////////
 
-AnyTextLayout::AnyTextLayout(const areg::String & anyMessage)
-    : LogLayout      ( areg::LayoutToken::AnyText )
-    , mTextMessage  ( anyMessage )
-{
-}
+    areg::CookieIdLayout::CookieIdLayout()
+        : areg::LogLayout(areg::LayoutToken::CookieId)
+    {
+    }
 
-AnyTextLayout::AnyTextLayout(const char * anyMessage)
-    : LogLayout      ( areg::LayoutToken::AnyText )
-    , mTextMessage  ( anyMessage != nullptr ? anyMessage : areg::EmptyStringA )
-{
-}
+    areg::CookieIdLayout::CookieIdLayout(const areg::CookieIdLayout& /* src */)
+        : areg::LogLayout(areg::LayoutToken::CookieId)
+    {
+    }
 
-void AnyTextLayout::logMessage( const areg::LogEntry & /*msgLog*/, areg::OutStream & stream ) const
-{
-    stream.write( reinterpret_cast<const uint8_t *>(mTextMessage.getString()), static_cast<uint32_t>(mTextMessage.getLength()) );
-}
+    areg::CookieIdLayout::CookieIdLayout(areg::CookieIdLayout&& /* src */) noexcept
+        : areg::LogLayout(areg::LayoutToken::CookieId)
+    {
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// CookieIdLayout class declaration
-//////////////////////////////////////////////////////////////////////////
+    void areg::CookieIdLayout::logMessage(const areg::LogEntry& msgLog, areg::OutStream& stream) const
+    {
+    #ifdef _BIT64
+        constexpr char fmt[]{ "%03llu" };
+    #else   // _BIT32
+        constexpr char fmt[]{ "%03u" };
+    #endif  // _BIT64
 
-CookieIdLayout::CookieIdLayout()
-    : LogLayout(areg::LayoutToken::CookieId)
-{
-}
+        char buffer[128];
+        uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
+        stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
+    }
 
-CookieIdLayout::CookieIdLayout(const CookieIdLayout& /* src */)
-    : LogLayout(areg::LayoutToken::CookieId)
-{
-}
+    #endif  // AREG_LOGS
 
-CookieIdLayout::CookieIdLayout(CookieIdLayout&& /* src */) noexcept
-    : LogLayout(areg::LayoutToken::CookieId)
-{
-}
-
-void CookieIdLayout::logMessage(const areg::LogEntry& msgLog, areg::OutStream& stream) const
-{
-#ifdef _BIT64
-    constexpr char fmt[]{ "%03llu" };
-#else   // _BIT32
-    constexpr char fmt[]{ "%03u" };
-#endif  // _BIT64
-
-    char buffer[128];
-    uint32_t len = static_cast<uint32_t>(areg::String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
-    stream.write(reinterpret_cast<const uint8_t*>(buffer), len);
-}
-
-#endif  // AREG_LOGS
+} // namespace areg

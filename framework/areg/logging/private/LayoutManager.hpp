@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogLayout;
+namespace areg { class LogLayout; }
 namespace areg { class OutStream; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ class LayoutManager
 // Local types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
-    using ListLayouts   = areg::ArrayList<LogLayout *>;
+    using ListLayouts   = areg::ArrayList<areg::LogLayout *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

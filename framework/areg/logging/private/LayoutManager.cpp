@@ -59,8 +59,8 @@ bool LayoutManager::createLayouts(const areg::String& layoutFormat)
 
 void LayoutManager::deleteLayouts()
 {
-    const std::vector<LogLayout*>& list{ mLayoutList.getData() };
-    for (LogLayout* layout : list)
+    const std::vector<areg::LogLayout*>& list{ mLayoutList.getData() };
+    for (areg::LogLayout* layout : list)
     {
         delete layout;
     }
@@ -76,8 +76,8 @@ void LayoutManager::logMessage(const areg::LogEntry & logMsg, areg::OutStream & 
     }
     else
     {
-        const std::vector<LogLayout*>& list{ mLayoutList.getData() };
-        for (const LogLayout* layout : list)
+        const std::vector<areg::LogLayout*>& list{ mLayoutList.getData() };
+        for (const areg::LogLayout* layout : list)
         {
             layout->logMessage(logMsg, stream);
         }
@@ -91,70 +91,70 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
     bool hasExclusive{ false };
     char* pos = layoutFormat;
     const char* pos1 = pos;
-    LogLayout* anyText{ nullptr };
+    areg::LogLayout* anyText{ nullptr };
 
     while (*pos != areg::String::EmptyChar)
     {
         if (*pos == areg::SYNTAX_SPECIAL_FORMAT)
         {
             char ch = *(pos + 1);
-            LogLayout* newLayout{ nullptr };
+            areg::LogLayout* newLayout{ nullptr };
             switch (static_cast<areg::LayoutToken>(ch))
             {
             case areg::LayoutToken::TickCount:
-                newLayout = DEBUG_NEW TickCountLayout();
+                newLayout = DEBUG_NEW areg::TickCountLayout();
                 break;
 
             case areg::LayoutToken::DayTime:
-                newLayout = DEBUG_NEW DayTimeLayout();
+                newLayout = DEBUG_NEW areg::DayTimeLayout();
                 break;
 
             case areg::LayoutToken::ExecutableId:
-                newLayout = DEBUG_NEW ModuleIdLayout();
+                newLayout = DEBUG_NEW areg::ModuleIdLayout();
                 break;
 
             case areg::LayoutToken::Message:
                 if (hasExclusive == false)
                 {
-                    newLayout = DEBUG_NEW MessageLayout();
+                    newLayout = DEBUG_NEW areg::MessageLayout();
                     hasExclusive = true;
                 }
                 break;
 
             case areg::LayoutToken::EndOfLine:
-                newLayout = DEBUG_NEW EndOfLineLayout();
+                newLayout = DEBUG_NEW areg::EndOfLineLayout();
                 break;
 
             case areg::LayoutToken::Priority:
-                newLayout = DEBUG_NEW PriorityLayout();
+                newLayout = DEBUG_NEW areg::PriorityLayout();
                 break;
 
             case areg::LayoutToken::ScopeId:
-                newLayout = DEBUG_NEW ScopeIdLayout();
+                newLayout = DEBUG_NEW areg::ScopeIdLayout();
                 break;
 
             case areg::LayoutToken::ThreadId:
-                newLayout = DEBUG_NEW ThreadIdLayout();
+                newLayout = DEBUG_NEW areg::ThreadIdLayout();
                 break;
 
             case areg::LayoutToken::ExecutableName:
-                newLayout = DEBUG_NEW ModuleNameLayout();
+                newLayout = DEBUG_NEW areg::ModuleNameLayout();
                 break;
 
             case areg::LayoutToken::ThreadName:
-                newLayout = DEBUG_NEW ThreadNameLayout();
+                newLayout = DEBUG_NEW areg::ThreadNameLayout();
                 break;
 
             case areg::LayoutToken::ScopeName:
                 if (hasExclusive == false)
                 {
-                    newLayout = DEBUG_NEW ScopeNameLayout();
+                    newLayout = DEBUG_NEW areg::ScopeNameLayout();
                     hasExclusive = true;
                 }
                 break;
 
             case areg::LayoutToken::CookieId:
-                newLayout = DEBUG_NEW CookieIdLayout();
+                newLayout = DEBUG_NEW areg::CookieIdLayout();
                 break;
 
             case areg::LayoutToken::Undefined:  // fall through
@@ -163,7 +163,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 if (ch == areg::SYNTAX_SPECIAL_FORMAT)
                 {
                     *(pos + 1) = areg::String::EmptyChar;
-                    newLayout = DEBUG_NEW AnyTextLayout(pos1);
+                    newLayout = DEBUG_NEW areg::AnyTextLayout(pos1);
                     pos1 = pos; // <== will automatically move 2 positions when newLayout is not nullptr;
                 }
                 else
@@ -176,7 +176,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
             if (newLayout != nullptr)
             {
                 *pos = areg::String::EmptyChar;
-                anyText = pos1 != pos ? DEBUG_NEW AnyTextLayout(pos1) : nullptr;
+                anyText = pos1 != pos ? DEBUG_NEW areg::AnyTextLayout(pos1) : nullptr;
                 if (anyText != nullptr)
                 {
                     mLayoutList.add(anyText);
@@ -193,7 +193,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
         }
     }
     
-    anyText = pos1 != pos ? DEBUG_NEW AnyTextLayout(pos1) : nullptr;
+    anyText = pos1 != pos ? DEBUG_NEW areg::AnyTextLayout(pos1) : nullptr;
     if (anyText != nullptr)
     {
         mLayoutList.add(anyText);
