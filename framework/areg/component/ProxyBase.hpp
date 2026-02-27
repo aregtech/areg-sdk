@@ -51,7 +51,6 @@ namespace areg { class DispatcherThread; }
 namespace areg { class EventDataStream; }
 namespace areg { class ProxyListener; }
 namespace areg { class ProxyEvent; }
-class ProxyBase;
 namespace areg { class Version; }
 namespace areg { class ProxyBase; }
 namespace areg { class RemoteEventFactory; }

@@ -385,7 +385,7 @@ areg::ComponentEntry::ComponentEntry()
 {
 }
 
-areg::ComponentEntry::ComponentEntry( const areg::String & masterThreadName, const areg::String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete )
+areg::ComponentEntry::ComponentEntry( const areg::String & masterThreadName, const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
@@ -401,8 +401,8 @@ areg::ComponentEntry::ComponentEntry( const areg::String & masterThreadName, con
 
 areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
                                             , const areg::String & roleName
-                                            , FuncCreateComponent funcCreate
-                                            , FuncDeleteComponent funcDelete
+                                            , areg::FuncCreateComponent funcCreate
+                                            , areg::FuncDeleteComponent funcDelete
                                             , const areg::ServiceList & serviceList
                                             , const areg::DependencyList & dependencyList
                                             , const areg::WorkerThreadList & workerList )
@@ -421,8 +421,8 @@ areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
 
 areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
                                             , const areg::String & roleName
-                                            , FuncCreateComponent funcCreate
-                                            , FuncDeleteComponent funcDelete
+                                            , areg::FuncCreateComponent funcCreate
+                                            , areg::FuncDeleteComponent funcDelete
                                             , const areg::ServiceEntry & service
                                             , const areg::DependencyEntry & dependency
                                             , const areg::WorkerThreadEntry & worker )
@@ -671,7 +671,7 @@ const areg::DependencyList & areg::ComponentEntry::getDependencyServices() const
     return mDependencyServices;
 }
 
-void areg::ComponentEntry::setInstanceMethods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete )
+void areg::ComponentEntry::setInstanceMethods( areg::FuncCreateComponent fnCreate, areg::FuncDeleteComponent fnDelete )
 {
     mFuncCreate = fnCreate;
     mFuncDelete = fnDelete;
@@ -842,7 +842,7 @@ void areg::ComponentThreadEntry::addComponent( const areg::ComponentList & compo
     }
 }
 
-areg::ComponentEntry & areg::ComponentThreadEntry::addComponent(const areg::String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete)
+areg::ComponentEntry & areg::ComponentThreadEntry::addComponent(const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete)
 {
     int32_t index = mComponents.findComponent(roleName);
     if ( index == areg::INVALID_INDEX )

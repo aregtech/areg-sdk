@@ -76,50 +76,50 @@ namespace areg { class ComponentThread; }
 namespace areg { class WorkerThreadConsumer; }
 namespace areg { class ComponentLoader; }
 
-/************************************************************************
- * Global types
- ************************************************************************/
-
-/**
- * \brief   Type of Component Load Function. Called to instantiate and start component
- * \type areg::ComponentEntry     Component registry entry passed to component constructor.
- *                                      The component entry contains list of dependencies, services and component data.
- * \type ComponentThread                The component owning thread object.
- * \example This function should create and return pointer to component object.
- *  [](const areg::ComponentEntry& entry, ComponentThread& ownerThread) -> Component *{
- *      return new MyComponent(entry, ownerThread);
- *  }
- **/
-using  FuncCreateComponent  = std::function<areg::Component* (const areg::ComponentEntry& /*entry*/, areg::ComponentThread& /*ownerThread*/)>;
-
-/**
- * \brief   Type of Component Unload Function. Called to stop and delete component
- * \type Component                    The component to stop and delete.
- * \type areg::ComponentEntry   Component registry entry passed to delete function.
- * \example This function should stop and delete component object.
- *  [] (Component& comp, const areg::ComponentEntry& entry) {
- *      delete &comp;
- *  }
- **/
-using FuncDeleteComponent   = std::function<void (areg::Component& /*comp*/, const areg::ComponentEntry& /*entry*/)>;
-
-//////////////////////////////////////////////////////////////////////////
-// NERegistry namespace declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief       This namespace contains collection of classes to register
- *              components, service interfaces, threads and point
- *              dependencies. These is used when defining Model object
- *              and used to start initialization process when Model
- *              object is loading.
- *
- **/
 namespace areg
 {
 
-//////////////////////////////////////////////////////////////////////////
-// areg::ServiceEntry class declaration
-//////////////////////////////////////////////////////////////////////////
+    /************************************************************************
+     * Global types
+     ************************************************************************/
+
+    /**
+     * \brief   Type of Component Load Function. Called to instantiate and start component
+     * \type areg::ComponentEntry     Component registry entry passed to component constructor.
+     *                                      The component entry contains list of dependencies, services and component data.
+     * \type ComponentThread                The component owning thread object.
+     * \example This function should create and return pointer to component object.
+     *  [](const areg::ComponentEntry& entry, ComponentThread& ownerThread) -> Component *{
+     *      return new MyComponent(entry, ownerThread);
+     *  }
+     **/
+    using  FuncCreateComponent  = std::function<areg::Component* (const areg::ComponentEntry& /*entry*/, areg::ComponentThread& /*ownerThread*/)>;
+
+    /**
+     * \brief   Type of Component Unload Function. Called to stop and delete component
+     * \type Component                    The component to stop and delete.
+     * \type areg::ComponentEntry   Component registry entry passed to delete function.
+     * \example This function should stop and delete component object.
+     *  [] (Component& comp, const areg::ComponentEntry& entry) {
+     *      delete &comp;
+     *  }
+     **/
+    using FuncDeleteComponent   = std::function<void (areg::Component& /*comp*/, const areg::ComponentEntry& /*entry*/)>;
+
+    //////////////////////////////////////////////////////////////////////////
+    // NERegistry namespace declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief       This namespace contains collection of classes to register
+     *              components, service interfaces, threads and point
+     *              dependencies. These is used when defining Model object
+     *              and used to start initialization process when Model
+     *              object is loading.
+     *
+     **/
+    //////////////////////////////////////////////////////////////////////////
+    // areg::ServiceEntry class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   areg::ServiceEnty, defines Server side of implemented
      *          Service Interfaces inComponent. It contains name of
@@ -831,7 +831,7 @@ namespace areg
          * \param   funcCreate          Pointer of component create function
          * \param   funcDelete          Pointer of component delete function
          **/
-        ComponentEntry( const areg::String & masterThreadName, const areg::String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+        ComponentEntry( const areg::String & masterThreadName, const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete );
 
         /**
          * \brief   Initialize Component Entry by given Role Name, component thread, component create and delete methods,
@@ -847,8 +847,8 @@ namespace areg
          **/
         ComponentEntry(   const areg::String & masterThreadName
                         , const areg::String & roleName
-                        , FuncCreateComponent funcCreate
-                        , FuncDeleteComponent funcDelete
+                        , areg::FuncCreateComponent funcCreate
+                        , areg::FuncDeleteComponent funcDelete
                         , const areg::ServiceList & serviceList
                         , const areg::DependencyList & dependencyList
                         , const areg::WorkerThreadList & workerList);
@@ -867,8 +867,8 @@ namespace areg
          **/
         ComponentEntry(   const areg::String & masterThreadName
                         , const areg::String & roleName
-                        , FuncCreateComponent funcCreate
-                        , FuncDeleteComponent funcDelete
+                        , areg::FuncCreateComponent funcCreate
+                        , areg::FuncDeleteComponent funcDelete
                         , const areg::ServiceEntry & service
                         , const areg::DependencyEntry & dependency
                         , const areg::WorkerThreadEntry & worker);
@@ -1116,7 +1116,7 @@ namespace areg
          * \param   fnCreate    The pointer to create component method.
          * \param   fnDelete    The pointer to delete component method.
          **/
-        void setInstanceMethods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete );
+        void setInstanceMethods( areg::FuncCreateComponent fnCreate, areg::FuncDeleteComponent fnDelete );
 
         /**
          * \brief   Sets component data to pass to component create method.
@@ -1170,11 +1170,11 @@ namespace areg
         /**
          * \brief   Pointer of function to create component
          **/
-        FuncCreateComponent mFuncCreate;
+        areg::FuncCreateComponent mFuncCreate;
         /**
          * \brief   Pointer of function to delete component
          **/
-        FuncDeleteComponent mFuncDelete;
+        areg::FuncDeleteComponent mFuncDelete;
         /**
          * \brief   The data to pass to component create method.
          * \note    You should manually free memory if the data was manually allocated in the memory
@@ -1483,7 +1483,7 @@ namespace areg
          * \note    NOTE:   The method does not check the uniqueness of role name within the entire system or entire
          *                  model. It checks only within the current component thread entry context.
          **/
-        areg::ComponentEntry & addComponent( const areg::String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
+        areg::ComponentEntry & addComponent( const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete );
 
         template<typename ComponentType>
         inline areg::ComponentEntry& addComponent(const areg::String& roleName);
