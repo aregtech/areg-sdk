@@ -323,7 +323,7 @@ namespace areg
          * \brief   Component informations object, which contains
          *          component address and registered worker thread list.
          **/
-        ComponentInfo         mComponentInfo;
+        areg::ComponentInfo         mComponentInfo;
 
         /**
          * \brief   The calculated number of component.

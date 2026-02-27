@@ -18,79 +18,83 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/WorkerThread.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo::_ImplWorkerThreadMap class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo::_WorkerThreadMap class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo::_WorkerThreadMap class, methods, overrides
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo class, constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-ComponentInfo::ComponentInfo( areg::ComponentThread& ownerThread, const areg::String & roleName )
-    : mComponentAddress ( ownerThread.getAddress(), roleName)
-    , mMasterThread     ( ownerThread )
-    , mWorkerThreadMap  ( )
+namespace areg
 {
-}
 
-//////////////////////////////////////////////////////////////////////////
-// ComponentInfo class, methods
-//////////////////////////////////////////////////////////////////////////
-areg::DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
-{
-    areg::DispatcherThread * result = nullptr;
+    //////////////////////////////////////////////////////////////////////////
+    // ComponentInfo::_ImplWorkerThreadMap class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-    // firs check master thread.
-    if (mMasterThread.hasRegisteredConsumer(whichClass))
+    //////////////////////////////////////////////////////////////////////////
+    // ComponentInfo::_WorkerThreadMap class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // ComponentInfo::_WorkerThreadMap class, methods, overrides
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // ComponentInfo class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // ComponentInfo class, constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    ComponentInfo::ComponentInfo( areg::ComponentThread& ownerThread, const areg::String & roleName )
+        : mComponentAddress ( ownerThread.getAddress(), roleName)
+        , mMasterThread     ( ownerThread )
+        , mWorkerThreadMap  ( )
     {
-        result = static_cast<areg::DispatcherThread *>(&mMasterThread);
     }
-    else
-    {
-        // start checking component binded worker threads.
-        mWorkerThreadMap.lock();
 
-        areg::ThreadAddress Key;
-        areg::DispatcherThread * dispThread = static_cast<areg::DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
-        while (result == nullptr && dispThread != nullptr)
+    //////////////////////////////////////////////////////////////////////////
+    // ComponentInfo class, methods
+    //////////////////////////////////////////////////////////////////////////
+    areg::DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
+    {
+        areg::DispatcherThread * result = nullptr;
+
+        // firs check master thread.
+        if (mMasterThread.hasRegisteredConsumer(whichClass))
         {
-            if (dispThread->hasRegisteredConsumer(whichClass))
-                result = dispThread;
-            else
-                dispThread = mWorkerThreadMap.resourceNextKey(Key);
+            result = static_cast<areg::DispatcherThread *>(&mMasterThread);
         }
+        else
+        {
+            // start checking component binded worker threads.
+            mWorkerThreadMap.lock();
 
-        mWorkerThreadMap.unlock();
+            areg::ThreadAddress Key;
+            areg::DispatcherThread * dispThread = static_cast<areg::DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
+            while (result == nullptr && dispThread != nullptr)
+            {
+                if (dispThread->hasRegisteredConsumer(whichClass))
+                    result = dispThread;
+                else
+                    dispThread = mWorkerThreadMap.resourceNextKey(Key);
+            }
+
+            mWorkerThreadMap.unlock();
+        }
+        return result;
     }
-    return result;
-}
 
-void ComponentInfo::registerWorkerThread( areg::WorkerThread& workerThread )
-{
-    mWorkerThreadMap.registerResourceObject(workerThread.getAddress(), &workerThread);
-}
+    void ComponentInfo::registerWorkerThread( areg::WorkerThread& workerThread )
+    {
+        mWorkerThreadMap.registerResourceObject(workerThread.getAddress(), &workerThread);
+    }
 
-bool ComponentInfo::unregisterWorkerThread( areg::WorkerThread& workerThread )
-{
-    return (mWorkerThreadMap.unregisterResourceObject(workerThread.getAddress()) == &workerThread);
-}
+    bool ComponentInfo::unregisterWorkerThread( areg::WorkerThread& workerThread )
+    {
+        return (mWorkerThreadMap.unregisterResourceObject(workerThread.getAddress()) == &workerThread);
+    }
 
-bool ComponentInfo::isWorkerThreadRegistered( areg::WorkerThread& workerThread ) const
-{
-    return isWorkerThreadAddress(workerThread.getAddress());
-}
+    bool ComponentInfo::isWorkerThreadRegistered( areg::WorkerThread& workerThread ) const
+    {
+        return isWorkerThreadAddress(workerThread.getAddress());
+    }
 
-bool ComponentInfo::isMasterThreadAddress( const areg::ThreadAddress& threadAddress ) const
-{
-    return (threadAddress == mMasterThread.getAddress());
-}
+    bool ComponentInfo::isMasterThreadAddress( const areg::ThreadAddress& threadAddress ) const
+    {
+        return (threadAddress == mMasterThread.getAddress());
+    }
+} // namespace areg
