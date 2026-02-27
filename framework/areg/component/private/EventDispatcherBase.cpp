@@ -50,7 +50,7 @@ EventDispatcherBase::~EventDispatcherBase()
 
 bool EventDispatcherBase::isExitEvent( const areg::Event * anEvent ) const
 {
-    return (anEvent == static_cast<const areg::Event *>(&ExitEvent::getExitEvent( )));
+    return (anEvent == static_cast<const areg::Event *>(&areg::ExitEvent::getExitEvent( )));
 }
 
 void EventDispatcherBase::signalEvent( uint32_t eventCount )
@@ -70,7 +70,7 @@ void EventDispatcherBase::stopDispatcher()
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternalEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
+        mExternalEvents.pushEvent( areg::ExitEvent::getExitEvent( ), nullptr );
     }
 
     mEventExit.setEvent( );
@@ -91,7 +91,7 @@ void EventDispatcherBase::shutdownDispatcher()
     if ( mHasStarted )
     {
         removeEvents( true );
-        mExternalEvents.pushEvent(ExitEvent::getExitEvent(), nullptr);
+        mExternalEvents.pushEvent(areg::ExitEvent::getExitEvent(), nullptr);
     }
 
     mEventExit.setEvent( );
@@ -211,7 +211,7 @@ bool EventDispatcherBase::runDispatcher()
     areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
     areg::MultiLock multiLock(syncObjects, 2, false);
     int32_t whichEvent  = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
-    const ExitEvent& exitEvent = ExitEvent::getExitEvent();
+    const areg::ExitEvent& exitEvent = areg::ExitEvent::getExitEvent();
 
     do 
     {

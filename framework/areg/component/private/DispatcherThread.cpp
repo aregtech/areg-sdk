@@ -238,7 +238,7 @@ namespace areg
         if ( mHasStarted )
         {
             removeEvents( true );
-            mExternalEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
+            mExternalEvents.pushEvent( areg::ExitEvent::getExitEvent( ), nullptr );
         }
 
         mEventExit.setEvent( );
@@ -285,7 +285,7 @@ namespace areg
 
     bool DispatcherThread::isExitEvent(const areg::Event * checkEvent) const
     {
-        return ( checkEvent == static_cast<const areg::Event *>(&ExitEvent::getExitEvent()) );
+        return ( checkEvent == static_cast<const areg::Event *>(&areg::ExitEvent::getExitEvent()) );
     }
 
     DispatcherThread * DispatcherThread::findEventConsumerThread( const areg::RuntimeClassID & whichClass )
