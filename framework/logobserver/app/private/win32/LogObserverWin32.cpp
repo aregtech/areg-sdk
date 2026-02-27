@@ -80,7 +80,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
     char** argvTemp = _convertArguments(argv, static_cast<int32_t>(argc));
-    LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argvTemp);
+    logobserver::LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argvTemp);
     _deleteArguments(argvTemp, static_cast<int32_t>(argc));
 
     return 0;
@@ -88,7 +88,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #else
 int main(int argc, char* argv[], char* envp[])
 {
-    LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argv);
+    logobserver::LogObserver::getInstance().logMain(static_cast<int32_t>(argc), argv);
     return 0;
 }
 #endif
