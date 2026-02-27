@@ -34,7 +34,7 @@
 namespace areglogger
 {
 
-    ObserverMessageProcessor::ObserverMessageProcessor(areglogger::LoggerClient& loggerClient)
+    ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
         : mLoggerClient (loggerClient)
     {
     }
@@ -104,9 +104,9 @@ namespace areglogger
 
     void ObserverMessageProcessor::notifyLogRegisterScopes(const areg::RemoteMessage& msgReceived)
     {
-        areglogger::FuncLogRegisterScopes callback{ nullptr };
+        FuncLogRegisterScopes callback{ nullptr };
         ITEM_ID cookie{ msgReceived.getSource() };
-        areglogger::ScopeInfo* scopes{ nullptr };
+        ScopeInfo* scopes{ nullptr };
         uint32_t count{ 0 };
         areg::DateTime now(areg::DateTime::getNow());
 
@@ -116,7 +116,7 @@ namespace areglogger
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
             mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
             msgReceived >> count;
-            scopes = count != 0 ? new areglogger::ScopeInfo[count] : nullptr;
+            scopes = count != 0 ? new ScopeInfo[count] : nullptr;
             if (scopes == nullptr)
             {
                 count = 0;
@@ -126,7 +126,7 @@ namespace areglogger
             for (uint32_t i = 0; i < count; ++i)
             {
                 areg::LogScope scope(msgReceived);
-                areglogger::ScopeInfo& entry{ scopes[i] };
+                ScopeInfo& entry{ scopes[i] };
                 entry.lsId = scope.getScopeId();
                 entry.lsPrio = scope.getPriority();
                 areg::memCopy(entry.lsName, LENGTH_SCOPE, scope.getScopeName().getString(), scope.getScopeName().getLength() + 1);
@@ -143,9 +143,9 @@ namespace areglogger
 
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogRegisterScopes(cookie, scopes, count);
+            LogObserverBase::_theLogObserver->onLogRegisterScopes(cookie, scopes, count);
         }
         else if (callback != nullptr)
         {
@@ -160,9 +160,9 @@ namespace areglogger
 
     void ObserverMessageProcessor::notifyLogUpdateScopes(const areg::RemoteMessage& msgReceived)
     {
-        areglogger::FuncLogUpdateScopes callback{ nullptr };
+        FuncLogUpdateScopes callback{ nullptr };
         ITEM_ID cookie{ msgReceived.getSource() };
-        areglogger::ScopeInfo* scopes{ nullptr };
+        ScopeInfo* scopes{ nullptr };
         uint32_t count{ 0 };
         areg::DateTime now(areg::DateTime::getNow());
 
@@ -172,7 +172,7 @@ namespace areglogger
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
             mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
             msgReceived >> count;
-            scopes = count != 0 ? new areglogger::ScopeInfo[count] : nullptr;
+            scopes = count != 0 ? new ScopeInfo[count] : nullptr;
             if (scopes == nullptr)
             {
                 count = 0;
@@ -182,7 +182,7 @@ namespace areglogger
             for (uint32_t i = 0; i < count; ++i)
             {
                 areg::LogScope scope(msgReceived);
-                areglogger::ScopeInfo& entry{ scopes[i] };
+                ScopeInfo& entry{ scopes[i] };
                 entry.lsId = scope.getScopeId();
                 entry.lsPrio = scope.getPriority();
                 areg::memCopy(entry.lsName, LENGTH_SCOPE, scope.getScopeName().getString(), scope.getScopeName().getLength() + 1);
@@ -193,9 +193,9 @@ namespace areglogger
 
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogUpdateScopes(cookie, scopes, count);
+            LogObserverBase::_theLogObserver->onLogUpdateScopes(cookie, scopes, count);
         }
         else if (callback != nullptr)
         {
@@ -210,9 +210,9 @@ namespace areglogger
 
     void ObserverMessageProcessor::notifyLogMessage(const areg::RemoteMessage& msgReceived)
     {
-        areglogger::FuncLogMessage callback{ nullptr };
-        areglogger::FuncLogMessageEx callbackEx{ nullptr };
-        areglogger::LogRecord msgLog{ };
+        FuncLogMessage callback{ nullptr };
+        FuncLogMessageEx callbackEx{ nullptr };
+        LogRecord msgLog{ };
         const uint8_t* logBuffer{ nullptr };
         uint32_t size{ 0 };
         areg::DateTime now{ areg::DateTime::getNow() };
@@ -231,9 +231,9 @@ namespace areglogger
 
             mLoggerClient.mLogDatabase.commit(true);
 
-            if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+            if (LogObserverBase::_theLogObserver != nullptr)
             {
-                areglogger::LogObserverBase::_theLogObserver->onLogMessage(msgReceived);
+                LogObserverBase::_theLogObserver->onLogMessage(msgReceived);
             }
             else if (mLoggerClient.mCallbacks != nullptr)
             {
@@ -241,8 +241,8 @@ namespace areglogger
                 {
                     callback = mLoggerClient.mCallbacks->evtLogMessage;
 
-                    msgLog.msgType      = static_cast<areglogger::LogType>(msgRemote->logMsgType);
-                    msgLog.msgPriority  = static_cast<areglogger::LogPriority>(msgRemote->logMessagePrio);
+                    msgLog.msgType      = static_cast<LogType>(msgRemote->logMsgType);
+                    msgLog.msgPriority  = static_cast<LogPriority>(msgRemote->logMessagePrio);
                     msgLog.msgSource    = static_cast<uint64_t>(msgRemote->logSource);
                     msgLog.msgCookie    = static_cast<uint64_t>(msgRemote->logCookie);
                     msgLog.msgModuleId  = static_cast<uint64_t>(msgRemote->logModuleId);
@@ -281,8 +281,8 @@ namespace areglogger
         areg::ArrayList< areg::ConnectedInstance > listConnected;
         msgReceived >> listConnected;
 
-        areglogger::FuncInstancesConnect callback{ nullptr };
-        areglogger::LogInstance* listInstances{ nullptr };
+        FuncInstancesConnect callback{ nullptr };
+        LogInstance* listInstances{ nullptr };
         int32_t size{ static_cast<int32_t>(listConnected.getSize()) };
         if (size == 0)
             return;
@@ -292,7 +292,7 @@ namespace areglogger
             areg::Lock lock(mLoggerClient.mLock);
             areg::DateTime now(areg::DateTime::getNow());
 
-            if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+            if (LogObserverBase::_theLogObserver != nullptr)
             {
                 for (int i = 0; i < size; ++i)
                 {
@@ -320,7 +320,7 @@ namespace areglogger
             else
             {
                 callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
-                listInstances = new areglogger::LogInstance[size];
+                listInstances = new LogInstance[size];
 
                 for (int i = 0; i < size; ++i)
                 {
@@ -344,7 +344,7 @@ namespace areglogger
 
                     if (listInstances != nullptr)
                     {
-                        areglogger::LogInstance& inst{ listInstances[i] };
+                        LogInstance& inst{ listInstances[i] };
                         inst.liSource = static_cast<uint32_t>(client.ciSource);
                         inst.liBitness = static_cast<uint32_t>(client.ciBitness);
                         inst.liCookie = client.ciCookie;
@@ -358,9 +358,9 @@ namespace areglogger
             }
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
+            LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
         }
         else if (callback != nullptr)
         {
@@ -379,7 +379,7 @@ namespace areglogger
         areg::ArrayList< areg::ConnectedInstance > listDisconnected;
 
         msgReceived >> listClients;
-        areglogger::FuncInstancesDisconnect callback{ nullptr };
+        FuncInstancesDisconnect callback{ nullptr };
         ITEM_ID* listInstances{ nullptr };
         int32_t size{ static_cast<int32_t>(listClients.getSize()) };
         int32_t count{ 0 };
@@ -388,7 +388,7 @@ namespace areglogger
         {
             areg::Lock lock(mLoggerClient.mLock);
 
-            if (areglogger::LogObserverBase::_theLogObserver == nullptr)
+            if (LogObserverBase::_theLogObserver == nullptr)
             {
                 callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstDisconnected : nullptr;
             }
@@ -424,9 +424,9 @@ namespace areglogger
         } while (false);
 
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
+            LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
         }
         else if (callback != nullptr)
         {

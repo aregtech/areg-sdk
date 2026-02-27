@@ -35,7 +35,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areglogger { struct ObserverEvents; }
+namespace areglogger
+{
+    struct ObserverEvents;
+}
 
 namespace areglogger
 {
@@ -57,7 +60,7 @@ namespace areglogger
     //////////////////////////////////////////////////////////////////////////
     // Friend class
     //////////////////////////////////////////////////////////////////////////
-        friend class areglogger::ObserverMessageProcessor;
+        friend class ObserverMessageProcessor;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal constants
@@ -130,7 +133,7 @@ namespace areglogger
          *                      If the parameter is 'nullptr' it resets all callbacks and no
          *                      callback is triggered on the events.
          **/
-        void setCallbacks(const areglogger::ObserverEvents * callbacks);
+        void setCallbacks(const ObserverEvents * callbacks);
 
         /**
          * \brief   Set paused flag true or false. If log collector client is paused, it does not
@@ -523,12 +526,12 @@ namespace areglogger
          * \brief   The pointer to the callback structure to trigger methods on certain event.
          *          If nullptr, no callback is triggered.
          **/
-        const areglogger::ObserverEvents *     mCallbacks;
+        const ObserverEvents *     mCallbacks;
 
         /**
          * \brief   The object that processes received messages.
          **/
-        areglogger::ObserverMessageProcessor    mMessageProcessor;
+        ObserverMessageProcessor    mMessageProcessor;
 
         /**
          * \brief   The flag, indicating whether the observer was paused or not.

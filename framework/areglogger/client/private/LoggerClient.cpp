@@ -89,7 +89,7 @@ namespace areglogger
         disconnectServiceHost();
     }
 
-    void LoggerClient::setCallbacks(const areglogger::ObserverEvents* callbacks)
+    void LoggerClient::setCallbacks(const ObserverEvents* callbacks)
     {
         areg::Lock lock(mLock);
         mCallbacks = callbacks;
@@ -97,7 +97,7 @@ namespace areglogger
 
     void LoggerClient::setPaused(bool doPause)
     {
-        areglogger::FuncObserverStarted callback{ nullptr };
+        FuncObserverStarted callback{ nullptr };
         bool isStarted{ false };
 
         do
@@ -108,9 +108,9 @@ namespace areglogger
             isStarted = mIsPaused ? false : isConnectionStarted();
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
+            LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
         }
         else if (callback != nullptr)
         {
@@ -244,10 +244,10 @@ namespace areglogger
         }
 
         bool result{ mLogDatabase.connect(filePath, false) };
-        areglogger::FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().getData());
+            LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().getData());
         }
         else if (callback != nullptr)
         {
@@ -384,8 +384,8 @@ namespace areglogger
 
     void LoggerClient::postReadConfiguration(areg::ConfigManager& config)
     {
-        areglogger::FuncObserverConfigured callbackConf{ nullptr };
-        areglogger::FuncLogDbConfigured callbackConfDb{ nullptr };
+        FuncObserverConfigured callbackConf{ nullptr };
+        FuncLogDbConfigured callbackConfDb{ nullptr };
         areg::String address;
         uint16_t port{0};
         areg::String dbName;
@@ -410,10 +410,10 @@ namespace areglogger
             }
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
-            areglogger::LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(areg::LogTarget::Database), dbName.getData(), dbLocation.getData(), dbUser.getData());
+            LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
+            LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(areg::LogTarget::Database), dbName.getData(), dbLocation.getData(), dbUser.getData());
         }
         else
         {
@@ -477,10 +477,10 @@ namespace areglogger
     {
         if (isRunning())
         {
-            areglogger::FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
-            if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+            FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
+            if (LogObserverBase::_theLogObserver != nullptr)
             {
-                areglogger::LogObserverBase::_theLogObserver->onLogServiceDisconnected();
+                LogObserverBase::_theLogObserver->onLogServiceDisconnected();
             }
             else if (callback != nullptr)
             {
@@ -507,8 +507,8 @@ namespace areglogger
 
     void LoggerClient::connectedRemoteServiceChannel(const areg::Channel& channel)
     {
-        areglogger::FuncServiceConnected callbackConnect{ nullptr };
-        areglogger::FuncObserverStarted callbackStart{ nullptr };
+        FuncServiceConnected callbackConnect{ nullptr };
+        FuncObserverStarted callbackStart{ nullptr };
         areg::String address;
         uint16_t port{ areg::InvalidPort };
         bool isStarted{ false };
@@ -530,10 +530,10 @@ namespace areglogger
 
         sendMessage(areg::messageQueryInstances(channel.getCookie(), LoggerClient::TARGET_ID));
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogServiceConnected(true, address.getData(), port);
-            areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
+            LogObserverBase::_theLogObserver->onLogServiceConnected(true, address.getData(), port);
+            LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
         }
         else
         {
@@ -546,8 +546,8 @@ namespace areglogger
 
     void LoggerClient::disconnectedRemoteServiceChannel(const areg::Channel& /* channel */)
     {
-        areglogger::FuncServiceConnected callbackConnect{ nullptr };
-        areglogger::FuncObserverStarted callbackStart{ nullptr };
+        FuncServiceConnected callbackConnect{ nullptr };
+        FuncObserverStarted callbackStart{ nullptr };
         areg::String address;
         uint16_t port{ areg::InvalidPort };
 
@@ -565,10 +565,10 @@ namespace areglogger
             }
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(false);
-            areglogger::LogObserverBase::_theLogObserver->onLogServiceConnected(false, address.getData(), port);
+            LogObserverBase::_theLogObserver->onLogObserverStarted(false);
+            LogObserverBase::_theLogObserver->onLogServiceConnected(false, address.getData(), port);
         }
         else
         {
@@ -581,7 +581,7 @@ namespace areglogger
 
     void LoggerClient::lostRemoteServiceChannel(const areg::Channel& /* channel */)
     {
-        areglogger::FuncObserverStarted callback{ nullptr };
+        FuncObserverStarted callback{ nullptr };
 
         do
         {
@@ -590,9 +590,9 @@ namespace areglogger
             mInstances.clear();
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(false);
+            LogObserverBase::_theLogObserver->onLogObserverStarted(false);
         }
         else if (callback != nullptr)
         {
@@ -602,16 +602,16 @@ namespace areglogger
 
     void LoggerClient::failedSendMessage(const areg::RemoteMessage& /* msgFailed */, areg::Socket& /* whichTarget */)
     {
-        areglogger::FuncMessagingFailed callback{ nullptr };
+        FuncMessagingFailed callback{ nullptr };
         do
         {
             areg::Lock lock(mLock);
             callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogMessagingFailed();
+            LogObserverBase::_theLogObserver->onLogMessagingFailed();
         }
         else if (callback != nullptr)
         {
@@ -621,16 +621,16 @@ namespace areglogger
 
     void LoggerClient::failedReceiveMessage(areg::Socket& /* whichSource */)
     {
-        areglogger::FuncMessagingFailed callback{ nullptr };
+        FuncMessagingFailed callback{ nullptr };
         do
         {
             areg::Lock lock(mLock);
             callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
         } while (false);
 
-        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
+        if (LogObserverBase::_theLogObserver != nullptr)
         {
-            areglogger::LogObserverBase::_theLogObserver->onLogMessagingFailed();
+            LogObserverBase::_theLogObserver->onLogMessagingFailed();
         }
         else if (callback != nullptr)
         {
