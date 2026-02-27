@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogMessage;
+namespace areg { class LogMessage; }
 namespace areg
 {
     struct LogEntry;

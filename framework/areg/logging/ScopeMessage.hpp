@@ -25,7 +25,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class LogScope; }
-class LogMessage;
+namespace areg { class LogMessage; }
 
 namespace areg
 {
