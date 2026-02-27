@@ -50,12 +50,12 @@ namespace
         "\'h\' or \'help\'      - to print this help.\n"
     };
 
-    constexpr Console::Coord    _coordTitle     { 0, 1 };
-    constexpr Console::Coord    _coordSubtitle  { 0, 2 };
-    constexpr Console::Coord    _coordUserInput { 0, 4 };
-    constexpr Console::Coord    _coordSeparate  { 0, 6 };
-    constexpr Console::Coord    _coordErrorMsg  { 0, 7 };
-    constexpr Console::Coord    _coordInfoMsg   { 0, 8 };
+    constexpr aregext::Console::Coord    _coordTitle     { 0, 1 };
+    constexpr aregext::Console::Coord    _coordSubtitle  { 0, 2 };
+    constexpr aregext::Console::Coord    _coordUserInput { 0, 4 };
+    constexpr aregext::Console::Coord    _coordSeparate  { 0, 6 };
+    constexpr aregext::Console::Coord    _coordErrorMsg  { 0, 7 };
+    constexpr aregext::Console::Coord    _coordInfoMsg   { 0, 8 };
 
 }
 
@@ -236,7 +236,7 @@ void Publisher::processTimer(areg::Timer & timer)
 
 void Publisher::onThreadRuns()
 {
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
@@ -300,7 +300,7 @@ void Publisher::onThreadRuns()
 
 inline void Publisher::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.clearScreen();
     console.outputStr(_coordTitle       , _title);
     console.outputStr(_coordSubtitle    , _separator);

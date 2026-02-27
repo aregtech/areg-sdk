@@ -317,7 +317,7 @@ namespace aregext
         /**
          * \brief   Triggered to receive a function to validate and check the input option values.
          **/
-        virtual Console::CallBack getOptionCheckCallback() const = 0;
+        virtual aregext::Console::CallBack getOptionCheckCallback() const = 0;
 
         /**
          * \brief   Triggered if need to run console with extended features.

@@ -129,8 +129,8 @@ void LogCollector::printStatus(const areg::String& status)
 
     if (LogCollector::getInstance().getCurrentOption() == aregext::ServiceOption::CMD_Console)
     {
-        Console& console{ Console::getInstance() };
-        Console::Coord curPos{ console.getCursorCurPosition() };
+        aregext::Console& console{ aregext::Console::getInstance() };
+        aregext::Console::Coord curPos{ console.getCursorCurPosition() };
         LogCollector::_outputInfo(status);
         console.setCursorCurPosition(curPos);
     }
@@ -148,16 +148,16 @@ LogCollector::LogCollector()
 {
 }
 
-Console::CallBack LogCollector::getOptionCheckCallback() const
+aregext::Console::CallBack LogCollector::getOptionCheckCallback() const
 {
-    return Console::CallBack( LogCollector::_checkCommand );
+    return aregext::Console::CallBack( LogCollector::_checkCommand );
 }
 
 void LogCollector::runConsoleInputExtended()
 {
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     LogCollector::_outputTitle( );
 
     if (getDataRateHelper().isVerbose())
@@ -271,8 +271,8 @@ void LogCollector::printHelp( bool /* isCmdLine */ )
 {
 #if     AREG_EXTENDED
 
-    Console::Coord line{ aregext::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+    aregext::Console& console = aregext::Console::getInstance();
     console.lockConsole();
     for (const auto& text : _msgHelp)
     {
@@ -390,7 +390,7 @@ bool LogCollector::_checkCommand(const areg::String& cmd)
 
 #if AREG_EXTENDED
     
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.lockConsole();
     if ( quit == false )
     {
@@ -434,7 +434,7 @@ void LogCollector::_outputTitle()
 {
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.lockConsole();
     console.outputTxt( aregext::COORD_TITLE, logcollector::APP_TITLE.data( ) );
     console.outputTxt( aregext::COORD_SUBTITLE, aregext::MSG_SEPARATOR.data( ) );
@@ -452,8 +452,8 @@ void LogCollector::_outputInfo( const areg::String & info )
 {
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
-    Console::Coord coord{aregext::COORD_INFO_MSG};
+    aregext::Console & console = aregext::Console::getInstance( );
+    aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
     console.lockConsole( );
 
     console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
@@ -476,8 +476,8 @@ void LogCollector::_outputInstances( const areg::MapInstances & instances )
 
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
-    Console::Coord coord{aregext::COORD_INFO_MSG};
+    aregext::Console & console = aregext::Console::getInstance( );
+    aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
     console.lockConsole( );
 
     if ( instances.isEmpty( ) )
@@ -547,7 +547,7 @@ void LogCollector::_setVerboseMode( bool makeVerbose )
     static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
     static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
     LogCollector & logger = LogCollector::getInstance( );
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.lockConsole( );
     if ( logger.getDataRateHelper().isVerbose() != makeVerbose )
     {
@@ -590,8 +590,8 @@ void LogCollector::_cleanHelp()
 {
 #if     AREG_EXTENDED
 
-    Console::Coord line{ aregext::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+    aregext::Console& console = aregext::Console::getInstance();
     console.lockConsole();
 
     console.clearLine(aregext::COORD_USER_INPUT);

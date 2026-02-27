@@ -46,7 +46,7 @@ int main()
     areg::String roleName( traffic::SimpleLightClientNamePrefix);
     char name[128];
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.enableConsoleInput( true );
     console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 

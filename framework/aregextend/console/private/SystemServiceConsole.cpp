@@ -43,7 +43,7 @@ namespace aregext
     {
         areg::StubBase::startupServiceInterface( holder );
 
-        Console & console = Console::getInstance( );
+        aregext::Console & console = aregext::Console::getInstance( );
         console.lockConsole( );
 
         if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
@@ -101,7 +101,7 @@ namespace aregext
 
     inline void SystemServiceConsole::_outputDataRate()
     {
-        Console& console = Console::getInstance();
+        aregext::Console& console = aregext::Console::getInstance();
         console.lockConsole( );
         if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
         {

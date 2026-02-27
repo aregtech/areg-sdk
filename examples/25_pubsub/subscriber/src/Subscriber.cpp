@@ -34,12 +34,12 @@ namespace
     constexpr std::string_view  _txtConnected   { "Connected to PubSub service" };
     constexpr std::string_view  _fmtDisconnected{ "Connected to PubSub service with status [ %s ]" };
 
-    constexpr Console::Coord    _coordTitle     { 0, 1 };
-    constexpr Console::Coord    _coordSubtitle  { 0, 2 };
-    constexpr Console::Coord    _coordStatus    { 0, 3 };
+    constexpr aregext::Console::Coord    _coordTitle     { 0, 1 };
+    constexpr aregext::Console::Coord    _coordSubtitle  { 0, 2 };
+    constexpr aregext::Console::Coord    _coordStatus    { 0, 3 };
 
-    constexpr Console::Coord    _coordInteger   { 0, 5 };
-    constexpr Console::Coord    _coordString    { 0, 6 };
+    constexpr aregext::Console::Coord    _coordInteger   { 0, 5 };
+    constexpr aregext::Console::Coord    _coordString    { 0, 6 };
 }
 
 Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
@@ -61,7 +61,7 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
     bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
 
     if (connected == false)
     {
@@ -86,7 +86,7 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
 void Subscriber::onStringOnChangeUpdate(const areg::String & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onStringOnChangeUpdate);
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ]", mOldString.getString(), StringOnChange.getString());
@@ -113,7 +113,7 @@ void Subscriber::onStringOnChangeUpdate(const areg::String & StringOnChange, are
 void Subscriber::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(examples_25_subscriber_Subscriber_onIntegerAlwaysUpdate);
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger) : _invalid;
     if (state == areg::DataState::DataIsOK)
     {

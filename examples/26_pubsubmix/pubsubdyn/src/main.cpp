@@ -96,7 +96,7 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // Output the title
-        Console & console = Console::getInstance();
+        aregext::Console & console = aregext::Console::getInstance();
         console.clearScreen();
         console.outputTxt(pubsub::CoordTitle, _title);
         console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);

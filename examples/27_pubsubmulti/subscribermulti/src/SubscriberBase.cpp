@@ -36,7 +36,7 @@ void SubscriberBase::onStringOnChangeUpdate(const areg::String & StringOnChange,
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onStringOnChangeUpdate);
     ++ mStrEventCount;
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     if (state == areg::DataState::DataIsOK)
     {
         LOG_DBG("The STRING (on change) data is OK, old is [ %s ], new [ %s ], event count [ %u ]", mOldString.getString(), StringOnChange.getString(), mStrEventCount);
@@ -72,7 +72,7 @@ void SubscriberBase::onIntegerAlwaysUpdate(uint32_t IntegerAlways, areg::DataSta
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberBase_onIntegerAlwaysUpdate);
     ++ mIntEventCount;
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger) : pubsub::StrInvalid;
     if (state == areg::DataState::DataIsOK)
     {

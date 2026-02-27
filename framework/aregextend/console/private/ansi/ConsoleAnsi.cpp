@@ -83,7 +83,7 @@ namespace
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup()
+bool aregext::Console::_osSetup()
 {
     _enableAsciiControlSequence();
     mIsReady = true;
@@ -92,45 +92,45 @@ bool Console::_osSetup()
     return mIsReady;
 }
 
-void Console::_osRelease()
+void aregext::Console::_osRelease()
 {
     mIsReady = false;
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
 }
 
-void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
+void aregext::Console::_osOutputText(aregext::Console::Coord pos, const areg::String& text) const
 {
     areg::Lock lock(mLock);
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
 }
 
-void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
+void aregext::Console::_osOutputText(aregext::Console::Coord pos, const std::string_view& text) const
 {
     areg::Lock lock(mLock);
     printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
 }
 
-void Console::_osOutputText(const areg::String& text) const
+void aregext::Console::_osOutputText(const areg::String& text) const
 {
     areg::Lock lock(mLock);
     printf("%s", text.getString());
 }
 
-void Console::_osOutputText(const std::string_view& text) const
+void aregext::Console::_osOutputText(const std::string_view& text) const
 {
     areg::Lock lock(mLock);
     printf("%s", text.data());
 }
 
-Console::Coord Console::_osGetCursorPosition() const
+aregext::Console::Coord aregext::Console::_osGetCursorPosition() const
 {
     areg::Lock lock(mLock);
     constexpr int32_t _EOY{ static_cast<int32_t>(';') };
     constexpr int32_t _EOX{ static_cast<int32_t>('R') };
     constexpr int32_t _ZERO{ static_cast<int32_t>('0') };
 
-    Console::Coord result{ 0, 0 };
+    aregext::Console::Coord result{ 0, 0 };
     printf("\x1B[6n");
     if ((getchar() == '\x1B') && (getchar() == '['))
     {
@@ -150,13 +150,13 @@ Console::Coord Console::_osGetCursorPosition() const
     return result;
 }
 
-void Console::_osSetCursorCurPosition(Console::Coord pos) const
+void aregext::Console::_osSetCursorCurPosition(aregext::Console::Coord pos) const
 {
     areg::Lock lock(mLock);
     printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size)
+bool aregext::Console::_osWaitInputString(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
@@ -181,50 +181,50 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
     return ( areg::isEmpty(buffer) == false );
 }
 
-void Console::_osRefreshScreen() const
+void aregext::Console::_osRefreshScreen() const
 {
     areg::Lock lock(mLock);
     ::fflush(stdout);
 }
 
-void Console::_osClearLine() const
+void aregext::Console::_osClearLine() const
 {
     areg::Lock lock(mLock);
     printf("%s", CMD_CLEAR_LINE.data());
     ::fflush(stdout);
 }
 
-void Console::_osClearScreen() const
+void aregext::Console::_osClearScreen() const
 {
     areg::Lock lock(mLock);
     printf("%s", CMD_CLEAR_SCREEN.data());
     ::fflush(stdout);
 }
 
-bool Console::_osReadInputList(const char* format, va_list varList) const
+bool aregext::Console::_osReadInputList(const char* format, va_list varList) const
 {
     return (vscanf(format, varList) > 0);
 }
 
-void Console::_osSaveCursorPosition() const
+void aregext::Console::_osSaveCursorPosition() const
 {
     areg::Lock lock(mLock);
     printf("\x1B[s");
 }
 
-void Console::_osRestoreCursorPosition() const
+void aregext::Console::_osRestoreCursorPosition() const
 {
     areg::Lock lock(mLock);
     printf("\x1B[u");
 }
 
-void Console::_osMoveCursorOneLineUp() const
+void aregext::Console::_osMoveCursorOneLineUp() const
 {
     areg::Lock lock(mLock);
     printf("\x1B[1F");
 }
 
-void Console::_osMoveCursorOneLineDown() const
+void aregext::Console::_osMoveCursorOneLineDown() const
 {
     areg::Lock lock(mLock);
     printf("\x1B[1E");

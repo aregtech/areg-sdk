@@ -133,27 +133,27 @@ class ServicingComponent    : public    areg::Component
 //////////////////////////////////////////////////////////////////////////
 
     //!< Coordinates to output application title / headline
-    static constexpr Console::Coord     COORD_TITLE     { 1, 2 };
+    static constexpr aregext::Console::Coord     COORD_TITLE     { 1, 2 };
 
-    static constexpr Console::Coord     COORD_COMM_RATE { 1, 3 };
+    static constexpr aregext::Console::Coord     COORD_COMM_RATE { 1, 3 };
 
     //!< Coordinates to output data rate
-    static constexpr Console::Coord     COORD_DATA_RATE { 1, 4 };
+    static constexpr aregext::Console::Coord     COORD_DATA_RATE { 1, 4 };
 
     //!< Coordinates to output item rate
-    static constexpr Console::Coord     COORD_ITEM_RATE { 1, 5 };
+    static constexpr aregext::Console::Coord     COORD_ITEM_RATE { 1, 5 };
 
     //!< Coordinates to output information of thread suspend statistics
-    static constexpr Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
+    static constexpr aregext::Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
 
     //!< Coordinates to input the option commands
-    static constexpr Console::Coord     COORD_OPTIONS   { 1, 7 };
+    static constexpr aregext::Console::Coord     COORD_OPTIONS   { 1, 7 };
 
     //!< Coordinates to output the error information.
-    static constexpr Console::Coord     COORD_ERROR_INFO{ 1, 8 };
+    static constexpr aregext::Console::Coord     COORD_ERROR_INFO{ 1, 8 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr Console::Coord     COORD_OPT_INFO  { 1, 10 };
+    static constexpr aregext::Console::Coord     COORD_OPT_INFO  { 1, 10 };
 
     //!< Message to output as application title / headline
     static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part...\n" };

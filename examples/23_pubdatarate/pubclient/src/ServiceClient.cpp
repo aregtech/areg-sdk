@@ -38,7 +38,7 @@ void ServiceClient::startupComponent(areg::ComponentThread& /* comThread */)
     LOG_DBG("The component [ %s ] has been started", getRoleName().getString());
 
     areg::DataLiteral dataRate = areg::convDataSize(mDataSize);
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     console.clearCurrentLine();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
@@ -99,7 +99,7 @@ bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg:
 void ServiceClient::processTimer(areg::Timer& /* timer */)
 {
     LOG_SCOPE(examples_23_clientdatarate_ServiceClient_processTimer);
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     areg::DataLiteral dataRate = areg::convDataSize( mDataSize );
     LOG_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);

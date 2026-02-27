@@ -28,7 +28,7 @@
 
 #include <utility>
 
-class Console;
+namespace aregext { class Console; }
 
 //////////////////////////////////////////////////////////////////////////
 // LogCollector class declaration
@@ -135,7 +135,7 @@ protected:
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    Console::CallBack getOptionCheckCallback() const override;
+    aregext::Console::CallBack getOptionCheckCallback() const override;
 
     /**
      * \brief   Triggered if need to run console with extended features.

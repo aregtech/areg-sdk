@@ -93,14 +93,14 @@ LogObserver & LogObserver::getInstance()
     return _instance;
 }
 
-Console::CallBack LogObserver::getOptionCheckCallback() const
+aregext::Console::CallBack LogObserver::getOptionCheckCallback() const
 {
-    return Console::CallBack( LogObserver::_checkCommand );
+    return aregext::Console::CallBack( LogObserver::_checkCommand );
 }
 
 void LogObserver::_runConsoleInputExtended()
 {
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     LogObserver::_outputTitle( );
 
     console.enableConsoleInput(true);
@@ -356,7 +356,7 @@ bool LogObserver::_checkCommand(const areg::String& cmd)
     bool hasError {false};
 
     LogObserver::_cleanHelp();
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
 
     if ( parser.parseOptionLine( cmd ) )
     {
@@ -471,7 +471,7 @@ bool LogObserver::_checkCommand(const areg::String& cmd)
 
 void LogObserver::_outputTitle()
 {
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.lockConsole();
     console.outputTxt( aregext::COORD_TITLE, LogObserver::APP_TITLE );
     console.outputTxt( aregext::COORD_SUBTITLE, aregext::MSG_SEPARATOR );
@@ -480,8 +480,8 @@ void LogObserver::_outputTitle()
 
 void LogObserver::_outputInfo( const areg::String & info )
 {
-    Console & console = Console::getInstance( );
-    Console::Coord coord{aregext::COORD_INFO_MSG};
+    aregext::Console & console = aregext::Console::getInstance( );
+    aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
     console.lockConsole( );
 
     console.outputTxt( coord, aregext::MSG_SEPARATOR );
@@ -493,8 +493,8 @@ void LogObserver::_outputInfo( const areg::String & info )
 
 void LogObserver::_cleanHelp()
 {
-    Console::Coord line{ aregext::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+    aregext::Console& console = aregext::Console::getInstance();
     console.lockConsole();
 
     console.clearLine(aregext::COORD_USER_INPUT);
@@ -543,8 +543,8 @@ bool LogObserver::_processSaveConfig(const aregext::OptionParser::InputOption& o
 
 bool LogObserver::_processPrintHelp()
 {
-    Console::Coord line{ aregext::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+    aregext::Console& console = aregext::Console::getInstance();
     console.lockConsole();
     for (const auto& text : _msgHelp)
     {
@@ -562,8 +562,8 @@ bool LogObserver::_processInfoInstances()
     static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  |  %s " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
 
-    Console& console = Console::getInstance();
-    Console::Coord coord{ aregext::COORD_INFO_MSG };
+    aregext::Console& console = aregext::Console::getInstance();
+    aregext::Console::Coord coord{ aregext::COORD_INFO_MSG };
     console.lockConsole();
 
     if (_listInstances.isEmpty())

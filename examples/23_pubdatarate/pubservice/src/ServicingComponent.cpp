@@ -99,7 +99,7 @@ void ServicingComponent::startupServiceInterface( areg::Component & holder )
     areg::DataLiteral itemRate = areg::convDataSize( sizeItem );
 
 
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
     console.outputMsg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
@@ -163,7 +163,7 @@ void ServicingComponent::onTimerExpired()
     mIgnoreSleep = 0;
     mLock.unlock( );
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.saveCursorPosition( );
 
     console.outputMsg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
@@ -181,7 +181,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     if (data.hasError())
     {
         LOG_WARN("Error input of command");
-        Console& console = Console::getInstance();
+        aregext::Console& console = aregext::Console::getInstance();
 
         console.saveCursorPosition();
         console.outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
@@ -279,7 +279,7 @@ void ServicingComponent::onThreadRuns()
 
 void ServicingComponent::_runInputThread()
 {
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
 
     bool cmdQuit{ false };
     while ((cmdQuit == false) && (mQuitThread == false))
@@ -370,7 +370,7 @@ uint64_t ServicingComponent::_getBlockImageTime() const
 
 void ServicingComponent::_printInfo() const
 {
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 
@@ -403,7 +403,7 @@ void ServicingComponent::_printInfo() const
 
 void ServicingComponent::_printHelp() const
 {
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 

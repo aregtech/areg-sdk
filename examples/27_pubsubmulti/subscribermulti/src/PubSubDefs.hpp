@@ -32,16 +32,16 @@ namespace pubsub
     constexpr std::string_view  TxtConnected    { "Connected" };
     constexpr std::string_view  FmtDisconnected { "Disconnected to PubSub service with status %s" };
 
-    constexpr Console::Coord    CoordTitle     { 0, 1 };
-    constexpr Console::Coord    CoordSubtitle  { 0, 2 };
-    constexpr Console::Coord    CoordStatus    { 0, 3 };
+    constexpr aregext::Console::Coord    CoordTitle     { 0, 1 };
+    constexpr aregext::Console::Coord    CoordSubtitle  { 0, 2 };
+    constexpr aregext::Console::Coord    CoordStatus    { 0, 3 };
 
-    constexpr Console::Coord    Coord1Subtitle  { 0, 4 };
-    constexpr Console::Coord    Coord1Integer   { 0, 5 };
-    constexpr Console::Coord    Coord1String    { 0, 6 };
+    constexpr aregext::Console::Coord    Coord1Subtitle  { 0, 4 };
+    constexpr aregext::Console::Coord    Coord1Integer   { 0, 5 };
+    constexpr aregext::Console::Coord    Coord1String    { 0, 6 };
 
-    constexpr Console::Coord    Coord2Subtitle  { 0, 7 };
-    constexpr Console::Coord    Coord2Integer   { 0, 8 };
-    constexpr Console::Coord    Coord2String    { 0, 9 };
+    constexpr aregext::Console::Coord    Coord2Subtitle  { 0, 7 };
+    constexpr aregext::Console::Coord    Coord2Integer   { 0, 8 };
+    constexpr aregext::Console::Coord    Coord2String    { 0, 9 };
 }
 

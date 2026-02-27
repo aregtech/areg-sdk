@@ -134,36 +134,36 @@ namespace aregext
     /**
      * \brief   Coordinate to display the application title.
      **/
-    constexpr Console::Coord    COORD_TITLE         { 0, 1 };
+    constexpr aregext::Console::Coord    COORD_TITLE         { 0, 1 };
     /**
      * \brief   Coordinate to display the underscore.
      **/
-    constexpr Console::Coord    COORD_SUBTITLE      { 0, 2 };
+    constexpr aregext::Console::Coord    COORD_SUBTITLE      { 0, 2 };
 
     /**
      * \brief   Coordinate to start to display send data rate message.
      **/
-    constexpr Console::Coord    COORD_SEND_RATE     { 0, 3 };
+    constexpr aregext::Console::Coord    COORD_SEND_RATE     { 0, 3 };
     /**
      * \brief   Coordinate to start to display receive data rate message.
      **/
-    constexpr Console::Coord    COORD_RECV_RATE     { 0, 4 };
+    constexpr aregext::Console::Coord    COORD_RECV_RATE     { 0, 4 };
     /**
      * \brief   Coordinate to display the status message.
      **/
-    constexpr Console::Coord    COORD_STATUS_MSG    { 0, 5 };
+    constexpr aregext::Console::Coord    COORD_STATUS_MSG    { 0, 5 };
     /**
      * \brief   Coordinate to start to display user input message.
      **/
-    constexpr Console::Coord    COORD_USER_INPUT    { 0, 6 };
+    constexpr aregext::Console::Coord    COORD_USER_INPUT    { 0, 6 };
     /**
      * \brief   Coordinate to start to display error message.
      **/
-    constexpr Console::Coord    COORD_ERROR_MSG     { 0, 7 };
+    constexpr aregext::Console::Coord    COORD_ERROR_MSG     { 0, 7 };
     /**
      * \brief   Coordinate to start to display information message.
      **/
-    constexpr Console::Coord    COORD_INFO_MSG      { 0, 8 };
+    constexpr aregext::Console::Coord    COORD_INFO_MSG      { 0, 8 };
 
     /**
      * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'.

@@ -26,7 +26,7 @@
 
 namespace
 {
-    Console::Coord  _cursorPos{ -1, -1 };
+    aregext::Console::Coord  _cursorPos{ -1, -1 };
     bool            _isSaved{ false };
 }
 
@@ -34,7 +34,7 @@ namespace
 // Console POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup()
+bool aregext::Console::_osSetup()
 {
     if (mIsReady == false)
     {
@@ -50,7 +50,7 @@ bool Console::_osSetup()
     return mIsReady;
 }
 
-void Console::_osRelease()
+void aregext::Console::_osRelease()
 {
     if (mIsReady)
     {
@@ -66,7 +66,7 @@ void Console::_osRelease()
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
+void aregext::Console::_osOutputText(aregext::Console::Coord pos, const areg::String& text) const
 {
     areg::Lock lock(mLock);
 
@@ -78,7 +78,7 @@ void Console::_osOutputText(Console::Coord pos, const areg::String& text) const
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
+void aregext::Console::_osOutputText(aregext::Console::Coord pos, const std::string_view& text) const
 {
     areg::Lock lock(mLock);
 
@@ -90,7 +90,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     }
 }
 
-void Console::_osOutputText(const areg::String& text) const
+void aregext::Console::_osOutputText(const areg::String& text) const
 {
     areg::Lock lock(mLock);
 
@@ -101,7 +101,7 @@ void Console::_osOutputText(const areg::String& text) const
     }
 }
 
-void Console::_osOutputText(const std::string_view& text) const
+void aregext::Console::_osOutputText(const std::string_view& text) const
 {
     areg::Lock lock(mLock);
 
@@ -112,11 +112,11 @@ void Console::_osOutputText(const std::string_view& text) const
     }
 }
 
-Console::Coord Console::_osGetCursorPosition() const
+aregext::Console::Coord aregext::Console::_osGetCursorPosition() const
 {
     areg::Lock lock(mLock);
 
-    Console::Coord pos{ -1, -1 };
+    aregext::Console::Coord pos{ -1, -1 };
     if (mContext != 0)
     {
         ASSERT(mIsReady);
@@ -129,7 +129,7 @@ Console::Coord Console::_osGetCursorPosition() const
     return pos;
 }
 
-void Console::_osSetCursorCurPosition(Console::Coord pos) const
+void aregext::Console::_osSetCursorCurPosition(aregext::Console::Coord pos) const
 {
     areg::Lock lock(mLock);
 
@@ -140,7 +140,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     }
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size)
+bool aregext::Console::_osWaitInputString(char* buffer, uint32_t size)
 {
     ASSERT(buffer != nullptr);
     // Use getnstr which operates on stdscr (the standard screen).
@@ -153,7 +153,7 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
     return (areg::isEmpty<char>(buffer) == false);
 }
 
-void Console::_osRefreshScreen() const
+void aregext::Console::_osRefreshScreen() const
 {
     if (mContext != 0)
     {
@@ -161,7 +161,7 @@ void Console::_osRefreshScreen() const
     }
 }
 
-void Console::_osClearLine() const
+void aregext::Console::_osClearLine() const
 {
     areg::Lock lock(mLock);
 
@@ -171,7 +171,7 @@ void Console::_osClearLine() const
     }
 }
 
-void Console::_osClearScreen() const
+void aregext::Console::_osClearScreen() const
 {
     areg::Lock lock(mLock);
 
@@ -181,19 +181,19 @@ void Console::_osClearScreen() const
     }
 }
 
-bool Console::_osReadInputList(const char* format, va_list varList) const
+bool aregext::Console::_osReadInputList(const char* format, va_list varList) const
 {
     return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);
 }
 
-void Console::_osSaveCursorPosition() const
+void aregext::Console::_osSaveCursorPosition() const
 {
     areg::Lock lock(mLock);
     _cursorPos = _osGetCursorPosition();
     _isSaved = true;
 }
 
-void Console::_osRestoreCursorPosition() const
+void aregext::Console::_osRestoreCursorPosition() const
 {
     areg::Lock lock(mLock);
 
@@ -209,17 +209,17 @@ void Console::_osRestoreCursorPosition() const
     }
 }
 
-void Console::_osMoveCursorOneLineUp() const
+void aregext::Console::_osMoveCursorOneLineUp() const
 {
     areg::Lock lock(mLock);
-    Console::Coord pos = _osGetCursorPosition();
+    aregext::Console::Coord pos = _osGetCursorPosition();
     mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
 }
 
-void Console::_osMoveCursorOneLineDown() const
+void aregext::Console::_osMoveCursorOneLineDown() const
 {
     areg::Lock lock(mLock);
-    Console::Coord pos = _osGetCursorPosition();
+    aregext::Console::Coord pos = _osGetCursorPosition();
     mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
 }
 

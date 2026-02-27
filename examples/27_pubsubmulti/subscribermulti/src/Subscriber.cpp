@@ -35,7 +35,7 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
     bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
 
     if (connected == false)
     {
@@ -68,7 +68,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
-    Console & console = Console::getInstance();    
+    aregext::Console & console = aregext::Console::getInstance();    
     areg::String stateConnect = pubsub::TxtConnected;
     if (PubSubClientBase::isConnected() == false)
     {

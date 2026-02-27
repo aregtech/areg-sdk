@@ -78,7 +78,7 @@ void PubSubController::shutdownComponent(areg::ComponentThread & comThread)
 
 void PubSubController::onThreadRuns()
 {
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.lockConsole();
     console.enableConsoleInput(true);
@@ -145,7 +145,7 @@ void PubSubController::onThreadRuns()
 
 inline void PubSubController::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     if (cmd == OptionFlag::CMD_Error)
     {
         console.outputStr(pubsub::CoordInfoMsg, message);

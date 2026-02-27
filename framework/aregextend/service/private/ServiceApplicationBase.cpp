@@ -269,6 +269,6 @@ namespace aregext
 
     bool ServiceApplicationBase::inputConsoleData(char* buffer, uint32_t bufSize)
     {
-        return Console::readConsoleData(buffer, bufSize);
+        return aregext::Console::readConsoleData(buffer, bufSize);
     }
 } // namespace aregext

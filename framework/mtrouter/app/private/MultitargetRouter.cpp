@@ -120,8 +120,8 @@ void MultitargetRouter::printStatus(const areg::String& status)
 
     if (MultitargetRouter::getInstance().getCurrentOption() == aregext::ServiceOption::CMD_Console)
     {
-        Console& console{ Console::getInstance() };
-        Console::Coord curPos{ console.getCursorCurPosition() };
+        aregext::Console& console{ aregext::Console::getInstance() };
+        aregext::Console::Coord curPos{ console.getCursorCurPosition() };
         MultitargetRouter::_outputInfo(status);
         console.setCursorCurPosition(curPos);
     }
@@ -138,16 +138,16 @@ MultitargetRouter::MultitargetRouter()
 {
 }
 
-Console::CallBack MultitargetRouter::getOptionCheckCallback() const
+aregext::Console::CallBack MultitargetRouter::getOptionCheckCallback() const
 {
-    return Console::CallBack( MultitargetRouter::_checkCommand );
+    return aregext::Console::CallBack( MultitargetRouter::_checkCommand );
 }
 
 void MultitargetRouter::runConsoleInputExtended()
 {
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     MultitargetRouter::_outputTitle( );
 
     if (getDataRateHelper().isVerbose())
@@ -244,8 +244,8 @@ void MultitargetRouter::printHelp( bool /* isCmdLine */ )
 {
 #if     AREG_EXTENDED
 
-    Console::Coord line{ aregext::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+    aregext::Console& console = aregext::Console::getInstance();
     console.lockConsole();
     for (const auto& text : _msgHelp)
     {
@@ -349,7 +349,7 @@ bool MultitargetRouter::_checkCommand(const areg::String& cmd)
 
 #if AREG_EXTENDED
     
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.lockConsole();
     if ( quit == false )
     {
@@ -393,7 +393,7 @@ void MultitargetRouter::_outputTitle()
 {
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.lockConsole();
     console.outputTxt( aregext::COORD_TITLE, mtrouter::APP_TITLE.data( ) );
     console.outputTxt( aregext::COORD_SUBTITLE, aregext::MSG_SEPARATOR.data( ) );
@@ -411,8 +411,8 @@ void MultitargetRouter::_outputInfo( const areg::String & info )
 {
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
-    Console::Coord coord{aregext::COORD_INFO_MSG};
+    aregext::Console & console = aregext::Console::getInstance( );
+    aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
     console.lockConsole( );
 
     console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
@@ -435,8 +435,8 @@ void MultitargetRouter::_outputInstances( const areg::MapInstances & instances )
 
 #if AREG_EXTENDED
 
-    Console & console = Console::getInstance( );
-    Console::Coord coord{aregext::COORD_INFO_MSG};
+    aregext::Console & console = aregext::Console::getInstance( );
+    aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
     console.lockConsole( );
 
     if ( instances.isEmpty( ) )
@@ -505,7 +505,7 @@ void MultitargetRouter::_setVerboseMode( bool makeVerbose )
     static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
     static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
     MultitargetRouter & router = MultitargetRouter::getInstance( );
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.lockConsole( );
     if ( router.getDataRateHelper().isVerbose() != makeVerbose )
     {
@@ -547,8 +547,8 @@ void MultitargetRouter::_cleanHelp()
 {
 #if     AREG_EXTENDED
 
-    Console::Coord line{ aregext::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
+    aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+    aregext::Console& console = aregext::Console::getInstance();
     console.lockConsole();
 
     console.clearLine(aregext::COORD_USER_INPUT);

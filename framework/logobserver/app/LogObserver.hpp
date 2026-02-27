@@ -167,7 +167,7 @@ public:
     /**
      * \brief   Triggered to receive a function to validate and check the input option values.
      **/
-    Console::CallBack getOptionCheckCallback() const;
+    aregext::Console::CallBack getOptionCheckCallback() const;
 
 private:
 

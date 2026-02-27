@@ -70,7 +70,7 @@ int main()
     ASSERT(thread->isInstanceOfRuntimeClass("DispatcherThread"));
 
     bool doLoop = true;
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.enableConsoleInput( true );
 
     std::string_view commands[]

@@ -46,7 +46,7 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
     bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
     if (connected == false)
@@ -79,7 +79,7 @@ bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::Pr
 void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
     if (state == areg::DataState::DataIsOK)
@@ -134,7 +134,7 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
 void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.lockConsole();
     areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger.value) : pubsub::Invalid;
     console.saveCursorPosition();
