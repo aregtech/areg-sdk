@@ -55,24 +55,24 @@ namespace aregext
     /**
      * \brief   The default setup for the system service executable options.
      **/
-    const OptionParser::OptionSetup ServiceOptionSetup[ ]
+    const aregext::OptionParser::OptionSetup ServiceOptionSetup[ ]
     {
           //!< Default command.
-          { ""  , ""            , static_cast<int32_t>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+          { ""  , ""            , static_cast<int32_t>(ServiceOption::CMD_Console)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a console application.
-        , { "-c", "--console"   , static_cast<int32_t>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-c", "--console"   , static_cast<int32_t>(ServiceOption::CMD_Console)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display help on console.
-        , { "-h", "--help"      , static_cast<int32_t>(ServiceOption::CMD_Help)        , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-h", "--help"      , static_cast<int32_t>(ServiceOption::CMD_Help)        , aregext::OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display the error message.
-        , { "-l", "--load"      , static_cast<int32_t>(ServiceOption::CMD_Load)        , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+        , { "-l", "--load"      , static_cast<int32_t>(ServiceOption::CMD_Load)        , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
           //!< Command to install service. Valid for Windows OS, ignored in other cases.
-        , { "-i", "--install"   , static_cast<int32_t>(ServiceOption::CMD_Install)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-i", "--install"   , static_cast<int32_t>(ServiceOption::CMD_Install)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a system service process.
-        , { "-s", "--service"   , static_cast<int32_t>(ServiceOption::CMD_Service)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-s", "--service"   , static_cast<int32_t>(ServiceOption::CMD_Service)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to uninstall service. Valid for Windows OS, ignored in other cases.
-        , { "-u", "--uninstall" , static_cast<int32_t>(ServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA          , {}, {}, {} }
+        , { "-u", "--uninstall" , static_cast<int32_t>(ServiceOption::CMD_Uninstall)  , aregext::OptionParser::NO_DATA          , {}, {}, {} }
           //!< Command to display data rate when run as console application.
-        , { "-v", "--verbose"   , static_cast<int32_t>(ServiceOption::CMD_Verbose)     , OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-v", "--verbose"   , static_cast<int32_t>(ServiceOption::CMD_Verbose)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
     };
 
     /**

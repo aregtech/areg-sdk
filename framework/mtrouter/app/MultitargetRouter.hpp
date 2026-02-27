@@ -69,7 +69,7 @@ private:
     /**
      * \brief   The setup to validate input options of the message router.
      **/
-    static const OptionParser::OptionSetup ValidOptions[ ];
+    static const aregext::OptionParser::OptionSetup ValidOptions[ ];
 
 //////////////////////////////////////////////////////////////////////////
 // statics
@@ -152,7 +152,7 @@ protected:
      *          where the first entry is the pointer to the list and second entry is
      *          the number of elements in the list
      **/
-    std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const override;
+    std::pair<const aregext::OptionParser::OptionSetup*, int32_t> getAppOptions() const override;
 
     /**
      * \brief   Returns the UNICODE name of the service application.

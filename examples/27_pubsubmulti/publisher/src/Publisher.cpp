@@ -63,13 +63,13 @@ namespace
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::OptionSetup Publisher::ValidOptions[]
+const aregext::OptionParser::OptionSetup Publisher::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -237,7 +237,7 @@ void Publisher::processTimer(areg::Timer & timer)
 void Publisher::onThreadRuns()
 {
     Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, std::size(ValidOptions));
+    aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
     printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
@@ -251,7 +251,7 @@ void Publisher::onThreadRuns()
 
         if (parser.parseOptionLine(usrInput.getString()))
         {
-            const OptionParser::InputOptionList & opts = parser.getOptions();
+            const aregext::OptionParser::InputOptionList & opts = parser.getOptions();
             cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {

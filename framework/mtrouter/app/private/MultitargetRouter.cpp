@@ -92,20 +92,20 @@ DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_setState);
 // MultitargetRouter class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::OptionSetup MultitargetRouter::ValidOptions[ ]
+const aregext::OptionParser::OptionSetup MultitargetRouter::ValidOptions[ ]
 {
-      { "-c", "--console"   , static_cast<int32_t>(RouterOption::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int32_t>(RouterOption::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int32_t>(RouterOption::CMD_RouterInstall)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int32_t>(RouterOption::CMD_RouterLoad)      , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int32_t>(RouterOption::CMD_RouterInstances) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int32_t>(RouterOption::CMD_RouterPause)     , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int32_t>(RouterOption::CMD_RouterQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int32_t>(RouterOption::CMD_RouterRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int32_t>(RouterOption::CMD_RouterService)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , { "-t", "--silent"    , static_cast<int32_t>(RouterOption::CMD_RouterSilent)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int32_t>(RouterOption::CMD_RouterUninstall) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int32_t>(RouterOption::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-c", "--console"   , static_cast<int32_t>(RouterOption::CMD_RouterConsole)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int32_t>(RouterOption::CMD_RouterPrintHelp) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int32_t>(RouterOption::CMD_RouterInstall)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int32_t>(RouterOption::CMD_RouterLoad)      , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int32_t>(RouterOption::CMD_RouterInstances) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int32_t>(RouterOption::CMD_RouterPause)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int32_t>(RouterOption::CMD_RouterQuit)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int32_t>(RouterOption::CMD_RouterRestart)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int32_t>(RouterOption::CMD_RouterService)   , aregext::OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int32_t>(RouterOption::CMD_RouterSilent)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int32_t>(RouterOption::CMD_RouterUninstall) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int32_t>(RouterOption::CMD_RouterVerbose)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 MultitargetRouter & MultitargetRouter::getInstance()
@@ -194,9 +194,9 @@ void MultitargetRouter::runConsoleInputSimple()
     } while ( quit == false );
 }
 
-std::pair<const OptionParser::OptionSetup*, int32_t> MultitargetRouter::getAppOptions() const
+std::pair<const aregext::OptionParser::OptionSetup*, int32_t> MultitargetRouter::getAppOptions() const
 {
-    static  std::pair< const OptionParser::OptionSetup*, int32_t> _opts(std::pair< const OptionParser::OptionSetup*, int32_t>(MultitargetRouter::ValidOptions, static_cast<int32_t>(std::size(MultitargetRouter::ValidOptions))));
+    static  std::pair< const aregext::OptionParser::OptionSetup*, int32_t> _opts(std::pair< const aregext::OptionParser::OptionSetup*, int32_t>(MultitargetRouter::ValidOptions, static_cast<int32_t>(std::size(MultitargetRouter::ValidOptions))));
     return _opts;
 }
 
@@ -279,7 +279,7 @@ void MultitargetRouter::stopConsoleService()
 
 bool MultitargetRouter::_checkCommand(const areg::String& cmd)
 {
-    OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
+    aregext::OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
     bool quit{ false };
     bool hasError{ false };
 
@@ -288,10 +288,10 @@ bool MultitargetRouter::_checkCommand(const areg::String& cmd)
     if ( parser.parseOptionLine( cmd ) )
     {
         MultitargetRouter & router = MultitargetRouter::getInstance( );
-        const OptionParser::InputOptionList & opts = parser.getOptions( );
+        const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
         for (uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
-            const OptionParser::InputOption & opt = opts[ i ];
+            const aregext::OptionParser::InputOption & opt = opts[ i ];
             switch ( static_cast<MultitargetRouter::RouterOption>(opt.inCommand) )
             {
             case MultitargetRouter::RouterOption::CMD_RouterPause:

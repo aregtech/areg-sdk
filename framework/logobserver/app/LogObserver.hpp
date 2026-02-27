@@ -93,7 +93,7 @@ private:
     /**
      * \brief   The setup to validate input options of the Log Observer.
      **/
-    static const OptionParser::OptionSetup ValidOptions[];
+    static const aregext::OptionParser::OptionSetup ValidOptions[];
 
     /**
      * \brief   The list of actions, associated status and error messages.
@@ -313,7 +313,7 @@ private:
      *                      that should save configuration.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processSaveConfig(const OptionParser::InputOption& optSave);
+    static bool _processSaveConfig(const aregext::OptionParser::InputOption& optSave);
 
     /**
      * \brief   Triggered to print the help message on console.
@@ -333,7 +333,7 @@ private:
      *                      If the command contains a list of scopes to update, the should be split by ';'.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processUpdateScopes(const OptionParser::InputOption& optScope);
+    static bool _processUpdateScopes(const aregext::OptionParser::InputOption& optScope);
 
     /**
      * \brief   Triggered to pause logging. The lob observer is paused if it does not write logs in the file.
@@ -357,7 +357,7 @@ private:
      *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static bool _processQueryScopes(const OptionParser::InputOption& optScope);
+    static bool _processQueryScopes(const aregext::OptionParser::InputOption& optScope);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.

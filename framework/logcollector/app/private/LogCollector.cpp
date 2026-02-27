@@ -96,25 +96,25 @@ DEF_LOG_SCOPE(logcollector_app_logcollector_setState);
 // LogCollector class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::OptionSetup LogCollector::ValidOptions[ ]
+const aregext::OptionParser::OptionSetup LogCollector::ValidOptions[ ]
 {
-      { "-a", "--save"      , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-b", "--unsave"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-c", "--console"   , static_cast<int32_t>(LoggerOption::CMD_LogConsole)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int32_t>(LoggerOption::CMD_LogInstall)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int32_t>(LoggerOption::CMD_LogService)      , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , { "-t", "--silent"    , static_cast<int32_t>(LoggerOption::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int32_t>(LoggerOption::CMD_LogUninstall)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int32_t>(LoggerOption::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-a", "--save"      , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogs)     , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-b", "--unsave"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveLogsStop) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-c", "--console"   , static_cast<int32_t>(LoggerOption::CMD_LogConsole)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int32_t>(LoggerOption::CMD_LogInstall)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int32_t>(LoggerOption::CMD_LogService)      , aregext::OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int32_t>(LoggerOption::CMD_LogSilent)       , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int32_t>(LoggerOption::CMD_LogUninstall)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int32_t>(LoggerOption::CMD_LogVerbose)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 LogCollector & LogCollector::getInstance()
@@ -209,9 +209,9 @@ void LogCollector::runService()
     areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 }
 
-std::pair<const OptionParser::OptionSetup*, int32_t> LogCollector::getAppOptions() const
+std::pair<const aregext::OptionParser::OptionSetup*, int32_t> LogCollector::getAppOptions() const
 {
-    static  std::pair< const OptionParser::OptionSetup*, int32_t> _opts( std::pair< const OptionParser::OptionSetup*
+    static  std::pair< const aregext::OptionParser::OptionSetup*, int32_t> _opts( std::pair< const aregext::OptionParser::OptionSetup*
                                                                     , int32_t>(LogCollector::ValidOptions
                                                                     , static_cast<int32_t>(std::size(LogCollector::ValidOptions))));
     return _opts;
@@ -306,7 +306,7 @@ void LogCollector::stopConsoleService()
 
 bool LogCollector::_checkCommand(const areg::String& cmd)
 {
-    OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
+    aregext::OptionParser parser( LogCollector::ValidOptions, std::size( LogCollector::ValidOptions ) );
     bool quit{ false };
     bool hasError {false};
 
@@ -315,10 +315,10 @@ bool LogCollector::_checkCommand(const areg::String& cmd)
     if ( parser.parseOptionLine( cmd ) )
     {
         LogCollector & logger = LogCollector::getInstance( );
-        const OptionParser::InputOptionList & opts = parser.getOptions( );
+        const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
         for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
-            const OptionParser::InputOption & opt = opts[ i ];
+            const aregext::OptionParser::InputOption & opt = opts[ i ];
             switch ( static_cast<LoggerOption>(opt.inCommand) )
             {
             case LoggerOption::CMD_LogPause:
@@ -607,7 +607,7 @@ void LogCollector::_cleanHelp()
 #endif  // AREG_EXTENDED
 }
 
-void LogCollector::_processUpdateScopes(const OptionParser::InputOption& optScope)
+void LogCollector::_processUpdateScopes(const aregext::OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
     areg::ArrayList<areg::RemoteMessage> msgList;
@@ -618,7 +618,7 @@ void LogCollector::_processUpdateScopes(const OptionParser::InputOption& optScop
     }
 }
 
-void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope)
+void LogCollector::_processQueryScopes(const aregext::OptionParser::InputOption& optScope)
 {
     LogCollector& logger{ LogCollector::getInstance() };
     areg::ArrayList<ITEM_ID> listTargets;
@@ -649,12 +649,12 @@ void LogCollector::_processQueryScopes(const OptionParser::InputOption& optScope
     }
 }
 
-void LogCollector::_createScopeMessage(const OptionParser::InputOption& optScope, areg::ArrayList<areg::RemoteMessage>& msgList)
+void LogCollector::_createScopeMessage(const aregext::OptionParser::InputOption& optScope, areg::ArrayList<areg::RemoteMessage>& msgList)
 {
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
 
-    const OptionParser::StrList& optValues{ optScope.inString };
+    const aregext::OptionParser::StrList& optValues{ optScope.inString };
     areg::String scope;
     for (const auto& entry : optValues)
     {

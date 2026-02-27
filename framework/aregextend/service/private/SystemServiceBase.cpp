@@ -49,13 +49,13 @@ namespace aregext
         mCommunication.enableCalculateDataRate(aregext::DEFAULT_VERBOSE);
     }
 
-    bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount )
+    bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const aregext::OptionParser::OptionSetup * optSetup, uint32_t optCount )
     {
         bool result{ false };
 
         if (argc > 1)
         {
-            OptionParser parser(optSetup, optCount);
+            aregext::OptionParser parser(optSetup, optCount);
             if (parser.parseCommandLine(argv, argc > 1 ? static_cast<uint32_t>(argc) : 0))
             {
                 result = prepareOptions(parser.getOptions());
@@ -75,13 +75,13 @@ namespace aregext
         return result;
     }
 
-    bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount)
+    bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const aregext::OptionParser::OptionSetup* optSetup, uint32_t optCount)
     {
         bool result{ false };
 
         if (argc > 1)
         {
-            OptionParser parser(optSetup, optCount);
+            aregext::OptionParser parser(optSetup, optCount);
             if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
             {
                 parser.sort();
@@ -102,20 +102,20 @@ namespace aregext
         return result;
     }
 
-    bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
+    bool SystemServiceBase::prepareOptions(const aregext::OptionParser::InputOptionList& opts)
     {
         bool result{ true };
 
         for (uint32_t i = 0; i < opts.getSize(); ++i)
         {
-            const OptionParser::InputOption& opt = opts[i];
+            const aregext::OptionParser::InputOption& opt = opts[i];
             result &= dispatchOption(opt);
         }
 
         return result;
     }
 
-    bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
+    bool SystemServiceBase::dispatchOption(const aregext::OptionParser::InputOption& opt)
     {
         bool result{ false };
         bool outHelp{ false };

@@ -46,7 +46,7 @@ private:
     };
 
     //!< The list of valid options
-    static const OptionParser::OptionSetup ValidOptions[];
+    static const aregext::OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor

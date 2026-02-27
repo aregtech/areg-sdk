@@ -73,18 +73,18 @@ namespace
 // LogObserver class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::OptionSetup LogObserver::ValidOptions[ ]
+const aregext::OptionParser::OptionSetup LogObserver::ValidOptions[ ]
 {
-      { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-x", "--stop"      , static_cast<int32_t>(LoggerOption::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-e", "--query"     , static_cast<int32_t>(LoggerOption::CMD_LogQueryScopes)  , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int32_t>(LoggerOption::CMD_LogSaveConfig)   , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int32_t>(LoggerOption::CMD_LogPrintHelp)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int32_t>(LoggerOption::CMD_LogLoad)         , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int32_t>(LoggerOption::CMD_LogInstances)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope)  , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int32_t>(LoggerOption::CMD_LogPause)        , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int32_t>(LoggerOption::CMD_LogQuit)         , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int32_t>(LoggerOption::CMD_LogRestart)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-x", "--stop"      , static_cast<int32_t>(LoggerOption::CMD_LogStop)         , aregext::OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 LogObserver & LogObserver::getInstance()
@@ -326,7 +326,7 @@ void LogObserver::logMain( int32_t argc, char ** argv )
 
     areg::Application::setWorkingDirectory(nullptr);
     areg::String fileConfig(areg::DEFAULT_CONFIG_FILE);
-    OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
+    aregext::OptionParser parser(LogObserver::ValidOptions, std::size(LogObserver::ValidOptions));
     if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
     {
         uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::LoggerOption::CMD_LogLoad));
@@ -351,7 +351,7 @@ void LogObserver::logMain( int32_t argc, char ** argv )
 
 bool LogObserver::_checkCommand(const areg::String& cmd)
 {
-    OptionParser parser( LogObserver::ValidOptions, std::size(LogObserver::ValidOptions) );
+    aregext::OptionParser parser( LogObserver::ValidOptions, std::size(LogObserver::ValidOptions) );
     bool quit{ false };
     bool hasError {false};
 
@@ -360,12 +360,12 @@ bool LogObserver::_checkCommand(const areg::String& cmd)
 
     if ( parser.parseOptionLine( cmd ) )
     {
-        const OptionParser::InputOptionList & opts = parser.getOptions( );
+        const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
         for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
             bool processed{ false };
             const LogObserver::ObserverStatus* status{ nullptr };
-            const OptionParser::InputOption & opt = opts[ i ];
+            const aregext::OptionParser::InputOption & opt = opts[ i ];
             switch ( static_cast<LogObserver::LoggerOption>(opt.inCommand) )
             {
             case LogObserver::LoggerOption::CMD_LogQueryScopes:
@@ -508,7 +508,7 @@ void LogObserver::_cleanHelp()
     console.unlockConsole();
 }
 
-bool LogObserver::_processSaveConfig(const OptionParser::InputOption& optSave)
+bool LogObserver::_processSaveConfig(const aregext::OptionParser::InputOption& optSave)
 {
     areg::ArrayList<ITEM_ID> listTargets;
     if (optSave.inString.empty() || (optSave.inString[0] == areg::SYNTAX_ALL_MODULES))
@@ -598,13 +598,13 @@ bool LogObserver::_processInfoInstances()
     return true;
 }
 
-bool LogObserver::_processUpdateScopes(const OptionParser::InputOption& optScope)
+bool LogObserver::_processUpdateScopes(const aregext::OptionParser::InputOption& optScope)
 {
     bool result{ false };
     ASSERT(optScope.inCommand == static_cast<int32_t>(LoggerOption::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
 
-    const OptionParser::StrList& optValues{ optScope.inString };
+    const aregext::OptionParser::StrList& optValues{ optScope.inString };
     areg::String scope;
     for (const auto& entry : optValues)
     {
@@ -661,7 +661,7 @@ bool LogObserver::_processStartLogging(bool doStart)
     return result;
 }
 
-bool LogObserver::_processQueryScopes(const OptionParser::InputOption& optScope)
+bool LogObserver::_processQueryScopes(const aregext::OptionParser::InputOption& optScope)
 {
     bool result{ true };
     areg::ArrayList<ITEM_ID> listTargets;
