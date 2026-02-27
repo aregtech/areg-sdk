@@ -409,7 +409,7 @@ void ServiceManagerEventProcessor::_sendClientConnectedEvent( const areg::ProxyA
                    , areg::StubAddress::convAddressToPath( server ).getString( )
                    , areg::ProxyAddress::convAddressToPath( client ).getString( ) );
 
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, areg::ServiceConnectionState::Connected );
+        areg::StubConnectEvent * clientConnect = DEBUG_NEW areg::StubConnectEvent( client, server, areg::ServiceConnectionState::Connected );
         if ( clientConnect != nullptr )
         {
             server.deliverServiceEvent( *clientConnect );
@@ -442,7 +442,7 @@ void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const areg::Proxy
                    , areg::StubAddress::convAddressToPath( server ).getString( )
                    , areg::ProxyAddress::convAddressToPath( client ).getString( ) );
 
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
+        areg::StubConnectEvent * clientConnect = DEBUG_NEW areg::StubConnectEvent( client, server, status );
         if ( clientConnect != nullptr )
         {
             server.deliverServiceEvent( *clientConnect );

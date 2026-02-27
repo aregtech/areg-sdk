@@ -50,7 +50,7 @@
 namespace areg { class ServiceRequestEvent; }
 namespace areg { class RequestEvent; }
 namespace areg { class NotifyRequestEvent; }
-class StubConnectEvent;
+namespace areg { class StubConnectEvent; }
 
 namespace areg
 {
@@ -288,7 +288,7 @@ namespace areg
          *          Processes when service registered and when client connection changed.
          * \param   notifyConnect   The connection notification event.
          **/
-        void _localProcessConnectEvent( StubConnectEvent & notifyConnect );
+        void _localProcessConnectEvent( areg::StubConnectEvent & notifyConnect );
 
     private:
         //!< The address of stub object, which is handling consumer.

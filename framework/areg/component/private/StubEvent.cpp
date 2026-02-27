@@ -131,7 +131,7 @@ namespace areg
         areg::ComponentThread::setCurrentComponent(nullptr);
     }
 
-    inline void areg::StubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
+    inline void areg::StubEventConsumer::_localProcessConnectEvent( areg::StubConnectEvent & notifyConnect )
     {
         if ( notifyConnect.getRequestId() == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) )
         {
@@ -175,7 +175,7 @@ namespace areg
                     }
                     else
                     {
-                        StubConnectEvent * stubConnectEvent = AREG_RUNTIME_CAST(stubEvent, StubConnectEvent);
+                        areg::StubConnectEvent * stubConnectEvent = AREG_RUNTIME_CAST(stubEvent, areg::StubConnectEvent);
                         if (stubConnectEvent != nullptr)
                         {
                             _localProcessConnectEvent(*stubConnectEvent);

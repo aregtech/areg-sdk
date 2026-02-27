@@ -279,14 +279,14 @@ namespace areg
         LOG_SCOPE( areg_component_StubBase_startupServiceInterface );
         LOG_DBG( "Service with role [ %s ] and interface [ %s ] is started", getServiceRole( ).getString( ), getServiceName( ).getString( ) );
 
-        StubConnectEvent::addListener( static_cast<areg::StubEventConsumer &>(self()), holder.getMasterThread() );
+        areg::StubConnectEvent::addListener( static_cast<areg::StubEventConsumer &>(self()), holder.getMasterThread() );
     }
 
     void StubBase::shutdownServiceInterface( areg::Component & holder )
     {
         LOG_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
         LOG_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );
-        StubConnectEvent::removeListener( static_cast<areg::StubEventConsumer &>(self()), holder.getMasterThread() );
+        areg::StubConnectEvent::removeListener( static_cast<areg::StubEventConsumer &>(self()), holder.getMasterThread() );
     }
 
     void StubBase::errorAllRequests()
