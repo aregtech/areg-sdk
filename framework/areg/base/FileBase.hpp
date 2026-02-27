@@ -893,7 +893,7 @@ private:
      *          such as bool, char, int16_t, double, int32_t, etc.
      *          For more details see description of ReadConverter class
      **/
-    ReadConverter   mReadConvert;
+    areg::ReadConverter   mReadConvert;
     /**
      * \brief   Object of converter class.
      *          Used to convert and write primitive types
