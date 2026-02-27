@@ -317,7 +317,7 @@ namespace areg::os
         return ((mDueTime.tv_sec != 0) || (mDueTime.tv_nsec != 0));
     }
 
-    #endif  // defined(_POSIX) || defined(POSIX)
-
+    
 } // namespace areg::os
+#endif  // defined(_POSIX) || defined(POSIX)
 #endif  // AREG_COMPONENT_PRIVATE_POSIX_TIMERPOSIX_HPP

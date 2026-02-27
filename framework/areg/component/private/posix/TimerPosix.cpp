@@ -344,5 +344,5 @@ namespace areg::os
     #endif  // __APPLE__
     }
 
-    #endif // defined(_POSIX) || defined(POSIX)
 } // namespace areg::os
+#endif // defined(_POSIX) || defined(POSIX)
