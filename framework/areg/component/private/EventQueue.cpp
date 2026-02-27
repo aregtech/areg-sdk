@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventQueue::EventQueue( QueueListener & eventListener, areg::SortedEventStack & eventQueue )
+EventQueue::EventQueue( areg::QueueListener & eventListener, areg::SortedEventStack & eventQueue )
     : mEventListener(eventListener)
     , mEventQueue   (eventQueue)
 {
@@ -77,7 +77,7 @@ void EventQueue::removeEvents( const areg::RuntimeClassID & eventClassId )
 // ExternalEventQueue class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ExternalEventQueue::ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue)
+ExternalEventQueue::ExternalEventQueue( areg::QueueListener & eventListener, uint32_t maxQueue)
     : EventQueue( eventListener, mStack )
     , mStack    ( maxQueue)
 {
@@ -93,7 +93,7 @@ ExternalEventQueue::~ExternalEventQueue()
 //////////////////////////////////////////////////////////////////////////
 
 InternalEventQueue::InternalEventQueue(uint32_t maxQueue)
-    : EventQueue( static_cast<QueueListener &>(self()), mStack )
+    : EventQueue( static_cast<areg::QueueListener &>(self()), mStack )
     , mStack    ( maxQueue )
 {
 }

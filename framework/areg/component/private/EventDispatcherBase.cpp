@@ -27,10 +27,10 @@
 // EventDispatcherBase class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 EventDispatcherBase::EventDispatcherBase(const areg::String & name, uint32_t maxQeueue)
-    : QueueListener  ( )
+    : areg::QueueListener  ( )
 
     , mDispatcherName   ( name )
-    , mExternalEvents    ( static_cast<QueueListener &>(self()), maxQeueue)
+    , mExternalEvents    ( static_cast<areg::QueueListener &>(self()), maxQeueue)
     , mInternalEvents   ( maxQeueue )
     , mConsumerMap      ( )
     , mEventExit        ( false, false )

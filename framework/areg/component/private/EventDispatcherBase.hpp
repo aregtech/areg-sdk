@@ -54,7 +54,7 @@ namespace areg { class DispatcherThread; }
  *          Event Consumers to trigger Event Processing.
  *          
  **/
-class AREG_API EventDispatcherBase  : protected QueueListener
+class AREG_API EventDispatcherBase  : protected areg::QueueListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal defines and constants.

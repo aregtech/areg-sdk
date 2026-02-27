@@ -54,7 +54,7 @@ public:
      *                          the Queue is empty.
      * \param   messageQueue    The instance of event queue object to keep event elements.
      **/
-    EventQueue( QueueListener & eventListener, areg::SortedEventStack & messageQueue );
+    EventQueue( areg::QueueListener & eventListener, areg::SortedEventStack & messageQueue );
 
     /**
      * \brief   Destructor
@@ -141,7 +141,7 @@ private:
      * \brief   Queue Listener object, which is signaled every time 
      *          new Event is pushed or removed.
      **/
-    QueueListener &   mEventListener;
+    areg::QueueListener &   mEventListener;
     /**
      * \brief   Event queue stack object, which stores event elements
      **/
@@ -182,7 +182,7 @@ public:
      * \param   maxQueue        The maximum number of event elements in the queue.
      *                          The value areg::IGNORE_VALUE (0) means ignore the maximum size.
      **/
-    ExternalEventQueue( QueueListener & eventListener, uint32_t maxQueue );
+    ExternalEventQueue( areg::QueueListener & eventListener, uint32_t maxQueue );
 
     /**
      * \brief   Destructor
@@ -212,7 +212,7 @@ private:
  *          Used to queue external types of event. 
  **/
 class AREG_API InternalEventQueue   : public    EventQueue
-                                    , private   QueueListener
+                                    , private   areg::QueueListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
