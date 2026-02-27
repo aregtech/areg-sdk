@@ -30,6 +30,39 @@
 #include "areg/base/NEMath.hpp"
 
 /************************************************************************
+ * Ring Stack Operation Result Structure
+ ************************************************************************/
+/**
+ * \brief   Result structure for ring stack insert/remove operations.
+ *          Tracks operation success, current size, and any removed element.
+ **/
+template <typename VALUE>
+struct SRingStackOperationResult
+{
+    /**
+     * \brief   Current number of elements in the ring stack after the operation
+     **/
+    uint32_t        count           { 0u };
+    /**
+     * \brief   True if the operation succeeded (element inserted/removed/popped).
+     *          For insert: always true if capacity > 0.
+     *          For remove/pop: true if element was found/stack not empty.
+     **/
+    bool            isSuccess       { false };
+    /**
+     * \brief   True if an element was removed during the operation.
+     *          For insert: true if ring was full and overlapped.
+     *          For remove/pop: true if element was removed.
+     **/
+    bool            isRemoved       { false };
+    /**
+     * \brief   The element that was removed, if any.
+     *          Valid only if isRemoved is true.
+     **/
+    VALUE           removedElement  { };
+};
+
+/************************************************************************
  * Hierarchies. Following class are declared.
  ************************************************************************/
 template <typename VALUE> class TERingStack;
