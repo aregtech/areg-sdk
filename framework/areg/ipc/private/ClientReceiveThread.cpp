@@ -26,8 +26,8 @@ DEF_LOG_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 namespace areg
 {
 
-    ClientReceiveThread::ClientReceiveThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String & namePrefix)
-        : areg::DispatcherThread  (namePrefix + areg::CLIENT_RECEIVE_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM)
+    ClientReceiveThread::ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix)
+        : DispatcherThread  (namePrefix + CLIENT_RECEIVE_MESSAGE_THREAD, STACK_SIZE_DEFAULT, QUEUE_SIZE_MAXIMUM)
         , mRemoteService    ( remoteService )
         , mConnection       ( connection )
         , mBytesReceive     ( 0 )
@@ -42,23 +42,23 @@ namespace areg
     
         readyForEvents( true );
 
-        areg::SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
-        areg::MultiLock multiLock(syncObjects, 2, false);
-        areg::RemoteMessage msgReceived;
-        int32_t whichEvent{ static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Error) };
+        SyncObject* syncObjects[2] {&mEventExit, &mEventQueue};
+        MultiLock multiLock(syncObjects, 2, false);
+        RemoteMessage msgReceived;
+        int32_t whichEvent{ static_cast<int32_t>(EventDispatcherBase::EventSignal::Error) };
 
         do
         {
-            whichEvent = multiLock.lock(areg::DO_NOT_WAIT, false);
-            if ( whichEvent == areg::MultiLock::LOCK_INDEX_TIMEOUT )
+            whichEvent = multiLock.lock(DO_NOT_WAIT, false);
+            if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
             {
-                whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue); // escape quit
+                whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue); // escape quit
                 int32_t sizeReceive = mConnection.receiveMessage( msgReceived );
                 if ( sizeReceive <= 0 )
                 {
                     msgReceived.invalidate();
                     mRemoteService.failedReceiveMessage( mConnection.getSocket() );
-                    whichEvent = static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Error);
+                    whichEvent = static_cast<int32_t>(EventDispatcherBase::EventSignal::Error);
                 }
                 else
                 {
@@ -74,19 +74,19 @@ namespace areg
             }
             else
             {
-                areg::Event * eventElem = whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
-                whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit) : whichEvent;
+                Event * eventElem = whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) ? pickEvent() : nullptr;
+                whichEvent = isExitEvent(eventElem) ? static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) : whichEvent;
             }
 
-        } while (whichEvent == static_cast<int>(areg::EventDispatcherBase::EventSignal::Queue));
+        } while (whichEvent == static_cast<int>(EventDispatcherBase::EventSignal::Queue));
 
         readyForEvents(false);
         removeAllEvents( );
 
         LOG_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
                     , getName().getString()
-                    , whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit) ? "SUCCESS" : "FAILURE");
+                    , whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit) ? "SUCCESS" : "FAILURE");
 
-        return (whichEvent == static_cast<int32_t>(areg::EventDispatcherBase::EventSignal::Exit));
+        return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
     }
 } // namespace areg

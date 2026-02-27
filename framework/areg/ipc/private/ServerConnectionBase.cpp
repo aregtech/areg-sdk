@@ -20,7 +20,7 @@ namespace areg
 {
     ServerConnectionBase::ServerConnectionBase()
         : mServerSocket         ( )
-        , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
+        , mCookieGenerator      ( COOKIE_REMOTE_SERVICE )
         , mAcceptedConnections  ( )
         , mCookieToSocket       ( )
         , mSocketToCookie       ( )
@@ -29,9 +29,9 @@ namespace areg
     {
     }
 
-    ServerConnectionBase::ServerConnectionBase(const areg::String & hostName, uint16_t portNr)
+    ServerConnectionBase::ServerConnectionBase(const String & hostName, uint16_t portNr)
         : mServerSocket         ( hostName, portNr )
-        , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
+        , mCookieGenerator      ( COOKIE_REMOTE_SERVICE )
         , mAcceptedConnections  ( )
         , mCookieToSocket       ( )
         , mSocketToCookie       ( )
@@ -40,9 +40,9 @@ namespace areg
     {
     }
 
-    ServerConnectionBase::ServerConnectionBase(const areg::SocketAddress & serverAddress)
+    ServerConnectionBase::ServerConnectionBase(const SocketAddress & serverAddress)
         : mServerSocket         ( serverAddress )
-        , mCookieGenerator      ( areg::COOKIE_REMOTE_SERVICE )
+        , mCookieGenerator      ( COOKIE_REMOTE_SERVICE )
         , mAcceptedConnections  ( )
         , mCookieToSocket       ( )
         , mSocketToCookie       ( )
@@ -51,26 +51,26 @@ namespace areg
     {
     }
 
-    bool ServerConnectionBase::createSocket(const areg::String & hostName, uint16_t portNr)
+    bool ServerConnectionBase::createSocket(const String & hostName, uint16_t portNr)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mServerSocket.createSocket(hostName, portNr);
     }
 
     bool ServerConnectionBase::createSocket()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mServerSocket.createSocket();
     }
 
     void ServerConnectionBase::closeSocket()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mMasterList.clear();
         mCookieToSocket.clear();
         mSocketToCookie.clear();
         mAcceptedConnections.clear();
-        mCookieGenerator = areg::COOKIE_REMOTE_SERVICE;
+        mCookieGenerator = COOKIE_REMOTE_SERVICE;
 
         mServerSocket.closeSocket();
     }
@@ -80,20 +80,20 @@ namespace areg
         return mServerSocket.listenConnection(maxQueueSize);
     }
 
-    SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(areg::SocketAddress & out_addrNewAccepted)
+    SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(SocketAddress & out_addrNewAccepted)
     {
         return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), static_cast<int32_t>(mMasterList.getSize()));
     }
 
-    bool ServerConnectionBase::acceptConnection(areg::SocketAccepted & clientConnection)
+    bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         bool result = false;
 
         if ( mServerSocket.isValid() && clientConnection.isValid( ) )
         {
             const SOCKETHANDLE hSocket = clientConnection.getHandle();
-            ASSERT(hSocket != areg::InvalidSocketHandle);
+            ASSERT(hSocket != InvalidSocketHandle);
 
             if ( mMasterList.find(hSocket) == -1)
             {
@@ -101,7 +101,7 @@ namespace areg
                 ASSERT(mSocketToCookie.contains(hSocket) == false);
 
                 ITEM_ID cookie{ mCookieGenerator ++ };
-                ASSERT(cookie >= areg::COOKIE_REMOTE_SERVICE);
+                ASSERT(cookie >= COOKIE_REMOTE_SERVICE);
 
                 mAcceptedConnections.setAt(hSocket, clientConnection);
                 mCookieToSocket.setAt(cookie, hSocket);
@@ -120,13 +120,13 @@ namespace areg
         return result;
     }
 
-    void ServerConnectionBase::closeConnection(areg::SocketAccepted & clientConnection)
+    void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
 
         SOCKETHANDLE hSocket{ clientConnection.getHandle() };
         MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
-        ITEM_ID cookie{ mSocketToCookie.isValidPosition(pos) ? static_cast<ITEM_ID>(mSocketToCookie.valueAtPosition(pos)) : areg::COOKIE_UNKNOWN };
+        ITEM_ID cookie{ mSocketToCookie.isValidPosition(pos) ? static_cast<ITEM_ID>(mSocketToCookie.valueAtPosition(pos)) : COOKIE_UNKNOWN };
 
         mSocketToCookie.removeAt(hSocket);
         mCookieToSocket.removeAt(cookie);
@@ -138,7 +138,7 @@ namespace areg
 
     void ServerConnectionBase::closeConnection( const ITEM_ID & cookie )
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
         MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
         if (mCookieToSocket.isValidPosition(posCookie))
@@ -151,7 +151,7 @@ namespace areg
             mMasterList.removeElem( hSocket, 0 );
             if (mAcceptedConnections.isValidPosition(posClient))
             {
-                areg::SocketAccepted client(mAcceptedConnections.valueAtPosition(posClient));
+                SocketAccepted client(mAcceptedConnections.valueAtPosition(posClient));
                 mAcceptedConnections.removePosition(posClient);
                 client.closeSocket( );
             }

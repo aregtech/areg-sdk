@@ -24,8 +24,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RemoteMessage; }
-namespace areg { class Socket; }
+namespace areg
+{
+    class RemoteMessage;
+    class Socket;
+}
 
 namespace areg
 {
@@ -73,7 +76,7 @@ namespace areg
          *          Returns negative number if socket is not valid of failed to send.
          *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
          **/
-        int32_t sendMessage( const areg::RemoteMessage & in_message, const areg::Socket & clientSocket ) const;
+        int32_t sendMessage( const RemoteMessage & in_message, const Socket & clientSocket ) const;
 
         /**
          * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
@@ -91,7 +94,7 @@ namespace areg
          *          Returns negative number if socket is not valid of failed to send.
          *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
          **/
-        int32_t receiveMessage( areg::RemoteMessage & out_message, const areg::Socket & clientSocket ) const;
+        int32_t receiveMessage( RemoteMessage & out_message, const Socket & clientSocket ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

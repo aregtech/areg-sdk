@@ -24,57 +24,57 @@
 
 namespace areg
 {
-    ConnectionConfiguration::ConnectionConfiguration(const areg::String& service, const areg::String& connectType)
+    ConnectionConfiguration::ConnectionConfiguration(const String& service, const String& connectType)
         : mServiceName  ( service )
         , mConnectType  ( connectType )
     {
     }
 
-    ConnectionConfiguration::ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType)
-        : mServiceName  (areg::Identifier::convToString(static_cast<uint32_t>(service), areg::RemoteServiceIdentifiers, static_cast<uint32_t>(areg::RemoteServiceKind::Unknown)))
-        , mConnectType  (areg::Identifier::convToString(static_cast<uint32_t>(connectType), areg::ConnectionIdentifiers, static_cast<uint32_t>(areg::ConnectionType::Undefined)))
+    ConnectionConfiguration::ConnectionConfiguration(RemoteServiceKind service, ConnectionType connectType)
+        : mServiceName  (Identifier::convToString(static_cast<uint32_t>(service), RemoteServiceIdentifiers, static_cast<uint32_t>(RemoteServiceKind::Unknown)))
+        , mConnectType  (Identifier::convToString(static_cast<uint32_t>(connectType), ConnectionIdentifiers, static_cast<uint32_t>(ConnectionType::Undefined)))
     {
     }
 
-    areg::String ConnectionConfiguration::getConnectionAddress() const
+    String ConnectionConfiguration::getConnectionAddress() const
     {
-        return areg::Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
+        return Application::getConfigManager().getRemoteServiceAddress(mServiceName, mConnectType);
     }
 
-    void ConnectionConfiguration::setConnectionAddress(const areg::String& address)
+    void ConnectionConfiguration::setConnectionAddress(const String& address)
     {
-        areg::Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
+        Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
     }
 
-    void ConnectionConfiguration::setConnectionData(const areg::String& address, uint16_t portNr)
+    void ConnectionConfiguration::setConnectionData(const String& address, uint16_t portNr)
     {
-        areg::Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
-        areg::Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+        Application::getConfigManager().setRemoteServiceAddress(mServiceName, mConnectType, address);
+        Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
     }
 
     bool ConnectionConfiguration::isConfigured() const
     {
-        return areg::Application::isConfigured();
+        return Application::isConfigured();
     }
 
     bool ConnectionConfiguration::getConnectionEnableFlag() const
     {
-        return areg::Application::getConfigManager().getRemoteServiceEnable(mServiceName, mConnectType);
+        return Application::getConfigManager().getRemoteServiceEnable(mServiceName, mConnectType);
     }
 
     void ConnectionConfiguration::setConnectionEnableFlag(bool isEnabled)
     {
-        areg::Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
+        Application::getConfigManager().setRemoteServiceEnable(mServiceName, mConnectType, isEnabled);
     }
 
     uint16_t ConnectionConfiguration::getConnectionPort() const
     {
-        return areg::Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
+        return Application::getConfigManager().getRemoteServicePort(mServiceName, mConnectType);
     }
 
     void ConnectionConfiguration::setConnectionPort(uint16_t portNr)
     {
-        areg::Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
+        Application::getConfigManager().setRemoteServicePort(mServiceName, mConnectType, portNr);
     }
 
     bool ConnectionConfiguration::getConnectionIpAddress( uint8_t & field0
@@ -85,25 +85,25 @@ namespace areg
         bool result = false;
         field0 = field1 = field2 = field3 = 0u;
 
-        areg::String addr{ getConnectionAddress() };
+        String addr{ getConnectionAddress() };
         if ( addr.isEmpty() == false )
         {
             const char * buffer = addr.getString( );
             const char * next   = nullptr;
 
-            uint32_t f0 = areg::String::makeUInt32(buffer, areg::Radix::Decimal, &next);
-            if ( (buffer != next) && (f0 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
+            uint32_t f0 = String::makeUInt32(buffer, Radix::Decimal, &next);
+            if ( (buffer != next) && (f0 <= 0xFFu) && (*next == IP_SEPARATOR) )
             {
                 buffer = next + 1;
-                uint32_t f1 = areg::String::makeUInt32( buffer, areg::Radix::Decimal, &next );
-                if ( (buffer != next) && (f1 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
+                uint32_t f1 = String::makeUInt32( buffer, Radix::Decimal, &next );
+                if ( (buffer != next) && (f1 <= 0xFFu) && (*next == IP_SEPARATOR) )
                 {
                     buffer = next + 1;
-                    uint32_t f2 = areg::String::makeUInt32( buffer, areg::Radix::Decimal, &next );
-                    if ( (buffer != next) && (f2 <= 0xFFu) && (*next == areg::IP_SEPARATOR) )
+                    uint32_t f2 = String::makeUInt32( buffer, Radix::Decimal, &next );
+                    if ( (buffer != next) && (f2 <= 0xFFu) && (*next == IP_SEPARATOR) )
                     {
                         buffer = next + 1;
-                        uint32_t f3 = areg::String::makeUInt32( buffer, areg::Radix::Decimal, &next );
+                        uint32_t f3 = String::makeUInt32( buffer, Radix::Decimal, &next );
                         if ( (buffer != next) && (f3 <= 0xFFu) )
                         {
                             field0 = static_cast<uint8_t>(f0);

@@ -33,8 +33,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ConnectionConsumer; }
-namespace areg { class RemoteMessageHandler; }
+namespace areg
+{
+    class ConnectionConsumer;
+    class RemoteMessageHandler;
+}
 
 namespace areg
 {
@@ -46,8 +49,8 @@ namespace areg
      *          to read and send message, to dispatch messages and
      *          communicate with service manager.
      **/
-    class AREG_API ServiceClientConnectionBase  : public    areg::ConnectionProvider
-                                                , public    areg::ServiceEventConsumer
+    class AREG_API ServiceClientConnectionBase  : public    ConnectionProvider
+                                                , public    ServiceEventConsumer
     {
     //////////////////////////////////////////////////////////////////////////
     // Internal types and constants
@@ -88,13 +91,13 @@ namespace areg
          * \param   prefixName          The prefix to add to the names of message receive and send threads.
          **/
         ServiceClientConnectionBase(  const ITEM_ID & target
-                                    , areg::RemoteServiceKind service
+                                    , RemoteServiceKind service
                                     , uint32_t connectTypes
-                                    , areg::MessageSource msgSource
-                                    , areg::ConnectionConsumer& connectionConsumer
-                                    , areg::RemoteMessageHandler & messageHandler
-                                    , areg::DispatcherThread & messageDispatcher
-                                    , const areg::String & prefixName);
+                                    , MessageSource msgSource
+                                    , ConnectionConsumer& connectionConsumer
+                                    , RemoteMessageHandler & messageHandler
+                                    , DispatcherThread & messageDispatcher
+                                    , const String & prefixName);
         /**
          * \brief   Destructor
          **/
@@ -173,7 +176,7 @@ namespace areg
          *          Override the method if need custom connection reaction.
          * \param   msgReceived     The message sent by service to the client.
          **/
-        virtual void serviceConnectionEvent(const areg::RemoteMessage& msgReceived);
+        virtual void serviceConnectionEvent(const RemoteMessage& msgReceived);
 
     /************************************************************************/
     // ConnectionProvider interface overrides
@@ -189,7 +192,7 @@ namespace areg
          * \param   connectTypes    The type of connection to setup.
          * \return  Returns true if system could configure. Otherwise, it returns false.
          **/
-        bool setupServiceConnectionData(areg::RemoteServiceKind service, uint32_t connectTypes) override;
+        bool setupServiceConnectionData(RemoteServiceKind service, uint32_t connectTypes) override;
 
         /**
          * \brief   Call manually to set router service host name and port number.
@@ -198,7 +201,7 @@ namespace areg
          * \param   hostName    IP-address or host name of routing service to connect.
          * \param   portNr      Port number of routing service to connect.
          **/
-        void applyServiceConnectionData( const areg::String & hostName, uint16_t portNr ) override;
+        void applyServiceConnectionData( const String & hostName, uint16_t portNr ) override;
 
         /**
          * \brief   Call to start remote service. The host name and port number should be already set.
@@ -241,7 +244,7 @@ namespace areg
          * \param   msgSource   The message source type of the connected client.
          * \return  Returns the created message for remote communication.
          **/
-        areg::RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const override;
+        RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, MessageSource msgSource) const override;
 
         /**
          * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -249,7 +252,7 @@ namespace areg
          * \param   target  The ID of the target to send the disconnection message request.
          * \return  Returns the created message for remote communication.
          **/
-        areg::RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
+        RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides
@@ -303,13 +306,13 @@ namespace areg
          * \brief   Called when received a communication message to dispatch and process.
          * \param   msgReceived     The received the communication message.
          **/
-        void onServiceMessageReceived(const areg::RemoteMessage& msgReceived) override;
+        void onServiceMessageReceived(const RemoteMessage& msgReceived) override;
 
         /**
          * \brief   Called when need to send a communication message.
          * \param   msgSend     The communication message sent.
          **/
-        void onServiceMessageSend(const areg::RemoteMessage& msgSend) override;
+        void onServiceMessageSend(const RemoteMessage& msgSend) override;
 
         /**
          * \brief   Called when need to inform the channel connection.
@@ -331,14 +334,14 @@ namespace areg
          * \param   cmd         The command to send and process.
          * \param   eventPrio   The priority of the event. By default, the priority is normal.
          */
-        inline void sendCommand(areg::ServiceEventData::ServiceCommand cmd, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
+        inline void sendCommand(ServiceEventData::ServiceCommand cmd, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
         /**
          * \brief   Queues the message for sending
          * \param   data        The data of the message.
          * \param   eventPrio   The priority of the message to set.
          **/
-        inline bool sendMessage(const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio );
+        inline bool sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio );
 
         /**
          * \brief   Called to start client socket connection. Returns true if connected.
@@ -365,7 +368,7 @@ namespace areg
          * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
          * \param   eventPrio   The priority of set to the event.
          **/
-        inline void disconnectService( areg::Event::EventPriority eventPrio );
+        inline void disconnectService( Event::EventPriority eventPrio );
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden operations and attributes
@@ -389,7 +392,7 @@ namespace areg
         /**
          * \brief   The remote target service to communicate.
          **/
-        const areg::RemoteServiceKind  mService;
+        const RemoteServiceKind  mService;
 
         /**
          * \brief   The bitwise set of connection types supported by remote service.
@@ -399,26 +402,26 @@ namespace areg
         /**
          * \brief   The type of messaging source application.
          **/
-        const areg::MessageSource         mMessageSource;
+        const MessageSource         mMessageSource;
 
         /**
          * \brief   Client connection object
          **/
-        areg::ClientConnection                        mClientConnection;
+        ClientConnection                        mClientConnection;
         /**
          * \brief   Instance of remote servicing consumer to handle message.
          **/
-        areg::ConnectionConsumer &                    mConnectionConsumer;
+        ConnectionConsumer &                    mConnectionConsumer;
 
         /**
          * \brief   The thread that makes message dispatching.
          **/
-        areg::DispatcherThread &                      mMessageDispatcher;
+        DispatcherThread &                      mMessageDispatcher;
 
         /**
          * \brief   The connection channel.
          **/
-        areg::Channel                                 mChannel;
+        Channel                                 mChannel;
 
         /**
          * \brief   The sate of connection
@@ -428,12 +431,12 @@ namespace areg
         /**
          * \brief   The Client Service event consumer
          **/
-        areg::ServiceClientConsumer                   mEventConsumer;
+        ServiceClientConsumer                   mEventConsumer;
 
         /**
          * \brief   Data access synchronization object
          **/
-        mutable areg::ResourceLock                    mLock;
+        mutable ResourceLock                    mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden member variables
@@ -446,19 +449,19 @@ namespace areg
         /**
          * \brief   Connection retry timer object.
          **/
-        areg::Timer                                   mTimerConnect;
+        Timer                                   mTimerConnect;
         /**
          * \brief   Message receiver thread
          **/
-        areg::ClientReceiveThread                     mThreadReceive;
+        ClientReceiveThread                     mThreadReceive;
         /**
          * \brief   Message sender thread
          **/
-        areg::ClientSendThread                        mThreadSend;
+        ClientSendThread                        mThreadSend;
         /**
          * \brief   The Client Service event consumer
          **/
-        areg::ReconnectTimerConsumer                  mTimerConsumer;
+        ReconnectTimerConsumer                  mTimerConsumer;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
@@ -524,12 +527,12 @@ namespace areg
 
     inline void ServiceClientConnectionBase::registerForServiceClientCommands()
     {
-        areg::ServiceClientEvent::addListener(static_cast<areg::ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+        ServiceClientEvent::addListener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
     }
 
     inline void ServiceClientConnectionBase::unregisterForServiceClientCommands()
     {
-        areg::ServiceClientEvent::removeListener(static_cast<areg::ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+        ServiceClientEvent::removeListener(static_cast<ServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
     }
 
     inline const char * ServiceClientConnectionBase::getString(ServiceClientConnectionBase::ConnectionPhase val)
@@ -556,7 +559,7 @@ namespace areg
     inline bool ServiceClientConnectionBase::isConnectionStarted() const
     {
         const ITEM_ID & cookie = mClientConnection.getCookie();
-        return (mClientConnection.isValid() && (cookie != areg::COOKIE_LOCAL) && (cookie != areg::COOKIE_UNKNOWN));
+        return (mClientConnection.isValid() && (cookie != COOKIE_LOCAL) && (cookie != COOKIE_UNKNOWN));
     }
 
     inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::ConnectionPhase newState)
@@ -569,28 +572,28 @@ namespace areg
         return mConnectionState;
     }
 
-    inline void ServiceClientConnectionBase::sendCommand( areg::ServiceEventData::ServiceCommand cmd
-                                                        , areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+    inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::ServiceCommand cmd
+                                                        , Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
     {
-        areg::ServiceClientEvent::sendEvent( areg::ServiceEventData( cmd )
-                                    , static_cast<areg::ServiceClientEventConsumer &>(mEventConsumer)
+        ServiceClientEvent::sendEvent( ServiceEventData( cmd )
+                                    , static_cast<ServiceClientEventConsumer &>(mEventConsumer)
                                     , mMessageDispatcher
                                     , eventPrio );
     }
 
-    inline bool ServiceClientConnectionBase::sendMessage(const areg::RemoteMessage & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+    inline bool ServiceClientConnectionBase::sendMessage(const RemoteMessage & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
     {
-        return areg::SendMessageEvent::sendEvent( areg::SendMessageEventData(data)
-                                        , static_cast<areg::SendMessageEventConsumer &>(mThreadSend)
-                                        , static_cast<areg::DispatcherThread &>(mThreadSend)
+        return SendMessageEvent::sendEvent( SendMessageEventData(data)
+                                        , static_cast<SendMessageEventConsumer &>(mThreadSend)
+                                        , static_cast<DispatcherThread &>(mThreadSend)
                                         , eventPrio);
     }
 
-    inline void ServiceClientConnectionBase::disconnectService( areg::Event::EventPriority eventPrio )
+    inline void ServiceClientConnectionBase::disconnectService( Event::EventPriority eventPrio )
     {
-        areg::SendMessageEvent::sendEvent( areg::SendMessageEventData()
-                                , static_cast<areg::SendMessageEventConsumer &>(mThreadSend)
-                                , static_cast<areg::DispatcherThread &>(mThreadSend)
+        SendMessageEvent::sendEvent( SendMessageEventData()
+                                , static_cast<SendMessageEventConsumer &>(mThreadSend)
+                                , static_cast<DispatcherThread &>(mThreadSend)
                                 , eventPrio );
     }
 

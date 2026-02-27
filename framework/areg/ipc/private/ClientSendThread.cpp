@@ -26,9 +26,9 @@ DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 namespace areg
 {
 
-    ClientSendThread::ClientSendThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String& namePrefix )
-        : areg::DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
-        , areg::SendMessageEventConsumer( )
+    ClientSendThread::ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
+        : DispatcherThread  ( namePrefix + CLIENT_SEND_MESSAGE_THREAD, STACK_SIZE_DEFAULT, QUEUE_SIZE_MAXIMUM )
+        , SendMessageEventConsumer( )
 
         , mRemoteService    ( remoteService )
         , mConnection       ( connection )
@@ -44,23 +44,23 @@ namespace areg
         if ( isReady )
         {
             LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
-            areg::SendMessageEvent::addListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
-            areg::DispatcherThread::readyForEvents( true );
+            SendMessageEvent::addListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+            DispatcherThread::readyForEvents( true );
         }
         else
         {
-            areg::DispatcherThread::readyForEvents( false );
-            areg::SendMessageEvent::removeListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+            DispatcherThread::readyForEvents( false );
+            SendMessageEvent::removeListener( static_cast<SendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
             mConnection.closeSocket( );
             LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
         }
     }
 
-    void ClientSendThread::processEvent( const areg::SendMessageEventData & data )
+    void ClientSendThread::processEvent( const SendMessageEventData & data )
     {
         if ( data.isForwardMessage() )
         {
-            const areg::RemoteMessage & msg = data.getRemoteMessage( );
+            const RemoteMessage & msg = data.getRemoteMessage( );
             int32_t sizeSend = mConnection.sendMessage( msg );
             if ( sizeSend > 0 )
             {
@@ -81,8 +81,8 @@ namespace areg
         }
     }
 
-    bool ClientSendThread::postEvent(areg::Event & eventElem)
+    bool ClientSendThread::postEvent(Event & eventElem)
     {
-        return (AREG_RUNTIME_CAST(&eventElem, areg::SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
+        return (AREG_RUNTIME_CAST(&eventElem, SendMessageEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
     }
 } // namespace areg

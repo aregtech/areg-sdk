@@ -54,22 +54,22 @@ namespace areg
         /**
          * \brief   The container of accepted socket objects where the keys are socket handle.
          **/
-        using MapSocketToObject 	= areg::OrderedMap<SOCKETHANDLE, areg::SocketAccepted>;
+        using MapSocketToObject 	= OrderedMap<SOCKETHANDLE, SocketAccepted>;
 
         /**
          * \brief   The container of socket handles where the keys are cookie values.
          **/
-        using MapCookieToSocket		= areg::OrderedMap<ITEM_ID, SOCKETHANDLE>;
+        using MapCookieToSocket		= OrderedMap<ITEM_ID, SOCKETHANDLE>;
 
         /**
          * \brief   The container of cookie values where the keys are socket handles.
          **/
-        using MapSocketToCookie		= areg::OrderedMap<SOCKETHANDLE, ITEM_ID>;
+        using MapSocketToCookie		= OrderedMap<SOCKETHANDLE, ITEM_ID>;
 
         /**
          * \brief   The list of accepted sockets.
          **/
-        using ListSockets			= areg::ArrayList<SOCKETHANDLE>;
+        using ListSockets			= ArrayList<SOCKETHANDLE>;
 
         /**
          * \brief   The size of master list to listen sockets for incoming messages.
@@ -99,7 +99,7 @@ namespace areg
          * \param   hostName    Host name or IP-address of server.
          * \param   portNr      Port number of server.
          **/
-        ServerConnectionBase( const areg::String & hostName, uint16_t portNr );
+        ServerConnectionBase( const String & hostName, uint16_t portNr );
 
         /**
          * \brief   Creates instance of object with invalid socket object.
@@ -107,7 +107,7 @@ namespace areg
          *          and bound to host and port. Specified remoteAddress will be set as server address.
          * \param   serverAddress   The address of server socket.
          **/
-        ServerConnectionBase( const areg::SocketAddress & serverAddress );
+        ServerConnectionBase( const SocketAddress & serverAddress );
 
         /**
          * \brief   Destructor.
@@ -122,7 +122,7 @@ namespace areg
         /**
          * \brief   Return Socket Address object.
          **/
-        inline const areg::SocketAddress & getAddress() const;
+        inline const SocketAddress & getAddress() const;
 
         /**
          * \brief   Sets Socket Address. If hostName is not IP-address, it will
@@ -135,14 +135,14 @@ namespace areg
          * \param   portNr      Valid port number of socket connection.
          * \return  Returns true if succeeded to resolve and set Socket Address.
          **/
-        inline bool setAddress( const areg::String & hostName, uint16_t portNr );
+        inline bool setAddress( const String & hostName, uint16_t portNr );
 
         /**
          * \brief   Sets socket address. The address should be either invalid
          *          or already resolved with IP-address.
          * \param   newAddress  The new address to set.
          **/
-        inline void setAddress( const areg::SocketAddress & newAddress );
+        inline void setAddress( const SocketAddress & newAddress );
 
         /**
          * \brief   Returns true if existing socket descriptor is valid.
@@ -167,7 +167,7 @@ namespace areg
          *          source or target in Remote Buffer.
          * \param   clientSocket    Accepted client socket connection
          **/
-        inline ITEM_ID getCookie( const areg::SocketAccepted & clientSocket ) const;
+        inline ITEM_ID getCookie( const SocketAccepted & clientSocket ) const;
 
         /**
          * \brief   Returns cookie of client connection set by server.
@@ -185,7 +185,7 @@ namespace areg
          * \return  If there is registered accepted client socket object, which matches client cookie,
          *          the returned object is valid accepted client object. Otherwise, the object is invalid.
          **/
-        inline areg::SocketAccepted getClientByCookie(const ITEM_ID & clientCookie ) const;
+        inline SocketAccepted getClientByCookie(const ITEM_ID & clientCookie ) const;
 
         /**
          * \brief   Returns accepted socket object, with same unique socket handle.
@@ -195,7 +195,7 @@ namespace areg
          * \return  If there is registered accepted client socket object, which matches socket handle,
          *          the returned object is valid accepted client object. Otherwise, the object is invalid.
          **/
-        inline areg::SocketAccepted getClientByHandle( SOCKETHANDLE clientSocket ) const;
+        inline SocketAccepted getClientByHandle( SOCKETHANDLE clientSocket ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -209,7 +209,7 @@ namespace areg
          * \param   portNr      The valid port number to bind.
          * \return  Returns true if operation succeeded.
          **/
-        bool createSocket( const areg::String & hostName, uint16_t portNr );
+        bool createSocket( const String & hostName, uint16_t portNr );
 
         /**
          * \brief   Before listening and accepting connection from clients,
@@ -233,7 +233,7 @@ namespace areg
          *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
          * \param   maxQueueSize    The maximum size of the socket queue in the list.
          **/
-        bool serverListen( int32_t maxQueueSize = areg::MAXIMUM_LISTEN_QUEUE_SIZE );
+        bool serverListen( int32_t maxQueueSize = MAXIMUM_LISTEN_QUEUE_SIZE );
 
         /**
          * \brief   Call to wait for connection event. Function is blocking call until connection
@@ -252,7 +252,7 @@ namespace areg
          *          out_addrNewAccepted parameter contains address of accepted socket.
          *          If function fails, returns invalid socket handle.
          **/
-        SOCKETHANDLE waitForConnectionEvent(areg::SocketAddress & out_addrNewAccepted);
+        SOCKETHANDLE waitForConnectionEvent(SocketAddress & out_addrNewAccepted);
 
         /**
          * \brief   Call to accept connection. Nothing will happen if connection was already accepted.
@@ -260,13 +260,13 @@ namespace areg
          * \param[out]  clientConnection    Connection to accept. If object is valid, on output this will
          *                                  be in accepted state.
          **/
-        bool acceptConnection( areg::SocketAccepted & clientConnection );
+        bool acceptConnection( SocketAccepted & clientConnection );
 
         /**
          * \brief   Call to close client connection.
          * \param   clientConnection    The client to close connection.
          **/
-        void closeConnection( areg::SocketAccepted & clientConnection );
+        void closeConnection( SocketAccepted & clientConnection );
 
         /**
          * \brief   Call to close connection by cookie.
@@ -279,14 +279,14 @@ namespace areg
          * \param   clientConnection    The connected client socket to set in read-only mode.
          * \return  Returns true if operation succeeds.
          **/
-        inline bool disableSend( const areg::SocketAccepted & clientConnection );
+        inline bool disableSend( const SocketAccepted & clientConnection );
 
         /**
          * \brief   Sets socket in the write-only mode, i.e. no receive message is possible anymore.
          * \param   clientConnection    The connected client socket to set in write-only mode.
          * \return  Returns true if operation succeeds.
          **/
-        inline bool disableReceive( const areg::SocketAccepted & clientConnection );
+        inline bool disableReceive( const SocketAccepted & clientConnection );
 
         /**
          * \brief   Sets all sockets in the read-only mode, i.e. no send message is possible anymore.
@@ -305,7 +305,7 @@ namespace areg
         /**
          * \brief   The instance of server socket connection, which accepts connections
          **/
-        areg::SocketServer        mServerSocket;
+        SocketServer        mServerSocket;
         /**
          * \brief   The cookie value generator, counter.
          **/
@@ -337,7 +337,7 @@ namespace areg
         /**
          * \brief   Synchronization object for data sharing
          **/
-        mutable areg::ResourceLock    mLock;
+        mutable ResourceLock    mLock;
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
@@ -349,75 +349,75 @@ namespace areg
     // ServerConnectionBase class inline functions
     //////////////////////////////////////////////////////////////////////////
 
-    inline bool ServerConnectionBase::setAddress(const areg::String & hostName, uint16_t portNr)
+    inline bool ServerConnectionBase::setAddress(const String & hostName, uint16_t portNr)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mServerSocket.setAddress(hostName, portNr, true);
     }
 
-    inline void ServerConnectionBase::setAddress( const areg::SocketAddress & newAddress )
+    inline void ServerConnectionBase::setAddress( const SocketAddress & newAddress )
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mServerSocket.setAddress(newAddress);
     }
 
-    inline const areg::SocketAddress & ServerConnectionBase::getAddress() const
+    inline const SocketAddress & ServerConnectionBase::getAddress() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mServerSocket.getAddress();
     }
 
     inline bool ServerConnectionBase::isValid() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mServerSocket.isValid();
     }
 
     inline SOCKETHANDLE ServerConnectionBase::getSocketHandle() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mServerSocket.getHandle();
     }
 
     inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection ) const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mAcceptedConnections.contains(connection);
     }
 
-    inline ITEM_ID ServerConnectionBase::getCookie(const areg::SocketAccepted & clientSocket) const
+    inline ITEM_ID ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
     {
         return getCookie(clientSocket.getHandle());
     }
 
     inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
 
         MapSocketToCookie::MAPPOS pos = mSocketToCookie.find( socketHandle );
-        return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : areg::COOKIE_UNKNOWN );
+        return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : COOKIE_UNKNOWN );
     }
 
-    inline areg::SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
+    inline SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
         MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);
-        return (mCookieToSocket.isValidPosition(pos) ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : areg::SocketAccepted());
+        return (mCookieToSocket.isValidPosition(pos) ? getClientByHandle( mCookieToSocket.valueAtPosition(pos) ) : SocketAccepted());
     }
 
-    inline areg::SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
+    inline SocketAccepted ServerConnectionBase::getClientByHandle(SOCKETHANDLE clientSocket) const
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
         MapSocketToObject::MAPPOS pos = mAcceptedConnections.find(clientSocket);
-        return (mAcceptedConnections.isValidPosition(pos) ? mAcceptedConnections.getAt(clientSocket) : areg::SocketAccepted());
+        return (mAcceptedConnections.isValidPosition(pos) ? mAcceptedConnections.getAt(clientSocket) : SocketAccepted());
     }
 
-    inline bool ServerConnectionBase::disableSend( const areg::SocketAccepted & clientConnection )
+    inline bool ServerConnectionBase::disableSend( const SocketAccepted & clientConnection )
     {
         return clientConnection.disableSend();
     }
 
-    inline bool ServerConnectionBase::disableReceive( const areg::SocketAccepted & clientConnection )
+    inline bool ServerConnectionBase::disableReceive( const SocketAccepted & clientConnection )
     {
         return clientConnection.disableReceive();
     }

@@ -28,7 +28,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RegistrationConsumer; }
+namespace areg
+{
+    class RegistrationConsumer;
+}
 
 namespace areg
 {
@@ -40,11 +43,11 @@ namespace areg
      *          to read and send message, to dispatch messages and
      *          communicate with service manager.
      **/
-    class RouterClient  : public    areg::ServiceClientConnectionBase
-                        , public    areg::RegistrationProvider
-                        , protected areg::DispatcherThread
-                        , private   areg::RemoteMessageHandler
-                        , private   areg::RemoteEventConsumer
+    class RouterClient  : public    ServiceClientConnectionBase
+                        , public    RegistrationProvider
+                        , protected DispatcherThread
+                        , private   RemoteMessageHandler
+                        , private   RemoteEventConsumer
     {
     private:
         //! The prefix to add to the send and receive message threads.
@@ -58,7 +61,7 @@ namespace areg
          * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
          * \param   registerConsumer    The instance of remote service registration consumer to handle service register notification.
          **/
-        RouterClient(areg::ConnectionConsumer& connectionConsumer, areg::RegistrationConsumer & registerConsumer);
+        RouterClient(ConnectionConsumer& connectionConsumer, RegistrationConsumer & registerConsumer);
         /**
          * \brief   Destructor
          **/
@@ -103,27 +106,27 @@ namespace areg
          * \param   msgFailed   The message, which failed to send.
          * \param   whichTarget The target socket to send message.
          **/
-        void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
+        void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
         /**
          * \brief   Triggered, when failed to receive message.
          * \param   whichSource Indicates the failed source socket to receive message.
          **/
-        void failedReceiveMessage( areg::Socket & whichSource ) override;
+        void failedReceiveMessage( Socket & whichSource ) override;
 
         /**
          * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
          *          In case of request message processing, the source should receive error notification.
          * \param   msgUnprocessed  Unprocessed message data.
          **/
-        void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) override;
+        void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
         /**
          * \brief   Triggered, when need to process received message.
          * \param   msgReceived Received message to process.
          * \param   whichSource The source socket, which received message.
          **/
-        void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
+        void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
     /************************************************************************/
     // RegistrationProvider interface overrides
@@ -136,7 +139,7 @@ namespace areg
          * \param   stubService     The address of service provider to register in the system.
          * \return  Returns true if succeeded registration.
          **/
-        bool registerServiceProvider( const areg::StubAddress & stubService ) override;
+        bool registerServiceProvider( const StubAddress & stubService ) override;
 
         /**
          * \brief   Call to unregister the service provider from the system and disconnect service consumers.
@@ -144,7 +147,7 @@ namespace areg
          * \param   stubService     The address of service provider to unregister in the system.
          * \param   reason          The reason to unregister and disconnect the service provider.
          **/
-        void unregisterServiceProvider( const areg::StubAddress & stubService, const areg::DisconnectReason reason ) override;
+        void unregisterServiceProvider( const StubAddress & stubService, const DisconnectReason reason ) override;
 
         /**
          * \brief   Call to register the remote service consumer in the system and connect to service provider.
@@ -153,7 +156,7 @@ namespace areg
          * \param   proxyService    The address of the service consumer to register in system.
          * \return  Returns true if registration process started with success. Otherwise, it returns false.
          **/
-        bool registerServiceConsumer( const areg::ProxyAddress & proxyService ) override;
+        bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
 
         /**
          * \brief   Call to unregister the service consumer from the system and disconnect service provider.
@@ -161,7 +164,7 @@ namespace areg
          * \param   proxyService    The address of the service consumer to unregister from the system.
          * \param   reason          The reason to unregister and disconnect the service consumer.
          **/
-        void unregisterServiceConsumer( const areg::ProxyAddress & proxyService, const areg::DisconnectReason reason ) override;
+        void unregisterServiceConsumer( const ProxyAddress & proxyService, const DisconnectReason reason ) override;
 
     /************************************************************************/
     // EventRouter interface overrides
@@ -176,7 +179,7 @@ namespace areg
          * \param	eventElem	Event object to post
          * \return	In this class it always returns true.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
     /************************************************************************/
     // RemoteEventConsumer interface overrides
@@ -186,7 +189,7 @@ namespace areg
          * \brief   Triggered when the Stub receives remote request event to process.
          * \param   requestEvent        The remote request event to be processed.
          **/
-        void processRemoteRequestEvent( areg::RemoteRequestEvent & requestEvent ) override;
+        void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
 
         /**
          * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -194,7 +197,7 @@ namespace areg
          *          sending attribute update notifications.
          * \param   requestNotifyEvent  The remote notification request event to be processed.
          **/
-        void processRemoteNotifyRequestEvent( areg::RemoteNotifyRequestEvent & requestNotifyEvent ) override;
+        void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
 
         /**
          * \brief   Triggered when the Stub receives remote response request event to process.
@@ -202,7 +205,7 @@ namespace areg
          *          to subscribe on information or response sent by Stub.
          * \param   responseEvent   The remote response event sent on processed request.
          **/
-        void processRemoteResponseEvent( areg::RemoteResponseEvent & responseEvent ) override;
+        void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
 
     /************************************************************************/
     // DispatcherThread overrides
@@ -232,7 +235,7 @@ namespace areg
         /**
          * \brief   The instance of service register consumer.
          **/
-        areg::RegistrationConsumer &     mRegisterConsumer;
+        RegistrationConsumer &     mRegisterConsumer;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

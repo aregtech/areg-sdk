@@ -21,8 +21,11 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/ServiceDefs.hpp"
 
-namespace areg { class StubAddress; }
-namespace areg { class ProxyAddress; }
+namespace areg
+{
+    class StubAddress;
+    class ProxyAddress;
+}
 
 namespace areg
 {
@@ -64,7 +67,7 @@ namespace areg
          * \param   stubService     The address of service provider to register in the system.
          * \return  Returns true if succeeded registration.
          **/
-        virtual bool registerServiceProvider(const areg::StubAddress& stubService) = 0;
+        virtual bool registerServiceProvider(const StubAddress& stubService) = 0;
 
         /**
          * \brief   Call to unregister the service provider from the system and disconnect service consumers.
@@ -72,7 +75,7 @@ namespace areg
          * \param   stubService     The address of service provider to unregister in the system.
          * \param   reason          The reason to unregister and disconnect the service provider.
          **/
-        virtual void unregisterServiceProvider(const areg::StubAddress& stubService, const areg::DisconnectReason reason) = 0;
+        virtual void unregisterServiceProvider(const StubAddress& stubService, const DisconnectReason reason) = 0;
 
         /**
          * \brief   Call to register the remote service consumer in the system and connect to service provider.
@@ -81,7 +84,7 @@ namespace areg
          * \param   proxyService    The address of the service consumer to register in system.
          * \return  Returns true if registration process started with success. Otherwise, it returns false.
          **/
-        virtual bool registerServiceConsumer(const areg::ProxyAddress& proxyService) = 0;
+        virtual bool registerServiceConsumer(const ProxyAddress& proxyService) = 0;
 
         /**
          * \brief   Call to unregister the service consumer from the system and disconnect service provider.
@@ -89,7 +92,7 @@ namespace areg
          * \param   proxyService    The address of the service consumer to unregister from the system.
          * \param   reason          The reason to unregister and disconnect the service consumer.
          **/
-        virtual void unregisterServiceConsumer(const areg::ProxyAddress& proxyService, const areg::DisconnectReason reason) = 0;
+        virtual void unregisterServiceConsumer(const ProxyAddress& proxyService, const DisconnectReason reason) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

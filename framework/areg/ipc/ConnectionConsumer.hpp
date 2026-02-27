@@ -23,7 +23,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Channel; }
+namespace areg
+{
+    class Channel;
+}
 
 namespace areg
 {
@@ -59,13 +62,13 @@ namespace areg
          * \brief   Triggered when remote service connection and communication channel is established.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        virtual void connectedRemoteServiceChannel(const areg::Channel& channel) = 0;
+        virtual void connectedRemoteServiceChannel(const Channel& channel) = 0;
 
         /**
          * \brief   Triggered when disconnected remote service connection and communication channel.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        virtual void disconnectedRemoteServiceChannel(const areg::Channel& channel) = 0;
+        virtual void disconnectedRemoteServiceChannel(const Channel& channel) = 0;
 
         /**
          * \brief   Triggered when remote service connection and communication channel is lost.
@@ -73,7 +76,7 @@ namespace areg
          *          receive data, and it was not stopped by API call.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        virtual void lostRemoteServiceChannel(const areg::Channel& channel) = 0;
+        virtual void lostRemoteServiceChannel(const Channel& channel) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

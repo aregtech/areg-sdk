@@ -27,8 +27,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RemoteMessageHandler; }
-namespace areg { class ClientConnection; }
+namespace areg
+{
+    class RemoteMessageHandler;
+    class ClientConnection;
+}
 
 namespace areg
 {
@@ -39,8 +42,8 @@ namespace areg
      * \brief   The message sender thread. All messages to be sent to remote routing service
      *          are queued in message sender thread. 
      **/
-    class ClientSendThread  : public    areg::DispatcherThread
-                            , public    areg::SendMessageEventConsumer
+    class ClientSendThread  : public    DispatcherThread
+                            , public    SendMessageEventConsumer
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -53,7 +56,7 @@ namespace areg
          * \param   namePrefix      The prefix to add to the areg::CLIENT_SEND_MESSAGE_THREAD
          *                          to have unique thread names.
          **/
-        ClientSendThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String & namePrefix );
+        ClientSendThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix );
         /**
          * \brief   Destructor
          **/
@@ -106,7 +109,7 @@ namespace areg
          * \param	eventElem	Event object to post
          * \return	In this class it always returns true.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
     private:
     /************************************************************************/
@@ -119,7 +122,7 @@ namespace areg
          *                  default constructor and assigning operator.
          *                  This object is not used for IPC.
          **/
-        void processEvent( const areg::SendMessageEventData & data ) override;
+        void processEvent( const SendMessageEventData & data ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables.
@@ -128,11 +131,11 @@ namespace areg
         /**
          * \brief   The instance of remote service handler to dispatch messages.
          **/
-        areg::RemoteMessageHandler&     mRemoteService;
+        RemoteMessageHandler&     mRemoteService;
         /**
          * \brief   The instance of connection to send messages from remote routing service.
          **/
-        areg::ClientConnection &          mConnection;
+        ClientConnection &          mConnection;
 
         /**
          * \brief   Accumulative value of sent data size.

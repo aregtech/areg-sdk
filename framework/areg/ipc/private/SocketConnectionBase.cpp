@@ -22,15 +22,15 @@
 
 namespace areg
 {
-    int32_t SocketConnectionBase::sendMessage(const areg::RemoteMessage & in_message, const areg::Socket & clientSocket) const
+    int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
     {
         int32_t result{ -1 };
         if ( in_message.isValid() && clientSocket.isValid() )
         {
             in_message.bufferCompletionFix();
-            const areg::MessageHeader & buffer = reinterpret_cast<const areg::MessageHeader &>( *in_message.getByteBuffer() );
-            result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(areg::MessageHeader) );
-            if ((result == sizeof(areg::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
+            const MessageHeader & buffer = reinterpret_cast<const MessageHeader &>( *in_message.getByteBuffer() );
+            result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(MessageHeader) );
+            if ((result == sizeof(MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
             {
                 ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
                 // send the aligned length.
@@ -41,18 +41,18 @@ namespace areg
         return result;
     }
 
-    int32_t SocketConnectionBase::receiveMessage(areg::RemoteMessage & out_message, const areg::Socket & clientSocket) const
+    int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
     {
         int32_t result{ -1 };
         if ( clientSocket.isValid() && clientSocket.isAlive() )
         {
-            areg::MessageHeader msgHeader{};
+            MessageHeader msgHeader{};
 
             out_message.invalidate();
-            result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(areg::MessageHeader));
-            if ( result == sizeof(areg::MessageHeader) )
+            result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(MessageHeader));
+            if ( result == sizeof(MessageHeader) )
             {
-                result = sizeof(areg::MessageHeader);
+                result = sizeof(MessageHeader);
                 uint8_t * buffer = out_message.initMessage( msgHeader );
                 if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
                 {
@@ -71,7 +71,7 @@ namespace areg
             }
             else
             {
-                result = (result > 0) && (result != sizeof(areg::MessageHeader)) ? 0 : result;
+                result = (result > 0) && (result != sizeof(MessageHeader)) ? 0 : result;
             }
         }
 

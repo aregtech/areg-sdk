@@ -26,8 +26,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RemoteMessageHandler; }
-namespace areg { class ClientConnection; }
+namespace areg
+{
+    class RemoteMessageHandler;
+    class ClientConnection;
+}
 
 namespace areg
 {
@@ -39,7 +42,7 @@ namespace areg
      *          All received messages are passed to receiver thread for further dispatching
      *          and distribution between components and services.
      **/
-    class ClientReceiveThread    : public    areg::DispatcherThread
+    class ClientReceiveThread    : public    DispatcherThread
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -52,7 +55,7 @@ namespace areg
          * \param   namePrefix      The prefix to add to the areg::CLIENT_RECEIVE_MESSAGE_THREAD
          *                          to have unique thread names.
          **/
-        ClientReceiveThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String & namePrefix);
+        ClientReceiveThread(RemoteMessageHandler& remoteService, ClientConnection & connection, const String & namePrefix);
 
         /**
          * \brief   Destructor.
@@ -102,11 +105,11 @@ namespace areg
         /**
          * \brief   The instance of remote service handler to dispatch messages.
          **/
-        areg::RemoteMessageHandler&     mRemoteService;
+        RemoteMessageHandler&     mRemoteService;
         /**
          * \brief   The instance of connection to receive messages from remote routing service.
          **/
-        areg::ClientConnection &          mConnection;
+        ClientConnection &          mConnection;
 
         /**
          * \brief   Accumulative value of received data size.

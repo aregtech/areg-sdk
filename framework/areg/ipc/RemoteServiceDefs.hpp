@@ -29,10 +29,13 @@
  /************************************************************************
   * Dependencies
   ************************************************************************/
-namespace areg { class StubAddress; }
-namespace areg { class ProxyAddress; }
-namespace areg { class RemoteMessage; }
-namespace areg { class Channel; }
+namespace areg
+{
+    class StubAddress;
+    class ProxyAddress;
+    class RemoteMessage;
+    class Channel;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // NERemoteService namespace declaration

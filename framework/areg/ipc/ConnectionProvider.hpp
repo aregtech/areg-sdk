@@ -27,7 +27,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class String; }
+namespace areg
+{
+    class String;
+}
 
 namespace areg
 {
@@ -74,7 +77,7 @@ namespace areg
          * \param   connectTypes    The bitwise set of connection types like 'tcpip' or 'udp'.
          * \return  Returns true if system could configure. Otherwise, it returns false.
          **/
-        virtual bool setupServiceConnectionData( areg::RemoteServiceKind service, uint32_t connectTypes ) = 0;
+        virtual bool setupServiceConnectionData( RemoteServiceKind service, uint32_t connectTypes ) = 0;
 
         /**
          * \brief   Call manually to set router service host name and port number.
@@ -83,7 +86,7 @@ namespace areg
          * \param   hostName    IP-address or host name of routing service to connect.
          * \param   portNr      Port number of routing service to connect.
          **/
-        virtual void applyServiceConnectionData( const areg::String & hostName, uint16_t portNr ) = 0;
+        virtual void applyServiceConnectionData( const String & hostName, uint16_t portNr ) = 0;
 
         /**
          * \brief   Call to start remote service. The host name and port number should be already set.
@@ -126,7 +129,7 @@ namespace areg
          * \param   msgSource   The message source type of the connected client.
          * \return  Returns the created message for remote communication.
          **/
-        virtual areg::RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource) const = 0;
+        virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, MessageSource msgSource) const = 0;
 
         /**
          * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -134,7 +137,7 @@ namespace areg
          * \param   target  The ID of the target to send the disconnection message request.
          * \return  Returns the created message for remote communication.
          **/
-        virtual areg::RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+        virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

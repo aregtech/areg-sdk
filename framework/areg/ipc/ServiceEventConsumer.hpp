@@ -25,15 +25,21 @@
  /************************************************************************
   * Declared classes
   ************************************************************************/
-namespace areg { class ServiceEventConsumer; }
-namespace areg { class ReconnectTimerConsumer; }
-namespace areg { class ServiceClientConsumer; }
-namespace areg { class ServiceServerConsumer; }
+namespace areg
+{
+    class ServiceEventConsumer;
+    class ReconnectTimerConsumer;
+    class ServiceClientConsumer;
+    class ServiceServerConsumer;
+}
 
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg { class RemoteMessage; }
+namespace areg
+{
+    class RemoteMessage;
+}
 
 namespace areg
 {
@@ -177,7 +183,7 @@ namespace areg
     /**
      * \brief   Dispatches service client connection event.
      **/
-    class AREG_API ServiceClientConsumer    : public    areg::ServiceClientEventConsumer
+    class AREG_API ServiceClientConsumer    : public    ServiceClientEventConsumer
     {
     public:
         /**
@@ -202,7 +208,7 @@ namespace areg
          *                  default constructor and assigning operator.
          *                  This object is not used for IPC.
          **/
-        void processEvent(const areg::ServiceEventData & data) override;
+        void processEvent(const ServiceEventData & data) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden member variables
@@ -226,7 +232,7 @@ namespace areg
     /**
      * \brief   Dispatches service server connection event.
      **/
-    class AREG_API ServiceServerConsumer : public    areg::ServiceServerEventConsumer
+    class AREG_API ServiceServerConsumer : public    ServiceServerEventConsumer
     {
     public:
         /**
@@ -251,7 +257,7 @@ namespace areg
          *                  default constructor and assigning operator.
          *                  This object is not used for IPC.
          **/
-        void processEvent(const areg::ServiceEventData & data) override;
+        void processEvent(const ServiceEventData & data) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden member variables

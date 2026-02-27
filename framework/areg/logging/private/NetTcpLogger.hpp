@@ -223,6 +223,7 @@ namespace areg
         return (*this);
     }
 
-    #endif  // AREG_LOGS
 } // namespace areg
+
+#endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_NETTCPLOGGER_HPP

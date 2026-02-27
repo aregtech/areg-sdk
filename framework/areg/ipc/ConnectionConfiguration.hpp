@@ -43,7 +43,7 @@ namespace areg
          * \param   service     The name of the service to read configuration properties.
          * \param   connectType The name of the connection type to read configuration properties.
          **/
-        ConnectionConfiguration( const areg::String & service, const areg::String & connectType );
+        ConnectionConfiguration( const String & service, const String & connectType );
 
         /**
          * \brief   Initializes connection configuration object to use properties based
@@ -51,7 +51,7 @@ namespace areg
          * \param   service     The type of the service to read configuration properties.
          * \param   connectType The type of the connection to read configuration properties.
          **/
-        ConnectionConfiguration(areg::RemoteServiceKind service, areg::ConnectionType connectType);
+        ConnectionConfiguration(RemoteServiceKind service, ConnectionType connectType);
 
         /**
          * \brief   Destructor.
@@ -66,12 +66,12 @@ namespace areg
         /**
          * \brief   Returns the optional name of the remote service.
          **/
-        inline const areg::String& getRemoteServiceName() const;
+        inline const String& getRemoteServiceName() const;
 
         /**
          * \brief   Returns the name of the connection type of the remote service.
          **/
-        inline const areg::String& getConnectionType() const;
+        inline const String& getConnectionType() const;
 
         /**
          * \brief   Returns true if the application already configured by reading configuration file or by default configuration.
@@ -101,19 +101,19 @@ namespace areg
         /**
          * \brief   Returns the connection address of the remote service and type.
          **/
-        areg::String getConnectionAddress() const;
+        String getConnectionAddress() const;
 
         /**
          * \brief   Sets the connection address of the remote service and type.
          **/
-        void setConnectionAddress(const areg::String& address);
+        void setConnectionAddress(const String& address);
 
         /**
          * \brief   Sets the connection address and port number of the remote service and type.
          * \param   address     The connection address.
          * \param   portNr      The connection port number.
          **/
-        void setConnectionData(const areg::String& address, uint16_t portNr);
+        void setConnectionData(const String& address, uint16_t portNr);
 
         /**
          * \brief   Returns byte sets of connection host IP address of given connection section.
@@ -128,10 +128,10 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     private:
         //! The name of the remote connection service name to look in configuration.
-        const areg::String    mServiceName;
+        const String    mServiceName;
 
         //! The name of the connection type to look in configuration.
-        const areg::String    mConnectType;
+        const String    mConnectType;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
@@ -145,12 +145,12 @@ namespace areg
     // ConnectionConfiguration inline methods.
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::String& ConnectionConfiguration::getRemoteServiceName() const
+    inline const String& ConnectionConfiguration::getRemoteServiceName() const
     {
         return mServiceName;
     }
 
-    inline const areg::String& ConnectionConfiguration::getConnectionType() const
+    inline const String& ConnectionConfiguration::getConnectionType() const
     {
         return mConnectType;
     }

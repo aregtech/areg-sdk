@@ -36,7 +36,7 @@ namespace areg
      *          Client socket is using only TCP/IP connection. All other types
      *          and protocols are out of scope of this class and are not considered.
      **/
-    class AREG_API ClientConnection : private   areg::SocketConnectionBase
+    class AREG_API ClientConnection : private   SocketConnectionBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
@@ -58,7 +58,7 @@ namespace areg
          *                      is setup for localhost.
          * \param   portNr      Port number of remote server to connect, should not be invalid port.
          **/
-        ClientConnection( const areg::String & hostName, uint16_t portNr );
+        ClientConnection( const String & hostName, uint16_t portNr );
 
         /**
          * \brief   Creates instance of object with invalid socket object. Before sending
@@ -66,7 +66,7 @@ namespace areg
          *          Specified remoteAddress is a remote server address to connect.
          * \param   remoteAddress   Address of remote host to connect.
          **/
-        ClientConnection( const areg::SocketAddress & remoteAddress );
+        ClientConnection( const SocketAddress & remoteAddress );
 
         /**
          * \brief   Destructor.
@@ -95,7 +95,7 @@ namespace areg
         /**
          * \brief   Return Socket Address object.
          **/
-        const areg::SocketAddress & getAddress() const;
+        const SocketAddress & getAddress() const;
 
         /**
          * \brief   Sets Socket Address. If hostName is not IP-address, it will 
@@ -108,14 +108,14 @@ namespace areg
          * \param   portNr      Valid port number of socket connection.
          * \return  Returns true if succeeded to resolve and set Socket Address.
          **/
-        bool setAddress( const areg::String & hostName, uint16_t portNr );
+        bool setAddress( const String & hostName, uint16_t portNr );
 
         /**
          * \brief   Sets socket address. The address should be either invalid
          *          or already resolved with IP-address.
          * \param   newAddress  The new address to set.
          **/
-        void setAddress( const areg::SocketAddress & newAddress );
+        void setAddress( const SocketAddress & newAddress );
 
         /**
          * \brief   Returns true if existing socket descriptor is valid.
@@ -126,7 +126,7 @@ namespace areg
         /**
          * \brief   Returns the socket object.
          **/
-        areg::Socket & getSocket();
+        Socket & getSocket();
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -140,7 +140,7 @@ namespace areg
          * \param   portNr      The valid port number to connect.
          * \return  Returns true if operation succeeded.
          **/
-        bool createSocket( const areg::String & hostName, uint16_t portNr );
+        bool createSocket( const String & hostName, uint16_t portNr );
 
         /**
          * \brief   Before sending or receiving any data from remote host,
@@ -176,7 +176,7 @@ namespace areg
          *          Returns negative number if socket is not valid of failed to send.
          *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
          **/
-        int32_t sendMessage( const areg::RemoteMessage & in_message ) const;
+        int32_t sendMessage( const RemoteMessage & in_message ) const;
 
         /**
          * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
@@ -193,7 +193,7 @@ namespace areg
          *          Returns negative number if socket is not valid of failed to send.
          *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
          **/
-        int32_t receiveMessage( areg::RemoteMessage & out_message ) const;
+        int32_t receiveMessage( RemoteMessage & out_message ) const;
 
         /**
          * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
@@ -214,7 +214,7 @@ namespace areg
         /**
          * \brief   The client connection socket
          **/
-        areg::SocketClient    mClientSocket;
+        SocketClient    mClientSocket;
 
         /**
          * \brief   Client connection cookie
@@ -242,17 +242,17 @@ namespace areg
         mCookie = newCookie;
     }
 
-    inline const areg::SocketAddress & ClientConnection::getAddress() const
+    inline const SocketAddress & ClientConnection::getAddress() const
     {
         return mClientSocket.getAddress();
     }
 
-    inline bool ClientConnection::setAddress(const areg::String& hostName, uint16_t portNr)
+    inline bool ClientConnection::setAddress(const String& hostName, uint16_t portNr)
     {
         return mClientSocket.setAddress(hostName, portNr, false);
     }
 
-    inline void ClientConnection::setAddress( const areg::SocketAddress & newAddress )
+    inline void ClientConnection::setAddress( const SocketAddress & newAddress )
     {
         mClientSocket.setAddress(newAddress);
     }
@@ -272,19 +272,19 @@ namespace areg
         return mClientSocket.disableReceive();
     }
 
-    inline areg::Socket & ClientConnection::getSocket()
+    inline Socket & ClientConnection::getSocket()
     {
         return mClientSocket;
     }
 
-    inline int32_t ClientConnection::sendMessage(const areg::RemoteMessage & in_message) const
+    inline int32_t ClientConnection::sendMessage(const RemoteMessage & in_message) const
     {
-        return areg::SocketConnectionBase::sendMessage(in_message, mClientSocket);
+        return SocketConnectionBase::sendMessage(in_message, mClientSocket);
     }
 
-    inline int32_t ClientConnection::receiveMessage(areg::RemoteMessage & out_message) const
+    inline int32_t ClientConnection::receiveMessage(RemoteMessage & out_message) const
     {
-        return areg::SocketConnectionBase::receiveMessage(out_message, mClientSocket);
+        return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
     }
 
 } // namespace areg

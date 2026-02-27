@@ -21,13 +21,13 @@ namespace areg
     // ReconnectTimerConsumer class implementation
     //////////////////////////////////////////////////////////////////////////
 
-    areg::ReconnectTimerConsumer::ReconnectTimerConsumer(ServiceEventConsumer& eventConsumer )
-        : areg::TimerConsumer       ( )
+    ReconnectTimerConsumer::ReconnectTimerConsumer(ServiceEventConsumer& eventConsumer )
+        : TimerConsumer       ( )
         , mServiceEventConsumer ( eventConsumer )
     {
     }
 
-    void areg::ReconnectTimerConsumer::processTimer(areg::Timer& /* timer */)
+    void ReconnectTimerConsumer::processTimer(Timer& /* timer */)
     {
         mServiceEventConsumer.onServiceReconnectTimerExpired();
     }
@@ -36,49 +36,49 @@ namespace areg
     // ServiceClientConsumer class implementation
     //////////////////////////////////////////////////////////////////////////
 
-    areg::ServiceClientConsumer::ServiceClientConsumer(ServiceEventConsumer& eventConsumer)
-        : areg::ServiceClientEventConsumer( )
+    ServiceClientConsumer::ServiceClientConsumer(ServiceEventConsumer& eventConsumer)
+        : ServiceClientEventConsumer( )
         , mServiceEventConsumer     ( eventConsumer )
     {
     }
 
-    void areg::ServiceClientConsumer::processEvent(const areg::ServiceEventData& data)
+    void ServiceClientConsumer::processEvent(const ServiceEventData& data)
     {
         switch (data.getCommand())
         {
-        case areg::ServiceEventData::ServiceCommand::CMD_StartService:
+        case ServiceEventData::ServiceCommand::CMD_StartService:
             mServiceEventConsumer.onServiceStart();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_StopService:
+        case ServiceEventData::ServiceCommand::CMD_StopService:
             mServiceEventConsumer.onServiceStop();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_RestartService:
+        case ServiceEventData::ServiceCommand::CMD_RestartService:
             mServiceEventConsumer.onServiceRestart();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceStarted:
+        case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
             mServiceEventConsumer.onServiceConnectionStarted();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceStopped:
+        case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
             mServiceEventConsumer.onServiceConnectionStopped();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceLost:
+        case ServiceEventData::ServiceCommand::CMD_ServiceLost:
             mServiceEventConsumer.onServiceConnectionLost();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceExit:
+        case ServiceEventData::ServiceCommand::CMD_ServiceExit:
             mServiceEventConsumer.onServiceExit();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
+        case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
             mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
+        case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
             mServiceEventConsumer.onServiceMessageSend(data.getMessage());
             break;
 
@@ -92,49 +92,49 @@ namespace areg
     // ServiceServerConsumer class implementation
     //////////////////////////////////////////////////////////////////////////
 
-    areg::ServiceServerConsumer::ServiceServerConsumer(ServiceEventConsumer& serviceEventConsumer)
-        : areg::ServiceServerEventConsumer( )
+    ServiceServerConsumer::ServiceServerConsumer(ServiceEventConsumer& serviceEventConsumer)
+        : ServiceServerEventConsumer( )
         , mServiceEventConsumer     ( serviceEventConsumer )
     {
     }
 
-    void areg::ServiceServerConsumer::processEvent(const areg::ServiceEventData& data)
+    void ServiceServerConsumer::processEvent(const ServiceEventData& data)
     {
         switch (data.getCommand())
         {
-        case areg::ServiceEventData::ServiceCommand::CMD_StartService:
+        case ServiceEventData::ServiceCommand::CMD_StartService:
             mServiceEventConsumer.onServiceStart();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_StopService:
+        case ServiceEventData::ServiceCommand::CMD_StopService:
             mServiceEventConsumer.onServiceStop();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_RestartService:
+        case ServiceEventData::ServiceCommand::CMD_RestartService:
             mServiceEventConsumer.onServiceRestart();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceStarted:
+        case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
             mServiceEventConsumer.onServiceConnectionStarted();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceStopped:
+        case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
             mServiceEventConsumer.onServiceConnectionStopped();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceLost:
+        case ServiceEventData::ServiceCommand::CMD_ServiceLost:
             mServiceEventConsumer.onServiceConnectionLost();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceExit:
+        case ServiceEventData::ServiceCommand::CMD_ServiceExit:
             mServiceEventConsumer.onServiceExit();
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
+        case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
             mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
             break;
 
-        case areg::ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
+        case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
             mServiceEventConsumer.onServiceMessageSend(data.getMessage());
             break;
 
