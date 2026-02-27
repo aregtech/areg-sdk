@@ -26,10 +26,13 @@
 #include "areg/component/ServiceDefs.hpp"
 
 
-namespace areg { class LocalResponseEvent; }
-namespace areg { class RemoteResponseEvent; }
-namespace areg { class LocalRequestEvent; }
-namespace areg { class RemoteRequestEvent; }
+namespace areg
+{
+    class LocalResponseEvent;
+    class RemoteResponseEvent;
+    class LocalRequestEvent;
+    class RemoteRequestEvent;
+}
 
 namespace areg
 {
@@ -50,10 +53,10 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // List of friend classes to access protected members
     //////////////////////////////////////////////////////////////////////////
-        friend class areg::LocalRequestEvent;
-        friend class areg::RemoteRequestEvent;
-        friend class areg::LocalResponseEvent;
-        friend class areg::RemoteResponseEvent;
+        friend class LocalRequestEvent;
+        friend class RemoteRequestEvent;
+        friend class LocalResponseEvent;
+        friend class RemoteResponseEvent;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
@@ -67,7 +70,7 @@ namespace areg
          * \param	name	Optional. Used to name data streaming object.
          *                  Can be nullptr if there is no need to name streaming object.
          **/
-        EventData(uint32_t msgId, areg::EventDataStream::EventDataKind dataType, const areg::String & name = areg::String::getEmptyString());
+        EventData(uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name = String::getEmptyString());
 
         /**
          * \brief	Constructor.
@@ -79,7 +82,7 @@ namespace areg
          * \param	name	Optional. Used to name data streaming object.
          *                  Can be nullptr if there is no need to name streaming object.
          **/
-        EventData(uint32_t msgId, const areg::EventDataStream & args, const areg::String & name = areg::String::getEmptyString());
+        EventData(uint32_t msgId, const EventDataStream & args, const String & name = String::getEmptyString());
 
         /**
          * \brief   Copy constructor.
@@ -98,7 +101,7 @@ namespace areg
          *          Initializes object data from streaming object.
          * \param   stream  Streaming object, containing initialized data information.
          **/
-        EventData( const areg::InStream & stream );
+        EventData( const InStream & stream );
 
         /**
          * \brief   Destructor.
@@ -128,7 +131,7 @@ namespace areg
          * \param	input	The Event Data Buffer object to write data.
          * \return	Reference to Streaming object.
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, EventData & input );
+        friend inline const InStream & operator >> ( const InStream & stream, EventData & input );
 
         /**
          * \brief	Friend global operator to write object into streaming buffer.
@@ -136,7 +139,7 @@ namespace areg
          * \param	output	The Event Data Buffer object of data source.
          * \return	Reference to Streaming object.
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const EventData & output );
+        friend inline OutStream & operator << ( OutStream & stream, const EventData & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -147,25 +150,25 @@ namespace areg
          *          It is either request or response. The update messages
          *          are classified as response.
          **/
-        inline areg::MessageDataType getDataType() const;
+        inline MessageDataType getDataType() const;
         
         /**
          * \brief   Returns reference of data input streaming object
          *          to deserialize message parameters.
          **/
-        inline const areg::InStream & getReadStream() const;
+        inline const InStream & getReadStream() const;
         
         /**
          * \brief   Returns reference of data output streaming object
          *          to serialize message parameters
          **/
-        inline areg::OutStream & getWriteStream();
+        inline OutStream & getWriteStream();
 
         /**
          * \brief   Returns reference of data container object,
          *          which is a streaming object.
          **/
-        inline const areg::EventDataStream & getDataStream() const;
+        inline const EventDataStream & getDataStream() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -174,38 +177,38 @@ namespace areg
         /**
          * \brief   The type of data
          **/
-        areg::MessageDataType    mDataType;
+        MessageDataType    mDataType;
         /**
          * \brief   Streaming object, containing data in binary format.
          **/
-        areg::EventDataStream                 mData;
+        EventDataStream                 mData;
     };
 
     //////////////////////////////////////////////////////////////////////////
     // EventData class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::MessageDataType EventData::getDataType() const
+    inline MessageDataType EventData::getDataType() const
     {
         return mDataType;
     }
 
-    inline const areg::InStream& EventData::getReadStream() const
+    inline const InStream& EventData::getReadStream() const
     {
         return mData.getStreamForRead();
     }
 
-    inline areg::OutStream & EventData::getWriteStream()
+    inline OutStream & EventData::getWriteStream()
     {
         return mData.getStreamForWrite();
     }
 
-    inline const areg::EventDataStream & EventData::getDataStream() const
+    inline const EventDataStream & EventData::getDataStream() const
     {
         return mData;
     }
 
-    inline const areg::InStream & operator >> ( const areg::InStream & stream, EventData & input )
+    inline const InStream & operator >> ( const InStream & stream, EventData & input )
     {
         stream >> input.mDataType;
         stream >> input.mData;
@@ -213,7 +216,7 @@ namespace areg
         return stream;
     }
 
-    inline areg::OutStream & operator << ( areg::OutStream & stream, const EventData & output )
+    inline OutStream & operator << ( OutStream & stream, const EventData & output )
     {
         stream << output.mDataType;
         stream << output.mData;

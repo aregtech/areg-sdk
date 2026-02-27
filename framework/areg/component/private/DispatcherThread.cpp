@@ -43,14 +43,14 @@ namespace areg
         static constexpr std::string_view   NullDispatcherName{ "_NullDispatcherThread_" };
     }
 
-    class AREG_API NullDispatcherThread    : public areg::ComponentThread
+    class AREG_API NullDispatcherThread    : public ComponentThread
     {
     //////////////////////////////////////////////////////////////////////////
     // Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class DispatcherThread;
-        friend class areg::ComponentThread;
-        friend class areg::Component;
+        friend class ComponentThread;
+        friend class Component;
 
     //////////////////////////////////////////////////////////////////////////
     // Static members
@@ -80,27 +80,27 @@ namespace areg
         //////////////////////////////////////////////////////////////////////////
         // Disable consumer registration functionalities
         //////////////////////////////////////////////////////////////////////////
-        virtual bool registerEventConsumer( const areg::RuntimeClassID & whichClass, areg::EventConsumer & whichConsumer ) override;
-        virtual bool unregisterEventConsumer( const areg::RuntimeClassID & whichClass, areg::EventConsumer & whichConsumer ) override;
-        virtual int32_t  removeConsumer( areg::EventConsumer & whichConsumer ) override;
-        virtual bool hasRegisteredConsumer( const areg::RuntimeClassID & whichClass ) const override;
+        virtual bool registerEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
+        virtual bool unregisterEventConsumer( const RuntimeClassID & whichClass, EventConsumer & whichConsumer ) override;
+        virtual int32_t  removeConsumer( EventConsumer & whichConsumer ) override;
+        virtual bool hasRegisteredConsumer( const RuntimeClassID & whichClass ) const override;
 
         //////////////////////////////////////////////////////////////////////////
         // Disable post event
         //////////////////////////////////////////////////////////////////////////
-        virtual bool postEvent( areg::Event & eventElem ) override;
+        virtual bool postEvent( Event & eventElem ) override;
 
         //////////////////////////////////////////////////////////////////////////
         // Disable running function and return error on exit.
         //////////////////////////////////////////////////////////////////////////
-        virtual bool onThreadRegistered( areg::Thread * threadObj ) override;
+        virtual bool onThreadRegistered( Thread * threadObj ) override;
         virtual void onThreadRuns() override;
         virtual int32_t onThreadExit() override;
 
         //////////////////////////////////////////////////////////////////////////
         // Disable Thread locking
         //////////////////////////////////////////////////////////////////////////
-        virtual bool waitForDispatcherStart( uint32_t waitTimeout = areg::WAIT_INFINITE ) override;
+        virtual bool waitForDispatcherStart( uint32_t waitTimeout = WAIT_INFINITE ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -124,38 +124,38 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Runtime information to identify NullDispatcher object
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, areg::ComponentThread)
+    AREG_IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
 
     //////////////////////////////////////////////////////////////////////////
     // NullDispatcherThread class Constructor 
     //////////////////////////////////////////////////////////////////////////
     inline NullDispatcherThread::NullDispatcherThread()
-        : areg::ComponentThread(NullDispatcherName)
+        : ComponentThread(NullDispatcherName)
     {                   }
 
     //////////////////////////////////////////////////////////////////////////
     // NullDispatcherThread class. Disable basic functionalities.
     //////////////////////////////////////////////////////////////////////////
-    bool NullDispatcherThread::registerEventConsumer( const areg::RuntimeClassID & /* whichClass*/, areg::EventConsumer & /*whichConsumer*/ )
+    bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID & /* whichClass*/, EventConsumer & /*whichConsumer*/ )
     {   return false;   }
 
-    bool NullDispatcherThread::unregisterEventConsumer( const areg::RuntimeClassID & /*whichClass*/, areg::EventConsumer & /* whichConsumer*/ )
+    bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID & /*whichClass*/, EventConsumer & /* whichConsumer*/ )
     {   return false;   }
 
-    int32_t NullDispatcherThread::removeConsumer( areg::EventConsumer & /* whichConsumer*/ )
+    int32_t NullDispatcherThread::removeConsumer( EventConsumer & /* whichConsumer*/ )
     {   return 0;       }
 
-    bool NullDispatcherThread::hasRegisteredConsumer( const areg::RuntimeClassID & /* whichClass */ ) const
+    bool NullDispatcherThread::hasRegisteredConsumer( const RuntimeClassID & /* whichClass */ ) const
     {   return false;   }
 
-    bool NullDispatcherThread::postEvent( areg::Event& eventElem )
+    bool NullDispatcherThread::postEvent( Event& eventElem )
     {
         eventElem.destroy();
         ASSERT(false);
         return false;
     }
 
-    bool NullDispatcherThread::onThreadRegistered( areg::Thread * /* threadObj */)
+    bool NullDispatcherThread::onThreadRegistered( Thread * /* threadObj */)
     {
         ASSERT(false);
         return false;
@@ -169,7 +169,7 @@ namespace areg
     int32_t NullDispatcherThread::onThreadExit()
     {
         ASSERT(false);
-        return static_cast<int32_t>(areg::ThreadConsumer::ExitCode::Error);
+        return static_cast<int32_t>(ThreadConsumer::ExitCode::Error);
     }
 
     bool NullDispatcherThread::waitForDispatcherStart( uint32_t /* waitTimeout */ /*= areg::WAIT_INFINITE */ )
@@ -192,7 +192,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // DispatcherThread class runtime implementation
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME(DispatcherThread, areg::Thread)
+    AREG_IMPLEMENT_RUNTIME(DispatcherThread, Thread)
 
     //////////////////////////////////////////////////////////////////////////
     // DispatcherThread class statics
@@ -206,9 +206,9 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // DispatcherThread class Constructor / Destructor.
     //////////////////////////////////////////////////////////////////////////
-    DispatcherThread::DispatcherThread (const areg::String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
-        : areg::Thread          ( static_cast<areg::ThreadConsumer &>(self()), threadName, stackSizeKb )
-        , areg::EventDispatcher ( threadName, maxQeueue )
+    DispatcherThread::DispatcherThread (const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue)
+        : Thread          ( static_cast<ThreadConsumer &>(self()), threadName, stackSizeKb )
+        , EventDispatcher ( threadName, maxQeueue )
 
         , mEventStarted     ( true, false )
     {
@@ -217,7 +217,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // DispatcherThread class Methods
     //////////////////////////////////////////////////////////////////////////
-    bool DispatcherThread::postEvent( areg::Event& eventElem )
+    bool DispatcherThread::postEvent( Event& eventElem )
     {
         eventElem.destroy();
         ASSERT(false);  // <= this should not be called.
@@ -238,14 +238,14 @@ namespace areg
         if ( mHasStarted )
         {
             removeEvents( true );
-            mExternalEvents.pushEvent( areg::ExitEvent::getExitEvent( ), nullptr );
+            mExternalEvents.pushEvent( ExitEvent::getExitEvent( ), nullptr );
         }
 
         mEventExit.setEvent( );
         mExternalEvents.unlockQueue( );
     }
 
-    areg::Thread::ThreadCompletion DispatcherThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+    Thread::ThreadCompletion DispatcherThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
     {
         LOG_SCOPE( areg_component_private_DispatcherThread_destroyThread);
         LOG_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
@@ -254,12 +254,12 @@ namespace areg
                     , isRunning() ? "RUNNING" : "NOT RUNNING" );
 
         stopDispatcher( );
-        areg::Thread::ThreadCompletion result = areg::Thread::shutdownThread(waitForStopMs);
+        Thread::ThreadCompletion result = Thread::shutdownThread(waitForStopMs);
         removeAllEvents( );
         return result;
     }
 
-    DispatcherThread* DispatcherThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
+    DispatcherThread* DispatcherThread::getEventConsumerThread( const RuntimeClassID& whichClass )
     {
         return (hasRegisteredConsumer(whichClass) ? this : nullptr);
     }
@@ -268,13 +268,13 @@ namespace areg
     {
         if ( isReady )
         {
-            areg::EventDispatcher::readyForEvents( true );
+            EventDispatcher::readyForEvents( true );
             mEventStarted.setEvent( );
         }
         else
         {
             mEventStarted.resetEvent( );
-            areg::EventDispatcher::readyForEvents( false );
+            EventDispatcher::readyForEvents( false );
         }
     }
 
@@ -283,25 +283,25 @@ namespace areg
         return mEventStarted.lock(waitTimeout);
     }
 
-    bool DispatcherThread::isExitEvent(const areg::Event * checkEvent) const
+    bool DispatcherThread::isExitEvent(const Event * checkEvent) const
     {
-        return ( checkEvent == static_cast<const areg::Event *>(&areg::ExitEvent::getExitEvent()) );
+        return ( checkEvent == static_cast<const Event *>(&ExitEvent::getExitEvent()) );
     }
 
-    DispatcherThread * DispatcherThread::findEventConsumerThread( const areg::RuntimeClassID & whichClass )
+    DispatcherThread * DispatcherThread::findEventConsumerThread( const RuntimeClassID & whichClass )
     {
         DispatcherThread * result = nullptr;
-        areg::Thread* dispThread = AREG_RUNTIME_CAST(areg::Thread::getCurrentThread(), DispatcherThread);
+        Thread* dispThread = AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
         result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
-        id_type threadId = areg::Thread::INVALID_THREAD_ID;
-        dispThread = areg::Thread::getFirstThread(threadId);
+        id_type threadId = Thread::INVALID_THREAD_ID;
+        dispThread = Thread::getFirstThread(threadId);
         while ((result == nullptr) && (dispThread != nullptr))
         {
             dispThread = dispThread != nullptr ? AREG_RUNTIME_CAST(dispThread, DispatcherThread) : nullptr;
             result = dispThread != nullptr ? static_cast<DispatcherThread *>(dispThread)->getEventConsumerThread(whichClass) : nullptr;
 
-            dispThread = areg::Thread::getNextThread(threadId);
+            dispThread = Thread::getNextThread(threadId);
         }
 
         return result;

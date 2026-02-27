@@ -28,7 +28,10 @@
   /************************************************************************
    * Declared classes
    ************************************************************************/
-namespace areg { class TimerManagerEventData; }
+namespace areg
+{
+    class TimerManagerEventData;
+}
 // class TimerManagerEvent
 // class TimerManagerEventConsumer
 
@@ -49,7 +52,10 @@ namespace areg { class TimerManagerEventData; }
  /************************************************************************
   * Dependencies
   ************************************************************************/
-namespace areg { class Timer; }
+namespace areg
+{
+    class Timer;
+}
 
 namespace areg
 {

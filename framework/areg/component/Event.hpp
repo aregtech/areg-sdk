@@ -98,10 +98,13 @@ public:                                                                         
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class EventConsumer; }
-namespace areg { class EventDispatcher; }
-namespace areg { class DispatcherThread; }
-namespace areg { class Thread; }
+namespace areg
+{
+    class EventConsumer;
+    class EventDispatcher;
+    class DispatcherThread;
+    class Thread;
+}
 
 namespace areg
 {
@@ -129,7 +132,7 @@ namespace areg
      *          which are used by the system.
      *
      **/
-    class AREG_API Event   : public areg::RuntimeObject
+    class AREG_API Event   : public RuntimeObject
     {
     //////////////////////////////////////////////////////////////////////////
     // Defines and constants.
@@ -234,7 +237,7 @@ namespace areg
          *          Returns false, if failed or specified thread already had specified
          *          consumer registered for specified event class type.
          **/
-        static bool addListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, const areg::String & whichThread);
+        static bool addListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread);
 
         /**
          * \brief	Static method to add the listener to specified thread,
@@ -246,7 +249,7 @@ namespace areg
          *          Returns false, if failed or specified thread already had specified
          *          consumer registered for specified event class type.
          **/
-        static bool addListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, id_type whichThread );
+        static bool addListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
 
         /**
          * \brief	Static method to add the listener to specified thread,
@@ -258,7 +261,7 @@ namespace areg
          *          Returns false, if failed or specified thread already had specified
          *          consumer registered for specified event class type.
          **/
-        static bool addListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, areg::DispatcherThread & dispThread);
+        static bool addListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
         /**
          * \brief	Static method to remove listener from specified thread,
@@ -269,7 +272,7 @@ namespace areg
          *                          it will use current thread to unregister consumer.
          * \return	Returns true if successfully unregistered.
          **/
-        static bool removeListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, const areg::String & whichThread);
+        static bool removeListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, const String & whichThread);
 
         /**
          * \brief	Static method to remove listener from specified thread,
@@ -279,7 +282,7 @@ namespace areg
          * \param	whichThread	    The valid registered thread ID to remove listener.
          * \return	Returns true if successfully unregistered.
          **/
-        static bool removeListener( const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, id_type whichThread );
+        static bool removeListener( const RuntimeClassID & classId, EventConsumer & eventConsumer, id_type whichThread );
 
         /**
          * \brief	Static method to remove listener from specified thread,
@@ -289,7 +292,7 @@ namespace areg
          * \param	dispThread	    The dispatcher thread, which dispatches messages
          * \return	Returns true if successfully unregistered.
          **/
-        static bool removeListener(const areg::RuntimeClassID & classId, areg::EventConsumer & eventConsumer, areg::DispatcherThread & dispThread);
+        static bool removeListener(const RuntimeClassID & classId, EventConsumer & eventConsumer, DispatcherThread & dispThread);
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor. Protected
@@ -331,7 +334,7 @@ namespace areg
          * \brief	Dispatch event itself. Overwrite function if needed.
          * \param	consumer	Registered event consumer
          **/
-        virtual void dispatchSelf( areg::EventConsumer * consumer );
+        virtual void dispatchSelf( EventConsumer * consumer );
 
         /**
          * \brief   Delivers the event to target thread. If target thread
@@ -349,7 +352,7 @@ namespace areg
          *          Returns false if failed or target thread already had consumer
          *          registered for current event class.
          **/
-        virtual bool addEventListener( areg::EventConsumer & eventConsumer );
+        virtual bool addEventListener( EventConsumer & eventConsumer );
 
         /**
          * \brief	Removes listener from target thread, i.e. unregisters consumer
@@ -359,7 +362,7 @@ namespace areg
          *                          event class.
          * \return	Returns true if successfully unregistered consumer.
          **/
-        virtual bool removeEventListener( areg::EventConsumer & eventConsumer );
+        virtual bool removeEventListener( EventConsumer & eventConsumer );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -393,7 +396,7 @@ namespace areg
          * \return	Returns true if target thread is not nullptr and ready
          *          to dispatch events.
          **/
-        bool registerForThread( areg::DispatcherThread * dispatchThread );
+        bool registerForThread( DispatcherThread * dispatchThread );
 
         /**
          * \brief   Returns true if the target thread has a consumer
@@ -433,12 +436,12 @@ namespace areg
          * \brief   Returns pointer of Event Consumer object.
          *          If nullptr, no Event Consumer is set and the Event cannot be processed.
          **/
-        inline areg::EventConsumer * getEventConsumer();
+        inline EventConsumer * getEventConsumer();
         /**
          * \brief   Sets the Event Consumer object.
          * \param   consumer    The Event Consumer object, which should process event
          **/
-        inline void setEventConsumer( areg::EventConsumer * consumer );
+        inline void setEventConsumer( EventConsumer * consumer );
 
         /**
          * \brief   Checks whether the given event type is internal or not.
@@ -504,7 +507,7 @@ namespace areg
          *          If target thread is unknown, this will return dispatcher of
          *          current thread.
          **/
-        areg::EventDispatcher & getDispatcher() const;
+        EventDispatcher & getDispatcher() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods.
@@ -530,11 +533,11 @@ namespace areg
         /**
          * \brief   Event consumer.
          **/
-        areg::EventConsumer*    mConsumer;
+        EventConsumer*    mConsumer;
         /**
          * \brief   Target thread.
          **/
-        areg::DispatcherThread*   mTargetThread;
+        DispatcherThread*   mTargetThread;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden method calls.
@@ -559,12 +562,12 @@ namespace areg
         mEventType = eventType;
     }
 
-    inline areg::EventConsumer * Event::getEventConsumer()
+    inline EventConsumer * Event::getEventConsumer()
     {
         return mConsumer;
     }
 
-    inline void Event::setEventConsumer( areg::EventConsumer * consumer )
+    inline void Event::setEventConsumer( EventConsumer * consumer )
     {
         mConsumer = consumer;
     }

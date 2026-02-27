@@ -27,9 +27,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class InStream; }
-namespace areg { class ProxyAddress; }
-namespace areg { class ServiceRequestEvent; }
+namespace areg
+{
+    class InStream;
+    class ProxyAddress;
+    class ServiceRequestEvent;
+}
 
 namespace areg
 {
@@ -50,7 +53,7 @@ namespace areg
      *              of Stub address before sending event.
      *
      **/
-    class AREG_API StubAddress    : public    areg::ServiceAddress
+    class AREG_API StubAddress    : public    ServiceAddress
     {
     //////////////////////////////////////////////////////////////////////////
     // Static operations
@@ -62,7 +65,7 @@ namespace areg
          * \param   addrStub    The Stub address containing information to crate path
          * \return  Returns converted path of Stub as string, containing Stub address information
          **/
-        static areg::String convAddressToPath( const StubAddress & addrStub );
+        static String convAddressToPath( const StubAddress & addrStub );
 
         /**
          * \brief   Instantiate Stub Address from given address path.
@@ -96,11 +99,11 @@ namespace areg
          * \param   roleName        The role name of holder component
          * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
          **/
-        StubAddress( const areg::String & serviceName
-                , const areg::Version & serviceVersion
-                , areg::ServiceType serviceType
-                , const areg::String & roleName
-                , const areg::String & threadName = areg::String::getEmptyString() );
+        StubAddress( const String & serviceName
+                , const Version & serviceVersion
+                , ServiceType serviceType
+                , const String & roleName
+                , const String & threadName = String::getEmptyString() );
 
         /**
          * \brief   Initialize Stub address from given service item, role name and holder thread.
@@ -108,7 +111,7 @@ namespace areg
          * \param   roleName    The role name of holder component
          * \param   threadName  Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
          **/
-        StubAddress( const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
+        StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
 
         /**
          * \brief   Initialize Stub address from given service data, role name and holder thread.
@@ -116,7 +119,7 @@ namespace areg
          * \param   roleName        The role name of holder component
          * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
          **/
-        StubAddress( const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
+        StubAddress( const InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
         /**
          * \brief   Copy constructor.
@@ -134,19 +137,19 @@ namespace areg
          * \brief   Initializes stub address by copying service address data.
          * \param   source  The service address source of data to copy.
          **/
-        explicit StubAddress( const areg::ServiceAddress & source );
+        explicit StubAddress( const ServiceAddress & source );
 
         /**
          * \brief   Initializes stub address by moving service address data.
          * \param   source  The service address source of data to move.
          **/
-        explicit StubAddress( areg::ServiceAddress && source );
+        explicit StubAddress( ServiceAddress && source );
 
         /**
          * \brief   Initialize Stub address from stream.
          * \param   stream  The streaming object to read data.
          **/
-        StubAddress( const areg::InStream & stream);
+        StubAddress( const InStream & stream);
 
         /**
          * \brief   Destructor.
@@ -177,13 +180,13 @@ namespace areg
          * \brief   Copies Stub Address data from given service address.
          * \param   addrService The service address as a source of basic information.
          **/
-        inline StubAddress & operator = ( const areg::ServiceAddress & addrService );
+        inline StubAddress & operator = ( const ServiceAddress & addrService );
 
         /**
          * \brief   Copies Stub Address data from given service address.
          * \param   addrService The service address as a source of basic information.
          **/
-        inline StubAddress & operator = ( areg::ServiceAddress && addrService ) noexcept;
+        inline StubAddress & operator = ( ServiceAddress && addrService ) noexcept;
 
         /**
          * \brief   Checks equality of 2 stub address and returns true if objects are equal.
@@ -195,7 +198,7 @@ namespace areg
          * \brief   Checks compatibility of stub and proxy addresses and returns true if addresses of objects are compatible.
          * \param   addrProxy   The proxy address to check compatibility.
          **/
-        inline bool operator == ( const areg::ProxyAddress & addrProxy ) const;
+        inline bool operator == ( const ProxyAddress & addrProxy ) const;
 
         /**
          * \brief   Checks inequality of 2 stub address and returns true if objects are not equal.
@@ -217,14 +220,14 @@ namespace areg
          * \param   stream  The streaming object to read data.
          * \param   input   Service address object to initialize data.
          **/
-        friend AREG_API const areg::InStream & operator >> ( const areg::InStream & stream, StubAddress & input );
+        friend AREG_API const InStream & operator >> ( const InStream & stream, StubAddress & input );
 
         /**
          * \brief   Streaming operator. Writes proxy address into stream.
          * \param   stream  The streaming object to write data.
          * \param   output  Service address object to serialize.
          **/
-        friend AREG_API areg::OutStream & operator << ( areg::OutStream & stream, const StubAddress & output);
+        friend AREG_API OutStream & operator << ( OutStream & stream, const StubAddress & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes and operations
@@ -263,12 +266,12 @@ namespace areg
         /**
          * \brief   Returns stub communication channel
          **/
-        inline const areg::Channel & getChannel() const;
+        inline const Channel & getChannel() const;
 
         /**
          * \brief   Sets stub communication channel.
          **/
-        inline void setChannel( const areg::Channel & channel );
+        inline void setChannel( const Channel & channel );
 
         /**
          * \brief   Returns stub cookies value
@@ -293,13 +296,13 @@ namespace areg
         /**
          * \brief   Returns the service owner thread name.
          **/
-        inline const areg::String & getThread() const;
+        inline const String & getThread() const;
 
         /**
          * \brief   Sets the service owner thread name.
          * \param   threadName  The thread name to set.
          **/
-        void setThread( const areg::String & threadName );
+        void setThread( const String & threadName );
 
         /**
          * \brief   Returns validity of stub address. 
@@ -317,7 +320,7 @@ namespace areg
          * \param   proxyAddress    The address of proxy to check compatibility
          * \return  Returns true if proxy is compatible with proxy. Otherwise it returns false.
          **/
-        bool isProxyCompatible( const areg::ProxyAddress & proxyAddress ) const;
+        bool isProxyCompatible( const ProxyAddress & proxyAddress ) const;
 
         /**
          * \brief   Triggered to deliver given service event to target. Returns true if event is delivered.
@@ -326,14 +329,14 @@ namespace areg
          * \note    For remote events, it returns true if event is queued to be delivered and returned boolean value does not
          *          indicate that the target component received event.
          **/
-        bool deliverServiceEvent( areg::ServiceRequestEvent & serviceEvent ) const;
+        bool deliverServiceEvent( ServiceRequestEvent & serviceEvent ) const;
 
         /**
          * \brief   Converts Stub address to string as a Address Path, containing
          *          path separator.
          * \return  Returns converted path of Stub as string, containing Stub address information
          **/
-        areg::String convToString() const;
+        String convToString() const;
 
         /**
          * \brief   Instantiate Stub Address from given address path.
@@ -367,11 +370,11 @@ namespace areg
         /**
          * \brief   The name of owner thread.
          **/
-        areg::String          mThreadName;
+        String          mThreadName;
         /**
          * \brief   The communication channel.
          **/
-        areg::Channel         mChannel;
+        Channel         mChannel;
 
     private:
         /**
@@ -392,7 +395,7 @@ namespace areg
     {
         if (this != &source)
         {
-            static_cast<areg::ServiceAddress &>(*this) = static_cast<const areg::ServiceAddress &>(source);
+            static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
             mThreadName = source.mThreadName;
             mChannel    = source.mChannel;
             mMagicNum   = source.mMagicNum;
@@ -405,7 +408,7 @@ namespace areg
     {
         if ( this != &source )
         {
-            static_cast<areg::ServiceAddress &>(*this) = static_cast<areg::ServiceAddress &&>(source);
+            static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
             mThreadName = std::move(source.mThreadName);
             mChannel    = std::move(source.mChannel);
             mMagicNum   = source.mMagicNum;
@@ -414,26 +417,26 @@ namespace areg
         return (*this);
     }
 
-    inline StubAddress & StubAddress::operator = (const areg::ServiceAddress & addrService)
+    inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService)
     {
-        if ( static_cast<const areg::ServiceAddress *>(this) != &addrService)
+        if ( static_cast<const ServiceAddress *>(this) != &addrService)
         {
-            static_cast<areg::ServiceAddress &>(*this) = static_cast<const areg::ServiceAddress &>(addrService);
-            mThreadName = areg::String::getEmptyString();
-            mChannel    = areg::Channel();
+            static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
+            mThreadName = String::getEmptyString();
+            mChannel    = Channel();
             mMagicNum   = StubAddress::_magicNumber(*this);
         }
 
         return (*this);
     }
 
-    inline StubAddress & StubAddress::operator = ( areg::ServiceAddress && addrService ) noexcept
+    inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) noexcept
     {
-        if ( static_cast<const areg::ServiceAddress *>(this) != &addrService )
+        if ( static_cast<const ServiceAddress *>(this) != &addrService )
         {
-            static_cast<areg::ServiceAddress &>(*this) = static_cast<areg::ServiceAddress &&>(addrService);
-            mThreadName = areg::String::getEmptyString();
-            mChannel    = areg::Channel( );
+            static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
+            mThreadName = String::getEmptyString();
+            mChannel    = Channel( );
             mMagicNum   = StubAddress::_magicNumber( *this );
         }
 
@@ -450,7 +453,7 @@ namespace areg
         return (mMagicNum != other.mMagicNum) || (mChannel.getCookie() != other.mChannel.getCookie());
     }
 
-    inline bool StubAddress::operator == ( const areg::ProxyAddress & addrProxy ) const
+    inline bool StubAddress::operator == ( const ProxyAddress & addrProxy ) const
     {
         return isProxyCompatible(addrProxy);
     }
@@ -462,45 +465,45 @@ namespace areg
 
     inline bool StubAddress::isLocalAddress() const
     {
-        return mChannel.getCookie() == areg::COOKIE_LOCAL;
+        return mChannel.getCookie() == COOKIE_LOCAL;
     }
 
     inline bool StubAddress::isRemoteAddress() const
     {
-        return (mChannel.getCookie() >= areg::COOKIE_ANY);
+        return (mChannel.getCookie() >= COOKIE_ANY);
     }
 
     inline bool StubAddress::isSourceLocal() const
     {
-        return (mChannel.getCookie( ) == areg::COOKIE_LOCAL) && (mChannel.getSource( ) != 0);
+        return (mChannel.getCookie( ) == COOKIE_LOCAL) && (mChannel.getSource( ) != 0);
     }
 
     inline bool StubAddress::isSourcePublic() const
     {
-        return (mChannel.getCookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
+        return (mChannel.getCookie( ) >= COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
     }
 
     inline bool StubAddress::isTargetLocal() const
     {
-        return (mChannel.getCookie( ) == areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+        return (mChannel.getCookie( ) == COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
     }
 
     inline bool StubAddress::isTargetPublic() const
     {
-        return (mChannel.getCookie( ) >= areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+        return (mChannel.getCookie( ) >= COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
     }
 
-    inline const areg::String & StubAddress::getThread() const
+    inline const String & StubAddress::getThread() const
     {
         return mThreadName;
     }
 
-    inline const areg::Channel & StubAddress::getChannel() const
+    inline const Channel & StubAddress::getChannel() const
     {
         return mChannel;
     }
 
-    inline void StubAddress::setChannel(const areg::Channel & channel)
+    inline void StubAddress::setChannel(const Channel & channel)
     {
         mChannel = channel;
     }

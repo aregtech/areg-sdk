@@ -33,11 +33,14 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Application; }
-namespace areg { class StubAddress; }
-namespace areg { class ProxyAddress; }
-namespace areg { class ServiceRequestEvent; }
-namespace areg { class ServiceResponseEvent; }
+namespace areg
+{
+    class Application;
+    class StubAddress;
+    class ProxyAddress;
+    class ServiceRequestEvent;
+    class ServiceResponseEvent;
+}
 
 namespace areg
 {
@@ -67,13 +70,13 @@ namespace areg
      *          To start application Service Manager, use Application::initialize() method,
      *          which should be called before any model is loaded.
      **/
-    class ServiceManager    : private   areg::DispatcherThread
-                            , private   areg::ServiceManagerEventConsumer
-                            , private   areg::ConnectionConsumer
-                            , private   areg::RegistrationConsumer
+    class ServiceManager    : private   DispatcherThread
+                            , private   ServiceManagerEventConsumer
+                            , private   ConnectionConsumer
+                            , private   RegistrationConsumer
     {
-        friend class areg::Application;
-        friend class areg::ServiceManagerEventProcessor;
+        friend class Application;
+        friend class ServiceManagerEventProcessor;
     //////////////////////////////////////////////////////////////////////////
     // Declare Runtime
     //////////////////////////////////////////////////////////////////////////
@@ -101,7 +104,7 @@ namespace areg
          * \param   whichServer     The address of Stub Server object, which has been
          *                          started and requesting registration at Service Manager Module.
          **/
-        static void requestRegisterServer( const areg::StubAddress & whichServer );
+        static void requestRegisterServer( const StubAddress & whichServer );
 
         /**
          * \brief   Static method to be called globally.
@@ -115,7 +118,7 @@ namespace areg
          * \param   whichServer     The address of Stub Server object, which has been.
          * \param   reason          The reason to unregister the service provider.
          **/
-        static void requestUnregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason );
+        static void requestUnregisterServer( const StubAddress & whichServer, const DisconnectReason reason );
 
         /**
          * \brief   Static method to be called globally.
@@ -131,7 +134,7 @@ namespace areg
          * \param   whichClient     The address of Proxy client object, which has been
          *                          started and requesting registration at Service Manager Module.
          **/
-        static void requestRegisterClient( const areg::ProxyAddress & whichClient );
+        static void requestRegisterClient( const ProxyAddress & whichClient );
 
         /**
          * \brief   Static method to be called when a proxy is shutting down
@@ -145,7 +148,7 @@ namespace areg
          *                          unregistering at Service Manager Module.
          * \param   reason          The reason to unregister the service consumer
          **/
-        static void requestUnregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason );
+        static void requestUnregisterClient( const ProxyAddress & whichClient, const DisconnectReason reason );
 
         /**
          * \brief   Static method to be called globally.
@@ -156,7 +159,7 @@ namespace areg
          * 
          * \param   whichThread     The instance of valid component thread.
          */
-        static void requestRecreateThread( const areg::ComponentThread & whichThread );
+        static void requestRecreateThread( const ComponentThread & whichThread );
 
         /**
          * \brief   The function returns true, if Service Manager is running and ready to
@@ -266,7 +269,7 @@ namespace areg
          * \return  Returns true if router client successfully started.
          * \see     _routingServiceConfigure, _routingServiceStop
          **/
-        static bool _routingServiceStart( const areg::String & ipAddress, uint16_t portNr );
+        static bool _routingServiceStart( const String & ipAddress, uint16_t portNr );
 
         /**
          * \brief   Call to stop router client.
@@ -295,7 +298,7 @@ namespace areg
          * 
          * \param   componentThread The name of the thread to create and restart.
          **/
-        static void _requestCreateThread( const areg::String & componentThread );
+        static void _requestCreateThread( const String & componentThread );
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides
@@ -312,7 +315,7 @@ namespace areg
          *                  default constructor and assigning operator.
          *                  This object is not used for IPC.
          **/
-        void processEvent( const areg::ServiceManagerEventData & data ) override;
+        void processEvent( const ServiceManagerEventData & data ) override;
 
     /************************************************************************/
     // EventRouter Interface overrides.
@@ -324,7 +327,7 @@ namespace areg
          * \return	Returns true if target was found and the event
          *          delivered with success. Otherwise it returns false.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
         /**
          * \brief   Call to enable or disable event dispatching threads to receive events.
@@ -341,13 +344,13 @@ namespace areg
          * \brief   Triggered when remote service connection and communication channel is established.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        void connectedRemoteServiceChannel( const areg::Channel & channel ) override;
+        void connectedRemoteServiceChannel( const Channel & channel ) override;
 
         /**
          * \brief   Triggered when disconnected remote service connection and communication channel.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        void disconnectedRemoteServiceChannel( const areg::Channel & channel ) override;
+        void disconnectedRemoteServiceChannel( const Channel & channel ) override;
 
         /**
          * \brief   Triggered when remote service connection and communication channel is lost.
@@ -355,7 +358,7 @@ namespace areg
          *          receive data, and it was not stopped by API call.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        void lostRemoteServiceChannel( const areg::Channel & channel ) override;
+        void lostRemoteServiceChannel( const Channel & channel ) override;
 
     /************************************************************************/
     // RegistrationConsumer overrides
@@ -369,19 +372,19 @@ namespace areg
          * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
          * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
          **/
-        void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumer ) const override;
+        void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumer ) const override;
 
         /**
          * \brief   Triggered when a remote service provider is registered in the system.
          * \param   stub    The address of remote service provider that has been registered.
          **/
-        void registeredRemoteServiceProvider( const areg::StubAddress & stub ) override;
+        void registeredRemoteServiceProvider( const StubAddress & stub ) override;
 
         /**
          * \brief   Triggered when a remote service consumer is registered in the system.
          * \param   proxy   The address of remote service consumer that has been registered.
          **/
-        void registeredRemoteServiceConsumer( const areg::ProxyAddress & proxy ) override;
+        void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
 
         /**
          * \brief   Triggered when a remote service provider is unregistered from the system.
@@ -390,7 +393,7 @@ namespace areg
          * \param   cookie  The cookie of source that has initiated to unregister provider.
          *                  The parameter is ignored if 'areg::COOKIE_ANY'.
          **/
-        void unregisteredRemoteServiceProvider( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+        void unregisteredRemoteServiceProvider( const StubAddress & stub, DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
         /**
          * \brief   Triggered when a remote service consumer is unregistered from the system.
@@ -399,7 +402,7 @@ namespace areg
          * \param   cookie  The cookie of source that has initiated to unregister consumer.
          *                  The parameter is ignored if 'areg::COOKIE_ANY'.
          **/
-        void unregisteredRemoteServiceConsumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+        void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations and attributes
@@ -408,12 +411,12 @@ namespace areg
         /**
          * \brief   Returns the instance of remote servicing handler.
          **/
-        inline areg::ConnectionProvider& getServiceConnectionProvider();
+        inline ConnectionProvider& getServiceConnectionProvider();
 
         /**
          * \brief   Returns the instance of remote servicing handler.
          **/
-        inline areg::RegistrationProvider& getServiceRegisterProvider();
+        inline RegistrationProvider& getServiceRegisterProvider();
 
         /**
          * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
@@ -449,15 +452,15 @@ namespace areg
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        areg::ServiceManagerEventProcessor    mEventProcessor;
+        ServiceManagerEventProcessor    mEventProcessor;
         /**
          * \brief   The connection service.
          **/
-        areg::RouterClient                    mServiceClient;
+        RouterClient                    mServiceClient;
         /**
          * \brief   Synchronization object, for multi-threading access.
          **/
-        mutable areg::ResourceLock            mLock;
+        mutable ResourceLock            mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden method calls
@@ -470,14 +473,14 @@ namespace areg
     // ServiceManager class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::ConnectionProvider& ServiceManager::getServiceConnectionProvider()
+    inline ConnectionProvider& ServiceManager::getServiceConnectionProvider()
     {
-        return static_cast<areg::ConnectionProvider&>(mServiceClient);
+        return static_cast<ConnectionProvider&>(mServiceClient);
     }
 
-    inline areg::RegistrationProvider& ServiceManager::getServiceRegisterProvider()
+    inline RegistrationProvider& ServiceManager::getServiceRegisterProvider()
     {
-        return static_cast<areg::RegistrationProvider&>(mServiceClient);
+        return static_cast<RegistrationProvider&>(mServiceClient);
     }
 
     inline ServiceManager & ServiceManager::self()

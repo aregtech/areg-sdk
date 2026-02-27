@@ -45,20 +45,20 @@ namespace areg
 {
 
 
-    ServiceManagerEventProcessor::ServiceManagerEventProcessor( areg::ServiceManager & serviceManager )
+    ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & serviceManager )
         : mServiceManager   ( serviceManager )
         , mServerList       ( )
     {
     }
 
-    void ServiceManagerEventProcessor::processServiceEvent(   areg::ServiceManagerEventData::ServiceManagerCommand cmdService
-                                                            , const areg::InStream& stream
-                                                            , areg::ConnectionProvider& connectProvider
-                                                            , areg::RegistrationProvider& registerProvider )
+    void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
+                                                            , const InStream& stream
+                                                            , ConnectionProvider& connectProvider
+                                                            , RegistrationProvider& registerProvider )
     {
         switch ( cmdService )
         {
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
             {
                 mServerList.clear( );
                 connectProvider.disconnectServiceHost( );
@@ -67,20 +67,20 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
             {
                 for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
                 {
-                    areg::ServerInfo si;
-                    areg::ClientList clientList;
+                    ServerInfo si;
+                    ClientList clientList;
 
                     mServerList.getAtPosition( mapPos, si, clientList );
                     for ( auto listPos = clientList.firstPosition( ); clientList.isValidPosition( listPos ); listPos = clientList.nextPosition( listPos ) )
                     {
-                        const areg::ClientInfo & client = clientList.valueAtPosition( listPos );
+                        const ClientInfo & client = clientList.valueAtPosition( listPos );
                         if ( client.isConnected( ) )
                         {
-                            _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), areg::ServiceConnectionState::Disconnected );
+                            _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), ServiceConnectionState::Disconnected );
                         }
                     }
                 }
@@ -92,10 +92,10 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
             {
-                areg::ProxyAddress  addrProxy;
-                areg::Channel       channel;
+                ProxyAddress  addrProxy;
+                Channel       channel;
                 stream >> addrProxy;
                 stream >> channel;
                 addrProxy.setChannel( channel );
@@ -103,11 +103,11 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
             {
-                areg::ProxyAddress  addrProxy;
-                areg::Channel       channel;
-                areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
+                ProxyAddress  addrProxy;
+                Channel       channel;
+                DisconnectReason reason{DisconnectReason::UndefinedReason};
                 stream >> addrProxy;
                 stream >> channel;
                 stream >> reason;
@@ -116,10 +116,10 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
             {
-                areg::StubAddress   addrstub;
-                areg::Channel       channel;
+                StubAddress   addrstub;
+                Channel       channel;
                 stream >> addrstub;
                 stream >> channel;
                 addrstub.setChannel( channel );
@@ -127,11 +127,11 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
             {
-                areg::StubAddress   addrstub;
-                areg::Channel       channel;
-                areg::DisconnectReason reason{areg::DisconnectReason::UndefinedReason};
+                StubAddress   addrstub;
+                Channel       channel;
+                DisconnectReason reason{DisconnectReason::UndefinedReason};
                 stream >> addrstub;
                 stream >> channel;
                 stream >> reason;
@@ -140,10 +140,10 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
             {
-                areg::RemoteServiceKind service{ areg::RemoteServiceKind::Unknown };
-                uint32_t connectTypes{ static_cast<uint32_t>(areg::ConnectionType::Undefined) };
+                RemoteServiceKind service{ RemoteServiceKind::Unknown };
+                uint32_t connectTypes{ static_cast<uint32_t>(ConnectionType::Undefined) };
                 stream >> service;
                 stream >> connectTypes;
 
@@ -151,10 +151,10 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
             {
-                areg::RemoteServiceKind service{ areg::RemoteServiceKind::Unknown };
-                uint32_t connectTypes{ static_cast<uint32_t>(areg::ConnectionType::Undefined) };
+                RemoteServiceKind service{ RemoteServiceKind::Unknown };
+                uint32_t connectTypes{ static_cast<uint32_t>(ConnectionType::Undefined) };
                 stream >> service;
                 stream >> connectTypes;
 
@@ -165,9 +165,9 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
             {
-                areg::String   ipAddress;
+                String   ipAddress;
                 uint16_t portNr = 0;
                 stream >> ipAddress;
                 stream >> portNr;
@@ -180,27 +180,27 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
             {
                 connectProvider.disconnectServiceHost( );
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
             {
-                for ( areg::ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+                for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
                 {
-                    const areg::StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                    const areg::ClientList & clientList = mServerList.valueAtPosition( posMap );
+                    const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
+                    const ClientList & clientList = mServerList.valueAtPosition( posMap );
 
                     if ( server.isServicePublic( ) && server.isLocalAddress( ) && server.isValid( ) )
                     {
                         registerProvider.registerServiceProvider( server );
                     }
 
-                    for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
                     {
-                        const areg::ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
+                        const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
                         if ( proxy.isServicePublic( ) && (proxy.isTargetLocal( ) == false) && proxy.isValid( ) )
                         {
                             registerProvider.registerServiceConsumer( proxy );
@@ -210,27 +210,27 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
             {
                 // Create service provider and service consumer list
                 // to be able to unregister entries, because they are removing
                 // elements from the existing list and it may invalidate position object.
-                areg::ArrayList<areg::StubAddress> stubList;
-                areg::ArrayList<areg::ProxyAddress> proxyList;
-                for ( areg::ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+                ArrayList<StubAddress> stubList;
+                ArrayList<ProxyAddress> proxyList;
+                for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
                 {
-                    const areg::StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                    const areg::ClientList & clientList = mServerList.valueAtPosition( posMap );
+                    const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
+                    const ClientList & clientList = mServerList.valueAtPosition( posMap );
 
                     if ( server.isServicePublic( ) && server.isRemoteAddress( ) && server.isValid( ) )
                     {
                         stubList.add( server );
                     }
 
-                    for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
                     {
-                        const areg::ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
+                        const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
                         if ( proxy.isServicePublic( ) && proxy.isRemoteAddress( ) && proxy.isValid( ) )
                         {
                             proxyList.add( proxy );
@@ -238,10 +238,10 @@ namespace areg
                     }
                 }
 
-                areg::DisconnectReason reason { areg::DisconnectReason::ProviderDisconnected };
-                if ( cmdService == areg::ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection )
+                DisconnectReason reason { DisconnectReason::ProviderDisconnected };
+                if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection )
                 {
-                    reason = areg::DisconnectReason::ServiceLost;
+                    reason = DisconnectReason::ServiceLost;
                 }
 
                 for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
@@ -256,20 +256,20 @@ namespace areg
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
             {
-                areg::String threadName;
+                String threadName;
                 stream >> threadName;
                 if ( _terminateComponentThread( threadName ) )
                 {
-                    areg::ServiceManager::_requestCreateThread( threadName );
+                    ServiceManager::_requestCreateThread( threadName );
                 }
             }
             break;
 
-        case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
             {
-                areg::String threadName;
+                String threadName;
                 stream >> threadName;
                 _startComponentThread( threadName );
             }
@@ -281,7 +281,7 @@ namespace areg
         }
     }
 
-    void ServiceManagerEventProcessor::_registerServer( const areg::StubAddress & whichServer, areg::RegistrationProvider& registerProvider)
+    void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider)
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
 
@@ -290,21 +290,21 @@ namespace areg
             registerProvider.registerServiceProvider( whichServer );
         }
 
-        areg::ClientList clientList;
+        ClientList clientList;
 
     #if AREG_LOGS
-        const areg::ServerInfo & server = mServerList.registerServer( whichServer, clientList );
+        const ServerInfo & server = mServerList.registerServer( whichServer, clientList );
         LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
-                   , areg::StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-                   , areg::getString( server.getConnectionStatus( ) )
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( server.getConnectionStatus( ) )
                    , clientList.getSize( ) );
     #else   // !AREG_LOGS
         mServerList.registerServer( whichServer, clientList );
     #endif  // !AREG_LOGS
 
-        for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+        for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
         {
-            const areg::ClientInfo & client{ clientList.valueAtPosition( pos ) };
+            const ClientInfo & client{ clientList.valueAtPosition( pos ) };
             if ( client.isConnected( ) )
             {
                 _sendClientConnectedEvent( client.getAddress( ), whichServer );
@@ -312,7 +312,7 @@ namespace areg
         }
     }
 
-    void ServiceManagerEventProcessor::_unregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider)
+    void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const DisconnectReason reason, RegistrationProvider& registerProvider)
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
@@ -321,14 +321,14 @@ namespace areg
             registerProvider.unregisterServiceProvider( whichServer, reason );
         }
 
-        areg::ClientList clientList;
+        ClientList clientList;
 
     #if AREG_LOGS
-        areg::ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
+        ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
         LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
-                   , areg::StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-                   , areg::getString( reason )
-                   , areg::getString( server.getConnectionStatus( ) )
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( reason )
+                   , getString( server.getConnectionStatus( ) )
                    , clientList.getSize( ) );
 
     #else   // AREG_LOGS
@@ -337,10 +337,10 @@ namespace areg
 
     #endif  // AREG_LOGS
 
-        areg::ServiceConnectionState status = areg::serviceConnection( reason );
-        for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+        ServiceConnectionState status = serviceConnection( reason );
+        for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
         {
-            const areg::ClientInfo & client{ clientList.valueAtPosition( pos ) };
+            const ClientInfo & client{ clientList.valueAtPosition( pos ) };
             if ( client.isConnected( ) )
             {
                 _sendClientDisconnectEvent( client.getAddress( ), whichServer, status );
@@ -348,7 +348,7 @@ namespace areg
         }
     }
 
-    void ServiceManagerEventProcessor::_registerClient( const areg::ProxyAddress & whichClient, areg::RegistrationProvider& registerProvider)
+    void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
 
@@ -357,13 +357,13 @@ namespace areg
             registerProvider.registerServiceConsumer( whichClient );
         }
 
-        areg::ClientInfo client;
-        const areg::ServerInfo & server = mServerList.registerClient( whichClient, client );
+        ClientInfo client;
+        const ServerInfo & server = mServerList.registerClient( whichClient, client );
 
         LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
-                   , areg::ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
-                   , areg::StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-                   , areg::getString( client.getConnectionStatus( ) ) );
+                   , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( client.getConnectionStatus( ) ) );
 
         if ( client.isConnected( ) )
         {
@@ -371,11 +371,11 @@ namespace areg
         }
         else
         {
-            LOG_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", areg::ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+            LOG_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
         }
     }
 
-    void ServiceManagerEventProcessor::_unregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider)
+    void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const DisconnectReason reason, RegistrationProvider& registerProvider)
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 
@@ -384,48 +384,48 @@ namespace areg
             registerProvider.unregisterServiceConsumer( whichClient, reason );
         }
 
-        areg::ClientInfo client;
+        ClientInfo client;
 
-        areg::ServerInfo server = mServerList.unregisterClient( whichClient, client );
+        ServerInfo server = mServerList.unregisterClient( whichClient, client );
         LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
-                   , areg::ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
-                   , areg::StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-                   , areg::getString( client.getConnectionStatus( ) ) );
+                   , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( client.getConnectionStatus( ) ) );
 
         // Unregister client first, then send event that client does not receive notification
         if ( client.isConnected( ) )
         {
-            _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), areg::serviceConnection( reason ) );
+            _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), serviceConnection( reason ) );
         }
         else
         {
-            LOG_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", areg::ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+            LOG_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
         }
     }
 
-    void ServiceManagerEventProcessor::_sendClientConnectedEvent( const areg::ProxyAddress & client, const areg::StubAddress & server ) const
+    void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
-        if ( server.isLocalAddress( ) && server.getSource( ) != areg::SOURCE_UNKNOWN )
+        if ( server.isLocalAddress( ) && server.getSource( ) != SOURCE_UNKNOWN )
         {
             LOG_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
-                       , areg::StubAddress::convAddressToPath( server ).getString( )
-                       , areg::ProxyAddress::convAddressToPath( client ).getString( ) );
+                       , StubAddress::convAddressToPath( server ).getString( )
+                       , ProxyAddress::convAddressToPath( client ).getString( ) );
 
-            areg::StubConnectEvent * clientConnect = DEBUG_NEW areg::StubConnectEvent( client, server, areg::ServiceConnectionState::Connected );
+            StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, ServiceConnectionState::Connected );
             if ( clientConnect != nullptr )
             {
                 server.deliverServiceEvent( *clientConnect );
             }
         }
 
-        if ( client.isLocalAddress( ) && client.getSource( ) != areg::SOURCE_UNKNOWN )
+        if ( client.isLocalAddress( ) && client.getSource( ) != SOURCE_UNKNOWN )
         {
             LOG_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
-                       , areg::ProxyAddress::convAddressToPath( client ).getString( )
-                       , areg::StubAddress::convAddressToPath( server ).getString( ) );
+                       , ProxyAddress::convAddressToPath( client ).getString( )
+                       , StubAddress::convAddressToPath( server ).getString( ) );
 
-            areg::ProxyConnectEvent * proxyConnect = DEBUG_NEW areg::ProxyConnectEvent( client, server, areg::ServiceConnectionState::Connected );
+            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, ServiceConnectionState::Connected );
             if ( proxyConnect != nullptr )
             {
                 client.deliverServiceEvent( *proxyConnect );
@@ -433,19 +433,19 @@ namespace areg
         }
     }
 
-    void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const areg::ProxyAddress & client
-                                                                 , const areg::StubAddress & server
-                                                                 , const areg::ServiceConnectionState status ) const
+    void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
+                                                                 , const StubAddress & server
+                                                                 , const ServiceConnectionState status ) const
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
 
-        if ( server.isLocalAddress( ) && server.getSource( ) != areg::SOURCE_UNKNOWN )
+        if ( server.isLocalAddress( ) && server.getSource( ) != SOURCE_UNKNOWN )
         {
             LOG_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
-                       , areg::StubAddress::convAddressToPath( server ).getString( )
-                       , areg::ProxyAddress::convAddressToPath( client ).getString( ) );
+                       , StubAddress::convAddressToPath( server ).getString( )
+                       , ProxyAddress::convAddressToPath( client ).getString( ) );
 
-            areg::StubConnectEvent * clientConnect = DEBUG_NEW areg::StubConnectEvent( client, server, status );
+            StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
             if ( clientConnect != nullptr )
             {
                 server.deliverServiceEvent( *clientConnect );
@@ -455,10 +455,10 @@ namespace areg
         if ( client.isLocalAddress( ) )
         {
             LOG_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
-                       , areg::ProxyAddress::convAddressToPath( client ).getString( )
-                       , areg::StubAddress::convAddressToPath( server ).getString( ) );
+                       , ProxyAddress::convAddressToPath( client ).getString( )
+                       , StubAddress::convAddressToPath( server ).getString( ) );
 
-            areg::ProxyConnectEvent * proxyConnect = DEBUG_NEW areg::ProxyConnectEvent( client, server, status );
+            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
             if ( proxyConnect != nullptr )
             {
                 client.deliverServiceEvent( *proxyConnect );
@@ -466,14 +466,14 @@ namespace areg
         }
     }
 
-    bool ServiceManagerEventProcessor::_terminateComponentThread( const areg::String & threadName )
+    bool ServiceManagerEventProcessor::_terminateComponentThread( const String & threadName )
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
 
         bool result{ false };
 
-        areg::Thread * thread = areg::Thread::findThreadByName( threadName );
-        areg::ComponentThread * compThread = AREG_RUNTIME_CAST( thread, areg::ComponentThread );
+        Thread * thread = Thread::findThreadByName( threadName );
+        ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
         if ( compThread != nullptr )
         {
             LOG_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );
@@ -488,16 +488,16 @@ namespace areg
         return result;
     }
 
-    void ServiceManagerEventProcessor::_startComponentThread( const areg::String & threadName )
+    void ServiceManagerEventProcessor::_startComponentThread( const String & threadName )
     {
         LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
-        const areg::ComponentThreadEntry & entry = areg::ComponentLoader::findThreadEntry( threadName );
-        areg::Thread * thread = areg::Thread::findThreadByName( threadName );
+        const ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
+        Thread * thread = Thread::findThreadByName( threadName );
         if ( entry.isValid( ) && (thread == nullptr) )
         {
-            areg::ComponentThread * compThread = DEBUG_NEW areg::ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
-            if ( (compThread != nullptr) && compThread->createThread( areg::WAIT_INFINITE ) )
+            ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
+            if ( (compThread != nullptr) && compThread->createThread( WAIT_INFINITE ) )
             {
                 LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );
             }

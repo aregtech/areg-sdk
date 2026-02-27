@@ -23,7 +23,10 @@
 #include "areg/base/Stack.hpp"
 #include "areg/component/Event.hpp"
 
-namespace areg { class RuntimeClassID; }
+namespace areg
+{
+    class RuntimeClassID;
+}
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
@@ -50,7 +53,7 @@ namespace areg
      *          by other developers. The "Exit" events should be immediately processed and they are not removed from the 
      *          stack until they are not processed by thread dispatcher.
      **/
-    class SortedEventStack  : protected areg::ConcurrentStack<areg::Event *>
+    class SortedEventStack  : protected ConcurrentStack<Event *>
     {
         //!< The maximum size of the event queue stack
         static constexpr uint32_t   MAX_QUEUE_SIZE  { std::numeric_limits<uint32_t>::max() };
@@ -79,28 +82,28 @@ namespace areg
          *                      to remove all events. Only "Exit" events are untouched if they are present.
          * \return  Returns number of elements in the stack. Returns zero if empty.
          **/
-        uint32_t deleteAllLowerPriority(areg::Event::EventPriority eventPrio);
+        uint32_t deleteAllLowerPriority(Event::EventPriority eventPrio);
 
         /**
          * \brief   Deletes all events, except those that are with the specified class ID, except "Exit" event.
          * \param   eventClassId    The class ID of the event to ignore to delete.
          * \return  Returns number of elements in the stack. Returns zero if empty.
          **/
-        uint32_t deleteAllExceptClass(const areg::RuntimeClassID& eventClassId);
+        uint32_t deleteAllExceptClass(const RuntimeClassID& eventClassId);
 
         /**
          * \brief   Deletes all events with the specified priority, except "Exit" event, which should be processed.
          * \param   eventPrio   The priority of events to delete.
          * \return  Returns number of elements in the stack. Returns zero if empty.
          **/
-        uint32_t deleteAllMatchPriority(areg::Event::EventPriority eventPrio);
+        uint32_t deleteAllMatchPriority(Event::EventPriority eventPrio);
 
         /**
          * \brief   Deletes all events, which match the specified class ID.
          * \param   eventClassId    The class ID of the event to delete.
          * \return  Returns number of elements in the stack. Returns zero if empty.
          **/
-        uint32_t deleteAllMatchClass(const areg::RuntimeClassID& eventClassId);
+        uint32_t deleteAllMatchClass(const RuntimeClassID& eventClassId);
 
         /**
          * \brief   Pushes the event in the stack considering the priority, so that the events
@@ -109,7 +112,7 @@ namespace areg
          * \param[out]  removedEvent    The address of pointer to receive the removed event.
          * \return  Returns the number of elements in the stack.
          **/
-        uint32_t pushEvent(areg::Event * newEvent, areg::Event** removedEvent);
+        uint32_t pushEvent(Event * newEvent, Event** removedEvent);
 
         /**
          * \brief   Pops the event from the FIFO stack.
@@ -117,7 +120,7 @@ namespace areg
          *                          This parameter must not be nullptr, but it may point to the nullptr object.
          * \return  Returns the number of elements in the stack.
          **/
-        uint32_t popEvent(areg::Event** stackEvent);
+        uint32_t popEvent(Event** stackEvent);
 
         /**
          * \brief   Returns the maximum size of the stack.
@@ -153,7 +156,7 @@ namespace areg
          * \brief   Inserts the event at the end of the stack. No priority is considered.
          *          For example, the events with low priority are inserted at the end of the stack.
          **/
-        inline void _insertAtEnd(areg::Event * newEvent);
+        inline void _insertAtEnd(Event * newEvent);
 
         /**
          * \brief   Inserts the event object at the end of the event elements list of specified priority.
@@ -163,7 +166,7 @@ namespace areg
          * \param   newEvent    The event object to insert.
          * \param   eventPrio   The priority of event to search in the stack.
          **/
-        inline void _insertAfterPrio(areg::Event * newEvent, areg::Event::EventPriority eventPrio);
+        inline void _insertAfterPrio(Event * newEvent, Event::EventPriority eventPrio);
 
         /**
          * \brief   Inserts the event object before the elements of specified are queued.
@@ -173,13 +176,13 @@ namespace areg
          * \param   newEvent    The event object to insert.
          * \param   eventPrio   The priority of event to search in the stack.
          **/
-        inline void _insertBeforePrio(areg::Event * newEvent, areg::Event::EventPriority eventPrio);
+        inline void _insertBeforePrio(Event * newEvent, Event::EventPriority eventPrio);
 
         /**
          * \brief   Inserts the event element at the very begin of the stack, so that it is
          *          processed as soon as possible.
          **/
-        inline void _insertAtBegin(areg::Event * newEvent);
+        inline void _insertAtBegin(Event * newEvent);
 
         inline static constexpr uint32_t _calcQueueSize(uint32_t requestedSize);
 
@@ -208,7 +211,7 @@ namespace areg
 
     inline bool SortedEventStack::isEmpty() const
     {
-        areg::Lock lock(mSyncObject);
+        Lock lock(mSyncObject);
         return mValueList.empty();
     }
 

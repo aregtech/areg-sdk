@@ -30,32 +30,32 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Implement Runtime
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME(WorkerThread, areg::DispatcherThread)
+    AREG_IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    WorkerThread::WorkerThread( const areg::String & threadName
-                            , areg::Component & bindingComponent
-                            , areg::WorkerThreadConsumer & threadConsumer
+    WorkerThread::WorkerThread( const String & threadName
+                            , Component & bindingComponent
+                            , WorkerThreadConsumer & threadConsumer
                             , uint32_t watchdogTimeout/* = areg::WATCHDOG_IGNORE    */
                             , uint32_t stackSizeKb    /* = areg::STACK_SIZE_DEFAULT */
                             , uint32_t maxQueue       /* = areg::IGNORE_VALUE */ )
-        : areg::DispatcherThread      ( threadName, stackSizeKb, maxQueue )
+        : DispatcherThread      ( threadName, stackSizeKb, maxQueue )
 
         , mBindingComponent     ( bindingComponent )
         , mWorkerThreadConsumer ( threadConsumer )
         , mWatchdog             ( self(), watchdogTimeout )
     {
-        ASSERT(areg::isEmpty<char>(threadName) == false);
+        ASSERT(isEmpty<char>(threadName) == false);
     }
 
     //////////////////////////////////////////////////////////////////////////
     // Methods
     //////////////////////////////////////////////////////////////////////////
-    bool WorkerThread::postEvent( areg::Event& eventElem )
+    bool WorkerThread::postEvent( Event& eventElem )
     {
-        return areg::Event::isCustom(eventElem.getEventType()) && areg::EventDispatcher::postEvent(eventElem);
+        return Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
     }
 
     void WorkerThread::readyForEvents( bool isReady )
@@ -69,24 +69,24 @@ namespace areg
             mWorkerThreadConsumer.unregisterEventConsumers( self( ) );
         }
 
-        areg::DispatcherThread::readyForEvents(isReady);
+        DispatcherThread::readyForEvents(isReady);
     }
 
-    areg::DispatcherThread* WorkerThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
+    DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& whichClass )
     {
-        return (hasRegisteredConsumer(whichClass) ? static_cast<areg::DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
+        return (hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
     }
 
-    bool WorkerThread::dispatchEvent(areg::Event& eventElem)
+    bool WorkerThread::dispatchEvent(Event& eventElem)
     {
         mWatchdog.startGuard();
-        bool result = areg::DispatcherThread::dispatchEvent(eventElem);
+        bool result = DispatcherThread::dispatchEvent(eventElem);
         mWatchdog.stopGuard();
 
         return result;
     }
 
-    areg::ComponentThread & WorkerThread::getBindingComponentThread() const
+    ComponentThread & WorkerThread::getBindingComponentThread() const
     {
         return mBindingComponent.getMasterThread();
     }
@@ -96,7 +96,7 @@ namespace areg
         mHasStarted = false;
         removeAllEvents();
         mEventExit.setEvent();
-        areg::Thread::shutdownThread(areg::TIMEOUT_10_MS);
+        Thread::shutdownThread(TIMEOUT_10_MS);
 
         delete this;
     }

@@ -22,7 +22,10 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/ServiceDefs.hpp"
 
-namespace areg { class StubAddress; }
+namespace areg
+{
+    class StubAddress;
+}
 namespace areg
 {
     //////////////////////////////////////////////////////////////////////////
@@ -56,12 +59,12 @@ namespace areg
          * \brief   Initializes object and sets client Proxy address value.
          * \param   client  The Proxy address of the client
          **/
-        explicit ClientInfo( const areg::ProxyAddress & client );
+        explicit ClientInfo( const ProxyAddress & client );
         /**
          * \brief   Initializes object and sets client Proxy address value.
          * \param   client  The Proxy address of the client
          **/
-        explicit ClientInfo( areg::ProxyAddress && client ) noexcept;
+        explicit ClientInfo( ProxyAddress && client ) noexcept;
         /**
          * \brief   Copies values from given source.
          * \param   src     The source of data to copy.
@@ -96,13 +99,13 @@ namespace areg
          *          object is valid, it sets client in Waiting state
          * \param   client  The source of proxy address to extract data.
          **/
-        ClientInfo & operator = ( const areg::ProxyAddress & client );
+        ClientInfo & operator = ( const ProxyAddress & client );
         /**
          * \brief   Moves passed client Proxy address, if Service Info
          *          object is valid, it sets client in Waiting state
          * \param   client  The source of proxy address to extract data.
          **/
-        ClientInfo & operator = ( areg::ProxyAddress && client ) noexcept;
+        ClientInfo & operator = ( ProxyAddress && client ) noexcept;
 
         /**
          * \brief   Checks equality of 2 Client Info objects. 2 objects are equal if
@@ -119,7 +122,7 @@ namespace areg
          * \return  Returns true if proxy address of client service and given proxy address 
          *          are equal.
          **/
-        bool operator == ( const areg::ProxyAddress & client ) const;
+        bool operator == ( const ProxyAddress & client ) const;
         /**
          * \brief   Check equality / compatibility of servicing client and
          *          given stub address, and returns true if the proxy address
@@ -129,7 +132,7 @@ namespace areg
          * \return  Returns true if existing proxy address is compatible with
          *          given proxy address.
          **/
-        bool operator == ( const areg::StubAddress & server ) const;
+        bool operator == ( const StubAddress & server ) const;
 
         /**
          * \brief   Operator to covert client info to 32-bit unsigned integer.
@@ -145,7 +148,7 @@ namespace areg
         * \brief   Sets target server object in client info.
         * \param   addrStub    The address of targeted server component to set in client information.
         **/
-        void setTargetServer( const areg::StubAddress & addrStub );
+        void setTargetServer( const StubAddress & addrStub );
 
         /**
          * \brief   Called when server is in connected state.
@@ -158,17 +161,17 @@ namespace areg
          * \param   newConnection   The address of the Stub of server (service provider).
          *                          If valid address, this will change the state of client to connected.
          **/
-        void setConnectionStatus( areg::ServiceConnectionState newConnection );
+        void setConnectionStatus( ServiceConnectionState newConnection );
 
         /**
          * \brief   Returns the state of client.
          **/
-        inline areg::ServiceConnectionState getConnectionStatus() const;
+        inline ServiceConnectionState getConnectionStatus() const;
 
         /**
          * \brief   Returns the address of Proxy of client
          **/
-        inline const areg::ProxyAddress & getAddress() const;
+        inline const ProxyAddress & getAddress() const;
 
         /**
          * \brief   Returns true if client is in waiting state
@@ -187,36 +190,36 @@ namespace areg
         /**
          * \brief   The address of Proxy of client.
          **/
-        areg::ProxyAddress                  mClientAddress;
+        ProxyAddress                  mClientAddress;
 
         /**
          * \brief   The current state of client
          **/
-        areg::ServiceConnectionState  mClientState;
+        ServiceConnectionState  mClientState;
     };
 
     //////////////////////////////////////////////////////////////////////////
     // ClientInfo class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::ServiceConnectionState ClientInfo::getConnectionStatus() const
+    inline ServiceConnectionState ClientInfo::getConnectionStatus() const
     {
         return mClientState;
     }
 
-    inline const areg::ProxyAddress & ClientInfo::getAddress() const
+    inline const ProxyAddress & ClientInfo::getAddress() const
     {
         return mClientAddress;
     }
 
     inline bool ClientInfo::isWaitingConnection() const
     {
-        return (mClientState == areg::ServiceConnectionState::Pending);
+        return (mClientState == ServiceConnectionState::Pending);
     }
 
     inline bool ClientInfo::isConnected() const
     {
-        return (mClientState == areg::ServiceConnectionState::Connected);
+        return (mClientState == ServiceConnectionState::Connected);
     }
 
 } // namespace areg

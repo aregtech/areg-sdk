@@ -42,15 +42,21 @@
 // class StreamableEvent
     class StubEvent;
 // class EventConsumer
-    namespace areg { class StubEventConsumer; }
+namespace areg
+{
+    class StubEventConsumer;
+}
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ServiceRequestEvent; }
-namespace areg { class RequestEvent; }
-namespace areg { class NotifyRequestEvent; }
-namespace areg { class StubConnectEvent; }
+namespace areg
+{
+    class ServiceRequestEvent;
+    class RequestEvent;
+    class NotifyRequestEvent;
+    class StubConnectEvent;
+}
 
 namespace areg
 {
@@ -72,7 +78,7 @@ namespace areg
      *          By default it is marked as Service Internal to communicate with
      *          ServiceManager.
      **/
-    class AREG_API StubEvent  : public areg::StreamableEvent
+    class AREG_API StubEvent  : public StreamableEvent
     {
     /************************************************************************/
     // Friend classes
@@ -102,7 +108,7 @@ namespace areg
          * \param	toTarget    The address of target Stub
          * \param	eventType   The type of event.
          **/
-        StubEvent(const areg::StubAddress & toTarget, areg::Event::EventType eventType );
+        StubEvent(const StubAddress & toTarget, Event::EventType eventType );
 
         /**
          * \brief   Destructor.
@@ -128,7 +134,7 @@ namespace areg
         /**
          * \brief   Returns the address of Stub of event target.
          **/
-        inline const areg::StubAddress & getTargetStub() const;
+        inline const StubAddress & getTargetStub() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -157,7 +163,7 @@ namespace areg
         /**
          * \brief   Event target Stub address
          **/
-        areg::StubAddress   mTargetStubAddress;
+        StubAddress   mTargetStubAddress;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
@@ -177,7 +183,7 @@ namespace areg
      *          consumer of Stub specific events. It is extended in StubBase
      *          class, which is a base class for all Stub objects.
      **/
-    class AREG_API StubEventConsumer  : public areg::EventConsumer
+    class AREG_API StubEventConsumer  : public EventConsumer
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -187,7 +193,7 @@ namespace areg
          * \brief   Default constructor
          * \param   stubAddress The address of stub object, which is handling consumer
          **/
-        explicit StubEventConsumer( const areg::StubAddress & stubAddress );
+        explicit StubEventConsumer( const StubAddress & stubAddress );
 
         /**
          * \brief   Destructor
@@ -197,7 +203,7 @@ namespace areg
         /**
          * \brief   Returns the pointer to the currently processing event object.
          **/
-        inline const areg::Event* getCurrentEvent() const;
+        inline const Event* getCurrentEvent() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides, event processing functions.
@@ -211,7 +217,7 @@ namespace areg
          *                      which contains request ID and serialized
          *                      parameters.
          **/
-        virtual void processRequestEvent( areg::ServiceRequestEvent & eventElem ) = 0;
+        virtual void processRequestEvent( ServiceRequestEvent & eventElem ) = 0;
 
         /**
          * \brief	This event processing function is triggered when Stub
@@ -219,7 +225,7 @@ namespace areg
          * \param	eventElem	Service Request event object to process,
          *                      which contains attribute ID.
          **/
-        virtual void processAttributeEvent( areg::ServiceRequestEvent & eventElem ) = 0;
+        virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) = 0;
 
         /**
          * \brief	This function is triggered when component event should
@@ -234,7 +240,7 @@ namespace areg
          *          should be processed
          * \param	eventElem	Generic Event object to process.
          **/
-        virtual void processGenericEvent( areg::Event & eventElem ) = 0;
+        virtual void processGenericEvent( Event & eventElem ) = 0;
 
         /**
          * \brief   Triggered by system when stub is registered in service. The connection status indicated
@@ -242,14 +248,14 @@ namespace areg
          * \param   stubTarget  The address of registered service provider
          * \param   status      The connection status of the service provider.
          **/
-        virtual void processStubRegisteredEvent( const areg::StubAddress & stubTarget, ServiceConnectionState status ) = 0;
+        virtual void processStubRegisteredEvent( const StubAddress & stubTarget, ServiceConnectionState status ) = 0;
 
         /**
          * \brief   Send by system when client is requested connect / disconnect
          * \param   proxyAddress    The address of the service consumer proxy.
          * \param   status          The service consumer connection status.
          **/
-        virtual void processClientConnectEvent( const areg::ProxyAddress & proxyAddress, ServiceConnectionState status ) = 0;
+        virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, ServiceConnectionState status ) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -265,7 +271,7 @@ namespace areg
          *          dispatcher.
          * \param   eventElem   Event object to start processing.
          **/
-        void startEventProcessing( areg::Event & eventElem ) override;
+        void startEventProcessing( Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden operations
@@ -275,26 +281,26 @@ namespace areg
          * \brief   Processes request event
          * \param   requestEvent    The request event to process
          **/
-        void _localProcessRequestEvent( areg::RequestEvent & requestEvent );
+        void _localProcessRequestEvent( RequestEvent & requestEvent );
 
         /**
          * \brief   Processes notification request event.
          * \param   notifyRequest   The notification request event to process
          **/
-        void _localProcessNotifyRequestEvent( areg::NotifyRequestEvent & notifyRequest );
+        void _localProcessNotifyRequestEvent( NotifyRequestEvent & notifyRequest );
 
         /**
          * \brief   Processes connection update notification.
          *          Processes when service registered and when client connection changed.
          * \param   notifyConnect   The connection notification event.
          **/
-        void _localProcessConnectEvent( areg::StubConnectEvent & notifyConnect );
+        void _localProcessConnectEvent( StubConnectEvent & notifyConnect );
 
     private:
         //!< The address of stub object, which is handling consumer.
-        const areg::StubAddress & mStubAddress;
+        const StubAddress & mStubAddress;
         //!< The pointer to the currently processing event object.
-        areg::Event *             mCurEvent;
+        Event *             mCurEvent;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -312,12 +318,12 @@ namespace areg
     // StubEvent class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::StubAddress & StubEvent::getTargetStub() const
+    inline const StubAddress & StubEvent::getTargetStub() const
     {
         return mTargetStubAddress;
     }
 
-    inline const areg::Event* StubEventConsumer::getCurrentEvent() const
+    inline const Event* StubEventConsumer::getCurrentEvent() const
     {
         return mCurEvent;
     }

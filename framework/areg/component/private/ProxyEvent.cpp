@@ -30,19 +30,19 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ProxyEvent class, runtime implementation
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, areg::StreamableEvent)
+    AREG_IMPLEMENT_RUNTIME_EVENT(ProxyEvent, StreamableEvent)
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyEvent class, Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    ProxyEvent::ProxyEvent( const areg::ProxyAddress & targetProxy, areg::Event::EventType eventType )
-        : areg::StreamableEvent       (eventType)
+    ProxyEvent::ProxyEvent( const ProxyAddress & targetProxy, Event::EventType eventType )
+        : StreamableEvent       (eventType)
         , mTargetProxyAddress   (targetProxy)
     {
     }
 
-    ProxyEvent::ProxyEvent( const areg::InStream & stream )
-        : areg::StreamableEvent       ( stream )
+    ProxyEvent::ProxyEvent( const InStream & stream )
+        : StreamableEvent       ( stream )
         , mTargetProxyAddress   ( stream )
     {
     }
@@ -54,13 +54,13 @@ namespace areg
     {
         if ( mTargetThread == nullptr )
         {
-            areg::Thread * thread = areg::Thread::findThreadByName(mTargetProxyAddress.getThread());
-            registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, areg::DispatcherThread) : nullptr );
+            Thread * thread = Thread::findThreadByName(mTargetProxyAddress.getThread());
+            registerForThread( thread != nullptr ? AREG_RUNTIME_CAST(thread, DispatcherThread) : nullptr );
         }
 
         if ( mTargetThread != nullptr )
         {
-            areg::StreamableEvent::deliverEvent();
+            StreamableEvent::deliverEvent();
         }
         else
         {
@@ -68,16 +68,16 @@ namespace areg
         }
     }
 
-    const areg::InStream & ProxyEvent::readStream( const areg::InStream & stream )
+    const InStream & ProxyEvent::readStream( const InStream & stream )
     {
-        areg::StreamableEvent::readStream(stream);
+        StreamableEvent::readStream(stream);
         stream >> mTargetProxyAddress;
         return stream;
     }
 
-    areg::OutStream & ProxyEvent::writeStream( areg::OutStream & stream ) const
+    OutStream & ProxyEvent::writeStream( OutStream & stream ) const
     {
-        areg::StreamableEvent::writeStream(stream);
+        StreamableEvent::writeStream(stream);
         stream << mTargetProxyAddress;
         return stream;
     }
@@ -89,8 +89,8 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ProxyEventConsumer class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    areg::ProxyEventConsumer::ProxyEventConsumer( const areg::ProxyAddress & proxy )
-        : areg::EventConsumer   ( )
+    ProxyEventConsumer::ProxyEventConsumer( const ProxyAddress & proxy )
+        : EventConsumer   ( )
         , mProxyAddress     ( proxy )
     {
     }
@@ -98,21 +98,21 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ProxyEventConsumer class, methods
     //////////////////////////////////////////////////////////////////////////
-    inline void areg::ProxyEventConsumer::_localProcessResponseEvent(areg::ResponseEvent & eventResponse)
+    inline void ProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eventResponse)
     {
         switch (eventResponse.getDataType() )
         {
-        case areg::MessageDataType::RequestData:      // fall through
-        case areg::MessageDataType::ResponseData:
+        case MessageDataType::RequestData:      // fall through
+        case MessageDataType::ResponseData:
             processResponseEvent(eventResponse);
             break;
 
-        case areg::MessageDataType::AttributeData:
+        case MessageDataType::AttributeData:
             processAttributeEvent(eventResponse);
             break;
 
-        case areg::MessageDataType::ServiceData:      // fall through
-        case areg::MessageDataType::UndefinedData:
+        case MessageDataType::ServiceData:      // fall through
+        case MessageDataType::UndefinedData:
             ASSERT(false);
             break;
 
@@ -121,9 +121,9 @@ namespace areg
         }
     }
 
-    inline void areg::ProxyEventConsumer::_localProcessConnectEvent( areg::ProxyConnectEvent & eventConnect )
+    inline void ProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
     {
-        if ( eventConnect.getResponseId() == static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection) )
+        if ( eventConnect.getResponseId() == static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection) )
         {
             serviceConnectionUpdated( eventConnect.getStubAddress(), eventConnect.getTargetProxy().getChannel(), eventConnect.getConnectionStatus() );
         }
@@ -133,29 +133,29 @@ namespace areg
         }
     }
 
-    void areg::ProxyEventConsumer::startEventProcessing( areg::Event & eventElem )
+    void ProxyEventConsumer::startEventProcessing( Event & eventElem )
     {
         ProxyEvent * proxyEvent = AREG_RUNTIME_CAST(&eventElem, ProxyEvent);
         if ( proxyEvent != nullptr )
         {
-            const areg::ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
-            if ( static_cast<const areg::ServiceAddress &>(addrProxy) == static_cast<const areg::ServiceAddress &>(mProxyAddress) )
+            const ProxyAddress & addrProxy = proxyEvent->getTargetProxy();
+            if ( static_cast<const ServiceAddress &>(addrProxy) == static_cast<const ServiceAddress &>(mProxyAddress) )
             {
-                areg::ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, areg::ProxyConnectEvent);
+                ProxyConnectEvent * eventConnect  = AREG_RUNTIME_CAST(&eventElem, ProxyConnectEvent);
                 if ( eventConnect != nullptr )
                 {
                     _localProcessConnectEvent(*eventConnect);
                 }
                 else if ( addrProxy.getChannel() == mProxyAddress.getChannel() )
                 {
-                    areg::ResponseEvent * eventResponse = AREG_RUNTIME_CAST(&eventElem, areg::ResponseEvent);
+                    ResponseEvent * eventResponse = AREG_RUNTIME_CAST(&eventElem, ResponseEvent);
                     if ( eventResponse != nullptr )
                     {
                         _localProcessResponseEvent(*eventResponse);
                     }
                     else
                     {
-                        areg::ServiceResponseEvent* eventServiceResponse = AREG_RUNTIME_CAST(&eventElem, areg::ServiceResponseEvent);
+                        ServiceResponseEvent* eventServiceResponse = AREG_RUNTIME_CAST(&eventElem, ServiceResponseEvent);
                         if ( eventServiceResponse != nullptr )
                         {
                             processResponseEvent(*eventServiceResponse);

@@ -30,7 +30,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class InStream; }
+namespace areg
+{
+    class InStream;
+}
 
 namespace areg
 {
@@ -69,7 +72,7 @@ namespace areg
          * \param   service     The service item to convert.
          * /return  Returns service item as a string.
          **/
-        static areg::String convAddressToPath( const ServiceItem & service );
+        static String convAddressToPath( const ServiceItem & service );
     
         /**
          * \brief   Converts given service item path as a string to service item object.
@@ -92,7 +95,7 @@ namespace areg
          * \brief   Creates service item, sets service name.
          * \param   serviceName     The service name to set.
          **/
-        explicit ServiceItem( const areg::String & serviceName );
+        explicit ServiceItem( const String & serviceName );
 
         /**
          * \brief   Creates service item, sets service name, version and type.
@@ -100,13 +103,13 @@ namespace areg
          * \param   serviceVersion  The service version to set.
          * \param   serviceType     The type of service
          **/
-        ServiceItem( const areg::String & serviceName, const areg::Version & serviceVersion, areg::ServiceType serviceType );
+        ServiceItem( const String & serviceName, const Version & serviceVersion, ServiceType serviceType );
 
         /**
          * \brief   Creates service item and initializes data from given stream.
          * \param   stream      The streaming object, which contains service item information.
          **/
-        ServiceItem( const areg::InStream & stream );
+        ServiceItem( const InStream & stream );
 
         /**
          * \brief   Copy constructor.
@@ -167,7 +170,7 @@ namespace areg
          * \param   stream  The streaming object to read out data
          * \param   input   The Service Item to initialize data from stream.
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, ServiceItem & input);
+        friend inline const InStream & operator >> ( const InStream & stream, ServiceItem & input);
 
         /**
          * \brief   Streaming operator.
@@ -175,7 +178,7 @@ namespace areg
          * \param   stream  The streaming object to write data
          * \param   output  The Service Item containing data for streaming
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const ServiceItem & output );
+        friend inline OutStream & operator << ( OutStream & stream, const ServiceItem & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -189,32 +192,32 @@ namespace areg
         /**
          * \brief   Returns service name.
          **/
-        inline const areg::String & getServiceName() const;
+        inline const String & getServiceName() const;
 
         /**
          * \brief   Sets the service name
          **/
-        inline void setServiceName( const areg::String & serviceName );
+        inline void setServiceName( const String & serviceName );
 
         /**
          * \brief   Returns service version
          **/
-        inline const areg::Version & getServiceVersion() const;
+        inline const Version & getServiceVersion() const;
 
         /**
          * \brief   Sets service version
          **/
-        inline void setServiceVersion( const areg::Version & serviceVersion );
+        inline void setServiceVersion( const Version & serviceVersion );
 
         /**
          * \brief   Returns service type
          **/
-        inline areg::ServiceType getServiceType() const;
+        inline ServiceType getServiceType() const;
 
         /**
          * \brief   Sets the service type
          **/
-        inline void setServiceType( areg::ServiceType serviceType );
+        inline void setServiceType( ServiceType serviceType );
 
         /**
          * \brief   Returns true if service is remote
@@ -230,7 +233,7 @@ namespace areg
          * \brief   Creates Service Item path as a string.
          * /return  Returns service item as a string.
          **/
-        areg::String convToString() const;
+        String convToString() const;
 
         /**
          * \brief   Converts given service item path as a string to service item object.
@@ -259,15 +262,15 @@ namespace areg
         /**
          * \brief   Service name
          **/
-        areg::String                  mServiceName;
+        String                  mServiceName;
         /**
          * \brief   Service Version
          **/
-        areg::Version           mServiceVersion;
+        Version           mServiceVersion;
         /**
          * \brief   Service type
          **/
-        areg::ServiceType mServiceType;
+        ServiceType mServiceType;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden members
@@ -283,55 +286,55 @@ namespace areg
     // ServiceItem class inline functions
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::String & ServiceItem::getServiceName() const
+    inline const String & ServiceItem::getServiceName() const
     {
         return mServiceName;
     }
 
-    inline void ServiceItem::setServiceName( const areg::String & serviceName )
+    inline void ServiceItem::setServiceName( const String & serviceName )
     {
         mServiceName = serviceName;
-        mServiceName.truncate(areg::ITEM_NAMES_MAX_LENGTH);
+        mServiceName.truncate(ITEM_NAMES_MAX_LENGTH);
         mMagicNum    = ServiceItem::_magicNumber(*this);
     }
 
-    inline const areg::Version & ServiceItem::getServiceVersion() const
+    inline const Version & ServiceItem::getServiceVersion() const
     {
         return mServiceVersion;
     }
 
-    inline void ServiceItem::setServiceVersion( const areg::Version & serviceVersion )
+    inline void ServiceItem::setServiceVersion( const Version & serviceVersion )
     {
         mServiceVersion = serviceVersion;
     }
 
-    inline areg::ServiceType ServiceItem::getServiceType() const
+    inline ServiceType ServiceItem::getServiceType() const
     {
         return mServiceType;
     }
 
-    inline void ServiceItem::setServiceType( areg::ServiceType serviceType )
+    inline void ServiceItem::setServiceType( ServiceType serviceType )
     {
         mServiceType = serviceType;
-        mMagicNum    = serviceType != areg::ServiceType::Invalid ? ServiceItem::_magicNumber(*this) : areg::CHECKSUM_IGNORE;
+        mMagicNum    = serviceType != ServiceType::Invalid ? ServiceItem::_magicNumber(*this) : CHECKSUM_IGNORE;
     }
 
     inline bool ServiceItem::isServicePublic() const
     {
-        return (mServiceType == areg::ServiceType::Public);
+        return (mServiceType == ServiceType::Public);
     }
 
     inline bool ServiceItem::isValid() const
     {
-        return ( mMagicNum != areg::CHECKSUM_IGNORE );
+        return ( mMagicNum != CHECKSUM_IGNORE );
     }
 
     inline bool ServiceItem::isValidated() const
     {
         return (mServiceName.isEmpty()  == false                                    ) && 
             (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
-            (mServiceVersion         != areg::Version::getInvalidVersion()       ) &&
-            (mServiceType            != areg::ServiceType::Invalid  );
+            (mServiceVersion         != Version::getInvalidVersion()       ) &&
+            (mServiceType            != ServiceType::Invalid  );
     }
 
     inline ServiceItem & ServiceItem::operator = ( const ServiceItem & source )
@@ -380,7 +383,7 @@ namespace areg
         return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
     }
 
-    inline const areg::InStream & operator >> ( const areg::InStream & stream, ServiceItem & input )
+    inline const InStream & operator >> ( const InStream & stream, ServiceItem & input )
     {
         stream >> input.mServiceName;
         stream >> input.mServiceVersion;
@@ -391,7 +394,7 @@ namespace areg
         return stream;
     }
 
-    inline areg::OutStream & operator << ( areg::OutStream & stream, const ServiceItem & output )
+    inline OutStream & operator << ( OutStream & stream, const ServiceItem & output )
     {
         stream << output.mServiceName;
         stream << output.mServiceVersion;

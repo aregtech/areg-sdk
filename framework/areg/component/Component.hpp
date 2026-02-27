@@ -31,10 +31,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class WorkerThreadConsumer; }
-namespace areg { class ComponentThread; }
-namespace areg { class WorkerThread; }
-namespace areg { class StubBase; }
+namespace areg
+{
+    class WorkerThreadConsumer;
+    class ComponentThread;
+    class WorkerThread;
+    class StubBase;
+}
 
 namespace areg
 {
@@ -56,18 +59,18 @@ namespace areg
      *          name should be unique within network, and in case of provided local
      *          service, the role name should be unique within local process.
      **/
-    class AREG_API Component   : public    areg::RuntimeObject
+    class AREG_API Component   : public    RuntimeObject
     {
     //////////////////////////////////////////////////////////////////////////
     // Predefined types. Fol local use
     //////////////////////////////////////////////////////////////////////////
         //!< The basic operations of resource-map.
-        using ImplComponentResource = areg::ResourceMapImpl<uint32_t, Component *>;
+        using ImplComponentResource = ResourceMapImpl<uint32_t, Component *>;
         /**
          * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
          *          Component           The saved values are Component objects.
          **/
-        using MapComponentContainer  = areg::IntegerHashMap<Component *>;
+        using MapComponentContainer  = IntegerHashMap<Component *>;
         /**
          * \brief   Component::MapComponentResource
          *          The Resource Map of instantiated components.
@@ -76,7 +79,7 @@ namespace areg
          *          MapComponentContainer   The hash-map object to store containers.
          *          ImplComponentResource   The implementation of basic resource+map operations.
          **/
-        using MapComponentResource  = areg::ConcurrentResourceMap<uint32_t, Component *, MapComponentContainer, ImplComponentResource>;
+        using MapComponentResource  = ConcurrentResourceMap<uint32_t, Component *, MapComponentContainer, ImplComponentResource>;
     //////////////////////////////////////////////////////////////////////////
     // Declare as runtime object
     //////////////////////////////////////////////////////////////////////////
@@ -91,7 +94,7 @@ namespace areg
          *          The list of addresses of Servers.
          *          StubBase  The pointer to base class of Stub objects.
          **/
-        using ListServers           = areg::LinkedList<areg::StubBase*>;
+        using ListServers           = LinkedList<StubBase*>;
 
     /************************************************************************/
     // static functions to load / unload component
@@ -105,7 +108,7 @@ namespace areg
          * \param   componentThread The thread, which is loading component and dispatching messages
          * \return  Returns pointer to instantiated component.
          **/
-        static Component * loadComponent( const areg::ComponentEntry & entry, areg::ComponentThread & componentThread);
+        static Component * loadComponent( const ComponentEntry & entry, ComponentThread & componentThread);
 
         /**
          * \brief   This function is unloading component.
@@ -114,7 +117,7 @@ namespace areg
          * \param   comItem The component object, which should be unloaded.
          * \param   entry   The areg::ComponentEntry containing component loading information.
          **/
-        static void unloadComponent( Component & comItem, const areg::ComponentEntry & entry);
+        static void unloadComponent( Component & comItem, const ComponentEntry & entry);
 
     /************************************************************************/
     // static utility functions to search component and check existence
@@ -126,7 +129,7 @@ namespace areg
          * \return	If found, returns pointer to component object.
          *          Otherwise returns nullptr.
          **/
-        static Component * findComponentByName(const areg::String & roleName);
+        static Component * findComponentByName(const String & roleName);
 
         /**
          * \brief	Find and return component by specified component number
@@ -140,7 +143,7 @@ namespace areg
          * \param	roleName	The role name of component to look up
          * \return	Returns true ff found entry in registries. Otherwise returns false.
          **/
-        static bool existComponent(const areg::String & roleName);
+        static bool existComponent(const String & roleName);
 
         /**
          * \brief	Find component in registries by given component address.
@@ -148,7 +151,7 @@ namespace areg
          * \return	If found, returns pointer to registered component.
          *          Otherwise returns nullptr.
          **/
-        static Component * findComponentByAddress(const areg::ComponentAddress & comAddress);
+        static Component * findComponentByAddress(const ComponentAddress & comAddress);
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor.
@@ -159,20 +162,20 @@ namespace areg
          * \param	roleName	Unique role name of the component.
          * \param	ownerThread The instance of the thread, which owns the component.
          **/
-        Component( const areg::String & roleName, areg::ComponentThread & ownerThread );
+        Component( const String & roleName, ComponentThread & ownerThread );
 
         /**
          * \brief	Instantiates the component object and dispatches the events in the specified thread.
          * \param	regEntry	The registry entry object with the role name of the component.
          * \param	ownerThread The instance of the thread, which owns the component.
          **/
-        Component( const areg::ComponentEntry & regEntry, areg::ComponentThread & ownerThread );
+        Component( const ComponentEntry & regEntry, ComponentThread & ownerThread );
 
         /**
          * \brief	Instantiates the component object and dispatches the events in the current thread.
          * \param	roleName	Unique role name of the component.
          **/
-        explicit Component( const areg::String & roleName );
+        explicit Component( const String & roleName );
 
         virtual ~Component();
 
@@ -189,7 +192,7 @@ namespace areg
          *          initialization in this function call.
          * \param	comThread	The component thread, which triggered startup command
          **/
-        virtual void startupComponent( areg::ComponentThread & comThread );
+        virtual void startupComponent( ComponentThread & comThread );
 
         /**
          * \brief	This function is triggered by component thread when it
@@ -197,7 +200,7 @@ namespace areg
          *          make cleanups in this function call.
          * \param	comThread	The component thread, which triggered shutdown command.
          **/
-        virtual void shutdownComponent( areg::ComponentThread & comThread );
+        virtual void shutdownComponent( ComponentThread & comThread );
 
         /**
          * \brief	This function is triggered when the master thread of component is notified
@@ -205,7 +208,7 @@ namespace areg
          *          Service Manager is notified to stop job and unload components
          * \param	comThread	The component thread, which triggered shutdown command.
          **/
-        virtual void notifyComponentShutdown( areg::ComponentThread & comThread );
+        virtual void notifyComponentShutdown( ComponentThread & comThread );
 
         /**
          * \brief   Waits until component completes job. 
@@ -224,7 +227,7 @@ namespace areg
          * \param   workerThreadName    The name of worker thread, which consumer should return
          * \return  Return valid pointer if worker thread has assigned consumer.
          **/
-        virtual areg::WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName );
+        virtual WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName );
 
         /**
          * \brief   This function is called when worker thread is started.
@@ -233,7 +236,7 @@ namespace areg
          * \param   consumer        The worker thread consumer object
          * \param   workerThread    The worker thread, which is started.
          **/
-        virtual void notifyWorkerThreadStarted(areg::WorkerThreadConsumer& consumer, areg::WorkerThread & workerThread);
+        virtual void notifyWorkerThreadStarted(WorkerThreadConsumer& consumer, WorkerThread & workerThread);
 
     /************************************************************************/
     // Component operations
@@ -249,18 +252,18 @@ namespace areg
          *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          * \return	Pointer to created worker thread object.
          **/
-        areg::WorkerThread * createWorkerThread( const areg::String & threadName
-                                        , areg::WorkerThreadConsumer & consumer
-                                        , areg::ComponentThread & ownerThread
-                                        , uint32_t watchdogTimeout = areg::WATCHDOG_IGNORE
-                                        , uint32_t stackSizeKb     = areg::STACK_SIZE_DEFAULT
-                                        , uint32_t maxQeueue       = areg::IGNORE_VALUE);
+        WorkerThread * createWorkerThread( const String & threadName
+                                        , WorkerThreadConsumer & consumer
+                                        , ComponentThread & ownerThread
+                                        , uint32_t watchdogTimeout = WATCHDOG_IGNORE
+                                        , uint32_t stackSizeKb     = STACK_SIZE_DEFAULT
+                                        , uint32_t maxQeueue       = IGNORE_VALUE);
 
         /**
          * \brief	Stops and deletes worker thread by given name
          * \param	threadName	Worker thread name to stop and delete.
          **/
-        void deleteWorkerThread( const areg::String & threadName );
+        void deleteWorkerThread( const String & threadName );
 
         /**
          * \brief   Call to terminate the component execution and cleanup resources.
@@ -273,7 +276,7 @@ namespace areg
          * \brief	Registers Stub / Server object of component
          * \param	server	The Stub / Server object to register for component
          **/
-        void registerServerItem( areg::StubBase & server );
+        void registerServerItem( StubBase & server );
 
         /**
          * \brief	Find and return Stub / Server object by specified
@@ -281,7 +284,7 @@ namespace areg
          * \param	serviceName	The service name of Stub / Server object.
          * \return	If found, returns pointer to registered server object.
          **/
-        areg::StubBase * findServerByName( const areg::String & serviceName );
+        StubBase * findServerByName( const String & serviceName );
 
         /**
          * \brief	Finds event dispatcher consumer of specific runtime class ID object.
@@ -289,22 +292,22 @@ namespace areg
          * \return	If finds, returns pointer to dispatcher thread, which has registered
          *          consumer.
          **/
-        inline areg::DispatcherThread * findEventConsumer( const areg::RuntimeClassID & whichClass ) const;
+        inline DispatcherThread * findEventConsumer( const RuntimeClassID & whichClass ) const;
 
         /**
          * \brief   Returns master thread of component
          **/
-        inline areg::ComponentThread & getMasterThread();
+        inline ComponentThread & getMasterThread();
 
         /**
          * \brief   Returns the role name of component
          **/
-        inline const areg::String & getRoleName() const;
+        inline const String & getRoleName() const;
 
         /**
          * \brief   Returns address of component
          **/
-        inline const areg::ComponentAddress & getAddress() const;
+        inline const ComponentAddress & getAddress() const;
 
         /**
          * \brief   Returns the list of registered (provided) Server Service list.
@@ -323,7 +326,7 @@ namespace areg
          * \brief   Component informations object, which contains
          *          component address and registered worker thread list.
          **/
-        areg::ComponentInfo         mComponentInfo;
+        ComponentInfo         mComponentInfo;
 
         /**
          * \brief   The calculated number of component.
@@ -347,7 +350,7 @@ namespace areg
         /**
          * \brief   Static method. Returns the component thread of current component.
          **/
-        static areg::ComponentThread & _getCurrentComponentThread();
+        static ComponentThread & _getCurrentComponentThread();
 
         /**
          * \brief   Calculates the number of specified component object.
@@ -387,22 +390,22 @@ namespace areg
     // Component class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::ComponentThread & Component::getMasterThread()
+    inline ComponentThread & Component::getMasterThread()
     {
         return mComponentInfo.getMasterThread();
     }
 
-    inline areg::DispatcherThread * Component::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
+    inline DispatcherThread * Component::findEventConsumer( const RuntimeClassID& whichClass ) const
     {
         return mComponentInfo.findEventConsumer(whichClass);
     }
 
-    inline const areg::String & Component::getRoleName() const
+    inline const String & Component::getRoleName() const
     {
         return mComponentInfo.getRoleName();
     }
 
-    inline const areg::ComponentAddress& Component::getAddress() const
+    inline const ComponentAddress& Component::getAddress() const
     {
         return mComponentInfo.getAddress();
     }

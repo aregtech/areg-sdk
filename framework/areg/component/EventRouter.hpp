@@ -23,7 +23,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Event; }
+namespace areg
+{
+    class Event;
+}
 
 namespace areg
 {
@@ -61,7 +64,7 @@ namespace areg
          * \return	Returns true if target was found and the event
          *          delivered with success. Otherwise it returns false.
          **/
-        virtual bool postEvent( areg::Event & eventElem ) = 0;
+        virtual bool postEvent( Event & eventElem ) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

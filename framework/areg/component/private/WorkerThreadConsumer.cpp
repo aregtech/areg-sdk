@@ -24,7 +24,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    WorkerThreadConsumer::WorkerThreadConsumer(const areg::String & consumerName)
+    WorkerThreadConsumer::WorkerThreadConsumer(const String & consumerName)
         : mConsumerName (consumerName)
     {
     }

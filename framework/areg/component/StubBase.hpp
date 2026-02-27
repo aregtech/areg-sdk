@@ -33,14 +33,17 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RemoteNotifyRequestEvent; }
-namespace areg { class ServiceResponseEvent; }
-namespace areg { class RemoteRequestEvent; }
-namespace areg { class ComponentThread; }
-namespace areg { class EventDataStream; }
-namespace areg { class ResponseEvent; }
-namespace areg { class Component; }
-namespace areg { class RemoteEventFactory; }
+namespace areg
+{
+    class RemoteNotifyRequestEvent;
+    class ServiceResponseEvent;
+    class RemoteRequestEvent;
+    class ComponentThread;
+    class EventDataStream;
+    class ResponseEvent;
+    class Component;
+    class RemoteEventFactory;
+}
 
 namespace areg
 {
@@ -59,12 +62,12 @@ namespace areg
      *          main basic logic of asynchronous communication. It keeps 
      *          track of requests and contains list of listeners
      **/
-    class AREG_API StubBase    : public areg::StubEventConsumer
+    class AREG_API StubBase    : public StubEventConsumer
     {
     //////////////////////////////////////////////////////////////////////////
     // friend classes
     //////////////////////////////////////////////////////////////////////////
-        friend class areg::RemoteEventFactory;
+        friend class RemoteEventFactory;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal constants and definitions
@@ -73,7 +76,7 @@ namespace areg
         /**
          * \brief   Constant. Defines Invalid Session ID
          **/
-        static constexpr areg::SessionID      INVALID_SESSION_ID  { static_cast<areg::SessionID>(~0) };
+        static constexpr SessionID      INVALID_SESSION_ID  { static_cast<SessionID>(~0) };
 
         /**
          * \brief   Constant. Defines Invalid Message ID
@@ -118,7 +121,7 @@ namespace areg
              * \param   seqId   The Sequence number.
              * \param   proxy   The target proxy address.
              **/
-            inline Listener(uint32_t reqId, const SequenceNumber & seqId, const areg::ProxyAddress & proxy);
+            inline Listener(uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress & proxy);
 
             /**
              * \brief   Copies listener data from given source.
@@ -172,7 +175,7 @@ namespace areg
             /**
              * \brief   The address of target Proxy object.
              **/
-            areg::ProxyAddress    mProxy;
+            ProxyAddress    mProxy;
         };
 
         //////////////////////////////////////////////////////////////////////////
@@ -181,7 +184,7 @@ namespace areg
         /**
          * \brief   StubBase::StubListenerList class defines list of pending listeners.
          **/
-        using StubListenerList  = areg::LinkedList<StubBase::Listener>;
+        using StubListenerList  = LinkedList<StubBase::Listener>;
 
         //////////////////////////////////////////////////////////////////////////
         // StubBase session tracking
@@ -189,20 +192,20 @@ namespace areg
         /**
          * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
          **/
-        using MapStubSession     = areg::IntegerMap<StubBase::Listener>;
+        using MapStubSession     = IntegerMap<StubBase::Listener>;
 
         //////////////////////////////////////////////////////////////////////////
         // StubBase resource tracking
         //////////////////////////////////////////////////////////////////////////
-        using MapStub           = areg::HashMap<areg::StubAddress, StubBase *>;
+        using MapStub           = HashMap<StubAddress, StubBase *>;
         /**
          * \brief   Stub resource helper definition.
          **/
-        using ImplStubResource  = areg::ResourceMapImpl<areg::StubAddress, StubBase *>;
+        using ImplStubResource  = ResourceMapImpl<StubAddress, StubBase *>;
         /**
          * \brief   Resource Map definition.
          **/
-        using MapStubResource   = areg::ConcurrentResourceMap<areg::StubAddress, StubBase *, MapStub, ImplStubResource>;
+        using MapStubResource   = ConcurrentResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -215,7 +218,7 @@ namespace areg
          * \param   siData          The service interface data, containing service name
          *                          service version and service type
          **/
-        StubBase( areg::Component & masterComp, const areg::InterfaceData & siData );
+        StubBase( Component & masterComp, const InterfaceData & siData );
 
         /**
          * \brief   Destructor.
@@ -230,22 +233,22 @@ namespace areg
         /**
          * \brief   Returns Component Master thread object.
          **/
-        areg::ComponentThread & getComponentThread() const;
+        ComponentThread & getComponentThread() const;
 
         /**
          * \brief   Returns the address of Stub object.
          **/
-        inline const areg::StubAddress & getAddress() const;
+        inline const StubAddress & getAddress() const;
 
         /**
          * \brief   Returns the role name of the implemented service interface.
          **/
-        inline const areg::String & getServiceRole() const;
+        inline const String & getServiceRole() const;
 
         /**
          * \brief   Returns the name of the implemented service.
          **/
-        inline const areg::String & getServiceName() const;
+        inline const String & getServiceName() const;
 
         /**
          * \brief   Sends error event to all pending responses and notification updates
@@ -264,7 +267,7 @@ namespace areg
          * \return  If found, returns valid pointer of Stub object.
          *          Otherwise returns nullptr.
          **/
-        static StubBase * findStubByAddress(const areg::StubAddress& address);
+        static StubBase * findStubByAddress(const StubAddress& address);
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides
@@ -281,7 +284,7 @@ namespace areg
          * \param   holder  The holder component of service interface of Stub,
          *                  which started up.
          **/
-        virtual void startupServiceInterface(areg::Component& holder);
+        virtual void startupServiceInterface(Component& holder);
 
         /**
          * \brief   This function is triggered by Component when shuts down.
@@ -289,7 +292,7 @@ namespace areg
          * \param   holder  The holder component of service interface of Stub,
          *                  which shuts down.
          **/
-        virtual void shutdownServiceInterface(areg::Component& holder);
+        virtual void shutdownServiceInterface(Component& holder);
 
     /************************************************************************/
     // StubBase overrides. 
@@ -301,7 +304,7 @@ namespace areg
          *          The caller of this function should save Session ID
          *          for later use to prepare response.
          **/
-        virtual areg::SessionID unblockCurrentRequest();
+        virtual SessionID unblockCurrentRequest();
 
         /**
          * \brief   By given unique Session ID, prepares response to send.
@@ -310,7 +313,7 @@ namespace areg
          * \return  Return true if specified session exist in the list.
          *          Otherwise, return false.
          **/
-        virtual bool prepareResponse(areg::SessionID sessionId);
+        virtual bool prepareResponse(SessionID sessionId);
 
         /**
          * \brief   Triggered when proxy client either connected or disconnected to stub.
@@ -318,7 +321,7 @@ namespace areg
          * \param   status  The service consumer connection status.
          * \return  Returns true if connected service consumer is relevant to the provider.
          **/
-        virtual bool clientConnected( const areg::ProxyAddress & client, areg::ServiceConnectionState status );
+        virtual bool clientConnected( const ProxyAddress & client, ServiceConnectionState status );
 
     /************************************************************************/
     // StubBase overrides. Public pure virtual methods 
@@ -364,7 +367,7 @@ namespace areg
          * \param   data    The buffer of data to send to client. Can be Invalid buffer
          * \return  Returns valid pointer to Response event object
          **/
-        virtual areg::ResponseEvent * createResponseEvent( const areg::ProxyAddress & proxy, uint32_t msgId, areg::ResultType result, const areg::EventDataStream & data ) const;
+        virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, uint32_t msgId, ResultType result, const EventDataStream & data ) const;
 
         /**
          * \brief   Overwrite method to create remote service request event from streaming object for 
@@ -373,7 +376,7 @@ namespace areg
          * \return  If operation succeeds, returns valid pointer to Service Request event object.
          *          Otherwise, it returns nullptr.
          **/
-        virtual areg::RemoteRequestEvent * createRemoteRequestEvent( const areg::InStream & stream ) const;
+        virtual RemoteRequestEvent * createRemoteRequestEvent( const InStream & stream ) const;
 
         /**
          * \brief   Overwrite method to create remote notify request event from streaming object for 
@@ -382,7 +385,7 @@ namespace areg
          * \return  If operation succeeds, returns valid pointer to Service Request event object.
          *          Otherwise, it returns nullptr.
          **/
-        virtual areg::RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const areg::InStream & stream ) const;
+        virtual RemoteNotifyRequestEvent * createRemoteNotifyRequestEvent( const InStream & stream ) const;
 
     /************************************************************************/
     // StubEventConsumer interface overrides.
@@ -394,7 +397,7 @@ namespace areg
          * \param   eventElem   Service Request Event object, contains request
          *                      call ID and parameters.
          **/
-        virtual void processRequestEvent( areg::ServiceRequestEvent & eventElem ) override = 0;
+        virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override = 0;
         
         /**
          * \brief   Triggered to process attribute update notification event.
@@ -402,7 +405,7 @@ namespace areg
          *          process notification request of attribute update.
          * \param   eventElem   Service Request Event object, contains attribute ID.
          **/
-        virtual void processAttributeEvent( areg::ServiceRequestEvent & eventElem ) override = 0;
+        virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override = 0;
 
         /**
          * \brief   Triggered by system when stub is registered in service. The connection status indicated
@@ -410,25 +413,25 @@ namespace areg
          * \param   stubTarget  The address of registered service provider
          * \param   status      The connection status of the service provider.
          **/
-        void processStubRegisteredEvent( const areg::StubAddress & stubTarget, areg::ServiceConnectionState status ) override;
+        void processStubRegisteredEvent( const StubAddress & stubTarget, ServiceConnectionState status ) override;
 
         /**
          * \brief   Send by system when client is requested connect / disconnect
          * \param   proxyAddress    The address of the service consumer proxy.
          * \param   status          The service consumer connection status.
          **/
-        void processClientConnectEvent( const areg::ProxyAddress & proxyAddress, areg::ServiceConnectionState status ) override;
+        void processClientConnectEvent( const ProxyAddress & proxyAddress, ServiceConnectionState status ) override;
 
         /**
          * \brief   Triggered to process generic stub event.
          *          Usually should not be triggered.
          **/
-        void processStubEvent( areg::StubEvent & eventElem ) override;
+        void processStubEvent( StubEvent & eventElem ) override;
 
         /**
          * \brief   Triggered to process generic event. Usually is not triggered.
          **/
-        void processGenericEvent(areg::Event & eventElem) override;
+        void processGenericEvent(Event & eventElem) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes and operations. Protected.
@@ -437,7 +440,7 @@ namespace areg
         /**
          * \brief   Returns implemented version of service interface.
          **/
-        const areg::Version & getImplVersion() const;
+        const Version & getImplVersion() const;
 
         /**
          * \brief   Returns number of requests of Service Interface
@@ -518,7 +521,7 @@ namespace areg
          * \param   notifySource    The address of Proxy source.
          * \return  Returns true if notification listener is already registered in the list of listeners.
          **/
-        bool existNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource ) const;
+        bool existNotificationListener( uint32_t msgId, const ProxyAddress & notifySource ) const;
 
         /**
          * \brief   Adds new notification listener in the list.
@@ -531,7 +534,7 @@ namespace areg
          * \return  Returns true, if list does not contain notification listener entry and new entry was added with success.
          *          Otherwise function returns false.
          **/
-        bool addNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource );
+        bool addNotificationListener( uint32_t msgId, const ProxyAddress & notifySource );
 
         /**
          * \brief   Removes notification listener from the listener list.
@@ -541,7 +544,7 @@ namespace areg
          * \param   msgId           The ID of notification message (normally, either attribute or response message ID).
          * \param   notifySource    The address of Proxy source.
          **/
-        void removeNotificationListener( uint32_t msgId, const areg::ProxyAddress & notifySource );
+        void removeNotificationListener( uint32_t msgId, const ProxyAddress & notifySource );
 
         /**
          * \brief   Returns all listeners for specified proxy and on output returns
@@ -549,13 +552,13 @@ namespace areg
          * \param   whichProxy  The address of request source proxy to remove.
          * \param   removedIDs  The list of removed request IDs
          **/
-        void clearAllListeners(const areg::ProxyAddress & whichProxy, areg::IntegerArray& removedIDs);
+        void clearAllListeners(const ProxyAddress & whichProxy, IntegerArray& removedIDs);
         /**
          * \brief   Returns all listeners for specified proxy and on output returns
          *          list of remove request IDs.
          * \param   whichProxy  The address of request source proxy to remove.
          **/
-        void clearAllListeners(const areg::ProxyAddress & whichProxy);
+        void clearAllListeners(const ProxyAddress & whichProxy);
 
         /**
          * \brief   Sends attribute notification response to all target proxy objects
@@ -565,7 +568,7 @@ namespace areg
          * \param   masterEvent     The event, containing updated object ID and the new
          *                          value of attribute.
          **/
-        void sendResponseNotification( const StubBase::StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent );
+        void sendResponseNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
 
         /**
          * \brief   Sends error message for requested to get attribute.
@@ -574,7 +577,7 @@ namespace areg
          * \param   masterEvent     The event, containing error type and 
          *                          attribute object ID.
          **/
-        void sendErrorNotification( const StubBase::StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent );
+        void sendErrorNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
 
         /**
          * \brief   Sends attribute update notification message to all
@@ -585,14 +588,14 @@ namespace areg
          *                          attribute object ID, update type and new 
          *                          updated  value of attribute.
          **/
-        void sendUpdateNotification( const StubBase::StubListenerList & whichListeners, const areg::ServiceResponseEvent & masterEvent ) const;
+        void sendUpdateNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const;
 
         /**
          * \brief   Sends Service Response message to trigger response call 
          *          on Proxy and Clients side
          * \param   eventElem   Service response event to send.
          **/
-        void sendServiceResponse( areg::ServiceResponseEvent & eventElem ) const;
+        void sendServiceResponse( ServiceResponseEvent & eventElem ) const;
 
         /**
          * \brief   Cancel current request.
@@ -614,7 +617,7 @@ namespace areg
          * \param   data    The buffer of serialized data to send to proxy. Can be Invalid buffer
          * \param   result  The result to send to proxy objects.
          **/
-        void sendUpdateEvent(uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result) const;
+        void sendUpdateEvent(uint32_t msgId, const EventDataStream & data, ResultType result) const;
 
         /**
          * \brief   Send once the data update notification event to the specified target.
@@ -623,14 +626,14 @@ namespace areg
          * \param   data    The data to send to the target. Can be Invalid buffer
          * \param   result  The result of data update to send to the target object.
          **/
-        void sendUpdateNotificationOnce( const areg::ProxyAddress & target, uint32_t msgId, const areg::EventDataStream & data, areg::ResultType result ) const;
+        void sendUpdateNotificationOnce( const ProxyAddress & target, uint32_t msgId, const EventDataStream & data, ResultType result ) const;
 
         /**
          * \brief   Sends response event to proxy. The list of proxy listeners is selected by message ID.
          * \param   respId  The ID of response to send to proxy objects
          * \param   data    The buffer of serialized data to send to proxy (should be serialized arguments of response call)
          **/
-        void sendResponseEvent(uint32_t respId, const areg::EventDataStream & data);
+        void sendResponseEvent(uint32_t respId, const EventDataStream & data);
 
         /**
          * \brief   Sends busy response on request from client side. If the stub already processing request, 
@@ -659,22 +662,22 @@ namespace areg
         /**
          * \brief   Holder component object reference.
          **/
-        areg::Component &                         mComponent;
+        Component &                         mComponent;
 
         /**
          * \brief   Instance of Servicing interface data.
          **/
-        const areg::InterfaceData &   mInterface;
+        const InterfaceData &   mInterface;
 
         /**
          * \brief   The address object of stub
          **/
-        areg::StubAddress                         mAddress;
+        StubAddress                         mAddress;
 
         /**
          * \brief   The service connection status
          **/
-        areg::ServiceConnectionState       mConnectionStatus;
+        ServiceConnectionState       mConnectionStatus;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)
@@ -745,25 +748,25 @@ namespace areg
     inline StubBase::Listener::Listener()
         : mMessageId ( 0 )
         , mSequenceNr( 0 )
-        , mProxy     ( areg::ProxyAddress::getInvalidProxyAddress() )
+        , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
     {
     }
 
     inline StubBase::Listener::Listener( uint32_t reqId )
         : mMessageId ( reqId )
         , mSequenceNr( 0 )
-        , mProxy     ( areg::ProxyAddress::getInvalidProxyAddress() )
+        , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
     {
     }
 
     inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId )
         : mMessageId ( reqId )
         , mSequenceNr( seqId )
-        , mProxy     ( areg::ProxyAddress::getInvalidProxyAddress() )
+        , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
     {
     }
 
-    inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const areg::ProxyAddress& proxy )
+    inline StubBase::Listener::Listener( uint32_t reqId, const SequenceNumber & seqId, const ProxyAddress& proxy )
         : mMessageId ( reqId )
         , mSequenceNr( seqId )
         , mProxy     ( proxy )
@@ -814,17 +817,17 @@ namespace areg
         return (*this);
     }
 
-    inline const areg::StubAddress& StubBase::getAddress() const
+    inline const StubAddress& StubBase::getAddress() const
     {
         return mAddress;
     }
 
-    inline const areg::String & StubBase::getServiceRole() const
+    inline const String & StubBase::getServiceRole() const
     {
         return mAddress.getRoleName( );
     }
 
-    inline const areg::String& StubBase::getServiceName() const
+    inline const String& StubBase::getServiceName() const
     {
         return mAddress.getServiceName();
     }

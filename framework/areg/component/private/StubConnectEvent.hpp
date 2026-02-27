@@ -28,7 +28,7 @@ namespace areg
      * \brief   An event sent by Service Manager to Stub to notify client Proxy connection status.
      *          Triggered by system and delivered to Sub to handle when need to change connection status.
      **/
-    class StubConnectEvent  : public    areg::ServiceRequestEvent
+    class StubConnectEvent  : public    ServiceRequestEvent
     {
     //////////////////////////////////////////////////////////////////////////
     // Declare Runtime Event
@@ -44,7 +44,7 @@ namespace areg
          * \param   stubTarget      The target Stub address
          * \param   connectStatus   The connection status of Stub
          **/
-        StubConnectEvent( const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
+        StubConnectEvent( const StubAddress & stubTarget, ServiceConnectionState connectStatus );
 
         /**
          * \brief   Constructor. Creates event to trigger request to set Proxy connection.
@@ -52,13 +52,13 @@ namespace areg
          * \param   stubTarget      The target Stub address, which receives request
          * \param   connectStatus   The connection status to notify.
          **/
-        StubConnectEvent( const areg::ProxyAddress & proxyClient, const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus );
+        StubConnectEvent( const ProxyAddress & proxyClient, const StubAddress & stubTarget, ServiceConnectionState connectStatus );
 
         /**
          * \brief   Constructor. Reads data from streaming object.
          * \param   stream      The instance of streaming object, which contains information.
          **/
-        StubConnectEvent( const areg::InStream & stream );
+        StubConnectEvent( const InStream & stream );
 
         /**
          * \brief   Destructor.
@@ -74,7 +74,7 @@ namespace areg
         /**
          * \brief   Returns current connection status of client Proxy.
          **/
-        inline areg::ServiceConnectionState getConnectionStatus() const;
+        inline ServiceConnectionState getConnectionStatus() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -88,20 +88,20 @@ namespace areg
          * \param   stream  The streaming object to read out event data
          * \return  Returns streaming object to read out data.
          **/
-        const areg::InStream & readStream( const areg::InStream & stream ) override;
+        const InStream & readStream( const InStream & stream ) override;
 
         /**
          * \brief   Writes event data to streaming object
          * \param   stream  The streaming object to write event data.
          * \return  Returns streaming object to write event data.
          **/
-        areg::OutStream & writeStream( areg::OutStream & stream ) const override;
+        OutStream & writeStream( OutStream & stream ) const override;
 
     private:
         /**
          * \brief   The connection status set in event.
          **/
-        areg::ServiceConnectionState   mConnectionStatus;
+        ServiceConnectionState   mConnectionStatus;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -115,7 +115,7 @@ namespace areg
     // StubConnectEvent class inline methods.
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::ServiceConnectionState StubConnectEvent::getConnectionStatus() const
+    inline ServiceConnectionState StubConnectEvent::getConnectionStatus() const
     {
         return mConnectionStatus;
     }

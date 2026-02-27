@@ -39,7 +39,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class DispatcherThread; }
+namespace areg
+{
+    class DispatcherThread;
+}
 
 namespace areg
 {
@@ -56,7 +59,7 @@ namespace areg
      *          Event Consumers to trigger Event Processing.
      *          
      **/
-    class AREG_API EventDispatcherBase  : protected areg::QueueListener
+    class AREG_API EventDispatcherBase  : protected QueueListener
     {
     //////////////////////////////////////////////////////////////////////////
     // Internal defines and constants.
@@ -82,7 +85,7 @@ namespace areg
          * \param   name        The name of Dispatcher.
          * \param   maxQeueue   The maximum number of event elements in the queue.
          **/
-        EventDispatcherBase( const areg::String & name, uint32_t maxQeueue );
+        EventDispatcherBase( const String & name, uint32_t maxQeueue );
         /**
          * \brief   Destructor
          **/
@@ -120,7 +123,7 @@ namespace areg
          * \return  Returns true, if Event was queued. Otherwise, it was not queued
          *          and the object should be deleted.
          **/
-        virtual bool queueEvent(areg::Event& eventElem);
+        virtual bool queueEvent(Event& eventElem);
 
         /**
          * \brief   Call to register specified event consumer for the specified
@@ -138,7 +141,7 @@ namespace areg
          *          If specified consumer is already registered for specified
          *          event class type, it returns false.
          **/
-        virtual bool registerEventConsumer(const areg::RuntimeClassID& whichClass, areg::EventConsumer& whichConsumer);
+        virtual bool registerEventConsumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
 
         /**
          * \brief	Call to unregister specified event consumer previously registered
@@ -147,7 +150,7 @@ namespace areg
          * \param	whichConsumer	Reference to consumer that should be unregistered.
          * \return	Returns true if successfully unregistered event consumer.
          **/
-        virtual bool unregisterEventConsumer(const areg::RuntimeClassID& whichClass, areg::EventConsumer& whichConsumer);
+        virtual bool unregisterEventConsumer(const RuntimeClassID& whichClass, EventConsumer& whichConsumer);
 
         /**
          * \brief	Call to remove specified consumer for all registered event class types,
@@ -155,7 +158,7 @@ namespace areg
          * \param	whichConsumer	Reference to consumer object to unregister.
          * \return	Returns unregister count. If zero, consumer is not registered for any event.
          **/
-        virtual int32_t  removeConsumer(areg::EventConsumer& whichConsumer);
+        virtual int32_t  removeConsumer(EventConsumer& whichConsumer);
 
         /**
          * \brief	Call to check whether specified event class type has any registered consumer.
@@ -163,7 +166,7 @@ namespace areg
          * \return	Returns true if dispatcher has at least one registered consumer for
          *          specified runtime class ID.
          **/
-        virtual bool hasRegisteredConsumer(const areg::RuntimeClassID& whichClass) const;
+        virtual bool hasRegisteredConsumer(const RuntimeClassID& whichClass) const;
 
     /************************************************************************/
     // EventDispatcherBase operations
@@ -200,14 +203,14 @@ namespace areg
          *                          All events having specified class ID
          *                          will be removed.
          **/
-        inline void removeExternalEventType(const areg::RuntimeClassID & eventClassId);
+        inline void removeExternalEventType(const RuntimeClassID & eventClassId);
 
         /**
          * \brief   Returns true if the specified event object is a special reserved event indicating to exit the thread.
          * \param   anEvent     A pointer to the event object to check.
          * \return  Returns true, if dispatcher should complete the job and exit the thread.
          **/
-        bool isExitEvent( const areg::Event * anEvent ) const;
+        bool isExitEvent( const Event * anEvent ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Protected overrides
@@ -238,7 +241,7 @@ namespace areg
          * \return	Returns true if at least one consumer processed event.
          *          Otherwise it returns false.
          **/
-        virtual bool dispatchEvent( areg::Event & eventElem );
+        virtual bool dispatchEvent( Event & eventElem );
         /**
          * \brief   The method is triggered after picking up event from event queue.
          *          Before starting dispatching, this function is called and if it
@@ -247,7 +250,7 @@ namespace areg
          * \return  Return true if event should be forwarded for dispatching.
          *          Return false if event should be ignored / dropped.
          **/
-        virtual bool prepareDispatchEvent( areg::Event * eventElem );
+        virtual bool prepareDispatchEvent( Event * eventElem );
         /**
          * \brief	All events after being processed are forwarded
          *          to this method. All cleanup operations should be provided
@@ -255,7 +258,7 @@ namespace areg
          * \param	eventElem	Pointer to Event element, which has been finished
          *                      to be dispatched.
          **/
-        virtual void postDispatchEvent( areg::Event * eventElem );
+        virtual void postDispatchEvent( Event * eventElem );
 
         /**
          * \brief	Triggered when dispatcher starts running. 
@@ -277,7 +280,7 @@ namespace areg
          *          and forwards to be dispatched.
          * \return	Return pointer to event element to be dispatched.
          **/
-        virtual areg::Event * pickEvent();
+        virtual Event * pickEvent();
 
         /**
          * \brief   Call if need to set exit event in the dispatcher
@@ -303,19 +306,19 @@ namespace areg
         /**
          * \brief   The name of dispatcher
          **/
-        areg::String              mDispatcherName;
+        String              mDispatcherName;
 
         /**
          * \brief   External Event Queue element. One External queue per one dispatcher.
          *          It is locking queue. Any thread can queue elements
          **/
-        areg::ExternalEventQueue  mExternalEvents;
+        ExternalEventQueue  mExternalEvents;
 
         /**
          * \brief   Internal Event Queue element. One Internal queue per one dispatcher.
          *          It is non-locking queue, only current owning thread can queue elements.
          **/
-        areg::InternalEventQueue  mInternalEvents;
+        InternalEventQueue  mInternalEvents;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)
@@ -324,7 +327,7 @@ namespace areg
         /**
          * \brief   Map of registered consumers.
          **/
-        areg::EventConsumerMap    mConsumerMap;
+        EventConsumerMap    mConsumerMap;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(default: 4251)
@@ -334,13 +337,13 @@ namespace areg
          * \brief   Exit Synchronization Event. 
          *          Signaled, when dispatcher should be stopped and exit from loop.
          **/
-        areg::SyncEvent           mEventExit;
+        SyncEvent           mEventExit;
         /**
          * \brief   Queue Synchronization Event.
          *          Signaled when new event is pushed into the queue and 
          *          reset (not signaled) when queue is empty.
          **/
-        areg::SyncEvent           mEventQueue;
+        SyncEvent           mEventQueue;
 
         /**
          * \brief   Flag, which is indicating whether dispatcher is started or not.
@@ -395,7 +398,7 @@ namespace areg
         mExternalEvents.unlockQueue();
     }
 
-    inline void EventDispatcherBase::removeExternalEventType( const areg::RuntimeClassID & eventClassId )
+    inline void EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
     {
         mExternalEvents.removeEvents(eventClassId);
     }

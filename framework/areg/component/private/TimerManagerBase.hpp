@@ -26,7 +26,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class TimerBase; }
+namespace areg
+{
+    class TimerBase;
+}
 
 namespace areg
 {
@@ -39,8 +42,8 @@ namespace areg
      *          Timer Manager and Watchdog Manager to execute specific tasks.
      *          It requires to run as separate thread.
      **/
-    class TimerManagerBase  : protected areg::DispatcherThread
-                            , protected areg::TimerManagerEventConsumer
+    class TimerManagerBase  : protected DispatcherThread
+                            , protected TimerManagerEventConsumer
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime declaration
@@ -55,7 +58,7 @@ namespace areg
         /**
          * \brief   protected Constructor / destructor
          **/
-        TimerManagerBase( const areg::String & threadName );
+        TimerManagerBase( const String & threadName );
         virtual ~TimerManagerBase() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -72,7 +75,7 @@ namespace areg
          * \return	Returns true if target was found and the event
          *          delivered with success. Otherwise it returns false.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
         /**
          * \brief	Triggered when dispatcher starts running. 

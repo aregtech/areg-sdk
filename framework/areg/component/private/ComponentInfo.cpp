@@ -39,7 +39,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ComponentInfo class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    ComponentInfo::ComponentInfo( areg::ComponentThread& ownerThread, const areg::String & roleName )
+    ComponentInfo::ComponentInfo( ComponentThread& ownerThread, const String & roleName )
         : mComponentAddress ( ownerThread.getAddress(), roleName)
         , mMasterThread     ( ownerThread )
         , mWorkerThreadMap  ( )
@@ -49,22 +49,22 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ComponentInfo class, methods
     //////////////////////////////////////////////////////////////////////////
-    areg::DispatcherThread * ComponentInfo::findEventConsumer( const areg::RuntimeClassID& whichClass ) const
+    DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& whichClass ) const
     {
-        areg::DispatcherThread * result = nullptr;
+        DispatcherThread * result = nullptr;
 
         // firs check master thread.
         if (mMasterThread.hasRegisteredConsumer(whichClass))
         {
-            result = static_cast<areg::DispatcherThread *>(&mMasterThread);
+            result = static_cast<DispatcherThread *>(&mMasterThread);
         }
         else
         {
             // start checking component binded worker threads.
             mWorkerThreadMap.lock();
 
-            areg::ThreadAddress Key;
-            areg::DispatcherThread * dispThread = static_cast<areg::DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
+            ThreadAddress Key;
+            DispatcherThread * dispThread = static_cast<DispatcherThread *>(mWorkerThreadMap.resourceFirstKey(Key));
             while (result == nullptr && dispThread != nullptr)
             {
                 if (dispThread->hasRegisteredConsumer(whichClass))
@@ -78,22 +78,22 @@ namespace areg
         return result;
     }
 
-    void ComponentInfo::registerWorkerThread( areg::WorkerThread& workerThread )
+    void ComponentInfo::registerWorkerThread( WorkerThread& workerThread )
     {
         mWorkerThreadMap.registerResourceObject(workerThread.getAddress(), &workerThread);
     }
 
-    bool ComponentInfo::unregisterWorkerThread( areg::WorkerThread& workerThread )
+    bool ComponentInfo::unregisterWorkerThread( WorkerThread& workerThread )
     {
         return (mWorkerThreadMap.unregisterResourceObject(workerThread.getAddress()) == &workerThread);
     }
 
-    bool ComponentInfo::isWorkerThreadRegistered( areg::WorkerThread& workerThread ) const
+    bool ComponentInfo::isWorkerThreadRegistered( WorkerThread& workerThread ) const
     {
         return isWorkerThreadAddress(workerThread.getAddress());
     }
 
-    bool ComponentInfo::isMasterThreadAddress( const areg::ThreadAddress& threadAddress ) const
+    bool ComponentInfo::isMasterThreadAddress( const ThreadAddress& threadAddress ) const
     {
         return (threadAddress == mMasterThread.getAddress());
     }

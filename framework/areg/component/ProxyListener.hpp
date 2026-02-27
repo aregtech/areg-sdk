@@ -34,7 +34,7 @@ namespace areg
      *          and sends to all its clients. The client objects are instances
      *          of Proxy Listener to receive those notification events.
      **/
-    class AREG_API ProxyListener  : public areg::NotificationConsumer
+    class AREG_API ProxyListener  : public NotificationConsumer
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -70,7 +70,7 @@ namespace areg
          * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
          * \return  Return true if this service connect notification was relevant to client object.
          **/
-        virtual bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) = 0;
+        virtual bool serviceConnected( ServiceConnectionState status, ProxyBase & proxy ) = 0;
 
         /**
          * \brief   Notification event processing function.
@@ -79,7 +79,7 @@ namespace areg
          *          event is going to be processed.
          * \param   eventElem   The notification event object to process.
          **/
-        virtual void processNotificationEvent( areg::NotificationEvent & eventElem ) override = 0;
+        virtual void processNotificationEvent( NotificationEvent & eventElem ) override = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

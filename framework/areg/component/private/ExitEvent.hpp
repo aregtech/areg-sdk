@@ -27,7 +27,7 @@ namespace areg
      *          The exit event is a singleton object, which is shared by more than thread.
      *          Normally, used to exit thread.
      **/
-    class ExitEvent : public areg::Event
+    class ExitEvent : public Event
     {
     //////////////////////////////////////////////////////////////////////////
     // Declare Event runtime information.

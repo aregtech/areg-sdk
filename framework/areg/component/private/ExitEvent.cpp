@@ -20,12 +20,12 @@
 namespace areg
 {
 
-    AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, areg::Event)
+    AREG_IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 
     ExitEvent::ExitEvent()
-        : areg::Event   ( areg::Event::EventType::EventExternal )
+        : Event   ( Event::EventType::EventExternal )
     {
-        mEventPrio = areg::Event::EventPriority::ExitPrio;
+        mEventPrio = Event::EventPriority::ExitPrio;
     }
 
     ExitEvent & ExitEvent::getExitEvent()

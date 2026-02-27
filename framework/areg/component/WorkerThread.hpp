@@ -27,9 +27,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Component; }
-namespace areg { class ComponentThread; }
-namespace areg { class WorkerThreadConsumer; }
+namespace areg
+{
+    class Component;
+    class ComponentThread;
+    class WorkerThreadConsumer;
+}
 
 namespace areg
 {
@@ -69,7 +72,7 @@ namespace areg
      *              the type of thread is identified during Runtime.
      *
      **/
-    class AREG_API WorkerThread    : public areg::DispatcherThread
+    class AREG_API WorkerThread    : public DispatcherThread
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime
@@ -98,12 +101,12 @@ namespace areg
          * \param   stackSizeKb         The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
          *                              Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
          **/
-        WorkerThread( const areg::String & threadName
-                    , areg::Component & bindingComponent
-                    , areg::WorkerThreadConsumer & threadConsumer
-                    , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
-                    , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
-                    , uint32_t maxQueue         = areg::IGNORE_VALUE);
+        WorkerThread( const String & threadName
+                    , Component & bindingComponent
+                    , WorkerThreadConsumer & threadConsumer
+                    , uint32_t watchdogTimeout  = WATCHDOG_IGNORE
+                    , uint32_t stackSizeKb      = STACK_SIZE_DEFAULT
+                    , uint32_t maxQueue         = IGNORE_VALUE);
 
         /**
          * \brief   Destructor
@@ -117,12 +120,12 @@ namespace areg
         /**
          * \brief   Returns Binding (master) component object
          **/
-        inline areg::Component & getBindingComponent() const;
+        inline Component & getBindingComponent() const;
 
         /**
          * \brief   Returns binding component thread object
          **/
-        areg::ComponentThread & getBindingComponentThread() const;
+        ComponentThread & getBindingComponentThread() const;
 
         /**
          * \brief   Call to make emergency termination of worker thread.
@@ -149,7 +152,7 @@ namespace areg
          *          destroyed.
          * \param   eventElem   The event object to post.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
     protected:
     /************************************************************************/
@@ -175,7 +178,7 @@ namespace areg
          * \return  If found, returns valid pointer of dispatching thread. 
          *          Otherwise returns nullptr
          **/
-        areg::DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass ) override;
+        DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
     /************************************************************************/
     // EventDispatcherBase overrides
@@ -189,7 +192,7 @@ namespace areg
          * \return	Returns true if at least one consumer processed event.
          *          Otherwise it returns false.
          **/
-        bool dispatchEvent( areg::Event & eventElem ) override;
+        bool dispatchEvent( Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -198,17 +201,17 @@ namespace areg
         /**
          * \brief   Binding (master) component object
          **/
-        areg::Component &               mBindingComponent;
+        Component &               mBindingComponent;
 
         /**
          * \brief   Worker Thread Consumer object
          **/
-        areg::WorkerThreadConsumer &   mWorkerThreadConsumer;
+        WorkerThreadConsumer &   mWorkerThreadConsumer;
 
         /**
          * \brief   The watchdog object to track the event processing.
          **/
-        areg::Watchdog                    mWatchdog;
+        Watchdog                    mWatchdog;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -231,9 +234,9 @@ namespace areg
     // WorkerThread class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::Component& WorkerThread::getBindingComponent() const
+    inline Component& WorkerThread::getBindingComponent() const
     {
-        return static_cast<areg::Component &>(mBindingComponent);
+        return static_cast<Component &>(mBindingComponent);
     }
 
     inline WorkerThread& WorkerThread::self()

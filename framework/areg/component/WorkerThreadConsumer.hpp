@@ -28,8 +28,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ComponentThread; }
-namespace areg { class WorkerThread; }
+namespace areg
+{
+    class ComponentThread;
+    class WorkerThread;
+}
 
 namespace areg
 {
@@ -58,7 +61,7 @@ namespace areg
          * \brief   Creates consumer object and sets name.
          * \param   consumerName    The name of consumer bind to worker thread.
          **/
-        explicit WorkerThreadConsumer( const areg::String & consumerName );
+        explicit WorkerThreadConsumer( const String & consumerName );
 
     public:
         /**
@@ -75,7 +78,7 @@ namespace areg
          *          Is required if component contains few worker threads
          *          and needs few consumers for every single worker thread.
          **/
-        inline const areg::String & getConsumerName() const;
+        inline const String & getConsumerName() const;
 
         /**
          * \brief   Compares passed name with the name of consumer
@@ -83,7 +86,7 @@ namespace areg
          * \param   consumerName    The name to check.
          * \return  Returns true if passed name is the name of consumer.
          **/
-        inline bool isEqualName( const areg::String & consumerName ) const;
+        inline bool isEqualName( const String & consumerName ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Override operations
@@ -100,7 +103,7 @@ namespace areg
          * \param   workThread      The Worker Thread object to notify startup
          * \param   masterThread    The component thread, which owns worker thread.
          **/
-        virtual void registerEventConsumers( areg::WorkerThread & workThread, areg::ComponentThread & masterThread ) = 0;
+        virtual void registerEventConsumers( WorkerThread & workThread, ComponentThread & masterThread ) = 0;
 
         /**
          * \brief   Triggered by Worker Thread when stops running.
@@ -108,7 +111,7 @@ namespace areg
          *          method to stop receiving events.
          * \param   workThread  The Worker Thread object to notify stop
          **/
-        virtual void unregisterEventConsumers( areg::WorkerThread & workThread ) = 0;
+        virtual void unregisterEventConsumers( WorkerThread & workThread ) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -117,7 +120,7 @@ namespace areg
         /**
          * \brief   The name of consumer. Is a fixed name and cannot be changed
          **/
-        const areg::String    mConsumerName;
+        const String    mConsumerName;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -130,12 +133,12 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // WorkerThreadConsumer class inline function implementation
     //////////////////////////////////////////////////////////////////////////
-    inline const areg::String & WorkerThreadConsumer::getConsumerName() const
+    inline const String & WorkerThreadConsumer::getConsumerName() const
     {
         return mConsumerName;
     }
 
-    inline bool WorkerThreadConsumer::isEqualName( const areg::String & consumerName ) const
+    inline bool WorkerThreadConsumer::isEqualName( const String & consumerName ) const
     {
         return (mConsumerName == consumerName);
     }

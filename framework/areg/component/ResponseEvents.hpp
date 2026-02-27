@@ -26,12 +26,18 @@
 /************************************************************************
  * List of declared classes:
  ************************************************************************/
-namespace areg { class RemoteEventFactory; }
+namespace areg
+{
+    class RemoteEventFactory;
+}
 
 // ServiceRequestEvent;
-namespace areg{ class ResponseEvent; }        
-    namespace areg{ class LocalResponseEvent; }
-    namespace areg{ class RemoteResponseEvent; }
+namespace areg
+{
+    class ResponseEvent;
+    class LocalResponseEvent;
+    class RemoteResponseEvent;
+}
 
 namespace areg
 {
@@ -83,10 +89,10 @@ namespace areg
          * \param   eventType   The event type.
          * \param   seqNr       The call sequence number.
          **/
-        ResponseEvent( const areg::ProxyAddress & proxyTarget
+        ResponseEvent( const ProxyAddress & proxyTarget
                     , const ResultType result
                     , uint32_t respId
-                    , areg::Event::EventType eventType
+                    , Event::EventType eventType
                     , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY );
 
         /**
@@ -99,11 +105,11 @@ namespace areg
          * \param   seqNr       The call sequence number.
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
-        ResponseEvent( const areg::EventDataStream & args
-                    , const areg::ProxyAddress & proxyTarget
+        ResponseEvent( const EventDataStream & args
+                    , const ProxyAddress & proxyTarget
                     , ResultType result
                     , uint32_t respId
-                    , areg::Event::EventType eventType
+                    , Event::EventType eventType
                     , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY
                     , const String & name = String::getEmptyString() );
 
@@ -112,7 +118,7 @@ namespace areg
          * \param	proxyTarget	The address of target Proxy
          * \param	src	        The Event source to copy data.
          **/
-        ResponseEvent( const areg::ProxyAddress & proxyTarget, const ResponseEvent & src );
+        ResponseEvent( const ProxyAddress & proxyTarget, const ResponseEvent & src );
 
         /**
          * \brief   Creates event from streaming object and initializes data
@@ -132,7 +138,7 @@ namespace areg
         /**
          * \brief   Returns event data object.
          **/
-        inline const areg::EventData & getData() const;
+        inline const EventData & getData() const;
 
         /**
          * \brief   Returns data type of request data
@@ -155,7 +161,7 @@ namespace areg
         /**
          * \brief   Returns data object valid for modification.
          **/
-        inline areg::EventData & getData();
+        inline EventData & getData();
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -185,7 +191,7 @@ namespace areg
         /**
          * \brief   Event data object.
          **/
-        areg::EventData     mData;
+        EventData     mData;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -225,7 +231,7 @@ namespace areg
          * \param	respId	    The ID of response. Can also be update ID.
          * \param   seqNr       The call sequence number.
          **/
-        LocalResponseEvent( const areg::ProxyAddress & proxyTarget
+        LocalResponseEvent( const ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY);
@@ -240,8 +246,8 @@ namespace areg
          * \param   seqNr       The call sequence number.
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
-        LocalResponseEvent( const areg::EventDataStream & args
-                        , const areg::ProxyAddress & proxyTarget
+        LocalResponseEvent( const EventDataStream & args
+                        , const ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY
@@ -252,7 +258,7 @@ namespace areg
          * \param	proxyTarget	The address of target Proxy
          * \param	src	        The Event source to copy data.
          **/
-        LocalResponseEvent(const areg::ProxyAddress & proxyTarget, const LocalResponseEvent & src);
+        LocalResponseEvent(const ProxyAddress & proxyTarget, const LocalResponseEvent & src);
 
         /**
          * \brief   Creates event from streaming object and initializes data
@@ -286,7 +292,7 @@ namespace areg
      **/
     class AREG_API RemoteResponseEvent: public    ResponseEvent
     {
-        friend class areg::RemoteEventFactory;
+        friend class RemoteEventFactory;
     //////////////////////////////////////////////////////////////////////////
     // Declare event as runtime to support runtime casting.
     //////////////////////////////////////////////////////////////////////////
@@ -304,7 +310,7 @@ namespace areg
          * \param	respId	    The ID of response. Can also be update ID.
          * \param   seqNr       The call sequence number.
          **/
-        RemoteResponseEvent( const areg::ProxyAddress & proxyTarget
+        RemoteResponseEvent( const ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY );
@@ -319,8 +325,8 @@ namespace areg
          * \param   seqNr       The call sequence number.
          * \param	name	    Optional. Name for event data. Can be nullptr.
          **/
-        RemoteResponseEvent( const areg::EventDataStream & args
-                        , const areg::ProxyAddress & proxyTarget
+        RemoteResponseEvent( const EventDataStream & args
+                        , const ProxyAddress & proxyTarget
                         , ResultType result
                         , uint32_t respId
                         , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY
@@ -331,7 +337,7 @@ namespace areg
          * \param	proxyTarget	The address of target Proxy
          * \param	src	        The Event source to copy data.
          **/
-        RemoteResponseEvent(const areg::ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
+        RemoteResponseEvent(const ProxyAddress & proxyTarget, const RemoteResponseEvent & src);
 
         /**
          * \brief   Creates event from streaming object and initializes data
@@ -353,12 +359,12 @@ namespace areg
          * \brief   Sets the target communication channel object.
          * \param   channel     The communication channel to set in remote event.
          **/
-        inline void setTargetChannel( const areg::Channel & channel );
+        inline void setTargetChannel( const Channel & channel );
 
         /**
          * \brief   Returns the event communication channel object.
          **/
-        inline const areg::Channel & getTargetChannel() const;
+        inline const Channel & getTargetChannel() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -372,7 +378,7 @@ namespace areg
     // ResponseEvent class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::EventData & ResponseEvent::getData() const
+    inline const EventData & ResponseEvent::getData() const
     {
         return mData;
     }
@@ -382,7 +388,7 @@ namespace areg
         return mData.getDataType();
     }
 
-    inline areg::EventData & ResponseEvent::getData()
+    inline EventData & ResponseEvent::getData()
     {
         return mData;
     }
@@ -401,12 +407,12 @@ namespace areg
     // RemoteResponseEvent class inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline void RemoteResponseEvent::setTargetChannel(const areg::Channel & channel)
+    inline void RemoteResponseEvent::setTargetChannel(const Channel & channel)
     {
         mTargetProxyAddress.setChannel(channel);
     }
 
-    inline const areg::Channel & RemoteResponseEvent::getTargetChannel() const
+    inline const Channel & RemoteResponseEvent::getTargetChannel() const
     {
         return mTargetProxyAddress.getChannel();
     }

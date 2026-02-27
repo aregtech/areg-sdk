@@ -26,7 +26,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ClientInfo; }
+namespace areg
+{
+    class ClientInfo;
+}
 
 namespace areg
 {
@@ -58,7 +61,7 @@ namespace areg
          *          and sets state to Registered if specified server address is valid.
          * \param   server  The address of Stub server
          **/
-        explicit ServerInfo( const areg::StubAddress & server );
+        explicit ServerInfo( const StubAddress & server );
 
         /**
          * \brief   Initialization constructor.
@@ -66,14 +69,14 @@ namespace areg
          *          and sets state to Registered if specified server address is valid.
          * \param   server  The address of Stub server
          **/
-        explicit ServerInfo( areg::StubAddress && server );
+        explicit ServerInfo( StubAddress && server );
 
         /**
          * \brief   Initialization constructor.
          *          Creates Server Info object, copies server address data from proxy address.
          * \param   proxy   The Proxy address to extract data of Stub address
          **/
-        explicit ServerInfo( const areg::ProxyAddress & proxy );
+        explicit ServerInfo( const ProxyAddress & proxy );
 
         /**
          * \brief   Copy constructor.
@@ -113,28 +116,28 @@ namespace areg
          *          if specified Stub address is valid. Otherwise, it will set state Undefined.
          * \param   server  The stub address to set.
          **/
-        ServerInfo & operator = ( const areg::StubAddress & server );
+        ServerInfo & operator = ( const StubAddress & server );
 
         /**
          * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
          *          if specified Stub address is valid. Otherwise, it will set state Undefined.
          * \param   server  The stub address to set.
          **/
-        ServerInfo & operator = ( areg::StubAddress && server ) noexcept;
+        ServerInfo & operator = ( StubAddress && server ) noexcept;
 
         /**
          * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
          *          if specified Stub address is valid. Otherwise, it will set state Undefined.
          * \param   addService  Service address.
          **/
-        ServerInfo & operator = ( const areg::ServiceAddress & addService );
+        ServerInfo & operator = ( const ServiceAddress & addService );
 
         /**
          * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
          *          if specified Stub address is valid. Otherwise, it will set state Undefined.
          * \param   addService  Service address.
          **/
-        ServerInfo & operator = ( areg::ServiceAddress && addService ) noexcept;
+        ServerInfo & operator = ( ServiceAddress && addService ) noexcept;
 
         /**
          * \brief   Returns true, if 2 Server Info objects are equal. Otherwise returns false.
@@ -146,14 +149,14 @@ namespace areg
          * \brief   Returns true, if specified and the existing Stub address objects are equal. Otherwise returns false.
          * \param   server  The Stub server address to compare
          **/
-        bool operator == ( const areg::StubAddress & server ) const;
+        bool operator == ( const StubAddress & server ) const;
 
         /**
          * \brief   Returns true, if the Service Info of specified Client Info object and the existing Service Info objects are equal.
          *          Otherwise returns false.
          * \param   proxy   The Proxy client address to compare
          **/
-        bool operator == ( const areg::ProxyAddress & proxy ) const;
+        bool operator == ( const ProxyAddress & proxy ) const;
 
         /**
          * \brief   Converts Server Info object to unsigned integer.
@@ -168,20 +171,20 @@ namespace areg
         /**
          * \brief   Returns Stub server address
          **/
-        inline const areg::StubAddress & getAddress() const;
+        inline const StubAddress & getAddress() const;
 
         /**
          * \brief   Returns the state of Server Info.
          *          The Server Info state is updated only when Stub address is set.
          *          No separate Set-method presented
          **/
-        inline areg::ServiceConnectionState getConnectionStatus() const;
+        inline ServiceConnectionState getConnectionStatus() const;
 
         /**
          * \brief   Changes the network connection status.
          * \param   newConnection   The service connection status.
          **/
-        void setConnectionStatus( areg::ServiceConnectionState newConnection );
+        void setConnectionStatus( ServiceConnectionState newConnection );
 
         /**
          * \brief   Returns true if server status is Connected
@@ -200,35 +203,35 @@ namespace areg
         /**
          * \brief   The Server Stub address
          **/
-        areg::StubAddress mServerAddress;
+        StubAddress mServerAddress;
         /**
          * \brief   The State of Server Info. State Registered set only when Stub address is valid.
          **/
-        areg::ServiceConnectionState  mServerState;
+        ServiceConnectionState  mServerState;
     };
 
     //////////////////////////////////////////////////////////////////////////
     // ServerInfo class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::StubAddress& ServerInfo::getAddress() const
+    inline const StubAddress& ServerInfo::getAddress() const
     {
         return mServerAddress;
     }
 
-    inline areg::ServiceConnectionState ServerInfo::getConnectionStatus() const
+    inline ServiceConnectionState ServerInfo::getConnectionStatus() const
     {
         return mServerState;
     }
 
     inline bool ServerInfo::isConnected() const
     {
-        return mServerState == areg::ServiceConnectionState::Connected;
+        return mServerState == ServiceConnectionState::Connected;
     }
 
     inline bool ServerInfo::isWaiting() const
     {
-        return mServerState == areg::ServiceConnectionState::Pending;
+        return mServerState == ServiceConnectionState::Pending;
     }
 
 } // namespace areg

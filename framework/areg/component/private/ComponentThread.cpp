@@ -31,18 +31,18 @@ namespace areg
     // Implement runtime
     //////////////////////////////////////////////////////////////////////////
 
-    AREG_IMPLEMENT_RUNTIME(ComponentThread, areg::DispatcherThread)
+    AREG_IMPLEMENT_RUNTIME(ComponentThread, DispatcherThread)
 
     //////////////////////////////////////////////////////////////////////////
     // Implement static methods
     //////////////////////////////////////////////////////////////////////////
-    areg::Component* ComponentThread::getCurrentComponent()
+    Component* ComponentThread::getCurrentComponent()
     {
         ComponentThread* comThread = ComponentThread::_getCurrentComponentThread();
         return (comThread != nullptr ? comThread->mCurrentComponent : nullptr);
     }
 
-    bool ComponentThread::setCurrentComponent( areg::Component* curComponent )
+    bool ComponentThread::setCurrentComponent( Component* curComponent )
     {
         ComponentThread* comThread = ComponentThread::_getCurrentComponentThread();
         if (comThread != nullptr)
@@ -57,17 +57,17 @@ namespace areg
 
     inline ComponentThread* ComponentThread::_getCurrentComponentThread()
     {
-        return AREG_RUNTIME_CAST( &(areg::DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
+        return AREG_RUNTIME_CAST( &(DispatcherThread::getCurrentDispatcherThread( )), ComponentThread );
     }
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    ComponentThread::ComponentThread( const areg::String & threadName
+    ComponentThread::ComponentThread( const String & threadName
                                     , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
                                     , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */
                                     , uint32_t maxQueue         /* = areg::IGNORE_VALUE         */ )
-        : areg::DispatcherThread  ( threadName, stackSizeKb, maxQueue )
+        : DispatcherThread  ( threadName, stackSizeKb, maxQueue )
 
         , mCurrentComponent ( nullptr )
         , mWatchdog         ( self(), watchdogTimeout )
@@ -78,9 +78,9 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Methods
     //////////////////////////////////////////////////////////////////////////
-    bool ComponentThread::postEvent( areg::Event& eventElem )
+    bool ComponentThread::postEvent( Event& eventElem )
     {
-        return areg::EventDispatcher::postEvent(eventElem);
+        return EventDispatcher::postEvent(eventElem);
     }
 
     bool ComponentThread::runDispatcher()
@@ -90,7 +90,7 @@ namespace areg
         {
             readyForEvents( true );
             startComponents();
-            result = areg::DispatcherThread::runDispatcher();
+            result = DispatcherThread::runDispatcher();
         }
 
         return result;
@@ -99,15 +99,15 @@ namespace areg
     int32_t ComponentThread::createComponents()
     {
         int32_t result = 0;
-        const areg::ComponentList& comList = areg::ComponentLoader::findComponentList(getName());
+        const ComponentList& comList = ComponentLoader::findComponentList(getName());
         if (comList.isValid())
         {
             for (uint32_t i = 0; i < comList.mListComponents.getSize(); ++ i)
             {
-                const areg::ComponentEntry& entry = comList.mListComponents[i];
+                const ComponentEntry& entry = comList.mListComponents[i];
                 if (entry.isValid() && entry.mFuncCreate != nullptr)
                 {
-                    areg::Component *comObj = areg::Component::loadComponent(entry, self());
+                    Component *comObj = Component::loadComponent(entry, self());
                     if (comObj != nullptr)
                     {
                         mListComponent.pushLast(comObj);
@@ -124,14 +124,14 @@ namespace areg
     {
         while (mListComponent.isEmpty() == false)
         {
-            areg::Component* comObj = nullptr;
+            Component* comObj = nullptr;
             if (mListComponent.removeLast(comObj))
             {
                 ASSERT(comObj != nullptr);
-                const areg::ComponentEntry& entry = areg::ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
+                const ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
                 if (entry.isValid() && entry.mFuncDelete != nullptr)
                 {
-                    areg::Component::unloadComponent(*comObj, entry);
+                    Component::unloadComponent(*comObj, entry);
                 }
                 else
                 {
@@ -146,7 +146,7 @@ namespace areg
         ListComponent::LISTPOS pos = mListComponent.lastPosition();
         while (mListComponent.isValidPosition(pos))
         {
-            areg::Component* comObj = mListComponent.getPrev(pos);
+            Component* comObj = mListComponent.getPrev(pos);
             ASSERT(comObj != nullptr);
             comObj->startupComponent(self());
         }
@@ -158,15 +158,15 @@ namespace areg
         _shutdownComponents();
     }
 
-    areg::DispatcherThread* ComponentThread::getEventConsumerThread( const areg::RuntimeClassID& whichClass )
+    DispatcherThread* ComponentThread::getEventConsumerThread( const RuntimeClassID& whichClass )
     {
-        areg::DispatcherThread* result = hasRegisteredConsumer(whichClass) ? static_cast<areg::DispatcherThread *>(this) : nullptr;
+        DispatcherThread* result = hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : nullptr;
         if (result == nullptr)
         {
             ListComponent::LISTPOS pos = mListComponent.firstPosition();
             while (mListComponent.isValidPosition(pos) && (result == nullptr))
             {
-                areg::Component* comObj = mListComponent.getNext(pos);
+                Component* comObj = mListComponent.getNext(pos);
                 ASSERT(comObj != nullptr);
                 result = comObj->findEventConsumer(whichClass);
             }
@@ -185,33 +185,33 @@ namespace areg
 
         while (mListComponent.isEmpty() == false)
         {
-            areg::Component* component{ nullptr };
+            Component* component{ nullptr };
             mListComponent.removeLast(component);
             ASSERT(component != nullptr);
             component->terminateSelf();
         }
 
-        areg::ArrayList<std::shared_ptr<areg::ProxyBase>> proxyList;
-        areg::ProxyBase::findThreadProxies(self(), proxyList);
+        ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+        ProxyBase::findThreadProxies(self(), proxyList);
         for (uint32_t i = 0; i < proxyList.getSize(); ++i)
         {
-            std::shared_ptr<areg::ProxyBase> proxy = proxyList[i];
+            std::shared_ptr<ProxyBase> proxy = proxyList[i];
             ASSERT(proxy != nullptr);
             proxy->terminateSelf();
         }
 
-        areg::DispatcherThread::shutdownThread(areg::TIMEOUT_10_MS);
+        DispatcherThread::shutdownThread(TIMEOUT_10_MS);
 
         delete this;
     }
 
     inline void ComponentThread::_shutdownProxies()
     {
-        areg::ArrayList<std::shared_ptr<areg::ProxyBase>> proxyList;
-        areg::ProxyBase::findThreadProxies(self(), proxyList);
+        ArrayList<std::shared_ptr<ProxyBase>> proxyList;
+        ProxyBase::findThreadProxies(self(), proxyList);
         for (uint32_t i = 0; i < proxyList.getSize(); ++i)
         {
-            std::shared_ptr<areg::ProxyBase> proxy = proxyList[i];
+            std::shared_ptr<ProxyBase> proxy = proxyList[i];
             ASSERT(proxy != nullptr);
             proxy->stopProxy();
         }
@@ -222,23 +222,23 @@ namespace areg
         ListComponent::LISTPOS pos = mListComponent.firstPosition();
         while (mListComponent.isValidPosition(pos))
         {
-            areg::Component* comObj = mListComponent.getNext(pos);
+            Component* comObj = mListComponent.getNext(pos);
             ASSERT(comObj != nullptr);
             comObj->shutdownComponent(self());
         }
     }
 
-    areg::Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
+    Thread::ThreadCompletion ComponentThread::shutdownThread( uint32_t waitForStopMs /*= areg::DO_NOT_WAIT*/ )
     {
         ListComponent::LISTPOS pos = mListComponent.firstPosition( );
         while ( mListComponent.isValidPosition( pos ) )
         {
-            areg::Component * comObj = mListComponent.getNext( pos );
+            Component * comObj = mListComponent.getNext( pos );
             ASSERT( comObj != nullptr );
             comObj->notifyComponentShutdown( self( ) );
         }
 
-        return areg::DispatcherThread::shutdownThread( waitForStopMs );
+        return DispatcherThread::shutdownThread( waitForStopMs );
     }
 
     bool ComponentThread::completionWait( uint32_t waitForCompleteMs /*= areg::WAIT_INFINITE */ )
@@ -246,12 +246,12 @@ namespace areg
         ListComponent::LISTPOS pos = mListComponent.firstPosition();
         while ( mListComponent.isValidPosition(pos) )
         {
-            areg::Component* comObj = mListComponent.getNext(pos);
+            Component* comObj = mListComponent.getNext(pos);
             ASSERT(comObj != nullptr);
             comObj->waitComponentCompletion(waitForCompleteMs);
         }
 
-        return areg::DispatcherThread::completionWait(waitForCompleteMs);
+        return DispatcherThread::completionWait(waitForCompleteMs);
     }
 
     int32_t ComponentThread::onThreadExit()
@@ -259,13 +259,13 @@ namespace areg
         shutdownComponents();
         destroyComponents();
 
-        return areg::DispatcherThread::onThreadExit( );
+        return DispatcherThread::onThreadExit( );
     }
 
-    bool ComponentThread::dispatchEvent(areg::Event& eventElem)
+    bool ComponentThread::dispatchEvent(Event& eventElem)
     {
         mWatchdog.startGuard();
-        bool result = areg::DispatcherThread::dispatchEvent(eventElem);
+        bool result = DispatcherThread::dispatchEvent(eventElem);
         mWatchdog.stopGuard();
 
         return result;

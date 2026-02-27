@@ -47,19 +47,19 @@ namespace areg
      *          in system. The event dispatching thread is a base class for
      *          Worker thread and Component thread.
      **/
-    class AREG_API DispatcherThread : public areg::Thread
-                                    , public areg::EventDispatcher
+    class AREG_API DispatcherThread : public Thread
+                                    , public EventDispatcher
     {
         /**
          * \brief   EventDispatcher needs this to access NullDispatcher.
          **/
-        friend class areg::EventDispatcher;
+        friend class EventDispatcher;
 
         /**
          * \brief   DispatcherList
          *          List of Dispatcher Thread type.
          **/
-        using DispatcherList    = areg::LinkedList<DispatcherThread *>;
+        using DispatcherList    = LinkedList<DispatcherThread *>;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal types, constants, etc.
@@ -81,7 +81,7 @@ namespace areg
          * \param	threadName	The unique name of dispatching thread.
          * \return	If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object, which destroys any event passed to thread.
          **/
-        static inline DispatcherThread & getDispatcherThread(const areg::String & threadName);
+        static inline DispatcherThread & getDispatcherThread(const String & threadName);
 
         /**
          * \brief	By given thread ID searches registered Event Dispatcher thread and returns object.
@@ -99,7 +99,7 @@ namespace areg
          * \param   threadAddr  The unique thread address to search. Should be local address
          * \return	If found, returns valid Dispatcher thread. Otherwise, returns NullDispather object, which destroys any event passed to thread.
          **/
-        static inline DispatcherThread & getDispatcherThread(const areg::ThreadAddress & threadAddr );
+        static inline DispatcherThread & getDispatcherThread(const ThreadAddress & threadAddr );
 
         /**
          * \brief   Static method to get reference to the current 
@@ -116,7 +116,7 @@ namespace areg
          *          Dispatcher thread, the Event Dispatcher (invalid dispatcher) of 
          *          NullDispatcher will be returned.
          **/
-        static inline areg::EventDispatcher & getCurrentDispatcher();
+        static inline EventDispatcher & getCurrentDispatcher();
 
         /**
          * \brief   For specified event class ID it searches the appropriate dispatcher thread.
@@ -130,7 +130,7 @@ namespace areg
          *
          * \see     getEventConsumerThread()
          **/
-        static DispatcherThread * findEventConsumerThread(const areg::RuntimeClassID & whichClass);
+        static DispatcherThread * findEventConsumerThread(const RuntimeClassID & whichClass);
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -146,7 +146,7 @@ namespace areg
          *                          Pass `areg::IGNORE_VALUE` to use default value set in configuration or ignore the parameter if not configured.
          *                          The configuration is set in `areg.init` file under key "config::*::default::messagequeue".
          **/
-        explicit DispatcherThread( const areg::String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
+        explicit DispatcherThread( const String & threadName, uint32_t stackSizeKb, uint32_t maxQeueue);
         /**
          * \brief   Destructor.
          **/
@@ -159,12 +159,12 @@ namespace areg
          * \brief   Returns reference to Event Dispatcher object of the thread.
          *          Every Dispatching Thread has one event dispatcher object.
          **/
-        inline areg::EventDispatcher & getEventDispatcher();
+        inline EventDispatcher & getEventDispatcher();
 
         /**
          * \brief   Returns true if specified event is special exit event.
          **/
-        bool isExitEvent( const areg::Event * checkEvent ) const;
+        bool isExitEvent( const Event * checkEvent ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations and overrides.
@@ -175,7 +175,7 @@ namespace areg
          * \param   waitTimeout     The waiting timeout in milliseconds
          * \return  Returns true, if dispatcher is started with ready to dispatch. Otherwise it returns false.
          **/
-        virtual bool waitForDispatcherStart( uint32_t waitTimeout = areg::WAIT_INFINITE );
+        virtual bool waitForDispatcherStart( uint32_t waitTimeout = WAIT_INFINITE );
 
     /************************************************************************/
     // Thread overrides
@@ -202,7 +202,7 @@ namespace areg
          *              Thread::Completed   -- The thread was valid and completed normally;
          *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
          **/
-        areg::Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+        Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = DO_NOT_WAIT ) override;
 
     protected:
     /************************************************************************/
@@ -218,7 +218,7 @@ namespace areg
          * \param	eventElem	Event object to post
          * \return	In this class it always returns true.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
     /************************************************************************/
     // DispatcherThread overrides
@@ -244,7 +244,7 @@ namespace areg
          * \return  If found, returns valid pointer of dispatching thread. 
          *          Otherwise returns nullptr
          **/
-        virtual DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass );
+        virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass );
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden members
@@ -274,7 +274,7 @@ namespace areg
          *          When Dispatcher is started, this event is signaled.
          *          Otherwise it is not signaled.
          **/
-        areg::SyncEvent    mEventStarted;
+        SyncEvent    mEventStarted;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden method calls.
@@ -288,38 +288,38 @@ namespace areg
     // DispatcherThread class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline DispatcherThread & DispatcherThread::getDispatcherThread( const areg::String & threadName )
+    inline DispatcherThread & DispatcherThread::getDispatcherThread( const String & threadName )
     {
-        DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.isEmpty() == false ? areg::Thread::findThreadByName(threadName) : areg::Thread::getCurrentThread(), DispatcherThread);
+        DispatcherThread * dispThread = AREG_RUNTIME_CAST(threadName.isEmpty() == false ? Thread::findThreadByName(threadName) : Thread::getCurrentThread(), DispatcherThread);
         return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
     }
 
     inline DispatcherThread & DispatcherThread::getDispatcherThread( id_type threadId )
     {
-        DispatcherThread* dispThread = AREG_RUNTIME_CAST(threadId != 0 ? areg::Thread::findThreadById(threadId) : areg::Thread::getCurrentThread(), DispatcherThread);
+        DispatcherThread* dispThread = AREG_RUNTIME_CAST(threadId != 0 ? Thread::findThreadById(threadId) : Thread::getCurrentThread(), DispatcherThread);
         return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
     }
 
-    inline DispatcherThread & DispatcherThread::getDispatcherThread(const areg::ThreadAddress & threadAddr )
+    inline DispatcherThread & DispatcherThread::getDispatcherThread(const ThreadAddress & threadAddr )
     {
-        DispatcherThread* dispThread = AREG_RUNTIME_CAST(areg::Thread::findThreadByAddress(threadAddr), DispatcherThread);
+        DispatcherThread* dispThread = AREG_RUNTIME_CAST(Thread::findThreadByAddress(threadAddr), DispatcherThread);
         return ( dispThread != nullptr ? *dispThread : DispatcherThread::_getNullDispatherThread() );
     }
 
     inline DispatcherThread & DispatcherThread::getCurrentDispatcherThread()
     {
-        DispatcherThread* currThread = AREG_RUNTIME_CAST(areg::Thread::getCurrentThread(), DispatcherThread);
+        DispatcherThread* currThread = AREG_RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread);
         return ( currThread != nullptr ? *currThread : DispatcherThread::_getNullDispatherThread() );
     }
 
-    inline areg::EventDispatcher & DispatcherThread::getCurrentDispatcher()
+    inline EventDispatcher & DispatcherThread::getCurrentDispatcher()
     {
         return getCurrentDispatcherThread().getEventDispatcher();
     }
 
-    inline areg::EventDispatcher & DispatcherThread::getEventDispatcher()
+    inline EventDispatcher & DispatcherThread::getEventDispatcher()
     {
-        return static_cast<areg::EventDispatcher &>(self());
+        return static_cast<EventDispatcher &>(self());
     }
 
     inline DispatcherThread & DispatcherThread::self()

@@ -30,7 +30,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Component; }
+namespace areg
+{
+    class Component;
+}
 
 namespace areg
 {
@@ -45,7 +48,7 @@ namespace areg
      *          and no component data is shared between several threads.
      *          Every component thread can have several component objects.
      **/
-    class AREG_API ComponentThread  : public    areg::DispatcherThread
+    class AREG_API ComponentThread  : public    DispatcherThread
     {
     //////////////////////////////////////////////////////////////////////////
     // Local types and constants
@@ -55,7 +58,7 @@ namespace areg
          * \brief   ComponentThread::ListComponent;
          *          Linked List of instantiated components in the Component Thread.
          **/
-        using ListComponent     = areg::LinkedList<areg::Component*>;
+        using ListComponent     = LinkedList<Component*>;
 
     //////////////////////////////////////////////////////////////////////////
     // Declare as Runtime instance
@@ -75,7 +78,7 @@ namespace areg
          *          current Component set in the thread, it will return nullptr.
          * \return  Returns the current Component object of current Component Thread.
          **/
-        static areg::Component * getCurrentComponent();
+        static Component * getCurrentComponent();
 
         /**
          * \brief   Sets current Component object of current Component Thread.
@@ -88,7 +91,7 @@ namespace areg
          * \return  The function returns true if current Thread is Component Thread.
          *          Otherwise, current Component is not set and function returns false.
          **/
-        static bool setCurrentComponent( areg::Component * curComponent );
+        static bool setCurrentComponent( Component * curComponent );
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -109,10 +112,10 @@ namespace areg
          * \param   maxQeueue       The maximum number of events in the internal event queue.
          *                          Pass areg::IGNORE_VALUE to use default value set in configuration or ignore the parameter if not configured.
          **/
-        explicit ComponentThread( const areg::String & threadName
-                                , uint32_t watchdogTimeout  = areg::WATCHDOG_IGNORE
-                                , uint32_t stackSizeKb      = areg::STACK_SIZE_DEFAULT
-                                , uint32_t maxQeueue        = areg::IGNORE_VALUE);
+        explicit ComponentThread( const String & threadName
+                                , uint32_t watchdogTimeout  = WATCHDOG_IGNORE
+                                , uint32_t stackSizeKb      = STACK_SIZE_DEFAULT
+                                , uint32_t maxQeueue        = IGNORE_VALUE);
 
         /**
          * \brief   Destructor
@@ -157,7 +160,7 @@ namespace areg
          *              Thread::Completed   -- The thread was valid and completed normally;
          *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
          **/
-        areg::Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = areg::DO_NOT_WAIT ) override;
+        Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = DO_NOT_WAIT ) override;
 
         /**
          * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -167,7 +170,7 @@ namespace areg
          * \param   waitForCompleteMs   The timeout to wait for completion.
          * \return  Returns true if either thread completed or the waiting timeout is areg::DO_NOT_WAIT.
          **/
-        bool completionWait( uint32_t waitForCompleteMs = areg::WAIT_INFINITE ) override;
+        bool completionWait( uint32_t waitForCompleteMs = WAIT_INFINITE ) override;
 
     /************************************************************************/
     // EventRouter interface overrides
@@ -181,7 +184,7 @@ namespace areg
          * \param   eventElem   The event object to push in the queue.
          * \return  Returns true if successfully pushed event in the queue.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Overrides. Protected
@@ -209,7 +212,7 @@ namespace areg
          * \return  If found, returns valid pointer of dispatching thread.
          *          Otherwise returns nullptr
          **/
-        areg::DispatcherThread * getEventConsumerThread( const areg::RuntimeClassID & whichClass ) override;
+        DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
     /************************************************************************/
     // ThreadConsumer interface overrides
@@ -272,7 +275,7 @@ namespace areg
          * \return	Returns true if at least one consumer processed event.
          *          Otherwise it returns false.
          **/
-        bool dispatchEvent( areg::Event & eventElem ) override;
+        bool dispatchEvent( Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -307,7 +310,7 @@ namespace areg
         /**
          * \brief   Current component of Component Thread.
          **/
-        areg::Component *     mCurrentComponent;
+        Component *     mCurrentComponent;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables.
@@ -316,7 +319,7 @@ namespace areg
         /**
          * \brief   The watchdog object to track the event processing.
          **/
-        areg::Watchdog        mWatchdog;
+        Watchdog        mWatchdog;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)

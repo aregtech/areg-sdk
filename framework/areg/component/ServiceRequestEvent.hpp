@@ -28,9 +28,12 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg { class StubAddress; }
-namespace areg { class ProxyAddress; }
-namespace areg { class ComponentAddress; }
+namespace areg
+{
+    class StubAddress;
+    class ProxyAddress;
+    class ComponentAddress;
+}
 
 namespace areg
 {
@@ -51,7 +54,7 @@ namespace areg
      *              set additional data parameter.
      *
      **/
-    class AREG_API ServiceRequestEvent : public areg::StubEvent
+    class AREG_API ServiceRequestEvent : public StubEvent
     {
     //////////////////////////////////////////////////////////////////////////
     // Declare as runtime event class
@@ -70,17 +73,17 @@ namespace areg
          * \param   reqType         The request type.
          * \param   eventType       The type of event.
          **/
-        ServiceRequestEvent( const areg::ProxyAddress & proxyAddress
-                        , const areg::StubAddress & target
+        ServiceRequestEvent( const ProxyAddress & proxyAddress
+                        , const StubAddress & target
                         , uint32_t reqId
-                        , areg::RequestType reqType
-                        , areg::Event::EventType eventType );
+                        , RequestType reqType
+                        , Event::EventType eventType );
 
         /**
          * \brief   Creates event from streaming object and initializes data
          * \param   stream  The streaming object to read data
          **/
-        ServiceRequestEvent(const areg::InStream & stream);
+        ServiceRequestEvent(const InStream & stream);
 
         /**
          * \brief   Destructor.
@@ -94,13 +97,13 @@ namespace areg
         /**
          * \brief   Return the address of Proxy of event source
          **/
-        inline const areg::ProxyAddress & getEventSource() const;
+        inline const ProxyAddress & getEventSource() const;
 
         /**
          * \brief   Sets the address of Proxy of event source
          * \param   addrProxySource The address of Proxy of source
          **/
-        inline void setEventSource( const areg::ProxyAddress &  addrProxySource );
+        inline void setEventSource( const ProxyAddress &  addrProxySource );
 
         /**
          * \brief   Returns request message ID stored in service event
@@ -110,7 +113,7 @@ namespace areg
         /**
          * \brief   Returns request type to process.
          **/
-        inline areg::RequestType getRequestType() const;
+        inline RequestType getRequestType() const;
 
         /**
          * \brief   Returns sequence number set in info.
@@ -134,14 +137,14 @@ namespace areg
          * \param   stream  The streaming object to read out event data
          * \return  Returns streaming object to read out data.
          **/
-        const areg::InStream & readStream( const areg::InStream & stream ) override;
+        const InStream & readStream( const InStream & stream ) override;
 
         /**
          * \brief   Writes event data to streaming object
          * \param   stream  The streaming object to write event data.
          * \return  Returns streaming object to write event data.
          **/
-        areg::OutStream & writeStream( areg::OutStream & stream ) const override;
+        OutStream & writeStream( OutStream & stream ) const override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -150,7 +153,7 @@ namespace areg
         /**
          * \brief   Event source Proxy address
          **/
-        areg::ProxyAddress              mProxySource;
+        ProxyAddress              mProxySource;
 
         /**
          * \brief   Request message ID to trigger service call.
@@ -160,7 +163,7 @@ namespace areg
         /**
          * \brief   Request type. Normally, either notification or request call.
          **/
-        areg::RequestType    mRequestType;
+        RequestType    mRequestType;
 
         /**
          * \brief   Sequence number.
@@ -179,12 +182,12 @@ namespace areg
     // ServiceRequestEvent class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::ProxyAddress & ServiceRequestEvent::getEventSource() const
+    inline const ProxyAddress & ServiceRequestEvent::getEventSource() const
     {
         return mProxySource;
     }
 
-    inline void ServiceRequestEvent::setEventSource(const areg::ProxyAddress& addrProxySource)
+    inline void ServiceRequestEvent::setEventSource(const ProxyAddress& addrProxySource)
     {
         mProxySource = addrProxySource;
     }
@@ -194,7 +197,7 @@ namespace areg
         return mMessageId;
     }
 
-    inline areg::RequestType ServiceRequestEvent::getRequestType() const
+    inline RequestType ServiceRequestEvent::getRequestType() const
     {
         return mRequestType;
     }

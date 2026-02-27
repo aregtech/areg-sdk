@@ -26,8 +26,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Event; }
-namespace areg { class RuntimeClassID; }
+namespace areg
+{
+    class Event;
+    class RuntimeClassID;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class declaration

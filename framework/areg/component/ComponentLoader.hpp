@@ -280,9 +280,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Component; }
-namespace areg { class ComponentThread; }
-namespace areg { class Thread; }
+namespace areg
+{
+    class Component;
+    class ComponentThread;
+    class Thread;
+}
 
 namespace areg
 {
@@ -705,7 +708,7 @@ namespace areg
         /**
          * \brief   Synchronization object
          **/
-        mutable areg::ResourceLock    mLock;
+        mutable ResourceLock    mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

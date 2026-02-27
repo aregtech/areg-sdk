@@ -27,8 +27,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class StubAddress; }
-namespace areg { class ProxyAddress; }
+namespace areg
+{
+    class StubAddress;
+    class ProxyAddress;
+}
 
 
 namespace areg
@@ -40,7 +43,7 @@ namespace areg
     /**
      * \brief   Server List helper class.
      **/
-    using ServerListBase    = areg::HashMap<areg::ServerInfo, areg::ClientList>;
+    using ServerListBase    = HashMap<ServerInfo, ClientList>;
     
     /**
      * \brief   Server List is a Hash Map class containing information
@@ -75,7 +78,7 @@ namespace areg
         /**
          * \brief   Returns true if server with requested address is registered.
          **/
-        bool isServerRegistered( const areg::StubAddress & server ) const;
+        bool isServerRegistered( const StubAddress & server ) const;
 
         /**
          * \brief   Registers requested client by given address in the list.
@@ -89,7 +92,7 @@ namespace areg
          * \param   out_client  [out]   On output, this contain the information of connected service consumer (client).
          * \return  Returns registered Client Info object.
          **/
-        const areg::ServerInfo & registerClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client );
+        const ServerInfo & registerClient( const ProxyAddress & whichClient, ClientInfo & out_client );
 
         /**
          * \brief   Unregisters specified Proxy client from Server List.
@@ -105,7 +108,7 @@ namespace areg
          *          Any other value specifies number of existing client related
          *          with Service Interface.
          **/
-        areg::ServerInfo unregisterClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client );
+        ServerInfo unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client );
 
         /**
          * \brief   Registers specified Stub Server in the list, if the address is valid, it sets Server state
@@ -117,7 +120,7 @@ namespace areg
          *                                  Server to be connected.
          * \return  Returns updated and registered Server Info object.
          **/
-        const areg::ServerInfo & registerServer( const areg::StubAddress & addrStub, areg::ClientList & out_clinetList );
+        const ServerInfo & registerServer( const StubAddress & addrStub, ClientList & out_clinetList );
 
         /**
          * \brief   Unregisters specified Stub Server from the list and returns related
@@ -127,7 +130,7 @@ namespace areg
          *                                  objects that were previousely registered to the service provider (server).
          * \return  Returns updated and registered Server Info object.
          **/
-        areg::ServerInfo unregisterServer( const areg::StubAddress & whichServer, areg::ClientList & out_clinetList );
+        ServerInfo unregisterServer( const StubAddress & whichServer, ClientList & out_clinetList );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -142,7 +145,7 @@ namespace areg
          *          is not registered yet, or returns ServerInfo::SERVER_REGISTERED
          *          if Server is registered and runs.
          **/
-        areg::ServiceConnectionState getServerState( const areg::StubAddress & whichServer ) const;
+        ServiceConnectionState getServerState( const StubAddress & whichServer ) const;
 
         /**
          * \brief   Returns Client Info List related with specified server.
@@ -150,7 +153,7 @@ namespace areg
          * \return  Returns Client Info List related with specified server.
          *          If list is empty, there is no Client connected to server yet.
          **/
-        const areg::ClientList & getClientList( const areg::StubAddress & whichServer ) const;
+        const ClientList & getClientList( const StubAddress & whichServer ) const;
 
         /**
          * \brief   Searches the server info object for given client.
@@ -158,7 +161,7 @@ namespace areg
          * \param   whichClient     The instance of client information object to extract data for search.
          * \return  Returns valid pointer if found registered server. Otherwise, it returns null.
          **/
-        const areg::ServerInfo * findClientServer( const areg::ProxyAddress & whichClient ) const;
+        const ServerInfo * findClientServer( const ProxyAddress & whichClient ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -168,17 +171,17 @@ namespace areg
         /**
          * \brief   Find server component by client proxy address.
          **/
-        MAPPOS findServer(const areg::ProxyAddress& whichClient) const;
+        MAPPOS findServer(const ProxyAddress& whichClient) const;
 
         /**
          * \brief   Find server component by service address.
          **/
-        MAPPOS findServer(const areg::StubAddress& whichServer) const;
+        MAPPOS findServer(const StubAddress& whichServer) const;
 
         /**
          * \brief   Find server component by server info.
          **/
-        MAPPOS findServer(const areg::ServerInfo& server) const;
+        MAPPOS findServer(const ServerInfo& server) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

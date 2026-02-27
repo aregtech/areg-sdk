@@ -29,16 +29,16 @@ namespace areg
         return (++_id);
     }
 
-    Watchdog::Watchdog(areg::ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-        : areg::TimerBase         (areg::TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, areg::TimerBase::ONE_TIME)
+    Watchdog::Watchdog(ComponentThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
         , mGuardId          (_generateId())
         , mSequence         (0u)
         , mComponentThread  (thread)
     {
     }
 
-    Watchdog::Watchdog(areg::WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
-        : areg::TimerBase         (areg::TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, areg::TimerBase::ONE_TIME)
+    Watchdog::Watchdog(WorkerThread& thread, uint32_t msTimeout /*= areg::WATCHDOG_IGNORE*/)
+        : TimerBase         (TimerBase::TimerType::WatchdogTimer, thread.getName(), msTimeout, TimerBase::ONE_TIME)
         , mGuardId          (_generateId())
         , mSequence         (0u)
         , mComponentThread  (thread.getBindingComponentThread())
@@ -47,28 +47,28 @@ namespace areg
 
     Watchdog::~Watchdog()
     {
-        areg::WatchdogManager::stopTimer(*this);
+        WatchdogManager::stopTimer(*this);
     }
 
     void Watchdog::startGuard()
     {
-        if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+        if (mTimeoutInMs != WATCHDOG_IGNORE)
         {
-            areg::Lock lock(mLock);
+            Lock lock(mLock);
             ASSERT(mHandle != nullptr);
             ++mSequence;
-            mActive = areg::WatchdogManager::startTimer(*this);
+            mActive = WatchdogManager::startTimer(*this);
         }
     }
 
     void Watchdog::stopGuard()
     {
-        if (mTimeoutInMs != areg::WATCHDOG_IGNORE)
+        if (mTimeoutInMs != WATCHDOG_IGNORE)
         {
-            areg::Lock lock(mLock);
+            Lock lock(mLock);
             ASSERT(mHandle != nullptr);
             mActive = false;
-            areg::WatchdogManager::stopTimer(*this);
+            WatchdogManager::stopTimer(*this);
         }
     }
 

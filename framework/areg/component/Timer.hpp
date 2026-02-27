@@ -27,10 +27,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class TimerConsumer; }
-namespace areg { class DispatcherThread; }
-namespace areg { class TimerEvent; }
-namespace areg { class TimerManager; }
+namespace areg
+{
+    class TimerConsumer;
+    class DispatcherThread;
+    class TimerEvent;
+    class TimerManager;
+}
 
 namespace areg
 {
@@ -45,14 +48,14 @@ namespace areg
      *              - Periodic timer to set the number of timer events to fire.
      *              - Continues timers run in cycle until are not manually stopped.
      **/
-    class AREG_API Timer : public areg::TimerBase
+    class AREG_API Timer : public TimerBase
     {
     /************************************************************************/
     // Friend classes to access protected members.
     /************************************************************************/
 
-        friend class areg::TimerEvent;
-        friend class areg::TimerManager;
+        friend class TimerEvent;
+        friend class TimerManager;
 
     //////////////////////////////////////////////////////////////////////////
     // Predefined constants and types
@@ -94,9 +97,9 @@ namespace areg
          *                          fired once or less than maxQueued timer, this parameter will be ignored
          *                          and play no role.
          **/
-        explicit Timer( areg::TimerConsumer & timerConsumer
-                    , const areg::String & timerName = areg::String::getEmptyString()
-                    , uint32_t timeoutMs       = areg::INVALID_TIMEOUT
+        explicit Timer( TimerConsumer & timerConsumer
+                    , const String & timerName = String::getEmptyString()
+                    , uint32_t timeoutMs       = INVALID_TIMEOUT
                     , int32_t maxQueued            = Timer::IGNORE_TIMER_QUEUE );
         /**
          * \brief   Destructor
@@ -126,7 +129,7 @@ namespace areg
          *                      reached specified number.
          * \return  Returns true if Timer was successfully started.
          **/
-        bool startTimer(uint32_t timeoutInMs, uint32_t eventCount = areg::TimerBase::CONTINUOUSLY);
+        bool startTimer(uint32_t timeoutInMs, uint32_t eventCount = TimerBase::CONTINUOUSLY);
 
         /**
          * \brief   Call to start timer. The system will send and the
@@ -149,7 +152,7 @@ namespace areg
          *                      reaching specified number.
          * \return  Returns true if Timer was successfully started.
          **/
-        bool startTimer(uint32_t timeoutInMs, areg::DispatcherThread & whichThread, uint32_t eventCount = areg::TimerBase::CONTINUOUSLY);
+        bool startTimer(uint32_t timeoutInMs, DispatcherThread & whichThread, uint32_t eventCount = TimerBase::CONTINUOUSLY);
 
         /**
          * \brief   Call to stop previously started timer.
@@ -163,7 +166,7 @@ namespace areg
         /**
          * \brief   Returns Timer Consumer object.
          **/
-        inline areg::TimerConsumer & getConsumer() const;
+        inline TimerConsumer & getConsumer() const;
 
         /**
          * \brief   Returns true if timer is stopped. The timer is stopped if timeout value is zero.
@@ -208,7 +211,7 @@ namespace areg
         /**
          * \brief   Timer consumer object
          **/
-        areg::TimerConsumer &   mConsumer;
+        TimerConsumer &   mConsumer;
     private:
         /**
          * \brief   Number of timer events, currently queued dispatcher.
@@ -223,7 +226,7 @@ namespace areg
         /**
          * \brief   The Dispatcher thread where currently the timer is dispatched.
          **/
-        areg::DispatcherThread *  mDispatchThread;
+        DispatcherThread *  mDispatchThread;
         /**
          * \brief   First starting time. The value is system dependent.
          **/
@@ -293,14 +296,14 @@ namespace areg
         return (*this);
     }
 
-    inline areg::TimerConsumer& Timer::getConsumer() const
+    inline TimerConsumer& Timer::getConsumer() const
     {
         return mConsumer;
     }
 
     inline bool Timer::isStopped() const
     {
-        return (mTimeoutInMs == areg::INVALID_TIMEOUT);
+        return (mTimeoutInMs == INVALID_TIMEOUT);
     }
 
 } // namespace areg

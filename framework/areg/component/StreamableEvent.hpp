@@ -25,7 +25,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class RemoteEventFactory; }
+namespace areg
+{
+    class RemoteEventFactory;
+}
 
 namespace areg
 {
@@ -40,12 +43,12 @@ namespace areg
      *          created and used directly. Instead, one of derived classes
      *          should be used.
      **/
-    class AREG_API StreamableEvent : public areg::Event
+    class AREG_API StreamableEvent : public Event
     {
     //////////////////////////////////////////////////////////////////////////
     // friend classes
     //////////////////////////////////////////////////////////////////////////
-        friend class areg::RemoteEventFactory;
+        friend class RemoteEventFactory;
     //////////////////////////////////////////////////////////////////////////
     // Runtime declare
     //////////////////////////////////////////////////////////////////////////
@@ -59,13 +62,13 @@ namespace areg
          * \brief   Creates streamable event and defines event type.
          * \param   eventType   The type of event.
          **/
-        explicit StreamableEvent( areg::Event::EventType eventType );
+        explicit StreamableEvent( Event::EventType eventType );
 
         /**
          * \brief   Creates streamable event and initialize data
          * \param   stream  The streaming object to read data
          **/
-        StreamableEvent( const areg::InStream & stream );
+        StreamableEvent( const InStream & stream );
 
         /**
          * \brief   Destructor
@@ -84,14 +87,14 @@ namespace areg
          * \param   stream  The streaming object to read out event data
          * \return  Returns streaming object to read out data.
          **/
-        virtual const areg::InStream & readStream( const areg::InStream & stream );
+        virtual const InStream & readStream( const InStream & stream );
 
         /**
          * \brief   Writes event data to streaming object
          * \param   stream  The streaming object to write event data.
          * \return  Returns streaming object to write event data.
          **/
-        virtual areg::OutStream & writeStream( areg::OutStream & stream ) const;
+        virtual OutStream & writeStream( OutStream & stream ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

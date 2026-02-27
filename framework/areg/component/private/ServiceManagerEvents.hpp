@@ -28,10 +28,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ProxyAddress; }
-namespace areg { class StubAddress; }
-namespace areg { class Channel; }
-namespace areg { class String; }
+namespace areg
+{
+    class ProxyAddress;
+    class StubAddress;
+    class Channel;
+    class String;
+}
 
 namespace areg
 {

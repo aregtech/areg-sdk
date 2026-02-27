@@ -27,13 +27,19 @@
  * List of declared classes:
  ************************************************************************/
 // ServiceRequestEvent;
-namespace areg { class RequestEvent; }
-    namespace areg { class LocalRequestEvent; }
-    namespace areg { class RemoteRequestEvent; }
+namespace areg
+{
+    class RequestEvent;
+    class LocalRequestEvent;
+    class RemoteRequestEvent;
+}
 
-namespace areg { class NotifyRequestEvent; }
-    namespace areg { class LocalNotifyRequestEvent; }
-    namespace areg { class RemoteNotifyRequestEvent; }
+namespace areg
+{
+    class NotifyRequestEvent;
+    class LocalNotifyRequestEvent;
+    class RemoteNotifyRequestEvent;
+}
 
 namespace areg
 {

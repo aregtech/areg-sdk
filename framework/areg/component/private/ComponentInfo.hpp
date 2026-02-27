@@ -29,9 +29,12 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ComponentThread; }
-namespace areg { class WorkerThread; }
-namespace areg { class DispatcherThread; }
+namespace areg
+{
+    class ComponentThread;
+    class WorkerThread;
+    class DispatcherThread;
+}
 
 namespace areg
 {
@@ -59,7 +62,7 @@ namespace areg
          * \brief   The Hash Map object to save information of threads
          *          saved in specified Component Info object.
          **/
-        using _WorkerThreadMap  = areg::OrderedMap<areg::ThreadAddress, areg::WorkerThread *>;
+        using _WorkerThreadMap  = OrderedMap<ThreadAddress, WorkerThread *>;
 
         /**
          * \brief   Resource mapping object type. 
@@ -67,7 +70,7 @@ namespace areg
          *          As a value, it saves pointers of Worker Thread object
          *          As a Hash Map used ComponentInfo::_WorkerThreadMap object
          **/
-        using MapWorkerThread   = areg::ConcurrentResourceMap<areg::ThreadAddress, areg::WorkerThread *, _WorkerThreadMap, areg::ResourceMapImpl<areg::ThreadAddress, areg::WorkerThread>>;
+        using MapWorkerThread   = ConcurrentResourceMap<ThreadAddress, WorkerThread *, _WorkerThreadMap, ResourceMapImpl<ThreadAddress, WorkerThread>>;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -81,7 +84,7 @@ namespace areg
          * \param   ownerThread The Master Thread of Component (Component Thread)
          * \param   roleName    The Role Name of component, must not be empty
          **/
-        ComponentInfo( areg::ComponentThread & ownerThread, const areg::String & roleName );
+        ComponentInfo( ComponentThread & ownerThread, const String & roleName );
 
         /**
          * \brief   Destructor
@@ -95,24 +98,24 @@ namespace areg
         /**
          * \brief   Returns Component Thread object
          **/
-        inline areg::ComponentThread & getMasterThread() const;
+        inline ComponentThread & getMasterThread() const;
 
         /**
          * \brief   Returns the address of Component
          **/
-        inline const areg::ComponentAddress & getAddress() const;
+        inline const ComponentAddress & getAddress() const;
 
         /**
          * \brief   Returns the Role Name of Component
          **/
-        inline const areg::String & getRoleName() const;
+        inline const String & getRoleName() const;
 
         /**
          * \brief   Returns true, if specified thread address is the address of registered Worker Thread.
          * \param   threadAddress   The thread address to check.
          * \return  Returns true, if specified thread address is the address of registered Worker Thread.
          **/
-        inline bool isWorkerThreadAddress( const areg::ThreadAddress & threadAddress) const;
+        inline bool isWorkerThreadAddress( const ThreadAddress & threadAddress) const;
 
         /**
          * \brief   Returns true, if Component Info has at least one registered Worker Thread.
@@ -124,14 +127,14 @@ namespace areg
          * \param   workerThread    The Worker Thread object to check.
          * \return  Returns true if specified Worker Thread is registered in Component Info.
          **/
-        bool isWorkerThreadRegistered( areg::WorkerThread & workerThread ) const;
+        bool isWorkerThreadRegistered( WorkerThread & workerThread ) const;
 
         /**
          * \brief   Returns true, if specified thread address is the address of Component Thread.
          * \param   threadAddress   The thread address to check.
          * \return  Returns true, if specified thread address is the address of Component Thread.
          **/
-        bool isMasterThreadAddress( const areg::ThreadAddress & threadAddress ) const;
+        bool isMasterThreadAddress( const ThreadAddress & threadAddress ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -142,14 +145,14 @@ namespace areg
          *          and returns true, if registration succeeded.
          * \param   workerThread    The Worker Thread to register in Component Info
          **/
-        void registerWorkerThread( areg::WorkerThread & workerThread );
+        void registerWorkerThread( WorkerThread & workerThread );
 
         /**
          * \brief   Unregisters specified Worker Thread object in Component Info
          *          and returns true, if operation succeeded. The operation may fail,
          *          if thread previously was not registered in Component Info.
          **/
-        bool unregisterWorkerThread( areg::WorkerThread & workerThread );
+        bool unregisterWorkerThread( WorkerThread & workerThread );
 
         /**
          * \brief   Looks up for Worker Thread by specified unique Thread address.
@@ -160,7 +163,7 @@ namespace areg
          * \return  Returns pointer of valid Worker Thread if there is registered
          *          Worker Thread with specified unique address. Otherwise, returns nullptr.
          **/
-        inline areg::WorkerThread * findWorkerThread( const areg::ThreadAddress & threadAddress ) const;
+        inline WorkerThread * findWorkerThread( const ThreadAddress & threadAddress ) const;
 
         /**
          * \brief   Looks up for Worker Thread by specified unique Thread name.
@@ -171,7 +174,7 @@ namespace areg
          * \return  Returns pointer of valid Worker Thread if there is registered
          *          Worker Thread with specified unique name. Otherwise, returns nullptr.
          **/
-        inline areg::WorkerThread * findWorkerThread( const areg::String & threadName ) const;
+        inline WorkerThread * findWorkerThread( const String & threadName ) const;
 
         /**
          * \brief   Looks up for Worker Thread by specified unique Component Path,
@@ -184,7 +187,7 @@ namespace areg
          * \return  Returns pointer of valid Worker Thread if there is registered
          *          Worker Thread with extracted unique address. Otherwise, returns nullptr.
          **/
-        inline areg::WorkerThread * findThreadByPath( const areg::String & componentPath ) const;
+        inline WorkerThread * findThreadByPath( const String & componentPath ) const;
 
         /**
          * \brief   By specified Event Consumer runtime class ID object, looks up for registered
@@ -196,7 +199,7 @@ namespace areg
          *          If there is no such Event Consumer registered in Component Thread and in Worker Threads,
          *          it returns nullptr.
          **/
-        areg::DispatcherThread * findEventConsumer( const areg::RuntimeClassID & whichClass ) const;
+        DispatcherThread * findEventConsumer( const RuntimeClassID & whichClass ) const;
 
         /**
          * \brief   Returns pointer of first Worker Thread. On output, threadAddress
@@ -210,7 +213,7 @@ namespace areg
          *          Worker Thread object will have address specified in threadAddress.
          *          If Component has no Worker Thread, it will return nullptr.
          **/
-        inline areg::WorkerThread * getFirstWorkerThread( areg::ThreadAddress & threadAddress );
+        inline WorkerThread * getFirstWorkerThread( ThreadAddress & threadAddress );
 
         /**
          * \brief   Returns pointer of next Worker Thread after registered thread specified in
@@ -225,7 +228,7 @@ namespace areg
          *          next Worker Thread object and the address of thread is equal to address
          *          in threadAddress parameter on output. Otherwise, it returns nullptr.
          **/
-        inline areg::WorkerThread * getNextWorkerThread( areg::ThreadAddress & threadAddress );
+        inline WorkerThread * getNextWorkerThread( ThreadAddress & threadAddress );
 
         /**
          * \brief   Removes first worker thread from the list of worker threads.
@@ -234,7 +237,7 @@ namespace areg
          * \return  Returns valid pointer to the worker thread object if operation succeeded.
          *          Otherwise, returns nullptr.
          */
-        inline areg::WorkerThread * removeFirstWorkerThread( areg::ThreadAddress & threadAddress );
+        inline WorkerThread * removeFirstWorkerThread( ThreadAddress & threadAddress );
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -243,12 +246,12 @@ namespace areg
         /**
          * \brief   The address of Component associated with Component Info object
          **/
-        areg::ComponentAddress  mComponentAddress;
+        ComponentAddress  mComponentAddress;
 
         /**
          * \brief   The Master Thread of Component (Component Thread)
          **/
-        areg::ComponentThread & mMasterThread;
+        ComponentThread & mMasterThread;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)
@@ -273,56 +276,56 @@ namespace areg
     // ComponentInfo class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline areg::ComponentThread& ComponentInfo::getMasterThread() const
+    inline ComponentThread& ComponentInfo::getMasterThread() const
     {
         return mMasterThread;
     }
 
-    inline const areg::ComponentAddress& ComponentInfo::getAddress() const
+    inline const ComponentAddress& ComponentInfo::getAddress() const
     {
         return mComponentAddress;
     }
 
-    inline const areg::String& ComponentInfo::getRoleName() const
+    inline const String& ComponentInfo::getRoleName() const
     {
         return mComponentAddress.getRoleName();
     }
 
-    inline bool ComponentInfo::isWorkerThreadAddress( const areg::ThreadAddress& threadAddress ) const
+    inline bool ComponentInfo::isWorkerThreadAddress( const ThreadAddress& threadAddress ) const
     {
         return mWorkerThreadMap.existResource(threadAddress);
     }
 
-    inline areg::WorkerThread* ComponentInfo::findWorkerThread( const areg::ThreadAddress& threadAddress ) const
+    inline WorkerThread* ComponentInfo::findWorkerThread( const ThreadAddress& threadAddress ) const
     {
         return mWorkerThreadMap.findResourceObject(threadAddress);
     }
 
-    inline areg::WorkerThread* ComponentInfo::findWorkerThread( const areg::String & threadName ) const
+    inline WorkerThread* ComponentInfo::findWorkerThread( const String & threadName ) const
     {
-        areg::Thread* targetThread = areg::Thread::findThreadByName(threadName);
+        Thread* targetThread = Thread::findThreadByName(threadName);
         return (targetThread != nullptr ? findWorkerThread(targetThread->getAddress()) : nullptr);
     }
 
-    inline areg::WorkerThread* ComponentInfo::findThreadByPath( const areg::String & componentPath ) const
+    inline WorkerThread* ComponentInfo::findThreadByPath( const String & componentPath ) const
     {
-        areg::ComponentAddress componentAddress = areg::ComponentAddress::convPathToAddress(componentPath);
+        ComponentAddress componentAddress = ComponentAddress::convPathToAddress(componentPath);
         return findWorkerThread(componentAddress.getThreadAddress());
     }
 
-    inline areg::WorkerThread* ComponentInfo::getFirstWorkerThread( areg::ThreadAddress & threadAddress )
+    inline WorkerThread* ComponentInfo::getFirstWorkerThread( ThreadAddress & threadAddress )
     {
         return mWorkerThreadMap.resourceFirstKey(threadAddress);
     }
 
-    inline areg::WorkerThread* ComponentInfo::getNextWorkerThread( areg::ThreadAddress & threadAddress )
+    inline WorkerThread* ComponentInfo::getNextWorkerThread( ThreadAddress & threadAddress )
     {
         return mWorkerThreadMap.resourceNextKey(threadAddress);
     }
 
-    inline areg::WorkerThread* ComponentInfo::removeFirstWorkerThread(areg::ThreadAddress& threadAddress)
+    inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& threadAddress)
     {
-        std::pair<areg::ThreadAddress, areg::WorkerThread*> elem{areg::ThreadAddress::getInvalidThreadAddress(), nullptr};
+        std::pair<ThreadAddress, WorkerThread*> elem{ThreadAddress::getInvalidThreadAddress(), nullptr};
         if (mWorkerThreadMap.isEmpty() == false)
         {
             mWorkerThreadMap.removeResourceFirstElement(elem);

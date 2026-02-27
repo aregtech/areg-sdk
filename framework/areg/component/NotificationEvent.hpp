@@ -30,14 +30,20 @@
 /************************************************************************
  * List of declared classes
  ************************************************************************/
-namespace areg { class NotificationConsumer; }
-namespace areg { class NotificationEventData; }
-namespace areg { class NotificationEvent; }
+namespace areg
+{
+    class NotificationConsumer;
+    class NotificationEventData;
+    class NotificationEvent;
+}
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ProxyBase; }
+namespace areg
+{
+    class ProxyBase;
+}
 
 
 namespace areg
@@ -84,7 +90,7 @@ namespace areg
          *                      If request fails, also request ID.
          * \param	seqNr	    The call sequence number.
          **/
-        NotificationEventData( const areg::ProxyBase & proxy, ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
+        NotificationEventData( const ProxyBase & proxy, ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr );
 
         /**
          * \brief   Copies data from given source.
@@ -122,11 +128,11 @@ namespace areg
         /**
          * \brief   Returns Proxy pointer if any was set or returns null.
          **/
-        inline const areg::ProxyBase * getProxy() const;
+        inline const ProxyBase * getProxy() const;
         /**
          * \brief   Sets the proxy object
          **/
-        inline void setProxy(const areg::ProxyBase & proxy);
+        inline void setProxy(const ProxyBase & proxy);
 
         /**
          * \brief   Returns the result of notification type.
@@ -163,7 +169,7 @@ namespace areg
         /**
          * \brief   Pointer of proxy, which triggered notification event.
          **/
-        const areg::ProxyBase *     mProxy;
+        const ProxyBase *     mProxy;
         /**
          * \brief   Notification type (or notification result)
          **/
@@ -355,12 +361,12 @@ namespace areg
     // class NotificationEventData inline function implementation
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::ProxyBase* NotificationEventData::getProxy() const
+    inline const ProxyBase* NotificationEventData::getProxy() const
     {
         return mProxy;
     }
 
-    inline void NotificationEventData::setProxy( const areg::ProxyBase & proxy )
+    inline void NotificationEventData::setProxy( const ProxyBase & proxy )
     {
         mProxy = &proxy;
     }

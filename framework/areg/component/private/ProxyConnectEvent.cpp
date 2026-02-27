@@ -25,47 +25,47 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Runtime implementation
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, areg::ServiceResponseEvent)
+    AREG_IMPLEMENT_RUNTIME_EVENT(ProxyConnectEvent, ServiceResponseEvent)
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    ProxyConnectEvent::ProxyConnectEvent( const areg::ProxyAddress & target, const areg::StubAddress & implAddress, areg::ServiceConnectionState connectStatus )
-        : areg::ServiceResponseEvent  ( target
-                                , areg::ResultType::DataOK
-                                , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
-                                , areg::Event::EventType::EventLocalProxyConnect )
+    ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAddress & implAddress, ServiceConnectionState connectStatus )
+        : ServiceResponseEvent  ( target
+                                , ResultType::DataOK
+                                , static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection)
+                                , Event::EventType::EventLocalProxyConnect )
         , mStubAddress          ( implAddress )
         , mConnectionStatus     ( connectStatus )
     {
     }
 
-    ProxyConnectEvent::ProxyConnectEvent( const areg::ProxyAddress & target, const ProxyConnectEvent & src )
-        : areg::ServiceResponseEvent  ( target, static_cast<const areg::ServiceResponseEvent &>(src) )
+    ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
+        : ServiceResponseEvent  ( target, static_cast<const ServiceResponseEvent &>(src) )
         , mStubAddress          ( src.mStubAddress )
         , mConnectionStatus     ( src.mConnectionStatus )
     {
     }
 
-    ProxyConnectEvent::ProxyConnectEvent(const areg::InStream & stream)
-        : areg::ServiceResponseEvent  ( stream )
+    ProxyConnectEvent::ProxyConnectEvent(const InStream & stream)
+        : ServiceResponseEvent  ( stream )
         , mStubAddress          ( stream )
-        , mConnectionStatus     ( areg::ServiceConnectionState::Unknown )
+        , mConnectionStatus     ( ServiceConnectionState::Unknown )
     {
          stream >> mConnectionStatus;
     }
 
-    const areg::InStream & ProxyConnectEvent::readStream(const areg::InStream & stream)
+    const InStream & ProxyConnectEvent::readStream(const InStream & stream)
     {
-        areg::ServiceResponseEvent::readStream(stream);
+        ServiceResponseEvent::readStream(stream);
         stream >> mStubAddress;
         stream >> mConnectionStatus;
         return stream;
     }
 
-    areg::OutStream & ProxyConnectEvent::writeStream(areg::OutStream & stream) const
+    OutStream & ProxyConnectEvent::writeStream(OutStream & stream) const
     {
-        areg::ServiceResponseEvent::writeStream(stream);
+        ServiceResponseEvent::writeStream(stream);
         stream << mStubAddress;
         stream << mConnectionStatus;
         return stream;

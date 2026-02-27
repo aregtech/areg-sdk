@@ -26,7 +26,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // NotificationEventData class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    areg::NotificationEventData::NotificationEventData( const areg::ProxyBase & proxy, areg::ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
+    NotificationEventData::NotificationEventData( const ProxyBase & proxy, ResultType notifyType, uint32_t notifyId, const SequenceNumber & seqNr )
         : mProxy        (&proxy)
         , mNotifyType   (notifyType)
         , mNotifyId     (notifyId)
@@ -34,7 +34,7 @@ namespace areg
     {
     }
 
-    areg::NotificationEventData::NotificationEventData( const areg::NotificationEventData& src )
+    NotificationEventData::NotificationEventData( const NotificationEventData& src )
         : mProxy        (src.mProxy)
         , mNotifyType   (src.mNotifyType)
         , mNotifyId     (src.mNotifyId)
@@ -42,7 +42,7 @@ namespace areg
     {
     }
 
-    areg::NotificationEventData::NotificationEventData( areg::NotificationEventData && src ) noexcept
+    NotificationEventData::NotificationEventData( NotificationEventData && src ) noexcept
         : mProxy        ( src.mProxy )
         , mNotifyType   ( src.mNotifyType )
         , mNotifyId     ( src.mNotifyId )
@@ -51,7 +51,7 @@ namespace areg
         src.mProxy = nullptr;
     }
 
-    areg::NotificationEventData & areg::NotificationEventData::operator = ( const areg::NotificationEventData & src )
+    NotificationEventData & NotificationEventData::operator = ( const NotificationEventData & src )
     {
         if ( this != &src )
         {
@@ -64,7 +64,7 @@ namespace areg
         return (*this);
     }
 
-    areg::NotificationEventData & areg::NotificationEventData::operator = ( areg::NotificationEventData && src ) noexcept
+    NotificationEventData & NotificationEventData::operator = ( NotificationEventData && src ) noexcept
     {
         if ( this != &src )
         {
@@ -86,27 +86,27 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // NotificationEvent class, implement runtime
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, areg::Event)
+    AREG_IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 
     //////////////////////////////////////////////////////////////////////////
     // NotificationEvent class, static methods
     //////////////////////////////////////////////////////////////////////////
-    void NotificationEvent::sendEvent( const areg::NotificationEventData& data, areg::NotificationConsumer* caller /*= nullptr*/ )
+    void NotificationEvent::sendEvent( const NotificationEventData& data, NotificationConsumer* caller /*= nullptr*/ )
     {
         NotificationEvent* eventElem = DEBUG_NEW NotificationEvent(data);
         if (eventElem != nullptr)
         {
             if (caller != nullptr)
-                eventElem->setEventConsumer(static_cast<areg::EventConsumer *>(caller));
-            static_cast<areg::Event *>(eventElem)->deliverEvent();
+                eventElem->setEventConsumer(static_cast<EventConsumer *>(caller));
+            static_cast<Event *>(eventElem)->deliverEvent();
         }
     }
 
     //////////////////////////////////////////////////////////////////////////
     // NotificationEvent class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    NotificationEvent::NotificationEvent( const areg::NotificationEventData& data )
-        : areg::Event (areg::Event::EventType::EventNotifyClient)
+    NotificationEvent::NotificationEvent( const NotificationEventData& data )
+        : Event (Event::EventType::EventNotifyClient)
         , mData (data)
     {
         setTargetThread();
@@ -117,8 +117,8 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     void NotificationEvent::setTargetThread()
     {
-        const areg::ProxyBase * proxy = mData.getProxy();
-        areg::DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : areg::DispatcherThread::getCurrentDispatcherThread();
+        const ProxyBase * proxy = mData.getProxy();
+        DispatcherThread& dispThread = proxy != nullptr ? proxy->getProxyDispatcherThread() : DispatcherThread::getCurrentDispatcherThread();
         ASSERT(dispThread.isValid());
         registerForThread(&dispThread);
     }
@@ -130,7 +130,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // NotificationConsumer class, methods
     //////////////////////////////////////////////////////////////////////////
-    void areg::NotificationConsumer::startEventProcessing( areg::Event& eventElem )
+    void NotificationConsumer::startEventProcessing( Event& eventElem )
     {
         NotificationEvent* eventNotify = AREG_RUNTIME_CAST(&eventElem, NotificationEvent);
         if (eventNotify != nullptr)

@@ -40,10 +40,10 @@ namespace areg
      *              contains at least information of function parameters,
      *              attributes and states.
      **/
-    class AREG_API EventDataStream : public areg::IOStream
+    class AREG_API EventDataStream : public IOStream
     {
         //! The list of shared buffer list (stack).
-        using SharedList    = areg::Stack<areg::SharedBuffer>;
+        using SharedList    = Stack<SharedBuffer>;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal constants and types public
@@ -78,14 +78,14 @@ namespace areg
          * \param   evetDataType    The type of event data. Either for internal or for external communication
          * \param   name            The name for streaming object. Can be ignored.
          **/
-        explicit EventDataStream( EventDataStream::EventDataKind evetDataType, const areg::String & name = areg::String::getEmptyString() );
+        explicit EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name = String::getEmptyString() );
 
         /**
          * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.
          * \param	buffer	The shared buffer to pass to streaming object.
          * \param	name	The name of streaming object.
          **/
-        EventDataStream(const EventDataStream & buffer, const areg::String & name);
+        EventDataStream(const EventDataStream & buffer, const String & name);
 
         /**
          * \brief   Copy constructor.
@@ -104,7 +104,7 @@ namespace areg
          *          Initializes object data from streaming object.
          * \param   stream  Streaming object, containing initialized data information.
          **/
-        EventDataStream( const areg::InStream & stream );
+        EventDataStream( const InStream & stream );
 
         /**
          * \brief   Destructor.
@@ -137,13 +137,13 @@ namespace areg
          * \param	stream	The data streaming object to read data
          * \param	input	The Event Data Stream Buffer object to write data
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, EventDataStream & input );
+        friend inline const InStream & operator >> ( const InStream & stream, EventDataStream & input );
         /**
          * \brief	Friend global operator declaration to write data to streaming object
          * \param	stream	The data streaming object to write data
          * \param	output	The Event Data Stream Buffer object containing data
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const EventDataStream & output );
+        friend inline OutStream & operator << ( OutStream & stream, const EventDataStream & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -162,12 +162,12 @@ namespace areg
         /**
          * \brief   Returns reference to the streaming object to read data
          **/
-        inline const areg::InStream & getStreamForRead() const;
+        inline const InStream & getStreamForRead() const;
 
         /**
          * \brief   Returns reference to the streaming object to write data
          **/
-        inline areg::OutStream & getStreamForWrite();
+        inline OutStream & getStreamForWrite();
 
     /************************************************************************/
     // InStream interface overrides
@@ -204,7 +204,7 @@ namespace areg
          * \param   buffer  The instance of Byte Buffer object to stream data from Input Stream object
          * \return	Returns the size in bytes of copied data
          **/
-        uint32_t read( areg::ByteBuffer & buffer ) const override;
+        uint32_t read( ByteBuffer & buffer ) const override;
 
         /**
          * \brief   Reads string data from Input Stream object and copies into given ASCII String.
@@ -212,7 +212,7 @@ namespace areg
          * \param   ascii     The buffer of ASCII String to stream data from Input Stream object.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t read( areg::String & ascii ) const override;
+        uint32_t read( String & ascii ) const override;
 
         /**
          * \brief   Reads string data from Input Stream object and copies into given Wide String.
@@ -220,7 +220,7 @@ namespace areg
          * \param   wide      The buffer of Wide String to stream data from Input Stream object.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t read( areg::WideString & wide ) const override;
+        uint32_t read( WideString & wide ) const override;
 
     /************************************************************************/
     // OutStream interface overrides
@@ -243,7 +243,7 @@ namespace areg
          * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
          * \return	Returns the size in bytes of written data
          **/
-        uint32_t write( const areg::ByteBuffer & buffer ) override;
+        uint32_t write( const ByteBuffer & buffer ) override;
 
         /**
         * \brief   Writes string data from given ASCII String object to output stream object.
@@ -251,7 +251,7 @@ namespace areg
         * \param   ascii     The buffer of String containing data to stream to Output Stream.
         * \return  Returns the size in bytes of copied string data.
         **/
-        uint32_t write( const areg::String & ascii ) override;
+        uint32_t write( const String & ascii ) override;
 
         /**
         * \brief   Writes string data from given wide-char String object to output stream object.
@@ -259,7 +259,7 @@ namespace areg
         * \param   wide  The buffer of String containing data to stream to Output Stream.
         * \return  Returns the size in bytes of copied string data.
         **/
-        uint32_t write( const areg::WideString & wide ) override;
+        uint32_t write( const WideString & wide ) override;
 
         /**
          * \brief	Flushes cached data to output stream object.
@@ -299,12 +299,12 @@ namespace areg
         /**
          * \brief   The name of Event Data object.
          **/
-        areg::String                      mBufferName;
+        String                      mBufferName;
 
         /**
          * \brief   The Shared Buffer where the data is written / streamed.
          **/
-        mutable areg::SharedBuffer        mDataBuffer;
+        mutable SharedBuffer        mDataBuffer;
 
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)
@@ -337,17 +337,17 @@ namespace areg
         return (mEventDataType != EventDataStream::EventDataKind::Internal);
     }
 
-    inline const areg::InStream & EventDataStream::getStreamForRead() const
+    inline const InStream & EventDataStream::getStreamForRead() const
     {
-        return static_cast<const areg::InStream &>(*this);
+        return static_cast<const InStream &>(*this);
     }
 
-    inline areg::OutStream & EventDataStream::getStreamForWrite()
+    inline OutStream & EventDataStream::getStreamForWrite()
     {
-        return static_cast<areg::OutStream &>(*this);
+        return static_cast<OutStream &>(*this);
     }
 
-    inline const areg::InStream & operator >> ( const areg::InStream & stream, EventDataStream & input )
+    inline const InStream & operator >> ( const InStream & stream, EventDataStream & input )
     {
         stream >> input.mEventDataType;
         stream >> input.mBufferName;
@@ -355,7 +355,7 @@ namespace areg
         return stream;
     }
 
-    inline areg::OutStream & operator << ( areg::OutStream & stream, const EventDataStream & output )
+    inline OutStream & operator << ( OutStream & stream, const EventDataStream & output )
     {
         ASSERT(output.mEventDataType != EventDataStream::EventDataKind::Internal);
         stream << EventDataStream::EventDataKind::External;

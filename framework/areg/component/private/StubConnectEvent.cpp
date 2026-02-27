@@ -21,45 +21,45 @@
 namespace areg
 {
 
-    AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, areg::ServiceRequestEvent)
+    AREG_IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
-    StubConnectEvent::StubConnectEvent(const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
-        : areg::ServiceRequestEvent   ( areg::ProxyAddress::getInvalidProxyAddress()
+    StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, ServiceConnectionState connectStatus)
+        : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
                                 , stubTarget
-                                , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
-                                , areg::RequestType::ServiceConnection
-                                , areg::Event::EventType::EventLocalStubConnect)
+                                , static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection)
+                                , RequestType::ServiceConnection
+                                , Event::EventType::EventLocalStubConnect)
         , mConnectionStatus     ( connectStatus )
     {
     }
 
-    StubConnectEvent::StubConnectEvent(const areg::ProxyAddress & proxyClient, const areg::StubAddress & stubTarget, areg::ServiceConnectionState connectStatus)
-        : areg::ServiceRequestEvent   ( proxyClient
+    StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, ServiceConnectionState connectStatus)
+        : ServiceRequestEvent   ( proxyClient
                                 , stubTarget
-                                , static_cast<uint32_t>(areg::FuncIdRange::ResponseServiceProviderConnection)
-                                , areg::RequestType::ClientConnection
-                                , areg::Event::EventType::EventLocalStubConnect)
+                                , static_cast<uint32_t>(FuncIdRange::ResponseServiceProviderConnection)
+                                , RequestType::ClientConnection
+                                , Event::EventType::EventLocalStubConnect)
         , mConnectionStatus     ( connectStatus )
     {
     }
 
-    StubConnectEvent::StubConnectEvent( const areg::InStream & stream )
-        : areg::ServiceRequestEvent   ( stream )
-        , mConnectionStatus    ( areg::ServiceConnectionState::Unknown )
+    StubConnectEvent::StubConnectEvent( const InStream & stream )
+        : ServiceRequestEvent   ( stream )
+        , mConnectionStatus    ( ServiceConnectionState::Unknown )
     {
         stream >> mConnectionStatus;
     }
 
-    const areg::InStream & StubConnectEvent::readStream(const areg::InStream & stream)
+    const InStream & StubConnectEvent::readStream(const InStream & stream)
     {
-        areg::ServiceRequestEvent::readStream(stream);
+        ServiceRequestEvent::readStream(stream);
         stream >> mConnectionStatus;
         return stream;
     }
 
-    areg::OutStream & StubConnectEvent::writeStream(areg::OutStream & stream) const
+    OutStream & StubConnectEvent::writeStream(OutStream & stream) const
     {
-        areg::ServiceRequestEvent::writeStream(stream);
+        ServiceRequestEvent::writeStream(stream);
         stream << mConnectionStatus;
         return stream;
     }

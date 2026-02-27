@@ -30,7 +30,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Runtime implementation
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME(Component, areg::RuntimeObject)
+    AREG_IMPLEMENT_RUNTIME(Component, RuntimeObject)
 
     //////////////////////////////////////////////////////////////////////////
     // Static Methods
@@ -42,21 +42,21 @@ namespace areg
         return _mapResource;
     }
 
-    Component* Component::loadComponent(const areg::ComponentEntry &entry, areg::ComponentThread & componentThread )
+    Component* Component::loadComponent(const ComponentEntry &entry, ComponentThread & componentThread )
     {
         ASSERT(entry.mFuncCreate != nullptr);
 
         Component* component = entry.mFuncCreate(entry, componentThread);
         if (component != nullptr)
         {
-            const areg::WorkerThreadList& wThreads = entry.getWorkerThreads();
+            const WorkerThreadList& wThreads = entry.getWorkerThreads();
             for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++ i)
             {
-                const areg::WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
-                areg::WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
+                const WorkerThreadEntry& wtEntry = wThreads.mListWorkers[i];
+                WorkerThreadConsumer* consumer = static_cast<Component *>(component)->workerThreadConsumer(wtEntry.mConsumerName.getString(), wtEntry.mThreadName.getBuffer());
                 if (consumer != nullptr)
                 {
-                    areg::WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
+                    WorkerThread * wThread = component->createWorkerThread( wtEntry.mThreadName.getString()
                                                                         , *consumer
                                                                         , componentThread
                                                                         , wtEntry.mWatchdogTimeout
@@ -74,11 +74,11 @@ namespace areg
         return component;
     }
 
-    void Component::unloadComponent( Component& comItem, const areg::ComponentEntry& entry )
+    void Component::unloadComponent( Component& comItem, const ComponentEntry& entry )
     {
         ASSERT(entry.mFuncDelete != nullptr);
 
-        const areg::WorkerThreadList& wThreads = entry.getWorkerThreads();
+        const WorkerThreadList& wThreads = entry.getWorkerThreads();
         for (uint32_t i = 0; i < wThreads.mListWorkers.getSize(); ++i)
         {
             comItem.deleteWorkerThread(wThreads.mListWorkers[i].mThreadName.getString());
@@ -87,35 +87,35 @@ namespace areg
         entry.mFuncDelete(comItem, entry);
     }
 
-    Component* Component::findComponentByName( const areg::String & roleName )
+    Component* Component::findComponentByName( const String & roleName )
     {
         ASSERT(roleName.isEmpty() == false);
         
-        return Component::resource_map().findResourceObject(areg::crc32Calculate(roleName.getString()));
+        return Component::resource_map().findResourceObject(crc32Calculate(roleName.getString()));
     }
 
     Component * Component::findComponentByNumber(uint32_t magicNum)
     {
-        ASSERT(magicNum != areg::CHECKSUM_IGNORE);
+        ASSERT(magicNum != CHECKSUM_IGNORE);
 
         return Component::resource_map().findResourceObject(magicNum);
     }
 
-    Component* Component::findComponentByAddress( const areg::ComponentAddress& comAddress )
+    Component* Component::findComponentByAddress( const ComponentAddress& comAddress )
     {
         Component* result = Component::resource_map().findResourceObject( static_cast<uint32_t>(comAddress.getRoleName()) );
         return (result != nullptr && result->getAddress() == comAddress ? result : nullptr);
     }
 
-    bool Component::existComponent( const areg::String & roleName )
+    bool Component::existComponent( const String & roleName )
     {
         ASSERT(roleName.isEmpty() == false);
-        return Component::resource_map().existResource(areg::crc32Calculate(roleName.getString()));
+        return Component::resource_map().existResource(crc32Calculate(roleName.getString()));
     }
 
-    areg::ComponentThread& Component::_getCurrentComponentThread()
+    ComponentThread& Component::_getCurrentComponentThread()
     {
-        areg::ComponentThread* result = AREG_RUNTIME_CAST(&(areg::DispatcherThread::getCurrentDispatcherThread()), areg::ComponentThread);
+        ComponentThread* result = AREG_RUNTIME_CAST(&(DispatcherThread::getCurrentDispatcherThread()), ComponentThread);
         ASSERT(result != nullptr);
         return *result;
     }
@@ -123,8 +123,8 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor 
     //////////////////////////////////////////////////////////////////////////
-    Component::Component( const areg::String & roleName, areg::ComponentThread & ownerThread )
-        : areg::RuntimeObject ( )
+    Component::Component( const String & roleName, ComponentThread & ownerThread )
+        : RuntimeObject ( )
 
         , mComponentInfo( ownerThread, roleName )
         , mMagicNum     ( Component::_magicNumber(self()) )
@@ -133,8 +133,8 @@ namespace areg
         Component::resource_map().registerResourceObject(mMagicNum, this);
     }
 
-    Component::Component( const areg::ComponentEntry & regEntry, areg::ComponentThread & ownerThread )
-        : areg::RuntimeObject ( )
+    Component::Component( const ComponentEntry & regEntry, ComponentThread & ownerThread )
+        : RuntimeObject ( )
 
         , mComponentInfo( ownerThread, regEntry.mRoleName)
         , mMagicNum     ( Component::_magicNumber(self()) )
@@ -143,8 +143,8 @@ namespace areg
         Component::resource_map().registerResourceObject(mMagicNum, this);
     }
 
-    Component::Component( const areg::String & roleName )
-        : areg::RuntimeObject           ( )
+    Component::Component( const String & roleName )
+        : RuntimeObject           ( )
 
         , mComponentInfo    (_getCurrentComponentThread(), roleName)
         , mMagicNum         ( Component::_magicNumber(self()) )
@@ -162,20 +162,20 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Methods
     //////////////////////////////////////////////////////////////////////////
-    areg::WorkerThread* Component::createWorkerThread(  const areg::String & threadName
-                                                , areg::WorkerThreadConsumer& consumer
-                                                , areg::ComponentThread & /* ownerThread */
+    WorkerThread* Component::createWorkerThread(  const String & threadName
+                                                , WorkerThreadConsumer& consumer
+                                                , ComponentThread & /* ownerThread */
                                                 , uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE */
                                                 , uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT */
                                                 , uint32_t maxQeueue        /* = areg::IGNORE_VALUE */)
     {
-        areg::WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
+        WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
         if (workThread == nullptr)
         {
-            workThread = DEBUG_NEW areg::WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
+            workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout, stackSizeKb, maxQeueue);
             if (workThread != nullptr)
             {
-                if (workThread->createThread(areg::WAIT_INFINITE))
+                if (workThread->createThread(WAIT_INFINITE))
                 {
                     mComponentInfo.registerWorkerThread(*workThread);
                 }
@@ -190,48 +190,48 @@ namespace areg
         return workThread;
     }
 
-    void Component::deleteWorkerThread( const areg::String & threadName )
+    void Component::deleteWorkerThread( const String & threadName )
     {
-        areg::WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
+        WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
         if (workThread != nullptr)
         {
-            workThread->shutdownThread(areg::WAIT_INFINITE);
+            workThread->shutdownThread(WAIT_INFINITE);
             mComponentInfo.unregisterWorkerThread(*workThread);
             delete workThread;
         }
     }
 
-    void Component::startupComponent( areg::ComponentThread& /* comThread */ )
+    void Component::startupComponent( ComponentThread& /* comThread */ )
     {
         for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
         {
-            areg::StubBase * stub = mServerList.valueAtPosition(pos);
+            StubBase * stub = mServerList.valueAtPosition(pos);
             ASSERT( stub != nullptr );
             stub->startupServiceInterface(self());
-            areg::ServiceManager::requestRegisterServer(stub->getAddress());
+            ServiceManager::requestRegisterServer(stub->getAddress());
         }
     }
 
-    void Component::shutdownComponent( areg::ComponentThread& /* comThread */ )
+    void Component::shutdownComponent( ComponentThread& /* comThread */ )
     {
         _shutdownServices();
 
-        areg::ThreadAddress addrThread;
-        areg::WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+        ThreadAddress addrThread;
+        WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
         while (workerThread != nullptr)
         {
-            workerThread->shutdownThread( areg::WAIT_INFINITE );
+            workerThread->shutdownThread( WAIT_INFINITE );
             workerThread = mComponentInfo.getNextWorkerThread(addrThread);
         }
     }
 
-    void Component::notifyComponentShutdown( areg::ComponentThread& /*comThread */ )
+    void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
     {
-        areg::ThreadAddress addrThread;
-        areg::WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+        ThreadAddress addrThread;
+        WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
         while (workerThread != nullptr)
         {
-            workerThread->shutdownThread( areg::WAIT_INFINITE );
+            workerThread->shutdownThread( WAIT_INFINITE );
             workerThread = mComponentInfo.getNextWorkerThread(addrThread);
         }
     }
@@ -240,11 +240,11 @@ namespace areg
     {
         _shutdownServices();
 
-        areg::ThreadAddress threadAddress;
+        ThreadAddress threadAddress;
 
         while (mComponentInfo.hasWorkerThreads())
         {
-            areg::WorkerThread* workThread = mComponentInfo.removeFirstWorkerThread(threadAddress);
+            WorkerThread* workThread = mComponentInfo.removeFirstWorkerThread(threadAddress);
             ASSERT(workThread != nullptr);
             workThread->terminateSelf();
         }
@@ -252,17 +252,17 @@ namespace areg
         delete this;
     }
 
-    void Component::registerServerItem( areg::StubBase& server )
+    void Component::registerServerItem( StubBase& server )
     {
         mServerList.pushLast(&server);
     }
 
-    areg::StubBase* Component::findServerByName( const areg::String & serviceName )
+    StubBase* Component::findServerByName( const String & serviceName )
     {
-        areg::StubBase* result = nullptr;
+        StubBase* result = nullptr;
         for (ListServers::LISTPOS  pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
         {
-            areg::StubBase* stub = mServerList.valueAtPosition(pos);
+            StubBase* stub = mServerList.valueAtPosition(pos);
             ASSERT(stub != nullptr);
             if (stub->getAddress().getServiceName() == serviceName)
             {
@@ -276,8 +276,8 @@ namespace areg
 
     void Component::waitComponentCompletion( uint32_t waitTimeout )
     {
-        areg::ThreadAddress addrThread;
-        areg::WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
+        ThreadAddress addrThread;
+        WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
         while (workerThread != nullptr)
         {
             workerThread->shutdownThread(waitTimeout);
@@ -285,21 +285,21 @@ namespace areg
         }
     }
 
-    areg::WorkerThreadConsumer* Component::workerThreadConsumer( const areg::String & /* consumerName */, const areg::String & /* workerThreadName */)
+    WorkerThreadConsumer* Component::workerThreadConsumer( const String & /* consumerName */, const String & /* workerThreadName */)
     {
         return nullptr;
     }
 
-    void Component::notifyWorkerThreadStarted(areg::WorkerThreadConsumer& /*consumer*/, areg::WorkerThread& /*workerThread*/)
+    void Component::notifyWorkerThreadStarted(WorkerThreadConsumer& /*consumer*/, WorkerThread& /*workerThread*/)
     {
     }
 
     uint32_t Component::_magicNumber(Component & comp)
     {
-        uint32_t result = areg::CHECKSUM_IGNORE;
+        uint32_t result = CHECKSUM_IGNORE;
         if ( comp.getAddress().isValid() )
         {
-            result = areg::crc32Calculate(comp.getRoleName().getString());
+            result = crc32Calculate(comp.getRoleName().getString());
         }
 
         return result;
@@ -309,11 +309,11 @@ namespace areg
     {
         for (ListServers::LISTPOS pos = mServerList.firstPosition(); mServerList.isValidPosition(pos); pos = mServerList.nextPosition(pos))
         {
-            areg::StubBase* stub = mServerList.valueAtPosition(pos);
+            StubBase* stub = mServerList.valueAtPosition(pos);
             ASSERT(stub != nullptr);
 
             stub->shutdownServiceInterface(self());
-            areg::ServiceManager::requestUnregisterServer(stub->getAddress(), areg::DisconnectReason::ProviderDisconnected);
+            ServiceManager::requestUnregisterServer(stub->getAddress(), DisconnectReason::ProviderDisconnected);
         }
     }
 

@@ -24,8 +24,11 @@
  /************************************************************************
   * Dependencies.
   ************************************************************************/
-namespace areg { class ComponentThread; }
-namespace areg { class WorkerThread; }
+namespace areg
+{
+    class ComponentThread;
+    class WorkerThread;
+}
 
 namespace areg
 {
@@ -44,7 +47,7 @@ namespace areg
      *          If the watchdog timeout is zero (areg::WATCHDOG_IGNORE), the
      *          watchdog is ignored for the thread and thread is not terminated.
      **/
-    class AREG_API Watchdog  : public areg::TimerBase
+    class AREG_API Watchdog  : public TimerBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Object specific types and constants
@@ -91,7 +94,7 @@ namespace areg
          * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
          *                      The timeout with value zero disables Watchdog
          **/
-        Watchdog(areg::ComponentThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
+        Watchdog(ComponentThread& thread, uint32_t msTimeout = WATCHDOG_IGNORE);
 
         /**
          * \brief   The watchdog object bind with Worker Thread. Should not be instantiated
@@ -100,7 +103,7 @@ namespace areg
          * \param   msTimeout   Timeout in milliseconds of the Watchdog to check thread status.
          *                      The timeout with value zero disables Watchdog
          **/
-        Watchdog(areg::WorkerThread& thread, uint32_t msTimeout = areg::WATCHDOG_IGNORE);
+        Watchdog(WorkerThread& thread, uint32_t msTimeout = WATCHDOG_IGNORE);
 
         /**
          * \brief   Destructor.
@@ -142,7 +145,7 @@ namespace areg
          *          If watchdog belongs to worker thread, it returns the thread of owning component.
          *          The component thread of the watchdog is always valid.
          **/
-        inline const areg::ComponentThread& getComponentThread() const;
+        inline const ComponentThread& getComponentThread() const;
 
         /**
          * \brief   Out of Guard ID and Sequence number generates watchdog ID.
@@ -200,7 +203,7 @@ namespace areg
         /**
          * \brief   The valid instance of the component thread to trigger restart if timeout expired.
          **/
-        areg::ComponentThread &   mComponentThread;
+        ComponentThread &   mComponentThread;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -229,7 +232,7 @@ namespace areg
         return mSequence;
     }
 
-    inline const areg::ComponentThread& Watchdog::getComponentThread() const
+    inline const ComponentThread& Watchdog::getComponentThread() const
     {
         return mComponentThread;
     }
@@ -242,27 +245,27 @@ namespace areg
     inline Watchdog::WATCHDOG_ID Watchdog::makeWatchdogId(GUARD_ID guardId, SEQUENCE_ID sequence)
     {
     #if (AREG_TARGET_PLATFORM ==64)
-        return static_cast<WATCHDOG_ID>(areg::make64(guardId, sequence));
+        return static_cast<WATCHDOG_ID>(make64(guardId, sequence));
     #elif (AREG_TARGET_PLATFORM == 32)
-        return static_cast<WATCHDOG_ID>(areg::make32(guardId, sequence));
+        return static_cast<WATCHDOG_ID>(make32(guardId, sequence));
     #endif  // (AREG_TARGET_PLATFORM == 64)
     }
 
     inline Watchdog::GUARD_ID Watchdog::makeGuardId(Watchdog::WATCHDOG_ID watchdogId)
     {
     #if (AREG_TARGET_PLATFORM == 64)
-        return static_cast<GUARD_ID>(areg::hiDword(watchdogId));
+        return static_cast<GUARD_ID>(hiDword(watchdogId));
     #elif (AREG_TARGET_PLATFORM == 32)
-        return static_cast<GUARD_ID>(areg::hiWord(watchdogId));
+        return static_cast<GUARD_ID>(hiWord(watchdogId));
     #endif  // (AREG_TARGET_PLATFORM == 64)
     }
 
     inline Watchdog::SEQUENCE_ID Watchdog::makeSequenceId(Watchdog::WATCHDOG_ID watchdogId)
     {
     #if (AREG_TARGET_PLATFORM == 64)
-        return static_cast<GUARD_ID>(areg::loDword(watchdogId));
+        return static_cast<GUARD_ID>(loDword(watchdogId));
     #elif (AREG_TARGET_PLATFORM == 32)
-        return static_cast<GUARD_ID>(areg::loWord(watchdogId));
+        return static_cast<GUARD_ID>(loWord(watchdogId));
     #endif  // (AREG_TARGET_PLATFORM == 64)
     }
 

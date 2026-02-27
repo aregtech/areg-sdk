@@ -25,9 +25,12 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg { class RemoteRequestEvent; }
-namespace areg { class RemoteNotifyRequestEvent; }
-namespace areg { class RemoteResponseEvent; }
+namespace areg
+{
+    class RemoteRequestEvent;
+    class RemoteNotifyRequestEvent;
+    class RemoteResponseEvent;
+}
 
 namespace areg
 {
@@ -39,7 +42,7 @@ namespace areg
      * \brief   The interface of remote event consumer. Derived by Stub object
      *          with type of remote to trigger event processing.
      **/
-    class AREG_API RemoteEventConsumer   : public areg::EventConsumer
+    class AREG_API RemoteEventConsumer   : public EventConsumer
     {
     protected:
         /**
@@ -60,7 +63,7 @@ namespace areg
          * \brief   Triggered when the Stub receives remote request event to process.
          * \param   requestEvent        The remote request event to be processed.
          **/
-        virtual void processRemoteRequestEvent( areg::RemoteRequestEvent & requestEvent ) = 0;
+        virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) = 0;
 
         /**
          * \brief   Triggered when the Stub receives remote notification request event to process.
@@ -68,7 +71,7 @@ namespace areg
          *          sending attribute update notifications.
          * \param   requestNotifyEvent  The remote notification request event to be processed.
          **/
-        virtual void processRemoteNotifyRequestEvent( areg::RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
+        virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) = 0;
 
         /**
          * \brief   Triggered when the Stub receives remote response request event to process.
@@ -76,7 +79,7 @@ namespace areg
          *          to subscribe on information or response sent by Stub.
          * \param   responseEvent  The remote response event on the request to processed.
          **/
-        virtual void processRemoteResponseEvent( areg::RemoteResponseEvent & responseEvent ) = 0;
+        virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Override operations
@@ -94,7 +97,7 @@ namespace areg
          *                      processing. As soon as event is finished processing
          *                      it will be destroyed.
          **/
-        void startEventProcessing( areg::Event & eventElem ) override;
+        void startEventProcessing( Event & eventElem ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

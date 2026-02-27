@@ -31,8 +31,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class InStream; }
-namespace areg { class OutStream; }
+namespace areg
+{
+    class InStream;
+    class OutStream;
+}
 
 namespace areg
 {
@@ -77,7 +80,7 @@ namespace areg
          * \param   componentAddress    The address of Component to create path
          * \return  Returns converted path of Component as string, containing Component address information
          **/
-        static areg::String convAddressToPath( const ComponentAddress & componentAddress );
+        static String convAddressToPath( const ComponentAddress & componentAddress );
 
         /**
          * \brief   From given component path creates component address and returns pointer
@@ -101,7 +104,7 @@ namespace areg
          *          Otherwise component address is invalid and component
          *          cannot be included in dispatching process.
          **/
-        ComponentAddress( const areg::ThreadAddress & threadAddress );
+        ComponentAddress( const ThreadAddress & threadAddress );
         
         /**
          * \brief	Initialization component.
@@ -110,7 +113,7 @@ namespace areg
          * \param	threadAddress	The address of master component thread.
          * \param	roleName	    The role name of component.
          **/
-        ComponentAddress( const areg::ThreadAddress & threadAddress, const areg::String & roleName );
+        ComponentAddress( const ThreadAddress & threadAddress, const String & roleName );
 
         /**
          * \brief	Initialization component.
@@ -120,7 +123,7 @@ namespace areg
          *          component thread.
          * \param	roleName	The role name of component.
          **/
-        ComponentAddress( const areg::String & roleName );
+        ComponentAddress( const String & roleName );
 
         /**
          * \brief	Initialization component.
@@ -130,7 +133,7 @@ namespace areg
          * \param	roleName	The role name of component.
          * \param	nameThread	The thread name of master component thread.
          **/
-        ComponentAddress( const areg::String & roleName, const areg::String & nameThread );
+        ComponentAddress( const String & roleName, const String & nameThread );
 
         /**
          * \brief   Copy constructor.
@@ -148,7 +151,7 @@ namespace areg
          * \brief   Initialization constructor.
          *          De-serialize component address information stored in stream.
          **/
-        ComponentAddress( const areg::InStream & stream );
+        ComponentAddress( const InStream & stream );
 
         /**
          * \brief   Destructor.
@@ -195,12 +198,12 @@ namespace areg
         /**
          * \brief   Streaming operator. Read from stream and initialize component address.
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, ComponentAddress & input );
+        friend inline const InStream & operator >> ( const InStream & stream, ComponentAddress & input );
 
         /**
          * \brief   Streaming operator. Writes to stream component address.
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const ComponentAddress & output );
+        friend inline OutStream & operator << ( OutStream & stream, const ComponentAddress & output );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes and operations
@@ -209,12 +212,12 @@ namespace areg
         /**
          * \brief   Returns component master thread address.
          **/
-        inline const areg::ThreadAddress & getThreadAddress() const;
+        inline const ThreadAddress & getThreadAddress() const;
 
         /**
          * \brief   Returns the name of component (role name)
          **/
-        inline const areg::String & getRoleName() const;
+        inline const String & getRoleName() const;
 
         /**
          * \brief   Return true if component address if valid.
@@ -226,7 +229,7 @@ namespace areg
          *          Every part of component address has a special path separator.
          * \return  Returns converted path of Component as a string.
          **/
-        areg::String convToString() const;
+        String convToString() const;
 
         /**
          * \brief	Parses component path string and retrieves component address data from path.
@@ -260,11 +263,11 @@ namespace areg
         /**
          * \brief   Component name. Or Role Name of component
          **/
-        areg::String          mRoleName;
+        String          mRoleName;
         /**
          * \brief   Thread address object.
          **/
-        areg::ThreadAddress   mThreadAddress;
+        ThreadAddress   mThreadAddress;
         /**
          * \brief   The numeric value of Component Address object
          **/
@@ -291,7 +294,7 @@ namespace areg
             mThreadAddress  = std::move(src.mThreadAddress);
             mRoleName       = std::move(src.mRoleName);
             mMagicNum       = src.mMagicNum;
-            src.mMagicNum   = areg::CHECKSUM_IGNORE;
+            src.mMagicNum   = CHECKSUM_IGNORE;
         }
 
         return (*this);
@@ -312,12 +315,12 @@ namespace areg
         return mMagicNum;
     }
 
-    inline const areg::ThreadAddress& ComponentAddress::getThreadAddress() const
+    inline const ThreadAddress& ComponentAddress::getThreadAddress() const
     {
         return mThreadAddress;
     }
 
-    inline const areg::String& ComponentAddress::getRoleName() const
+    inline const String& ComponentAddress::getRoleName() const
     {
         return mRoleName;
     }
@@ -325,13 +328,13 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Friend global operators to support streaming
     //////////////////////////////////////////////////////////////////////////
-    inline const areg::InStream & operator >> (const areg::InStream & stream, ComponentAddress & input)
+    inline const InStream & operator >> (const InStream & stream, ComponentAddress & input)
     {
         stream >> input.mRoleName;
         stream >> input.mThreadAddress; 
         return stream;                                   }
 
-    inline areg::OutStream & operator << (areg::OutStream & stream, const ComponentAddress & output)
+    inline OutStream & operator << (OutStream & stream, const ComponentAddress & output)
     {
         stream << output.mRoleName;
         stream << output.mThreadAddress;

@@ -63,7 +63,7 @@ namespace areg
          * \param   target  The channel communication target ID set by system.
          * \param   cookie  The ID assigned by system.
          **/
-        explicit Channel( const ITEM_ID & source, const ITEM_ID & target = areg::TARGET_UNKNOWN, const ITEM_ID & cookie = areg::COOKIE_UNKNOWN );
+        explicit Channel( const ITEM_ID & source, const ITEM_ID & target = TARGET_UNKNOWN, const ITEM_ID & cookie = COOKIE_UNKNOWN );
 
         /**
          * \brief   Copy constructor.
@@ -126,14 +126,14 @@ namespace areg
          * \param   stream  The streaming object to read data.
          * \param   input   Connection channel to initialize.
          **/
-        friend inline const areg::InStream & operator >> ( const areg::InStream & stream, Channel & input );
+        friend inline const InStream & operator >> ( const InStream & stream, Channel & input );
 
         /**
          * \brief   Streaming operator. Writes connection channel data into stream.
          * \param   stream  The streaming object to write data.
          * \param   output  Connection channel to stream.
          **/
-        friend inline areg::OutStream & operator << ( areg::OutStream & stream, const Channel & output);
+        friend inline OutStream & operator << ( OutStream & stream, const Channel & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes and operations
@@ -187,13 +187,13 @@ namespace areg
         /**
          * \brief   Converts channel data to string
          **/
-        areg::String convToString() const;
+        String convToString() const;
 
         /**
          * \brief   Creates channel data from string
          * \param   channel     Null-terminated string, which contains channel data.
          **/
-        const Channel & convFromString( const areg::String & channel );
+        const Channel & convFromString( const String & channel );
 
 
     //////////////////////////////////////////////////////////////////////////
@@ -265,17 +265,17 @@ namespace areg
 
     inline bool Channel::isValid() const
     {
-        return (mCookie != areg::COOKIE_UNKNOWN);
+        return (mCookie != COOKIE_UNKNOWN);
     }
 
     inline void Channel::invalidate()
     {
-        mSource = areg::SOURCE_UNKNOWN;
-        mTarget = areg::TARGET_UNKNOWN;
-        mCookie = areg::COOKIE_UNKNOWN;
+        mSource = SOURCE_UNKNOWN;
+        mTarget = TARGET_UNKNOWN;
+        mCookie = COOKIE_UNKNOWN;
     }
 
-    inline const areg::InStream & operator >> ( const areg::InStream & stream, Channel & input )
+    inline const InStream & operator >> ( const InStream & stream, Channel & input )
     {
         stream >> input.mSource;
         stream >> input.mTarget;
@@ -283,7 +283,7 @@ namespace areg
         return stream;
     }
 
-    inline areg::OutStream & operator << ( areg::OutStream & stream, const Channel & output)
+    inline OutStream & operator << ( OutStream & stream, const Channel & output)
     {
         stream << output.mSource;
         stream << output.mTarget;

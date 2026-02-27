@@ -27,12 +27,15 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ConnectionProvider; }
-namespace areg { class RegistrationProvider; }
-namespace areg { class ServiceManager; }
-namespace areg { class ProxyAddress; }
-namespace areg { class StubAddress; }
-namespace areg { class InStream; }
+namespace areg
+{
+    class ConnectionProvider;
+    class RegistrationProvider;
+    class ServiceManager;
+    class ProxyAddress;
+    class StubAddress;
+    class InStream;
+}
 
 namespace areg
 {
@@ -52,7 +55,7 @@ namespace areg
         /**
          * \brief   Initializes the object, receives the instance of Service Manager.
          **/
-        ServiceManagerEventProcessor( areg::ServiceManager & serviceManager );
+        ServiceManagerEventProcessor( ServiceManager & serviceManager );
         ~ServiceManagerEventProcessor() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -67,15 +70,15 @@ namespace areg
          * \param   connectProvider     The instance of service connection provider to forward connection requests.
          * \param   registerProvider    The instance of service register provider to forward register requests
          **/
-        void processServiceEvent( areg::ServiceManagerEventData::ServiceManagerCommand cmdService
-                                , const areg::InStream & stream
-                                , areg::ConnectionProvider& connectProvider
-                                , areg::RegistrationProvider & registerProvider );
+        void processServiceEvent( ServiceManagerEventData::ServiceManagerCommand cmdService
+                                , const InStream & stream
+                                , ConnectionProvider& connectProvider
+                                , RegistrationProvider & registerProvider );
 
         /**
          * \brief   Returns the list of registered service providers that contain the list of service consumers.
          **/
-        inline const areg::ServerList& getRegisteredServiceList() const;
+        inline const ServerList& getRegisteredServiceList() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden calls
@@ -90,7 +93,7 @@ namespace areg
          * \param   registerProvider    The service connection object to notify remote application
          *                              about public service connection status.
          **/
-        void _registerServer( const areg::StubAddress & whichServer, areg::RegistrationProvider& registerProvider );
+        void _registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider );
 
         /**
           * \brief   The function is called when it is requested to unregister the service provider.
@@ -101,7 +104,7 @@ namespace areg
          * \param   registerProvider    The service connection object to notify remote application
           *                             about public service connection status.
          **/
-        void _unregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider);
+        void _unregisterServer( const StubAddress & whichServer, const DisconnectReason reason, RegistrationProvider& registerProvider);
 
          /**
           * \brief   The function is called when it is requested to register the service consumer.
@@ -111,7 +114,7 @@ namespace areg
           * \param   registerProvider   The service connection object to notify remote application
           *                             about public service connection status.
           **/
-        void _registerClient( const areg::ProxyAddress & whichClient, areg::RegistrationProvider& registerProvider);
+        void _registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider);
 
         /**
          * \brief   The function is called when it is requested to unregister the service consumer.
@@ -122,14 +125,14 @@ namespace areg
          * \param   registerProvider    The service connection object to notify remote application
          *                              about public service connection status.
          **/
-        void _unregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason, areg::RegistrationProvider& registerProvider);
+        void _unregisterClient( const ProxyAddress & whichClient, const DisconnectReason reason, RegistrationProvider& registerProvider);
 
         /**
          * \brief   Creates and sends predefined service consumer connected notification.
          * \param   client      The address of service consumer to send the event.
          * \param   server      The address of service provider that connected.
          **/
-        void _sendClientConnectedEvent( const areg::ProxyAddress & client, const areg::StubAddress & server ) const;
+        void _sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const;
 
         /**
          * \brief   Creates and sends predefined service consumer disconnected notification.
@@ -137,14 +140,14 @@ namespace areg
          * \param   server      The address of service provider that disconnected.
          * \param   status      The service connection status.
          **/
-        void _sendClientDisconnectEvent( const areg::ProxyAddress & client, const areg::StubAddress & server, const areg::ServiceConnectionState status ) const;
+        void _sendClientDisconnectEvent( const ProxyAddress & client, const StubAddress & server, const ServiceConnectionState status ) const;
 
         /**
          * \brief   Terminates the component thread. No guarantee that all resources are cleanup.
          *          After processing this method the thread is not operable anymore.
          * \param   threadName  The name of component thread to terminate.
          **/
-        bool _terminateComponentThread( const areg::String & threadName );
+        bool _terminateComponentThread( const String & threadName );
 
         /**
          * \brief   Creates new instance of the component thread after it was terminated.
@@ -152,7 +155,7 @@ namespace areg
          *          component thread are restarted again.
          * \param   threadName  The name of the thread to re-start.
          */
-        void _startComponentThread( const areg::String & threadName );
+        void _startComponentThread( const String & threadName );
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -161,11 +164,11 @@ namespace areg
         /**
          * \brief   The instance of service manager.
          **/
-        areg::ServiceManager &        mServiceManager;
+        ServiceManager &        mServiceManager;
         /**
          * \brief   The Map of Server Info object as a Key and Client Info List as Values
          **/
-        areg::ServerList              mServerList;
+        ServerList              mServerList;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -179,7 +182,7 @@ namespace areg
     // ServiceManagerEventProcessor inline methods
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::ServerList & ServiceManagerEventProcessor::getRegisteredServiceList() const
+    inline const ServerList & ServiceManagerEventProcessor::getRegisteredServiceList() const
     {
         return mServerList;
     }

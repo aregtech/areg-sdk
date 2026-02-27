@@ -28,14 +28,14 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // EventData class Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    EventData::EventData( uint32_t msgId, areg::EventDataStream::EventDataKind dataType, const areg::String & name /*= areg::String::getEmptyString()*/ )
-        : mDataType (areg::getMessageDataType(msgId))
+    EventData::EventData( uint32_t msgId, EventDataStream::EventDataKind dataType, const String & name /*= areg::String::getEmptyString()*/ )
+        : mDataType (getMessageDataType(msgId))
         , mData     (dataType, name)
     {
     }
 
-    EventData::EventData( uint32_t msgId, const areg::EventDataStream & args, const areg::String & name /*= areg::String::getEmptyString()*/ )
-        : mDataType (areg::getMessageDataType(msgId))
+    EventData::EventData( uint32_t msgId, const EventDataStream & args, const String & name /*= areg::String::getEmptyString()*/ )
+        : mDataType (getMessageDataType(msgId))
         , mData     (args, name)
     {
     }
@@ -52,9 +52,9 @@ namespace areg
     {
     }
 
-    EventData::EventData(const areg::InStream & stream)
-        : mDataType ( areg::MessageDataType::UndefinedData )
-        , mData     ( areg::EventDataStream::EventDataKind::External )
+    EventData::EventData(const InStream & stream)
+        : mDataType ( MessageDataType::UndefinedData )
+        , mData     ( EventDataStream::EventDataKind::External )
     {
         stream >> mDataType;
         stream >> mData;

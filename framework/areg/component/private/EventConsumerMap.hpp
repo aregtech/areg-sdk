@@ -27,12 +27,18 @@
 /************************************************************************
  * Declared classes
  ************************************************************************/
-namespace areg { class EventConsumerList; }
+namespace areg
+{
+    class EventConsumerList;
+}
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class EventConsumer; }
+namespace areg
+{
+    class EventConsumer;
+}
 
 namespace areg
 {

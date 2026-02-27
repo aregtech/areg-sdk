@@ -22,14 +22,14 @@ namespace areg
 
     const Channel & Channel::getInvalidChannel()
     {
-        static const Channel _invalidChannel( areg::SOURCE_UNKNOWN, areg::TARGET_UNKNOWN, areg::COOKIE_UNKNOWN );
+        static const Channel _invalidChannel( SOURCE_UNKNOWN, TARGET_UNKNOWN, COOKIE_UNKNOWN );
         return _invalidChannel;
     }
 
     Channel::Channel()
-        : mSource( areg::SOURCE_UNKNOWN )
-        , mTarget( areg::TARGET_UNKNOWN )
-        , mCookie( areg::COOKIE_UNKNOWN )
+        : mSource( SOURCE_UNKNOWN )
+        , mTarget( TARGET_UNKNOWN )
+        , mCookie( COOKIE_UNKNOWN )
     {
     }
 
@@ -70,26 +70,26 @@ namespace areg
         return (*this);
     }
 
-    areg::String Channel::convToString() const
+    String Channel::convToString() const
     {
         constexpr const char * format{ "%llu.%llu.%llu" };
 
         char buffer[ 128 ]{ 0 };
-        int32_t len = areg::String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
-        return (len > 0 ? areg::String( buffer, static_cast<uint32_t>(len) ) : areg::String::getEmptyString());
+        int32_t len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
+        return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
     }
 
-    const Channel & Channel::convFromString(const areg::String & channel)
+    const Channel & Channel::convFromString(const String & channel)
     {
-        mSource = areg::SOURCE_UNKNOWN;
-        mTarget = areg::TARGET_UNKNOWN;
-        mCookie = areg::COOKIE_UNKNOWN;
+        mSource = SOURCE_UNKNOWN;
+        mTarget = TARGET_UNKNOWN;
+        mCookie = COOKIE_UNKNOWN;
 
-        areg::String source, target, cookie;
-        areg::CharPos pos = areg::START_POS;
-        pos = channel.substring( source, areg::OBJECT_SEPARATOR, pos );
-        pos = channel.substring( target, areg::OBJECT_SEPARATOR, pos );
-        channel.substring( cookie, areg::OBJECT_SEPARATOR, pos );
+        String source, target, cookie;
+        CharPos pos = START_POS;
+        pos = channel.substring( source, OBJECT_SEPARATOR, pos );
+        pos = channel.substring( target, OBJECT_SEPARATOR, pos );
+        channel.substring( cookie, OBJECT_SEPARATOR, pos );
 
         mSource = static_cast<ITEM_ID>( source.toUInt64() );
         mTarget = static_cast<ITEM_ID>( target.toUInt64() );

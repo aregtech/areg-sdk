@@ -25,12 +25,18 @@
  * Declared classes
  ************************************************************************/
 class TimerEventData;
-namespace areg { class TimerEvent; }
+namespace areg
+{
+    class TimerEvent;
+}
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Timer; }
+namespace areg
+{
+    class Timer;
+}
 
 namespace areg
 {

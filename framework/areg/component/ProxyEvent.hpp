@@ -27,19 +27,25 @@
 /************************************************************************
  * List of declared classes
  ************************************************************************/
-namespace areg { class ProxyEvent; }
-namespace areg { class ProxyEventConsumer; }
+namespace areg
+{
+    class ProxyEvent;
+    class ProxyEventConsumer;
+}
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Event; }
-namespace areg { class StubAddress; }
-namespace areg { class ServiceResponseEvent; }
-namespace areg { class NotificationConsumer; }
-namespace areg { class Channel; }
-namespace areg { class ResponseEvent; }
-namespace areg { class ProxyConnectEvent; }
+namespace areg
+{
+    class Event;
+    class StubAddress;
+    class ServiceResponseEvent;
+    class NotificationConsumer;
+    class Channel;
+    class ResponseEvent;
+    class ProxyConnectEvent;
+}
 
 namespace areg
 {
@@ -249,7 +255,7 @@ namespace areg
          *          to service serve component.
          * \param   eventConnect    The connection event to process.
          **/
-        void _localProcessConnectEvent( areg::ProxyConnectEvent & eventConnect );
+        void _localProcessConnectEvent( ProxyConnectEvent & eventConnect );
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables

@@ -24,33 +24,33 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Runtime implementation
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(StreamableEvent, areg::Event)
+    AREG_IMPLEMENT_RUNTIME_EVENT(StreamableEvent, Event)
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
     //////////////////////////////////////////////////////////////////////////
-    StreamableEvent::StreamableEvent( areg::Event::EventType eventType )
-        : areg::Event (eventType)
+    StreamableEvent::StreamableEvent( Event::EventType eventType )
+        : Event (eventType)
     {
     }
 
-    StreamableEvent::StreamableEvent( const areg::InStream & stream )
-        : areg::Event ( areg::Event::EventType::EventUnknown )
+    StreamableEvent::StreamableEvent( const InStream & stream )
+        : Event ( Event::EventType::EventUnknown )
     {
-        stream >> areg::Event::mEventType;
+        stream >> Event::mEventType;
     }
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
     //////////////////////////////////////////////////////////////////////////
-    const areg::InStream & StreamableEvent::readStream( const areg::InStream & stream )
+    const InStream & StreamableEvent::readStream( const InStream & stream )
     {
-        return (stream >> areg::Event::mEventType);
+        return (stream >> Event::mEventType);
     }
 
-    areg::OutStream & StreamableEvent::writeStream( areg::OutStream & stream ) const
+    OutStream & StreamableEvent::writeStream( OutStream & stream ) const
     {
-        return (stream << areg::Event::mEventType);
+        return (stream << Event::mEventType);
     }
 
 } // namespace areg

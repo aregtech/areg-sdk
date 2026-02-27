@@ -28,20 +28,20 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Methods
     //////////////////////////////////////////////////////////////////////////
-    bool ClientList::existClient( const areg::ProxyAddress & client ) const
+    bool ClientList::existClient( const ProxyAddress & client ) const
     {
-        return contains(areg::ClientInfo(client));
+        return contains(ClientInfo(client));
     }
 
-    const areg::ClientInfo & ClientList::getClient( const areg::ProxyAddress & whichClient ) const
+    const ClientInfo & ClientList::getClient( const ProxyAddress & whichClient ) const
     {
-        LISTPOS pos = find(areg::ClientInfo(whichClient));
-        return (isValidPosition(pos) ? *pos : areg::ClientInfo::getInvalidClientInfo());
+        LISTPOS pos = find(ClientInfo(whichClient));
+        return (isValidPosition(pos) ? *pos : ClientInfo::getInvalidClientInfo());
     }
 
-    const areg::ClientInfo & ClientList::registerClient( const areg::ProxyAddress & whichClient, const areg::ServerInfo & server )
+    const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient, const ServerInfo & server )
     {
-        areg::ClientInfo clInfo(whichClient);
+        ClientInfo clInfo(whichClient);
         LISTPOS pos = find(clInfo);
         if (isInvalidPosition(pos))
         {
@@ -49,18 +49,18 @@ namespace areg
             pos = lastPosition();
         }
 
-        areg::ClientInfo & client = valueAtPosition(pos);
+        ClientInfo & client = valueAtPosition(pos);
         client.setTargetServer( server.getAddress() );
         client.setConnectionStatus( server.getConnectionStatus() );
 
         return client;
     }
 
-    bool ClientList::unregisterClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client )
+    bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client )
     {
         bool result{ false };
 
-        LISTPOS pos = find( areg::ClientInfo(whichClient) );
+        LISTPOS pos = find( ClientInfo(whichClient) );
         if (isValidPosition(pos))
         {
             removeAt(pos, out_client);
@@ -70,14 +70,14 @@ namespace areg
         return result;
     }
 
-    void ClientList::serverAvailable( const areg::ServerInfo & whichServer, ClientList & out_clientList )
+    void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & out_clientList )
     {
-        areg::ServiceConnectionState state = whichServer.getConnectionStatus();
-        const areg::StubAddress & addrStub = whichServer.getAddress();
+        ServiceConnectionState state = whichServer.getConnectionStatus();
+        const StubAddress & addrStub = whichServer.getAddress();
 
         for ( LISTPOS pos = firstPosition(); isValidPosition(pos); ++ pos)
         {
-            areg::ClientInfo & client = *pos;
+            ClientInfo & client = *pos;
             client.setTargetServer(addrStub);
             client.setConnectionStatus( state );
             out_clientList.pushFirst(client);
@@ -88,10 +88,10 @@ namespace areg
     {
         for (LISTPOS pos = firstPosition(); isValidPosition(pos); ++pos )
         {
-            areg::ClientInfo & client = valueAtPosition( pos );
+            ClientInfo & client = valueAtPosition( pos );
             out_clientList.pushLast( client );
-            client.setTargetServer( areg::StubAddress::getInvalidStubAddress() );
-            client.setConnectionStatus( areg::ServiceConnectionState::Pending );
+            client.setTargetServer( StubAddress::getInvalidStubAddress() );
+            client.setConnectionStatus( ServiceConnectionState::Pending );
         }
     }
 } // namespace areg

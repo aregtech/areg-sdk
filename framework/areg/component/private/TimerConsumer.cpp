@@ -22,15 +22,15 @@ namespace areg
     // TimerConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
 
-    void TimerConsumer::processEvent( const areg::TimerEventData & /* data */ )
+    void TimerConsumer::processEvent( const TimerEventData & /* data */ )
     {
         ASSERT(false);
     }
 
-    void TimerConsumer::startEventProcessing( areg::Event& eventElem )
+    void TimerConsumer::startEventProcessing( Event& eventElem )
     {
-        areg::TimerEvent* timerEvent = static_cast<areg::TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, areg::TimerEvent) );
-        areg::Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
+        TimerEvent* timerEvent = static_cast<TimerEvent *>( AREG_RUNTIME_CAST(&eventElem, TimerEvent) );
+        Timer *timer = timerEvent != nullptr ? timerEvent->getData().getTimer() : nullptr;
         if (timer != nullptr )
         {
             processTimer(*timer);

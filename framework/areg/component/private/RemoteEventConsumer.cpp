@@ -19,25 +19,25 @@
 
 namespace areg
 {
-    void RemoteEventConsumer::startEventProcessing(areg::Event & eventElem)
+    void RemoteEventConsumer::startEventProcessing(Event & eventElem)
     {
-        if ( areg::Event::isRemote(eventElem.getEventType()) )
+        if ( Event::isRemote(eventElem.getEventType()) )
         {
-            areg::RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteRequestEvent);
+            RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
             if ( requestEvent != nullptr )
             {
                 processRemoteRequestEvent(*requestEvent);
             }
             else
             {
-                areg::RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteResponseEvent);
+                RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
                 if ( responseEvent != nullptr )
                 {
                     processRemoteResponseEvent(*responseEvent);
                 }
                 else
                 {
-                    areg::RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, areg::RemoteNotifyRequestEvent);
+                    RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
                     if (requestNotifyEvent != nullptr)
                     {
                         processRemoteNotifyRequestEvent(*requestNotifyEvent);

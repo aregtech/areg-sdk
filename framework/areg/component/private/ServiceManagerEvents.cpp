@@ -26,122 +26,122 @@ namespace areg
     // ServiceManagerEventData class implementation
     //////////////////////////////////////////////////////////////////////////
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::stopMessageRouterClient()
+    ServiceManagerEventData ServiceManagerEventData::stopMessageRouterClient()
     {
-        return areg::ServiceManagerEventData( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient );
+        return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient );
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::shutdownServiceManager()
+    ServiceManagerEventData ServiceManagerEventData::shutdownServiceManager()
     {
-        return areg::ServiceManagerEventData( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService );
+        return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService );
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::registerProxy(const areg::ProxyAddress & addrProxy)
+    ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddress & addrProxy)
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy );
+        OutStream & stream = data.getWriteStream();
         stream << addrProxy;
         stream << addrProxy.getChannel();
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::unregisterProxy( const areg::ProxyAddress & addrProxy, areg::DisconnectReason reason )
+    ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, DisconnectReason reason )
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy );
+        OutStream & stream = data.getWriteStream();
         stream << addrProxy;
         stream << addrProxy.getChannel();
         stream << reason;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::registerStub(const areg::StubAddress & addrStub)
+    ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress & addrStub)
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub );
+        OutStream & stream = data.getWriteStream();
         stream << addrStub;
         stream << addrStub.getChannel();
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::unregisterStub( const areg::StubAddress & addrStub, areg::DisconnectReason reason )
+    ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, DisconnectReason reason )
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub );
+        OutStream & stream = data.getWriteStream();
         stream << addrStub;
         stream << addrStub.getChannel();
         stream << reason;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::configureConnection(areg::RemoteServiceKind service, uint32_t connectTypes)
+    ServiceManagerEventData ServiceManagerEventData::configureConnection(RemoteServiceKind service, uint32_t connectTypes)
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection );
+        OutStream & stream = data.getWriteStream();
         stream << service;
         stream << connectTypes;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::startConnection(areg::RemoteServiceKind service, uint32_t connectTypes)
+    ServiceManagerEventData ServiceManagerEventData::startConnection(RemoteServiceKind service, uint32_t connectTypes)
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection );
+        OutStream & stream = data.getWriteStream();
         stream << service;
         stream << connectTypes;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::startNetConnection( const areg::String & ipAddress, uint16_t portNr )
+    ServiceManagerEventData ServiceManagerEventData::startNetConnection( const String & ipAddress, uint16_t portNr )
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection );
-        areg::OutStream & stream = data.getWriteStream( );
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection );
+        OutStream & stream = data.getWriteStream( );
         stream << ipAddress;
         stream << portNr;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::stopConnection()
+    ServiceManagerEventData ServiceManagerEventData::stopConnection()
     {
-        return areg::ServiceManagerEventData( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection );
+        return ServiceManagerEventData( ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection );
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::registerConnection(const areg::Channel & channel)
+    ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channel & channel)
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection );
+        OutStream & stream = data.getWriteStream();
         stream << channel;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::unregisterConnection(const areg::Channel & channel)
+    ServiceManagerEventData ServiceManagerEventData::unregisterConnection(const Channel & channel)
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection );
+        OutStream & stream = data.getWriteStream();
         stream << channel;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::lostConnection(const areg::Channel & channel)
+    ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & channel)
     {
-        areg::ServiceManagerEventData data( areg::ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection );
-        areg::OutStream & stream = data.getWriteStream();
+        ServiceManagerEventData data( ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection );
+        OutStream & stream = data.getWriteStream();
         stream << channel;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::terminateComponentThread(const areg::String& threadName)
+    ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const String& threadName)
     {
-        areg::ServiceManagerEventData data(areg::ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread);
-        areg::OutStream& stream = data.getWriteStream();
+        ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread);
+        OutStream& stream = data.getWriteStream();
         stream << threadName;
         return data;
     }
 
-    areg::ServiceManagerEventData areg::ServiceManagerEventData::createComponentThread(const areg::String& threadName)
+    ServiceManagerEventData ServiceManagerEventData::createComponentThread(const String& threadName)
     {
-        areg::ServiceManagerEventData data(areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread);
-        areg::OutStream& stream = data.getWriteStream();
+        ServiceManagerEventData data(ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread);
+        OutStream& stream = data.getWriteStream();
         stream << threadName;
         return data;
     }

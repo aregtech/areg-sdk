@@ -17,33 +17,33 @@
 
 namespace areg
 {
-    AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, areg::ProxyEvent)
+    AREG_IMPLEMENT_RUNTIME_EVENT(ServiceResponseEvent, ProxyEvent)
 
-    ServiceResponseEvent::ServiceResponseEvent( const areg::ProxyAddress & target
-                                            , areg::ResultType result
+    ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
+                                            , ResultType result
                                             , uint32_t responseId
-                                            , areg::Event::EventType eventType
+                                            , Event::EventType eventType
                                             , const SequenceNumber & seqNr    /*= areg::SEQUENCE_NUMBER_NOTIFY*/)
-        : areg::ProxyEvent    (target, eventType)
+        : ProxyEvent    (target, eventType)
         , mResponseId   (responseId)
         , mResult       (result)
         , mSequenceNr   (seqNr)
     {
     }
 
-    ServiceResponseEvent::ServiceResponseEvent( const areg::ProxyAddress& target, const ServiceResponseEvent& src )
-        : areg::ProxyEvent    (target, src.getEventType())
+    ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress& target, const ServiceResponseEvent& src )
+        : ProxyEvent    (target, src.getEventType())
         , mResponseId   (src.mResponseId)
         , mResult       (src.mResult)
         , mSequenceNr   (src.mSequenceNr)
     {
     }
 
-    ServiceResponseEvent::ServiceResponseEvent(const areg::InStream & stream)
-        : areg::ProxyEvent    ( stream )
-        , mResponseId   ( areg::INVALID_MESSAGE_ID )
-        , mResult       ( areg::ResultType::Undefined )
-        , mSequenceNr   ( areg::SEQUENCE_NUMBER_ANY )
+    ServiceResponseEvent::ServiceResponseEvent(const InStream & stream)
+        : ProxyEvent    ( stream )
+        , mResponseId   ( INVALID_MESSAGE_ID )
+        , mResult       ( ResultType::Undefined )
+        , mSequenceNr   ( SEQUENCE_NUMBER_ANY )
     {
         stream >> mResponseId;
         stream >> mResult;
@@ -51,23 +51,23 @@ namespace areg
     }
 
 
-    ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const areg::ProxyAddress & target ) const
+    ServiceResponseEvent* ServiceResponseEvent::cloneForTarget( const ProxyAddress & target ) const
     {
         return DEBUG_NEW ServiceResponseEvent(target, *this);
     }
 
-    const areg::InStream & ServiceResponseEvent::readStream( const areg::InStream & stream )
+    const InStream & ServiceResponseEvent::readStream( const InStream & stream )
     {
-        areg::ProxyEvent::readStream(stream);
+        ProxyEvent::readStream(stream);
         stream >> mResponseId;
         stream >> mResult;
         stream >> mSequenceNr;
         return stream;
     }
 
-    areg::OutStream & ServiceResponseEvent::writeStream( areg::OutStream & stream ) const
+    OutStream & ServiceResponseEvent::writeStream( OutStream & stream ) const
     {
-        areg::ProxyEvent::writeStream(stream);
+        ProxyEvent::writeStream(stream);
         stream << mResponseId;
         stream << mResult;
         stream << mSequenceNr;

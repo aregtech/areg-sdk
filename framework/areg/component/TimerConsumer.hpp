@@ -30,9 +30,12 @@ class TimerConsumer;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Timer; }
-namespace areg { class TimerEventData; }
-namespace areg { class DispatcherThread; }
+namespace areg
+{
+    class Timer;
+    class TimerEventData;
+    class DispatcherThread;
+}
 
 namespace areg
 {
@@ -52,7 +55,7 @@ namespace areg
      *          message when timer is expired. Inherit and override
      *          pure virtual function to process Timer.
      **/
-    class AREG_API TimerConsumer : public  areg::TimerEventConsumerBase
+    class AREG_API TimerConsumer : public  TimerEventConsumerBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor. Protected
@@ -81,13 +84,13 @@ namespace areg
          *          Overwrite method to receive messages.
          * \param   timer   The timer object that is expired.
          **/
-        virtual void processTimer( areg::Timer & timer ) = 0;
+        virtual void processTimer( Timer & timer ) = 0;
 
         /**
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   data    The Timer Event Data object containing Timer object.
          **/
-        void processEvent( const areg::TimerEventData & data) override;
+        void processEvent( const TimerEventData & data) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden overrides
@@ -97,7 +100,7 @@ namespace areg
          * \brief	Triggered when dispatcher starts to dispatch Timer Event.
          * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
          **/
-        void startEventProcessing( areg::Event & eventElem) override;
+        void startEventProcessing( Event & eventElem) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

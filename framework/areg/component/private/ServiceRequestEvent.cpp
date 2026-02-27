@@ -25,39 +25,39 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ServiceRequestEvent class, declare runtime event
     //////////////////////////////////////////////////////////////////////////
-    AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, areg::StubEvent)
+    AREG_IMPLEMENT_RUNTIME_EVENT(ServiceRequestEvent, StubEvent)
 
     //////////////////////////////////////////////////////////////////////////
     // ServiceRequestEvent class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    ServiceRequestEvent::ServiceRequestEvent( const areg::ProxyAddress & proxyAddress
-                                            , const areg::StubAddress  & target
+    ServiceRequestEvent::ServiceRequestEvent( const ProxyAddress & proxyAddress
+                                            , const StubAddress  & target
                                             , uint32_t reqId
-                                            , areg::RequestType reqType
-                                            , areg::Event::EventType eventType)
-        : areg::StubEvent     (target, eventType)
+                                            , RequestType reqType
+                                            , Event::EventType eventType)
+        : StubEvent     (target, eventType)
         , mProxySource  (proxyAddress)
         , mMessageId    (reqId)
         , mRequestType  (reqType)
-        , mSequenceNr   (areg::SEQUENCE_NUMBER_NOTIFY)
+        , mSequenceNr   (SEQUENCE_NUMBER_NOTIFY)
     {
     }
 
-    ServiceRequestEvent::ServiceRequestEvent(const areg::InStream & stream)
-        : areg::StubEvent     (stream)
+    ServiceRequestEvent::ServiceRequestEvent(const InStream & stream)
+        : StubEvent     (stream)
         , mProxySource  (stream)
-        , mMessageId    (areg::INVALID_MESSAGE_ID)
-        , mRequestType  (areg::RequestType::Unprocessed)
-        , mSequenceNr   (areg::SEQUENCE_NUMBER_NOTIFY)
+        , mMessageId    (INVALID_MESSAGE_ID)
+        , mRequestType  (RequestType::Unprocessed)
+        , mSequenceNr   (SEQUENCE_NUMBER_NOTIFY)
     {
         stream >> mMessageId;
         stream >> mRequestType;
         stream >> mSequenceNr;
     }
 
-    const areg::InStream & ServiceRequestEvent::readStream(const areg::InStream & stream)
+    const InStream & ServiceRequestEvent::readStream(const InStream & stream)
     {
-        areg::StubEvent::readStream(stream);
+        StubEvent::readStream(stream);
         stream >> mProxySource;
         stream >> mMessageId;
         stream >> mRequestType;
@@ -65,9 +65,9 @@ namespace areg
         return stream;
     }
 
-    areg::OutStream & ServiceRequestEvent::writeStream(areg::OutStream & stream) const
+    OutStream & ServiceRequestEvent::writeStream(OutStream & stream) const
     {
-        areg::StubEvent::writeStream(stream);
+        StubEvent::writeStream(stream);
         stream << mProxySource;
         stream << mMessageId;
         stream << mRequestType;

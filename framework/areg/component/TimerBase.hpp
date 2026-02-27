@@ -91,8 +91,8 @@ namespace areg
          *                      Any other number defines the amount of timeout events to fire.
          **/
         TimerBase( const TimerType timerType
-                , const areg::String & timerName
-                , uint32_t timeoutMs   = areg::INVALID_TIMEOUT
+                , const String & timerName
+                , uint32_t timeoutMs   = INVALID_TIMEOUT
                 , uint32_t eventCount  = TimerBase::CONTINUOUSLY );
 
     public:
@@ -137,7 +137,7 @@ namespace areg
         /**
          * \brief   Returns the name of timer.
          **/
-        inline const areg::String& getName() const;
+        inline const String& getName() const;
 
         /**
          * \brief   Returns the handle of the system waitable timer.
@@ -210,7 +210,7 @@ namespace areg
         /**
          * \brief   Timer name. If not empty, it is unique name
          **/
-        const areg::String        mName;
+        const String        mName;
         /**
          * \brief   Timeout to fire timer.
          **/
@@ -226,7 +226,7 @@ namespace areg
         /**
          * \brief   Synchronization object
          **/
-        areg::ResourceLock        mLock;
+        ResourceLock        mLock;
 
     private:
         TimerBase() = delete;
@@ -239,7 +239,7 @@ namespace areg
 
     inline bool TimerBase::isValid() const
     {
-        return ((mTimeoutInMs != areg::INVALID_TIMEOUT) && (mHandle != nullptr));
+        return ((mTimeoutInMs != INVALID_TIMEOUT) && (mHandle != nullptr));
     }
 
     inline void TimerBase::setEventCount(uint32_t eventCount)
@@ -247,7 +247,7 @@ namespace areg
         mEventsCount = eventCount;
     }
 
-    inline const areg::String & TimerBase::getName() const
+    inline const String & TimerBase::getName() const
     {
         return mName;
     }

@@ -60,7 +60,7 @@ namespace areg
         return getInstance().isReady();
     }
 
-    bool WatchdogManager::startTimer(areg::Watchdog& watchdog)
+    bool WatchdogManager::startTimer(Watchdog& watchdog)
     {
         bool result = false;
         ASSERT(watchdog.getHandle() != nullptr);
@@ -69,15 +69,15 @@ namespace areg
         if (watchdogManager.isWatchdogManagerStarted())
         {
             watchdogManager._registerWatchdog(watchdog);
-            result = areg::TimerManagerEvent::sendEvent( areg::TimerManagerEventData(&watchdog)
-                                                , static_cast<areg::TimerManagerEventConsumer&>(watchdogManager)
-                                                , static_cast<areg::DispatcherThread&>(watchdogManager));
+            result = TimerManagerEvent::sendEvent( TimerManagerEventData(&watchdog)
+                                                , static_cast<TimerManagerEventConsumer&>(watchdogManager)
+                                                , static_cast<DispatcherThread&>(watchdogManager));
         }
 
         return result;
     }
 
-    void WatchdogManager::stopTimer(areg::Watchdog& watchdog)
+    void WatchdogManager::stopTimer(Watchdog& watchdog)
     {
         getInstance()._unregisterWatchdog(watchdog);
         WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
@@ -88,7 +88,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     WatchdogManager::WatchdogManager()
-        : areg::TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME)
+        : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME)
 
         , mWatchdogResource()
     {
@@ -103,12 +103,12 @@ namespace areg
     // Methods
     //////////////////////////////////////////////////////////////////////////
 
-    inline void WatchdogManager::_registerWatchdog(areg::Watchdog & watchdog)
+    inline void WatchdogManager::_registerWatchdog(Watchdog & watchdog)
     {
         mWatchdogResource.registerResourceObject(watchdog.getId(), &watchdog);
     }
 
-    inline void WatchdogManager::_unregisterWatchdog(areg::Watchdog& watchdog)
+    inline void WatchdogManager::_unregisterWatchdog(Watchdog& watchdog)
     {
         mWatchdogResource.unregisterResourceObject(watchdog.getId());
         WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
@@ -118,7 +118,7 @@ namespace areg
     {
         mWatchdogResource.lock();
 
-        std::pair< areg::Watchdog::GUARD_ID, areg::Watchdog*> elem;
+        std::pair< Watchdog::GUARD_ID, Watchdog*> elem;
         while (mWatchdogResource.isEmpty() == false)
         {
             mWatchdogResource.removeResourceFirstElement(elem);
@@ -129,9 +129,9 @@ namespace areg
         mWatchdogResource.unlock();
     }
 
-    void WatchdogManager::processEvent(const areg::TimerManagerEventData & data)
+    void WatchdogManager::processEvent(const TimerManagerEventData & data)
     {
-        areg::Watchdog* watchdog = static_cast<areg::Watchdog*>(data.getTimer());
+        Watchdog* watchdog = static_cast<Watchdog*>(data.getTimer());
         ASSERT(watchdog != nullptr);
         if (mWatchdogResource.existResource(watchdog->getId()))
         {
@@ -139,20 +139,20 @@ namespace areg
         }
     }
 
-    void WatchdogManager::_processExpiredTimer(areg::Watchdog* watchdog, areg::Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
+    void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
     {
         LOG_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 
         mWatchdogResource.lock();
 
-        areg::Watchdog::SEQUENCE_ID sequence  = areg::Watchdog::makeSequenceId(watchdogId);
+        Watchdog::SEQUENCE_ID sequence  = Watchdog::makeSequenceId(watchdogId);
         if ((watchdog != nullptr) && (watchdog->getSequence() == sequence))
         {
             LOG_WARN("The watchdog [ %s ] has expired, terminating component thread [ %s ]"
                             , watchdog->getName().getString()
                             , watchdog->getComponentThread().getName().getString());
 
-            areg::ServiceManager::requestRecreateThread(watchdog->getComponentThread());
+            ServiceManager::requestRecreateThread(watchdog->getComponentThread());
         }
 
         mWatchdogResource.unlock();
@@ -165,7 +165,7 @@ namespace areg
             _removeAllWatchdogs();
         }
 
-        areg::TimerManagerBase::readyForEvents(isReady);
+        TimerManagerBase::readyForEvents(isReady);
     }
 
 } // namespace areg

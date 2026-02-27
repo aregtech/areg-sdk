@@ -27,10 +27,10 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // EventDispatcher class, constructor / destructor
     //////////////////////////////////////////////////////////////////////////
-    EventDispatcher::EventDispatcher( const areg::String & name, uint32_t maxQeueue )
-        : areg::EventDispatcherBase   ( name, maxQeueue )
-        , areg::ThreadConsumer      (  )
-        , areg::EventRouter         (  )
+    EventDispatcher::EventDispatcher( const String & name, uint32_t maxQeueue )
+        : EventDispatcherBase   ( name, maxQeueue )
+        , ThreadConsumer      (  )
+        , EventRouter         (  )
 
         , mDispatcherThread     ( nullptr )
     {
@@ -44,13 +44,13 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // EventDispatcher class, methods
     //////////////////////////////////////////////////////////////////////////
-    bool EventDispatcher::onThreadRegistered( areg::Thread * threadObj )
+    bool EventDispatcher::onThreadRegistered( Thread * threadObj )
     {
-        mDispatcherThread = AREG_RUNTIME_CAST(threadObj, areg::DispatcherThread);
+        mDispatcherThread = AREG_RUNTIME_CAST(threadObj, DispatcherThread);
         ASSERT(mDispatcherThread != nullptr);
 
-        areg::EventDispatcherBase::removeAllEvents( );
-        return areg::EventDispatcherBase::mEventExit.resetEvent();
+        EventDispatcherBase::removeAllEvents( );
+        return EventDispatcherBase::mEventExit.resetEvent();
     }
 
     void EventDispatcher::onThreadUnregistering()
@@ -69,10 +69,10 @@ namespace areg
     {
         exitDispatcher( );
         mDispatcherThread   = nullptr;
-        return static_cast<int32_t>(areg::ThreadConsumer::ExitCode::Normal);
+        return static_cast<int32_t>(ThreadConsumer::ExitCode::Normal);
     }
 
-    bool EventDispatcher::postEvent( areg::Event& eventElem )
+    bool EventDispatcher::postEvent( Event& eventElem )
     {
         return queueEvent(eventElem);
     }

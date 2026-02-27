@@ -25,11 +25,11 @@ namespace areg
 
     uint32_t TimerBase::getTickCount()
     {
-        return static_cast<uint32_t>(areg::DateTime::getSystemTickCount());
+        return static_cast<uint32_t>(DateTime::getSystemTickCount());
     }
 
     TimerBase::TimerBase( const TimerType timerType
-                        , const areg::String& timerName
+                        , const String& timerName
                         , uint32_t timeoutMs    /*= areg::INVALID_TIMEOUT*/
                         , uint32_t eventCount   /*= TimerBase::CONTINUOUSLY*/)
         : mTimerType    ( timerType )
@@ -50,9 +50,9 @@ namespace areg
 
     bool TimerBase::createWaitableTimer()
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
 
-        if ( (mHandle == nullptr) && (mTimeoutInMs != areg::INVALID_TIMEOUT) )
+        if ( (mHandle == nullptr) && (mTimeoutInMs != INVALID_TIMEOUT) )
         {
             mHandle = _osCreateWaitableTimer( );
         }
@@ -63,7 +63,7 @@ namespace areg
 
     void TimerBase::destroyWaitableTimer()
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
 
         TIMERHANDLE handle = mHandle;
         mHandle = nullptr;

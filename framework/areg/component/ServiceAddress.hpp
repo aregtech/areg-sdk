@@ -27,8 +27,11 @@
 /************************************************************************
  * Child objects
  ************************************************************************/
-namespace areg { class StubAddress; }
-namespace areg { class ProxyAddress; }
+namespace areg
+{
+    class StubAddress;
+    class ProxyAddress;
+}
 
 namespace areg
 {
@@ -99,7 +102,7 @@ namespace areg
          * \brief   Creates service address, which is contained in proxy address object.
          * \param   addrProxy       The address of proxy object with contains information of service address.
          **/
-        explicit ServiceAddress( const areg::ProxyAddress & addrProxy );
+        explicit ServiceAddress( const ProxyAddress & addrProxy );
 
         /**
          * \brief   Initializes service address data from given streaming object.

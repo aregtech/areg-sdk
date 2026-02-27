@@ -38,9 +38,9 @@ namespace areg
      *          Do not make long processing and run methods in the long loop, 
      *          because this will delay event processing.
      **/
-    class AREG_API EventDispatcher  : public    areg::EventDispatcherBase
-                                    , public    areg::ThreadConsumer
-                                    , public    areg::EventRouter
+    class AREG_API EventDispatcher  : public    EventDispatcherBase
+                                    , public    ThreadConsumer
+                                    , public    EventRouter
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -51,7 +51,7 @@ namespace areg
          * \param   name        The name of Event Dispatcher
          * \param   maxQeueue   The maximum number of queued external events.
          **/
-        explicit EventDispatcher( const areg::String & name, uint32_t maxQeueue);
+        explicit EventDispatcher( const String & name, uint32_t maxQeueue);
         /**
          * \brief   Destructor.
          **/
@@ -75,7 +75,7 @@ namespace areg
          *                      which contains this consumer.
          * \return	Return true if thread should run. Return false, it should not run.
          **/
-        bool onThreadRegistered( areg::Thread * threadObj ) override;
+        bool onThreadRegistered( Thread * threadObj ) override;
 
         /**
          * \brief   Function is triggered from thread object when it is going to be destroyed.
@@ -103,7 +103,7 @@ namespace areg
          * \return	Returns true if target was found and the event
          *          delivered with success. Otherwise it returns false.
          **/
-        bool postEvent(areg::Event& eventElem) override;
+        bool postEvent(Event& eventElem) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -113,7 +113,7 @@ namespace areg
          * \brief   Return pointer to Dispatcher Thread where current dispatcher
          *          is registered.
          **/
-        inline areg::DispatcherThread * getDispatcherThread() const;
+        inline DispatcherThread * getDispatcherThread() const;
 
     protected:
         /**
@@ -132,7 +132,7 @@ namespace areg
          *          The pointer is set after thread has been created and reset
          *          when it is destroyed.
          **/
-        areg::DispatcherThread *  mDispatcherThread;
+        DispatcherThread *  mDispatcherThread;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden method calls.
@@ -145,7 +145,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // DispatcherThread class inline functions implementation
     //////////////////////////////////////////////////////////////////////////
-    inline areg::DispatcherThread * EventDispatcher::getDispatcherThread() const
+    inline DispatcherThread * EventDispatcher::getDispatcherThread() const
     {
         return mDispatcherThread;
     }

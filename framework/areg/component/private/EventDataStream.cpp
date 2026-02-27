@@ -36,15 +36,15 @@ namespace areg
 
     const EventDataStream& EventDataStream::empty_data()
     {
-        static const EventDataStream _data(EventDataStream::EventDataKind::Empty, areg::String("EmptyData"));
+        static const EventDataStream _data(EventDataStream::EventDataKind::Empty, String("EmptyData"));
         return _data;
     }
 
     //////////////////////////////////////////////////////////////////////////
     // EventDataStream class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
-    EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const areg::String & name /*= areg::String::getEmptyString()*/ )
-        : areg::IOStream      ( )
+    EventDataStream::EventDataStream( EventDataStream::EventDataKind evetDataType, const String & name /*= areg::String::getEmptyString()*/ )
+        : IOStream      ( )
 
         , mEventDataType(evetDataType)
         , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
@@ -53,8 +53,8 @@ namespace areg
     {
     }
 
-    EventDataStream::EventDataStream( const EventDataStream & buffer, const areg::String & name )
-        : areg::IOStream    ( )
+    EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
+        : IOStream    ( )
 
         , mEventDataType(buffer.mEventDataType)
         , mBufferName   (name.isEmpty() == false ? name : DefaultStreamName)
@@ -65,7 +65,7 @@ namespace areg
     }
 
     EventDataStream::EventDataStream( const EventDataStream & src )
-        : areg::IOStream    ( )
+        : IOStream    ( )
 
         , mEventDataType(src.mEventDataType)
         , mBufferName   (src.mBufferName)
@@ -75,7 +75,7 @@ namespace areg
     }
 
     EventDataStream::EventDataStream( EventDataStream && src ) noexcept
-        : areg::IOStream    ( )
+        : IOStream    ( )
 
         , mEventDataType( src.mEventDataType )
         , mBufferName   ( std::move(src.mBufferName) )
@@ -84,8 +84,8 @@ namespace areg
     {
     }
 
-    EventDataStream::EventDataStream(const areg::InStream & stream)
-        : areg::IOStream    ( )
+    EventDataStream::EventDataStream(const InStream & stream)
+        : IOStream    ( )
 
         , mEventDataType( EventDataStream::EventDataKind::External)
         , mBufferName   ( DefaultStreamName)
@@ -136,12 +136,12 @@ namespace areg
         return mDataBuffer.read(buffer, size);
     }
 
-    uint32_t EventDataStream::read( areg::ByteBuffer & buffer ) const
+    uint32_t EventDataStream::read( ByteBuffer & buffer ) const
     {
         uint32_t result = 0;
         if (mEventDataType == EventDataStream::EventDataKind::Internal && mSharedList.isEmpty() == false)
         {
-            static_cast<areg::SharedBuffer &>(buffer) = mSharedList.popFirst();
+            static_cast<SharedBuffer &>(buffer) = mSharedList.popFirst();
             result = buffer.getSizeUsed();
         }
         else
@@ -152,12 +152,12 @@ namespace areg
         return result;
     }
 
-    uint32_t EventDataStream::read( areg::String & ascii ) const
+    uint32_t EventDataStream::read( String & ascii ) const
     {
         return mDataBuffer.read(ascii);
     }
 
-    uint32_t EventDataStream::read( areg::WideString & wide ) const
+    uint32_t EventDataStream::read( WideString & wide ) const
     {
         return mDataBuffer.read(wide);
     }
@@ -172,12 +172,12 @@ namespace areg
         return mDataBuffer.write(buffer, size);
     }
 
-    uint32_t EventDataStream::write( const areg::ByteBuffer & buffer )
+    uint32_t EventDataStream::write( const ByteBuffer & buffer )
     {
         uint32_t result = 0;
         if (mEventDataType == EventDataStream::EventDataKind::Internal)
         {
-            mSharedList.pushLast( static_cast<const areg::SharedBuffer &>(buffer) );
+            mSharedList.pushLast( static_cast<const SharedBuffer &>(buffer) );
             result = buffer.getSizeUsed();
         }
         else
@@ -188,12 +188,12 @@ namespace areg
         return result;
     }
 
-    uint32_t EventDataStream::write( const areg::String & ascii )
+    uint32_t EventDataStream::write( const String & ascii )
     {
         return mDataBuffer.write(ascii);
     }
 
-    uint32_t EventDataStream::write( const areg::WideString & wide )
+    uint32_t EventDataStream::write( const WideString & wide )
     {
         return mDataBuffer.write(wide);
     }

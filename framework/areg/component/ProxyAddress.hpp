@@ -30,11 +30,14 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class InStream; }
-namespace areg { class StubAddress; }
-namespace areg { class Event; }
-namespace areg { class ServiceRequestEvent; }
-namespace areg { class ServiceResponseEvent; }
+namespace areg
+{
+    class InStream;
+    class StubAddress;
+    class Event;
+    class ServiceRequestEvent;
+    class ServiceResponseEvent;
+}
 
 namespace areg
 {
@@ -46,7 +49,7 @@ namespace areg
      *          to identify Proxy. The proxy address is unique and contains 
      *          information of thread, connected component, and the service interface.
      **/
-    class AREG_API ProxyAddress   : public    areg::ServiceAddress
+    class AREG_API ProxyAddress   : public    ServiceAddress
     {
     //////////////////////////////////////////////////////////////////////////
     // Static methods
@@ -61,7 +64,7 @@ namespace areg
          * \param	addrProxy   The proxy address to generate path
          * \return  Returns converted path of Proxy as string, containing Proxy address information
          **/
-        static areg::String convAddressToPath( const ProxyAddress & addrProxy );
+        static String convAddressToPath( const ProxyAddress & addrProxy );
 
         /**
          * \brief	Pars proxy path string and retrieves proxy address data from path.
@@ -97,11 +100,11 @@ namespace areg
          * \param   roleName        Assigned role name of Proxy
          * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
          **/
-        ProxyAddress( const areg::String & serviceName
-                    , const areg::Version & serviceVersion
-                    , areg::ServiceType serviceType
-                    , const areg::String & roleName
-                    , const areg::String & threadName = areg::String::getEmptyString() );
+        ProxyAddress( const String & serviceName
+                    , const Version & serviceVersion
+                    , ServiceType serviceType
+                    , const String & roleName
+                    , const String & threadName = String::getEmptyString() );
         /**
          * \brief	Creates Proxy address according required connected component role name,
          *          service name and thread address of Proxy.
@@ -109,7 +112,7 @@ namespace areg
          * \param   roleName        Assigned role name of Proxy
          * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
          **/
-        ProxyAddress( const areg::ServiceItem & service, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
+        ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
         /**
          * \brief	Creates Proxy address according required connected component role name,
          *          service name and thread address of Proxy.
@@ -117,7 +120,7 @@ namespace areg
          * \param   roleName        Assigned role name of Proxy
          * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
          **/
-        ProxyAddress( const areg::InterfaceData & siData, const areg::String & roleName, const areg::String & threadName = areg::String::getEmptyString() );
+        ProxyAddress( const InterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
         /**
          * \brief   Copy constructor.
@@ -135,18 +138,18 @@ namespace areg
          * \brief   Initializes proxy address by copying service address data.
          * \param   source  The service address source of data to copy.
          **/
-        explicit ProxyAddress(const areg::ServiceAddress & source);
+        explicit ProxyAddress(const ServiceAddress & source);
 
         /**
          * \brief   Initializes proxy address by moving service address data.
          * \param   source  The service address source of data to move.
          **/
-        explicit ProxyAddress(areg::ServiceAddress && source);
+        explicit ProxyAddress(ServiceAddress && source);
 
         /**
          * \brief   Initialize proxy address from streaming object.
          **/
-        ProxyAddress(const areg::InStream & stream);
+        ProxyAddress(const InStream & stream);
 
         /**
          * \brief   Destructor.
@@ -183,7 +186,7 @@ namespace areg
          * \brief   Returns true if passed stub address is compatible with existing proxy address
          * \param   addrStub    Address of stub to compare.
          **/
-        inline bool operator == (const areg::StubAddress & addrStub ) const;
+        inline bool operator == (const StubAddress & addrStub ) const;
 
         /**
          * \brief   Checks inequality of 2 proxy addresses. Returns true if 2 proxy addresses are not equal.
@@ -205,14 +208,14 @@ namespace areg
          * \param   stream  The streaming object to read data.
          * \param   input   Service address object to initialize data.
          **/
-        friend AREG_API const areg::InStream & operator >> ( const areg::InStream & stream, ProxyAddress & input );
+        friend AREG_API const InStream & operator >> ( const InStream & stream, ProxyAddress & input );
 
         /**
          * \brief   Writes proxy address into stream.
          * \param   stream  The streaming object to write data.
          * \param   output  Service address object to serialize.
          **/
-        friend AREG_API areg::OutStream & operator << ( areg::OutStream & stream, const ProxyAddress & output);
+        friend AREG_API OutStream & operator << ( OutStream & stream, const ProxyAddress & output);
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -251,19 +254,19 @@ namespace areg
         /**
          * \brief   Returns thread name of processed Proxy
          **/
-        inline const areg::String & getThread() const;
+        inline const String & getThread() const;
         /**
          * \brief   Sets the thread name of processed Proxy
          **/
-        void setThread( const areg::String & threadName );
+        void setThread( const String & threadName );
         /**
          * \brief   Returns Proxy communication channel object
          **/
-        inline const areg::Channel & getChannel() const;
+        inline const Channel & getChannel() const;
         /**
          * \brief   Sets proxy communication channel
          **/
-        inline void setChannel( const areg::Channel & channel );
+        inline void setChannel( const Channel & channel );
         /**
          * \brief   Returns Proxy cookie value
          **/
@@ -306,7 +309,7 @@ namespace areg
          * \return  Returns true if specified service provider address (stub-address)
          *          is compatible with the proxy address.
          **/
-        bool isStubCompatible( const areg::StubAddress & addrStub ) const;
+        bool isStubCompatible( const StubAddress & addrStub ) const;
 
         /**
          * \brief   Delivers specified service request event to target Stub
@@ -315,7 +318,7 @@ namespace areg
          *          for remote target, the returned boolean value indicates whether event was successfully
          *          queued in the communication channel to deliver.
          **/
-        bool deliverServiceEvent( areg::ServiceRequestEvent & stubEvent ) const;
+        bool deliverServiceEvent( ServiceRequestEvent & stubEvent ) const;
 
         /**
          * \brief   Delivers specified service response event to target Stub
@@ -324,7 +327,7 @@ namespace areg
          *          for remote target, the returned boolean value indicates whether event was successfully
          *          queued in the communication channel to deliver.
          **/
-        bool deliverServiceEvent( areg::ServiceResponseEvent & proxyEvent ) const;
+        bool deliverServiceEvent( ServiceResponseEvent & proxyEvent ) const;
 
         /**
          * \brief	Creates proxy address path as a string.
@@ -334,7 +337,7 @@ namespace areg
          *          and special extension identifying proxy.
          * \return  Returns converted path of Proxy as string, containing Proxy address information
          **/
-        areg::String convToString() const;
+        String convToString() const;
 
         /**
          * \brief	Parses proxy path string and retrieves proxy address data from path.
@@ -364,7 +367,7 @@ namespace areg
          * \param   serviceEvent    The service event to deliver
          * \param   idTarget        The ID of target service to deliver event
          **/
-        static bool _deliverEvent( areg::Event & serviceEvent, const ITEM_ID & idTarget );
+        static bool _deliverEvent( Event & serviceEvent, const ITEM_ID & idTarget );
 
         /**
          * \brief   Returns the calculated hash-key value of specified proxy address object.
@@ -378,11 +381,11 @@ namespace areg
         /**
          * \brief   Thread name of Proxy
          **/
-        areg::String          mThreadName;
+        String          mThreadName;
         /**
          * \brief   Communication channel of Proxy.
          **/
-        areg::Channel         mChannel;
+        Channel         mChannel;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden members
@@ -398,7 +401,7 @@ namespace areg
     // ProxyAddress class inline functions
     //////////////////////////////////////////////////////////////////////////
 
-    inline bool ProxyAddress::operator == ( const areg::StubAddress & addrStub ) const
+    inline bool ProxyAddress::operator == ( const StubAddress & addrStub ) const
     {
         return isStubCompatible(addrStub);
     }
@@ -407,7 +410,7 @@ namespace areg
     {
         if (this != &source)
         {
-            static_cast<areg::ServiceAddress &>(*this) = static_cast<const areg::ServiceAddress &>(source);
+            static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(source);
             mThreadName = source.mThreadName;
             mChannel    = source.mChannel;
             mMagicNum   = source.mMagicNum;
@@ -420,7 +423,7 @@ namespace areg
     {
         if ( this != &source )
         {
-            static_cast<areg::ServiceAddress &>(*this) = static_cast<areg::ServiceAddress &&>(source);
+            static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(source);
             mThreadName = std::move(source.mThreadName);
             mChannel    = std::move(source.mChannel);
             mMagicNum   = source.mMagicNum;
@@ -446,45 +449,45 @@ namespace areg
 
     inline bool ProxyAddress::isLocalAddress() const
     {
-        return (mChannel.getCookie() == areg::COOKIE_LOCAL);
+        return (mChannel.getCookie() == COOKIE_LOCAL);
     }
 
     inline bool ProxyAddress::isRemoteAddress() const
     {
-        return (mChannel.getCookie() >= areg::COOKIE_ANY);
+        return (mChannel.getCookie() >= COOKIE_ANY);
     }
 
     inline bool ProxyAddress::isSourceLocal() const
     {
-        return (mChannel.getCookie() == areg::COOKIE_LOCAL) && (mChannel.getSource() != 0);
+        return (mChannel.getCookie() == COOKIE_LOCAL) && (mChannel.getSource() != 0);
     }
 
     inline bool ProxyAddress::isSourcePublic() const
     {
-        return (mChannel.getCookie( ) >= areg::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
+        return (mChannel.getCookie( ) >= COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
     }
 
     inline bool ProxyAddress::isTargetLocal() const
     {
-        return (mChannel.getCookie( ) == areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+        return (mChannel.getCookie( ) == COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
     }
 
     inline bool ProxyAddress::isTargetPublic() const
     {
-        return (mChannel.getCookie( ) >= areg::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+        return (mChannel.getCookie( ) >= COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
     }
 
-    inline const areg::String & ProxyAddress::getThread() const
+    inline const String & ProxyAddress::getThread() const
     {
         return mThreadName;
     }
 
-    inline const areg::Channel & ProxyAddress::getChannel() const
+    inline const Channel & ProxyAddress::getChannel() const
     {
         return mChannel;
     }
 
-    inline void ProxyAddress::setChannel( const areg::Channel & channel )
+    inline void ProxyAddress::setChannel( const Channel & channel )
     {
         mChannel = channel;
     }

@@ -27,7 +27,10 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg { class ProxyAddress; }
+namespace areg
+{
+    class ProxyAddress;
+}
 
 namespace areg
 {
@@ -47,7 +50,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // ServiceResponseEvent class declaration
     //////////////////////////////////////////////////////////////////////////
-    class AREG_API ServiceResponseEvent    : public areg::ProxyEvent
+    class AREG_API ServiceResponseEvent    : public ProxyEvent
     {
     //////////////////////////////////////////////////////////////////////////
     // Internal defines
@@ -78,11 +81,11 @@ namespace areg
          * \param   eventType   The type of event.
          * \param   seqNr       The sequence number of call.
          **/
-        ServiceResponseEvent( const areg::ProxyAddress & target
-                            , areg::ResultType result
+        ServiceResponseEvent( const ProxyAddress & target
+                            , ResultType result
                             , uint32_t responseId
-                            , areg::Event::EventType eventType
-                            , const SequenceNumber & seqNr = areg::SEQUENCE_NUMBER_NOTIFY );
+                            , Event::EventType eventType
+                            , const SequenceNumber & seqNr = SEQUENCE_NUMBER_NOTIFY );
 
         /**
          * \brief   Copies all data from given source, except the target proxy address. This is used if proxy needs to clone
@@ -90,13 +93,13 @@ namespace areg
          * \param   target  The target proxy address
          * \param   src     The service response source to copy data.
          **/
-        ServiceResponseEvent(const areg::ProxyAddress & target, const ServiceResponseEvent & src );
+        ServiceResponseEvent(const ProxyAddress & target, const ServiceResponseEvent & src );
 
         /**
          * \brief   Creates event from streaming object and initializes data
          * \param   stream  The streaming object to read data
          **/
-        ServiceResponseEvent(const areg::InStream & stream);
+        ServiceResponseEvent(const InStream & stream);
 
         /**
          * \brief   Destructor. Protected.
@@ -117,7 +120,7 @@ namespace areg
         /**
          * \brief   Returns response call result
          **/
-        inline areg::ResultType getResult() const;
+        inline ResultType getResult() const;
 
         /**
          * \brief   Returns sequence number of call.
@@ -142,7 +145,7 @@ namespace areg
          * \return  Cloned service response event object, which contains specified
          *          target proxy address.
          **/
-        virtual ServiceResponseEvent * cloneForTarget(const areg::ProxyAddress & target) const;
+        virtual ServiceResponseEvent * cloneForTarget(const ProxyAddress & target) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations
@@ -156,14 +159,14 @@ namespace areg
          * \param   stream  The streaming object to read out event data
          * \return  Returns streaming object to read out data.
          **/
-        const areg::InStream & readStream( const areg::InStream & stream ) override;
+        const InStream & readStream( const InStream & stream ) override;
 
         /**
          * \brief   Writes event data to streaming object
          * \param   stream  The streaming object to write event data.
          * \return  Returns streaming object to write event data.
          **/
-        areg::OutStream & writeStream( areg::OutStream & stream ) const override;
+        OutStream & writeStream( OutStream & stream ) const override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
@@ -177,7 +180,7 @@ namespace areg
         /**
          * \brief   The response result
          **/
-        areg::ResultType mResult;
+        ResultType mResult;
 
         /**
          * \brief   The sequence number.
@@ -201,7 +204,7 @@ namespace areg
         return mResponseId;
     }
 
-    inline areg::ResultType ServiceResponseEvent::getResult() const
+    inline ResultType ServiceResponseEvent::getResult() const
     {
         return mResult;
     }

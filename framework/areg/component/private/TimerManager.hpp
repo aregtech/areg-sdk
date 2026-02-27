@@ -29,7 +29,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class Timer; }
+namespace areg
+{
+    class Timer;
+}
 namespace areg::os { class TimerPosix; }
 
 namespace areg
@@ -55,7 +58,7 @@ namespace areg
      *              the queue of Timer Consumer Thread.
      *
      **/
-    class TimerManager  : protected areg::TimerManagerBase
+    class TimerManager  : protected TimerManagerBase
     {
 
     //////////////////////////////////////////////////////////////////////////
@@ -68,8 +71,8 @@ namespace areg
          **/
         static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
 
-        using MapTimerResource  = areg::HashMap<TIMERHANDLE, areg::Timer *>;
-        using TimerResource     = areg::ConcurrentResourceMap<TIMERHANDLE, areg::Timer *, MapTimerResource>;
+        using MapTimerResource  = HashMap<TIMERHANDLE, Timer *>;
+        using TimerResource     = ConcurrentResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // Static members
@@ -127,7 +130,7 @@ namespace areg
          * \param   timer   The timer object that should be started
          * \return  Returns true if timer was successfully created.
          **/
-        static bool startTimer(areg::Timer &timer);
+        static bool startTimer(Timer &timer);
 
         /**
          * \brief   Starts the timer. If succeeds, returns true.
@@ -138,13 +141,13 @@ namespace areg
          *                      event should be dispatched.
          * \return  Returns true if timer was successfully created.
          **/
-        static bool startTimer(areg::Timer &timer, const areg::DispatcherThread & whichThread);
+        static bool startTimer(Timer &timer, const DispatcherThread & whichThread);
 
         /**
          * \brief   Stops the timer.
          * \param   timer   The timer object that should be stopped
          **/
-        static void stopTimer(areg::Timer &timer);
+        static void stopTimer(Timer &timer);
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -171,7 +174,7 @@ namespace areg
          * \brief   Automatically triggered when event is dispatched by timer thread
          * \param   data    The data object passed in event.
          **/
-        void processEvent( const areg::TimerManagerEventData & data) override;
+        void processEvent( const TimerManagerEventData & data) override;
 
     /************************************************************************/
     // DispatcherThread overrides
@@ -191,7 +194,7 @@ namespace areg
         /**
          * \brief   Called when expired timers should be processed.
          **/
-        void _processExpiredTimer(areg::Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes);
+        void _processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes);
 
         /**
          * \brief   Stops and removes all timers, i.e. unregisters all timers.
@@ -207,7 +210,7 @@ namespace areg
          * \param   whichThread The dispatcher thread, where the timer event should be dispatched.
          * \return  Returns true if succeeded to register timer in the map.
          **/
-        bool _registerTimer( areg::Timer & timer, const areg::DispatcherThread & whichThread );
+        bool _registerTimer( Timer & timer, const DispatcherThread & whichThread );
 
         /**
          * \brief   Registers timer in the timer resource map.
@@ -218,14 +221,14 @@ namespace areg
          * \param   whichThreadId   The dispatcher thread, where the timer event should be dispatched.
          * \return  Returns true if succeeded to register timer in the map.
          **/
-        bool _registerTimer( areg::Timer & timer, id_type whichThreadId );
+        bool _registerTimer( Timer & timer, id_type whichThreadId );
 
         /**
          * \brief   Unregisters timer manager in the timer resource map.
          *          Before unregistering timer, it stops and closes system timer.
          * \param   timer   The pointer to timer object that should be unregistered.
          **/
-        void _unregisterTimer( areg::Timer & timer );
+        void _unregisterTimer( Timer & timer );
 
     //////////////////////////////////////////////////////////////////////////
     //  OS specific hidden methods
@@ -252,7 +255,7 @@ namespace areg
          * \brief   macOS timer callback function. Triggered when one of timers is expired.
          * \param   timerPtr        The pointer to the TimerPosix object that expired.
          **/
-        static void _posixTimerExpiredRoutine( areg::os::TimerPosix* timerPtr );
+        static void _posixTimerExpiredRoutine( os::TimerPosix* timerPtr );
     #else   // !__APPLE__
         /**
          * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
@@ -269,7 +272,7 @@ namespace areg
          * \param   timer   The timer object.
          * \return  Returns true if system timer started with success.
          **/
-        static bool _osSystemTimerStart( areg::Timer& timer );
+        static bool _osSystemTimerStart( Timer& timer );
 
         /**
          * \brief   Stops previously started waitable timer.
