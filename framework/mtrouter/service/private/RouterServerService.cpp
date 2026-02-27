@@ -281,7 +281,7 @@ namespace mtrouter
         if ( mServiceRegistry.getServiceStatus(stub) != areg::ServiceConnectionState::Connected )
         {
             ListServiceProxies listProxies;
-            const ServiceStub & stubService = mServiceRegistry.registerServiceStub(stub, listProxies);
+            const mtrouter::ServiceStub & stubService = mServiceRegistry.registerServiceStub(stub, listProxies);
             if ( stubService.getServiceStatus() == areg::ServiceConnectionState::Connected && listProxies.isEmpty() == false )
             {
                 LOG_DBG("Stub [ %s ] is connected, sending notification messages to [ %d ] waiting proxies"
@@ -355,7 +355,7 @@ namespace mtrouter
         if ( mServiceRegistry.getServiceStatus(proxy) != areg::ServiceConnectionState::Connected )
         {
             ServiceProxy proxyService;
-            const ServiceStub & stubService   = mServiceRegistry.registerServiceProxy(proxy, proxyService);
+            const mtrouter::ServiceStub & stubService   = mServiceRegistry.registerServiceProxy(proxy, proxyService);
             const areg::StubAddress & addrStub      = stubService.getServiceAddress();
 
             LOG_DBG("Registered proxy [ %s ], for connection with stub [ %s ], connection status is [ %s ]"
@@ -462,7 +462,7 @@ namespace mtrouter
 
         areg::RemoteMessage msgRegisterProxy;
         ServiceProxy svcProxy;
-        const ServiceStub * svcStub     = nullptr;
+        const mtrouter::ServiceStub * svcStub     = nullptr;
 
         if (proxy.getSource() == cookie)
         {

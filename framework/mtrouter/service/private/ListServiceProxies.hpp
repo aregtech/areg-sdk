@@ -25,7 +25,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ServiceStub;
+namespace mtrouter { class ServiceStub; }
 using ListServiceProxiesBase = areg::LinkedList<ServiceProxy>;
 
 //////////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ public:
      * \return  If specified proxy address is valid, returns either existing or 
      *          new proxy service entry. Otherwise, returns invalid service object.
      **/
-    ServiceProxy & registerService( const areg::ProxyAddress & addrProxy, const ServiceStub & stubService );
+    ServiceProxy & registerService( const areg::ProxyAddress & addrProxy, const mtrouter::ServiceStub & stubService );
 
     /**
      * \brief   Unregisters and removes entry of proxy service with specified

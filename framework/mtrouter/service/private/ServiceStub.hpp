@@ -26,180 +26,209 @@
  ************************************************************************/
 namespace areg { class ProxyAddress; }
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceStub class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Stub service object to register at message router.
- **/
-class ServiceStub
+namespace mtrouter
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceStub class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default constructor, creates invalid Stub service object
+     * \brief   The Stub service object to register at message router.
      **/
-    ServiceStub();
+    class ServiceStub
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor, creates invalid Stub service object
+         **/
+        ServiceStub();
 
-    /**
-     * \brief   Initializes Stub address of remote service
-     * \param   addrStub    The Stub address to set.
-     **/
-    ServiceStub( const areg::StubAddress & addrStub );
+        /**
+         * \brief   Initializes Stub address of remote service
+         * \param   addrStub    The Stub address to set.
+         **/
+        ServiceStub( const areg::StubAddress & addrStub );
 
-    /**
-     * \brief   Initializes Stub address of remote service
-     * \param   addrStub    The Stub address to set.
-     **/
-    ServiceStub( areg::StubAddress && addrStub ) noexcept;
+        /**
+         * \brief   Initializes Stub address of remote service
+         * \param   addrStub    The Stub address to set.
+         **/
+        ServiceStub( areg::StubAddress && addrStub ) noexcept;
 
-    /**
-     * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
-     * \param   addrProxy   The Proxy address to extract information.
-     **/
-    explicit ServiceStub( const areg::ProxyAddress & addrProxy );
+        /**
+         * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
+         * \param   addrProxy   The Proxy address to extract information.
+         **/
+        explicit ServiceStub( const areg::ProxyAddress & addrProxy );
 
-    /**
-     * \brief   Copies Stub service data from given source.
-     * \param   stubService     The source of Stub service object to copy data.
-     **/
-    ServiceStub( const ServiceStub & stubService );
+        /**
+         * \brief   Copies Stub service data from given source.
+         * \param   stubService     The source of Stub service object to copy data.
+         **/
+        ServiceStub( const ServiceStub & stubService );
 
-    /**
-     * \brief   Copies Stub service data from given source.
-     * \param   stubService     The source of Stub service object to copy data.
-     **/
-    ServiceStub( ServiceStub && stubService ) noexcept;
+        /**
+         * \brief   Copies Stub service data from given source.
+         * \param   stubService     The source of Stub service object to copy data.
+         **/
+        ServiceStub( ServiceStub && stubService ) noexcept;
 
-    /**
-     * \brief   Initializes Service stub object by copying the service address data.
-     * \param   addrService     Service address that contains data to copy.
-     **/
-    explicit ServiceStub( const areg::ServiceAddress & addrService );
+        /**
+         * \brief   Initializes Service stub object by copying the service address data.
+         * \param   addrService     Service address that contains data to copy.
+         **/
+        explicit ServiceStub( const areg::ServiceAddress & addrService );
 
-    /**
-     * \brief   Initializes Service stub object by moving the service address data.
-     * \param   addrService     Service address that contains data to move.
-     **/
-    explicit ServiceStub( areg::ServiceAddress && addrService );
+        /**
+         * \brief   Initializes Service stub object by moving the service address data.
+         * \param   addrService     Service address that contains data to move.
+         **/
+        explicit ServiceStub( areg::ServiceAddress && addrService );
 
-    /**
-     * \brief   Destructor
-     **/
-    ~ServiceStub() = default;
+        /**
+         * \brief   Destructor
+         **/
+        ~ServiceStub() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Copies Stub address data from given source
-     * \param   addrStub    The Stub address data to copy
-     **/
-    ServiceStub & operator = ( const areg::StubAddress & addrStub );
+        /**
+         * \brief   Copies Stub address data from given source
+         * \param   addrStub    The Stub address data to copy
+         **/
+        ServiceStub & operator = ( const areg::StubAddress & addrStub );
 
-    /**
-     * \brief   Moves Stub address data from given source.
-     * \param   addrStub    The Stub address data to move.
-     **/
-    ServiceStub & operator = ( areg::StubAddress && addrStub ) noexcept;
+        /**
+         * \brief   Moves Stub address data from given source.
+         * \param   addrStub    The Stub address data to move.
+         **/
+        ServiceStub & operator = ( areg::StubAddress && addrStub ) noexcept;
 
-    /**
-     * \brief   Creates and copies Stub address data out of Proxy address.
-     * \param   addrProxy   The Proxy address to generate Stub address information
-     **/
-    ServiceStub & operator = ( const areg::ProxyAddress & addrProxy );
+        /**
+         * \brief   Creates and copies Stub address data out of Proxy address.
+         * \param   addrProxy   The Proxy address to generate Stub address information
+         **/
+        ServiceStub & operator = ( const areg::ProxyAddress & addrProxy );
 
-    /**
-     * \brief   Copies data from given source
-     * \param   stubService The source of Stub service to copy data.
-     **/
-    ServiceStub & operator = ( const ServiceStub & stubService );
+        /**
+         * \brief   Copies data from given source
+         * \param   stubService The source of Stub service to copy data.
+         **/
+        ServiceStub & operator = ( const ServiceStub & stubService );
 
-    /**
-     * \brief   Moves data from given source
-     * \param   stubService The source of Stub service to move data.
-     **/
-    ServiceStub & operator = ( ServiceStub && stubService ) noexcept;
+        /**
+         * \brief   Moves data from given source
+         * \param   stubService The source of Stub service to move data.
+         **/
+        ServiceStub & operator = ( ServiceStub && stubService ) noexcept;
 
-    /**
-     * \brief   Checks equality of address set in Service and given Stub address
-     * \param   addrStub    The address of Stub to check
-     **/
-    bool operator == ( const areg::StubAddress & addrStub ) const;
+        /**
+         * \brief   Checks equality of address set in Service and given Stub address
+         * \param   addrStub    The address of Stub to check
+         **/
+        bool operator == ( const areg::StubAddress & addrStub ) const;
 
-    /**
-     * \brief   Checks equality of Stub address set in service and Proxy address.
-     *          Stub and Proxy addresses are equal if they are compatible.
-     * \param   addrProxy   The Proxy address to check.
-     **/
-    bool operator == ( const areg::ProxyAddress & addrProxy ) const;
+        /**
+         * \brief   Checks equality of Stub address set in service and Proxy address.
+         *          Stub and Proxy addresses are equal if they are compatible.
+         * \param   addrProxy   The Proxy address to check.
+         **/
+        bool operator == ( const areg::ProxyAddress & addrProxy ) const;
 
-    /**
-     * \brief   Check equality of Stub service objects.
-     * \param   stubService The Stub service object to check equality.
-     **/
-    bool operator == ( const ServiceStub & stubService ) const;
+        /**
+         * \brief   Check equality of Stub service objects.
+         * \param   stubService The Stub service object to check equality.
+         **/
+        bool operator == ( const ServiceStub & stubService ) const;
 
-    /**
-     * \brief   Coverts data of Stub service object into 32-bit integer value.
-     **/
-    explicit operator uint32_t () const;
+        /**
+         * \brief   Coverts data of Stub service object into 32-bit integer value.
+         **/
+        explicit operator uint32_t () const;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations and attributes
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Operations and attributes
+    //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Returns true if connection status of Stub service is connected
-     **/
-    inline bool isConnected() const;
+        /**
+         * \brief   Returns true if connection status of Stub service is connected
+         **/
+        inline bool isConnected() const;
 
-    /**
-     * \brief   Returns true if connection status of Stub service is pending
-     **/
-    inline bool isWaiting() const;
+        /**
+         * \brief   Returns true if connection status of Stub service is pending
+         **/
+        inline bool isWaiting() const;
 
-    /**
-     * \brief   Returns the current connection status of Stub service
-     **/
-    inline areg::ServiceConnectionState getServiceStatus() const;
+        /**
+         * \brief   Returns the current connection status of Stub service
+         **/
+        inline areg::ServiceConnectionState getServiceStatus() const;
 
-    /**
-     * \brief   Returns Stub remote address of service
-     **/
-    inline const areg::StubAddress & getServiceAddress() const;
+        /**
+         * \brief   Returns Stub remote address of service
+         **/
+        inline const areg::StubAddress & getServiceAddress() const;
 
-    /**
-     * \brief   Returns true if Stub service object is valid.
-     **/
-    bool isValid() const;
+        /**
+         * \brief   Returns true if Stub service object is valid.
+         **/
+        bool isValid() const;
 
-    /**
-     * \brief   Sets new connection status of Stub service
-     **/
-    void setServiceStatus( areg::ServiceConnectionState newStatus );
+        /**
+         * \brief   Sets new connection status of Stub service
+         **/
+        void setServiceStatus( areg::ServiceConnectionState newStatus );
 
-    /**
-     * \brief   Sets service data. Sets Stub address and connection status.
-     * \param   addrStub        The address of remote Stub to set.
-     * \param   connectStatus   The connection status to set.
-     **/
-    void setService( const areg::StubAddress & addrStub, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Connected );
+        /**
+         * \brief   Sets service data. Sets Stub address and connection status.
+         * \param   addrStub        The address of remote Stub to set.
+         * \param   connectStatus   The connection status to set.
+         **/
+        void setService( const areg::StubAddress & addrStub, areg::ServiceConnectionState connectStatus = areg::ServiceConnectionState::Connected );
 
-private:
-    /**
-     * \brief   The address of remote Stub
-     **/
-    areg::StubAddress                     mStubAddress;
-    /**
-     * \brief   The connection status of service.
-     **/
-    areg::ServiceConnectionState   mConnectStatus;
-};
+    private:
+        /**
+         * \brief   The address of remote Stub
+         **/
+        areg::StubAddress                     mStubAddress;
+        /**
+         * \brief   The connection status of service.
+         **/
+        areg::ServiceConnectionState   mConnectStatus;
+    };
+
+
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceStub class inline function implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    inline bool ServiceStub::isConnected() const
+    {
+        return ( mConnectStatus == areg::ServiceConnectionState::Connected );
+    }
+
+    inline bool ServiceStub::isWaiting() const
+    {
+        return ( mConnectStatus == areg::ServiceConnectionState::Pending );
+    }
+
+    inline areg::ServiceConnectionState ServiceStub::getServiceStatus() const
+    {
+        return mConnectStatus;
+    }
+
+    inline const areg::StubAddress & ServiceStub::getServiceAddress() const
+    {
+        return mStubAddress;
+    }
+
+} // namespace mtrouter
 
 //////////////////////////////////////////////////////////////////////////
 // Hasher of ServiceStub class
@@ -210,48 +239,23 @@ private:
 namespace std
 {
     //! Calculates the hash value of the ServiceStub object
-    template<> struct hash<ServiceStub>
+    template<> struct hash<mtrouter::ServiceStub>
     {
         //! A function to convert ServiceStub object to uint32_t.
-        inline uint32_t operator()(const ServiceStub& key) const
+        inline uint32_t operator()(const mtrouter::ServiceStub& key) const
         {
             return static_cast<uint32_t>(static_cast<const areg::ServiceAddress &>(key.getServiceAddress()));
         }
     };
 
     //!< Compares 2 ServiceStub objects
-    template<> struct equal_to<ServiceStub>
+    template<> struct equal_to<mtrouter::ServiceStub>
     {
         //! A function operator to compare 2 StubAddress objects.
-        inline bool operator() (const ServiceStub& key1, const ServiceStub& key2) const
+        inline bool operator() (const mtrouter::ServiceStub& key1, const mtrouter::ServiceStub& key2) const
         {
             return static_cast<const areg::ServiceAddress&>(key1.getServiceAddress()) == static_cast<const areg::ServiceAddress&>(key2.getServiceAddress());
         }
     };
 }
-
-//////////////////////////////////////////////////////////////////////////
-// ServiceStub class inline function implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline bool ServiceStub::isConnected() const
-{
-    return ( mConnectStatus == areg::ServiceConnectionState::Connected );
-}
-
-inline bool ServiceStub::isWaiting() const
-{
-    return ( mConnectStatus == areg::ServiceConnectionState::Pending );
-}
-
-inline areg::ServiceConnectionState ServiceStub::getServiceStatus() const
-{
-    return mConnectStatus;
-}
-
-inline const areg::StubAddress & ServiceStub::getServiceAddress() const
-{
-    return mStubAddress;
-}
-
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICESTUB_HPP

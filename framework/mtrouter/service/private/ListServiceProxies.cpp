@@ -42,7 +42,7 @@ ServiceProxy & ListServiceProxies::registerService( const areg::ProxyAddress & a
     return static_cast<ServiceProxy &>(valueAtPosition(pos));
 }
 
-ServiceProxy & ListServiceProxies::registerService(const areg::ProxyAddress & addrProxy, const ServiceStub & stubService)
+ServiceProxy & ListServiceProxies::registerService(const areg::ProxyAddress & addrProxy, const mtrouter::ServiceStub & stubService)
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
     if (isInvalidPosition(pos))

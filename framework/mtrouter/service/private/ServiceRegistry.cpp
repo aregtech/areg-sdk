@@ -32,7 +32,7 @@ DEF_LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
 // ServiceRegistry statics
 //////////////////////////////////////////////////////////////////////////
 
-const ServiceStub         ServiceRegistry::InvalidStubService;
+const mtrouter::ServiceStub         ServiceRegistry::InvalidStubService;
 
 const ListServiceProxies  ServiceRegistry::EmptyProxiesList;
 
@@ -42,7 +42,7 @@ const ListServiceProxies  ServiceRegistry::EmptyProxiesList;
 
 bool ServiceRegistry::isServiceRegistered(const areg::StubAddress & addrStub) const
 {
-    return contains(ServiceStub(addrStub));
+    return contains(mtrouter::ServiceStub(addrStub));
 }
 
 bool ServiceRegistry::isServiceRegistered(const areg::ProxyAddress & addrProxy) const
@@ -50,7 +50,7 @@ bool ServiceRegistry::isServiceRegistered(const areg::ProxyAddress & addrProxy) 
     return getProxyServiceList( static_cast<const areg::ServiceAddress &>(addrProxy) ).isServiceRegistered(addrProxy);
 }
 
-const ServiceStub & ServiceRegistry::getStubService( const areg::ServiceAddress & addrService ) const
+const mtrouter::ServiceStub & ServiceRegistry::getStubService( const areg::ServiceAddress & addrService ) const
 {
     MAPPOS pos = findService( addrService );
     return ( isValidPosition(pos) ? keyAtPosition(pos) : ServiceRegistry::InvalidStubService);
@@ -77,13 +77,13 @@ areg::ServiceConnectionState ServiceRegistry::getServiceStatus(const areg::Proxy
     return getProxyService(addrProxy).getServiceStatus();
 }
 
-const ServiceStub & ServiceRegistry::registerServiceProxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
+const mtrouter::ServiceStub & ServiceRegistry::registerServiceProxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceProxy);
-    std::pair<MAPPOS, bool> pos = addIfUnique(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
+    std::pair<MAPPOS, bool> pos = addIfUnique(mtrouter::ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
 
-    const ServiceStub & result = keyAtPosition(pos.first);
+    const mtrouter::ServiceStub & result = keyAtPosition(pos.first);
     ListServiceProxies& proxies = valueAtPosition(pos.first);
     if ( pos.second )
     {
@@ -104,14 +104,14 @@ const ServiceStub & ServiceRegistry::registerServiceProxy(const areg::ProxyAddre
     return result;
 }
 
-const ServiceStub & ServiceRegistry::unregisterServiceProxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
+const mtrouter::ServiceStub & ServiceRegistry::unregisterServiceProxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceProxy);
 
     MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrProxy) );
     if ( isValidPosition(pos) )
     {
-        const ServiceStub & stub = keyAtPosition(pos);
+        const mtrouter::ServiceStub & stub = keyAtPosition(pos);
         ListServiceProxies & proxies = valueAtPosition(pos);
         out_proxyService = proxies.unregisterService(addrProxy);
         if ( proxies.isEmpty() && (stub.isValid() == false) )
@@ -140,13 +140,13 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const areg::ProxyAdd
     return (isValidPosition( pos ) ? keyAtPosition( pos ) : ServiceRegistry::InvalidStubService);
 }
 
-const ServiceStub & ServiceRegistry::registerServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const mtrouter::ServiceStub & ServiceRegistry::registerServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceStub);
 
-    std::pair<MAPPOS, bool> pos = addIfUnique( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
+    std::pair<MAPPOS, bool> pos = addIfUnique( mtrouter::ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
-    ServiceStub& result = keyAtPosition(pos.first);
+    mtrouter::ServiceStub& result = keyAtPosition(pos.first);
     ListServiceProxies& proxies = valueAtPosition(pos.first);
 
     if ( pos.second )
@@ -171,14 +171,14 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const areg::StubAddress
     return result;
 }
 
-const ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
+const mtrouter::ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceStub);
 
     MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrStub) );
     if ( isValidPosition(pos) )
     {
-        ServiceStub & stub = keyAtPosition(pos);
+        mtrouter::ServiceStub & stub = keyAtPosition(pos);
         ListServiceProxies & proxies = valueAtPosition(pos);
 
         stub.setServiceStatus( areg::ServiceConnectionState::Pending );
@@ -211,7 +211,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddre
 
 ServiceRegistry::MAPPOS ServiceRegistry::findService( const areg::ServiceAddress & addrService ) const
 {
-    return find(ServiceStub(addrService));
+    return find(mtrouter::ServiceStub(addrService));
 }
 
 void ServiceRegistry::getServiceList(const ITEM_ID & cookie , areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const
@@ -221,7 +221,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , areg::ArrayList<ar
 
     for (ServiceRegistryBase::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
-        const ServiceStub & svcStub  = keyAtPosition(posMap);
+        const mtrouter::ServiceStub & svcStub  = keyAtPosition(posMap);
         const areg::StubAddress & addrStub = svcStub.getServiceAddress();
         const ListServiceProxies & listProxies = valueAtPosition(posMap);
 
@@ -273,7 +273,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, areg::ArrayList<
 
     for (ServiceRegistry::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
     {
-        const ServiceStub & svcStub  = keyAtPosition(posMap);
+        const mtrouter::ServiceStub & svcStub  = keyAtPosition(posMap);
         const areg::StubAddress & addrStub = svcStub.getServiceAddress();
         const ListServiceProxies & listProxies = valueAtPosition(posMap);
 
@@ -307,7 +307,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, areg::ArrayList<
     }
 }
 
-const ServiceStub & ServiceRegistry::disconnectProxy(const areg::ProxyAddress & addrProxy)
+const mtrouter::ServiceStub & ServiceRegistry::disconnectProxy(const areg::ProxyAddress & addrProxy)
 {
     LOG_SCOPE(mtrouter_service_private_ServiceRegistry_disconnectProxy);
     MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrProxy) );
