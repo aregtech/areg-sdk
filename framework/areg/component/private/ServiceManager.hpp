@@ -66,7 +66,7 @@ namespace areg { class ServiceResponseEvent; }
  *          which should be called before any model is loaded.
  **/
 class ServiceManager    : private   areg::DispatcherThread
-                        , private   ServiceManagerEventConsumer
+                        , private   areg::ServiceManagerEventConsumer
                         , private   areg::ConnectionConsumer
                         , private   areg::RegistrationConsumer
 {
@@ -310,7 +310,7 @@ private:
      *                  default constructor and assigning operator.
      *                  This object is not used for IPC.
      **/
-    void processEvent( const ServiceManagerEventData & data ) override;
+    void processEvent( const areg::ServiceManagerEventData & data ) override;
 
 /************************************************************************/
 // EventRouter Interface overrides.

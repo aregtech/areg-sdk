@@ -44,7 +44,7 @@ namespace areg { class Channel; }
 namespace areg
 {
     /**
-     * \brief   areg::ConnectionType
+     * \brief   ConnectionType
      *          Remote services connection types.
      **/
     enum class ConnectionType   : uint32_t
@@ -57,7 +57,7 @@ namespace areg
     };
 
     /**
-     * \brief   areg::RemoteServiceKind
+     * \brief   RemoteServiceKind
      *          Remote services
      **/
     enum class RemoteServiceKind : uint32_t
@@ -77,7 +77,7 @@ namespace areg
     };
 
     /**
-     * \brief   areg::DEFAULT_REMOTE_SERVICE_ENABLED
+     * \brief   DEFAULT_REMOTE_SERVICE_ENABLED
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
      **/
@@ -86,92 +86,92 @@ namespace areg
     /**
      * \brief   Returns fixed predefined message to start server connection
      **/
-    AREG_API const areg::RawMessage & getMessageHelloServer();
+    AREG_API const RawMessage & getMessageHelloServer();
 
     /**
      * \brief   Returns fixed predefined message to stop server connection
      **/
-    AREG_API const areg::RawMessage & getMessageByeServer();
+    AREG_API const RawMessage & getMessageByeServer();
 
     /**
      * \brief   Returns fixed message to notify client connection statuses such as
      *          connection accepted, connection rejected and connection is closed.
      **/
-    AREG_API const areg::RawMessage & getMessageNotifyClientConnection();
+    AREG_API const RawMessage & getMessageNotifyClientConnection();
 
     /**
      * \brief   Returns fixed message to start service registration
      **/
-    AREG_API const areg::RawMessage & getMessageRegisterService();
+    AREG_API const RawMessage & getMessageRegisterService();
 
     /**
      * \brief   Returns fixed message to query service the connected instances. Only log observers can query.
      **/
-    AREG_API const areg::RawMessage & getMessageQueryInstances();
+    AREG_API const RawMessage & getMessageQueryInstances();
 
     /**
      * \brief   Returns fixed message to notify log observers the connected instances. Only log observers receive the message.
      **/
-    AREG_API const areg::RawMessage & getMessageNotifyInstances();
+    AREG_API const RawMessage & getMessageNotifyInstances();
 
     /**
      * \brief   Returns fixed message to register notification
      **/
-    AREG_API const areg::RawMessage & getMessageRegisterNotify();
+    AREG_API const RawMessage & getMessageRegisterNotify();
 
     /**
-     * \brief   areg::CreateConnectRequest
+     * \brief   CreateConnectRequest
      *          Initializes and returns connection request message.
      * \param   source      The iD of the source that generates and sends the message.
      * \param   target      The ID of the target to send the connect message request.
      * \param   msgSource   The message source of the application to connect to service
      **/
-    AREG_API areg::RemoteMessage createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, areg::MessageSource msgSource);
+    AREG_API RemoteMessage createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, MessageSource msgSource);
 
     /**
-     * \brief   areg::CreateDisconnectRequest
+     * \brief   CreateDisconnectRequest
      *          Initializes and returns disconnect request message.
      * \param   source  The ID of the source that sends the disconnect message request.
      * \param   target  The ID of the target to send the disconnect message request.
      **/
-    AREG_API areg::RemoteMessage createDisconnectRequest( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API RemoteMessage createDisconnectRequest( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
-     * \brief   areg::CreateConnectNotify
+     * \brief   CreateConnectNotify
      *          Initializes and returns connection available notification message
      * \param   source  The ID of the source that sends the connect notification message.
      * \param   target  The ID of the target to send the connect notification message.
      **/
-    AREG_API areg::RemoteMessage createConnectNotify( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API RemoteMessage createConnectNotify( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
-     * \brief   areg::CreateRejectNotify
+     * \brief   CreateRejectNotify
      *          Initializes and returns connection rejected message
      * \param   source  The ID of the source that sends the connection rejected message.
      * \param   target  The ID of the target to send the connection rejected message.
      **/
-    AREG_API areg::RemoteMessage createRejectNotify( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API RemoteMessage createRejectNotify( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
-     * \brief   areg::CreateDisconnectNotify
+     * \brief   CreateDisconnectNotify
      *          Initializes and returns disconnect notification message sent by server to clients.
      * \param   source  The ID of the source that sends the disconnect notification message.
      * \param   target  The ID of the target to send the disconnect notification message.
      **/
-    AREG_API areg::RemoteMessage createDisconnectNotify( const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API RemoteMessage createDisconnectNotify( const ITEM_ID & source, const ITEM_ID & target );
 
     /**
-     * \brief   areg::createRouterRegisterService
+     * \brief   createRouterRegisterService
      *          Initializes and returns message to register Stub at the router.
      * \param   stub    The address of remote Stub service, which is registering.
      * \param   source  The ID of the source that sends the request message to register service provider.
      * \param   target  The ID of the target to send the request message to register service provider.
      * \see     createRouterUnregisterService
      **/
-    AREG_API areg::RemoteMessage createRouterRegisterService( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createRouterRegisterService( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
-     * \brief   areg::createRouterUnregisterService
+     * \brief   createRouterUnregisterService
      *          Initializes and returns message to unregister Stub at the router.
      * \param   stub    The address of remote Stub service, which is registering.
      * \param   reason  The unregister / disconnect reason.
@@ -179,20 +179,20 @@ namespace areg
      * \param   target  The ID of the target to send the request message to unregister service provider.
      * \see     createRouterRegisterService
      **/
-    AREG_API areg::RemoteMessage createRouterUnregisterService( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
-     * \brief   areg::createRouterRegisterClient
+     * \brief   createRouterRegisterClient
      *          Initializes and returns message to register Proxy at the router.
      * \param   proxy   The address of remote Proxy, which is registering.
      * \param   source  The ID of the source that sends the request message to register service consumer.
      * \param   target  The ID of the target to send the request message to register service consumer.
      * \see     createRouterUnregisterClient
      **/
-    AREG_API areg::RemoteMessage createRouterRegisterClient( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API RemoteMessage createRouterRegisterClient( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target );
 
     /**
-     * \brief   areg::createRouterUnregisterClient
+     * \brief   createRouterUnregisterClient
      *          Initializes and returns message to unregister Proxy at the router.
      * \param   proxy   The address of remote Proxy, which is registering.
      * \param   reason  The unregister / disconnect reason.
@@ -200,20 +200,20 @@ namespace areg
      * \param   target  The ID of the target to send the request message to unregister service consumer.
      * \see     createRouterRegisterClient
      **/
-    AREG_API areg::RemoteMessage createRouterUnregisterClient( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
-     * \brief   areg::createServiceRegisteredNotification
+     * \brief   createServiceRegisteredNotification
      *          Initializes and returns Stub available notification message to broadcast.
      * \param   stub    The address of remote Stub to notify registering.
      * \param   source  The ID of the source that sends the service provider is registered notification message.
      * \param   target  The ID of the target to send the service provider is registered notification message.
      * \see     createServiceUnregisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceRegisteredNotification( const areg::StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
+    AREG_API RemoteMessage createServiceRegisteredNotification( const StubAddress & stub, const ITEM_ID & source, const ITEM_ID & target );
 
     /**
-     * \brief   areg::createServiceUnregisteredNotification
+     * \brief   createServiceUnregisteredNotification
      *          Initializes and returns Stub unavailable notification message to broadcast.
      * \param   stub    The address of remote Stub to notify unregistering.
      * \param   reason  The unregister / disconnect reason.
@@ -221,20 +221,20 @@ namespace areg
      * \param   target  The ID of the target to send the service provider is unregistered notification message.
      * \see     createServiceRegisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceUnregisteredNotification( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
-     * \brief   areg::createServiceClientRegisteredNotification
+     * \brief   createServiceClientRegisteredNotification
      *          Initializes and returns Proxy available notification message to broadcast.
      * \param   proxy   The address of remote Proxy to notify registering.
      * \param   source  The ID of the source that sends the service consumer is registered notification message.
      * \param   target  The ID of the target to send the service consumer is registered notification message.
      * \see     createServiceClientUnregisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceClientRegisteredNotification( const areg::ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createServiceClientRegisteredNotification( const ProxyAddress & proxy, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
-     * \brief   areg::createServiceClientUnregisteredNotification
+     * \brief   createServiceClientUnregisteredNotification
      *          Initializes and returns Proxy unavailable notification message to broadcast.
      * \param   proxy   The address of remote Proxy to notify unregistering.
      * \param   reason  The unregister / disconnect reason.
@@ -242,46 +242,48 @@ namespace areg
      * \param   target  The ID of the target to send the service consumer is unregistered notification message.
      * \see     createServiceClientRegisteredNotification
      **/
-    AREG_API areg::RemoteMessage createServiceClientUnregisteredNotification( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, DisconnectReason reason, const ITEM_ID & source, const ITEM_ID & target);
 
     /**
-     * \brief   areg::isMessageHelloServer
+     * \brief   isMessageHelloServer
      *          Checks whether specified message is a connect request.
      * \param   msgHelloServer      The instance of remote message to check.
      * \return  Returns true if the message is connect request.
      **/
-    AREG_API bool isMessageHelloServer( const areg::RemoteMessage & msgHelloServer );
+    AREG_API bool isMessageHelloServer( const RemoteMessage & msgHelloServer );
 
     /**
-     * \brief   areg::isMessageByeServer
+     * \brief   isMessageByeServer
      *          Checks whether specified message is a disconnect request.
      * \param   msgByeServer        The instance of remote message to check.
      * \return  Returns true if the message is disconnect request.
      **/
-    AREG_API bool isMessageByeServer( const areg::RemoteMessage & msgByeServer );
+    AREG_API bool isMessageByeServer( const RemoteMessage & msgByeServer );
 
     /**
-     * \brief   areg::isMessagNotifyClient
+     * \brief   isMessagNotifyClient
      *          Checks whether specified message is client notification request.
      * \param   msgNotifyClient     The instance of remote message to check.
      * \return  Returns true if the message is a client notification request.
      **/
-    AREG_API bool isMessagNotifyClient( const areg::RemoteMessage & msgNotifyClient );
+    AREG_API bool isMessagNotifyClient( const RemoteMessage & msgNotifyClient );
 
     /**
-     * \brief   areg::isMessageRegisterService
+     * \brief   isMessageRegisterService
      *          Checks whether specified message is service notification request.
      * \param   msgRegisterService  The instance of remote message to check.
      * \return  Returns true if the message is a service notification request.
      **/
-    AREG_API bool isMessageRegisterService( const areg::RemoteMessage & msgRegisterService );
+    AREG_API bool isMessageRegisterService( const RemoteMessage & msgRegisterService );
+
+    //////////////////////////////////////////////////////////////////////////
+    // Make RemoteServiceKind and ConnectionType streamable
+    //////////////////////////////////////////////////////////////////////////
+    AREG_IMPLEMENT_STREAMABLE(RemoteServiceKind);
+    AREG_IMPLEMENT_STREAMABLE(ConnectionType);
+    AREG_IMPLEMENT_STREAMABLE(RemoteConnectionState);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Make RemoteServiceKind and ConnectionType streamable
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_STREAMABLE(areg::RemoteServiceKind);
-AREG_IMPLEMENT_STREAMABLE(areg::ConnectionType);
-AREG_IMPLEMENT_STREAMABLE(areg::RemoteConnectionState);
+
 
 #endif  // AREG_IPC_REMOTESERVICEDEFS_HPP

@@ -48,14 +48,14 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 {
 }
 
-void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
+void ServiceManagerEventProcessor::processServiceEvent(   areg::ServiceManagerEventData::ServiceManagerCommand cmdService
                                                         , const areg::InStream& stream
                                                         , areg::ConnectionProvider& connectProvider
                                                         , areg::RegistrationProvider& registerProvider )
 {
     switch ( cmdService )
     {
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
         {
             mServerList.clear( );
             connectProvider.disconnectServiceHost( );
@@ -64,7 +64,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
         {
             for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
             {
@@ -89,7 +89,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
         {
             areg::ProxyAddress  addrProxy;
             areg::Channel       channel;
@@ -100,7 +100,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
         {
             areg::ProxyAddress  addrProxy;
             areg::Channel       channel;
@@ -113,7 +113,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
         {
             areg::StubAddress   addrstub;
             areg::Channel       channel;
@@ -124,7 +124,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
         {
             areg::StubAddress   addrstub;
             areg::Channel       channel;
@@ -137,7 +137,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
         {
             areg::RemoteServiceKind service{ areg::RemoteServiceKind::Unknown };
             uint32_t connectTypes{ static_cast<uint32_t>(areg::ConnectionType::Undefined) };
@@ -148,7 +148,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
         {
             areg::RemoteServiceKind service{ areg::RemoteServiceKind::Unknown };
             uint32_t connectTypes{ static_cast<uint32_t>(areg::ConnectionType::Undefined) };
@@ -162,7 +162,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
         {
             areg::String   ipAddress;
             uint16_t portNr = 0;
@@ -177,13 +177,13 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
         {
             connectProvider.disconnectServiceHost( );
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
         {
             for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
             {
@@ -207,8 +207,8 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
         {
             // Create service provider and service consumer list
             // to be able to unregister entries, because they are removing
@@ -236,7 +236,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             }
 
             areg::DisconnectReason reason { areg::DisconnectReason::ProviderDisconnected };
-            if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection )
+            if ( cmdService == areg::ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection )
             {
                 reason = areg::DisconnectReason::ServiceLost;
             }
@@ -253,7 +253,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
         {
             areg::String threadName;
             stream >> threadName;
@@ -264,7 +264,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
         }
         break;
 
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
+    case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
         {
             areg::String threadName;
             stream >> threadName;
