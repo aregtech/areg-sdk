@@ -109,9 +109,9 @@ namespace areg
         return result;
     }
 
-    SessionID StubBase::unblockCurrentRequest()
+    areg::SessionID StubBase::unblockCurrentRequest()
     {
-        SessionID result = StubBase::INVALID_SESSION_ID;
+        areg::SessionID result = StubBase::INVALID_SESSION_ID;
         StubBase::Listener listener;
         if (mListListener.isValidPosition(mCurrListener) )
         {
@@ -124,7 +124,7 @@ namespace areg
         return result;
     }
 
-    bool StubBase::prepareResponse( SessionID sessionId )
+    bool StubBase::prepareResponse( areg::SessionID sessionId )
     {
         bool result{ false };
         StubBase::Listener listener;

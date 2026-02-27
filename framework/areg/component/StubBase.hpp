@@ -29,10 +29,6 @@
 
 #include <utility>
 
-/************************************************************************
- * Definition of Session ID. Used when unblocking request
- ************************************************************************/
-using SessionID = uint32_t;
 
 /************************************************************************
  * Dependencies
@@ -48,6 +44,12 @@ namespace areg { class RemoteEventFactory; }
 
 namespace areg
 {
+    
+    /************************************************************************
+     * Definition of Session ID. Used when unblocking request
+     ************************************************************************/
+    using SessionID = uint32_t;
+    
     //////////////////////////////////////////////////////////////////////////
     // StubBase class declaration
     //////////////////////////////////////////////////////////////////////////
@@ -71,7 +73,7 @@ namespace areg
         /**
          * \brief   Constant. Defines Invalid Session ID
          **/
-        static constexpr SessionID      INVALID_SESSION_ID  { static_cast<SessionID>(~0) };
+        static constexpr areg::SessionID      INVALID_SESSION_ID  { static_cast<areg::SessionID>(~0) };
 
         /**
          * \brief   Constant. Defines Invalid Message ID
@@ -299,7 +301,7 @@ namespace areg
          *          The caller of this function should save Session ID
          *          for later use to prepare response.
          **/
-        virtual SessionID unblockCurrentRequest();
+        virtual areg::SessionID unblockCurrentRequest();
 
         /**
          * \brief   By given unique Session ID, prepares response to send.
@@ -308,7 +310,7 @@ namespace areg
          * \return  Return true if specified session exist in the list.
          *          Otherwise, return false.
          **/
-        virtual bool prepareResponse(SessionID sessionId);
+        virtual bool prepareResponse(areg::SessionID sessionId);
 
         /**
          * \brief   Triggered when proxy client either connected or disconnected to stub.
