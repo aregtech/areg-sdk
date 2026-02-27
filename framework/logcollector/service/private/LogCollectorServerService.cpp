@@ -46,7 +46,7 @@ namespace logcollector
         areg::Lock lock(mLock);
 
         aregext::ServiceCommunicationBase::addInstance(cookie, instance);
-        if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
+        if (logcollector::LogCollectorMessageProcessor::isLogSource(instance.ciSource))
         {
             areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
             areg::String::formatString( logMsgHello.logMessage
@@ -60,7 +60,7 @@ namespace logcollector
 
             mLoggerProcessor.notifyConnectedInstances(getInstances(), areg::TARGET_ALL);
         }
-        else if (LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
+        else if (logcollector::LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
         {
             mObservers.addIfUnique(cookie, instance);
         }
@@ -76,7 +76,7 @@ namespace logcollector
         aregext::ServiceCommunicationBase::removeInstance(cookie);
    
         mLoggerProcessor.clientDisconnected(cookie);
-        if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
+        if (exists && logcollector::LogCollectorMessageProcessor::isLogSource(instance.ciSource))
         {
             areg::LogEntry logMsgBye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
             areg::String::formatString(logMsgBye.logMessage
@@ -91,7 +91,7 @@ namespace logcollector
             listIds.add(instance.ciCookie);
             mLoggerProcessor.notifyDisconnectedInstances(listIds, areg::TARGET_ALL);
         }
-        else if (LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
+        else if (logcollector::LogCollectorMessageProcessor::isLogObserver(instance.ciSource))
         {
             mObservers.removeAt(cookie);
         }
@@ -108,7 +108,7 @@ namespace logcollector
             areg::ArrayList<ITEM_ID> listIds;
             for (const auto& entry : getInstances().getData())
             {
-                if (LogCollectorMessageProcessor::isLogSource(entry.second.ciSource))
+                if (logcollector::LogCollectorMessageProcessor::isLogSource(entry.second.ciSource))
                 {
                     listIds.add(entry.second.ciCookie);
                 }

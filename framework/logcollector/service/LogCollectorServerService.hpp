@@ -41,7 +41,7 @@ namespace logcollector
     //////////////////////////////////////////////////////////////////////////
     // Friend classes to access internals
     //////////////////////////////////////////////////////////////////////////
-        friend class ::LogCollectorMessageProcessor;
+        friend class logcollector::LogCollectorMessageProcessor;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal constants
@@ -195,7 +195,7 @@ namespace logcollector
     //////////////////////////////////////////////////////////////////////////////
     private:
         //!< The Log Collector message processor
-        LogCollectorMessageProcessor    mLoggerProcessor;
+        logcollector::LogCollectorMessageProcessor    mLoggerProcessor;
         //!< List of log observers (log viewers)
         areg::MapInstances         mObservers;
         //!< The timer used when trigger multiple requests to save configuration.
