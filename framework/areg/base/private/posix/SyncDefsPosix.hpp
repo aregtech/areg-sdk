@@ -73,7 +73,7 @@ namespace areg::os
     /**
      * \brief   Returns string value of areg::os::ResetMode
      **/
-    inline const char * getString(areg::os::ResetMode val);
+    inline const char * getString(ResetMode val);
 
     /**
      * \brief   areg::os::WaitCondition
@@ -88,7 +88,7 @@ namespace areg::os
     /**
      * \brief   Returns string value of areg::os::WaitCondition
      **/
-    inline const char * getString(areg::os::WaitCondition val);
+    inline const char * getString(WaitCondition val);
 
     /**
      * \brief   areg::os::SyncKind
@@ -108,7 +108,7 @@ namespace areg::os
     /**
      * \brief   Returns string value of areg::os::SyncKind
      **/
-    inline const char * getString(areg::os::SyncKind val);
+    inline const char * getString(SyncKind val);
 
     /**
      * \brief   Calculates the timeout value starting from now.

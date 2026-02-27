@@ -39,7 +39,7 @@ namespace areg::os
      *          signaled. This object cannot be directly instantiated.
      *          Instead, instantiate one of child classes.
      **/
-    class WaitablePosix : public areg::os::MutexPosix
+    class WaitablePosix : public MutexPosix
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -49,7 +49,7 @@ namespace areg::os
          * \brief   Protected instantiation constructor. Call to set the synchronization
          *          object type, recursive flag and the name.
          **/
-        WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
+        WaitablePosix( SyncKind syncType, bool isRecursive, const char* asciiName = nullptr );
 
     public:
         /**

@@ -50,14 +50,14 @@ namespace areg
 
     void _osCloseSocket(SOCKETHANDLE hSocket)
     {
-        ASSERT(hSocket != areg::InvalidSocketHandle);
+        ASSERT(hSocket != InvalidSocketHandle);
         ::shutdown(hSocket, SHUT_RDWR);
         ::close(hSocket);
     }
 
     int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
-        ASSERT(hSocket != areg::InvalidSocketHandle);
+        ASSERT(hSocket != InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
@@ -79,7 +79,7 @@ namespace areg
                 {
                     // try again with other package size
                     checkSize = true;
-                    blockMaxSize = areg::getMaxSendSize(hSocket);
+                    blockMaxSize = getMaxSendSize(hSocket);
                 }
                 else
                 {
@@ -95,7 +95,7 @@ namespace areg
 
     int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
-        ASSERT(hSocket != areg::InvalidSocketHandle);
+        ASSERT(hSocket != InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
@@ -127,15 +127,15 @@ namespace areg
 
     bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
     {
-        ASSERT(hSocket != areg::InvalidSocketHandle);
-        return (areg::RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
+        ASSERT(hSocket != InvalidSocketHandle);
+        return (RETURNED_OK == ::ioctl(hSocket, cmd, &arg));
     }
 
     bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
     {
-        ASSERT(hSocket != areg::InvalidSocketHandle);
+        ASSERT(hSocket != InvalidSocketHandle);
         socklen_t len{ sizeof(unsigned long) };
-        return (areg::RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
+        return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
     }
 
 } // namespace areg

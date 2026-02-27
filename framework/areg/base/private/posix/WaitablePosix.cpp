@@ -29,19 +29,19 @@ namespace areg::os
     // SyncWaitable class implementation
     //////////////////////////////////////////////////////////////////////////
 
-    WaitablePosix::WaitablePosix( areg::os::SyncKind syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
-        : areg::os::MutexPosix     ( syncType, isRecursive, asciiName )
+    WaitablePosix::WaitablePosix( SyncKind syncType, bool isRecursive, const char* asciiName /* = nullptr */ )
+        : MutexPosix     ( syncType, isRecursive, asciiName )
     {
     }
 
     WaitablePosix::~WaitablePosix()
     {
-        ASSERT(areg::os::SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
+        ASSERT(SyncLockAndWaitPosix::isWaitableRegistered(*this) == false);
     }
 
     void WaitablePosix::freeResources()
     {
-        areg::os::SyncLockAndWaitPosix::eventRemove(*this);
+        SyncLockAndWaitPosix::eventRemove(*this);
     }
 
 } // namespace areg::os

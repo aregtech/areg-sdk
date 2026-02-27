@@ -30,9 +30,9 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
 
     WaitableEventPosix::WaitableEventPosix( bool isInitSignaled, bool isAutoReset, const char * asciiName /* = nullptr */ )
-        : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitEvent, true, asciiName )
+        : WaitablePosix  ( SyncKind::SoWaitEvent, true, asciiName )
 
-        , mEventReset       ( isAutoReset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
+        , mEventReset       ( isAutoReset ? ResetMode::Automatic : ResetMode::Manual )
         , mIsSignaled       ( isInitSignaled )
     {
     }
@@ -44,7 +44,7 @@ namespace areg::os
 
         do 
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
 
             if (isValid())
             {
@@ -66,7 +66,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
+            SyncLockAndWaitPosix::eventSignaled(*this);
         }
 
         return result;
@@ -75,13 +75,13 @@ namespace areg::os
     bool WaitableEventPosix::resetEvent()
     {
         bool result = false;
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
         if ( isValid() )
         {
     #ifdef DEBUG
             if (mIsSignaled)
             {
-                if (areg::os::ResetMode::Automatic == mEventReset)
+                if (ResetMode::Automatic == mEventReset)
                 {
                     AREG_OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
                 }
@@ -104,7 +104,7 @@ namespace areg::os
     {
         do 
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
             if (isValid())
             {
                 if (mIsSignaled == false)
@@ -114,7 +114,7 @@ namespace areg::os
                     mIsSignaled = true;
                     lock.unlock();
 
-                    areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
+                    SyncLockAndWaitPosix::eventSignaled(*this);
 
                     lock.lock();
                     mIsSignaled = false;
@@ -125,7 +125,7 @@ namespace areg::os
 
     bool WaitableEventPosix::checkSignaled(pthread_t /*contextThread*/) const
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
         return mIsSignaled;
     }
 
@@ -141,9 +141,9 @@ namespace areg::os
 
     void WaitableEventPosix::notifyReleasedThreads(int32_t numThreads)
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
 
-        if ((mEventReset == areg::os::ResetMode::Automatic) && (numThreads > 0))
+        if ((mEventReset == ResetMode::Automatic) && (numThreads > 0))
         {
             AREG_OUTPUT_DBG("There were [ %d ] released threads, automatically resetting waitable event [ %p ].", numThreads, this);
             mIsSignaled = false;

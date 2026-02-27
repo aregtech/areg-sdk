@@ -40,23 +40,23 @@ namespace areg
         struct timespec ts { };
 #ifndef _MINGW
         return (timespec_get(&ts, TIME_UTC) != 0
-                ? (static_cast<TIME64>(ts.tv_sec) * areg::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / areg::MICROSEC_TO_NS)
+                ? (static_cast<TIME64>(ts.tv_sec) * SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / MICROSEC_TO_NS)
                 : 0uLL);
 #else   // _MINGW
-        return (areg::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
-                    ? static_cast<TIME64>((ts.tv_sec * areg::SEC_TO_MICROSECS) + (ts.tv_nsec / areg::MICROSEC_TO_NS))
+        return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+                    ? static_cast<TIME64>((ts.tv_sec * SEC_TO_MICROSECS) + (ts.tv_nsec / MICROSEC_TO_NS))
                     : 0LL);
 #endif  // _MINGW
     }
 
-    void _osSystemTimeNow( areg::CalendarTime & sysTime, bool localTime )
+    void _osSystemTimeNow( CalendarTime & sysTime, bool localTime )
     {
         struct timespec ts { };
         struct tm now { };
 #ifndef _MINGW
         if (timespec_get(&ts, TIME_UTC) != 0)
 #else   // _MINGW
-        if (areg::RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
+        if (RETURNED_OK == ::clock_gettime( CLOCK_REALTIME, &ts ))
 #endif  // _MINGW
         {
             if (localTime)
@@ -74,7 +74,7 @@ namespace areg
             ASSERT(milli < 1000);
             ASSERT(micro < 1000);
 
-            areg::convToSystemTime(now, sysTime);
+            convToSystemTime(now, sysTime);
             sysTime.stMillisecs = milli;
             sysTime.stMicrosecs = micro;
         }
@@ -82,7 +82,7 @@ namespace areg
 
     void _osMakeTmLocal(struct tm& utcTime)
     {
-        areg::memSet(&utcTime, sizeof(struct tm), 0);
+        memSet(&utcTime, sizeof(struct tm), 0);
         time_t _timer = mktime(&utcTime);
         localtime_s(&utcTime, &_timer);
     }
@@ -93,12 +93,12 @@ namespace areg
 
         time_t secs;
         uint16_t milli, micro;
-        areg::convMicrosecs(utcTime, secs, milli, micro);
+        convMicrosecs(utcTime, secs, milli, micro);
 
         struct tm tmLocal { };
-        if (areg::RETURNED_OK == localtime_s(&tmLocal, &secs))
+        if (RETURNED_OK == localtime_s(&tmLocal, &secs))
         {
-            areg::convToSystemTime(tmLocal, localTime);
+            convToSystemTime(tmLocal, localTime);
             localTime.stMillisecs = milli;
             localTime.stMicrosecs = micro;
 
@@ -110,18 +110,18 @@ namespace areg
 
     bool _osConvToLocalTm(const TIME64& utcTime, struct tm & localTm)
     {
-        time_t secs = static_cast<time_t>(utcTime / areg::SEC_TO_MICROSECS);
-        return (areg::RETURNED_OK == localtime_s(&localTm, &secs));
+        time_t secs = static_cast<time_t>(utcTime / SEC_TO_MICROSECS);
+        return (RETURNED_OK == localtime_s(&localTm, &secs));
     }
 
-    void _osConvToSystemTime(const TIME64& timeValue, areg::CalendarTime& sysTime)
+    void _osConvToSystemTime(const TIME64& timeValue, CalendarTime& sysTime)
     {
         time_t secs;
         uint16_t milli, micro;
-        areg::convMicrosecs(timeValue, secs, milli, micro);
+        convMicrosecs(timeValue, secs, milli, micro);
 
         struct tm gmt {};
-        if (areg::RETURNED_OK == ::gmtime_s(&gmt, &secs))
+        if (RETURNED_OK == ::gmtime_s(&gmt, &secs))
         {
             convToSystemTime(gmt, sysTime);
             sysTime.stMillisecs = milli;
@@ -131,7 +131,7 @@ namespace areg
     
     void _osConvToTm(const TIME64& timeValue, tm& time)
     {
-        time_t secs{ static_cast<time_t>(timeValue / areg::SEC_TO_MICROSECS) };
+        time_t secs{ static_cast<time_t>(timeValue / SEC_TO_MICROSECS) };
         ::gmtime_s(&time, &secs);
     }
 

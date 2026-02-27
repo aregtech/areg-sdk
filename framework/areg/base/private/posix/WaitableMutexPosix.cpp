@@ -30,7 +30,7 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
 
     WaitableMutexPosix::WaitableMutexPosix(bool initOwned /*= false*/, const char * asciiName /*= nullptr*/)
-        : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitMutex, true, asciiName             )
+        : WaitablePosix  ( SyncKind::SoWaitMutex, true, asciiName             )
 
         , mOwnerThread      ( initOwned ? pthread_self() : static_cast<pthread_t>(0) )
         , mLockCount        ( initOwned ? 1 : 0                                      )
@@ -44,7 +44,7 @@ namespace areg::os
 
         do 
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
             if (mOwnerThread == pthread_self())
             {
                 ASSERT(mLockCount > 0);
@@ -79,7 +79,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
+            SyncLockAndWaitPosix::eventSignaled(*this);
         }
         return result;
     }
@@ -87,7 +87,7 @@ namespace areg::os
 
     bool WaitableMutexPosix::checkSignaled(pthread_t contextThread) const
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
         return (mOwnerThread == static_cast<pthread_t>(0)) || (mOwnerThread == contextThread);
     }
 
@@ -96,7 +96,7 @@ namespace areg::os
         bool result = false;
         if (ownerThread != static_cast<pthread_t>(0))
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
             if (mOwnerThread == static_cast<pthread_t>(0))
             {
                 ASSERT(mLockCount == 0);

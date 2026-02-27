@@ -33,7 +33,7 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
 
     MutexPosix::MutexPosix( bool initLocked /*= false*/, const char * asciiName /* = nullptr */)
-        : areg::os::SyncObjectPosix( areg::os::SyncKind::SoMutex, asciiName)
+        : SyncObjectPosix( SyncKind::SoMutex, asciiName)
 
         , mPosixMutex       ( )
         , mMutexValid       ( false )
@@ -47,8 +47,8 @@ namespace areg::os
         }
     }
 
-    MutexPosix::MutexPosix( areg::os::SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
-        : areg::os::SyncObjectPosix( syncType, asciiName )
+    MutexPosix::MutexPosix( SyncKind syncType, bool isRecursive, const char * asciiName /* = nullptr */ )
+        : SyncObjectPosix( syncType, asciiName )
 
         , mPosixMutex       ( )
         , mMutexValid       ( false )
@@ -113,7 +113,7 @@ namespace areg::os
             else
             {
                 timespec deadline;
-                areg::os::timeoutFromNow(deadline, msTimeout);
+                timeoutFromNow(deadline, msTimeout);
     #ifdef __APPLE__
                 // macOS doesn't have pthread_mutex_timedlock
                 // Use exponential backoff to reduce CPU usage while maintaining responsiveness

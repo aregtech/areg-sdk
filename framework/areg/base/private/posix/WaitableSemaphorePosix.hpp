@@ -42,7 +42,7 @@ namespace areg::os
      *          The semaphore cannot have owning thread, because several threads
      *          can get released until the count reaches zero.
      **/
-    class WaitableSemaphorePosix : public areg::os::WaitablePosix
+    class WaitableSemaphorePosix : public WaitablePosix
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor.
@@ -151,7 +151,7 @@ namespace areg::os
 
     inline int32_t WaitableSemaphorePosix::getCurrentCount() const
     {
-        areg::os::ObjectLockPosix lock(*this); return mCurCount;
+        ObjectLockPosix lock(*this); return mCurCount;
     }
 
 } // namespace areg::os

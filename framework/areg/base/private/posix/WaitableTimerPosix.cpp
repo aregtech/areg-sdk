@@ -47,9 +47,9 @@ namespace areg::os
     #endif
 
     WaitableTimerPosix::WaitableTimerPosix(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
-        : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitTimer, false, name )
+        : WaitablePosix  ( SyncKind::SoWaitTimer, false, name )
 
-        , mResetInfo        ( isAutoReset ? areg::os::ResetMode::Automatic : areg::os::ResetMode::Manual )
+        , mResetInfo        ( isAutoReset ? ResetMode::Automatic : ResetMode::Manual )
     #ifdef __APPLE__
         , mTimerSource      ( nullptr )
         , mTimerQueue       ( nullptr )
@@ -87,7 +87,7 @@ namespace areg::os
     bool WaitableTimerPosix::setTimer(uint32_t msTimeout, bool isPeriodic)
     {
         bool result = false;
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
 
         _stopTimer();
 
@@ -109,7 +109,7 @@ namespace areg::os
                     this->_timerExpired();
                 });
 
-                areg::os::convTimeout(mDueTime, msTimeout);
+                convTimeout(mDueTime, msTimeout);
                 mTimeout    = msTimeout;
                 mIsSignaled = false;
                 mThreadId   = areg::Thread::getCurrentThreadId();
@@ -123,7 +123,7 @@ namespace areg::os
         {
             struct itimerspec interval;
             areg::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-            areg::os::convTimeout(interval.it_value, msTimeout);
+            convTimeout(interval.it_value, msTimeout);
             if ( isPeriodic )
             {
                 interval.it_interval.tv_sec = interval.it_value.tv_sec;
@@ -152,7 +152,7 @@ namespace areg::os
         bool sendSignal = false;
         do 
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
 
             sendSignal = (mIsSignaled == false);
             _stopTimer();
@@ -162,7 +162,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
+            SyncLockAndWaitPosix::eventSignaled(*this);
         }
 
         return true;
@@ -175,7 +175,7 @@ namespace areg::os
         bool sendSignal = false;
         do 
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
 
             sendSignal = (mIsSignaled == false);
             _resetTimer();
@@ -185,7 +185,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
+            SyncLockAndWaitPosix::eventSignaled(*this);
         }
 
         return true;
@@ -193,13 +193,13 @@ namespace areg::os
 
     bool WaitableTimerPosix::checkSignaled(pthread_t /*contextThread*/) const
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
         return mIsSignaled;
     }
 
     bool WaitableTimerPosix::isValid() const
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
     #ifdef __APPLE__
         return (mTimerQueue != nullptr);
     #else   // !__APPLE__
@@ -219,8 +219,8 @@ namespace areg::os
 
     void WaitableTimerPosix::notifyReleasedThreads(int32_t /* numThreads */)
     {
-        areg::os::ObjectLockPosix lock(*this);
-        if (mResetInfo == areg::os::ResetMode::Automatic)
+        ObjectLockPosix lock(*this);
+        if (mResetInfo == ResetMode::Automatic)
         {
             AREG_OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
             mIsSignaled = false;
@@ -279,7 +279,7 @@ namespace areg::os
 
         do
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
 
     #ifdef __APPLE__
             if ( mTimerSource != nullptr )
@@ -288,7 +288,7 @@ namespace areg::os
     #endif  // __APPLE__
             {
                 ++ mFiredCount;
-                areg::os::convTimeout(mDueTime, mTimeout);
+                convTimeout(mDueTime, mTimeout);
 
                 mIsSignaled = true;
                 sendSignal  = true;
@@ -306,8 +306,8 @@ namespace areg::os
 
         if (sendSignal)
         {
-            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
-            areg::os::SyncLockAndWaitPosix::notifyAsyncSignal(mThreadId);
+            SyncLockAndWaitPosix::eventSignaled(*this);
+            SyncLockAndWaitPosix::notifyAsyncSignal(mThreadId);
         }
     }
 

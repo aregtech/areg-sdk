@@ -40,7 +40,7 @@ namespace areg::os
      *          state. The released state of Mute is considered as signaled and the thread
      *          owning state is non-signaled if it has mutex owning thread.
      **/
-    class WaitableMutexPosix : public areg::os::WaitablePosix
+    class WaitableMutexPosix : public WaitablePosix
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor.
@@ -159,7 +159,7 @@ namespace areg::os
 
     inline pthread_t WaitableMutexPosix::getOwningThreadId() const
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
         return mOwnerThread;
     }
 

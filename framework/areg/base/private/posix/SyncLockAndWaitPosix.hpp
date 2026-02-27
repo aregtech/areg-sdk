@@ -38,10 +38,19 @@
  /************************************************************************
   * dependencies.
   ************************************************************************/
-namespace areg::os { class WaitablePosix; }
+namespace areg::os
+{
+    class WaitablePosix;
+}
 class SyncLockAndWaitPosix;
-namespace areg::os { class WaitableTimerPosix; }
-namespace areg { class TimerManager; }
+namespace areg::os
+{
+    class WaitableTimerPosix;
+}
+namespace areg
+{
+    class TimerManager;
+}
 
 namespace areg::os
 {
@@ -64,7 +73,7 @@ namespace areg::os
         /**
          * \brief   The hash map container of waitable object and LockAndWait lists.
          **/
-        using MapLockAndWait        = areg::OrderedMap<areg::os::WaitablePosix *, ListLockAndWait>;
+        using MapLockAndWait        = areg::OrderedMap<WaitablePosix *, ListLockAndWait>;
 
     //////////////////////////////////////////////////////////////////////////
     // ImplResourceListMap class declaration
@@ -72,7 +81,7 @@ namespace areg::os
         /**
          * \brief   The helper class of resource list map that contains helper functions implementation.
          **/
-        class ImplResourceListMap : public areg::ResourceListMapImpl<areg::os::WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
+        class ImplResourceListMap : public areg::ResourceListMapImpl<WaitablePosix *, SyncLockAndWaitPosix, ListLockAndWait>
         {
         public:
             /**
@@ -82,7 +91,7 @@ namespace areg::os
              * \param   Key     The Key value of resource.
              * \param   List    The list of resource objects.
              **/
-            inline void implCleanResourceList( areg::os::WaitablePosix * & /* Key */, ListLockAndWait & List )
+            inline void implCleanResourceList( WaitablePosix * & /* Key */, ListLockAndWait & List )
             {
             	List.clear();
             }
@@ -113,7 +122,7 @@ namespace areg::os
          *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
          *          objects in the entire map are not unique, but should be unique in the list.
          **/
-        using SyncResourceMapIX = areg::ConcurrentResourceListMap<areg::os::WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
+        using SyncResourceMapIX = areg::ConcurrentResourceListMap<WaitablePosix *, SyncLockAndWaitPosix *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
     //////////////////////////////////////////////////////////////////////////
     // The resource map for timer.
@@ -136,7 +145,7 @@ namespace areg::os
     // Friend classes
     //////////////////////////////////////////////////////////////////////////
         friend class areg::TimerManager;
-        friend class areg::os::WaitableTimerPosix;
+        friend class WaitableTimerPosix;
 
     //////////////////////////////////////////////////////////////////////////
     // Constants and statics
@@ -167,7 +176,7 @@ namespace areg::os
         /**
          * \brief   The fixed array of waitable. The maximum size of array is areg::MAXIMUM_WAITING_OBJECTS
          **/
-        using WaitingList   = areg::FixedArray<areg::os::WaitablePosix *>;
+        using WaitingList   = areg::FixedArray<WaitablePosix *>;
 
     //////////////////////////////////////////////////////////////////////////
     // Public static methods.
@@ -190,7 +199,7 @@ namespace areg::os
          *              - areg::os::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
          *              - areg::os::SyncSignal::FirstError if error happened. For example, the waitable is invalidated.
          **/
-        static int32_t waitForSingleObject( areg::os::WaitablePosix & syncWait, uint32_t msTimeout = areg::WAIT_INFINITE );
+        static int32_t waitForSingleObject( WaitablePosix & syncWait, uint32_t msTimeout = areg::WAIT_INFINITE );
 
         /**
          * \brief   Call to lock and wait the list of synchronization objects until one or all objects are signaled.
@@ -216,7 +225,7 @@ namespace areg::os
          *              - areg::os::SyncSignal::Interrupted if waiting was interrupted by such event like timer;
          *              - areg::os::SyncSignal::FirstError + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
          **/
-        static int32_t waitForMultipleObjects( areg::os::WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = areg::WAIT_INFINITE);
+        static int32_t waitForMultipleObjects( WaitablePosix ** listWaitables, int32_t count, bool waitAll = false, uint32_t msTimeout = areg::WAIT_INFINITE);
 
         /**
          * \brief   Called by waitable object to indicate that it is in signaled state.
@@ -225,27 +234,27 @@ namespace areg::os
          *          In case of Mutex this should be one. In case of Synchronization Event there can be multiple threads.
          *          For more details see description of each waitable object
          **/
-        static int32_t eventSignaled( areg::os::WaitablePosix & syncWaitable );
+        static int32_t eventSignaled( WaitablePosix & syncWaitable );
 
         /**
          * \brief   Called by waitable object to indicate wait failure. For example, when waitable object is invalidated.
          *          This call unlocks all threads that wait for event and the waiting return indicates error.
          * \param   syncWaitable    The waitable object that should indicate error.
          **/
-        static void eventFailed( areg::os::WaitablePosix & syncWaitable );
+        static void eventFailed( WaitablePosix & syncWaitable );
 
         /**
          * \brief   Call to remove waitable object from the waiting list.
          * \param   syncWaitable    The waitable object to remove from the list.
          **/
-        static void eventRemove( areg::os::WaitablePosix & syncWaitable );
+        static void eventRemove( WaitablePosix & syncWaitable );
 
         /**
          * \brief   Checks whether the waitable is registered or not.
          * \param   syncWaitable    Waitable to check the registration.
          * \return  Returns true if waitable is registered.
          **/
-        static bool isWaitableRegistered( areg::os::WaitablePosix & syncWaitable );
+        static bool isWaitableRegistered( WaitablePosix & syncWaitable );
 
         /**
          * \brief   Notifies the asynchronous execution within a locked thread. This call breaks waiting process of thread
@@ -267,7 +276,7 @@ namespace areg::os
          *                          or it should wait for any event to be in signaled state.
          * \param   msTimeout       Initializes the timeout in milliseconds to wait.
          **/
-        SyncLockAndWaitPosix( areg::os::WaitablePosix ** listWaitables, int32_t count, areg::os::WaitCondition matchCondition, uint32_t msTimeout );
+        SyncLockAndWaitPosix( WaitablePosix ** listWaitables, int32_t count, WaitCondition matchCondition, uint32_t msTimeout );
 
         /**
          * \brief   Destructor.
@@ -331,7 +340,7 @@ namespace areg::os
          * \brief   Returns the index of registered waitable in the list.
          * \param   syncWaitable   The instance of waitable object to lookup in the list.
          **/
-        inline int32_t _getWaitableIndex( const areg::os::WaitablePosix & syncWaitable ) const;
+        inline int32_t _getWaitableIndex( const WaitablePosix & syncWaitable ) const;
 
         /**
          * \brief   Called to notify the event has been fired.
@@ -349,7 +358,7 @@ namespace areg::os
          * \param   syncObject The waitable object to check.
          * \return  Returns one of event fired state.
          **/
-        int32_t _checkEventFired( areg::os::WaitablePosix & syncObject );
+        int32_t _checkEventFired( WaitablePosix & syncObject );
 
         /**
          * \brief   Called to notify threads to take fired event ownership.
@@ -369,7 +378,7 @@ namespace areg::os
         /**
          * \brief   Describes the lock and wait condition.
          **/
-        const areg::os::WaitCondition   mMatchCondition;
+        const WaitCondition   mMatchCondition;
         /**
          * \brief   Timeout in milliseconds to wait when blocks the thread.
          **/

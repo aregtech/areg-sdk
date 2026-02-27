@@ -31,7 +31,7 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
 
     WaitableSemaphorePosix::WaitableSemaphorePosix(int32_t maxCount, int32_t initCount /*= 0*/, const char * asciiName /*= nullptr */)
-        : areg::os::WaitablePosix  ( areg::os::SyncKind::SoWaitSemaphore, true, asciiName )
+        : WaitablePosix  ( SyncKind::SoWaitSemaphore, true, asciiName )
 
         , mMaxCount         ( maxCount  )
         , mCurCount         ( initCount )
@@ -44,7 +44,7 @@ namespace areg::os
 
         do 
         {
-            areg::os::ObjectLockPosix lock(*this);
+            ObjectLockPosix lock(*this);
             if (mCurCount < mMaxCount)
             {
                 ++ mCurCount;
@@ -54,7 +54,7 @@ namespace areg::os
 
         if (sendSignal)
         {
-            areg::os::SyncLockAndWaitPosix::eventSignaled(*this);
+            SyncLockAndWaitPosix::eventSignaled(*this);
         }
 
         return sendSignal;
@@ -62,13 +62,13 @@ namespace areg::os
 
     bool WaitableSemaphorePosix::checkSignaled(pthread_t /*contextThread*/) const
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
         return (mCurCount > 0);
     }
 
     bool WaitableSemaphorePosix::notifyRequestOwnership(pthread_t ownerThread)
     {
-        areg::os::ObjectLockPosix lock(*this);
+        ObjectLockPosix lock(*this);
         bool result = false;
 
         if ((mCurCount > 0) && (ownerThread != static_cast<pthread_t>(0)))

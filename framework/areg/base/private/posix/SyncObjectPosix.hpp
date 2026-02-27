@@ -30,11 +30,14 @@
 //////////////////////////////////////////////////////////////////////////
 // Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
-class SyncObjectPosix;
-    namespace areg::os { class MutexPosix; }
-        class WaitableBaseIX;
-            namespace areg::os { class WaitableEventPosix; }
-            namespace areg::os { class WaitableMutexPosix; }
+
+namespace areg::os
+{
+    class SyncObjectPosix;
+    class MutexPosix;
+    class WaitableEventPosix;
+    class WaitableMutexPosix;
+}
 
 namespace areg::os
 {
@@ -65,7 +68,7 @@ namespace areg::os
          * \param   syncType    The type of synchronization object.
          * \param   asciiName   The name of synchronization object.
          **/
-        SyncObjectPosix( areg::os::SyncKind syncType, const char* asciiName = nullptr );
+        SyncObjectPosix( SyncKind syncType, const char* asciiName = nullptr );
 
     //////////////////////////////////////////////////////////////////////////
     // Public destructor.
@@ -87,7 +90,7 @@ namespace areg::os
         /**
          * \brief   Returns the type of synchronization object.
          **/
-        inline areg::os::SyncKind getSyncType() const;
+        inline SyncKind getSyncType() const;
 
         /**
          * \brief   Returns synchronization object name.
@@ -117,7 +120,7 @@ namespace areg::os
         /**
          * \brief   The type of synchronization object.
          **/
-        const areg::os::SyncKind  mSyncType;
+        const SyncKind  mSyncType;
 
         /**
          * \brief   The name of synchronization object.
@@ -136,7 +139,7 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
     // SyncObjectPosix class inline implementation
     //////////////////////////////////////////////////////////////////////////
-    inline areg::os::SyncKind SyncObjectPosix::getSyncType() const
+    inline SyncKind SyncObjectPosix::getSyncType() const
     {
         return mSyncType;
     }

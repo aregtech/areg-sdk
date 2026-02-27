@@ -41,7 +41,7 @@ namespace areg::os
      *          set to signaled when the specified timeout is expired. There are two 
      *          types of waitable timers: manual- or auto-reset.
      **/
-    class WaitableTimerPosix : public areg::os::WaitablePosix
+    class WaitableTimerPosix : public WaitablePosix
     {
     //////////////////////////////////////////////////////////////////////////
     // Statics and constants
@@ -149,7 +149,7 @@ namespace areg::os
         /**
          * \brief   Waitable timer reset information. Either manual- or auto-reset.
          **/
-        const areg::os::ResetMode mResetInfo;
+        const ResetMode mResetInfo;
     #ifdef __APPLE__
         /**
          * \brief   GCD dispatch timer source for macOS.

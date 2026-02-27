@@ -38,7 +38,7 @@ namespace areg::os
      *          The Critical Section can be used only for the communication between threads.
      *          The Critical Section can be owned only by one thread at a time.
      **/
-    class CriticalSectionPosix   : protected areg::os::SyncObjectPosix
+    class CriticalSectionPosix   : protected SyncObjectPosix
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor.
@@ -106,7 +106,7 @@ namespace areg::os
         /**
          * \brief   The Critical Section object, which has implementation of recursive spin lock.
          **/
-        mutable areg::os::SpinLockPosix  mSpinLock;
+        mutable SpinLockPosix  mSpinLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
