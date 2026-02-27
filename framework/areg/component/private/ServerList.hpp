@@ -89,7 +89,7 @@ namespace areg
          * \param   out_client  [out]   On output, this contain the information of connected service consumer (client).
          * \return  Returns registered Client Info object.
          **/
-        const areg::ServerInfo & registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
+        const areg::ServerInfo & registerClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client );
 
         /**
          * \brief   Unregisters specified Proxy client from Server List.
@@ -105,7 +105,7 @@ namespace areg
          *          Any other value specifies number of existing client related
          *          with Service Interface.
          **/
-        areg::ServerInfo unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
+        areg::ServerInfo unregisterClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client );
 
         /**
          * \brief   Registers specified Stub Server in the list, if the address is valid, it sets Server state

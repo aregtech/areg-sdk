@@ -18,133 +18,137 @@
 
 #include <utility>
 
-//////////////////////////////////////////////////////////////////////////
-// ClientInfo class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Constants
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   Invalid client info object
- **/
-const ClientInfo & ClientInfo::getInvalidClientInfo()
+namespace areg
 {
-    static const ClientInfo _invalidClientInfo;
-    return _invalidClientInfo;
-}
 
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // ClientInfo class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-ClientInfo::ClientInfo()
-    : mClientAddress( )
-    , mClientState  ( areg::ServiceConnectionState::Unknown )
-{
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Constants
+    //////////////////////////////////////////////////////////////////////////
 
-ClientInfo::ClientInfo( const areg::ProxyAddress & client )
-    : mClientAddress( client )
-    , mClientState  ( areg::ServiceConnectionState::Unknown )
-{
-    setConnectionStatus( areg::ServiceConnectionState::Pending);
-}
+    /**
+     * \brief   Invalid client info object
+     **/
+    const ClientInfo & ClientInfo::getInvalidClientInfo()
+    {
+        static const ClientInfo _invalidClientInfo;
+        return _invalidClientInfo;
+    }
 
-ClientInfo::ClientInfo( areg::ProxyAddress && client ) noexcept
-    : mClientAddress( static_cast<areg::ProxyAddress &&>(client) )
-    , mClientState  ( areg::ServiceConnectionState::Unknown )
-{
-    setConnectionStatus( areg::ServiceConnectionState::Pending );
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
 
-ClientInfo::ClientInfo( const ClientInfo & src )
-    : mClientAddress( src.mClientAddress )
-    , mClientState  ( src.mClientState )
-{
-}
+    ClientInfo::ClientInfo()
+        : mClientAddress( )
+        , mClientState  ( areg::ServiceConnectionState::Unknown )
+    {
+    }
 
-ClientInfo::ClientInfo( ClientInfo && src ) noexcept
-    : mClientAddress( std::move(src.mClientAddress) )
-    , mClientState  ( src.mClientState )
-{
-}
+    ClientInfo::ClientInfo( const areg::ProxyAddress & client )
+        : mClientAddress( client )
+        , mClientState  ( areg::ServiceConnectionState::Unknown )
+    {
+        setConnectionStatus( areg::ServiceConnectionState::Pending);
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
+    ClientInfo::ClientInfo( areg::ProxyAddress && client ) noexcept
+        : mClientAddress( static_cast<areg::ProxyAddress &&>(client) )
+        , mClientState  ( areg::ServiceConnectionState::Unknown )
+    {
+        setConnectionStatus( areg::ServiceConnectionState::Pending );
+    }
 
-ClientInfo & ClientInfo::operator = ( const ClientInfo & src )
-{
-    mClientAddress  = src.mClientAddress;
-    mClientState    = src.mClientState;
+    ClientInfo::ClientInfo( const ClientInfo & src )
+        : mClientAddress( src.mClientAddress )
+        , mClientState  ( src.mClientState )
+    {
+    }
+
+    ClientInfo::ClientInfo( ClientInfo && src ) noexcept
+        : mClientAddress( std::move(src.mClientAddress) )
+        , mClientState  ( src.mClientState )
+    {
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+
+    ClientInfo & ClientInfo::operator = ( const ClientInfo & src )
+    {
+        mClientAddress  = src.mClientAddress;
+        mClientState    = src.mClientState;
     
-    return (*this);
-}
-
-ClientInfo & ClientInfo::operator = ( ClientInfo && src ) noexcept
-{
-    mClientAddress  = std::move(src.mClientAddress);
-    mClientState    = src.mClientState;
-
-    return (*this);
-}
-
-ClientInfo & ClientInfo::operator = ( const areg::ProxyAddress & client )
-{
-    mClientAddress  = client;
-    setConnectionStatus(areg::ServiceConnectionState::Pending);
-    return (*this);
-}
-
-ClientInfo & ClientInfo::operator = ( areg::ProxyAddress && client ) noexcept
-{
-    mClientAddress  = std::move(client);
-    setConnectionStatus( areg::ServiceConnectionState::Pending );
-    return (*this);
-}
-
-bool ClientInfo::operator == (const areg::ProxyAddress & client) const
-{
-    return mClientAddress == client;
-}
-
-bool ClientInfo::operator == (const ClientInfo & other) const
-{
-    return (this != &other ? mClientAddress == other.mClientAddress : true);
-}
-
-bool ClientInfo::operator == (const areg::StubAddress & server) const
-{
-    return mClientAddress == server;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
-void ClientInfo::setConnectionStatus( areg::ServiceConnectionState newConnection )
-{
-    if ( mClientAddress.getSource() != areg::SOURCE_UNKNOWN )
-    {
-        mClientState = mClientAddress.getTarget() != areg::TARGET_UNKNOWN ? newConnection : areg::ServiceConnectionState::Pending;
+        return (*this);
     }
-    else
-    {
-        mClientState = areg::ServiceConnectionState::Unknown;
-    }
-}
 
-ClientInfo::operator uint32_t () const
-{
-    const areg::ServiceAddress & addrService = static_cast<const areg::ServiceAddress &>(mClientAddress);
-    return static_cast<uint32_t>( addrService );
-}
-
-void ClientInfo::setTargetServer(const areg::StubAddress & addrStub)
-{
-    if ( mClientAddress.getSource() != areg::SOURCE_UNKNOWN )
+    ClientInfo & ClientInfo::operator = ( ClientInfo && src ) noexcept
     {
-        mClientAddress.setTarget( addrStub.getSource() );
+        mClientAddress  = std::move(src.mClientAddress);
+        mClientState    = src.mClientState;
+
+        return (*this);
     }
-}
+
+    ClientInfo & ClientInfo::operator = ( const areg::ProxyAddress & client )
+    {
+        mClientAddress  = client;
+        setConnectionStatus(areg::ServiceConnectionState::Pending);
+        return (*this);
+    }
+
+    ClientInfo & ClientInfo::operator = ( areg::ProxyAddress && client ) noexcept
+    {
+        mClientAddress  = std::move(client);
+        setConnectionStatus( areg::ServiceConnectionState::Pending );
+        return (*this);
+    }
+
+    bool ClientInfo::operator == (const areg::ProxyAddress & client) const
+    {
+        return mClientAddress == client;
+    }
+
+    bool ClientInfo::operator == (const ClientInfo & other) const
+    {
+        return (this != &other ? mClientAddress == other.mClientAddress : true);
+    }
+
+    bool ClientInfo::operator == (const areg::StubAddress & server) const
+    {
+        return mClientAddress == server;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Methods
+    //////////////////////////////////////////////////////////////////////////
+    void ClientInfo::setConnectionStatus( areg::ServiceConnectionState newConnection )
+    {
+        if ( mClientAddress.getSource() != areg::SOURCE_UNKNOWN )
+        {
+            mClientState = mClientAddress.getTarget() != areg::TARGET_UNKNOWN ? newConnection : areg::ServiceConnectionState::Pending;
+        }
+        else
+        {
+            mClientState = areg::ServiceConnectionState::Unknown;
+        }
+    }
+
+    ClientInfo::operator uint32_t () const
+    {
+        const areg::ServiceAddress & addrService = static_cast<const areg::ServiceAddress &>(mClientAddress);
+        return static_cast<uint32_t>( addrService );
+    }
+
+    void ClientInfo::setTargetServer(const areg::StubAddress & addrStub)
+    {
+        if ( mClientAddress.getSource() != areg::SOURCE_UNKNOWN )
+        {
+            mClientAddress.setTarget( addrStub.getSource() );
+        }
+    }
+} // namespace areg

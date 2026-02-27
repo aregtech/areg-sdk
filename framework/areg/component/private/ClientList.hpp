@@ -31,7 +31,7 @@ namespace areg { class ServerInfo; }
 
 namespace areg
 {
-    using ClientListBase = areg::LinkedList<ClientInfo>;
+    using ClientListBase = areg::LinkedList<areg::ClientInfo>;
 
     /**
      * \brief   ClientList is a linked list object containing the list
@@ -108,7 +108,7 @@ namespace areg
          *          of Proxy of client, it will return valid object. Otherwise, it will return
          *          invalid client info object.
          **/
-        const ClientInfo & getClient( const areg::ProxyAddress & whichClient ) const;
+        const areg::ClientInfo & getClient( const areg::ProxyAddress & whichClient ) const;
 
         /**
          * \brief   Registers client in the list by given address of Proxy and Server Info, 
@@ -124,7 +124,7 @@ namespace areg
          *          object. Otherwise, it will create new Client Info entry with initial
          *          number of instances 1.
          **/
-        const ClientInfo & registerClient( const areg::ProxyAddress & whichClient, const areg::ServerInfo & server );
+        const areg::ClientInfo & registerClient( const areg::ProxyAddress & whichClient, const areg::ServerInfo & server );
 
         /**
          * \brief   It searches servicing Client entry in the list by the given address of Proxy.
@@ -135,7 +135,7 @@ namespace areg
          *                      will contains information of unregistered client.
          * \return  Return true if found an entry with specified proxy and operation to unregister client succeeded.
          **/
-        bool unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
+        bool unregisterClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client );
 
         /**
          * \brief   Call to notify all pending clients the servicing server availability.

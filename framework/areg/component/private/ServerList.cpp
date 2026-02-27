@@ -58,7 +58,7 @@ namespace areg
         return ServerList::find(server);
     }
 
-    const areg::ServerInfo & ServerList::registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
+    const areg::ServerInfo & ServerList::registerClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client )
     {
         LOG_SCOPE(areg_component_private_ServerList_registerClient);
 
@@ -79,7 +79,7 @@ namespace areg
     }
 
 
-    areg::ServerInfo ServerList::unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
+    areg::ServerInfo ServerList::unregisterClient( const areg::ProxyAddress & whichClient, areg::ClientInfo & out_client )
     {
         LOG_SCOPE(areg_component_private_ServerList_unregisterClient);
 

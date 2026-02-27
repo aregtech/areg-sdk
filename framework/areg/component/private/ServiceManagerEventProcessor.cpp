@@ -77,7 +77,7 @@ namespace areg
                     mServerList.getAtPosition( mapPos, si, clientList );
                     for ( auto listPos = clientList.firstPosition( ); clientList.isValidPosition( listPos ); listPos = clientList.nextPosition( listPos ) )
                     {
-                        const ClientInfo & client = clientList.valueAtPosition( listPos );
+                        const areg::ClientInfo & client = clientList.valueAtPosition( listPos );
                         if ( client.isConnected( ) )
                         {
                             _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), areg::ServiceConnectionState::Disconnected );
@@ -304,7 +304,7 @@ namespace areg
 
         for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
         {
-            const ClientInfo & client{ clientList.valueAtPosition( pos ) };
+            const areg::ClientInfo & client{ clientList.valueAtPosition( pos ) };
             if ( client.isConnected( ) )
             {
                 _sendClientConnectedEvent( client.getAddress( ), whichServer );
@@ -340,7 +340,7 @@ namespace areg
         areg::ServiceConnectionState status = areg::serviceConnection( reason );
         for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
         {
-            const ClientInfo & client{ clientList.valueAtPosition( pos ) };
+            const areg::ClientInfo & client{ clientList.valueAtPosition( pos ) };
             if ( client.isConnected( ) )
             {
                 _sendClientDisconnectEvent( client.getAddress( ), whichServer, status );
@@ -357,7 +357,7 @@ namespace areg
             registerProvider.registerServiceConsumer( whichClient );
         }
 
-        ClientInfo client;
+        areg::ClientInfo client;
         const areg::ServerInfo & server = mServerList.registerClient( whichClient, client );
 
         LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
@@ -384,7 +384,7 @@ namespace areg
             registerProvider.unregisterServiceConsumer( whichClient, reason );
         }
 
-        ClientInfo client;
+        areg::ClientInfo client;
 
         areg::ServerInfo server = mServerList.unregisterClient( whichClient, client );
         LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
