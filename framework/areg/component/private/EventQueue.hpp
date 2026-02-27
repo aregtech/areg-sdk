@@ -54,7 +54,7 @@ public:
      *                          the Queue is empty.
      * \param   messageQueue    The instance of event queue object to keep event elements.
      **/
-    EventQueue( QueueListener & eventListener, SortedEventStack & messageQueue );
+    EventQueue( QueueListener & eventListener, areg::SortedEventStack & messageQueue );
 
     /**
      * \brief   Destructor
@@ -145,7 +145,7 @@ private:
     /**
      * \brief   Event queue stack object, which stores event elements
      **/
-    SortedEventStack &  mEventQueue;
+    areg::SortedEventStack &  mEventQueue;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -194,7 +194,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     //! The stack to store queued elements.
-    SortedEventStack    mStack;
+    areg::SortedEventStack    mStack;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -248,7 +248,7 @@ private:
 
 private:
     //! The stack to store queued elements.
-    SortedEventStack   mStack;
+    areg::SortedEventStack   mStack;
 
     inline InternalEventQueue& self();
 

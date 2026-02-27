@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventQueue::EventQueue( QueueListener & eventListener, SortedEventStack & eventQueue )
+EventQueue::EventQueue( QueueListener & eventListener, areg::SortedEventStack & eventQueue )
     : mEventListener(eventListener)
     , mEventQueue   (eventQueue)
 {
