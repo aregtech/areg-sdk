@@ -450,7 +450,7 @@ namespace areg
         /**
          * \brief   Message receiver thread
          **/
-        ClientReceiveThread                     mThreadReceive;
+        areg::ClientReceiveThread                     mThreadReceive;
         /**
          * \brief   Message sender thread
          **/

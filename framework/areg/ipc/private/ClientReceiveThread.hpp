@@ -29,118 +29,121 @@
 namespace areg { class RemoteMessageHandler; }
 namespace areg { class ClientConnection; }
 
-//////////////////////////////////////////////////////////////////////////
-// ClientConnection class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The message receiver thread from remote routing service.
- *          All received messages are passed to receiver thread for further dispatching
- *          and distribution between components and services.
- **/
-class ClientReceiveThread    : public    areg::DispatcherThread
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // ClientConnection class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Initializes Service handler and client connection objects.
-     * \param   remoteService   The instance of remote service to process messages.
-     * \param   connection      The instance of client connection object to read messages.
-     * \param   namePrefix      The prefix to add to the areg::CLIENT_RECEIVE_MESSAGE_THREAD
-     *                          to have unique thread names.
+     * \brief   The message receiver thread from remote routing service.
+     *          All received messages are passed to receiver thread for further dispatching
+     *          and distribution between components and services.
      **/
-    ClientReceiveThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String & namePrefix);
-
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~ClientReceiveThread() = default;
-
-/************************************************************************/
-// Actions and attributes.
-/************************************************************************/
-public:
-    /**
-     * \brief   Returns accumulative value of received data size and rests the existing value to zero.
-     *          The operations are atomic. The value can be used to display data rate, for example.
-     **/
-    inline uint32_t extractDataReceive() const;
-
-    /**
-     * \brief   Call to enable or disable the received data calculation.
-     *          It as well resets the existing calculated data.
-     * \param   enable  Flag, indicating whether data calculation is enabled or not.
-     **/
-    inline void setEnableCalculateData(bool enable);
-
-    /**
-     * \brief   Returns flag, indicating whether data calculation is enabled or not.
-     **/
-    inline bool isCalculateDataEnabled() const;
-
-protected:
-/************************************************************************/
-// DispatcherThread overrides
-/************************************************************************/
-
-    /**
-     * \brief	Triggered when dispatcher starts running.
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
-     **/
-    bool runDispatcher() override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The instance of remote service handler to dispatch messages.
-     **/
-    areg::RemoteMessageHandler&     mRemoteService;
-    /**
-     * \brief   The instance of connection to receive messages from remote routing service.
-     **/
-    areg::ClientConnection &          mConnection;
-
-    /**
-     * \brief   Accumulative value of received data size.
-     */
-    mutable std::atomic_uint    mBytesReceive;
-
-    /**
-     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
-     **/
-    bool                        mSaveDataReceive;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    ClientReceiveThread() = delete;
-    AREG_NOCOPY_NOMOVE( ClientReceiveThread );
-};
-
-inline uint32_t ClientReceiveThread::extractDataReceive() const
-{
-    return static_cast<uint32_t>(mBytesReceive.exchange(0));
-}
-
-inline void ClientReceiveThread::setEnableCalculateData(bool enable)
-{
-    if (mSaveDataReceive != enable)
+    class ClientReceiveThread    : public    areg::DispatcherThread
     {
-        mBytesReceive.store(0u);
-        mSaveDataReceive = enable;
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initializes Service handler and client connection objects.
+         * \param   remoteService   The instance of remote service to process messages.
+         * \param   connection      The instance of client connection object to read messages.
+         * \param   namePrefix      The prefix to add to the areg::CLIENT_RECEIVE_MESSAGE_THREAD
+         *                          to have unique thread names.
+         **/
+        ClientReceiveThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String & namePrefix);
+
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~ClientReceiveThread() = default;
+
+    /************************************************************************/
+    // Actions and attributes.
+    /************************************************************************/
+    public:
+        /**
+         * \brief   Returns accumulative value of received data size and rests the existing value to zero.
+         *          The operations are atomic. The value can be used to display data rate, for example.
+         **/
+        inline uint32_t extractDataReceive() const;
+
+        /**
+         * \brief   Call to enable or disable the received data calculation.
+         *          It as well resets the existing calculated data.
+         * \param   enable  Flag, indicating whether data calculation is enabled or not.
+         **/
+        inline void setEnableCalculateData(bool enable);
+
+        /**
+         * \brief   Returns flag, indicating whether data calculation is enabled or not.
+         **/
+        inline bool isCalculateDataEnabled() const;
+
+    protected:
+    /************************************************************************/
+    // DispatcherThread overrides
+    /************************************************************************/
+
+        /**
+         * \brief	Triggered when dispatcher starts running.
+         *          In this function runs main dispatching loop.
+         *          Events are picked and dispatched here.
+         *          Override if logic should be changed.
+         * \return	Returns true if Exit Event is signaled.
+         **/
+        bool runDispatcher() override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   The instance of remote service handler to dispatch messages.
+         **/
+        areg::RemoteMessageHandler&     mRemoteService;
+        /**
+         * \brief   The instance of connection to receive messages from remote routing service.
+         **/
+        areg::ClientConnection &          mConnection;
+
+        /**
+         * \brief   Accumulative value of received data size.
+         */
+        mutable std::atomic_uint    mBytesReceive;
+
+        /**
+         * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+         **/
+        bool                        mSaveDataReceive;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ClientReceiveThread() = delete;
+        AREG_NOCOPY_NOMOVE( ClientReceiveThread );
+    };
+
+    inline uint32_t ClientReceiveThread::extractDataReceive() const
+    {
+        return static_cast<uint32_t>(mBytesReceive.exchange(0));
     }
-}
 
-inline bool ClientReceiveThread::isCalculateDataEnabled() const
-{
-    return mSaveDataReceive;
-}
+    inline void ClientReceiveThread::setEnableCalculateData(bool enable)
+    {
+        if (mSaveDataReceive != enable)
+        {
+            mBytesReceive.store(0u);
+            mSaveDataReceive = enable;
+        }
+    }
 
+    inline bool ClientReceiveThread::isCalculateDataEnabled() const
+    {
+        return mSaveDataReceive;
+    }
+
+} // namespace areg
 #endif  // AREG_IPC_PRIVATE_CLIENTRECEIVETHREAD_HPP
