@@ -34,10 +34,17 @@
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
-namespace areg { class TimerBase; }
-namespace areg::os { class TimerPosix; }
-namespace areg { class TimerManager; }
-namespace areg { class WatchdogManager; }
+namespace areg
+{
+    class TimerBase;
+    class TimerManager;
+    class WatchdogManager;
+}
+
+namespace areg::os
+{
+    class TimerPosix;
+}
 
 namespace areg::os
 { 
@@ -131,7 +138,7 @@ namespace areg::os
          * \param   funcTimer   The callback function to trigger when timer expires.
          * \return  Returns true if succeeded to created timer.
          **/
-        bool createTimer( areg::os::FuncPosixTimerRoutine funcTimer );
+        bool createTimer( FuncPosixTimerRoutine funcTimer );
 
         /**
          * \brief   Creates and starts timer with timeout and period count values specified in
@@ -143,7 +150,7 @@ namespace areg::os
          * \param   funcTimer   The callback function to trigger when timer expires.
          * \return  Returns true if timer is created and started with success.
          **/
-        bool startTimer( areg::TimerBase & context, id_type contextId, areg::os::FuncPosixTimerRoutine funcTimer );
+        bool startTimer( areg::TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
 
         /**
          * \brief   Restarts the timer if the timeout and the period values are not zero.
@@ -188,7 +195,7 @@ namespace areg::os
          * \param   funcTimer   The callback function to trigger when timer expires.
          * \return  Returns true if succeeded to create timer.
          **/
-        inline bool _createTimer( areg::os::FuncPosixTimerRoutine funcTimer );
+        inline bool _createTimer( FuncPosixTimerRoutine funcTimer );
 
         /**
          * \brief	Initializes and starts the timer.
@@ -228,7 +235,7 @@ namespace areg::os
         /**
          * \brief   The callback function to call when timer expires.
          */
-        areg::os::FuncPosixTimerRoutine   mTimerCallback;
+        FuncPosixTimerRoutine   mTimerCallback;
     #else   // !__APPLE__
         /**
          * \brief   The timer ID, set when creates timer.
@@ -256,7 +263,7 @@ namespace areg::os
         /**
          * \brief   Synchronization object.
          */
-        mutable areg::os::SpinLockPosix      mLock;
+        mutable SpinLockPosix      mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.

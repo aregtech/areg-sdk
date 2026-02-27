@@ -81,7 +81,7 @@ namespace areg::os
         _destroyTimer();
     }
 
-    bool TimerPosix::createTimer( areg::os::FuncPosixTimerRoutine funcTimer )
+    bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
     {
     	SpinAutolockPosix lock(mLock);
     #ifdef __APPLE__
@@ -92,7 +92,7 @@ namespace areg::os
     #endif  // __APPLE__
     }
 
-    bool TimerPosix::startTimer( areg::TimerBase & context, id_type contextId, areg::os::FuncPosixTimerRoutine funcTimer )
+    bool TimerPosix::startTimer( areg::TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
     {
     	SpinAutolockPosix lock(mLock);
 
@@ -171,7 +171,7 @@ namespace areg::os
         {
             if (mContext->getEventCount() > areg::TimerBase::ONE_TIME)
             {
-                areg::os::convTimeout(mDueTime, mContext->getTimeout());
+                convTimeout(mDueTime, mContext->getTimeout());
             }
             else if (_isStarted())
             {
@@ -180,7 +180,7 @@ namespace areg::os
         }
     }
 
-    bool TimerPosix::_createTimer( areg::os::FuncPosixTimerRoutine funcTimer )
+    bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
     {
     #ifdef __APPLE__
         mTimerCallback = funcTimer;
@@ -229,7 +229,7 @@ namespace areg::os
 
                     // Capture the callback and 'this' pointer to call when timer fires.
                     // This allows TimerManager and WatchdogManager to process the expired timer.
-                    areg::os::FuncPosixTimerRoutine callback = mTimerCallback;
+                    FuncPosixTimerRoutine callback = mTimerCallback;
                     TimerPosix* timerPtr = this;
                     dispatch_source_set_event_handler(mTimerSource, ^{
                         if (callback != nullptr)
@@ -240,7 +240,7 @@ namespace areg::os
 
                     if (areg::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
                     {
-                        areg::os::convTimeout(mDueTime, msTimeout);
+                        convTimeout(mDueTime, msTimeout);
                         result = true;
                         dispatch_resume(mTimerSource);
                     }
@@ -269,7 +269,7 @@ namespace areg::os
             {
                 struct itimerspec interval;
                 areg::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-                areg::os::convTimeout(interval.it_value, msTimeout);
+                convTimeout(interval.it_value, msTimeout);
                 if (eventCount > 1)
                 {
                     interval.it_interval.tv_sec = interval.it_value.tv_sec;
@@ -278,7 +278,7 @@ namespace areg::os
 
                 if (areg::RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &mDueTime))
                 {
-                    areg::os::convTimeout(mDueTime, msTimeout);
+                    convTimeout(mDueTime, msTimeout);
                     result = true;
 
                     if (areg::RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
