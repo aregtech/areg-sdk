@@ -39,448 +39,451 @@ namespace areg { class ProxyAddress; }
 namespace areg { class ServiceRequestEvent; }
 namespace areg { class ServiceResponseEvent; }
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceManager class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Service Manager is a singleton module, which should be instantiated
- *          and run on System Startup. The service manager is responsible
- *          for service registration and automated service discovery.
- * 
- *          All system proxies and servers are automatically registered at
- *          Service Manager. As soon as a service server is available, the
- *          Service Manager generates appropriate events and automatically
- *          sends notifications to proxies to notify service availability, 
- *          and sends connection event to notify servers new client connection.
- *          When server or client is disconnected, Service Manager generates
- *          appropriate event to notify disconnect event. The proxies can send
- *          requests and subscribe to data update as long as the server remains
- *          connected. No message is sent to the server if it is not available yet.
- *          So that, each proxy / client first should wait for connected event, then
- *          start triggering tasks on the server side.
- * 
- *          Service Manager as well is starting the Timer Service, which provides
- *          possibility to start and stop timers.
- * 
- *          To start application Service Manager, use Application::initialize() method,
- *          which should be called before any model is loaded.
- **/
-class ServiceManager    : private   areg::DispatcherThread
-                        , private   areg::ServiceManagerEventConsumer
-                        , private   areg::ConnectionConsumer
-                        , private   areg::RegistrationConsumer
+namespace areg
 {
-    friend class areg::Application;
-    friend class areg::ServiceManagerEventProcessor;
-//////////////////////////////////////////////////////////////////////////
-// Declare Runtime
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME(ServiceManager)
-
-//////////////////////////////////////////////////////////////////////////
-// Static public methods to access globally
-//////////////////////////////////////////////////////////////////////////
-public:
-
-/************************************************************************/
-// Service Manager Server and Client registration functions
-/************************************************************************/
-
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceManager class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Static method to be called globally.
-     *          The function is called when Stub Server is starting up
-     *          and requests registration at Service Manager module
-     *          by specifying the address of available Stub of Service Interface.
-     *          The function will generate appropriate Event and send 
-     *          registration request to Service Manager. If connection and 
-     *          registration succeeded, the Stub server will receive notification
-     *          and all Proxy clients will receive connection available messages
-     *          to start sending requests and assign for Attribute Update Notifications.
-     * \param   whichServer     The address of Stub Server object, which has been
-     *                          started and requesting registration at Service Manager Module.
-     **/
-    static void requestRegisterServer( const areg::StubAddress & whichServer );
-
-    /**
-     * \brief   Static method to be called globally.
-     *          The function is called when Stub Server is shutting down
-     *          and requests to unregister at Service Manager module
-     *          by specifying the address of Stub of Service Interface.
-     *          The function will generate appropriate Event and send 
-     *          unregister request to Service Manager. All Proxy clients 
-     *          will receive appropriate disconnect messages to stop
-     *          communication with Stub Service Interface.
-     * \param   whichServer     The address of Stub Server object, which has been.
-     * \param   reason          The reason to unregister the service provider.
-     **/
-    static void requestUnregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason );
-
-    /**
-     * \brief   Static method to be called globally.
-     *          The function is called when new Proxy client is start up,
-     *          and requests registration at Service Manager module
-     *          by specifying the address of Proxy of Service Interface.
-     *          The function will generate appropriate Event and send 
-     *          registration request to Service Manager. If connection and 
-     *          registration succeeded, and the Stub server of implemented
-     *          Service Interface is available in the system, the Proxy will 
-     *          receive connection available notification message, containing
-     *          available Stub address of implemented Service Interface.
-     * \param   whichClient     The address of Proxy client object, which has been
-     *                          started and requesting registration at Service Manager Module.
-     **/
-    static void requestRegisterClient( const areg::ProxyAddress & whichClient );
-
-    /**
-     * \brief   Static method to be called when a proxy is shutting down
-     *          and requests to unregister the consumer by specifying
-     *          the address of Proxy of Service Interface.
-     *          The function generates appropriate Event and sends 
-     *          unregister request to Service Manager. After Proxy client
-     *          is unregistered, the Stub server will get notification
-     *          of disconnected client.
-     * \param   whichClient     The address of Proxy client object, which is
-     *                          unregistering at Service Manager Module.
-     * \param   reason          The reason to unregister the service consumer
-     **/
-    static void requestUnregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason );
-
-    /**
-     * \brief   Static method to be called globally.
-     *          The function is called if the component thread should be terminated and
-     *          restarted again. This will terminate all worker threads, components, service,
-     *          and the proxies of the component thread. Delete and re-create and restart the
-     *          component thread, so that it can restart again.
+     * \brief   Service Manager is a singleton module, which should be instantiated
+     *          and run on System Startup. The service manager is responsible
+     *          for service registration and automated service discovery.
      * 
-     * \param   whichThread     The instance of valid component thread.
-     */
-    static void requestRecreateThread( const areg::ComponentThread & whichThread );
-
-    /**
-     * \brief   The function returns true, if Service Manager is running and ready to
-     *          process Service Manager Events. Otherwise, it returns false.
-     **/
-    static bool isServiceManagerStarted();
-
-    /**
-     * \brief   Call to query the amount of send and receive data size in bytes.
-     *          The call extracts the send and receive sizes, and resets them to zero.
-     *          On output 'sizeSend' and 'sizeReceive' parameters contain the size
-     *          since the last call of the method.
-     *          If need to measure the total amount of data, accumulate calls.
-     *          If need to measure the data rate per second, call this method each second.
+     *          All system proxies and servers are automatically registered at
+     *          Service Manager. As soon as a service server is available, the
+     *          Service Manager generates appropriate events and automatically
+     *          sends notifications to proxies to notify service availability, 
+     *          and sends connection event to notify servers new client connection.
+     *          When server or client is disconnected, Service Manager generates
+     *          appropriate event to notify disconnect event. The proxies can send
+     *          requests and subscribe to data update as long as the server remains
+     *          connected. No message is sent to the server if it is not available yet.
+     *          So that, each proxy / client first should wait for connected event, then
+     *          start triggering tasks on the server side.
      * 
-     * \param[out]  sizeSend    On output this parameter contains the size of data in bytes
-     *                          sent since the last call of the method.
-     * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
-     *                          received since the last call of the method.
-     **/
-    static void queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive );
-
-private:
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Default Constructor.
-     *          Protected and cannot be accessed globally.
-     **/
-    ServiceManager();
-
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ServiceManager() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Private static methods
-//////////////////////////////////////////////////////////////////////////
-
-    static inline ServiceManager & getInstance();
-
-/************************************************************************/
-// Service Manager start / stop functions
-/************************************************************************/
-
-    /**
-     * \brief   This function called, when Service Manager should be started.
-     *          If Service Manager already started, the function will be ignored.
-     *          The function is called from Component Loader module before
-     *          it starts first Component Thread.
-     *          The function returns true, if Service Manager thread started with
-     *          success and the Service Manager is ready to receive Events.
-     * \return  Returns true, if Service Manager started or already running and
-     *          is ready to receive Events.
-     **/
-    static bool _startServiceManager();
-
-    /**
-     * \brief   This function called, when Service Manager should stop activities.
-     *          The function is called from application manager when all
-     *          Component Threads are stopped and completed.
-     *          If 'waitComplete' is set to true, the calling thread is
-     *          blocked until Service Manager thread completes jobs and cleans resources.
-     *          Otherwise, this triggers stop event and immediately returns.
-     * \param   waitComplete    If true, waits for service manager to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and
-     *                          returns.
-     **/
-    static void _stopServiceManager( bool waitComplete);
-
-    /**
-     * \brief   The calling thread is blocked until Service Manager Thread did not
-     *          complete the job and exit. This should be called if previously
-     *          it was requested to stop the Service Manager Thread without
-     *          waiting for completion.
-     **/
-    static void _waitServiceManager();
-
-/************************************************************************/
-// Message router client start / stop functions
-/************************************************************************/
-
-    /**
-     * \brief   Call to configure router client. This method gets configuration properties
-     *          to setup connection client.
-     * \return  Returns true if succeeded to setup and configure the connection client.
-     *          Otherwise, it returns false.
-     * \see     _routingServiceStart
-     **/
-    static bool _routingServiceConfigure();
-
-    /**
-     * \brief   Call to start the client connection of remote Routing Service.
-     * \return  Returns true if succeeded to start router client.
-     * \see     _routingServiceConfigure, _routingServiceStop
-     **/
-    static bool _routingServiceStart(uint32_t connectTypes);
-
-    /**
-     * \brief   Call to start connection to remote Routing Service. If called, it overwrites IP-Address and
-     *          port number set via configuration file.
-     * \param   ipAddress   Should be valid IP-Address of remote Routing Service.
-     * \param   portNr      Should be valid Port Number of remote Routing Service.
-     * \return  Returns true if router client successfully started.
-     * \see     _routingServiceConfigure, _routingServiceStop
-     **/
-    static bool _routingServiceStart( const areg::String & ipAddress, uint16_t portNr );
-
-    /**
-     * \brief   Call to stop router client.
-     * \see     _routingServiceStart
-     **/
-    static void _routingServiceStop();
-
-    /**
-     * \brief   Returns true if Routing Service client is started and ready to operate.
-     **/
-    static bool _isRoutingServiceStarted();
-
-    /**
-     * \brief   Returns true if Routing Service client is started, but not ready to operate yet.
-     **/
-    static bool _isRoutingServicePending();
-
-    /**
-     * \brief   Returns true if Routing Service client is configured and ready to start.
-     **/
-    static bool _isRoutingServiceConfigured();
-
-    /**
-     * \brief   The function generates an event to create and start component thread.
-     *          Only for internal use.
+     *          Service Manager as well is starting the Timer Service, which provides
+     *          possibility to start and stop timers.
      * 
-     * \param   componentThread The name of the thread to create and restart.
+     *          To start application Service Manager, use Application::initialize() method,
+     *          which should be called before any model is loaded.
      **/
-    static void _requestCreateThread( const areg::String & componentThread );
+    class ServiceManager    : private   areg::DispatcherThread
+                            , private   areg::ServiceManagerEventConsumer
+                            , private   areg::ConnectionConsumer
+                            , private   areg::RegistrationConsumer
+    {
+        friend class areg::Application;
+        friend class areg::ServiceManagerEventProcessor;
+    //////////////////////////////////////////////////////////////////////////
+    // Declare Runtime
+    //////////////////////////////////////////////////////////////////////////
+        AREG_DECLARE_RUNTIME(ServiceManager)
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Static public methods to access globally
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-/************************************************************************/
-// ServiceManagerEventConsumer overrides
-/************************************************************************/
+    /************************************************************************/
+    // Service Manager Server and Client registration functions
+    /************************************************************************/
 
-    /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
-     **/
-    void processEvent( const areg::ServiceManagerEventData & data ) override;
+        /**
+         * \brief   Static method to be called globally.
+         *          The function is called when Stub Server is starting up
+         *          and requests registration at Service Manager module
+         *          by specifying the address of available Stub of Service Interface.
+         *          The function will generate appropriate Event and send 
+         *          registration request to Service Manager. If connection and 
+         *          registration succeeded, the Stub server will receive notification
+         *          and all Proxy clients will receive connection available messages
+         *          to start sending requests and assign for Attribute Update Notifications.
+         * \param   whichServer     The address of Stub Server object, which has been
+         *                          started and requesting registration at Service Manager Module.
+         **/
+        static void requestRegisterServer( const areg::StubAddress & whichServer );
 
-/************************************************************************/
-// EventRouter Interface overrides.
-/************************************************************************/
+        /**
+         * \brief   Static method to be called globally.
+         *          The function is called when Stub Server is shutting down
+         *          and requests to unregister at Service Manager module
+         *          by specifying the address of Stub of Service Interface.
+         *          The function will generate appropriate Event and send 
+         *          unregister request to Service Manager. All Proxy clients 
+         *          will receive appropriate disconnect messages to stop
+         *          communication with Stub Service Interface.
+         * \param   whichServer     The address of Stub Server object, which has been.
+         * \param   reason          The reason to unregister the service provider.
+         **/
+        static void requestUnregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason );
 
-    /**
-     * \brief	Posts event and delivers to its target thread / process.
-     * \param	eventElem	Event object to post.
-     * \return	Returns true if target was found and the event
-     *          delivered with success. Otherwise it returns false.
-     **/
-    bool postEvent( areg::Event & eventElem ) override;
+        /**
+         * \brief   Static method to be called globally.
+         *          The function is called when new Proxy client is start up,
+         *          and requests registration at Service Manager module
+         *          by specifying the address of Proxy of Service Interface.
+         *          The function will generate appropriate Event and send 
+         *          registration request to Service Manager. If connection and 
+         *          registration succeeded, and the Stub server of implemented
+         *          Service Interface is available in the system, the Proxy will 
+         *          receive connection available notification message, containing
+         *          available Stub address of implemented Service Interface.
+         * \param   whichClient     The address of Proxy client object, which has been
+         *                          started and requesting registration at Service Manager Module.
+         **/
+        static void requestRegisterClient( const areg::ProxyAddress & whichClient );
 
-    /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
-     **/
-    void readyForEvents( bool isReady ) override;
+        /**
+         * \brief   Static method to be called when a proxy is shutting down
+         *          and requests to unregister the consumer by specifying
+         *          the address of Proxy of Service Interface.
+         *          The function generates appropriate Event and sends 
+         *          unregister request to Service Manager. After Proxy client
+         *          is unregistered, the Stub server will get notification
+         *          of disconnected client.
+         * \param   whichClient     The address of Proxy client object, which is
+         *                          unregistering at Service Manager Module.
+         * \param   reason          The reason to unregister the service consumer
+         **/
+        static void requestUnregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason );
 
-/************************************************************************/
-// ConnectionConsumer overrides
-/************************************************************************/
+        /**
+         * \brief   Static method to be called globally.
+         *          The function is called if the component thread should be terminated and
+         *          restarted again. This will terminate all worker threads, components, service,
+         *          and the proxies of the component thread. Delete and re-create and restart the
+         *          component thread, so that it can restart again.
+         * 
+         * \param   whichThread     The instance of valid component thread.
+         */
+        static void requestRecreateThread( const areg::ComponentThread & whichThread );
 
-    /**
-     * \brief   Triggered when remote service connection and communication channel is established.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    void connectedRemoteServiceChannel( const areg::Channel & channel ) override;
+        /**
+         * \brief   The function returns true, if Service Manager is running and ready to
+         *          process Service Manager Events. Otherwise, it returns false.
+         **/
+        static bool isServiceManagerStarted();
 
-    /**
-     * \brief   Triggered when disconnected remote service connection and communication channel.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    void disconnectedRemoteServiceChannel( const areg::Channel & channel ) override;
+        /**
+         * \brief   Call to query the amount of send and receive data size in bytes.
+         *          The call extracts the send and receive sizes, and resets them to zero.
+         *          On output 'sizeSend' and 'sizeReceive' parameters contain the size
+         *          since the last call of the method.
+         *          If need to measure the total amount of data, accumulate calls.
+         *          If need to measure the data rate per second, call this method each second.
+         * 
+         * \param[out]  sizeSend    On output this parameter contains the size of data in bytes
+         *                          sent since the last call of the method.
+         * \param[out]  sizeReceive On output this parameter contains the size of data in bytes
+         *                          received since the last call of the method.
+         **/
+        static void queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive );
 
-    /**
-     * \brief   Triggered when remote service connection and communication channel is lost.
-     *          The connection is considered lost if it not possible to read or
-     *          receive data, and it was not stopped by API call.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    void lostRemoteServiceChannel( const areg::Channel & channel ) override;
+    private:
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
 
-/************************************************************************/
-// RegistrationConsumer overrides
-/************************************************************************/
+        /**
+         * \brief   Default Constructor.
+         *          Protected and cannot be accessed globally.
+         **/
+        ServiceManager();
 
-    /**
-     * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
-     *          If cookie value is 'areg::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
-     *          On output listProviders and listConsumer contain the list of remote services.
-     * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering.
-     * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
-     * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
-     **/
-    void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumer ) const override;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~ServiceManager() = default;
 
-    /**
-     * \brief   Triggered when a remote service provider is registered in the system.
-     * \param   stub    The address of remote service provider that has been registered.
-     **/
-    void registeredRemoteServiceProvider( const areg::StubAddress & stub ) override;
+    //////////////////////////////////////////////////////////////////////////
+    // Private static methods
+    //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Triggered when a remote service consumer is registered in the system.
-     * \param   proxy   The address of remote service consumer that has been registered.
-     **/
-    void registeredRemoteServiceConsumer( const areg::ProxyAddress & proxy ) override;
+        static inline ServiceManager & getInstance();
 
-    /**
-     * \brief   Triggered when a remote service provider is unregistered from the system.
-     * \param   stub    The address of the remote service provider that has been unregistered.
-     * \param   reason  The reason that remote service provider is unregistered.
-     * \param   cookie  The cookie of source that has initiated to unregister provider.
-     *                  The parameter is ignored if 'areg::COOKIE_ANY'.
-     **/
-    void unregisteredRemoteServiceProvider( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+    /************************************************************************/
+    // Service Manager start / stop functions
+    /************************************************************************/
 
-    /**
-     * \brief   Triggered when a remote service consumer is unregistered from the system.
-     * \param   proxy   The address of the remote service consumer that has been unregistered.
-     * \param   reason  The reason that remote service consumer is unregistered.
-     * \param   cookie  The cookie of source that has initiated to unregister consumer.
-     *                  The parameter is ignored if 'areg::COOKIE_ANY'.
-     **/
-    void unregisteredRemoteServiceConsumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+        /**
+         * \brief   This function called, when Service Manager should be started.
+         *          If Service Manager already started, the function will be ignored.
+         *          The function is called from Component Loader module before
+         *          it starts first Component Thread.
+         *          The function returns true, if Service Manager thread started with
+         *          success and the Service Manager is ready to receive Events.
+         * \return  Returns true, if Service Manager started or already running and
+         *          is ready to receive Events.
+         **/
+        static bool _startServiceManager();
 
-//////////////////////////////////////////////////////////////////////////
-// Operations and attributes
-//////////////////////////////////////////////////////////////////////////
+        /**
+         * \brief   This function called, when Service Manager should stop activities.
+         *          The function is called from application manager when all
+         *          Component Threads are stopped and completed.
+         *          If 'waitComplete' is set to true, the calling thread is
+         *          blocked until Service Manager thread completes jobs and cleans resources.
+         *          Otherwise, this triggers stop event and immediately returns.
+         * \param   waitComplete    If true, waits for service manager to complete the jobs
+         *                          and exit threads. Otherwise, it triggers exit and
+         *                          returns.
+         **/
+        static void _stopServiceManager( bool waitComplete);
 
-    /**
-     * \brief   Returns the instance of remote servicing handler.
-     **/
-    inline areg::ConnectionProvider& getServiceConnectionProvider();
+        /**
+         * \brief   The calling thread is blocked until Service Manager Thread did not
+         *          complete the job and exit. This should be called if previously
+         *          it was requested to stop the Service Manager Thread without
+         *          waiting for completion.
+         **/
+        static void _waitServiceManager();
 
-    /**
-     * \brief   Returns the instance of remote servicing handler.
-     **/
-    inline areg::RegistrationProvider& getServiceRegisterProvider();
+    /************************************************************************/
+    // Message router client start / stop functions
+    /************************************************************************/
 
-    /**
-     * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
-     *          will automatically start as well.
-     * \return  Returns true if Service Manager Thread started and ready to receive Events.
-     **/
-    bool _startServiceManagerThread();
+        /**
+         * \brief   Call to configure router client. This method gets configuration properties
+         *          to setup connection client.
+         * \return  Returns true if succeeded to setup and configure the connection client.
+         *          Otherwise, it returns false.
+         * \see     _routingServiceStart
+         **/
+        static bool _routingServiceConfigure();
 
-    /**
-     * \brief   Stops Service Manager Thread. This call will stop Timer Server, all
-     *          pending server and client Service Interface will receive disconnect
-     *          notification, and the Service Manager Thread will stop and complete job.
-     * \param   waitComplete    If true, the calling thread is blocked until Service Manager
-     *                          completes the jobs. Otherwise, the method triggers
-     *                          stop service message and immediately returns.
-     **/
-    void _stopServiceManagerThread( bool waitComplete);
+        /**
+         * \brief   Call to start the client connection of remote Routing Service.
+         * \return  Returns true if succeeded to start router client.
+         * \see     _routingServiceConfigure, _routingServiceStop
+         **/
+        static bool _routingServiceStart(uint32_t connectTypes);
 
-    /**
-     * \brief   The calling thread is blocked until Service Manager Thread did not
-     *          complete the job and exit. This should be called if previously
-     *          it was requested to stop the Service Manager Thread without
-     *          waiting for completion.
-     **/
-    void _waitServiceManagerThread();
+        /**
+         * \brief   Call to start connection to remote Routing Service. If called, it overwrites IP-Address and
+         *          port number set via configuration file.
+         * \param   ipAddress   Should be valid IP-Address of remote Routing Service.
+         * \param   portNr      Should be valid Port Number of remote Routing Service.
+         * \return  Returns true if router client successfully started.
+         * \see     _routingServiceConfigure, _routingServiceStop
+         **/
+        static bool _routingServiceStart( const areg::String & ipAddress, uint16_t portNr );
 
-    /**
-     * \brief   Returns reference to ServiceManager object
-     **/
-    inline ServiceManager & self();
+        /**
+         * \brief   Call to stop router client.
+         * \see     _routingServiceStart
+         **/
+        static void _routingServiceStop();
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    areg::ServiceManagerEventProcessor    mEventProcessor;
-    /**
-     * \brief   The connection service.
-     **/
-    areg::RouterClient                    mServiceClient;
-    /**
-     * \brief   Synchronization object, for multi-threading access.
-     **/
-    mutable areg::ResourceLock            mLock;
+        /**
+         * \brief   Returns true if Routing Service client is started and ready to operate.
+         **/
+        static bool _isRoutingServiceStarted();
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden method calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ServiceManager );
-};
+        /**
+         * \brief   Returns true if Routing Service client is started, but not ready to operate yet.
+         **/
+        static bool _isRoutingServicePending();
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceManager class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
+        /**
+         * \brief   Returns true if Routing Service client is configured and ready to start.
+         **/
+        static bool _isRoutingServiceConfigured();
 
-inline areg::ConnectionProvider& ServiceManager::getServiceConnectionProvider()
-{
-    return static_cast<areg::ConnectionProvider&>(mServiceClient);
-}
+        /**
+         * \brief   The function generates an event to create and start component thread.
+         *          Only for internal use.
+         * 
+         * \param   componentThread The name of the thread to create and restart.
+         **/
+        static void _requestCreateThread( const areg::String & componentThread );
 
-inline areg::RegistrationProvider& ServiceManager::getServiceRegisterProvider()
-{
-    return static_cast<areg::RegistrationProvider&>(mServiceClient);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
 
-inline ServiceManager & ServiceManager::self()
-{
-    return (*this);
-}
+    /************************************************************************/
+    // ServiceManagerEventConsumer overrides
+    /************************************************************************/
 
+        /**
+         * \brief   Automatically triggered when event is dispatched by registered
+         *          worker / component thread.
+         * \param   data    The data object passed in event. It should have at least
+         *                  default constructor and assigning operator.
+         *                  This object is not used for IPC.
+         **/
+        void processEvent( const areg::ServiceManagerEventData & data ) override;
+
+    /************************************************************************/
+    // EventRouter Interface overrides.
+    /************************************************************************/
+
+        /**
+         * \brief	Posts event and delivers to its target thread / process.
+         * \param	eventElem	Event object to post.
+         * \return	Returns true if target was found and the event
+         *          delivered with success. Otherwise it returns false.
+         **/
+        bool postEvent( areg::Event & eventElem ) override;
+
+        /**
+         * \brief   Call to enable or disable event dispatching threads to receive events.
+         *          Override if need to make event dispatching preparation job.
+         * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+         **/
+        void readyForEvents( bool isReady ) override;
+
+    /************************************************************************/
+    // ConnectionConsumer overrides
+    /************************************************************************/
+
+        /**
+         * \brief   Triggered when remote service connection and communication channel is established.
+         * \param   channel     The connection and communication channel of remote service.
+         **/
+        void connectedRemoteServiceChannel( const areg::Channel & channel ) override;
+
+        /**
+         * \brief   Triggered when disconnected remote service connection and communication channel.
+         * \param   channel     The connection and communication channel of remote service.
+         **/
+        void disconnectedRemoteServiceChannel( const areg::Channel & channel ) override;
+
+        /**
+         * \brief   Triggered when remote service connection and communication channel is lost.
+         *          The connection is considered lost if it not possible to read or
+         *          receive data, and it was not stopped by API call.
+         * \param   channel     The connection and communication channel of remote service.
+         **/
+        void lostRemoteServiceChannel( const areg::Channel & channel ) override;
+
+    /************************************************************************/
+    // RegistrationConsumer overrides
+    /************************************************************************/
+
+        /**
+         * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
+         *          If cookie value is 'areg::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
+         *          On output listProviders and listConsumer contain the list of remote services.
+         * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering.
+         * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
+         * \param[out]  listConsumer    On output this contains the list of address of the remote service consumers of specified cookie.
+         **/
+        void extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumer ) const override;
+
+        /**
+         * \brief   Triggered when a remote service provider is registered in the system.
+         * \param   stub    The address of remote service provider that has been registered.
+         **/
+        void registeredRemoteServiceProvider( const areg::StubAddress & stub ) override;
+
+        /**
+         * \brief   Triggered when a remote service consumer is registered in the system.
+         * \param   proxy   The address of remote service consumer that has been registered.
+         **/
+        void registeredRemoteServiceConsumer( const areg::ProxyAddress & proxy ) override;
+
+        /**
+         * \brief   Triggered when a remote service provider is unregistered from the system.
+         * \param   stub    The address of the remote service provider that has been unregistered.
+         * \param   reason  The reason that remote service provider is unregistered.
+         * \param   cookie  The cookie of source that has initiated to unregister provider.
+         *                  The parameter is ignored if 'areg::COOKIE_ANY'.
+         **/
+        void unregisteredRemoteServiceProvider( const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+
+        /**
+         * \brief   Triggered when a remote service consumer is unregistered from the system.
+         * \param   proxy   The address of the remote service consumer that has been unregistered.
+         * \param   reason  The reason that remote service consumer is unregistered.
+         * \param   cookie  The cookie of source that has initiated to unregister consumer.
+         *                  The parameter is ignored if 'areg::COOKIE_ANY'.
+         **/
+        void unregisteredRemoteServiceConsumer( const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Operations and attributes
+    //////////////////////////////////////////////////////////////////////////
+
+        /**
+         * \brief   Returns the instance of remote servicing handler.
+         **/
+        inline areg::ConnectionProvider& getServiceConnectionProvider();
+
+        /**
+         * \brief   Returns the instance of remote servicing handler.
+         **/
+        inline areg::RegistrationProvider& getServiceRegisterProvider();
+
+        /**
+         * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
+         *          will automatically start as well.
+         * \return  Returns true if Service Manager Thread started and ready to receive Events.
+         **/
+        bool _startServiceManagerThread();
+
+        /**
+         * \brief   Stops Service Manager Thread. This call will stop Timer Server, all
+         *          pending server and client Service Interface will receive disconnect
+         *          notification, and the Service Manager Thread will stop and complete job.
+         * \param   waitComplete    If true, the calling thread is blocked until Service Manager
+         *                          completes the jobs. Otherwise, the method triggers
+         *                          stop service message and immediately returns.
+         **/
+        void _stopServiceManagerThread( bool waitComplete);
+
+        /**
+         * \brief   The calling thread is blocked until Service Manager Thread did not
+         *          complete the job and exit. This should be called if previously
+         *          it was requested to stop the Service Manager Thread without
+         *          waiting for completion.
+         **/
+        void _waitServiceManagerThread();
+
+        /**
+         * \brief   Returns reference to ServiceManager object
+         **/
+        inline ServiceManager & self();
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        areg::ServiceManagerEventProcessor    mEventProcessor;
+        /**
+         * \brief   The connection service.
+         **/
+        areg::RouterClient                    mServiceClient;
+        /**
+         * \brief   Synchronization object, for multi-threading access.
+         **/
+        mutable areg::ResourceLock            mLock;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden method calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( ServiceManager );
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceManager class inline functions implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    inline areg::ConnectionProvider& ServiceManager::getServiceConnectionProvider()
+    {
+        return static_cast<areg::ConnectionProvider&>(mServiceClient);
+    }
+
+    inline areg::RegistrationProvider& ServiceManager::getServiceRegisterProvider()
+    {
+        return static_cast<areg::RegistrationProvider&>(mServiceClient);
+    }
+
+    inline ServiceManager & ServiceManager::self()
+    {
+        return (*this);
+    }
+
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP

@@ -106,13 +106,13 @@ namespace areg
         areg::WatchdogManager::stopWatchdogManager(false);
         areg::TimerManager::stopTimerManager(false);
         areg::ComponentLoader::unloadComponentModel(false, areg::String::EmptyString);
-        ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
+        areg::ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
         areg::stopLogging(false);
 
         areg::WatchdogManager::waitWatchdogManager();
         areg::TimerManager::waitTimerManager();
         areg::ComponentLoader::waitModelUnload(areg::String::EmptyString);
-        ServiceManager::_waitServiceManager();
+        areg::ServiceManager::_waitServiceManager();
         areg::waitLoggingEnd();
 
         Application::_setAppState(areg::AppState::Stopped);
@@ -159,9 +159,9 @@ namespace areg
     {
         Application::_setAppState(areg::AppState::Releasing);
     
-        if ( ServiceManager::isServiceManagerStarted() )
+        if ( areg::ServiceManager::isServiceManagerStarted() )
         {
-            ServiceManager::_stopServiceManager(true);
+            areg::ServiceManager::_stopServiceManager(true);
         }
     
         Application::_setAppState(areg::AppState::Stopped);
@@ -173,9 +173,9 @@ namespace areg
 
         bool result = false;
 
-        if ( ServiceManager::isServiceManagerStarted( ) == false )
+        if ( areg::ServiceManager::isServiceManagerStarted( ) == false )
         {
-            if (ServiceManager::_startServiceManager( ))
+            if (areg::ServiceManager::_startServiceManager( ))
             {
                 Application::startTimerManager();
                 Application::startWatchdogManager();
@@ -224,7 +224,7 @@ namespace areg
 
         if (Application::isServiceManagerStarted())
         {
-            result = (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceStart(connectTypes));
+            result = (areg::ServiceManager::_isRoutingServiceStarted() || areg::ServiceManager::_routingServiceStart(connectTypes));
         }
 
         return result;
@@ -232,7 +232,7 @@ namespace areg
 
     bool Application::configMessageRouting()
     {
-        return (ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceConfigure());
+        return (areg::ServiceManager::_isRoutingServiceStarted() || areg::ServiceManager::_routingServiceConfigure());
     }
 
     bool Application::startMessageRouting( const char * ipAddress, uint16_t portNr )
@@ -241,7 +241,7 @@ namespace areg
 
         if ( Application::startServiceManager() )
         {
-            result = ServiceManager::_isRoutingServiceStarted() || ServiceManager::_routingServiceStart(ipAddress, portNr);
+            result = areg::ServiceManager::_isRoutingServiceStarted() || areg::ServiceManager::_routingServiceStart(ipAddress, portNr);
         }
 
         return result;
@@ -249,27 +249,27 @@ namespace areg
 
     void Application::stopMessageRouting()
     {
-        ServiceManager::_routingServiceStop();
+        areg::ServiceManager::_routingServiceStop();
     }
 
     bool Application::isServiceManagerStarted()
     {
-        return ServiceManager::isServiceManagerStarted();
+        return areg::ServiceManager::isServiceManagerStarted();
     }
 
     bool Application::isRouterConnected()
     {
-        return ServiceManager::_isRoutingServiceStarted();
+        return areg::ServiceManager::_isRoutingServiceStarted();
     }
 
     bool Application::isRouterConnectionPending()
     {
-        return ServiceManager::_isRoutingServicePending();
+        return areg::ServiceManager::_isRoutingServicePending();
     }
 
     bool Application::isMessageRoutingConfigured()
     {
-        return ServiceManager::_isRoutingServiceConfigured();
+        return areg::ServiceManager::_isRoutingServiceConfigured();
     }
 
     bool Application::startRouterService()
@@ -335,7 +335,7 @@ namespace areg
 
     void Application::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive )
     {
-        ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
+        areg::ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
     }
 
     const areg::String & Application::getApplicationName()

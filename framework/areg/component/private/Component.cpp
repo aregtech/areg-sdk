@@ -208,7 +208,7 @@ namespace areg
             areg::StubBase * stub = mServerList.valueAtPosition(pos);
             ASSERT( stub != nullptr );
             stub->startupServiceInterface(self());
-            ServiceManager::requestRegisterServer(stub->getAddress());
+            areg::ServiceManager::requestRegisterServer(stub->getAddress());
         }
     }
 
@@ -313,7 +313,7 @@ namespace areg
             ASSERT(stub != nullptr);
 
             stub->shutdownServiceInterface(self());
-            ServiceManager::requestUnregisterServer(stub->getAddress(), areg::DisconnectReason::ProviderDisconnected);
+            areg::ServiceManager::requestUnregisterServer(stub->getAddress(), areg::DisconnectReason::ProviderDisconnected);
         }
     }
 

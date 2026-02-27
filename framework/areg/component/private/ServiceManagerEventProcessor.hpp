@@ -29,7 +29,7 @@
  ************************************************************************/
 namespace areg { class ConnectionProvider; }
 namespace areg { class RegistrationProvider; }
-class ServiceManager;
+namespace areg { class ServiceManager; }
 namespace areg { class ProxyAddress; }
 namespace areg { class StubAddress; }
 namespace areg { class InStream; }
@@ -52,7 +52,7 @@ namespace areg
         /**
          * \brief   Initializes the object, receives the instance of Service Manager.
          **/
-        ServiceManagerEventProcessor( ServiceManager & serviceManager );
+        ServiceManagerEventProcessor( areg::ServiceManager & serviceManager );
         ~ServiceManagerEventProcessor() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -161,7 +161,7 @@ namespace areg
         /**
          * \brief   The instance of service manager.
          **/
-        ServiceManager &        mServiceManager;
+        areg::ServiceManager &        mServiceManager;
         /**
          * \brief   The Map of Server Info object as a Key and Client Info List as Values
          **/

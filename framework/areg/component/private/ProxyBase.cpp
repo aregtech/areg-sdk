@@ -218,7 +218,7 @@ namespace areg
                     if ( proxy->mProxyInstCount == 1 )
                     {
                         proxy->registerServiceListeners( );
-                        ServiceManager::requestRegisterClient( proxy->getProxyAddress( ) );
+                        areg::ServiceManager::requestRegisterClient( proxy->getProxyAddress( ) );
                     }
                     else if ( proxy->isConnected() )
                     {
@@ -325,7 +325,7 @@ namespace areg
                 unregisterServiceListeners( );
                 mListenerList.clear();
 
-                ServiceManager::requestUnregisterClient( getProxyAddress( ), areg::DisconnectReason::ConsumerDisconnected );
+                areg::ServiceManager::requestUnregisterClient( getProxyAddress( ), areg::DisconnectReason::ConsumerDisconnected );
                 mDispatcherThread.removeConsumer( *this );
             }
 
@@ -349,7 +349,7 @@ namespace areg
             mListenerList.clear();
             if (mIsStopped == false)
             {
-                ServiceManager::requestUnregisterClient(getProxyAddress(), areg::DisconnectReason::ConsumerDisconnected );
+                areg::ServiceManager::requestUnregisterClient(getProxyAddress(), areg::DisconnectReason::ConsumerDisconnected );
             }
 
             setConnectionStatus( areg::ServiceConnectionState::Disconnected );
@@ -685,7 +685,7 @@ namespace areg
             stopAllServiceNotifications( );
             unregisterServiceListeners( );
             mListenerList.clear();
-            ServiceManager::requestUnregisterClient( getProxyAddress( ), areg::DisconnectReason::ConsumerDisconnected );
+            areg::ServiceManager::requestUnregisterClient( getProxyAddress( ), areg::DisconnectReason::ConsumerDisconnected );
             mDispatcherThread.removeConsumer( *this );
 
             mStubAddress = areg::StubAddress::getInvalidStubAddress();

@@ -45,7 +45,7 @@ namespace areg
 {
 
 
-    ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & serviceManager )
+    ServiceManagerEventProcessor::ServiceManagerEventProcessor( areg::ServiceManager & serviceManager )
         : mServiceManager   ( serviceManager )
         , mServerList       ( )
     {
@@ -262,7 +262,7 @@ namespace areg
                 stream >> threadName;
                 if ( _terminateComponentThread( threadName ) )
                 {
-                    ServiceManager::_requestCreateThread( threadName );
+                    areg::ServiceManager::_requestCreateThread( threadName );
                 }
             }
             break;

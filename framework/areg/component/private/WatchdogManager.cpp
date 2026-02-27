@@ -152,7 +152,7 @@ namespace areg
                             , watchdog->getName().getString()
                             , watchdog->getComponentThread().getName().getString());
 
-            ServiceManager::requestRecreateThread(watchdog->getComponentThread());
+            areg::ServiceManager::requestRecreateThread(watchdog->getComponentThread());
         }
 
         mWatchdogResource.unlock();

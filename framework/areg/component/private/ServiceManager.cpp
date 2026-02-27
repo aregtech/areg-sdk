@@ -40,333 +40,337 @@ namespace
     constexpr std::string_view SERVICE_MANAGER_THREAD_NAME      { "_AREG_SERVICE_MANAGER_THREAD_" };
 }
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceManager class Implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Implement Runtime
-//////////////////////////////////////////////////////////////////////////
-AREG_IMPLEMENT_RUNTIME(ServiceManager, areg::DispatcherThread)
-
-//////////////////////////////////////////////////////////////////////////
-// Static methods
-//////////////////////////////////////////////////////////////////////////
-
-ServiceManager & ServiceManager::getInstance()
+namespace areg
 {
-    static ServiceManager	_theServiceManager;
-    return _theServiceManager;
-}
 
-bool ServiceManager::_startServiceManager()
-{
-    return getInstance()._startServiceManagerThread( );
-}
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceManager class Implementation
+    //////////////////////////////////////////////////////////////////////////
 
-void ServiceManager::_stopServiceManager(bool waitComplete)
-{
-    getInstance()._stopServiceManagerThread(waitComplete);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Implement Runtime
+    //////////////////////////////////////////////////////////////////////////
+    AREG_IMPLEMENT_RUNTIME(ServiceManager, areg::DispatcherThread)
 
-void ServiceManager::_waitServiceManager()
-{
-    getInstance()._waitServiceManagerThread();
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Static methods
+    //////////////////////////////////////////////////////////////////////////
 
-bool ServiceManager::isServiceManagerStarted()
-{
-    return ServiceManager::getInstance().isReady();
-}
+    ServiceManager & ServiceManager::getInstance()
+    {
+        static ServiceManager	_theServiceManager;
+        return _theServiceManager;
+    }
 
-void ServiceManager::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive )
-{
-    ServiceManager & serviceManager = ServiceManager::getInstance( );
-    sizeSend    = serviceManager.mServiceClient.queryBytesSent( );
-    sizeReceive = serviceManager.mServiceClient.queryBytesReceived( );
-}
+    bool ServiceManager::_startServiceManager()
+    {
+        return getInstance()._startServiceManagerThread( );
+    }
 
-void ServiceManager::requestRegisterServer( const areg::StubAddress & whichServer )
-{
-    LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
-    LOG_DBG("Request to register server [ %s ] of interface [ %s ]"
-                    , whichServer.getRoleName().getString()
-                    , whichServer.getServiceName().getString());
+    void ServiceManager::_stopServiceManager(bool waitComplete)
+    {
+        getInstance()._stopServiceManagerThread(waitComplete);
+    }
 
-    ASSERT(whichServer.isValid());
+    void ServiceManager::_waitServiceManager()
+    {
+        getInstance()._waitServiceManagerThread();
+    }
 
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::registerStub(whichServer)
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<areg::DispatcherThread &>(serviceManager));
-}
+    bool ServiceManager::isServiceManagerStarted()
+    {
+        return ServiceManager::getInstance().isReady();
+    }
 
-void ServiceManager::requestUnregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason )
-{
-    LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
-
-    LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
-                    , whichServer.getRoleName( ).getString( )
-                    , whichServer.getServiceName( ).getString( ) );
-    
-    ASSERT(whichServer.isValid());
-    
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::unregisterStub(whichServer, reason)
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<areg::DispatcherThread &>(serviceManager));
-}
-
-void ServiceManager::requestRegisterClient( const areg::ProxyAddress & whichClient )
-{
-    LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
-
-    LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
-                    , whichClient.getRoleName( ).getString( )
-                    , whichClient.getServiceName( ).getString( ) );
-    
-    ASSERT(whichClient.isValid());
-    
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::registerProxy(whichClient)
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<areg::DispatcherThread &>(serviceManager));
-}
-
-void ServiceManager::requestUnregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason )
-{
-    LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
-    LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
-                    , whichClient.getRoleName( ).getString( )
-                    , whichClient.getServiceName( ).getString( ) );
-    
-    ASSERT(whichClient.isValid());
-    
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::unregisterProxy(whichClient, reason)
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<areg::DispatcherThread &>(serviceManager));
-}
-
-void ServiceManager::requestRecreateThread(const areg::ComponentThread& whichThread)
-{
-    LOG_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
-    LOG_DBG("Request to re-create component thread [ %s ]", whichThread.getName().getString());
-
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEvent::sendEvent(areg::ServiceManagerEventData::terminateComponentThread(whichThread.getName())
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<areg::DispatcherThread &>(serviceManager));
-}
-
-bool ServiceManager::_routingServiceConfigure()
-{
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEventData data(areg::ServiceManagerEventData::configureConnection(areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip)));
-
-    return areg::ServiceManagerEvent::sendEvent( data
-                                         , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager) 
-                                         , static_cast<areg::DispatcherThread &>(serviceManager));
-}
-
-bool ServiceManager::_routingServiceStart( uint32_t connectTypes )
-{
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEventData data(areg::ServiceManagerEventData::startConnection(areg::RemoteServiceKind::Router, connectTypes));
-    return areg::ServiceManagerEvent::sendEvent( data
-                                         , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                         , static_cast<areg::DispatcherThread &>(serviceManager));
-}
-
-bool ServiceManager::_routingServiceStart( const areg::String & ipAddress, uint16_t portNr )
-{
-    bool result = false;
-    if ( (ipAddress.isEmpty() == false) && (portNr != areg::InvalidPort) )
+    void ServiceManager::queryCommunicationData( uint32_t & sizeSend, uint32_t & sizeReceive )
     {
         ServiceManager & serviceManager = ServiceManager::getInstance( );
-        result =areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::startNetConnection( ipAddress, portNr )
-                                              , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                              , static_cast<areg::DispatcherThread &>(serviceManager) );
+        sizeSend    = serviceManager.mServiceClient.queryBytesSent( );
+        sizeReceive = serviceManager.mServiceClient.queryBytesReceived( );
     }
-    return result;
-}
 
-void ServiceManager::_routingServiceStop()
-{
-    ServiceManager & serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::stopConnection()
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<areg::DispatcherThread &>(serviceManager));
-}
-
-bool ServiceManager::_isRoutingServiceStarted()
-{
-    return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostConnected( );
-}
-
-bool ServiceManager::_isRoutingServicePending()
-{
-    return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostPending();
-}
-
-bool ServiceManager::_isRoutingServiceConfigured()
-{
-    return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostSetup( );
-}
-
-void ServiceManager::_requestCreateThread(const areg::String& componentThread)
-{
-    ServiceManager& serviceManager = ServiceManager::getInstance();
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::createComponentThread(componentThread)
-                                  , static_cast<areg::ServiceManagerEventConsumer&>(serviceManager)
-                                  , static_cast<areg::DispatcherThread&>(serviceManager) );
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-ServiceManager::ServiceManager()
-    : areg::DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
-    , areg::ServiceManagerEventConsumer( )
-    , areg::ConnectionConsumer         ( )
-    , areg::RegistrationConsumer       ( )
-
-    , mEventProcessor   ( self() )
-    , mServiceClient    ( static_cast<areg::ConnectionConsumer&>(self()), static_cast<areg::RegistrationConsumer&>(self()) )
-    , mLock             (  )
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
-
-void ServiceManager::processEvent( const areg::ServiceManagerEventData & data )
-{
-    LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
-    areg::ServiceManagerEventData::ServiceManagerCommand cmdService { data.getCommand( ) };
-    LOG_DBG( "Service Manager is going to execute command [ %s ]", areg::ServiceManagerEventData::getString( cmdService ) );
-
-    mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnectionProvider( ), getServiceRegisterProvider() );
-}
-
-bool ServiceManager::postEvent(areg::Event & eventElem)
-{
-    return (AREG_RUNTIME_CAST(&eventElem, areg::ServiceManagerEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
-}
-
-void ServiceManager::readyForEvents( bool isReady )
-{
-    if ( isReady )
+    void ServiceManager::requestRegisterServer( const areg::StubAddress & whichServer )
     {
-        areg::ServiceManagerEvent::addListener( static_cast<areg::ServiceManagerEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
+        LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
+        LOG_DBG("Request to register server [ %s ] of interface [ %s ]"
+                        , whichServer.getRoleName().getString()
+                        , whichServer.getServiceName().getString());
+
+        ASSERT(whichServer.isValid());
+
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::registerStub(whichServer)
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                      , static_cast<areg::DispatcherThread &>(serviceManager));
     }
-    else
+
+    void ServiceManager::requestUnregisterServer( const areg::StubAddress & whichServer, const areg::DisconnectReason reason )
     {
-        areg::ServiceManagerEvent::removeListener( static_cast<areg::ServiceManagerEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
+        LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterServer);
+
+        LOG_DBG( "Request to unregister server [ %s ] of interface [ %s ]"
+                        , whichServer.getRoleName( ).getString( )
+                        , whichServer.getServiceName( ).getString( ) );
+    
+        ASSERT(whichServer.isValid());
+    
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::unregisterStub(whichServer, reason)
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                      , static_cast<areg::DispatcherThread &>(serviceManager));
     }
 
-    areg::DispatcherThread::readyForEvents( isReady );
-}
+    void ServiceManager::requestRegisterClient( const areg::ProxyAddress & whichClient )
+    {
+        LOG_SCOPE(areg_component_private_ServiceManager_requestRegisterClient);
 
-bool ServiceManager::_startServiceManagerThread()
-{
-    areg::Lock lock(mLock);
-    ASSERT(isReady() || (isRunning() == false));
-    return (isReady() || (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE)));
-}
+        LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
+                        , whichClient.getRoleName( ).getString( )
+                        , whichClient.getServiceName( ).getString( ) );
+    
+        ASSERT(whichClient.isValid());
+    
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::registerProxy(whichClient)
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                      , static_cast<areg::DispatcherThread &>(serviceManager));
+    }
 
-void ServiceManager::_stopServiceManagerThread(bool waitComplete)
-{
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::shutdownServiceManager()
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(self())
-                                  , static_cast<areg::DispatcherThread &>(self()));
+    void ServiceManager::requestUnregisterClient( const areg::ProxyAddress & whichClient, const areg::DisconnectReason reason )
+    {
+        LOG_SCOPE(areg_component_private_ServiceManager_requestUnregisterClient);
+        LOG_DBG( "Request to register proxy [ %s ] of interface [ %s ]"
+                        , whichClient.getRoleName( ).getString( )
+                        , whichClient.getServiceName( ).getString( ) );
+    
+        ASSERT(whichClient.isValid());
+    
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::unregisterProxy(whichClient, reason)
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                      , static_cast<areg::DispatcherThread &>(serviceManager));
+    }
 
-    if (waitComplete)
+    void ServiceManager::requestRecreateThread(const areg::ComponentThread& whichThread)
+    {
+        LOG_SCOPE(areg_component_private_ServiceManager_requestRecreateThread);
+        LOG_DBG("Request to re-create component thread [ %s ]", whichThread.getName().getString());
+
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEvent::sendEvent(areg::ServiceManagerEventData::terminateComponentThread(whichThread.getName())
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                      , static_cast<areg::DispatcherThread &>(serviceManager));
+    }
+
+    bool ServiceManager::_routingServiceConfigure()
+    {
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEventData data(areg::ServiceManagerEventData::configureConnection(areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip)));
+
+        return areg::ServiceManagerEvent::sendEvent( data
+                                             , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager) 
+                                             , static_cast<areg::DispatcherThread &>(serviceManager));
+    }
+
+    bool ServiceManager::_routingServiceStart( uint32_t connectTypes )
+    {
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEventData data(areg::ServiceManagerEventData::startConnection(areg::RemoteServiceKind::Router, connectTypes));
+        return areg::ServiceManagerEvent::sendEvent( data
+                                             , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                             , static_cast<areg::DispatcherThread &>(serviceManager));
+    }
+
+    bool ServiceManager::_routingServiceStart( const areg::String & ipAddress, uint16_t portNr )
+    {
+        bool result = false;
+        if ( (ipAddress.isEmpty() == false) && (portNr != areg::InvalidPort) )
+        {
+            ServiceManager & serviceManager = ServiceManager::getInstance( );
+            result =areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::startNetConnection( ipAddress, portNr )
+                                                  , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                                  , static_cast<areg::DispatcherThread &>(serviceManager) );
+        }
+        return result;
+    }
+
+    void ServiceManager::_routingServiceStop()
+    {
+        ServiceManager & serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::stopConnection()
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(serviceManager)
+                                      , static_cast<areg::DispatcherThread &>(serviceManager));
+    }
+
+    bool ServiceManager::_isRoutingServiceStarted()
+    {
+        return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostConnected( );
+    }
+
+    bool ServiceManager::_isRoutingServicePending()
+    {
+        return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostPending();
+    }
+
+    bool ServiceManager::_isRoutingServiceConfigured()
+    {
+        return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostSetup( );
+    }
+
+    void ServiceManager::_requestCreateThread(const areg::String& componentThread)
+    {
+        ServiceManager& serviceManager = ServiceManager::getInstance();
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::createComponentThread(componentThread)
+                                      , static_cast<areg::ServiceManagerEventConsumer&>(serviceManager)
+                                      , static_cast<areg::DispatcherThread&>(serviceManager) );
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    ServiceManager::ServiceManager()
+        : areg::DispatcherThread           ( SERVICE_MANAGER_THREAD_NAME, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
+        , areg::ServiceManagerEventConsumer( )
+        , areg::ConnectionConsumer         ( )
+        , areg::RegistrationConsumer       ( )
+
+        , mEventProcessor   ( self() )
+        , mServiceClient    ( static_cast<areg::ConnectionConsumer&>(self()), static_cast<areg::RegistrationConsumer&>(self()) )
+        , mLock             (  )
+    {
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Methods
+    //////////////////////////////////////////////////////////////////////////
+
+    void ServiceManager::processEvent( const areg::ServiceManagerEventData & data )
+    {
+        LOG_SCOPE(areg_component_private_ServiceManager_processEvent);
+        areg::ServiceManagerEventData::ServiceManagerCommand cmdService { data.getCommand( ) };
+        LOG_DBG( "Service Manager is going to execute command [ %s ]", areg::ServiceManagerEventData::getString( cmdService ) );
+
+        mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnectionProvider( ), getServiceRegisterProvider() );
+    }
+
+    bool ServiceManager::postEvent(areg::Event & eventElem)
+    {
+        return (AREG_RUNTIME_CAST(&eventElem, areg::ServiceManagerEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
+    }
+
+    void ServiceManager::readyForEvents( bool isReady )
+    {
+        if ( isReady )
+        {
+            areg::ServiceManagerEvent::addListener( static_cast<areg::ServiceManagerEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
+        }
+        else
+        {
+            areg::ServiceManagerEvent::removeListener( static_cast<areg::ServiceManagerEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
+        }
+
+        areg::DispatcherThread::readyForEvents( isReady );
+    }
+
+    bool ServiceManager::_startServiceManagerThread()
+    {
+        areg::Lock lock(mLock);
+        ASSERT(isReady() || (isRunning() == false));
+        return (isReady() || (createThread(areg::WAIT_INFINITE) && waitForDispatcherStart(areg::WAIT_INFINITE)));
+    }
+
+    void ServiceManager::_stopServiceManagerThread(bool waitComplete)
+    {
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::shutdownServiceManager()
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(self())
+                                      , static_cast<areg::DispatcherThread &>(self()));
+
+        if (waitComplete)
+        {
+            completionWait(areg::WAIT_INFINITE);
+            shutdownThread(areg::DO_NOT_WAIT);
+        }
+    }
+
+    void ServiceManager::_waitServiceManagerThread()
     {
         completionWait(areg::WAIT_INFINITE);
         shutdownThread(areg::DO_NOT_WAIT);
     }
-}
 
-void ServiceManager::_waitServiceManagerThread()
-{
-    completionWait(areg::WAIT_INFINITE);
-    shutdownThread(areg::DO_NOT_WAIT);
-}
-
-void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<areg::ProxyAddress> & out_lisProxies ) const
-{
-    LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
-    areg::Lock lock( mLock );
-
-    out_listStubs.clear();
-    out_lisProxies.clear();
-
-    const ServerList & serverList{ mEventProcessor.getRegisteredServiceList( ) };
-
-    for (ServerList::MAPPOS posMap = serverList.firstPosition(); serverList.isValidPosition(posMap); posMap = serverList.nextPosition(posMap) )
+    void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & out_listStubs, areg::ArrayList<areg::ProxyAddress> & out_lisProxies ) const
     {
-        const areg::StubAddress & server      = serverList.keyAtPosition(posMap).getAddress();
-        const ClientList & clientList   = serverList.valueAtPosition(posMap);
+        LOG_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
+        areg::Lock lock( mLock );
 
-        if ( server.isValid() && ((cookie == areg::COOKIE_ANY) || (server.getCookie() == cookie)) )
-        {
-            LOG_DBG("Found stub [ %s ] of cookie [ %u ]", areg::StubAddress::convAddressToPath(server).getString(), static_cast<uint32_t>(cookie));
-            out_listStubs.add(server);
-        }
+        out_listStubs.clear();
+        out_lisProxies.clear();
 
-        for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
+        const ServerList & serverList{ mEventProcessor.getRegisteredServiceList( ) };
+
+        for (ServerList::MAPPOS posMap = serverList.firstPosition(); serverList.isValidPosition(posMap); posMap = serverList.nextPosition(posMap) )
         {
-            const areg::ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
-            if ( proxy.isValid() && ((cookie == areg::COOKIE_ANY) || (proxy.getCookie() == cookie)) )
+            const areg::StubAddress & server      = serverList.keyAtPosition(posMap).getAddress();
+            const ClientList & clientList   = serverList.valueAtPosition(posMap);
+
+            if ( server.isValid() && ((cookie == areg::COOKIE_ANY) || (server.getCookie() == cookie)) )
             {
-                LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", areg::ProxyAddress::convAddressToPath(proxy).getString(), cookie);
-                out_lisProxies.add(proxy);
+                LOG_DBG("Found stub [ %s ] of cookie [ %u ]", areg::StubAddress::convAddressToPath(server).getString(), static_cast<uint32_t>(cookie));
+                out_listStubs.add(server);
+            }
+
+            for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
+            {
+                const areg::ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
+                if ( proxy.isValid() && ((cookie == areg::COOKIE_ANY) || (proxy.getCookie() == cookie)) )
+                {
+                    LOG_DBG("Found proxy [ %s ] of cookie [ %u ]", areg::ProxyAddress::convAddressToPath(proxy).getString(), cookie);
+                    out_lisProxies.add(proxy);
+                }
             }
         }
+
+        LOG_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", out_listStubs.getSize(), out_lisProxies.getSize(), cookie);
     }
 
-    LOG_DBG("Found [ %d ] servers and [ %d ] proxies of cookie [ %u ]", out_listStubs.getSize(), out_lisProxies.getSize(), cookie);
-}
+    void ServiceManager::registeredRemoteServiceProvider( const areg::StubAddress & stub )
+    {
+        ServiceManager::requestRegisterServer(stub);
+    }
 
-void ServiceManager::registeredRemoteServiceProvider( const areg::StubAddress & stub )
-{
-    ServiceManager::requestRegisterServer(stub);
-}
+    void ServiceManager::registeredRemoteServiceConsumer(const areg::ProxyAddress & proxy)
+    {
+        ServiceManager::requestRegisterClient(proxy);
+    }
 
-void ServiceManager::registeredRemoteServiceConsumer(const areg::ProxyAddress & proxy)
-{
-    ServiceManager::requestRegisterClient(proxy);
-}
+    void ServiceManager::unregisteredRemoteServiceProvider(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= areg::COOKIE_ANY*/ )
+    {
+        ServiceManager::requestUnregisterServer(stub, reason);
+    }
 
-void ServiceManager::unregisteredRemoteServiceProvider(const areg::StubAddress & stub, areg::DisconnectReason reason, const ITEM_ID & /*cookie*/ /*= areg::COOKIE_ANY*/ )
-{
-    ServiceManager::requestUnregisterServer(stub, reason);
-}
+    void ServiceManager::unregisteredRemoteServiceConsumer(const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= areg::COOKIE_ANY*/ )
+    {
+        ServiceManager::requestUnregisterClient(proxy, reason);
+    }
 
-void ServiceManager::unregisteredRemoteServiceConsumer(const areg::ProxyAddress & proxy, areg::DisconnectReason reason, const ITEM_ID & /* cookie */ /*= areg::COOKIE_ANY*/ )
-{
-    ServiceManager::requestUnregisterClient(proxy, reason);
-}
+    void ServiceManager::connectedRemoteServiceChannel(const areg::Channel & channel)
+    {
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::registerConnection(channel)
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(self())
+                                      , static_cast<areg::DispatcherThread &>(self()));
+    }
 
-void ServiceManager::connectedRemoteServiceChannel(const areg::Channel & channel)
-{
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::registerConnection(channel)
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(self())
-                                  , static_cast<areg::DispatcherThread &>(self()));
-}
+    void ServiceManager::disconnectedRemoteServiceChannel(const areg::Channel & channel)
+    {
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::unregisterConnection(channel)
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(self())
+                                      , static_cast<areg::DispatcherThread &>(self()));
+    }
 
-void ServiceManager::disconnectedRemoteServiceChannel(const areg::Channel & channel)
-{
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::unregisterConnection(channel)
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(self())
-                                  , static_cast<areg::DispatcherThread &>(self()));
-}
-
-void ServiceManager::lostRemoteServiceChannel(const areg::Channel & channel)
-{
-    areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::lostConnection(channel)
-                                  , static_cast<areg::ServiceManagerEventConsumer &>(self())
-                                  , static_cast<areg::DispatcherThread &>(self()));
-}
+    void ServiceManager::lostRemoteServiceChannel(const areg::Channel & channel)
+    {
+        areg::ServiceManagerEvent::sendEvent( areg::ServiceManagerEventData::lostConnection(channel)
+                                      , static_cast<areg::ServiceManagerEventConsumer &>(self())
+                                      , static_cast<areg::DispatcherThread &>(self()));
+    }
+} // namespace areg
