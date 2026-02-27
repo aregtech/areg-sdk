@@ -71,7 +71,7 @@ namespace areg
             {
                 for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
                 {
-                    ServerInfo si;
+                    areg::ServerInfo si;
                     ClientList clientList;
 
                     mServerList.getAtPosition( mapPos, si, clientList );
@@ -293,7 +293,7 @@ namespace areg
         ClientList clientList;
 
     #if AREG_LOGS
-        const ServerInfo & server = mServerList.registerServer( whichServer, clientList );
+        const areg::ServerInfo & server = mServerList.registerServer( whichServer, clientList );
         LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                    , areg::StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
                    , areg::getString( server.getConnectionStatus( ) )
@@ -324,7 +324,7 @@ namespace areg
         ClientList clientList;
 
     #if AREG_LOGS
-        ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
+        areg::ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
         LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
                    , areg::StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
                    , areg::getString( reason )
@@ -358,7 +358,7 @@ namespace areg
         }
 
         ClientInfo client;
-        const ServerInfo & server = mServerList.registerClient( whichClient, client );
+        const areg::ServerInfo & server = mServerList.registerClient( whichClient, client );
 
         LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
                    , areg::ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
@@ -386,7 +386,7 @@ namespace areg
 
         ClientInfo client;
 
-        ServerInfo server = mServerList.unregisterClient( whichClient, client );
+        areg::ServerInfo server = mServerList.unregisterClient( whichClient, client );
         LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
                    , areg::ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
                    , areg::StubAddress::convAddressToPath( server.getAddress( ) ).getString( )

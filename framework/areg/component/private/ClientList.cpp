@@ -36,7 +36,7 @@ const ClientInfo & ClientList::getClient( const areg::ProxyAddress & whichClient
     return (isValidPosition(pos) ? *pos : ClientInfo::getInvalidClientInfo());
 }
 
-const ClientInfo & ClientList::registerClient( const areg::ProxyAddress & whichClient, const ServerInfo & server )
+const ClientInfo & ClientList::registerClient( const areg::ProxyAddress & whichClient, const areg::ServerInfo & server )
 {
     ClientInfo clInfo(whichClient);
     LISTPOS pos = find(clInfo);
@@ -67,7 +67,7 @@ bool ClientList::unregisterClient( const areg::ProxyAddress & whichClient, Clien
     return result;
 }
 
-void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & out_clientList )
+void ClientList::serverAvailable( const areg::ServerInfo & whichServer, ClientList & out_clientList )
 {
     areg::ServiceConnectionState state = whichServer.getConnectionStatus();
     const areg::StubAddress & addrStub = whichServer.getAddress();

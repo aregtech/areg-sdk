@@ -35,7 +35,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // Methods.
     //////////////////////////////////////////////////////////////////////////
-    ServerList::MAPPOS ServerList::findServer(const ServerInfo& server) const
+    ServerList::MAPPOS ServerList::findServer(const areg::ServerInfo& server) const
     {
         return find(server);
     }
@@ -45,7 +45,7 @@ namespace areg
         LOG_SCOPE(areg_component_private_ServerList_findServer);
         LOG_DBG("Search server based on server address [ %s ]", areg::StubAddress::convAddressToPath(whichServer).getString());
 
-        ServerInfo server(whichServer);
+        areg::ServerInfo server(whichServer);
         return ServerList::find(server);
     }
 
@@ -54,15 +54,15 @@ namespace areg
         LOG_SCOPE(areg_component_private_ServerList_findServer);
         LOG_DBG("Search server based on proxy address [ %s ]", areg::ProxyAddress::convAddressToPath(whichClient).getString());
 
-        ServerInfo server(whichClient);
+        areg::ServerInfo server(whichClient);
         return ServerList::find(server);
     }
 
-    const ServerInfo & ServerList::registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
+    const areg::ServerInfo & ServerList::registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
     {
         LOG_SCOPE(areg_component_private_ServerList_registerClient);
 
-        std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(ServerInfo(whichClient), ClientList());
+        std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(areg::ServerInfo(whichClient), ClientList());
         LOG_DBG("[ %s ] entry for client [ %s ]"
                     , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
                     , areg::ProxyAddress::convAddressToPath(whichClient).getString());
@@ -79,11 +79,11 @@ namespace areg
     }
 
 
-    ServerInfo ServerList::unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
+    areg::ServerInfo ServerList::unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client )
     {
         LOG_SCOPE(areg_component_private_ServerList_unregisterClient);
 
-        ServerInfo result;
+        areg::ServerInfo result;
         ServerListBase::MAPPOS pos = findServer(whichClient);
         if (ServerListBase::isValidPosition(pos))
         {
@@ -114,13 +114,13 @@ namespace areg
         return result;
     }
 
-    const ServerInfo & ServerList::registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList )
+    const areg::ServerInfo & ServerList::registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList )
     {
         LOG_SCOPE(areg_component_private_ServerList_registerServer);
 
         ASSERT(addrStub.isValid() );
 
-        ServerInfo server(addrStub);
+        areg::ServerInfo server(addrStub);
         std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(server, ClientList());
         LOG_DBG("[ %s ] entry for server [ %s ]"
                     , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
@@ -129,7 +129,7 @@ namespace areg
         ServerListBase::MAPPOS pos = added.first;
         ASSERT(ServerListBase::isValidPosition(pos));
 
-        ServerInfo& key = ServerListBase::keyAtPosition(pos);
+        areg::ServerInfo& key = ServerListBase::keyAtPosition(pos);
         ClientList& value = ServerListBase::valueAtPosition(pos);
 
         key = server;
@@ -145,16 +145,16 @@ namespace areg
         return key;
     }
 
-    ServerInfo ServerList::unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList )
+    areg::ServerInfo ServerList::unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList )
     {
         LOG_SCOPE(areg_component_private_ServerList_unregisterServer);
 
-        ServerInfo result(whichServer);
+        areg::ServerInfo result(whichServer);
         ServerListBase::MAPPOS pos = find(result);
 
         if (ServerListBase::isValidPosition(pos))
         {
-            ServerInfo& key = ServerListBase::keyAtPosition(pos);
+            areg::ServerInfo& key = ServerListBase::keyAtPosition(pos);
             ClientList& value = ServerListBase::valueAtPosition(pos);
 
             result = key;
@@ -194,10 +194,10 @@ namespace areg
 
     bool ServerList::isServerRegistered(const areg::StubAddress & server) const
     {
-        return (ServerListBase::isValidPosition(find(ServerInfo(server))));
+        return (ServerListBase::isValidPosition(find(areg::ServerInfo(server))));
     }
 
-    const ServerInfo * ServerList::findClientServer(const areg::ProxyAddress & whichClient) const
+    const areg::ServerInfo * ServerList::findClientServer(const areg::ProxyAddress & whichClient) const
     {
         ServerListBase::MAPPOS pos = findServer( whichClient );
         return ( ServerListBase::isValidPosition(pos) ? &(pos->first) : nullptr);

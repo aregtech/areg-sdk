@@ -28,182 +28,210 @@
  ************************************************************************/
 class ClientInfo;
 
-//////////////////////////////////////////////////////////////////////////
-// ServerInfo class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Server Info is a helper class used by Routing Service,
- *          which contains information of Stub address,
- *          target Stub address, server state and Service Info objects.
- *          Every instantiated Stub is registered in Router Service,
- *          which will notify clients about service availability.
- **/
-class ServerInfo
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // ServerInfo class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default Constructor.
-     *          Creates Server Info with invalid Stub address and sets state Undefined.
+     * \brief   The Server Info is a helper class used by Routing Service,
+     *          which contains information of Stub address,
+     *          target Stub address, server state and Service Info objects.
+     *          Every instantiated Stub is registered in Router Service,
+     *          which will notify clients about service availability.
      **/
-    ServerInfo();
+    class ServerInfo
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default Constructor.
+         *          Creates Server Info with invalid Stub address and sets state Undefined.
+         **/
+        ServerInfo();
 
-    /**
-     * \brief   Initialization constructor.
-     *          Creates Server Info object, copies given address
-     *          and sets state to Registered if specified server address is valid.
-     * \param   server  The address of Stub server
-     **/
-    explicit ServerInfo( const areg::StubAddress & server );
+        /**
+         * \brief   Initialization constructor.
+         *          Creates Server Info object, copies given address
+         *          and sets state to Registered if specified server address is valid.
+         * \param   server  The address of Stub server
+         **/
+        explicit ServerInfo( const areg::StubAddress & server );
 
-    /**
-     * \brief   Initialization constructor.
-     *          Creates Server Info object, copies given address
-     *          and sets state to Registered if specified server address is valid.
-     * \param   server  The address of Stub server
-     **/
-    explicit ServerInfo( areg::StubAddress && server );
+        /**
+         * \brief   Initialization constructor.
+         *          Creates Server Info object, copies given address
+         *          and sets state to Registered if specified server address is valid.
+         * \param   server  The address of Stub server
+         **/
+        explicit ServerInfo( areg::StubAddress && server );
 
-    /**
-     * \brief   Initialization constructor.
-     *          Creates Server Info object, copies server address data from proxy address.
-     * \param   proxy   The Proxy address to extract data of Stub address
-     **/
-    explicit ServerInfo( const areg::ProxyAddress & proxy );
+        /**
+         * \brief   Initialization constructor.
+         *          Creates Server Info object, copies server address data from proxy address.
+         * \param   proxy   The Proxy address to extract data of Stub address
+         **/
+        explicit ServerInfo( const areg::ProxyAddress & proxy );
 
-    /**
-     * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
-     **/
-    ServerInfo( const ServerInfo & src );
+        /**
+         * \brief   Copy constructor.
+         * \param   src     The source of data to copy.
+         **/
+        ServerInfo( const ServerInfo & src );
 
-    /**
-     * \brief   Move constructor.
-     * \param   src     The source of data to move.
-     **/
-    ServerInfo( ServerInfo && src ) noexcept;
+        /**
+         * \brief   Move constructor.
+         * \param   src     The source of data to move.
+         **/
+        ServerInfo( ServerInfo && src ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
-    ~ServerInfo() = default;
+        /**
+         * \brief   Destructor
+         **/
+        ~ServerInfo() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies Server Info data from given source.
-     * \param   src     The source of Server Info to copy data.
-     **/
-    ServerInfo & operator = ( const ServerInfo & src );
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Copies Server Info data from given source.
+         * \param   src     The source of Server Info to copy data.
+         **/
+        ServerInfo & operator = ( const ServerInfo & src );
 
-    /**
-     * \brief   Moves Server Info data from given source.
-     * \param   src     The source of Server Info to move data.
-     **/
-    ServerInfo & operator = ( ServerInfo && src ) noexcept;
+        /**
+         * \brief   Moves Server Info data from given source.
+         * \param   src     The source of Server Info to move data.
+         **/
+        ServerInfo & operator = ( ServerInfo && src ) noexcept;
 
-    /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   server  The stub address to set.
-     **/
-    ServerInfo & operator = ( const areg::StubAddress & server );
+        /**
+         * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
+         *          if specified Stub address is valid. Otherwise, it will set state Undefined.
+         * \param   server  The stub address to set.
+         **/
+        ServerInfo & operator = ( const areg::StubAddress & server );
 
-    /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   server  The stub address to set.
-     **/
-    ServerInfo & operator = ( areg::StubAddress && server ) noexcept;
+        /**
+         * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Connected
+         *          if specified Stub address is valid. Otherwise, it will set state Undefined.
+         * \param   server  The stub address to set.
+         **/
+        ServerInfo & operator = ( areg::StubAddress && server ) noexcept;
 
-    /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   addService  Service address.
-     **/
-    ServerInfo & operator = ( const areg::ServiceAddress & addService );
+        /**
+         * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
+         *          if specified Stub address is valid. Otherwise, it will set state Undefined.
+         * \param   addService  Service address.
+         **/
+        ServerInfo & operator = ( const areg::ServiceAddress & addService );
 
-    /**
-     * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
-     *          if specified Stub address is valid. Otherwise, it will set state Undefined.
-     * \param   addService  Service address.
-     **/
-    ServerInfo & operator = ( areg::ServiceAddress && addService ) noexcept;
+        /**
+         * \brief   Sets the Stub server address without changing any other information and sets Server Info state to Pending
+         *          if specified Stub address is valid. Otherwise, it will set state Undefined.
+         * \param   addService  Service address.
+         **/
+        ServerInfo & operator = ( areg::ServiceAddress && addService ) noexcept;
 
-    /**
-     * \brief   Returns true, if 2 Server Info objects are equal. Otherwise returns false.
-     * \param   other   Server Info object to compare
-     **/
-    bool operator == ( const ServerInfo & other ) const;
+        /**
+         * \brief   Returns true, if 2 Server Info objects are equal. Otherwise returns false.
+         * \param   other   Server Info object to compare
+         **/
+        bool operator == ( const ServerInfo & other ) const;
 
-    /**
-     * \brief   Returns true, if specified and the existing Stub address objects are equal. Otherwise returns false.
-     * \param   server  The Stub server address to compare
-     **/
-    bool operator == ( const areg::StubAddress & server ) const;
+        /**
+         * \brief   Returns true, if specified and the existing Stub address objects are equal. Otherwise returns false.
+         * \param   server  The Stub server address to compare
+         **/
+        bool operator == ( const areg::StubAddress & server ) const;
 
-    /**
-     * \brief   Returns true, if the Service Info of specified Client Info object and the existing Service Info objects are equal.
-     *          Otherwise returns false.
-     * \param   proxy   The Proxy client address to compare
-     **/
-    bool operator == ( const areg::ProxyAddress & proxy ) const;
+        /**
+         * \brief   Returns true, if the Service Info of specified Client Info object and the existing Service Info objects are equal.
+         *          Otherwise returns false.
+         * \param   proxy   The Proxy client address to compare
+         **/
+        bool operator == ( const areg::ProxyAddress & proxy ) const;
 
-    /**
-     * \brief   Converts Server Info object to unsigned integer.
-     *          The conversion is done based on Service Info conversion mechanism.
-     **/
-    explicit operator uint32_t () const;
+        /**
+         * \brief   Converts Server Info object to unsigned integer.
+         *          The conversion is done based on Service Info conversion mechanism.
+         **/
+        explicit operator uint32_t () const;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Returns Stub server address
-     **/
-    inline const areg::StubAddress & getAddress() const;
+        /**
+         * \brief   Returns Stub server address
+         **/
+        inline const areg::StubAddress & getAddress() const;
 
-    /**
-     * \brief   Returns the state of Server Info.
-     *          The Server Info state is updated only when Stub address is set.
-     *          No separate Set-method presented
-     **/
-    inline areg::ServiceConnectionState getConnectionStatus() const;
+        /**
+         * \brief   Returns the state of Server Info.
+         *          The Server Info state is updated only when Stub address is set.
+         *          No separate Set-method presented
+         **/
+        inline areg::ServiceConnectionState getConnectionStatus() const;
 
-    /**
-     * \brief   Changes the network connection status.
-     * \param   newConnection   The service connection status.
-     **/
-    void setConnectionStatus( areg::ServiceConnectionState newConnection );
+        /**
+         * \brief   Changes the network connection status.
+         * \param   newConnection   The service connection status.
+         **/
+        void setConnectionStatus( areg::ServiceConnectionState newConnection );
 
-    /**
-     * \brief   Returns true if server status is Connected
-     **/
-    inline bool isConnected() const;
+        /**
+         * \brief   Returns true if server status is Connected
+         **/
+        inline bool isConnected() const;
 
-    /**
-     * \brief   Returns true if server status is Pending
-     **/
-    inline bool isWaiting() const;
+        /**
+         * \brief   Returns true if server status is Pending
+         **/
+        inline bool isWaiting() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The Server Stub address
-     **/
-    areg::StubAddress mServerAddress;
-    /**
-     * \brief   The State of Server Info. State Registered set only when Stub address is valid.
-     **/
-    areg::ServiceConnectionState  mServerState;
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   The Server Stub address
+         **/
+        areg::StubAddress mServerAddress;
+        /**
+         * \brief   The State of Server Info. State Registered set only when Stub address is valid.
+         **/
+        areg::ServiceConnectionState  mServerState;
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // ServerInfo class inline functions implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    inline const areg::StubAddress& ServerInfo::getAddress() const
+    {
+        return mServerAddress;
+    }
+
+    inline areg::ServiceConnectionState ServerInfo::getConnectionStatus() const
+    {
+        return mServerState;
+    }
+
+    inline bool ServerInfo::isConnected() const
+    {
+        return mServerState == areg::ServiceConnectionState::Connected;
+    }
+
+    inline bool ServerInfo::isWaiting() const
+    {
+        return mServerState == areg::ServiceConnectionState::Pending;
+    }
+
+} // namespace areg
 
 //////////////////////////////////////////////////////////////////////////
 // Hasher of ServerInfo class
@@ -214,48 +242,24 @@ private:
 namespace std
 {
     //! Calculates the hash value of the ServerInfo object
-    template<> struct hash<ServerInfo>
+    template<> struct hash<areg::ServerInfo>
     {
         //! A function to convert ServerInfo object to uint32_t.
-        inline uint32_t operator()(const ServerInfo& key) const
+        inline uint32_t operator()(const areg::ServerInfo& key) const
         {
             return static_cast<uint32_t>(static_cast<const areg::ServiceAddress &>(key.getAddress()));
         }
     };
 
     //!< Compares 2 ServerInfo objects
-    template<> struct equal_to<ServerInfo>
+    template<> struct equal_to<areg::ServerInfo>
     {
         //! A function operator to compare 2 ServerInfo objects.
-        inline bool operator() (const ServerInfo& key1, const ServerInfo& key2) const
+        inline bool operator() (const areg::ServerInfo& key1, const areg::ServerInfo& key2) const
         {
             return static_cast<const areg::ServiceAddress&>(key1.getAddress()) == static_cast<const areg::ServiceAddress&>(key2.getAddress());
         }
     };
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ServerInfo class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
-
-inline const areg::StubAddress& ServerInfo::getAddress() const
-{
-    return mServerAddress;
-}
-
-inline areg::ServiceConnectionState ServerInfo::getConnectionStatus() const
-{
-    return mServerState;
-}
-
-inline bool ServerInfo::isConnected() const
-{
-    return mServerState == areg::ServiceConnectionState::Connected;
-}
-
-inline bool ServerInfo::isWaiting() const
-{
-    return mServerState == areg::ServiceConnectionState::Pending;
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_SERVERINFO_HPP

@@ -16,130 +16,134 @@
 #include "areg/component/private/ServerInfo.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// ServerInfo class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-ServerInfo::ServerInfo()
-    : mServerAddress( areg::StubAddress::getInvalidStubAddress() )
-    , mServerState  ( areg::ServiceConnectionState::Unknown )
+namespace areg
 {
-}
 
-ServerInfo::ServerInfo( const areg::StubAddress & server )
-    : mServerAddress( server )
-    , mServerState  (  )
-{
-    setConnectionStatus( areg::ServiceConnectionState::Connected );
-}
+    //////////////////////////////////////////////////////////////////////////
+    // ServerInfo class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-ServerInfo::ServerInfo( areg::StubAddress && server )
-    : mServerAddress( server )
-    , mServerState  ( )
-{
-    setConnectionStatus( areg::ServiceConnectionState::Connected );
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    ServerInfo::ServerInfo()
+        : mServerAddress( areg::StubAddress::getInvalidStubAddress() )
+        , mServerState  ( areg::ServiceConnectionState::Unknown )
+    {
+    }
 
-ServerInfo::ServerInfo( const areg::ProxyAddress & proxy )
-    : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), areg::String::getEmptyString() )
-    , mServerState  ( areg::ServiceConnectionState::Pending )
-{
-    mServerAddress.invalidateChannel();
-}
+    ServerInfo::ServerInfo( const areg::StubAddress & server )
+        : mServerAddress( server )
+        , mServerState  (  )
+    {
+        setConnectionStatus( areg::ServiceConnectionState::Connected );
+    }
 
-ServerInfo::ServerInfo( const ServerInfo & src )
-    : mServerAddress( src.mServerAddress )
-    , mServerState  ( src.mServerState )
-{
-}
+    ServerInfo::ServerInfo( areg::StubAddress && server )
+        : mServerAddress( server )
+        , mServerState  ( )
+    {
+        setConnectionStatus( areg::ServiceConnectionState::Connected );
+    }
 
-ServerInfo::ServerInfo( ServerInfo && src ) noexcept
-    : mServerAddress( std::move(src.mServerAddress) )
-    , mServerState  ( std::move(src.mServerState) )
-{
-}
+    ServerInfo::ServerInfo( const areg::ProxyAddress & proxy )
+        : mServerAddress( proxy.getServiceName(), proxy.getServiceVersion(), proxy.getServiceType(), proxy.getRoleName(), areg::String::getEmptyString() )
+        , mServerState  ( areg::ServiceConnectionState::Pending )
+    {
+        mServerAddress.invalidateChannel();
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-ServerInfo & ServerInfo::operator = ( const ServerInfo & src )
-{
-    mServerAddress  = src.mServerAddress;
-    mServerState    = src.mServerState;
+    ServerInfo::ServerInfo( const ServerInfo & src )
+        : mServerAddress( src.mServerAddress )
+        , mServerState  ( src.mServerState )
+    {
+    }
 
-    return (*this);
-}
+    ServerInfo::ServerInfo( ServerInfo && src ) noexcept
+        : mServerAddress( std::move(src.mServerAddress) )
+        , mServerState  ( std::move(src.mServerState) )
+    {
+    }
 
-ServerInfo & ServerInfo::operator = ( ServerInfo && src ) noexcept
-{
-    mServerAddress  = std::move(src.mServerAddress);
-    mServerState    = std::move(src.mServerState);
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    ServerInfo & ServerInfo::operator = ( const ServerInfo & src )
+    {
+        mServerAddress  = src.mServerAddress;
+        mServerState    = src.mServerState;
+
+        return (*this);
+    }
+
+    ServerInfo & ServerInfo::operator = ( ServerInfo && src ) noexcept
+    {
+        mServerAddress  = std::move(src.mServerAddress);
+        mServerState    = std::move(src.mServerState);
     
-    return (*this);
-}
+        return (*this);
+    }
 
-ServerInfo & ServerInfo::operator = ( const areg::StubAddress & server )
-{
-    mServerAddress  = server;
-    setConnectionStatus( areg::ServiceConnectionState::Connected );
+    ServerInfo & ServerInfo::operator = ( const areg::StubAddress & server )
+    {
+        mServerAddress  = server;
+        setConnectionStatus( areg::ServiceConnectionState::Connected );
     
-    return (*this);
-}
+        return (*this);
+    }
 
-ServerInfo & ServerInfo::operator = ( areg::StubAddress && server ) noexcept
-{
-    mServerAddress  = std::move(server);
-    setConnectionStatus( areg::ServiceConnectionState::Connected );
+    ServerInfo & ServerInfo::operator = ( areg::StubAddress && server ) noexcept
+    {
+        mServerAddress  = std::move(server);
+        setConnectionStatus( areg::ServiceConnectionState::Connected );
     
-    return (*this);
-}
+        return (*this);
+    }
 
-ServerInfo & ServerInfo::operator = (const areg::ServiceAddress & addService)
-{
-    mServerAddress = addService;
-    setConnectionStatus( areg::ServiceConnectionState::Pending );
+    ServerInfo & ServerInfo::operator = (const areg::ServiceAddress & addService)
+    {
+        mServerAddress = addService;
+        setConnectionStatus( areg::ServiceConnectionState::Pending );
 
-    return (*this);
-}
+        return (*this);
+    }
 
-ServerInfo & ServerInfo::operator = ( areg::ServiceAddress && addService ) noexcept
-{
-    mServerAddress = std::move( addService );
-    setConnectionStatus( areg::ServiceConnectionState::Pending );
+    ServerInfo & ServerInfo::operator = ( areg::ServiceAddress && addService ) noexcept
+    {
+        mServerAddress = std::move( addService );
+        setConnectionStatus( areg::ServiceConnectionState::Pending );
 
-    return (*this);
-}
+        return (*this);
+    }
 
-bool ServerInfo::operator == ( const ServerInfo & other ) const
-{
-    return (mServerAddress == other.mServerAddress);
-}
+    bool ServerInfo::operator == ( const ServerInfo & other ) const
+    {
+        return (mServerAddress == other.mServerAddress);
+    }
 
-bool ServerInfo::operator == ( const areg::StubAddress & server ) const
-{
-    return server.getRoleName() == mServerAddress.getRoleName() && server.isServiceCompatible(mServerAddress.getService());
-}
+    bool ServerInfo::operator == ( const areg::StubAddress & server ) const
+    {
+        return server.getRoleName() == mServerAddress.getRoleName() && server.isServiceCompatible(mServerAddress.getService());
+    }
 
-bool ServerInfo::operator == ( const areg::ProxyAddress & proxy ) const
-{
-    return mServerAddress == proxy;
-}
+    bool ServerInfo::operator == ( const areg::ProxyAddress & proxy ) const
+    {
+        return mServerAddress == proxy;
+    }
 
-ServerInfo::operator uint32_t () const
-{
-    const areg::ServiceAddress & addrService = static_cast<const areg::ServiceAddress &>(mServerAddress);
-    return static_cast<uint32_t>( addrService );
-}
+    ServerInfo::operator uint32_t () const
+    {
+        const areg::ServiceAddress & addrService = static_cast<const areg::ServiceAddress &>(mServerAddress);
+        return static_cast<uint32_t>( addrService );
+    }
 
-void ServerInfo::setConnectionStatus(areg::ServiceConnectionState newConnection)
-{
-    if ( mServerAddress.getSource() != areg::SOURCE_UNKNOWN )
-        mServerState = newConnection;
-    else if ( static_cast<const areg::ServiceItem &>(mServerAddress).isValid() )
-        mServerState = areg::ServiceConnectionState::Pending;
-    else
-        mServerState = areg::ServiceConnectionState::Unknown;
-}
+    void ServerInfo::setConnectionStatus(areg::ServiceConnectionState newConnection)
+    {
+        if ( mServerAddress.getSource() != areg::SOURCE_UNKNOWN )
+            mServerState = newConnection;
+        else if ( static_cast<const areg::ServiceItem &>(mServerAddress).isValid() )
+            mServerState = areg::ServiceConnectionState::Pending;
+        else
+            mServerState = areg::ServiceConnectionState::Unknown;
+    }
+} // namespace areg

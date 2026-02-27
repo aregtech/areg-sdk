@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class ProxyAddress; }
-class ServerInfo;
+namespace areg { class ServerInfo; }
 
 using ClientListBase = areg::LinkedList<ClientInfo>;
 
@@ -121,7 +121,7 @@ public:
      *          object. Otherwise, it will create new Client Info entry with initial
      *          number of instances 1.
      **/
-    const ClientInfo & registerClient( const areg::ProxyAddress & whichClient, const ServerInfo & server );
+    const ClientInfo & registerClient( const areg::ProxyAddress & whichClient, const areg::ServerInfo & server );
 
     /**
      * \brief   It searches servicing Client entry in the list by the given address of Proxy.
@@ -141,7 +141,7 @@ public:
      * \param   whichServer     The servicing server helper object, which is available.
      * \param   out_clientList  On output it contains list of connected clients.
      **/
-    void serverAvailable( const ServerInfo & whichServer, ClientList & out_clientList );
+    void serverAvailable( const areg::ServerInfo & whichServer, ClientList & out_clientList );
 
     /**
      * \brief   Called to change the state of connected clients when server is disconnected. 

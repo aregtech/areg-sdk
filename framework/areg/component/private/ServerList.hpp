@@ -40,7 +40,7 @@ namespace areg
     /**
      * \brief   Server List helper class.
      **/
-    using ServerListBase    = areg::HashMap<ServerInfo, ClientList>;
+    using ServerListBase    = areg::HashMap<areg::ServerInfo, ClientList>;
     
     /**
      * \brief   Server List is a Hash Map class containing information
@@ -89,7 +89,7 @@ namespace areg
          * \param   out_client  [out]   On output, this contain the information of connected service consumer (client).
          * \return  Returns registered Client Info object.
          **/
-        const ServerInfo & registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
+        const areg::ServerInfo & registerClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
 
         /**
          * \brief   Unregisters specified Proxy client from Server List.
@@ -105,7 +105,7 @@ namespace areg
          *          Any other value specifies number of existing client related
          *          with Service Interface.
          **/
-        ServerInfo unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
+        areg::ServerInfo unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
 
         /**
          * \brief   Registers specified Stub Server in the list, if the address is valid, it sets Server state
@@ -117,7 +117,7 @@ namespace areg
          *                                  Server to be connected.
          * \return  Returns updated and registered Server Info object.
          **/
-        const ServerInfo & registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList );
+        const areg::ServerInfo & registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList );
 
         /**
          * \brief   Unregisters specified Stub Server from the list and returns related
@@ -127,7 +127,7 @@ namespace areg
          *                                  objects that were previousely registered to the service provider (server).
          * \return  Returns updated and registered Server Info object.
          **/
-        ServerInfo unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList );
+        areg::ServerInfo unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -158,7 +158,7 @@ namespace areg
          * \param   whichClient     The instance of client information object to extract data for search.
          * \return  Returns valid pointer if found registered server. Otherwise, it returns null.
          **/
-        const ServerInfo * findClientServer( const areg::ProxyAddress & whichClient ) const;
+        const areg::ServerInfo * findClientServer( const areg::ProxyAddress & whichClient ) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -178,7 +178,7 @@ namespace areg
         /**
          * \brief   Find server component by server info.
          **/
-        MAPPOS findServer(const ServerInfo& server) const;
+        MAPPOS findServer(const areg::ServerInfo& server) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
