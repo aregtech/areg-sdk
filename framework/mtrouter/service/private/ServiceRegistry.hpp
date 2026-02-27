@@ -24,183 +24,186 @@
 #include "mtrouter/service/private/ListServiceProxies.hpp"
 #include "areg/base/ArrayList.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceRegistry class declaration
-//////////////////////////////////////////////////////////////////////////
-using ServiceRegistryBase = areg::HashMap<mtrouter::ServiceStub, ListServiceProxies>;
-
-/**
- * \brief   The remote services registration map, which is a map of stub and list of connected proxies.
- **/
-class ServiceRegistry   : public ServiceRegistryBase
+namespace mtrouter
 {
-//////////////////////////////////////////////////////////////////////////
-// Predefined types and constants
-//////////////////////////////////////////////////////////////////////////
-
+    
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceRegistry class declaration
+    //////////////////////////////////////////////////////////////////////////
+    using ServiceRegistryBase = areg::HashMap<mtrouter::ServiceStub, ListServiceProxies>;
     /**
-     * \brief   ServiceRegistry::InvalidStubService
-     *          Defines invalid stub service
+     * \brief   The remote services registration map, which is a map of stub and list of connected proxies.
      **/
-    static const mtrouter::ServiceStub          InvalidStubService;
+    class ServiceRegistry   : public ServiceRegistryBase
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Predefined types and constants
+    //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   ServiceRegistry::EmptyProxiesList
-     *          Defines empty list of remote connected proxies.
-     **/
-    static const ListServiceProxies   EmptyProxiesList;
+        /**
+         * \brief   ServiceRegistry::InvalidStubService
+         *          Defines invalid stub service
+         **/
+        static const mtrouter::ServiceStub          InvalidStubService;
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Default constructor
-     **/
-    ServiceRegistry() = default;
-    /**
-     * \brief   Destructor
-     **/
-    ~ServiceRegistry() = default;
+        /**
+         * \brief   ServiceRegistry::EmptyProxiesList
+         *          Defines empty list of remote connected proxies.
+         **/
+        static const ListServiceProxies   EmptyProxiesList;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor
+         **/
+        ServiceRegistry() = default;
+        /**
+         * \brief   Destructor
+         **/
+        ~ServiceRegistry() = default;
 
-    /**
-     * \brief   Returns true if passed stub service is already registered.
-     * \param   addrStub    The remote servicing stub object to check.
-     **/
-    bool isServiceRegistered( const areg::StubAddress & addrStub ) const;
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Returns true if passed proxy address is already registered.
-     * \param   addrProxy   The address of proxy to check.
-     **/
-    bool isServiceRegistered( const areg::ProxyAddress & addrProxy ) const;
+        /**
+         * \brief   Returns true if passed stub service is already registered.
+         * \param   addrStub    The remote servicing stub object to check.
+         **/
+        bool isServiceRegistered( const areg::StubAddress & addrStub ) const;
 
-    /**
-     * \brief   By given remote servicing address finds the address of stub,
-     *          if there is any, or returns invalid stub address.
-     * \param   addrService     The servicing address to check.
-     * \return  Returns valid Stub address if it is registered. Otherwise, returns invalid Stub address.
-     **/
-    const mtrouter::ServiceStub & getStubService( const areg::ServiceAddress & addrService ) const;
+        /**
+         * \brief   Returns true if passed proxy address is already registered.
+         * \param   addrProxy   The address of proxy to check.
+         **/
+        bool isServiceRegistered( const areg::ProxyAddress & addrProxy ) const;
 
-    /**
-     * \brief   By given remote servicing Stub address checks and returns the service connection status.
-     * \param   addrStub        The address of remote Stub service to check the status.
-     * \return  If found registered remote Stub address, returns the actual service connection status.
-     *          Otherwise, returns unknown service connection status.
-     **/
-    areg::ServiceConnectionState getServiceStatus( const areg::StubAddress & addrStub ) const;
+        /**
+         * \brief   By given remote servicing address finds the address of stub,
+         *          if there is any, or returns invalid stub address.
+         * \param   addrService     The servicing address to check.
+         * \return  Returns valid Stub address if it is registered. Otherwise, returns invalid Stub address.
+         **/
+        const mtrouter::ServiceStub & getStubService( const areg::ServiceAddress & addrService ) const;
 
-    /**
-     * \brief   By given remote servicing Proxy address checks and returns the service connection status.
-     * \param   addrProxy       The address of remote Proxy service to check the status.
-     * \return  If found registered remote Stub address as Proxy target, returns the actual service connection status.
-     *          Otherwise, returns unknown service connection status.
-     **/
-    areg::ServiceConnectionState getServiceStatus( const areg::ProxyAddress & addrProxy ) const;
+        /**
+         * \brief   By given remote servicing Stub address checks and returns the service connection status.
+         * \param   addrStub        The address of remote Stub service to check the status.
+         * \return  If found registered remote Stub address, returns the actual service connection status.
+         *          Otherwise, returns unknown service connection status.
+         **/
+        areg::ServiceConnectionState getServiceStatus( const areg::StubAddress & addrStub ) const;
 
-    /**
-     * \brief   Returns the list of connected proxies address or empty list if no proxy is connected yet.
-     * \param   addrService     The address of remote servicing stub to check.
-     * \return  Returns not empty list if there is any proxy requested connection.
-     *          Otherwise, returns empty list.
-     **/
-    const ListServiceProxies & getProxyServiceList( const areg::ServiceAddress & addrService ) const;
+        /**
+         * \brief   By given remote servicing Proxy address checks and returns the service connection status.
+         * \param   addrProxy       The address of remote Proxy service to check the status.
+         * \return  If found registered remote Stub address as Proxy target, returns the actual service connection status.
+         *          Otherwise, returns unknown service connection status.
+         **/
+        areg::ServiceConnectionState getServiceStatus( const areg::ProxyAddress & addrProxy ) const;
 
-    /**
-     * \brief   By given Proxy address, searches and returns the registered proxy service object.
-     *          Returns invalid remote service proxy object if could not find any.
-     * \param   addProxy     The address of remote servicing proxy to check.
-     * \return  Returns valid servicing proxy object if found entry registered.
-     *          Otherwise, returns invalid object.
-     **/
-    const ServiceProxy & getProxyService( const areg::ProxyAddress & addProxy ) const;
+        /**
+         * \brief   Returns the list of connected proxies address or empty list if no proxy is connected yet.
+         * \param   addrService     The address of remote servicing stub to check.
+         * \return  Returns not empty list if there is any proxy requested connection.
+         *          Otherwise, returns empty list.
+         **/
+        const ListServiceProxies & getProxyServiceList( const areg::ServiceAddress & addrService ) const;
 
-    /**
-     * \brief   Registers remote Proxy address and returns the registered Stub and Proxy service object.
-     *          On output, the 'out_proxyService' parameter contains the data of remote proxy service object.
-     * \param[in]   addrProxy           The address of remote servicing proxy to register.
-     * \param[out]  out_proxyService    On output, contains data of remote proxy service.
-     * \return  Returns servicing stub object with remote stub address and connection status data.
-     **/
-    const mtrouter::ServiceStub & registerServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
+        /**
+         * \brief   By given Proxy address, searches and returns the registered proxy service object.
+         *          Returns invalid remote service proxy object if could not find any.
+         * \param   addProxy     The address of remote servicing proxy to check.
+         * \return  Returns valid servicing proxy object if found entry registered.
+         *          Otherwise, returns invalid object.
+         **/
+        const ServiceProxy & getProxyService( const areg::ProxyAddress & addProxy ) const;
 
-    /**
-     * \brief   Unregisters remote Proxy address and returns the Stub and Proxy service object.
-     *          On output, the 'out_proxyService' parameter contains the data of remote proxy service object.
-     * \param[in]   addrProxy           The address of remote servicing proxy to register.
-     * \param[out]  out_proxyService    On output, contains data of remote proxy service.
-     * \return  Returns servicing stub object with remote stub address and connection status data.
-     **/
-    const mtrouter::ServiceStub & unregisterServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
+        /**
+         * \brief   Registers remote Proxy address and returns the registered Stub and Proxy service object.
+         *          On output, the 'out_proxyService' parameter contains the data of remote proxy service object.
+         * \param[in]   addrProxy           The address of remote servicing proxy to register.
+         * \param[out]  out_proxyService    On output, contains data of remote proxy service.
+         * \return  Returns servicing stub object with remote stub address and connection status data.
+         **/
+        const mtrouter::ServiceStub & registerServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
 
-    /**
-     * \brief   Registers remote Stub address and returns the registered stub service object.
-     *          On output, the 'out_listProxies' parameter contains the list of proxies waiting for Stub registration
-     * \param[in]   addrStub            The address of remote servicing Stub to register.
-     * \param[out]  out_listProxies     On output, contains list of remote service proxy waiting for connection
-     * \return  Returns servicing stub object with remote stub address and connection status data.
-     **/
-    const mtrouter::ServiceStub & registerServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
+        /**
+         * \brief   Unregisters remote Proxy address and returns the Stub and Proxy service object.
+         *          On output, the 'out_proxyService' parameter contains the data of remote proxy service object.
+         * \param[in]   addrProxy           The address of remote servicing proxy to register.
+         * \param[out]  out_proxyService    On output, contains data of remote proxy service.
+         * \return  Returns servicing stub object with remote stub address and connection status data.
+         **/
+        const mtrouter::ServiceStub & unregisterServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
 
-    /**
-     * \brief   Unregisters remote Stub address and returns the registered stub service object.
-     *          On output, the 'out_listProxies' parameter contains the list of proxies previously connected to Stub
-     * \param[in]   addrStub            The address of remote servicing Stub to register.
-     * \param[out]  out_listProxies     On output, contains list of remote service proxy previously connected to Stub
-     * \return  Returns servicing stub object with remote stub address and connection status data.
-     **/
-    const mtrouter::ServiceStub & unregisterServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
+        /**
+         * \brief   Registers remote Stub address and returns the registered stub service object.
+         *          On output, the 'out_listProxies' parameter contains the list of proxies waiting for Stub registration
+         * \param[in]   addrStub            The address of remote servicing Stub to register.
+         * \param[out]  out_listProxies     On output, contains list of remote service proxy waiting for connection
+         * \return  Returns servicing stub object with remote stub address and connection status data.
+         **/
+        const mtrouter::ServiceStub & registerServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
-    /**
-     * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
-     *          specified value. In output listProviders and listConsumers contain list of remote stub and proxy addresses.
-     * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering
-     * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
-     * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
-     **/
-    void getServiceList(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const;
+        /**
+         * \brief   Unregisters remote Stub address and returns the registered stub service object.
+         *          On output, the 'out_listProxies' parameter contains the list of proxies previously connected to Stub
+         * \param[in]   addrStub            The address of remote servicing Stub to register.
+         * \param[out]  out_listProxies     On output, contains list of remote service proxy previously connected to Stub
+         * \return  Returns servicing stub object with remote stub address and connection status data.
+         **/
+        const mtrouter::ServiceStub & unregisterServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
-    /**
-     * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
-     *          In output listProviders and listConsumers contain list of remote stub and proxy addresses.
-     * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering
-     * \param[out]  listProviders      On output the list contains stub address objects that have sources of specified cookie.
-     * \param[out]  listConsumers    On output the list contains proxy address objects that have sources of specified cookie.
-     **/
-    void getServiceSources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers);
+        /**
+         * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
+         *          specified value. In output listProviders and listConsumers contain list of remote stub and proxy addresses.
+         * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering
+         * \param[out]  listProviders   On output this will contain list of remote stub addresses connected with specified cookie value.
+         * \param[out]  listConsumers   On output this will contain list of remote proxy addresses connected with specified cookie value.
+         **/
+        void getServiceList(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers ) const;
 
-    /**
-     * \brief   Call to disconnect proxy service specified by proxy address.
-     *          It sets the connection state to pending and resets channel data.
-     * \param   addrProxy   The address of proxy to disconnect.
-     * \return  Returns instance of valid stub service. Otherwise, the service stub is invalid.
-     **/
-    const mtrouter::ServiceStub & disconnectProxy( const areg::ProxyAddress & addrProxy );
+        /**
+         * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
+         *          In output listProviders and listConsumers contain list of remote stub and proxy addresses.
+         * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering
+         * \param[out]  listProviders      On output the list contains stub address objects that have sources of specified cookie.
+         * \param[out]  listConsumers    On output the list contains proxy address objects that have sources of specified cookie.
+         **/
+        void getServiceSources(const ITEM_ID & cookie, areg::ArrayList<areg::StubAddress> & listProviders, areg::ArrayList<areg::ProxyAddress> & listConsumers);
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
+        /**
+         * \brief   Call to disconnect proxy service specified by proxy address.
+         *          It sets the connection state to pending and resets channel data.
+         * \param   addrProxy   The address of proxy to disconnect.
+         * \return  Returns instance of valid stub service. Otherwise, the service stub is invalid.
+         **/
+        const mtrouter::ServiceStub & disconnectProxy( const areg::ProxyAddress & addrProxy );
 
-    /**
-     * \brief   Searches the entry of registered servicing by given address of service.
-     * \param   addrService     The address of remote service.
-     * \return  Returns valid position value if could find an entry matching given servicing address.
-     *          Otherwise, returns nullptr.
-     **/
-    MAPPOS findService( const areg::ServiceAddress & addrService ) const;
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ServiceRegistry );
-};
+        /**
+         * \brief   Searches the entry of registered servicing by given address of service.
+         * \param   addrService     The address of remote service.
+         * \return  Returns valid position value if could find an entry matching given servicing address.
+         *          Otherwise, returns nullptr.
+         **/
+        MAPPOS findService( const areg::ServiceAddress & addrService ) const;
 
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( ServiceRegistry );
+    };
+
+} // namespace mtrouter
 #endif  // AREG_mtrouter_SERVICE_PRIVATE_SERVICEREGISTRY_HPP

@@ -223,7 +223,7 @@ namespace mtrouter
     // Member variables
     //////////////////////////////////////////////////////////////////////////////
     private:
-        ServiceRegistry mServiceRegistry;   //!< The service registry map to track stub-proxy connections
+        mtrouter::ServiceRegistry mServiceRegistry;   //!< The service registry map to track stub-proxy connections
 
     //////////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
