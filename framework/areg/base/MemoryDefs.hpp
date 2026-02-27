@@ -335,17 +335,6 @@ namespace NEMemory
     inline const uint8_t * buffer_data_read( const RawBuffer * byteBuffer );
 
     /**
-     * \brief	Constructs elements in allocated buffer, i.e. calls default constructor to initialize element
-     *          The type of element should be specified.
-     * \param	begin	    Pointer to the buffer allocated in heap. 
-     * \param	elemCount	Amount of elements to construct. If zero, no element will be constructed.
-     * \return  Returns pointer to first constructed element in array.
-     * \tparam  ELEM_TYPE   The name of object to construct. Can be primitives of objects. 
-     *                      If objects (class or structure), it should have default constructor.
-     * \note    The type ELEM_TYPE must have public available default constructor.
-     **/
-    template <typename ELEM_TYPE>
-    /**
      * \brief   Constructs elements in allocated buffer by calling the default constructor for each
      *          element.
      *
@@ -355,20 +344,9 @@ namespace NEMemory
      * \return  Pointer to first constructed element in array.
      * \note    ELEM_TYPE must have a public default constructor.
      **/
+    template <typename ELEM_TYPE>
     inline ELEM_TYPE * construct_elems(void *begin, uint32_t elemCount);
 
-    /**
-     * \brief	Constructs elements with argument in allocated buffer,  i.e. calls constructor with argument to initialize elements
-     *          The type of element should be specified.
-     * \param	begin	    Pointer to the buffer allocated in heap.
-     * \param	elemCount	Amount of elements to construct. If zero, no element will be initialize.
-     * \param	arg	        Argument value to pass during initialization.
-     * \return  Returns pointer to first constructed element in array.
-     * \tparam  ELEM_TYPE   The name of object to construct. Can be primitives of objects.
-     *                      If objects (class or structure), it should have appropriate constructor with constructors.
-     * \note    The type ELEM_TYPE must have public available appropriate constructor with arguments.
-     **/
-    template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
     /**
      * \brief   Constructs elements in allocated buffer by calling the constructor with an argument
      *          for each element.
@@ -380,19 +358,9 @@ namespace NEMemory
      * \return  Pointer to first constructed element in array.
      * \note    ELEM_TYPE must have a public constructor accepting ARGUMENT_TYPE.
      **/
+    template <typename ELEM_TYPE, typename ARGUMENT_TYPE>
     inline ELEM_TYPE * construct_with_arg(void *begin, uint32_t elemCount, ARGUMENT_TYPE arg);
 
-    /**
-     * \brief	Destroys elements previously constructed / initialized in heap,
-     *          i.e. calls destructor of every element.
-     *          The type of element should be specified.
-     * \param	begin	    Pointer to buffer with allocated elements.
-     * \param	elemCount	Number of elements to destroy.
-     * \tparam  ELEM_TYPE   The name of object to destroy. Can be primitives or objects.
-     *                      If objects (class or structure), the destructor should be accessible (i.e. public)
-     * \note    The type ELEM_TYPE must have public available destructor.
-     **/
-    template <typename ELEM_TYPE>
     /**
      * \brief   Destroys previously constructed elements in heap by calling the destructor for each.
      *
@@ -400,24 +368,9 @@ namespace NEMemory
      * \param   elemCount       Number of elements to destroy.
      * \note    ELEM_TYPE must have a public destructor.
      **/
+    template <typename ELEM_TYPE>
     inline void destroy_elems(ELEM_TYPE *begin, uint32_t elemCount);
 
-    /**
-     * \brief	Copies element from source to destination. The allocated buffer of destination should be big enough
-     *          to store elemCount elements. The type of element should be specified.
-     *          The type ELEM_DST should support assigning operator. The type ELEM_SRC should support conversion operator 
-     *          to type ELEM_LEFT.
-     * \param	destination	Pointer to destination buffer. It should have minimum size to keep elemCount elements.
-     * \param	source	    Pointer to buffer containing element sources.
-     * \param	elemCount	Amount of elements to copy from source to destination buffers.
-     *                      The source and destination buffers should have at least elemCount elements.
-     * \tparam  ELEM_DST    The type of elements in destination. Can be primitives or objects (class or structure).
-     * \tparam  ELEM_SRC    The type of elements in destination. Can be primitives or objects (class or structure).
-     * \note    If ELEM_DST and ELEM_SRC are different types: 
-     *              - it must be possible to convert from ELEM_SRC to ELEM_DST to apply static_cast;
-     *              - the ELEM_SRC should support assigning operator ( operator = ).
-     **/
-    template <typename ELEM_DST, typename ELEM_SRC = ELEM_DST>
     /**
      * \brief   Copies elements from source to destination buffer using assignment operator.
      *
@@ -429,20 +382,9 @@ namespace NEMemory
      * \note    If ELEM_DST and ELEM_SRC differ: ELEM_SRC must be convertible to ELEM_DST (via
      *          static_cast), and ELEM_DST must support operator=.
      **/
+    template <typename ELEM_DST, typename ELEM_SRC = ELEM_DST>
     inline void copy_elems(ELEM_DST *destination, const ELEM_SRC *source, uint32_t elemCount);
 
-    /**
-     * \brief	Moves elements starting from source to destination positions. The source and destination must refer
-     *          to the same chunk of allocated memory. Do not call this function if buffers, which are allocated
-     *          in different spaces. Function makes checkup to avoid memory overlapping.
-     *          The type of element should be specified.
-     * \param	destination	The pointer to destination to move elements from source
-     * \param	source	    The pointer of source elements to move
-     * \param	elemCount	The number of elements to move.
-     * \tparam  ELEM_TYPE   The name of element type. Can be primitive or object (class or structure).
-     * \note    The type ELEM_TYPE must support assigning operator ( operator = ).
-     **/
-    template <typename ELEM_TYPE>
     /**
      * \brief   Moves elements from source to destination within the same allocated memory block,
      *          handling overlapping regions.
@@ -453,28 +395,9 @@ namespace NEMemory
      * \note    Source and destination must refer to the same allocated memory chunk. Do not use if
      *          buffers are in different memory spaces. ELEM_TYPE must support operator=.
      **/
+    template <typename ELEM_TYPE>
     void move_elems(ELEM_TYPE * destination, const ELEM_TYPE * source, uint32_t elemCount);
 
-    /**
-     * \brief	Sets certain element value to the allocated memory. The type of allocated elements and element value
-     *          should be specified. The type ELEM should support at least assigning operator.
-     *          The type ELEM_TYPE should support conversion to type ELEM.
-     * \param	begin	    The pointer to allocated element buffer.
-     * \param	elemValue	The value to set for every element in buffer.
-     * \param	elemCount	The number of elements allocated in buffer.
-     * \note    The type ELEM should have appropriate assignment operator available to set data from type ELEM_TYPE,
-     *          i.e. it should have operator 'operator = (ELEM_TYPE src)'.
-     * \example NEMath::SetMemory.
-     *          The following example is creating 100 elements and sets same value:
-     *
-     *          struct MyStruct {
-     *              int32_t     data;   // since
-     *          };
-     *          MyStruct buffer[100];   // <= create buffer of 100 elements
-     *          MyStruct zero = {0};    // <= create one element with value
-     *          NEMemory::SetMemory<MyStruct, const MyStruct &>(buffer, zero, 100); // <= sets same value to all entries.
-     **/
-    template <typename ELEM, typename ELEM_TYPE = ELEM>
     /**
      * \brief   Sets every element in buffer to the specified value using assignment operator.
      *
@@ -483,22 +406,9 @@ namespace NEMemory
      * \param   elemCount       Number of elements in buffer.
      * \note    ELEM must support operator= that accepts ELEM_TYPE.
      **/
+    template <typename ELEM, typename ELEM_TYPE = ELEM>
     inline void set_memory(ELEM * begin, ELEM_TYPE elemValue, uint32_t elemCount);
 
-    /**
-     * \brief	Compares 2 buffers of same elements. The type ELEM should have comparing
-     *          operator (operator == ). The comparing is done element-by-element.
-     * \param	lhs	    The buffer of elements on left side
-     * \param	rhs	    The buffer of elements on right side
-     * \param	count	The amount of elements to compare
-     * \return	Returns true if 2 buffers have same elements.
-     * \tparam  ELEM    The type of elements to compare
-     * \note    If elements type is structure or class, it should be possible
-     *          to compare elements by applying comparing operator '==' ( operator == ).
-     *          If not, use method NEMemory::mem_equal
-     * \see     NEMemory::mem_equal
-     **/
-    template <typename ELEM>
     /**
      * \brief   Compares two buffers of same element type, returning true if all elements match.
      *
@@ -509,25 +419,9 @@ namespace NEMemory
      * \note    ELEM must support operator== for element-by-element comparison. For
      *          structures/classes without operator==, use NEMemory::mem_equal instead.
      **/
+    template <typename ELEM>
     bool equal_elements(const ELEM * lhs, const ELEM * rhs, uint32_t count);
 
-    /**
-     * \brief	Compares 2 buffers of different elements. 
-     *          The type ELEM_LEFT should have comparing operator (operator == ). 
-     *          The type ELEM_RIGHT should be possible to convert to type 'const ELEM_LEFT'
-     *          The comparing is done element-by-element.
-     * \param	lhs	    The buffer of elements on left side
-     * \param	rhs	    The buffer of elements on right side
-     * \param	count	The amount of elements to compare
-     * \return	Returns true if 2 buffers have same elements.
-     * \tparam  ELEM_LEFT   The type of elements to compare with
-     * \tparam  ELEM_RIGHT  The type of elements to compare
-     * \note    If elements type is structure or class, it should be possible
-     *          to convert type of elements ELEM_RIGHT to the type 'const ELEM_LEFT' and
-     *          ELEM_LEFT should have valid comparing operator (operator ==).
-     * \see     NEMemory::mem_equal, NEMemory::equalElement
-     **/
-    template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
     /**
      * \brief   Compares two buffers of different element types, returning true if all elements
      *          match after conversion.
@@ -539,38 +433,24 @@ namespace NEMemory
      * \note    ELEM_RIGHT must be convertible to ELEM_LEFT (via static_cast), and ELEM_LEFT must
      *          support operator==.
      **/
+    template <typename ELEM_LEFT, typename ELEM_RIGHT = ELEM_LEFT>
     bool equal_elements(const ELEM_LEFT * lhs, const ELEM_RIGHT * rhs, uint32_t count);
 
-    /**
-     * \brief   Sets zero in a given element. The data is set byte-wise.
-     *          Normally used to set zero in a structure.
-     * \param   elem    The element to set zero
-     * \tparam  ELEM    The type of element. Can be primitive or object (structure or class).
-     *                  Normally expecting structure.
-     **/
-    template<typename ELEM>
     /**
      * \brief   Sets all bytes of a single element to zero, typically used for structures.
      *
      * \param   elem    Element to zero.
      **/
+    template<typename ELEM>
     inline void zero_element( ELEM & elem );
 
-    /**
-     * \brief   Sets zero in given element list. The data is set to each entry.
-     *          If ELEM is an object (struct or class), there should be possible 
-     *          to apply assigning operator with integer parameter (operator = (uint32_t number))
-     * \param   elemList    The list of elements to set zero.
-     * \param   elemCount   The number of elements in the list.
-     * \tparam  ELEM        The type of element entry. Can be primitive or objects (struct or class).
-     **/
-    template<typename ELEM>
     /**
      * \brief   Sets all elements in a list to zero using byte-wise clearing.
      *
      * \param   elemList        List of elements to zero.
      * \param   elemCount       Number of elements in list.
      **/
+    template<typename ELEM>
     inline void zero_elements( ELEM * elemList, uint32_t elemCount );
 
     /**
@@ -633,12 +513,9 @@ namespace NEMemory
     inline bool mem_equal( const void * memLeft, const void * memRight, uint32_t count);
 
     /**
-     * \brief   The custom buffer allocator.
-     **/
-    template<typename BufType>
-    /**
      * \brief   Functor for custom buffer allocation.
      **/
+    template<typename BufType>
     struct BufferAllocator
     {
         /**
@@ -648,12 +525,9 @@ namespace NEMemory
     };
 
     /**
-     * \brief   The custom buffer deleter.
-     **/
-    template<typename BufType>
-    /**
      * \brief   Functor for custom buffer deallocation.
      **/
+    template<typename BufType>
     struct BufferDeleter
     {
         /**

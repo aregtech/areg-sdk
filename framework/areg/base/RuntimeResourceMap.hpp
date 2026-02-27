@@ -45,16 +45,9 @@
 // RuntimeHashMap<RUNTIME_DELEGATE, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A hash map class template to track run-time objects accessed by 
- *          key, which are Runtime Class ID, and the stored values are 
- *          run-time objects.
- * 
- * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
- **/
-template <typename RUNTIME_DELEGATE>
-/**
  * \brief   Hash map template for tracking run-time objects by Runtime Class ID.
  **/
+template <typename RUNTIME_DELEGATE>
 class RuntimeHashMap : public HashMap<RuntimeClassID, RUNTIME_DELEGATE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -84,21 +77,10 @@ private:
 // RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   A run-time object resource map base class template to track run-time objects
- *          accessed by key, which are Runtime Class ID, and the stored values are 
- *          run-time object. Whether the resource map is thread safe or not, depends
- *          on instance of resource lock object passed in constructor. If a resource map
- *          is used only within one thread context, pass no locking synchronization object,
- *          which is faster. Otherwise, pass one of instances of resource lock.
- *
- * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
- * \tparam  Deleter             The implementation of resource clean call.
- **/
-template <class RUNTIME_DELEGATE, class Deleter>
-/**
  * \brief   Base class for resource maps tracking run-time objects by Runtime Class ID.
  *          Thread-safety depends on the synchronization object passed to the constructor.
  **/
+template <class RUNTIME_DELEGATE, class Deleter>
 class RuntimeResourceMapBase : public ResourceMapBase<RuntimeClassID, RUNTIME_DELEGATE, RuntimeHashMap<RUNTIME_DELEGATE>, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -132,19 +114,10 @@ private:
 // RuntimeResourceMap<RUNTIME_DELEGATE, Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Non thread-safe resource map class template to track run-time objects
- *          accessed by their key, which are Runtime Class ID, and the stored
- *          elements are run-time object. Use this object if resources are modified
- *          and accessed only within one thread context.
- *
- * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
- * \tparam  Deleter           The implementation of resource clean call.
- **/
-template <class RUNTIME_DELEGATE, class Deleter>
-/**
  * \brief   Non-thread-safe resource map template for tracking run-time objects by Runtime Class ID.
  *          Use in single-threaded contexts only.
  **/
+template <class RUNTIME_DELEGATE, class Deleter>
 class RuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -184,18 +157,10 @@ private:
 // ConcurrentRuntimeResourceMap<RUNTIME_DELEGATE, class Deleter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Thread-safe resource map class template to track run-time objects
- *          accessed by their key, which are Runtime Class ID, and the stored
- *          elements are run-time object. Use this object if resources are modified
- *          and accessed within multiple thread context.
- *
- * \tparam      RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
- **/
-template <class RUNTIME_DELEGATE, class Deleter>
-/**
  * \brief   Thread-safe resource map template for tracking run-time objects by Runtime Class ID in
  *          multi-threaded contexts.
  **/
+template <class RUNTIME_DELEGATE, class Deleter>
 class ConcurrentRuntimeResourceMap   : public RuntimeResourceMapBase<RUNTIME_DELEGATE, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////

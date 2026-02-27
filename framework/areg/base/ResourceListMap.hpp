@@ -33,8 +33,6 @@
    // HashMap 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class MapContainer, class Tracker> class ResourceListMapBase;
     template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class MapContainer, class Tracker> class ConcurrentResourceListMap;
-    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class MapContainer, class Tracker> class ResourceListMap;
-
 /************************************************************************
  * \brief   This file contains declarations of following class templates:
  *
@@ -49,6 +47,8 @@ template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, c
  *
  *          For more information, see descriptions bellow
  ************************************************************************/
+    template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList, class MapContainer, class Tracker> class ResourceListMap;
+
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceListMapBase<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, MapContainer, Tracker> class template declaration

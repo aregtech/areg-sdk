@@ -43,21 +43,10 @@ template <typename VALUE> class StackBase;
 // StackBase<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Simple FIFO Stack base object to queue elements, insert and
- *          access by push and pop operations. StackBase requires instance
- *          of resource lock object to synchronize access of stack elements.
- *          Whether the Stack is thread safe or not, depends on type of
- *          synchronization object passed in stack.
- *
- * \tparam  VALUE   The type of stored items. Either should be primitive
- *                  or should have default constructor and valid assigning
- *                  operator. And should be possible to convert to type const VALUE &.
- **/
-template <typename VALUE>
-/**
  * \brief   Synchronized FIFO stack container that requires a synchronization object (lock) to
  *          manage thread-safe access.
  **/
+template <typename VALUE>
 class StackBase   : private Constless<std::deque<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -164,17 +153,6 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream Stack values.
-     *          If Stack previously had values, they will be lost.
-     *          The values in the Stack will be initialized in the same sequence
-     *          as they were written.
-     *          There should be possibility to initialize values from streaming object and
-     *          if VALUE is not a primitive, but an object, it should have implemented streaming operator.
-     * \param   stream  The streaming object for reading values
-     * \param   input   The Stack object to save initialized values.
-     **/
-    template<typename V>
-    /**
      * \brief   Deserializes stack values from the input stream. Replaces existing contents. VALUE
      *          type must support the streaming operator.
      *
@@ -182,16 +160,8 @@ public:
      * \param   input       The stack to receive deserialized values.
      * \return  Reference to the input stream.
      **/
-    friend const InStream & operator >> (const InStream & stream, StackBase<V> & input);
-    /**
-     * \brief   Writes to the stream Stack values.
-     *          The values will be written to the stream starting from head position.
-     *          There should be possibility to stream every value of Stack and if VALUE
-     *          is not a primitive, but an object, it should have implemented streaming operator.
-     * \param   stream  The streaming object to write values
-     * \param   output  The Stack object to read out values.
-     **/
     template<typename V>
+    friend const InStream & operator >> (const InStream & stream, StackBase<V> & input);
     /**
      * \brief   Serializes all stack values to the output stream, starting from the head. VALUE type
      *          must support the streaming operator.
@@ -200,6 +170,7 @@ public:
      * \param   output      The stack to serialize.
      * \return  Reference to the output stream.
      **/
+    template<typename V>
     friend OutStream & operator << (OutStream & stream, const StackBase<V> & output);
 
 //////////////////////////////////////////////////////////////////////////
@@ -441,18 +412,13 @@ public:
     inline STACKPOS next_position( STACKPOS pos ) const;
 
     /**
-     * \brief   Sorts the stack, compares the elements by given Compare functionality.
-     * \param   comp    The comparing method, similar to the method  std::greater()
-     * \return  Sorts and returns the Stack object.
-     **/
-    template <class Compare>
-    /**
      * \brief   Sorts the stack using the provided comparison function. Returns this stack for
      *          chaining.
      *
      * \param   comp    The comparison function, similar to std::greater().
      * \return  Reference to this stack object.
      **/
+    template <class Compare>
     inline StackBase< VALUE >& sort(Compare comp);
 
     /**
@@ -489,15 +455,10 @@ private:
 // ConcurrentStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Thread safe FIFO stack class template declaration, where accessing
- *          data is synchronized by resource lock. Use this object if elements
- *          of stack are accessed by more than one thread.
- **/
-template <typename VALUE>
-/**
  * \brief   Thread-safe FIFO stack with synchronized data access. Use when multiple threads access
  *          the stack.
  **/
+template <typename VALUE>
 class ConcurrentStack  : public StackBase<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -601,15 +562,10 @@ private:
 // Stack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   No thread safe FIFO stack class template declaration, where accessing
- *          data is not synchronized. Use this object if elements of stack
- *          are accessed only by one thread.
- **/
-template <typename VALUE>
-/**
  * \brief   Non-blocking FIFO stack without synchronization. Not thread-safe. Use when a single
  *          thread accesses the stack.
  **/
+template <typename VALUE>
 class Stack    : public StackBase<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////

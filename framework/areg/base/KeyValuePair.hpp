@@ -21,16 +21,9 @@
 #include "areg/base/IOStream.hpp"
 
 /**
- * \brief   The KeyValuePair class template is an implementation of a pair of data,
- *          where one member plays role of a Key and other is a Value. It is used
- *          in the Property List where keys are unique entries.
- * \tparam  KEY     The type of property Key.
- * \tparam  VALUE   The type of property Value.
- **/
-template <typename KEY, typename VALUE>
-/**
  * \brief   A template class holding a key-value pair; used in property lists where keys are unique.
  **/
+template <typename KEY, typename VALUE>
 class KeyValuePair
 {
 //////////////////////////////////////////////////////////////////////////
@@ -113,33 +106,15 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream the key and value pairs of the property.
-     *          If property previously had key and value, they will be removed and new data
-     *          from the stream will be set. There should be possibility to initialize
-     *          key and value from streaming object and if KEY or VALUE are not primitives,
-     *          but objects, they should have implemented streaming operator.
-     * \param   stream  The streaming object to read values.
-     * \param   input   The property object to save initialized values.
-     **/
-    template < typename K, typename V >
-    /**
      * \brief   Reads key and value from a stream.
      *
      * \param   stream      The input stream to read from.
      * \param[out] input       The pair to write the values into.
      * \return  Reference to the input stream.
      **/
+    template < typename K, typename V >
     friend inline const InStream & operator >> ( const InStream & stream, KeyValuePair<K, V> & input);
 
-    /**
-     * \brief   Writes to the stream the key and value pairs of the property.
-     *          The values will be written to the stream as a KEY and VALUE.
-     *          There should be possibility to stream key and value pairs and if KEY or VALUE
-     *          are not primitives, but objects, they should have implemented streaming operator.
-     * \param   stream  The stream to write values.
-     * \param   output  The property object containing value to stream.
-     **/
-    template < typename K, typename V >
     /**
      * \brief   Writes key and value to a stream.
      *
@@ -147,6 +122,7 @@ public:
      * \param   output      The pair to read the values from.
      * \return  Reference to the output stream.
      **/
+    template < typename K, typename V >
     friend inline OutStream & operator << ( OutStream & stream, const KeyValuePair<K, V> & output );
 
 //////////////////////////////////////////////////////////////////////////

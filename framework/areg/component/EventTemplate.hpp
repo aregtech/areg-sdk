@@ -123,8 +123,8 @@
 /*****************************************************************************************************************************/             \
 template <class DATA_CLASS> class AregImpl_##EventClass;                                                                                           \
 template <class DATA_CLASS> class AregImpl_##ConsumerClass;                                                                                        \
-template <class DATA_CLASS> class AregImpl_##ConsumerClass##Extended;                                                                              \
 /*****************************************************************************************************************************/             \
+template <class DATA_CLASS> class AregImpl_##ConsumerClass##Extended;                                                                              \
 /** Declaration of ConsumerClass, derive from TEEventConsumer template.                                                     **/             \
 /** Does nothing, needed for Runtime Object information and declare process_event() function                                 **/             \
 /*****************************************************************************************************************************/             \

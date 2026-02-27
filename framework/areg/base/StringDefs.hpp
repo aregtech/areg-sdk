@@ -158,24 +158,6 @@ namespace NEString
     };
 
     /**
-     * \brief   Converts given integer digit to string. The data is written in given buffer.
-     *          If the buffer is nullptr or the charCount is zero, the function calculates and 
-     *          returns the spare required to make conversion.
-     * \param   strDst      The destination string buffer to write result.
-     * \param   charCount   The number of characters allocated in buffer, including null-terminated character at the end of string.
-     * \param   digit       The integer digit to convert.
-     * \param   radix       The conversion base. If equal to RadixAutomatic, it sets RadixDecimal, which is default value.
-     * \return  Returns number of character copied in the buffer, including null-terminated character.
-     *          If strDst is nullptr or empty, or charCount is zero, the function calculates and returns the number of characters
-     *          required to allocated to make conversion.
-     * \tparam  CharType    The type of character. Normally, either char or wchar_t.
-     * \tparam  IntType     The type of integer.
-     * \remark  Be careful if passing negative value and converting with base, which is not RadixDecimal.
-     *          In this case the conversion sets '-' sign at the begin of string, which can be confusing.
-     *          If base differs or RadixDecimal, use conversion of unsigned integer.
-     **/
-    template<typename CharType, typename IntType>
-    /**
      * \brief   Converts the given integer digit to a string, writing the result to the specified
      *          buffer. If the buffer is nullptr or charCount is zero, calculates and returns the
      *          space required.
@@ -190,15 +172,9 @@ namespace NEString
      *          terminator. If strDst is nullptr or charCount is zero, returns the number of
      *          characters required.
      **/
+    template<typename CharType, typename IntType>
     int32_t make_string( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::Radix radix = NEString::Radix::Decimal );
 
-    /**
-     * \brief   Swaps characters in a given string buffer.
-     * \param   strDst      The destination string buffer to make swapping.
-     * \param   charCount   The number of characters in buffer to swap. If COUNT_ALL, it swaps all characters until end-of-string
-     * \tparam  CharType    The type of characters in buffer.
-     */
-    template<typename CharType>
     /**
      * \brief   Reverses the order of characters in the given string buffer.
      *
@@ -206,6 +182,7 @@ namespace NEString
      * \param   charCount       The number of characters to reverse. If COUNT_ALL, reverses all
      *                          characters until the null terminator.
      **/
+    template<typename CharType>
     void revert_string(CharType * strDst, CharCount charCount = NEString::COUNT_ALL);
 
     /**
@@ -240,26 +217,14 @@ namespace NEString
     inline bool is_position_valid(NEString::CharPos pos);
 
     /**
-     * \brief   Returns true if given string is empty.
-     *          The string is empty if it is nullptr or starts with end-of-string character.
-     * \param   strBuffer   The string buffer to check whether it is empty or not.
-     * \return  Returns true if given string buffer is empty.
-     **/
-    template<typename CharType>
-    /**
      * \brief   Returns true if the given string is empty (nullptr or starts with null terminator).
      *
      * \param   strBuffer       The string buffer to check.
      * \return  Returns true if the string buffer is empty.
      **/
+    template<typename CharType>
     inline bool is_empty( const CharType * strBuffer );
     
-    /**
-     * \brief   Returns length of string buffer. The length is calculated until first match of End of String value.
-     * \param   theString   The string to count the length.
-     * \return  Returns number of characters in the string
-     **/
-    template <typename CharType>
     /**
      * \brief   Returns the length of the string buffer, counting characters until the null
      *          terminator.
@@ -267,14 +232,9 @@ namespace NEString
      * \param   theString       The string to measure.
      * \return  Returns the number of characters in the string.
      **/
+    template <typename CharType>
     inline CharCount string_length( const CharType * theString );
 
-    /**
-     * \brief   Returns length of string line. The length is calculated until first match of End-of-Line or End-of-string value.
-     * \param   theString   The string to count the length.
-     * \return  Returns number of characters in the string
-     **/
-    template <typename CharType>
     /**
      * \brief   Returns the length of the string line, counting characters until the end-of-line or
      *          null terminator.
@@ -282,23 +242,9 @@ namespace NEString
      * \param   theString       The string to measure.
      * \return  Returns the number of characters in the line.
      **/
+    template <typename CharType>
     inline CharCount string_line_length(const CharType* theString);
 
-    /**
-     * \brief   Copies string from source to destination string.
-     *          The method does not reallocates space for destination string
-     *          if there is no enough space available in destination.
-     *          characters, the function will no
-     * \param   strDst      The destination string to copy characters.
-     * \param   dstSpace    The space available at destination string buffer
-     * \param   strSrc      The source of string
-     * \param   charsCopy   The number of characters to copy.
-     *                      By default, it will try to copy all string if there is 
-     *                      enough space available at destination.
-     * \return  Returns number of characters copied to destination string, which is minimum
-     *          of destination space and characters to copy. Returns zero if no character was copied.
-     **/
-    template<typename CharDst, typename CharSrc>
     /**
      * \brief   Copies characters from source to destination buffer without reallocating destination
      *          space.
@@ -311,22 +257,9 @@ namespace NEString
      * \return  Returns the number of characters copied, which is the minimum of available
      *          destination space and characters to copy. Returns zero if no characters were copied.
      **/
+    template<typename CharDst, typename CharSrc>
     CharCount copy_string( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = NEString::COUNT_ALL );
 
-    /**
-     * \brief   Copies string from source to destination string.
-     *          The method does not reallocates space for destination string
-     *          if there is no enough space available in destination.
-     *          characters, the function will no
-     * \param   strDst      The destination string to copy characters.
-     * \param   strSrc      The source of string
-     * \param   charsCopy   The number of characters to copy.
-     *                      By default, it will try to copy all string if there is
-     *                      enough space available at destination.
-     * \return  Returns number of characters copied to destination string, which is minimum
-     *          of destination space and characters to copy. Returns zero if no character was copied.
-     **/
-    template<typename CharType>
     /**
      * \brief   Fast copy of characters from source to destination buffer without reallocating
      *          destination space.
@@ -338,15 +271,9 @@ namespace NEString
      * \return  Returns the number of characters copied, which is the minimum of available
      *          destination space and characters to copy. Returns zero if no characters were copied.
      **/
+    template<typename CharType>
     CharCount copy_string_fast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = NEString::COUNT_ALL);
 
-    /**
-     * \brief   Converts given character to lower case based on first 256 of UTF-8 code page..
-     * \param   ch      The character to convert to lower case.
-     * \return  If character is in range [-128 .. 127], it converts character to lower case. 
-     *          Otherwise, conversion is ignored and returns same value.
-     **/
-    template <typename CharType>
     /**
      * \brief   Converts the given character to lower case based on the first 256 UTF-8 code page
      *          symbols.
@@ -355,14 +282,9 @@ namespace NEString
      * \return  If the character is in range [-128, 127], returns the lower case equivalent.
      *          Otherwise, returns the same value.
      **/
+    template <typename CharType>
     inline CharType make_lower(CharType ch);
 
-    /**
-     * \brief   Converts given null-terminated string to lower case based on first 256 of UTF-8 code page..
-     * \param   source  The null-terminated string to convert to lower case.
-     * \return  Returns the converted string. The return string and `source` parameter indicate same string buffer.
-     **/
-    template <typename CharType>
     /**
      * \brief   Converts the given null-terminated string to lower case based on the first 256 UTF-8
      *          code page symbols.
@@ -370,15 +292,9 @@ namespace NEString
      * \param   source      The null-terminated string to convert.
      * \return  Returns the converted string (same buffer as the source parameter).
      **/
+    template <typename CharType>
     inline const CharType* make_lower(CharType* source);
 
-    /**
-     * \brief   Converts given character to upper case based on first 256 of UTF-8 code page.
-     * \param   ch      The character to convert to upper case.
-     * \return  If character is in range [-128 .. 127], it converts character to upper case.
-     *          Otherwise, conversion is ignored and returns same value.
-     **/
-    template <typename CharType>
     /**
      * \brief   Converts the given character to upper case based on the first 256 UTF-8 code page
      *          symbols.
@@ -387,14 +303,9 @@ namespace NEString
      * \return  If the character is in range [-128, 127], returns the upper case equivalent.
      *          Otherwise, returns the same value.
      **/
+    template <typename CharType>
     inline CharType make_upper(CharType ch);
 
-    /**
-     * \brief   Converts given null-terminated string to lower case based on first 256 of UTF-8 code page..
-     * \param   source  The null-terminated string to convert to lower case.
-     * \return  Returns the converted string. The return string and `source` parameter indicate same string buffer.
-     **/
-    template <typename CharType>
     /**
      * \brief   Converts the given null-terminated string to upper case based on the first 256 UTF-8
      *          code page symbols.
@@ -402,55 +313,25 @@ namespace NEString
      * \param   source      The null-terminated string to convert.
      * \return  Returns the converted string (same buffer as the source parameter).
      **/
+    template <typename CharType>
     inline const CharType* make_upper(CharType* source);
 
-    /**
-     * \brief   Returns true if the specified character is lower case.
-     * \param   ch      The character to check.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is lower case.
      *
      * \param   ch      The character to check.
      **/
+    template<typename CharType>
     inline bool is_lower(CharType ch);
 
-    /**
-     * \brief   Returns true if the specified character is upper case.
-     * \param   ch      The character to check.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is upper case.
      *
      * \param   ch      The character to check.
      **/
+    template<typename CharType>
     inline bool is_upper(CharType ch);
 
-    /**
-     * \brief   Compares 2 given strings (Left and Right side). The function compares 'charCount' characters
-     *          in the strings or until end of string is reached. If the number of characters is equal to `NEString::COUNT_ALL`
-     *          if compares the complete 2 string.
-     *          if 'caseSensitive' is false, function ignores capital and lower cases.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     * \param   left_side        The Left-side string to compare
-     * \param   right_side       The Right-side string to compare
-     * \param   charCount       The number of characters to compare or until end of string is reached.
-     *                          If the number of characters is `NEString::COUNT_ALL`, compares the complete string.
-     * \param   caseSensitive   If false, it will ignore upper and lower cases. 
-     * \return  The function returns:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
-     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
-     * \note    The results are based 'charCount' and 'caseSensitive' parameters.
-     **/
-    template<typename CharLhs, typename CharRhs>
     /**
      * \brief   Compares two strings up to a specified number of characters or until null terminator
      *          is reached.
@@ -460,31 +341,18 @@ namespace NEString
      * \param   charCount           The number of characters to compare, or COUNT_ALL to compare
      *                              complete strings.
      * \param   caseSensitive       If false, comparison ignores case differences.
+     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
+     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
      *          greater. Valid only for first 256 UTF-8 code page symbols.
+     * \note    The results are based on 'charCount' and 'caseSensitive' parameters.
      **/
+    template<typename CharLhs, typename CharRhs>
     NEMath::Ordering compare_strings( const CharLhs *left_side
                                    , const CharRhs * right_side
                                    , CharCount charCount = NEString::END_POS
                                    , bool caseSensitive  = true);
 
-    /**
-     * \brief   Compares 2 given strings (Left and Right side). The function compares complete string and ignores the upper and lower cases.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     * \param   left_side    The Left-side string to compare.
-     * \param   right_side   The Right-side string to compare.
-     * \param   count       The number of characters to compare. By default, it compares the complete strings.
-     * \return  The function returns:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
-     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
-     **/
-    template<typename CharLhs, typename CharRhs>
     /**
      * \brief   Compares two strings ignoring case differences.
      *
@@ -494,26 +362,12 @@ namespace NEString
      *                          strings.
      * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
      *          greater. Valid only for first 256 UTF-8 code page symbols.
-     **/
-    inline NEMath::Ordering compare_ignore_case( const CharLhs *left_side, const CharRhs * right_side, NEString::CharCount count = NEString::COUNT_ALL);
-
-    /**
-     * \brief   Compares 2 string. Compares first count characters.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \param   left_side    The Left-side string to compare.
-     * \param   right_side   The Right-side string to compare.
-     * \param   count       The number of characters to compare.
-     * \return  The function returns:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
      * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
+    inline NEMath::Ordering compare_ignore_case( const CharLhs *left_side, const CharRhs * right_side, NEString::CharCount count = NEString::COUNT_ALL);
+
     /**
      * \brief   Compares the first count characters of two strings.
      *
@@ -522,26 +376,12 @@ namespace NEString
      * \param   count           The number of characters to compare.
      * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
      *          greater. Valid only for first 256 UTF-8 code page symbols.
-     **/
-    inline NEMath::Ordering compare(const CharLhs* left_side, const CharRhs* right_side, NEString::CharCount count);
-
-    /**
-     * \brief   Compares 2 string. The comparing is done until first match of null-termination
-     *          and it is case sensitive.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \param   left_side        The Left-side string to compare
-     * \param   right_side       The Right-side string to compare
-     * \return  The function returns:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
      * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
      * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
+    inline NEMath::Ordering compare(const CharLhs* left_side, const CharRhs* right_side, NEString::CharCount count);
+
     /**
      * \brief   Compares two strings until the first null terminator, case-sensitive.
      *
@@ -550,24 +390,9 @@ namespace NEString
      * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
      *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
+    template<typename CharLhs, typename CharRhs>
     inline NEMath::Ordering compare(const CharLhs* left_side, const CharRhs* right_side);
 
-    /**
-     * \brief   Fast compares first count symbols of 2 string. The comparing case sensitive.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \param   left_side    The Left-side string to compare
-     * \param   right_side   The Right-side string to compare
-     * \param   count       The number of characters to compare.
-     * \return  The function returns:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \tparam  CharType    The type of characters. Either `char` or `wchar_t`.
-     **/
-    template<typename CharType>
     /**
      * \brief   Fast comparison of the first count characters of two strings, case-sensitive.
      *
@@ -577,15 +402,9 @@ namespace NEString
      * \return  Returns -1 if left-side is less than right-side, 0 if equal, 1 if left-side is
      *          greater. Valid only for first 256 UTF-8 code page symbols.
      **/
+    template<typename CharType>
     inline NEMath::Ordering compare_fast( const CharType * left_side, const CharType * right_side, NEString::CharCount count );
 
-    /**
-     * \brief   Returns true if given character is a letter.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a letter.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a letter based on the first 256 UTF-8 code page
      *          symbols.
@@ -593,15 +412,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is a letter.
      **/
+    template<typename CharType>
     inline bool is_letter( CharType ch );
 
-    /**
-     * \brief   Returns true if given character is a number.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is numeric.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a numeric digit based on the first 256 UTF-8 code
      *          page symbols.
@@ -609,15 +422,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is numeric.
      **/
+    template<typename CharType>
     inline bool is_numeric( CharType ch );
 
-    /**
-     * \brief   Returns true if given character is a letter or number.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a letter or numeric.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a letter or digit based on the first 256 UTF-8 code
      *          page symbols.
@@ -625,15 +432,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is alphanumeric.
      **/
+    template<typename CharType>
     inline bool is_alphanumeric( CharType ch );
 
-    /**
-     * \brief   Returns true if given character is a symbol, i.e. not a control key
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a symbol.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a symbol (not a control character) based on the
      *          first 256 UTF-8 code page symbols.
@@ -641,15 +442,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is a symbol.
      **/
+    template<typename CharType>
     inline bool is_symbol( CharType ch );
 
-    /**
-     * \brief   Returns true if given character is a white-space.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is white-space symbol.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a white-space based on the first 256 UTF-8 code
      *          page symbols.
@@ -657,15 +452,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is white-space.
      **/
+    template<typename CharType>
     inline bool is_whitespace( CharType ch);
 
-    /**
-     * \brief   Returns true if given character is used as delimiter in the syntax.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is syntax separator symbol.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is used as a delimiter in syntax based on the first
      *          256 UTF-8 code page symbols.
@@ -673,15 +462,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is a syntax delimiter.
      **/
+    template<typename CharType>
     inline bool is_delimited( CharType ch);
 
-    /**
-     * \brief	Checks whether the passed single character is end of line or not.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is end of line
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is an end-of-line symbol based on the first 256 UTF-8
      *          code page symbols.
@@ -689,15 +472,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is end-of-line.
      **/
+    template<typename CharType>
     inline bool is_eol( CharType ch );
 
-    /**
-     * \brief	Checks whether the passed single character is a carriage return symbol or not.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is carriage return symbol.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a carriage return symbol based on the first 256
      *          UTF-8 code page symbols.
@@ -705,15 +482,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is a carriage return.
      **/
+    template<typename CharType>
     inline bool is_carriage_return( CharType ch );
 
-    /**
-     * \brief	Checks whether the passed single character is a new line symbol or not.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is carriage return symbol.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a new line symbol based on the first 256 UTF-8 code
      *          page symbols.
@@ -721,44 +492,27 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is a new line.
      **/
+    template<typename CharType>
     inline bool is_new_line( CharType ch );
 
-    /**
-     * \brief   Checks whether the specified character is a Unix style 'new line', i.e. the symbol is equal to `'\n'`.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return  Returns `true` if specified character is equal to `'\n'`.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a Unix-style new line ('\n').
      *
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character equals '\n'.
      **/
+    template<typename CharType>
     inline bool is_unix_eol(CharType ch);
 
-    /**
-     * \brief   Checks whether the first character of the specified null-terminated string 
-     *          is a Unix style 'new line', i.e. the symbol is equal to `'\n'`.
-     * \param   source  The string to check.
-     * \return  Returns `true` if specified string is not null and the first character is equal to `'\n'`.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the first character of the string is a Unix-style new line ('\n').
      *
      * \param   source      The string to check.
      * \return  Returns true if the string is not null and the first character equals '\n'.
      **/
+    template<typename CharType>
     inline bool is_unix_eol(const CharType * source);
 
-    /**
-     * \brief   Checks whether the specified characters define DOS style new line, i.e. the symbol is equal to `"\r\n"` sequence.
-     * \param   ch1     The character in range [-128 .. 127] to check.
-     * \param   ch2     The character in range [-128 .. 127] to check.
-     * \return  Returns `true` if specified character `ch1` and `ch2` chars are appropriately are equal to sequence `"\r\n"`.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the two characters form a DOS-style new line ('\r\n').
      *
@@ -766,15 +520,9 @@ namespace NEString
      * \param   ch2     The second character in range [-128, 127] to check.
      * \return  Returns true if ch1 and ch2 form the sequence '\r\n'.
      **/
+    template<typename CharType>
     inline bool is_dos_eol(CharType ch1, CharType ch2);
 
-    /**
-     * \brief   Checks whether the first 2 characters of the specified null-terminated string
-     *          is DOS style new line, i.e. the symbol is equal to `"\r\n"`.
-     * \param   source  The string to check.
-     * \return  Returns `true` if specified string is not null and the first two characters are equal to `"\r\n"`.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the first two characters of the string form a DOS-style new line
      *          ('\r\n').
@@ -782,15 +530,9 @@ namespace NEString
      * \param   source      The string to check.
      * \return  Returns true if the string is not null and the first two characters form '\r\n'.
      **/
+    template<typename CharType>
     inline bool is_dos_eol(const CharType* source);
 
-    /**
-     * \brief	Checks whether the passed single character is an  end of string symbol.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is end of string symbol.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a null terminator based on the first 256 UTF-8 code
      *          page symbols.
@@ -798,15 +540,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is the null terminator.
      **/
+    template<typename CharType>
     inline bool is_eos( CharType ch );
 
-    /**
-     * \brief	Checks whether the passed single character is a control symbol.
-     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return	Returns true if character is a control symbol.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is a control symbol based on the first 256 UTF-8 code
      *          page symbols.
@@ -814,19 +550,9 @@ namespace NEString
      * \param   ch      The character in range [-128, 127] to check.
      * \return  Returns true if the character is a control symbol.
      **/
+    template<typename CharType>
     inline bool is_control(CharType ch);
 
-    /**
-     * \brief   Checks whether the given character is readable or not.
-     *          Readable are characters, which can be read by human and white-space.
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return  Returns true if character is readable.
-     * \tparam  CharType    The type of character (char or wchar_t). Expecting 8-bit or 16-bit character in range 0 - 0xFF
-     * \note    The readable and printable characters differ, which readable character can be read without
-     *          additional system support. For example, the horizontal and vertical tabs, or carriage return are not considered as readable.
-     * \see     is_printable
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is readable (human-readable characters and
      *          white-space).
@@ -837,20 +563,9 @@ namespace NEString
      *          additional system support, while printable characters include tabs, new-line, and
      *          carriage return.
      **/
+    template<typename CharType>
     inline bool is_readable( CharType ch );
 
-    /**
-     * \brief   Checks whether the given character is printable or not.
-     *          Printable are all characters, which can be printed. These include all readable characters, 
-     *          plus all other white-spaces like tabs, new-line, carriage return, etc..
-     * \param   ch      The character in range [-128 .. 127] to check.
-     * \return  Returns true if character is printable.
-     * \tparam  CharType    The type of character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
-     * \note    The printable characters include readable characters, but not vice-versa. In addition, it includes
-     *          all other white-spaces like tabs, new-line, carriage return, etc.
-     * \see     is_printable
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character is printable (all readable characters plus additional
      *          white-space characters).
@@ -860,16 +575,9 @@ namespace NEString
      * \note    Printable characters include readable characters plus additional white-space such as
      *          tabs, new-line, and carriage return.
      **/
+    template<typename CharType>
     inline bool is_printable( CharType ch );
 
-    /**
-     * \brief   Checks whether the character is one of matches in the sequence.
-     * \param   ch          The character in range [-128 .. 127] to check.
-     * \param   chSequence  The sequence of characters to have at least one match.
-     * \tparam  CharType    The type of character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
-     * \return  Returns true if given character matches one of entries in the given sequence.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the character matches one of the characters in the given sequence.
      *
@@ -877,33 +585,18 @@ namespace NEString
      * \param   chSequence      The sequence of characters to check against.
      * \return  Returns true if the character matches at least one entry in the sequence.
      **/
+    template<typename CharType>
     inline bool is_one_of(CharType ch, const CharType* chSequence);
 
-    /**
-     * \brief   In given string buffer removes white-space characters from left-side (from begin).
-     * \param   strBuffer   The string buffer to remove white characters.
-     * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
-     **/
-    template<typename CharType>
     /**
      * \brief   Removes white-space characters from the left-side of the string buffer.
      *
      * \param   strBuffer       The string buffer to trim.
      * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
+    template<typename CharType>
     void trim_left( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
 
-    /**
-     * \brief   In removes white-space characters from left-side (from begin) 
-     *          and copies the rest to the destination buffer.
-     * \param   strDst  The destination buffer to copy string.
-     * \param   lenDst  The destination buffer length to copy characters.
-     *                  The length should be big enough to copy.
-     *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
-     * \param   strSrc  The source string buffer.
-     * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
-     **/
-    template<typename CharDst, typename CharSrc>
     /**
      * \brief   Removes white-space characters from the left-side and copies the result to the
      *          destination buffer.
@@ -915,33 +608,18 @@ namespace NEString
      * \param   lenSrc      The length of the source string, or COUNT_ALL to calculate
      *                      automatically.
      **/
+    template<typename CharDst, typename CharSrc>
     void trim_left( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
 
-    /**
-     * \brief   In given string buffer removes white-space characters from right-side (from end).
-     * \param   strBuffer   The string buffer to remove white characters.
-     * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
-     **/
-    template<typename CharType>
     /**
      * \brief   Removes white-space characters from the right-side of the string buffer.
      *
      * \param   strBuffer       The string buffer to trim.
      * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
+    template<typename CharType>
     void trim_right( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
 
-    /**
-     * \brief   In removes white-space characters from right-side (from end) 
-     *          and copies the rest to the destination buffer.
-     * \param   strDst  The destination buffer to copy string.
-     * \param   lenDst  The destination buffer length to copy characters.
-     *                  The length should be big enough to copy.
-     *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
-     * \param   strSrc  The source string buffer.
-     * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
-     **/
-    template<typename CharDst, typename CharSrc>
     /**
      * \brief   Removes white-space characters from the right-side and copies the result to the
      *          destination buffer.
@@ -953,33 +631,18 @@ namespace NEString
      * \param   lenSrc      The length of the source string, or COUNT_ALL to calculate
      *                      automatically.
      **/
+    template<typename CharDst, typename CharSrc>
     void trim_right( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
 
-    /**
-     * \brief   In given string buffer removes white-space characters from left- and right-side (from begin and end).
-     * \param   strBuffer   The string buffer to remove white characters.
-     * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
-     **/
-    template<typename CharType>
     /**
      * \brief   Removes white-space characters from both left- and right-sides of the string buffer.
      *
      * \param   strBuffer       The string buffer to trim.
      * \param   strLen          The length of the string, or COUNT_ALL to calculate automatically.
      **/
+    template<typename CharType>
     void trim_all( CharType * strBuffer, NEString::CharCount strLen = NEString::COUNT_ALL );
 
-    /**
-     * \brief   In removes white-space characters from left- and right-side (from begin and end)
-     *          and copies the rest to the destination buffer.
-     * \param   strDst  The destination buffer to copy string.
-     * \param   lenDst  The destination buffer length to copy characters.
-     *                  The length should be big enough to copy.
-     *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
-     * \param   strSrc  The source string buffer.
-     * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
-     **/
-    template<typename CharDst, typename CharSrc>
     /**
      * \brief   Removes white-space characters from both sides and copies the result to the
      *          destination buffer.
@@ -991,25 +654,9 @@ namespace NEString
      * \param   lenSrc      The length of the source string, or COUNT_ALL to calculate
      *                      automatically.
      **/
+    template<typename CharDst, typename CharSrc>
     void trim_all( CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc = NEString::COUNT_ALL );
 
-    /**
-     * \brief   Removes specified character from the string.
-     * 
-     * \param   chRemove        The character to search and remove.
-     * \param   strSource       The string where the character should be searched and removed.
-     * \param   removeAll       Flag, indicating whether it should remove only once or all matches.
-     * \param   caseSensitive   Flag, indicating whether the remove character is case sensitive or not.
-     *                          If `caseSensitive` is `false` and `removeAll` parameter is `true`, all capital and small
-     *                          letters of specified `chRemove` character is removed in the string.
-     *                          If `caseSensitive` is false and `removeAll` parameter is `false`, the first matching capital or small
-     *                          letter of specified `chRemove` character is removed in the string.
-     * \return  Returns one of following values:
-     *              1. If `removeAll` is `false`, returns the position of removed character if found.
-     *              2. If `removeAll` is `true`, returns end of string, indicating that there is no more character to remove;
-     *              3. If did not find any matching, returns end of string, indicating that there is no character to remove.
-     **/
-    template<typename CharType>
     /**
      * \brief   Removes the specified character from the string, with options for multiple
      *          occurrences and case sensitivity.
@@ -1022,28 +669,9 @@ namespace NEString
      * \return  If removeAll is false, returns the position of the removed character if found. If
      *          removeAll is true or no match found, returns end-of-string position.
      **/
+    template<typename CharType>
     CharType * remove_char(const CharType chRemove, CharType* strSource, bool removeAll = true, bool caseSensitive = true);
 
-    /**
-     * \brief   Search a string inside of other string. The search starts at given position in the string.
-     *          If startPos is equal to NEString::START_POS, the search starts at the begin of string. Otherwise, searches at given position.
-     *          If found the phrase in string, returns the position in buffer where could find character,
-     *          which is same as number of characters to skip from begin to match the phrase.
-     *          Otherwise, returns NEString::INVALID_POS.
-     * \param   strPhrase       The phrase to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If NEString::START_POS, starts searching at begin of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        If the parameter is not nullptr, then:
-     *                              - On output, if not nullptr, this contains pointer in source string next after phrase.
-     *                              - On output, if nullptr, could not find the phrase.
-     *                          If parameter is nullptr, it is ignored.
-     * \return  If found the phrase, returns the position in buffer where phrase starts.
-     *          If did not find, returns NEString::INVALID_POS
-     **/
-    template<typename CharType>
     /**
      * \brief   Searches for a phrase within a string, starting at the specified position.
      *
@@ -1057,32 +685,13 @@ namespace NEString
      * \return  Returns the position where the phrase starts if found; NEString::INVALID_POS
      *          otherwise.
      **/
+    template<typename CharType>
     CharPos find_first( const CharType * strPhrase
                      , const CharType * strSource
                      , CharPos startPos             = NEString::START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr );
 
-    /**
-     * \brief   Search the match of given character inside of string. The search starts at given position
-     *          If startPos is equal to NEString::START_POS, the search starts at the begin of string. Otherwise, searches at given position.
-     *          If found character in string, returns the position in buffer where phrase starts,
-     *          which is same as number of characters to skip from begin to match the character.
-     *          Otherwise, returns NEString::INVALID_POS.
-     * \param   chSearch        The character to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If NEString::START_POS, starts searching at begin of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        If the parameter is not nullptr, then:
-     *                              - On output, if not nullptr, this contains pointer in source string next after character.
-     *                              - On output, if nullptr, could not find the character.
-     *                          If parameter is nullptr, it is ignored.
-     * \return  If found the character, returns the position in buffer where met character.
-     *          If did not find, returns NEString::INVALID_POS
-     **/
-    template<typename CharType>
     /**
      * \brief   Searches for a character within a string, starting at the specified position.
      *
@@ -1096,33 +705,13 @@ namespace NEString
      * \return  Returns the position where the character is found; NEString::INVALID_POS if not
      *          found.
      **/
+    template<typename CharType>
     CharPos find_first( CharType chSearch
                      , const CharType * strSource
                      , CharPos startPos             = NEString::START_POS
                      , bool caseSensitive           = true
                      , const CharType ** out_next   = nullptr);
 
-    /**
-     * \brief   Reverse search a string inside of other string. The search starts at the given position and moves to begin of string.
-     *          If startPos is equal to NEString::END_POS, the search starts at the end of string. Otherwise, searches at given position.
-     *          If found the phrase in string, returns the position in buffer where phrase starts,
-     *          which is same as number of characters to skip from begin to match the phrase.
-     *          Otherwise, returns NEString::INVALID_POS.
-     * \param   strPhrase       The phrase to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If NEString::END_POS, starts searching at the end of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        If the parameter is not nullptr, then:
-     *                              - On output, if not nullptr, this contains pointer in source string before phrase starts.
-     *                              - On output, if nullptr, could not find the phrase.
-     *                          If parameter is nullptr, it is ignored.
-     * \return  If found the phrase, returns the position in buffer where phrase starts.
-     *          If did not find, returns NEString::INVALID_POS
-     * \note    This is reverse search, but the returned position is relevant to begin of string.
-     **/
-    template<typename CharType>
     /**
      * \brief   Reverse searches for a phrase within a string, starting from the specified position
      *          and moving toward the beginning.
@@ -1138,33 +727,13 @@ namespace NEString
      * \note    This is a reverse search, but the returned position is relative to the beginning of
      *          the string.
      **/
+    template<typename CharType>
     CharPos find_last( const CharType * strPhrase
                     , const CharType * strSource
                     , CharPos startPos            = NEString::END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
-    /**
-     * \brief   Reverse search the match of given character inside of string. The search starts at the given position and moves to begin of string.
-     *          If `startPos` is equal to `NEString::END_POS`, the search starts at the end of string. Otherwise, searches at the given position.
-     *          If found the character in the string, returns the position (zero-based index) in the give source buffer,
-     *          Otherwise, returns `NEString::INVALID_POS`.
-     * \param   chSearch        The character to search in the string.
-     * \param   strSource       The source of string to search.
-     * \param   startPos        The starting position to search phrase. If `NEString::END_POS`, starts reverse searching from the end of given string buffer.
-     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
-     *                          If the flag is `true`, the exact match is searched.
-     *                          If the flag is `false`, the capital and small letters are ignored.
-     * \param   out_next        It is an optional parameter. If the parameter is not `nullptr`, then:
-     *                              - If on output it is not `nullptr`, it indicates to the source of last match of character,
-     *                                i.e. it points to the searching character.
-     *                              - if on output it is `nullptr`, it indicates that could not find the character.
-     *                          This parameter is ignored if `nullptr`.
-     * \return  If found the character, returns the position in buffer where met character.
-     *          If did not find, returns `NEString::INVALID_POS`.
-     * \note    This is reverse search, but the returned position is relevant to begin of string.
-     **/
-    template<typename CharType>
     /**
      * \brief   Reverse searches for a character within a string, starting from the specified
      *          position and moving toward the beginning.
@@ -1180,20 +749,13 @@ namespace NEString
      * \note    This is a reverse search, but the returned position is relative to the beginning of
      *          the string.
      **/
+    template<typename CharType>
     CharPos find_last( CharType chSearch
                     , const CharType * strSource
                     , CharPos startPos            = NEString::END_POS
                     , bool caseSensitive = true
                     , const CharType ** out_next  = nullptr);
 
-    /**
-     * \brief   Returns true if a give string starts with specified phrase.
-     * \param   strString       The string to check the phrase.
-     * \param   phrase          The phrase to check.
-     * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string starts with given phrase.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the string starts with the specified phrase.
      *
@@ -1202,16 +764,9 @@ namespace NEString
      * \param   caseSensitive       If false, checks with case insensitivity.
      * \return  Returns true if the string starts with the given phrase.
      **/
+    template<typename CharType>
     bool string_starts_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
 
-    /**
-     * \brief   Returns true if a give string starts with specified phrase.
-     * \param   strString       The string to check the phrase.
-     * \param   ch              The character to check.
-     * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string starts with given phrase.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the string starts with the specified character.
      *
@@ -1220,16 +775,9 @@ namespace NEString
      * \param   caseSensitive       If false, checks with case insensitivity.
      * \return  Returns true if the string starts with the given character.
      **/
+    template<typename CharType>
     bool string_starts_with(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
-    /**
-     * \brief   Returns true if a give string ends with specified phrase.
-     * \param   strString   The string to check the phrase.
-     * \param   phrase      The phrase to check.
-     * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string ends with given phrase.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the string ends with the specified phrase.
      *
@@ -1238,16 +786,9 @@ namespace NEString
      * \param   caseSensitive       If false, checks with case insensitivity.
      * \return  Returns true if the string ends with the given phrase.
      **/
+    template<typename CharType>
     bool string_ends_with(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
 
-    /**
-     * \brief   Returns true if a give string ends with specified phrase.
-     * \param   strString   The string to check the phrase.
-     * \param   ch              The character to check.
-     * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
-     * \return  Returns true if the string ends with given phrase.
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns true if the string ends with the specified character.
      *
@@ -1256,38 +797,9 @@ namespace NEString
      * \param   caseSensitive       If false, checks with case insensitivity.
      * \return  Returns true if the string ends with the given character.
      **/
+    template<typename CharType>
     bool string_ends_with(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
-    /**
-     * \brief   Returns printable string of given buffer. The buffer should be possible to modify.
-     *          Returns end-of-string if the first position of given string is not printable
-     *          and returns nullptr if given source is nullptr.
-     * \param   strSource   The source of string to make printable. The string buffer should be possible to modify
-     * \param   charCount   The number of characters in string buffer.
-     * \param   out_next    If not nullptr, on output this contains pointer to next position
-     *                      after first match of non-printable character in source buffer.
-     *                      If nullptr, there are no more non-printable characters in buffer.
-     * \return  Returns portion of printable string if found.
-     *          Returns empty string (end-of-string) if there is a non-printable character at first position.
-     *          Returns nullptr if given buffer is invalid.
-     *
-     * \example NEString::printable( )
-     *
-     *          Let's consider example:
-     *
-     *  char buffer[]   = {'1', '2', '\0', '4', 5, 6, '7', '8', '9', 127 };
-     *  int32_t count       = sizeof(buffer);
-     *  char * next     = buffer;
-     *
-     *  const char * result1 = NEString::printable<char>(next, count, &next);  // Results: result1 = "12"   , next = {'4', 5, 6, '7', '8', '9', 127}
-     *  count -= string_length<char>(result1) + 1;
-     *  const char * result2 = NEString::printable<char>(next, count, &next);  // Results: result2 = "4"    , next = {6, '7', '8', '9', 127}
-     *  count -= string_length<char>(result2) + 1;
-     *  const char * result3 = NEString::printable<char>(next, count, &next);  // Results: result3 = ""     , next = {'7', '8', '9', 127}
-     *  count -= string_length<char>(result3) + 1;
-     *  const char * result4 = NEString::printable<char>(next, count, &next);  // Results: result4 = "789"  , next = nullptr
-     **/
-    template<typename CharType>
     /**
      * \brief   Returns the first printable portion of the string. Requires the buffer to be
      *          modifiable.
@@ -1299,21 +811,9 @@ namespace NEString
      * \return  Returns the first printable portion. Returns empty string if the first character is
      *          not printable; nullptr if the buffer is invalid.
      **/
+    template<typename CharType>
     const CharType * printable( CharType * strSource, CharCount charCount, CharType ** out_next = nullptr );
 
-    /**
-     * \brief   Returns line of string of given buffer. The buffer should be possible to modify.
-     *          Returns end-of-string if end-of-line symbol is at first position of given string
-     *          and returns nullptr if given source is invalid.
-     * \param   strSource   The source of string to get line. The string buffer should be possible to modify
-     * \param   charCount   The number of characters in string buffer.
-     * \param   out_next    If not nullptr, on output this contains pointer to next position
-     *                      after first match of end-of-line character in source buffer.
-     *                      If nullptr, there are no more characters in buffer.
-     * \return  Returns portion of line of string.
-     *          Returns nullptr if given buffer is invalid.
-     **/
-    template<typename CharType>    
     /**
      * \brief   Extracts a single line from the string. Requires the buffer to be modifiable.
      *
@@ -1323,49 +823,31 @@ namespace NEString
      *                             end-of-line character; nullptr if no more lines.
      * \return  Returns the first line. Returns nullptr if the buffer is invalid.
      **/
+    template<typename CharType>    
     const CharType * line( CharType * strSource, CharCount charCount = NEString::COUNT_ALL, CharType ** out_next = nullptr );
 
-    /**
-     * \brief   Converts the given string to digit in base 10.
-     *          White-space at begin will be ignored. The negative
-     */
-    template<typename CharType>
     /**
      * \brief   Converts the given string to an integer in base 10, ignoring leading white-space.
      *
      * \param   strNumber       The string to convert.
      * \param[out] remain          On output, contains the pointer to the first non-digit character.
      **/
+    template<typename CharType>
     int32_t make_integer(const CharType * strNumber, const CharType ** remain);
 
     /**
-     * \brief   Computes and returns the buffer size required to allocate to format the string.
-     *          This function works only for 'char' and 'wchar_t' types.
-     * \note    Note:   This method does not compute the exact size required to allocate, rather
-     *                  than the approximate size of buffer. The method start checking for buffer
-     *                  sizes 128, 256, 512 and 1024. If it is required to allocate more than
-     *                  1024 bytes, the function returns -1.
-     * \param   format  The formatting string to calculate required size.
-     * \param   argptr  The pointer to the argument list that fits the format.
-     * \return  Returned values are 128, 256, 512, 1024 or -1 if failed to format or the required
-     *          buffer size is 0 or larger than 1024. The return value includes null-character at
-     *          the end of the string. If the buffer size could be bigger than 1024, check with
-     *          function 'is_buffer_fit'
+     * \brief   Computes the buffer size required to format a string. Works only for char and
+     *          wchar_t types.
+     *
+     * \param   format      The formatting string.
+     * \param   argptr      The pointer to the argument list matching the format.
+     * \return  Returns an approximate size (128, 256, 512, 1024) or -1 if the required size exceeds
+     *          1024 bytes or on error.
+     * \note    This method computes approximate buffer size, not exact size. It checks sizes 128,
+     *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
      **/
     template<char dummy = '\0'>
-    /**
-     * \brief   Computes the buffer size required to format a string. Works only for char and
-     *          wchar_t types.
-     *
-     * \param   format      The formatting string.
-     * \param   argptr      The pointer to the argument list matching the format.
-     * \return  Returns an approximate size (128, 256, 512, 1024) or -1 if the required size exceeds
-     *          1024 bytes or on error.
-     * \note    This method computes approximate buffer size, not exact size. It checks sizes 128,
-     *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
-     **/
     int32_t required_buffer_size( const char * format, va_list argptr );
-    template<wchar_t dummy = L'\0'>
     /**
      * \brief   Computes the buffer size required to format a string. Works only for char and
      *          wchar_t types.
@@ -1377,26 +859,18 @@ namespace NEString
      * \note    This method computes approximate buffer size, not exact size. It checks sizes 128,
      *          256, 512, and 1024 bytes. Use is_buffer_fit() to check for larger sizes.
      **/
+    template<wchar_t dummy = L'\0'>
     int32_t required_buffer_size( const wchar_t * format, va_list argptr );
 
     /**
-     * \brief   Checks whether the buffer size fits to format a string.
-     * \tparam  size    A constant expression to check the size.
-     * \tparam  dummy   Is not used.
-     * \param   format  The formatting string.
-     * \param   argptr  The pointer to the argument list.
-     * \return  Returns true if the checking size is enough to format the string.
+     * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
+     *
+     * \param   format      The formatting string.
+     * \param   argptr      The pointer to the argument list.
+     * \return  Returns true if the buffer has sufficient space to format the string.
      **/
     template<int32_t size, char dummy>
-    /**
-     * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
-     *
-     * \param   format      The formatting string.
-     * \param   argptr      The pointer to the argument list.
-     * \return  Returns true if the buffer has sufficient space to format the string.
-     **/
     bool is_buffer_fit( const char * format, va_list argptr );
-    template<int32_t size, wchar_t dummy>
     /**
      * \brief   Checks whether a buffer is large enough to format a string with the given arguments.
      *
@@ -1404,6 +878,7 @@ namespace NEString
      * \param   argptr      The pointer to the argument list.
      * \return  Returns true if the buffer has sufficient space to format the string.
      **/
+    template<int32_t size, wchar_t dummy>
     bool is_buffer_fit( const wchar_t * format, va_list argptr );
 }
 
@@ -1851,7 +1326,7 @@ NEString::CharPos NEString::find_first( CharType chSearch
     if ( out_next != nullptr )
         *out_next = nullptr;
 
-    if ( (is_empty<CharType>(strSource) == false) && (chSearch != static_cast<CharType>(NEString::EndOfString)) )
+    if ( is_empty<CharType>(strSource) || (chSearch == static_cast<CharType>(NEString::EndOfString)) )
     {
         if ( startPos >= NEString::START_POS )
         {

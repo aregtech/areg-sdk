@@ -42,35 +42,11 @@ template <typename VALUE> class RingStackBase;
 // StackBase<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Ring FIFO Stack base object to queue elements, insert and access
- *          by push and pop operations. RingStackBase requires instance of
- *          synchronization object to synchronize access of stack elements,
- *          capacity value and overlapping flag.
- *
- *          The capacity might be changed depending on overlapping flag.
- *          If ring stack is full, whether the capacity remains same or not,
- *          whether new element is pushed or not, depends on overlapping flag.
- *          For more details of capacity flag see NECommon::OverlapPolicy
- *          description. In Ring Stack the start and end position might point
- *          any index withing stack, but they cannot be more than capacity value.
- *
- *          Whether the ring stack is thread safe or not, depends on the
- *          instance of synchronization object passed to ring stack. There
- *          are 2 types of rings: Locking and Non-locking.
- *
- * \tparam  VALUE       The type of stored items. Either should be
- *                      primitive or should have default constructor
- *                      and valid assigning operator. Also, should be
- *                      possible to convert to type 'const VALUE&'.
- * 
- * \see     RingStack, ConcurrentRingStack.
- **/
-template <typename VALUE>
-/**
  * \brief   Ring FIFO stack container with configurable capacity and overlap policy. Supports
  *          synchronized or unsynchronized access depending on the provided synchronization object.
  *          Capacity may be fixed or dynamically resized based on overlap policy when full.
  **/
+template <typename VALUE>
 class RingStackBase
 {
 //////////////////////////////////////////////////////////////////////////
@@ -169,19 +145,6 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream Ring Stack values. If Ring Stack previously
-     *          had values, they will be lost. If capacity of Ring Stack is smaller than
-     *          the number of serialized elements in streaming object, it will be enlarged.
-     *          The values in the Ring Stack will be initialized in the same sequence
-     *          as they were written.
-     *          There should be possibility to initialize values from streaming object and
-     *          if VALUE is not a primitive, but an object, it should have implemented streaming operator.
-     *
-     * \param   stream  The streaming object for reading values
-     * \param   input   The Ring Stack object to save initialized values.
-     **/
-    template<typename V>
-    /**
      * \brief   Deserializes ring stack elements from input stream; clears existing elements and
      *          resizes if necessary.
      *
@@ -190,17 +153,8 @@ public:
      * \return  Returns const reference to input stream.
      * \note    VALUE type must support streaming deserialization operator.
      **/
-    friend const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input );
-    /**
-     * \brief   Writes to the stream Ring Stack values. The values are written into the stream
-     *          starting from head position.
-     *          There should be possibility to stream every value of Stack and if VALUE 
-     *          is not a primitive, but an object, it should have implemented streaming operator.
-     *
-     * \param   stream  The streaming object to write values
-     * \param   output  The Stack object to read out values.
-     **/
     template<typename V>
+    friend const InStream & operator >> ( const InStream & stream, RingStackBase<V> & input );
     /**
      * \brief   Serializes ring stack elements to output stream starting from head position.
      *
@@ -209,6 +163,7 @@ public:
      * \return  Returns reference to output stream.
      * \note    VALUE type must support streaming serialization operator.
      **/
+    template<typename V>
     friend OutStream & operator << ( OutStream & stream, const RingStackBase<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
@@ -501,20 +456,10 @@ private:
 // ConcurrentRingStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       Thread safe FIFO ring stack class template declaration.
- *              In this class data access is synchronized. Use this object 
- *              if elements of ring stack are accessed by more than one thread.
- *
- * \tparam  VALUE       The type of stored elements. Either should be
- *                      primitive or should have default constructor
- *                      and valid assigning operator. Also, should be
- *                      possible to convert to type const VALUE&.
- **/
-template <typename VALUE> 
-/**
  * \brief   Thread-safe FIFO ring stack class template. Data access is synchronized. Use this class
  *          when elements are accessed by multiple threads.
  **/
+template <typename VALUE> 
 class ConcurrentRingStack  : public RingStackBase<VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -625,21 +570,10 @@ private:
 // RingStack<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   No blocking FIFO ring stack class template declaration.
- *          No data access synchronization is performed in this class.
- *          It is faster than blocking stack and not thread safe.
- *          Use this ring stack if elements are accessed only by one thread.
- *
- * \tparam  VALUE       The type of stored items. Either should be
- *                      primitive or should have default constructor
- *                      and valid assigning operator. Also, should be
- *                      possible to convert to type const VALUE&.
- **/
-template <typename VALUE> 
-/**
  * \brief   Non-blocking FIFO ring stack class template. No data access synchronization. Not
  *          thread-safe. Use this class when elements are accessed by a single thread.
  **/
+template <typename VALUE> 
 class RingStack    : public RingStackBase<VALUE>
 {
 public:

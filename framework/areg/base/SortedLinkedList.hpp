@@ -37,25 +37,10 @@
 // SortedLinkedList<VALUE, VALUE_TYPE, Sorter> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Bi-directional linked list, which elements are sorted ascending or descending.
- *          Decision whether the elements of linked list are ascending or descending is
- *          done when initializing object. Depending on this flag, elements are sorted when
- *          inserted into the linked list.
- *
- *          The Sorted Linked List does not allow modification of element by position and
- *          it does not give possibility to insert Head or Tail position. Accessing elements
- *          by linked list position and index are read-only. The Sorted LinkedList object
- *          is not thread safe and data access should be  synchronized manually.
- *
- * \tparam  VALUE       The type of stored items. Either should be primitive or should have
- *                      default constructor and valid assigning operator. Also, should be
- *                      possible to convert to type VALUE_TYPE.
- **/
-template <typename VALUE>
-/**
  * \brief   Bi-directional linked list with elements automatically sorted in ascending or descending
  *          order during insertion. Not thread-safe; synchronization must be handled externally.
  **/
+template <typename VALUE>
 class SortedLinkedList : private Constless<std::list<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -144,39 +129,21 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream Linked List values.
-     *          If Linked List previously had values, they will be lost.
-     *          The values in the Linked List will be initialized in the same sequence
-     *          as they were written.
-     *          There should be possibility to initialize values from streaming object and
-     *          if VALUE is not a primitive, but an object, it should have implemented streaming operator.
-     * \param   stream  The streaming object for reading values
-     * \param   input   The Linked List object to save initialized values.
-     **/
-    template<typename V>
-    /**
      * \brief   Reads list elements from the input stream, clearing any existing elements first.
      *
      * \param   stream      The input stream to read from.
      * \param[in,out] input       The list to store deserialized elements. Existing elements are
      *                            cleared.
      **/
-    friend const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input);
-    /**
-     * \brief   Writes to the stream Linked List values.
-     *          The values will be written to the stream starting from head position.
-     *          There should be possibility to stream every value of Linked List and if VALUE
-     *          is not a primitive, but an object, it should have implemented streaming operator.
-     * \param   stream  The streaming object to write values
-     * \param   output  The Linked List object to read out values.
-     **/
     template<typename V>
+    friend const InStream& operator >> (const InStream& stream, SortedLinkedList<V>& input);
     /**
      * \brief   Writes all list elements to the output stream in head-to-tail order.
      *
      * \param[in,out] stream      The output stream to write to.
      * \param   output      The list whose elements will be serialized.
      **/
+    template<typename V>
     friend OutStream& operator << (OutStream& stream, const SortedLinkedList<V>& output);
 
 //////////////////////////////////////////////////////////////////////////

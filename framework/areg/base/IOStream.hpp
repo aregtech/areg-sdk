@@ -383,116 +383,86 @@ public:
     friend inline OutStream & operator << (OutStream & stream, const wchar_t * output);
 
     /**
-     * \brief   Writes STL string into the stream.
-     **/
-    template<typename CharType>
-    /**
      * \brief   Writes an STL string to the stream.
      **/
-    friend inline OutStream& operator << (OutStream& stream, const std::basic_string<CharType>& output);
     template<typename CharType>
+    friend inline OutStream& operator << (OutStream& stream, const std::basic_string<CharType>& output);
     /**
      * \brief   Writes an STL string_view to the stream.
      **/
+    template<typename CharType>
     friend inline OutStream& operator << (OutStream& stream, const std::basic_string_view<CharType>& output);
 
     /**
-     * \brief   Writes STL string into the stream.
-     **/
-    template<typename CharType>
-    /**
      * \brief   Reads an STL string from the stream.
      **/
+    template<typename CharType>
     friend inline const InStream& operator >> (const InStream& stream, std::basic_string<CharType>& input);
 
     /**
-     * \brief   Reads and writes std::deque object to the stream.
-     *          Each element in the container must be streamable.
-     **/
-    template<typename ElemType>
-    /**
      * \brief   Writes an std::deque to the stream. Each element must be streamable.
      **/
-    friend inline OutStream& operator << (OutStream& stream, const std::deque<ElemType>& output);
     template<typename ElemType>
+    friend inline OutStream& operator << (OutStream& stream, const std::deque<ElemType>& output);
     /**
      * \brief   Reads an std::deque from the stream. Each element must be streamable.
      **/
+    template<typename ElemType>
     friend inline const InStream& operator >> (const InStream& stream, std::deque<ElemType>& input);
 
     /**
-     * \brief   Reads and writes std::list object to the stream.
-     *          Each element in the container must be streamable.
-     **/
-    template<typename ElemType>
-    /**
      * \brief   Writes an std::list to the stream. Each element must be streamable.
      **/
-    friend inline OutStream& operator << (OutStream& stream, const std::list<ElemType>& output);
     template<typename ElemType>
+    friend inline OutStream& operator << (OutStream& stream, const std::list<ElemType>& output);
     /**
      * \brief   Reads an std::list from the stream. Each element must be streamable.
      **/
+    template<typename ElemType>
     friend inline const InStream& operator >> (const InStream& stream, std::list<ElemType>& input);
 
     /**
-     * \brief   Reads and writes std::vector object to the stream.
-     *          Each element in the container must be streamable. 
-     **/
-    template<typename ElemType>
-    /**
      * \brief   Writes an std::vector to the stream. Each element must be streamable.
      **/
-    friend inline OutStream& operator << (OutStream& stream, const std::vector<ElemType>& output);
     template<typename ElemType>
+    friend inline OutStream& operator << (OutStream& stream, const std::vector<ElemType>& output);
     /**
      * \brief   Reads an std::vector from the stream. Each element must be streamable.
      **/
+    template<typename ElemType>
     friend inline const InStream& operator >> (const InStream& stream, std::vector<ElemType>& input);
 
     /**
-     * \brief   Reads and writes std::pair object to the stream.
-     *          Each element in the container must be streamable.
-     **/
-    template<typename Key, typename Value>
-    /**
      * \brief   Writes an std::pair to the stream. Each element must be streamable.
      **/
-    friend inline OutStream& operator << (OutStream& stream, const std::pair<Key, Value>& output);
     template<typename Key, typename Value>
+    friend inline OutStream& operator << (OutStream& stream, const std::pair<Key, Value>& output);
     /**
      * \brief   Reads an std::pair from the stream. Each element must be streamable.
      **/
+    template<typename Key, typename Value>
     friend inline const InStream& operator >> (const InStream& stream, std::pair<Key, Value>& input);
 
     /**
-     * \brief   Reads and writes std::map object to the stream.
-     *          Each element in the container must be streamable.
-     **/
-    template<typename Key, typename Value>
-    /**
      * \brief   Writes an std::map to the stream. Each element must be streamable.
      **/
-    friend inline OutStream& operator << (OutStream& stream, const std::map<Key, Value>& output);
     template<typename Key, typename Value>
+    friend inline OutStream& operator << (OutStream& stream, const std::map<Key, Value>& output);
     /**
      * \brief   Reads an std::map from the stream. Each element must be streamable.
      **/
+    template<typename Key, typename Value>
     friend inline const InStream& operator >> (const InStream& stream, std::map<Key, Value>& input);
 
     /**
-     * \brief   Reads and writes std::unordered_map object to the stream.
-     *          Each element in the container must be streamable.
-     **/
-    template<typename Key, typename Value>
-    /**
      * \brief   Writes an std::unordered_map to the stream. Each element must be streamable.
      **/
-    friend inline OutStream& operator << (OutStream& stream, const std::unordered_map<Key, Value>& output);
     template<typename Key, typename Value>
+    friend inline OutStream& operator << (OutStream& stream, const std::unordered_map<Key, Value>& output);
     /**
      * \brief   Reads an std::unordered_map from the stream. Each element must be streamable.
      **/
+    template<typename Key, typename Value>
     friend inline const InStream& operator >> (const InStream& stream, std::unordered_map<Key, Value>& input);
 
 

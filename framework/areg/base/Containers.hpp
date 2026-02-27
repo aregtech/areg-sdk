@@ -65,13 +65,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Hash Map class template with integer keys.
- * \tparam  VALUE       The type of value to store in map
- **/
-template <typename VALUE>
-/**
  * \brief   Hash map template with integer keys.
  **/
+template <typename VALUE>
 class IntegerHashMap  : public HashMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -115,15 +111,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   This hash map is used to store values associate with ID. This is mainly used to
- *          keep control of resources. So that, there will be no other implementation. Because
- *          resources are mainly pointers and they would need individual solutions.
- * \tparam  VALUE       The type of value to store in map
- **/
-template <typename VALUE>
-/**
  * \brief   Hash map template with uint32_t ID keys for resource tracking and management.
  **/
+template <typename VALUE>
 class IdHashMap: public HashMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -166,13 +156,9 @@ public:
 // StringHashMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Hash Map class template where key are strings.
- * \tparam  VALUE       The type of value to store in the map.
- **/
-template <typename VALUE>
-/**
  * \brief   Hash map template with string keys.
  **/
+template <typename VALUE>
 class StringHashMap: public HashMap<String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -216,13 +202,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Hash Map class template where keys are pointers.
- * \tparam  VALUE       The type of value to store in map
- **/
-template <typename VALUE>
-/**
  * \brief   Hash map template with pointer keys.
  **/
+template <typename VALUE>
 class PtrHashMap: public HashMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -266,13 +248,9 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Sorted Map class template with integer keys.
- * \tparam  VALUE       The type of value to store in map
- **/
-template <typename VALUE>
-/**
  * \brief   Sorted map template with integer keys.
  **/
+template <typename VALUE>
 class IntegerMap : public OrderedMap<uint32_t, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -307,16 +285,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   This sorted map is used to store values associate with ID. This is mainly used to
- *          keep control of resources. So that, there will be no other implementation. Because
- *          resources are mainly pointers and they would need individual solutions.
-  * \tparam  VALUE       The type of value to store in map
-**/
-template <typename VALUE>
-/**
  * \brief   Sorted map template for storing values associated with Item IDs, used for resource
  *          management.
  **/
+template <typename VALUE>
 class IdMap : public OrderedMap<id_type, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -350,13 +322,9 @@ public:
 // StringMap class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Sorted Map class template where key are strings.
- * \tparam  VALUE       The type of value to store in the map.
- **/
-template <typename VALUE>
-/**
  * \brief   Sorted map template with string keys.
  **/
+template <typename VALUE>
 class StringMap : public OrderedMap<String, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -387,13 +355,9 @@ public:
 };
 
 /**
- * \brief   Sorted Map class template where keys are pointers.
- * \tparam  VALUE       The type of value to store in map.
- **/
-template <typename VALUE>
-/**
  * \brief   Sorted map template with pointer keys.
  **/
+template <typename VALUE>
 class PtrMap: public OrderedMap<void *, VALUE>
 {
 //////////////////////////////////////////////////////////////////////////

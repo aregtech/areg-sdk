@@ -29,17 +29,10 @@
 // ResourceMapImpl class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The class template for resource containers that save objects associated with the key.
- *          The methods of class are called when clean-up resource element.
- *          Make own implementation if it differs from default implementation.
- * \tparam  RESOURCE_KEY    The type of key to access resource object.
- * \tparam  RESOURCE_OBJECT The type of resource object stored in the map.
- **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT>
-/**
  * \brief   Base class template for resource containers; override impl_clean_resource() to customize
  *          cleanup behavior.
  **/
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT>
 class ResourceMapImpl
 {
 public:
@@ -54,18 +47,10 @@ public:
 // ResourceListMapImpl class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The class template for resource containers that save list of resources associated with the key.
- *          The methods of class are called when add or remove list, or when remove resource from the list to 
- *          make additional cleanup operation such as free memory.
- *          Make own implementation if it differs from default implementation.
- * \tparam  RESOURCE_KEY    The type of key to access the list of resource objects.
- * \tparam  RESOURCE_OBJECT The type of resource object stored in the resource list.
- **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList>
-/**
  * \brief   Helper class template providing customizable resource list cleanup and manipulation for
  *          resource containers.
  **/
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class ResourceList>
 class ResourceListMapImpl
 {
 public:
@@ -105,13 +90,9 @@ public:
 // Constless class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Converts the const_iterator type random access iterator into normal iterator.
- * \tparam  Container   The container object type to convert.
- */
-template <typename Container>
-/**
  * \brief   Utility for converting const_iterator to normal iterator without casting.
  **/
+template <typename Container>
 class Constless
 {
 public:

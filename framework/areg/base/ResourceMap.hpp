@@ -31,8 +31,6 @@
 // HashMap 
     template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ResourceMapBase;
         template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ConcurrentResourceMap;
-        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ResourceMap;
-
 /************************************************************************
  * \brief   This file contains declarations of following class templates:
  *
@@ -47,6 +45,8 @@
  *
  *          For more information, see descriptions bellow
  ************************************************************************/
+        template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter> class ResourceMap;
+
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter> class template declaration
@@ -248,21 +248,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief       Blocking Resource Map. It is thread safe and synchronizes thread access. 
- *              Use instance of this class template if resources are accessed
- *              by more than one thread.
- *
- * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
- * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the map.
- * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
- * \tparam  Deleter             Helper class to track the resource cleanup procedure.
- *
- * \see    ConcurrentResourceMap, ResourceMap
- **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
-/**
  * \brief   Thread-safe resource map with blocking synchronization for multi-threaded access.
  **/
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter = ResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class ConcurrentResourceMap    : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -296,20 +284,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief       Non-blocking Resource Map. It is not thread safe. Use instance 
- *              of this class if there is no need to control thread access.
- *
- * \tparam  RESOURCE_KEY        The type of Key to access resource element. Should be possible to compute hash.
- * \tparam  RESOURCE_OBJECT     The type of resource objects, which pointers are saved in the map.
- * \tparam  MapContainer        HashMap class to inherit to implement resource list map.
- * \tparam  Deleter             Helper class to track the resource cleanup procedure.
- *
- * \see    ConcurrentResourceMap
- **/
-template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
-/**
  * \brief   Non-thread-safe resource map for single-threaded use.
  **/
+template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class MapContainer, class Deleter>
 class ResourceMap  : public ResourceMapBase<RESOURCE_KEY, RESOURCE_OBJECT, MapContainer, Deleter>
 {
 //////////////////////////////////////////////////////////////////////////

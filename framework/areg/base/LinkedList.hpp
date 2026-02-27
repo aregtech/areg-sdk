@@ -38,25 +38,13 @@
 // LinkedList<VALUE> class template declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Bi-directional Linked List class template to access, insert and 
- *          remove entries by position, where is next and previous entry
- *          at the given position is accessed fast.
- *
- *          The type VALUE should have at least default constructor, applicable
- *          comparing and assigning operators. The LinkedList object is not
- *          thread safe and data access should be synchronized manually.
- *
- * \tparam  VALUE   The type of stored elements should be either primitive or have
- *                  default constructor, applicable comparing and assigning operators.
- **/
-template <typename VALUE> 
-/**
  * \brief   Bi-directional Linked List class template to access, insert and remove entries by
  *          position, where the next and previous entry at the given position is accessed fast. The
  *          type VALUE should have at least a default constructor, applicable comparing and
  *          assigning operators. The LinkedList object is not thread safe and data access should be
  *          synchronized manually.
  **/
+template <typename VALUE> 
 class LinkedList  : private Constless<std::list<VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -161,17 +149,6 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream linked list values.
-     *          If linked list previously had values, they will be removed and new values
-     *          from the stream will be set in the same sequence as they are present
-     *          in the stream. There should be possibility to initialize values from
-     *          streaming object and if VALUE is not a primitive, but an object, it
-     *          should have implemented streaming operator.
-     * \param   stream  The streaming object to read values.
-     * \param   input   The linked list object to save initialized values.
-     **/
-    template<typename V>
-    /**
      * \brief   Reads out from the stream linked list values. If linked list previously had values,
      *          they will be removed and new values from the stream will be set in the same sequence
      *          as they are present in the stream. There should be possibility to initialize values
@@ -181,17 +158,9 @@ public:
      * \param   stream      The streaming object to read values.
      * \param   input       The linked list object to save initialized values.
      **/
+    template<typename V>
     friend inline const InStream & operator >> ( const InStream & stream, LinkedList<V> & input );
 
-    /**
-     * \brief   Writes to the stream the values of linked list.
-     *          The values will be written to the stream starting from firs entry.
-     *          There should be possibility to stream values and if VALUE is not a
-     *          primitive, but an object, it should have implemented streaming operator.
-     * \param   stream  The stream to write values.
-     * \param   output  The linked list object containing value to stream.
-     **/
-    template<typename V>
     /**
      * \brief   Writes to the stream the values of linked list. The values will be written to the
      *          stream starting from first entry. There should be possibility to stream values and
@@ -201,6 +170,7 @@ public:
      * \param   stream      The stream to write values.
      * \param   output      The linked list object containing value to stream.
      **/
+    template<typename V>
     friend inline OutStream & operator << ( OutStream & stream, const LinkedList<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
@@ -757,12 +727,6 @@ public:
     inline void merge(LinkedList<VALUE> && source);
 
     /**
-     * \brief   Sorts the linked list, compares the elements by given Compare functionality.
-     * \param   comp    The comparing method, similar to the method  std::greater()
-     * \return  Sorts and returns the linked list object.
-     **/
-    template <class Compare>
-    /**
      * \brief   Sorts the linked list using the given comparator function. Returns a reference to
      *          this sorted list.
      *
@@ -770,6 +734,7 @@ public:
      *                  functors.
      * \return  Returns a reference to this list after sorting.
      **/
+    template <class Compare>
     inline LinkedList< VALUE >& sort(Compare comp);
 
     /**

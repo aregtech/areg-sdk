@@ -363,45 +363,38 @@ public:
     /**
      * \brief   Operator to concatenate 2 strings.
      *
-     * \param   lhs     Left-hand side string object
-     * \param   rhs     Right-hand side string object
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
     template<typename CT>
-    /**
-     * \brief   Operator to concatenate 2 strings.
-     *
-     * \return  Returns newly constructed string object by concatenating 2 strings
-     **/
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const StringBase<CT>& rhs);
-    template<typename CT>
     /**
      * \brief   Operator to concatenate 2 strings.
      *
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
+    template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string<CT>& rhs);
-    template<typename CT>
     /**
      * \brief   Operator to concatenate 2 strings.
      *
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
+    template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const std::basic_string_view<CT>& rhs);
-    template<typename CT>
     /**
      * \brief   Operator to concatenate 2 strings.
      *
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
-    friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT* rhs);
     template<typename CT>
+    friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT* rhs);
     /**
      * \brief   Operator to concatenate 2 strings.
      *
      * \param   rhs     Right-hand side string object
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
+    template<typename CT>
     friend inline StringBase<CT> operator + (const StringBase<CT>& lhs, const CT rhs);
     template<typename CT>
     friend inline StringBase<CT> operator + (const std::basic_string<CT>& lhs, const StringBase<CT>& rhs);
@@ -413,66 +406,36 @@ public:
     friend inline StringBase<CT> operator + (const CT lhs, const StringBase<CT>& rhs);
 
     /**
-     * \brief   Streams to input object, i.e. reads data from streaming object to string,
-     *          and initialize string data.
-     *
-     * \tparam  CT      The type of character.
-     * \param   stream  Streaming object to read string data
-     * \param   input   String object to initialize and write string data.
-     * \return  Reference to stream object.
-     **/
-    template<typename CT>
-    /**
      * \brief   Streams to input object, i.e. reads data from streaming object to string, initialize
      *          string data.
      *
      * \return  Reference to stream object.
      **/
+    template<typename CT>
     friend inline const InStream & operator >> (const InStream & stream, StringBase<CT> & input);
 
     /**
      * \brief   Streams from output object, i.e. write data from string to streaming object.
-     * \tparam  CT      The type of character.
-     * \param   stream  Streaming object to write data.
-     * \param   output  String object to read data from
-     * \return  Reference to stream object.
-     **/
-    template<typename CT>
-    /**
-     * \brief   Streams from output object, i.e. write data from string to streaming object.
      *
      * \return  Reference to stream object.
      **/
+    template<typename CT>
     friend inline OutStream & operator << (OutStream & stream, const StringBase<CT> & output);
 
     /**
      * \brief   Prints string message to the standard output stream.
-     * \tparam  CT      The type of character.
-     * \param   stream  Standard streaming object to print message.
-     * \param   output  String object with the message.
-     * \return  Reference to stream object.
-     **/
-    template<typename CT>
-    /**
-     * \brief   Prints string message to the standard output stream.
      *
      * \return  Reference to stream object.
      **/
+    template<typename CT>
     friend inline std::ostream & operator << ( std::ostream & stream, const StringBase<CT> & output );
 
     /**
      * \brief   Reads string message from the standard input stream.
-     * \tparam  CT      The type of character.
-     * \param   stream  Standard streaming object to read message.
-     * \param   input   String object to save the message.
-     * \return  Reference to stream object.
-     **/
-    template<typename CT>
-    /**
-     * \brief   Reads string message from the standard input stream.
      *
      * \return  Reference to stream object.
      **/
+    template<typename CT>
     friend inline const std::istream & operator >> ( const std::istream & stream, StringBase<CT> & input );
 
 //////////////////////////////////////////////////////////////////////////

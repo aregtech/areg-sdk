@@ -202,17 +202,6 @@ public:
 // Friend global operators to make Array streamable
 /************************************************************************/
     /**
-     * \brief   Reads out from the stream array values.
-     *          If array previously had values, they will be removed and new values
-     *          from the stream will be set in the same sequence as they are present 
-     *          in the stream. There should be possibility to initialize values from 
-     *          streaming object and if VALUE is not a primitive, but an object, it 
-     *          should have implemented streaming operator.
-     * \param   stream  The streaming object to read values.
-     * \param   input   The array object to save initialized values.
-     **/
-    template <typename V>
-    /**
      * \brief   Reads array values from the stream. If array previously had values, they will be
      *          removed and new values from the stream will be set in the same sequence as they are
      *          present in the stream. The VALUE type must support initialization from streaming and
@@ -221,17 +210,9 @@ public:
      * \param   stream      The streaming object to read values.
      * \param   input       The array object to save initialized values.
      **/
+    template <typename V>
     friend const InStream & operator >> (const InStream & stream, ArrayList< V > & input);
 
-    /**
-     * \brief   Writes to the stream the values of array.
-     *          The values will be written to the stream starting from firs entry. 
-     *          There should be possibility to stream values and if VALUE is not a 
-     *          primitive, but an object, it should have implemented streaming operator.
-     * \param   stream  The stream to write values.
-     * \param   output   The array object containing value to stream.
-     **/
-    template <typename V>
     /**
      * \brief   Writes array values to the stream starting from the first entry. The VALUE type must
      *          support streaming and have a streaming operator.
@@ -239,6 +220,7 @@ public:
      * \param   stream      The stream to write values.
      * \param   output      The array object containing values to stream.
      **/
+    template <typename V>
     friend OutStream & operator << (OutStream & stream, const ArrayList< V > & output);
 
 //////////////////////////////////////////////////////////////////////////
@@ -545,18 +527,13 @@ public:
     inline VALUE & last_entry();
 
     /**
-     * \brief   Sorts the array, compares the elements by given Compare functionality.
-     * \param   comp    The comparing method, similar to the method  std::greater()
-     * \return  Sorts and returns the array object.
-     **/
-    template <class Compare>
-    /**
      * \brief   Sorts the array using the given comparison function and returns reference to this
      *          array.
      *
      * \param   comp    The comparison function, similar to std::greater().
      * \return  Returns reference to the sorted array.
      **/
+    template <class Compare>
     inline ArrayList< VALUE >& sort(Compare comp);
 
     /**

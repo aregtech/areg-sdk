@@ -166,15 +166,6 @@ namespace NESystemService
     constexpr Console::Coord    COORD_INFO_MSG      { 0, 8 };
 
     /**
-     * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'.
-     *          The memory of returned value should be freed by calling 'deleteArgument'.
-     * \tparam  CharType    The type of the string. Should be 'char' or 'wchar_t'.
-     * \param   argv        The list of arguments received in 'main' function.
-     * \param   argc        The number of arguments in the argument list.
-     * \returns Returns argument list of type 'char'
-     **/
-    template<typename CharType>
-    /**
      * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'. The memory
      *          of returned value should be freed by calling 'deleteArgument'.
      *
@@ -182,6 +173,7 @@ namespace NESystemService
      * \param   argc    The number of arguments in the argument list.
      * \return  Returns argument list of type 'char'
      **/
+    template<typename CharType>
     inline char** convert_arguments(CharType** argv, int32_t argc);
 
     /**

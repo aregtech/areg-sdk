@@ -1484,7 +1484,6 @@ namespace NERegistry
          **/
         NERegistry::ComponentEntry & add_component( const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete );
 
-        template<typename ComponentType>
         /**
          * \brief   Adds a new component entry with the given role.
          *
@@ -1496,6 +1495,7 @@ namespace NERegistry
          *          system or entire model. It checks only within the current component thread entry
          *          context.
          **/
+        template<typename ComponentType>
         inline NERegistry::ComponentEntry& add_component(const String& roleName);
 
         /**

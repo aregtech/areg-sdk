@@ -33,45 +33,10 @@
 // FixedArray<VALUE> class template declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Fixed Array has general functionalities to access and copy elements 
- *          by valid index. Fixed Array is similar to FixedArray<VALUE> except
- *          that it does not support insert or remove element(s) and does not
- *          change the initial size, unless it is not assigned or moved from 
- *          another source.
- *
- *          The type VALUE should have at least default constructor, applicable
- *          comparing and assigning operators. The FixedArray object is not
- *          thread safe and data access should be synchronized manually.
- *
- * \tparam  VALUE   The type of stored elements should be either primitive or have
- *                  default constructor, applicable comparing and assigning operators.
- *
- * \example     FixedArray use
- *
- *              Suppose that there is a need to have a matrix with various length of columns. 
- *              For example:
- *              1   2   3
- *              1   2
- *              1
-
- *              In this case, this can be defined in following way:
- *
- *              typedef FixedArray<int32_t>           FixedArray;
- *              typedef FixedArray<FixedArray*>   FixedMatrix;
- *              FixedMatrix matrix(3);
- *              matrix[0] = new FixedArray(3);
- *              matrix[1] = new FixedArray(2);
- *              matrix[2] = new FixedArray(1);
- *              matrix[0][0] = 1; matrix[0][1] = 2; matrix[0][3] = 3;
- *              matrix[1][0] = 1; matrix[1][1] = 2;
- *              matrix[2][0] = 1;
- *
- **/
-template<typename VALUE>
-/**
  * \brief   Fixed-size array container with pre-allocated capacity, supporting element access and
  *          copying but not insertion or removal operations. Not thread-safe.
  **/
+template<typename VALUE>
 class FixedArray
 {
 //////////////////////////////////////////////////////////////////////////
@@ -168,38 +133,20 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream fixed array values.
-     *          If fixed array previously had values, they will be removed and new values
-     *          from the stream will be set in the same size and sequence as they are present
-     *          in the stream. There should be possibility to initialize values from
-     *          streaming object and if VALUE is not a primitive, but an object, it
-     *          should have implemented streaming operator.
-     * \param   stream  The streaming object to read values.
-     * \param   input   The fixed array object to save initialized values.
-     **/
-    template<typename V>
-    /**
      * \brief   Deserializes array values from stream, replacing existing contents.
      *
      * \param   stream      Streaming object to read values from.
      * \param[out] input       FixedArray to receive deserialized values.
      **/
-    friend const InStream & operator >> ( const InStream & stream, FixedArray<V> & input );
-    /**
-     * \brief   Writes to the stream the values of fixed array.
-     *          The values will be written to the stream starting from firs entry.
-     *          There should be possibility to stream values and if VALUE is not a
-     *          primitive, but an object, it should have implemented streaming operator.
-     * \param   stream  The stream to write values.
-     * \param   output  The fixed array object containing value to stream.
-     **/
     template<typename V>
+    friend const InStream & operator >> ( const InStream & stream, FixedArray<V> & input );
     /**
      * \brief   Serializes all array values to stream starting from first element.
      *
      * \param[out] stream      Streaming object to write values to.
      * \param   output      FixedArray containing values to serialize.
      **/
+    template<typename V>
     friend OutStream & operator << ( OutStream & stream, const FixedArray<V> & output );
 
 //////////////////////////////////////////////////////////////////////////
@@ -338,17 +285,12 @@ public:
     inline VALUE & last_entry();
 
     /**
-     * \brief   Sorts the array, compares the elements by given Compare functionality.
-     * \param   comp    The comparing method, similar to the method  std::greater()
-     * \return  Sorts and returns the fixed array object.
-     **/
-    template <class Compare>
-    /**
      * \brief   Sorts array in-place using provided comparator and returns self.
      *
      * \param   comp    Comparator function/functor (similar to std::greater).
      * \return  Returns reference to this sorted FixedArray.
      **/
+    template <class Compare>
     inline FixedArray< VALUE >& sort(Compare comp);
 
     /**

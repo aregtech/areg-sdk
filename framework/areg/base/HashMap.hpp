@@ -34,55 +34,12 @@
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   The Hash Map binds Value with its Key. The Key element is unique.
- *          Values are accessed by Key. Key and Value can be of different types.
- *
- *          To access first element in Hash Map, get the first Position (call function
- *          first_position()). Each next element is accessed by calling next position.
- *          The type KEY should be possible to convert to uint32_t type required to
- *          calculate the Hash. If KEY type is an object it should have implemented
- *          hasher std::hash<KEY>, KEY comparing operator or KEY comparing function
- *          std::equal_to<KEY>. In addition, the KEY and VALUE types should have
- *          at least default constructor and valid assigning operator.
- *
- *          For example:
- *          class MyClass {
- *              int32_t     mData;
- *          }
- *
- *          namespace std {
- *
- *              // Hasher
- *              template<> struct hash<MyClass> {
- *                  uint32_t operator()(const MyClass& my) const
- *                  {   return mData; }
- *              }
- *
- *              // Check equality
- *              template<> struct equal_to<MyClass> {
- *                  bool operator()(const MyClass& lhs, const MyClass& rhs) const
- *                  {   return (lhs.mData == rhs.mData); }
- *              }
- *          }
- *
- *          The HashMap object is not thread safe and data should be  synchronized manually.
- *
- * \tparam  KEY     The type of Key to identify entries in the hash map. Either should
- *                  be primitive or should have at least default and copy constructors,
- *                  and assigning operator. There should be as well possibility to convert
- *                  KEY type to the hash by calling std::hash() and compare keys by calling
- *                  comparing operator or by calling std::equal_to().
- * \tparam  VALUE   The type of stored items. Either should be primitive or should have
- *                  default constructor and valid assigning operator. Also, should be
- *                  possible to convert to type 'const VALUE&'.
- **/
-template < typename KEY, typename VALUE>
-/**
  * \brief   Hash map binding values to unique keys, with key-value pair access by key. Keys are
  *          hashed for O(1) lookup. KEY type must be hashable via std::hash<KEY> and comparable via
  *          std::equal_to<KEY>; VALUE type can differ. Both KEY and VALUE require default
  *          constructor and assignment operator. Not thread-safe; synchronize manually.
  **/
+template < typename KEY, typename VALUE>
 class HashMap : protected Constless<std::unordered_map<KEY, VALUE>>
 {
 //////////////////////////////////////////////////////////////////////////
@@ -187,39 +144,21 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Reads out from the stream hash-map key and value pairs.
-     *          If hash-map previously had values, they will be removed and new values
-     *          from the stream will be set in the same sequence as they are present
-     *          in the stream. There should be possibility to initialize values from
-     *          streaming object and if KEY or VALUE are not primitives, but an object,
-     *          they should have implemented streaming operator.
-     * \param   stream  The streaming object to read values.
-     * \param   input   The hash-map object to save initialized values.
-     **/
-    template < typename K, typename V >
-    /**
      * \brief   Deserializes hash-map key-value pairs from stream, replacing existing entries.
      *
      * \param   stream      The streaming object to read values.
      * \param   input       The hash-map object to save initialized values.
      **/
+    template < typename K, typename V >
     friend inline const InStream & operator >> ( const InStream & stream, HashMap<K, V> & input);
 
-    /**
-     * \brief   Writes to the stream the key and value pairs of hash-map.
-     *          The values will be written to the stream starting from firs entry.
-     *          There should be possibility to stream key and value pairs and if KEY or VALUE
-     *          are not primitives, but an object, they should have implemented streaming operator.
-     * \param   stream  The stream to write values.
-     * \param   output  The hash-map object containing value to stream.
-     **/
-    template < typename K, typename V >
     /**
      * \brief   Serializes hash-map key-value pairs to stream.
      *
      * \param   stream      The stream to write values.
      * \param   output      The hash-map object containing value to stream.
      **/
+    template < typename K, typename V >
     friend inline OutStream & operator << ( OutStream & stream, const HashMap<K, V> & output );
 
 //////////////////////////////////////////////////////////////////////////

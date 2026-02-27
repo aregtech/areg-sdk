@@ -326,17 +326,6 @@ namespace NEMath
 // Basic math global functions
 /************************************************************************/
     /**
-     * \brief   Returns the sign of given object.
-     *          The object should be possible to compare with 0 and should support
-     *          operator smaller (operator <) and operator greater (operator >)
-     * \param   val     The object to compare. Can be primitive or object.
-     * \return  Returns sign of given object. The returns values are:
-     *              a. NEMath::SignNegative     if the object is smaller than zero
-     *              b. NEMath::SignPositive     if the object is greater than zero
-     *              c. NEMath::SignUndefined    if the object is equal to zero
-     **/
-    template<typename Type>
-    /**
      * \brief   Returns the sign of a value that supports comparison with zero and operators < and
      *          >.
      *
@@ -344,6 +333,7 @@ namespace NEMath
      * \return  Returns NEMath::SignNegative if val < 0, NEMath::SignPositive if val > 0,
      *          NEMath::SignUndefined if val == 0.
      **/
+    template<typename Type>
     inline NEMath::NumericSign sign( const Type & val );
 
 /************************************************************************/
@@ -454,35 +444,15 @@ namespace NEMath
     AREG_API double round( double val );
 
     /**
-     * \brief   Returns absolute value of passed parameter.
-     *          The Type should support operator less to compare with 0
-     *          and multiplication.
-     * \param   val     A parameter to get absolute value
-     * \tparam  Type    The type of object. Can be primitive or an object,
-     *                  which has defined operator less ( operator > ),
-     *                  should be possible to compare with integer 0
-     *                  and should support multiplication.
-     **/
-    template <typename Type>
-    /**
      * \brief   Returns the absolute value of a type that supports comparison with zero and
      *          multiplication.
      *
      * \param   val     Value to get absolute value of (requires < operator and multiplication
      *                  support).
      **/
+    template <typename Type>
     inline Type abs( const Type & val );
 
-    /**
-     * \brief   Compares 2 type of objects (primitives of objects) and return:
-     *          -- NEMath::Ordering::Equal if `left` and `right` objects are equal.
-     *          -- NEMath::Ordering::Bigger if `left object is bigger than the `right` object.
-     *          -- NEMath::Ordering::Smaller if `left object is smaller than the `right` object.
-     * \param   left    The left side object to compare.
-     * \param   right   The right side object to compare.
-     * \tparam  Type    Any type of object that is possible to compare with the comparing operator.
-     **/
-    template<typename Type>
     /**
      * \brief   Compares two values and returns NEMath::Ordering::Equal, Bigger, or Smaller.
      *
@@ -490,21 +460,13 @@ namespace NEMath
      * \param   right       Right-hand value to compare.
      * \return  NEMath::Ordering::Equal if equal, Bigger if left > right, Smaller if left < right.
      **/
+    template<typename Type>
     inline NEMath::Ordering compare(const Type & left, const Type & right);
 
 /************************************************************************/
 // Numeric utility functions
 /************************************************************************/
 
-    /**
-     * \brief   Checks whether the value is in the range [rangeMin, rangeMax].
-     * \param   value       The value to check.
-     * \param   rangeMin    The minimum of the range (inclusive).
-     * \param   rangeMax    The maximum of the range (inclusive).
-     * \return  Returns true if value is within [rangeMin, rangeMax].
-     * \tparam  T           Any type that supports operator <= .
-     **/
-    template <typename T>
     /**
      * \brief   Returns true if value is within the inclusive range [rangeMin, rangeMax].
      *
@@ -513,16 +475,9 @@ namespace NEMath
      * \param   rangeMax    Maximum of the range (inclusive).
      * \return  Returns true if value is within [rangeMin, rangeMax]; false otherwise.
      **/
+    template <typename T>
     inline constexpr bool is_in_range(T value, T rangeMin, T rangeMax) noexcept;
 
-    /**
-     * \brief   Calculates and returns the nearest aligned value for the given length.
-     * \param   len     The value to align.
-     * \param   block   The alignment block size.
-     * \return  The smallest multiple of block that is >= len.
-     * \tparam  T       An arithmetic type.
-     **/
-    template <typename T>
     /**
      * \brief   Returns the smallest multiple of block that is greater than or equal to len.
      *
@@ -530,6 +485,7 @@ namespace NEMath
      * \param   block       Alignment block size.
      * \return  Aligned value.
      **/
+    template <typename T>
     inline constexpr T align_size(T len, T block) noexcept;
 
 /************************************************************************/
@@ -537,35 +493,21 @@ namespace NEMath
 /************************************************************************/
 
     /**
-     * \brief   Extracts the lowest 8 bits (byte) from the given integral value.
-     * \param   value   The integral value to extract the low byte from.
-     * \return  The lowest 8-bit value as uint8_t.
-     * \tparam  T       An integral type (e.g., uint16_t, uint32_t).
-     **/
-    template <typename T>
-    /**
      * \brief   Extracts the lowest 8 bits from the given integral value.
      *
      * \param   value       Integral value to extract low byte from.
      * \return  Lowest 8 bits as uint8_t.
      **/
+    template <typename T>
     inline constexpr uint8_t lo_byte(T value) noexcept;
 
-    /**
-     * \brief   Extracts the highest 8 bits (byte) from the given integral value.
-     *          For a 16-bit value, returns bits [15:8].
-     *          For a 32-bit value, returns bits [31:24].
-     * \param   value   The integral value to extract the high byte from.
-     * \return  The highest 8-bit value as uint8_t.
-     * \tparam  T       An integral type (e.g., uint16_t, uint32_t).
-     **/
-    template <typename T>
     /**
      * \brief   Extracts the highest 8 bits from the given integral value.
      *
      * \param   value       Integral value to extract high byte from.
      * \return  Highest 8 bits as uint8_t.
      **/
+    template <typename T>
     inline constexpr uint8_t hi_byte(T value) noexcept;
 
     /**
@@ -601,19 +543,12 @@ namespace NEMath
     inline constexpr uint32_t hi_dword(uint64_t value) noexcept;
 
     /**
-     * \brief   Swaps the byte order of a 16-bit or 32-bit integral value.
-     *          Uses compile-time branching (if constexpr) based on sizeof(T).
-     * \param   value   The value whose bytes to swap.
-     * \return  The byte-swapped value.
-     * \tparam  T       An integral type, must be 2 or 4 bytes wide.
-     **/
-    template <typename T>
-    /**
      * \brief   Swaps byte order of a 16-bit or 32-bit integral value.
      *
      * \param   value       Value whose bytes to swap.
      * \return  Byte-swapped value.
      **/
+    template <typename T>
     inline constexpr T swap_bytes(T value) noexcept;
 
     /**
@@ -662,21 +597,13 @@ namespace NEMath
                                           uint8_t b3, uint8_t b2, uint8_t b1, uint8_t b0) noexcept;
 
     /**
-     * \brief   Computes the absolute difference (delta) between two values.
-     *          Works with any type that supports comparison and subtraction.
-     * \param   a   The first value.
-     * \param   b   The second value.
-     * \return  The absolute difference between a and b.
-     * \tparam  T   A type that supports operator > and operator -.
-     **/
-    template <typename T>
-    /**
      * \brief   Returns the absolute difference between two values.
      *
      * \param   a       First value.
      * \param   b       Second value.
      * \return  Absolute difference between a and b.
      **/
+    template <typename T>
     inline constexpr T delta(T a, T b) noexcept;
 
 }
