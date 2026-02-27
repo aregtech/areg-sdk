@@ -31,22 +31,22 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     ScopeLeaf::ScopeLeaf()
-        : ScopeNodeBase ( ScopeNodeBase::NodeType::Leaf )
+        : areg::ScopeNodeBase ( areg::ScopeNodeBase::NodeType::Leaf )
     {
     }
 
-    ScopeLeaf::ScopeLeaf( const ScopeNodeBase & base )
-        : ScopeNodeBase( ScopeNodeBase::NodeType::Leaf, base.getNodeName(), base.getPriority() )
+    ScopeLeaf::ScopeLeaf( const areg::ScopeNodeBase & base )
+        : areg::ScopeNodeBase( areg::ScopeNodeBase::NodeType::Leaf, base.getNodeName(), base.getPriority() )
     {
     }
 
     ScopeLeaf::ScopeLeaf( const ScopeLeaf & src )
-        : ScopeNodeBase ( static_cast<const ScopeNodeBase &>(src) )
+        : areg::ScopeNodeBase ( static_cast<const areg::ScopeNodeBase &>(src) )
     {
     }
 
     ScopeLeaf::ScopeLeaf( ScopeLeaf && src ) noexcept
-        : ScopeNodeBase( std::move(static_cast<ScopeNodeBase &>(src)) )
+        : areg::ScopeNodeBase( std::move(static_cast<areg::ScopeNodeBase &>(src)) )
     {
     }
 
@@ -68,35 +68,35 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     ScopeNode::ScopeNode()
-        : ScopeNodeBase ( ScopeNodeBase::NodeType::Node )
+        : areg::ScopeNodeBase ( areg::ScopeNodeBase::NodeType::Node )
         , mChildNodes   ( true )
         , mChildLeafs   ( true )
     {
     }
 
-    ScopeNode::ScopeNode( const ScopeNodeBase & base )
-        : ScopeNodeBase ( ScopeNodeBase::NodeType::Node, base.getNodeName( ), base.getPriority() )
+    ScopeNode::ScopeNode( const areg::ScopeNodeBase & base )
+        : areg::ScopeNodeBase ( areg::ScopeNodeBase::NodeType::Node, base.getNodeName( ), base.getPriority() )
         , mChildNodes   ( true )
         , mChildLeafs   ( true )
     {
     }
 
     ScopeNode::ScopeNode( const ScopeNode & src )
-        : ScopeNodeBase ( static_cast<const ScopeNodeBase &>(src) )
+        : areg::ScopeNodeBase ( static_cast<const areg::ScopeNodeBase &>(src) )
         , mChildNodes   ( src.mChildNodes )
         , mChildLeafs   ( src.mChildLeafs )
     {
     }
 
     ScopeNode::ScopeNode( ScopeNode && src ) noexcept
-        : ScopeNodeBase ( static_cast<const ScopeNodeBase &>(src) )
+        : areg::ScopeNodeBase ( static_cast<const areg::ScopeNodeBase &>(src) )
         , mChildNodes   ( std::move(src.mChildNodes) )
         , mChildLeafs   ( std::move(src.mChildLeafs) )
     {
     }
 
-    ScopeNode::ScopeNode( ScopeNodeBase::NodeType nodeType, const areg::String & name, uint32_t prio )
-        : ScopeNodeBase( nodeType, name, prio )
+    ScopeNode::ScopeNode( areg::ScopeNodeBase::NodeType nodeType, const areg::String & name, uint32_t prio )
+        : areg::ScopeNodeBase( nodeType, name, prio )
         , mChildNodes( true )
         , mChildLeafs( true )
     {
@@ -104,7 +104,7 @@ namespace areg
 
     ScopeNode & ScopeNode::operator = ( const ScopeNode & src )
     {
-        ScopeNodeBase::operator = ( static_cast<const ScopeNodeBase &>(src) );
+        areg::ScopeNodeBase::operator = ( static_cast<const areg::ScopeNodeBase &>(src) );
         if ( this != &src )
         {
             mChildNodes = src.mChildNodes;
@@ -116,7 +116,7 @@ namespace areg
 
     ScopeNode & ScopeNode::operator=( ScopeNode && src ) noexcept
     {
-        ScopeNodeBase::operator = ( std::move(static_cast<ScopeNodeBase &&>(src)) );
+        areg::ScopeNodeBase::operator = ( std::move(static_cast<areg::ScopeNodeBase &&>(src)) );
         if ( this != &src )
         {
             mChildNodes = std::move(src.mChildNodes);
@@ -126,15 +126,15 @@ namespace areg
         return (*this);
     }
 
-    const ScopeNodeBase & ScopeNode::makeChildNode( areg::String & scopePath, uint32_t prioStates ) const
+    const areg::ScopeNodeBase & ScopeNode::makeChildNode( areg::String & scopePath, uint32_t prioStates ) const
     {
         if ( scopePath.isEmpty( ) )
         {
-            return ScopeNodeBase::makeChildNode( scopePath, prioStates );
+            return areg::ScopeNodeBase::makeChildNode( scopePath, prioStates );
         }
         else
         {
-            areg::String nodeName = ScopeNodeBase::extractNodeName( scopePath );
+            areg::String nodeName = areg::ScopeNodeBase::extractNodeName( scopePath );
             if ( scopePath.isEmpty( ) )
             {
                 static ScopeLeaf _leaf;
@@ -152,23 +152,23 @@ namespace areg
         }
     }
 
-    std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( const ScopeNodeBase & child )
+    std::pair<areg::ScopeNodeBase &, bool>  ScopeNode::addChildNode( const areg::ScopeNodeBase & child )
     {
-        ScopeNodeBase * scope = &(ScopeNodeBase::invalidNode());
+        areg::ScopeNodeBase * scope = &(areg::ScopeNodeBase::invalidNode());
         bool newEntry{ false };
 
         if ( child.isLeaf( ) )
         {
             auto atPos = mChildLeafs.addIfUnique( ScopeLeaf( child ), false );
-            const ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(atPos.first) };
-            scope = const_cast<ScopeNodeBase *>(&leaf);
+            const areg::ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(atPos.first) };
+            scope = const_cast<areg::ScopeNodeBase *>(&leaf);
             newEntry = atPos.second;
         }
         else if (child.isNode( ))
         {
             auto atPos = mChildNodes.addIfUnique( ScopeNode( child ), false );
-            const ScopeNodeBase& node{ mChildNodes.valueAtPosition(atPos.first) };
-            scope = const_cast<ScopeNodeBase*>(&node);
+            const areg::ScopeNodeBase& node{ mChildNodes.valueAtPosition(atPos.first) };
+            scope = const_cast<areg::ScopeNodeBase*>(&node);
             scope->addPriority(child.getPriority());
             newEntry = atPos.second;
         }
@@ -178,12 +178,12 @@ namespace areg
             mPrioStates |= child.getPriority( );
         }
 
-        return std::pair<ScopeNodeBase &, bool>{*scope, newEntry};
+        return std::pair<areg::ScopeNodeBase &, bool>{*scope, newEntry};
     }
 
-    std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( areg::String & scopePath, uint32_t prioStates )
+    std::pair<areg::ScopeNodeBase &, bool>  ScopeNode::addChildNode( areg::String & scopePath, uint32_t prioStates )
     {
-        const ScopeNodeBase & node = makeChildNode( scopePath, prioStates );
+        const areg::ScopeNodeBase & node = makeChildNode( scopePath, prioStates );
         return addChildNode( node );
     }
 
@@ -204,7 +204,7 @@ namespace areg
         uint32_t sameNodes{ mChildNodes.getSize() };
         uint32_t prioNode{ mPrioStates };
 
-        mGrouping = static_cast<uint32_t>(ScopeNodeBase::Grouping::None);
+        mGrouping = static_cast<uint32_t>(areg::ScopeNodeBase::Grouping::None);
 
         if ( sameNodes > 0 )
         {
@@ -220,7 +220,7 @@ namespace areg
 
             if ( sameNodes == mChildNodes.getSize( ) )
             {
-                mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Nodes);
+                mGrouping |= static_cast<uint32_t>(areg::ScopeNodeBase::Grouping::Nodes);
                 result += mChildNodes.getSize( );
                 mChildNodes.clear( );
 
@@ -247,7 +247,7 @@ namespace areg
 
             if (sameLeafs == mChildLeafs.getSize( ))
             {
-                mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Leaves);
+                mGrouping |= static_cast<uint32_t>(areg::ScopeNodeBase::Grouping::Leaves);
                 result += mChildLeafs.getSize( );
                 mChildLeafs.clear( );
                 result += removePriorityNodesRecursive( prioNode );
@@ -261,7 +261,7 @@ namespace areg
     {
         uint32_t result{ 0 };
         areg::String thisScope = makeScopePath( parentPath );
-        if ( (mGrouping & static_cast<uint32_t>(ScopeNodeBase::Grouping::All)) != 0 )
+        if ( (mGrouping & static_cast<uint32_t>(areg::ScopeNodeBase::Grouping::All)) != 0 )
         {
             config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
             result = 1;
@@ -316,7 +316,7 @@ namespace areg
             LeafList::LISTPOS pos = mChildLeafs.firstPosition( );
             while ( mChildLeafs.isValidPosition( pos ) )
             {
-                const ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(pos) };
+                const areg::ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(pos) };
                 if ( leaf.getPriority( ) == prioRemove )
                 {
                     pos = mChildLeafs.removeAt( pos );
@@ -330,7 +330,7 @@ namespace areg
 
             if ( mChildLeafs.isEmpty( ) )
             {
-                mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Leaves);
+                mGrouping |= static_cast<uint32_t>(areg::ScopeNodeBase::Grouping::Leaves);
             }
         }
 
@@ -339,10 +339,10 @@ namespace areg
             NodeList::LISTPOS pos = mChildNodes.firstPosition( );
             while ( mChildNodes.isValidPosition( pos ) )
             {
-                const ScopeNodeBase& node{ mChildNodes.valueAtPosition(pos) };
+                const areg::ScopeNodeBase& node{ mChildNodes.valueAtPosition(pos) };
                 if ( mChildNodes.valueAtPosition( pos ).getPriority( ) == prioRemove )
                 {
-                    result += const_cast<ScopeNodeBase &>(node).removePriorityNodesRecursive( prioRemove );
+                    result += const_cast<areg::ScopeNodeBase &>(node).removePriorityNodesRecursive( prioRemove );
                     if (node.isEmpty() )
                     {
                         pos = mChildNodes.removeAt( pos );
@@ -351,14 +351,14 @@ namespace areg
                 }
                 else
                 {
-                    const_cast<ScopeNodeBase&>(node).removePriorityNodesRecursive( prioRemove );
+                    const_cast<areg::ScopeNodeBase&>(node).removePriorityNodesRecursive( prioRemove );
                     pos = mChildNodes.nextPosition( pos );
                 }
             }
 
             if ( mChildNodes.isEmpty( ) )
             {
-                mGrouping |= static_cast<uint32_t>(ScopeNodeBase::Grouping::Nodes);
+                mGrouping |= static_cast<uint32_t>(areg::ScopeNodeBase::Grouping::Nodes);
             }
         }
 
@@ -375,7 +375,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     ScopeRoot::ScopeRoot()
-        : ScopeNode     ( ScopeNodeBase::NodeType::Root, areg::Process::getInstance().getAppName(), static_cast<uint32_t>(areg::LogPriority::PrioNotset) )
+        : ScopeNode     ( areg::ScopeNodeBase::NodeType::Root, areg::Process::getInstance().getAppName(), static_cast<uint32_t>(areg::LogPriority::PrioNotset) )
     {
     }
 

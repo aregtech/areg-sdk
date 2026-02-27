@@ -39,7 +39,7 @@ namespace areg
     /**
      * \brief   The Leaf node, which has a parent, but does not have children nodes.
      **/
-    class ScopeLeaf : public ScopeNodeBase
+    class ScopeLeaf : public areg::ScopeNodeBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructors / destructor
@@ -49,7 +49,7 @@ namespace areg
         /**
          * \brief   Copies data from the ScopeNodeBase object. Should be called explicit.
          **/
-        explicit ScopeLeaf( const ScopeNodeBase & base );
+        explicit ScopeLeaf( const areg::ScopeNodeBase & base );
 
         /**
          * \brief   Copies or moves data from the given source
@@ -107,7 +107,7 @@ namespace areg
     /**
      * \brief   The scope node, which has parent, leafs and child nodes.
      **/
-    class ScopeNode : public ScopeNodeBase
+    class ScopeNode : public areg::ScopeNodeBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Internal types
@@ -126,7 +126,7 @@ namespace areg
          * \brief   Creates a node with empty list of child leafs and nodes
          *          and copies data from the base object.
          **/
-        explicit ScopeNode( const ScopeNodeBase & base );
+        explicit ScopeNode( const areg::ScopeNodeBase & base );
 
         /**
          * \brief   Copies or moves data from the given source
@@ -143,7 +143,7 @@ namespace areg
         /**
          * \brief   Protected constructor required by root node.
          **/
-        ScopeNode( ScopeNodeBase::NodeType nodeType, const String & name, uint32_t prio );
+        ScopeNode( areg::ScopeNodeBase::NodeType nodeType, const String & name, uint32_t prio );
 
     //////////////////////////////////////////////////////////////////////////
     // Assigning operators
@@ -176,7 +176,7 @@ namespace areg
      * \return  Returns created node. It is either a node or a leaf.
      * \note    Only the root and nodes can create nodes or leafs. The leafs return invalid node.
      **/
-        const ScopeNodeBase & makeChildNode( String & scopePath, uint32_t prioStates ) const override;
+        const areg::ScopeNodeBase & makeChildNode( String & scopePath, uint32_t prioStates ) const override;
 
         /**
          * \brief   Adds a child node to the node if it does not contain a child of the same type
@@ -186,7 +186,7 @@ namespace areg
          * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
          *          it created new entry or updated the existing.
          **/
-        std::pair<ScopeNodeBase &, bool> addChildNode( const ScopeNodeBase & child ) override;
+        std::pair<areg::ScopeNodeBase &, bool> addChildNode( const areg::ScopeNodeBase & child ) override;
 
         /**
          * \brief   Creates a new node out of passed scope name and specified log priority.
@@ -201,7 +201,7 @@ namespace areg
          * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
          *          it created new entry or updated the existing.
          **/
-        std::pair<ScopeNodeBase &, bool> addChildNode( String & scopePath, uint32_t prioStates ) override;
+        std::pair<areg::ScopeNodeBase &, bool> addChildNode( String & scopePath, uint32_t prioStates ) override;
 
         /**
          * \brief   Creates a scope name (scope path) by adding the prefix to the node name.
