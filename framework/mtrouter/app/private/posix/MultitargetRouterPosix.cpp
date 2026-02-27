@@ -30,7 +30,7 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    MultitargetRouter& router = MultitargetRouter::getInstance();
+    mtrouter::MultitargetRouter& router = mtrouter::MultitargetRouter::getInstance();
     router.parseOptions(argc, argv, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }

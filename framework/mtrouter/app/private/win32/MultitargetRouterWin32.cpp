@@ -51,7 +51,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     static_cast<void>(envp);
     int32_t result{ aregext::ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = aregext::convertArguments<TCHAR>(argv, argc);
-    MultitargetRouter& router = MultitargetRouter::getInstance();
+    mtrouter::MultitargetRouter& router = mtrouter::MultitargetRouter::getInstance();
     router.parseOptions(static_cast<int32_t>(argc), argvTemp, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     result = router.serviceMain(router.getCurrentOption(), nullptr);
     aregext::deleteArguments(argvTemp, argc);
@@ -61,7 +61,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #else   // _MINGW
 int main(int argc, char* argv[], char* envp[])
 {
-    MultitargetRouter& router = MultitargetRouter::getInstance();
+    mtrouter::MultitargetRouter& router = mtrouter::MultitargetRouter::getInstance();
     router.parseOptions(argc, argv, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     return router.serviceMain(router.getCurrentOption(), nullptr);
 }
@@ -71,7 +71,7 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-        MultitargetRouter& router = MultitargetRouter::getInstance();
+        mtrouter::MultitargetRouter& router = mtrouter::MultitargetRouter::getInstance();
         router.setState(aregext::ServicePhase::Starting);
         char** argvTemp = aregext::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
         router.serviceMain(aregext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
@@ -89,19 +89,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch ( CtrlCode )
     {
     case SERVICE_CONTROL_STOP:
-        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceStop);
+        mtrouter::MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServicePause);
+        mtrouter::MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceContinue);
+        mtrouter::MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceShutdown);
+        mtrouter::MultitargetRouter::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:
