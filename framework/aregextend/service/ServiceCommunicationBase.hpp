@@ -490,7 +490,7 @@ namespace aregext
         const uint32_t                      mConnectTypes;      //!< The bitwise flags of remote service connections.
         aregext::ServerConnection                        mServerConnection;  //!< The instance of server connection object.
         areg::Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
-        ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
+        aregext::ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
         ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
         aregext::DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
         areg::StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.

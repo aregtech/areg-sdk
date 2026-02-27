@@ -26,7 +26,7 @@ namespace aregext
     // DataRateHelper class implementation
     //////////////////////////////////////////////////////////////////////////
 
-    DataRateHelper::DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose)
+    DataRateHelper::DataRateHelper(aregext::ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose)
         : mSendThread   (sendThread)
         , mReceiveThread(receiveThread)
     {
