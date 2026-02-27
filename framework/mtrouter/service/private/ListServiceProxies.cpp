@@ -16,43 +16,43 @@
 #include "mtrouter/service/private/ServiceStub.hpp"
 #include "areg/component/StubAddress.hpp"
 
-const ServiceProxy     ListServiceProxies::InvalidProxyService;
+const mtrouter::ServiceProxy     ListServiceProxies::InvalidProxyService;
 
-const ServiceProxy & ListServiceProxies::getService( const areg::ProxyAddress & addrProxy ) const
+const mtrouter::ServiceProxy & ListServiceProxies::getService( const areg::ProxyAddress & addrProxy ) const
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    return ( isValidPosition(pos) ? static_cast<const ServiceProxy &>(valueAtPosition(pos)) : ListServiceProxies::InvalidProxyService );
+    return ( isValidPosition(pos) ? static_cast<const mtrouter::ServiceProxy &>(valueAtPosition(pos)) : ListServiceProxies::InvalidProxyService );
 }
 
-ServiceProxy * ListServiceProxies::getService( const areg::ProxyAddress & addrProxy )
+mtrouter::ServiceProxy * ListServiceProxies::getService( const areg::ProxyAddress & addrProxy )
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    return ( isValidPosition(pos) ? static_cast<ServiceProxy *>(&valueAtPosition(pos)) : nullptr );
+    return ( isValidPosition(pos) ? static_cast<mtrouter::ServiceProxy *>(&valueAtPosition(pos)) : nullptr );
 }
 
-ServiceProxy & ListServiceProxies::registerService( const areg::ProxyAddress & addrProxy )
+mtrouter::ServiceProxy & ListServiceProxies::registerService( const areg::ProxyAddress & addrProxy )
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
     if ( isInvalidPosition(pos) )
     {
-        pushLast(ServiceProxy(addrProxy));
+        pushLast(mtrouter::ServiceProxy(addrProxy));
         pos = lastPosition();
     }
 
-    return static_cast<ServiceProxy &>(valueAtPosition(pos));
+    return static_cast<mtrouter::ServiceProxy &>(valueAtPosition(pos));
 }
 
-ServiceProxy & ListServiceProxies::registerService(const areg::ProxyAddress & addrProxy, const mtrouter::ServiceStub & stubService)
+mtrouter::ServiceProxy & ListServiceProxies::registerService(const areg::ProxyAddress & addrProxy, const mtrouter::ServiceStub & stubService)
 {
     ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
     if (isInvalidPosition(pos))
     {
-        pushLast(ServiceProxy(addrProxy));
+        pushLast(mtrouter::ServiceProxy(addrProxy));
         pos = lastPosition();
     }
 
     const areg::StubAddress & addrStub = stubService.getServiceAddress();
-    ServiceProxy & proxyService = valueAtPosition(pos);
+    mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
     if ( addrStub == addrProxy)
     {
         if ( stubService.getServiceStatus() == areg::ServiceConnectionState::Connected )
@@ -67,12 +67,12 @@ ServiceProxy & ListServiceProxies::registerService(const areg::ProxyAddress & ad
     return proxyService;
 }
 
-ServiceProxy ListServiceProxies::unregisterService( const areg::ProxyAddress & addrProxy )
+mtrouter::ServiceProxy ListServiceProxies::unregisterService( const areg::ProxyAddress & addrProxy )
 {
-    ServiceProxy result;
+    mtrouter::ServiceProxy result;
     for (ListServiceProxies::LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        const ServiceProxy & proxyService = valueAtPosition(pos);
+        const mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
         if ( proxyService == addrProxy )
         {
             result = proxyService;
@@ -89,7 +89,7 @@ int32_t ListServiceProxies::stubServiceAvailable( const areg::StubAddress & addr
     int32_t result = 0;
     for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        ServiceProxy & proxyService = valueAtPosition(pos);
+        mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
         result += proxyService.stubAvailable(addrStub) ? 1 : 0;
     }
 
@@ -101,7 +101,7 @@ int32_t ListServiceProxies::stubServiceUnavailable()
     int32_t result = 0;
     for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        ServiceProxy & proxyService = valueAtPosition(pos);
+        mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
         result += proxyService.stubUnavailable() ? 1 : 0;
     }
     return result;
@@ -112,7 +112,7 @@ int32_t ListServiceProxies::getSpecificService(ListServiceProxies & out_listProx
     int32_t result = 0;
     for ( LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
     {
-        ServiceProxy & proxyService = valueAtPosition(pos);
+        mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
         if ( proxyService.getServiceAddress().getCookie() == cookie )
         {
             result += 1;

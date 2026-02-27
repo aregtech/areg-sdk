@@ -26,7 +26,7 @@
  * Dependencies
  ************************************************************************/
 namespace mtrouter { class ServiceStub; }
-using ListServiceProxiesBase = areg::LinkedList<ServiceProxy>;
+using ListServiceProxiesBase = areg::LinkedList<mtrouter::ServiceProxy>;
 
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class declaration
@@ -43,7 +43,7 @@ private:
     /**
      * \brief   Invalid proxy service
      **/
-    static const ServiceProxy     InvalidProxyService;
+    static const mtrouter::ServiceProxy     InvalidProxyService;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -97,13 +97,13 @@ public:
      * \brief   Returns existing service proxy entry. If specified proxy address
      *          is not registered, returns invalid entry, which proxy address is invalid.
      **/
-    const ServiceProxy & getService( const areg::ProxyAddress & addrProxy ) const;
+    const mtrouter::ServiceProxy & getService( const areg::ProxyAddress & addrProxy ) const;
     
     /**
      * \brief   Returns existing service proxy entry. Returns nullptr, if specified proxy address
      *          is not registered.
      **/
-    ServiceProxy * getService( const areg::ProxyAddress & addrProxy );
+    mtrouter::ServiceProxy * getService( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers existing proxy service entry or creates new if
@@ -117,7 +117,7 @@ public:
      * \return  If specified proxy address is valid, returns either existing or 
      *          new proxy service entry. Otherwise, returns invalid service object.
      **/
-    ServiceProxy & registerService( const areg::ProxyAddress & addrProxy );
+    mtrouter::ServiceProxy & registerService( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Registers existing proxy service entry or creates new if
@@ -132,7 +132,7 @@ public:
      * \return  If specified proxy address is valid, returns either existing or 
      *          new proxy service entry. Otherwise, returns invalid service object.
      **/
-    ServiceProxy & registerService( const areg::ProxyAddress & addrProxy, const mtrouter::ServiceStub & stubService );
+    mtrouter::ServiceProxy & registerService( const areg::ProxyAddress & addrProxy, const mtrouter::ServiceStub & stubService );
 
     /**
      * \brief   Unregisters and removes entry of proxy service with specified
@@ -141,7 +141,7 @@ public:
      * \return  Returns address of unregistered proxy. If proxy was not found
      *          or proxy address was not found, returns invalid proxy service.
      **/
-    ServiceProxy unregisterService( const areg::ProxyAddress & addrProxy );
+    mtrouter::ServiceProxy unregisterService( const areg::ProxyAddress & addrProxy );
 
     /**
      * \brief   Sets all registered proxy services in connected state

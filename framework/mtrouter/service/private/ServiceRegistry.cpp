@@ -65,7 +65,7 @@ namespace mtrouter
         return (isValidPosition(pos) ? valueAtPosition(pos) : ServiceRegistry::EmptyProxiesList );
     }
 
-    const ServiceProxy & ServiceRegistry::getProxyService(const areg::ProxyAddress & addProxy) const
+    const mtrouter::ServiceProxy & ServiceRegistry::getProxyService(const areg::ProxyAddress & addProxy) const
     {
         return getProxyServiceList( static_cast<const areg::ServiceAddress &>(addProxy) ).getService(addProxy);
     }
@@ -80,7 +80,7 @@ namespace mtrouter
         return getProxyService(addrProxy).getServiceStatus();
     }
 
-    const mtrouter::ServiceStub & ServiceRegistry::registerServiceProxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
+    const mtrouter::ServiceStub & ServiceRegistry::registerServiceProxy(const areg::ProxyAddress & addrProxy, mtrouter::ServiceProxy & out_proxyService)
     {
         LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceProxy);
         std::pair<MAPPOS, bool> pos = addIfUnique(mtrouter::ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
@@ -107,7 +107,7 @@ namespace mtrouter
         return result;
     }
 
-    const mtrouter::ServiceStub & ServiceRegistry::unregisterServiceProxy(const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
+    const mtrouter::ServiceStub & ServiceRegistry::unregisterServiceProxy(const areg::ProxyAddress & addrProxy, mtrouter::ServiceProxy & out_proxyService)
     {
         LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceProxy);
 
@@ -247,7 +247,7 @@ namespace mtrouter
 
             for (ListServiceProxiesBase::LISTPOS posList = listProxies.firstPosition(); listProxies.isValidPosition(posList); posList = listProxies.nextPosition(posList) )
             {
-                const ServiceProxy & svcProxy   = listProxies.valueAtPosition(posList);
+                const mtrouter::ServiceProxy & svcProxy   = listProxies.valueAtPosition(posList);
                 const areg::ProxyAddress & addrProxy  = svcProxy.getServiceAddress();
                 if ( svcProxy.isValid() && ((cookie == areg::COOKIE_ANY) || (addrProxy.getCookie() == cookie)) )
                 {
@@ -294,7 +294,7 @@ namespace mtrouter
 
             for (ListServiceProxiesBase::LISTPOS posList = listProxies.firstPosition(); listProxies.isValidPosition(posList); posList = listProxies.nextPosition(posList) )
             {
-                const ServiceProxy & svcProxy   = listProxies.valueAtPosition(posList);
+                const mtrouter::ServiceProxy & svcProxy   = listProxies.valueAtPosition(posList);
                 const areg::ProxyAddress & addrProxy  = svcProxy.getServiceAddress();
 
                 if (svcProxy.isValid() && (cookie == addrProxy.getSource()))
@@ -317,7 +317,7 @@ namespace mtrouter
         if ( isValidPosition(pos) )
         {
             ListServiceProxies & proxies = valueAtPosition(pos);
-            ServiceProxy * svcProxy = proxies.getService(addrProxy);
+            mtrouter::ServiceProxy * svcProxy = proxies.getService(addrProxy);
             if ((svcProxy != nullptr) && svcProxy->isValid())
             {
                 LOG_INFO("Found service of proxy [ %s ] to disconnect, current state [ %s ]", addrProxy.convToString().getString(), areg::getString(svcProxy->getServiceStatus()));

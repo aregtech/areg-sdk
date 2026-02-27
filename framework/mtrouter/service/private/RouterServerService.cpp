@@ -291,7 +291,7 @@ namespace mtrouter
                 areg::ArrayList<ITEM_ID> sendList;
                 for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
                 {
-                    const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
+                    const mtrouter::ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
                     const areg::ProxyAddress & addrProxy    = proxyService.getServiceAddress();
                     if ( (proxyService.getServiceStatus() == areg::ServiceConnectionState::Connected) && (addrProxy.getSource() != stub.getSource()) )
                     {
@@ -354,7 +354,7 @@ namespace mtrouter
         LOG_SCOPE(mtrouter_service_RouterServerService_registeredRemoteServiceConsumer);
         if ( mServiceRegistry.getServiceStatus(proxy) != areg::ServiceConnectionState::Connected )
         {
-            ServiceProxy proxyService;
+            mtrouter::ServiceProxy proxyService;
             const mtrouter::ServiceStub & stubService   = mServiceRegistry.registerServiceProxy(proxy, proxyService);
             const areg::StubAddress & addrStub      = stubService.getServiceAddress();
 
@@ -417,7 +417,7 @@ namespace mtrouter
             areg::ArrayList<ITEM_ID> sendList;
             for (ListServiceProxiesBase::LISTPOS pos = listProxies.firstPosition(); listProxies.isValidPosition(pos); pos = listProxies.nextPosition(pos) )
             {
-                const ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
+                const mtrouter::ServiceProxy & proxyService = listProxies.valueAtPosition(pos);
                 const areg::ProxyAddress & addrProxy    = proxyService.getServiceAddress();
 
                 if ( (cookie == areg::COOKIE_ANY) || (addrProxy.getSource() != cookie) )
@@ -440,7 +440,7 @@ namespace mtrouter
                 else
                 {
                     // ignore, it already has unregistered stub locally or proxy status did not changed
-                    ServiceProxy dummy;
+                    mtrouter::ServiceProxy dummy;
                     mServiceRegistry.unregisterServiceProxy(addrProxy, dummy);
                     LOG_DBG("Proxy [ %s ] is marked as ignored by source [ %u ], remove and skip", addrProxy.convToString().getString(), static_cast<uint32_t>(cookie));
                 }
@@ -461,7 +461,7 @@ namespace mtrouter
                         , static_cast<uint32_t>(cookie));
 
         areg::RemoteMessage msgRegisterProxy;
-        ServiceProxy svcProxy;
+        mtrouter::ServiceProxy svcProxy;
         const mtrouter::ServiceStub * svcStub     = nullptr;
 
         if (proxy.getSource() == cookie)

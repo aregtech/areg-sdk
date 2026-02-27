@@ -121,7 +121,7 @@ namespace mtrouter
          * \return  Returns valid servicing proxy object if found entry registered.
          *          Otherwise, returns invalid object.
          **/
-        const ServiceProxy & getProxyService( const areg::ProxyAddress & addProxy ) const;
+        const mtrouter::ServiceProxy & getProxyService( const areg::ProxyAddress & addProxy ) const;
 
         /**
          * \brief   Registers remote Proxy address and returns the registered Stub and Proxy service object.
@@ -130,7 +130,7 @@ namespace mtrouter
          * \param[out]  out_proxyService    On output, contains data of remote proxy service.
          * \return  Returns servicing stub object with remote stub address and connection status data.
          **/
-        const mtrouter::ServiceStub & registerServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
+        const mtrouter::ServiceStub & registerServiceProxy( const areg::ProxyAddress & addrProxy, mtrouter::ServiceProxy & out_proxyService );
 
         /**
          * \brief   Unregisters remote Proxy address and returns the Stub and Proxy service object.
@@ -139,7 +139,7 @@ namespace mtrouter
          * \param[out]  out_proxyService    On output, contains data of remote proxy service.
          * \return  Returns servicing stub object with remote stub address and connection status data.
          **/
-        const mtrouter::ServiceStub & unregisterServiceProxy( const areg::ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
+        const mtrouter::ServiceStub & unregisterServiceProxy( const areg::ProxyAddress & addrProxy, mtrouter::ServiceProxy & out_proxyService );
 
         /**
          * \brief   Registers remote Stub address and returns the registered stub service object.
