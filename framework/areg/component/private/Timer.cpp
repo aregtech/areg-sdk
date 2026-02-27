@@ -77,7 +77,7 @@ namespace areg
                         , mTimeoutInMs
                         , mEventsCount);
 
-            TimerManager::stopTimer(self());
+            areg::TimerManager::stopTimer(self());
         }
 
         if (eventCount != 0)
@@ -91,7 +91,7 @@ namespace areg
 
             if (areg::TimerBase::createWaitableTimer())
             {
-                mStarted = TimerManager::startTimer(self(), whichThread);
+                mStarted = areg::TimerManager::startTimer(self(), whichThread);
                 mDispatchThread = mStarted ? &whichThread : nullptr;
             }
 
@@ -154,7 +154,7 @@ namespace areg
                 if ((++ mCurrentQueued > mMaxQueued) && mStarted)
                 {
                     mStarted = false;
-                    TimerManager::stopTimer(self());
+                    areg::TimerManager::stopTimer(self());
                 }
             }
         }
@@ -170,7 +170,7 @@ namespace areg
             {
             if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
             {
-                    mStarted = TimerManager::startTimer(self(), *mDispatchThread);
+                    mStarted = areg::TimerManager::startTimer(self(), *mDispatchThread);
             }
             }
         }
@@ -180,7 +180,7 @@ namespace areg
     {
         areg::Lock lock(mLock);
 
-        TimerManager::stopTimer(self());
+        areg::TimerManager::stopTimer(self());
 
         mStarted        = false;
         mActive         = false;

@@ -39,9 +39,9 @@
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
+void areg::TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
 {
-    TimerManager & timerManager = TimerManager::getInstance( );
+    areg::TimerManager & timerManager = areg::TimerManager::getInstance( );
     ASSERT( argPtr != nullptr );
     TIMERHANDLE handle = reinterpret_cast<void *>(argPtr);
     areg::Timer * timer = timerManager.mTimerResource.findResourceObject( handle );
@@ -51,14 +51,14 @@ void TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long low
     }
 }
 
-void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
+void areg::TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {
 
     ASSERT( timerHandle != nullptr );
     ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
 }
 
-bool TimerManager::_osSystemTimerStart( areg::Timer & timer )
+bool areg::TimerManager::_osSystemTimerStart( areg::Timer & timer )
 {
     ASSERT(timer.getHandle() != nullptr);
 
@@ -77,7 +77,7 @@ bool TimerManager::_osSystemTimerStart( areg::Timer & timer )
     return ( ::SetWaitableTimer(  timer.getHandle()
                                 , &timeTrigger
                                 , period
-                                , (PTIMERAPCROUTINE)(&TimerManager::_windowsTimerExpiredRoutine)
+                                , (PTIMERAPCROUTINE)(&areg::TimerManager::_windowsTimerExpiredRoutine)
                                 , static_cast<void *>(timer.getHandle()), FALSE ) == TRUE );
 }
 

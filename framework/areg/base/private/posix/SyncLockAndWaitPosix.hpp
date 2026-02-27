@@ -41,6 +41,7 @@
 namespace areg::os { class WaitablePosix; }
 class SyncLockAndWaitPosix;
 namespace areg::os { class WaitableTimerPosix; }
+namespace areg { class TimerManager; }
 
 namespace areg::os
 {
@@ -134,7 +135,7 @@ namespace areg::os
     //////////////////////////////////////////////////////////////////////////
     // Friend classes
     //////////////////////////////////////////////////////////////////////////
-        friend class TimerManager;
+        friend class areg::TimerManager;
         friend class areg::os::WaitableTimerPosix;
 
     //////////////////////////////////////////////////////////////////////////

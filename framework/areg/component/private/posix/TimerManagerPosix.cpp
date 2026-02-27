@@ -35,9 +35,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef __APPLE__
-void TimerManager::_posixTimerExpiredRoutine( areg::os::TimerPosix* posixTimer )
+void areg::TimerManager::_posixTimerExpiredRoutine( areg::os::TimerPosix* posixTimer )
 {
-    TimerManager & timerManager = TimerManager::getInstance( );
+    areg::TimerManager & timerManager = areg::TimerManager::getInstance( );
     ASSERT( posixTimer != nullptr );
     areg::Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
 
@@ -50,9 +50,9 @@ void TimerManager::_posixTimerExpiredRoutine( areg::os::TimerPosix* posixTimer )
     }
 }
 #else   // !__APPLE__
-void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
+void areg::TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
 {
-    TimerManager & timerManager = TimerManager::getInstance( );
+    areg::TimerManager & timerManager = areg::TimerManager::getInstance( );
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT( posixTimer != nullptr );
     areg::Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
@@ -67,7 +67,7 @@ void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
 }
 #endif  // __APPLE__
 
-void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
+void areg::TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {
     areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
@@ -76,7 +76,7 @@ void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
     }
 }
 
-bool TimerManager::_osSystemTimerStart( areg::Timer & timer )
+bool areg::TimerManager::_osSystemTimerStart( areg::Timer & timer )
 {
     bool result{ false };
     areg::os::TimerPosix * posixTimer   = reinterpret_cast<areg::os::TimerPosix *>(timer.getHandle());
@@ -86,7 +86,7 @@ bool TimerManager::_osSystemTimerStart( areg::Timer & timer )
     ::clock_gettime( CLOCK_REALTIME, &startTime );
     timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    if (posixTimer->startTimer(timer, 0, &TimerManager::_posixTimerExpiredRoutine))
+    if (posixTimer->startTimer(timer, 0, &areg::TimerManager::_posixTimerExpiredRoutine))
     {
         result = true;
     }

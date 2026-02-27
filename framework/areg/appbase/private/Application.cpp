@@ -104,13 +104,13 @@ namespace areg
         Application::_setAppState(areg::AppState::Releasing);
 
         areg::WatchdogManager::stopWatchdogManager(false);
-        TimerManager::stopTimerManager(false);
+        areg::TimerManager::stopTimerManager(false);
         areg::ComponentLoader::unloadComponentModel(false, areg::String::EmptyString);
         ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
         areg::stopLogging(false);
 
         areg::WatchdogManager::waitWatchdogManager();
-        TimerManager::waitTimerManager();
+        areg::TimerManager::waitTimerManager();
         areg::ComponentLoader::waitModelUnload(areg::String::EmptyString);
         ServiceManager::_waitServiceManager();
         areg::waitLoggingEnd();
@@ -199,13 +199,13 @@ namespace areg
     bool Application::startTimerManager()
     {
         Application::_osSetupHandlers();
-        return (TimerManager::isTimerManagerStarted() == false ? TimerManager::startTimerManager() : true);
+        return (areg::TimerManager::isTimerManagerStarted() == false ? areg::TimerManager::startTimerManager() : true);
     }
 
     void Application::stopTimerManager()
     {
         Application::_osReleaseHandlers();
-        TimerManager::stopTimerManager(true);
+        areg::TimerManager::stopTimerManager(true);
     }
 
     bool Application::startWatchdogManager()

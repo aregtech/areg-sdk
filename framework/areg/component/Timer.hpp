@@ -30,7 +30,7 @@
 namespace areg { class TimerConsumer; }
 namespace areg { class DispatcherThread; }
 class TimerEvent;
-class TimerManager;
+namespace areg { class TimerManager; }
 
 namespace areg
 {
@@ -52,7 +52,7 @@ namespace areg
     /************************************************************************/
 
         friend class ::TimerEvent;
-        friend class ::TimerManager;
+        friend class areg::TimerManager;
 
     //////////////////////////////////////////////////////////////////////////
     // Predefined constants and types
