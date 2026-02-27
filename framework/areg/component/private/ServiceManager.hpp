@@ -451,7 +451,7 @@ private:
     /**
      * \brief   The connection service.
      **/
-    RouterClient                    mServiceClient;
+    areg::RouterClient                    mServiceClient;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/
