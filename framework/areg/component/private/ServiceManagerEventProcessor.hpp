@@ -75,7 +75,7 @@ namespace areg
         /**
          * \brief   Returns the list of registered service providers that contain the list of service consumers.
          **/
-        inline const ServerList& getRegisteredServiceList() const;
+        inline const areg::ServerList& getRegisteredServiceList() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden calls
@@ -165,7 +165,7 @@ namespace areg
         /**
          * \brief   The Map of Server Info object as a Key and Client Info List as Values
          **/
-        ServerList              mServerList;
+        areg::ServerList              mServerList;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -179,7 +179,7 @@ namespace areg
     // ServiceManagerEventProcessor inline methods
     //////////////////////////////////////////////////////////////////////////
 
-    inline const ServerList & ServiceManagerEventProcessor::getRegisteredServiceList() const
+    inline const areg::ServerList & ServiceManagerEventProcessor::getRegisteredServiceList() const
     {
         return mServerList;
     }

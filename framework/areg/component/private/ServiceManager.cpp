@@ -306,9 +306,9 @@ namespace areg
         out_listStubs.clear();
         out_lisProxies.clear();
 
-        const ServerList & serverList{ mEventProcessor.getRegisteredServiceList( ) };
+        const areg::ServerList & serverList{ mEventProcessor.getRegisteredServiceList( ) };
 
-        for (ServerList::MAPPOS posMap = serverList.firstPosition(); serverList.isValidPosition(posMap); posMap = serverList.nextPosition(posMap) )
+        for (areg::ServerList::MAPPOS posMap = serverList.firstPosition(); serverList.isValidPosition(posMap); posMap = serverList.nextPosition(posMap) )
         {
             const areg::StubAddress & server      = serverList.keyAtPosition(posMap).getAddress();
             const ClientList & clientList   = serverList.valueAtPosition(posMap);

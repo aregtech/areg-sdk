@@ -188,7 +188,7 @@ namespace areg
 
         case areg::ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
             {
-                for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+                for ( areg::ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
                 {
                     const areg::StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
                     const ClientList & clientList = mServerList.valueAtPosition( posMap );
@@ -218,7 +218,7 @@ namespace areg
                 // elements from the existing list and it may invalidate position object.
                 areg::ArrayList<areg::StubAddress> stubList;
                 areg::ArrayList<areg::ProxyAddress> proxyList;
-                for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+                for ( areg::ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
                 {
                     const areg::StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
                     const ClientList & clientList = mServerList.valueAtPosition( posMap );
