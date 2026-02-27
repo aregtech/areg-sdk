@@ -307,7 +307,7 @@ namespace areg
         const auto& scopeList = scopeController.getScopeList();
         uint32_t key{ 0 };
         areg::LogScope* scope = scopeList.resourceFirstKey(key);
-        ScopeRoot root;
+        areg::ScopeRoot root;
         while (scope != nullptr)
         {
             root.addChildRecursive(*scope);
