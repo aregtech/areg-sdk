@@ -27,101 +27,104 @@
  ************************************************************************/
 namespace areg { class ByteBuffer; }
 
-//////////////////////////////////////////////////////////////////////////
-// BufferPosition class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   This class is defining Buffer cursor position and contains
- *          implementation of simple cursor move functionalities.
- *          The object is used in buffer classes.
- **/
-class AREG_API BufferPosition
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // BufferPosition class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief	Sets the instance of byte buffer object
-     * \param	buffer	Instance of Byte Buffer object
+     * \brief   This class is defining Buffer cursor position and contains
+     *          implementation of simple cursor move functionalities.
+     *          The object is used in buffer classes.
      **/
-    BufferPosition( areg::ByteBuffer & buffer );
+    class AREG_API BufferPosition
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief	Sets the instance of byte buffer object
+         * \param	buffer	Instance of Byte Buffer object
+         **/
+        BufferPosition( areg::ByteBuffer & buffer );
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~BufferPosition() = default;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~BufferPosition() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Invalidates current position, i.e. sets current position to Cursor::INVALID_CURSOR_POSITION
-     **/
-    inline void invalidate();
+    //////////////////////////////////////////////////////////////////////////
+    // Operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Invalidates current position, i.e. sets current position to Cursor::INVALID_CURSOR_POSITION
+         **/
+        inline void invalidate();
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// Cursor interface overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // Cursor interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief	Returns the current position of pointer relative to begin in streaming data.
-     *          The valid position should not be equal to INVALID_CURSOR_POSITION.
-     *          Check current position validation before accessing data in streaming object.
-     * \return	Returns the current position of pointer relative to begin in streaming data.
-     **/
-    uint32_t getPosition() const;
+        /**
+         * \brief	Returns the current position of pointer relative to begin in streaming data.
+         *          The valid position should not be equal to INVALID_CURSOR_POSITION.
+         *          Check current position validation before accessing data in streaming object.
+         * \return	Returns the current position of pointer relative to begin in streaming data.
+         **/
+        uint32_t getPosition() const;
 
-    /**
-     * \brief	Sets the pointer position and returns current position in streaming data
-     *          The positive value of offset means move pointer forward.
-     *          The negative value of offset means move pointer back.
-     *
-     * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
-     * \param	startAt	Specifies the starting position of pointer and should have one of values:
-     *                  Cursor::SeekOrigin::Begin   -- position from the beginning of data
-     *                  Cursor::SeekOrigin::Current -- position from current pointer position
-     *                  Cursor::SeekOrigin::End     -- position from the end of file
-     *
-     * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
-     **/
-    uint32_t setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const;
+        /**
+         * \brief	Sets the pointer position and returns current position in streaming data
+         *          The positive value of offset means move pointer forward.
+         *          The negative value of offset means move pointer back.
+         *
+         * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
+         * \param	startAt	Specifies the starting position of pointer and should have one of values:
+         *                  Cursor::SeekOrigin::Begin   -- position from the beginning of data
+         *                  Cursor::SeekOrigin::Current -- position from current pointer position
+         *                  Cursor::SeekOrigin::End     -- position from the end of file
+         *
+         * \return	If succeeds, returns the current position of pointer in bytes or value Cursor::INVALID_CURSOR_POSITION if fails.
+         **/
+        uint32_t setPosition( int32_t offset, areg::Cursor::SeekOrigin startAt ) const;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Reference to the Byte Buffer object
-     **/
-    areg::ByteBuffer &         mBuffer;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Reference to the Byte Buffer object
+         **/
+        areg::ByteBuffer &         mBuffer;
 
-    /**
-     * \brief   Current position of Byte Buffer cursor.
-     *          Value Cursor::INVALID_CURSOR_POSITION means invalid position.
-     **/
-    mutable uint32_t    mPosition;
+        /**
+         * \brief   Current position of Byte Buffer cursor.
+         *          Value Cursor::INVALID_CURSOR_POSITION means invalid position.
+         **/
+        mutable uint32_t    mPosition;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden / Disabled methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    BufferPosition() = delete;
-    AREG_NOCOPY_NOMOVE( BufferPosition );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden / Disabled methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        BufferPosition() = delete;
+        AREG_NOCOPY_NOMOVE( BufferPosition );
+    };
 
-//////////////////////////////////////////////////////////////////////////
-// BufferPosition class inline function implementation
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // BufferPosition class inline function implementation
+    //////////////////////////////////////////////////////////////////////////
 
-inline void BufferPosition::invalidate()
-{
-    mPosition   = areg::Cursor::INVALID_CURSOR_POSITION;
-}
+    inline void BufferPosition::invalidate()
+    {
+        mPosition   = areg::Cursor::INVALID_CURSOR_POSITION;
+    }
 
+} // namespace areg
 #endif  // AREG_BASE_PRIVATE_BUFFERPOSITION_HPP

@@ -322,7 +322,7 @@ namespace areg
     // Hidden member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        BufferPosition              mBufferPosition;
+        areg::BufferPosition              mBufferPosition;
 
     //////////////////////////////////////////////////////////////////////////
     // Local function member
