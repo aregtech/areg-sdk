@@ -62,7 +62,7 @@ namespace areg
     {
         LOG_SCOPE(areg_component_private_ServerList_registerClient);
 
-        std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(areg::ServerInfo(whichClient), ClientList());
+        std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(areg::ServerInfo(whichClient), areg::ClientList());
         LOG_DBG("[ %s ] entry for client [ %s ]"
                     , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
                     , areg::ProxyAddress::convAddressToPath(whichClient).getString());
@@ -114,14 +114,14 @@ namespace areg
         return result;
     }
 
-    const areg::ServerInfo & ServerList::registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList )
+    const areg::ServerInfo & ServerList::registerServer( const areg::StubAddress & addrStub, areg::ClientList & out_clinetList )
     {
         LOG_SCOPE(areg_component_private_ServerList_registerServer);
 
         ASSERT(addrStub.isValid() );
 
         areg::ServerInfo server(addrStub);
-        std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(server, ClientList());
+        std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(server, areg::ClientList());
         LOG_DBG("[ %s ] entry for server [ %s ]"
                     , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
                     , areg::StubAddress::convAddressToPath(addrStub).getString());
@@ -130,7 +130,7 @@ namespace areg
         ASSERT(ServerListBase::isValidPosition(pos));
 
         areg::ServerInfo& key = ServerListBase::keyAtPosition(pos);
-        ClientList& value = ServerListBase::valueAtPosition(pos);
+        areg::ClientList& value = ServerListBase::valueAtPosition(pos);
 
         key = server;
         key.setConnectionStatus( addrStub.getSource() != areg::SOURCE_UNKNOWN ? areg::ServiceConnectionState::Connected : areg::ServiceConnectionState::Pending );
@@ -145,7 +145,7 @@ namespace areg
         return key;
     }
 
-    areg::ServerInfo ServerList::unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList )
+    areg::ServerInfo ServerList::unregisterServer( const areg::StubAddress & whichServer, areg::ClientList & out_clinetList )
     {
         LOG_SCOPE(areg_component_private_ServerList_unregisterServer);
 
@@ -155,7 +155,7 @@ namespace areg
         if (ServerListBase::isValidPosition(pos))
         {
             areg::ServerInfo& key = ServerListBase::keyAtPosition(pos);
-            ClientList& value = ServerListBase::valueAtPosition(pos);
+            areg::ClientList& value = ServerListBase::valueAtPosition(pos);
 
             result = key;
             value.serverUnavailable(out_clinetList);
@@ -185,7 +185,7 @@ namespace areg
         return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : areg::ServiceConnectionState::Unknown);
     }
 
-    const ClientList & ServerList::getClientList(const areg::StubAddress & whichServer) const
+    const areg::ClientList & ServerList::getClientList(const areg::StubAddress & whichServer) const
     {
         ServerListBase::MAPPOS pos = findServer(whichServer);
         ASSERT(ServerListBase::isValidPosition(pos));

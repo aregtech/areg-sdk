@@ -33,7 +33,7 @@ void ServicingComponent::requestHelloWorld(const areg::String & roleName)
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 
     HelloWorld::sConnectedClient theClient;
-    ClientList::LISTPOS pos = mClientList.firstPosition();
+    areg::ClientList::LISTPOS pos = mClientList.firstPosition();
     for ( ; mClientList.isValidPosition(pos); pos = mClientList.nextPosition(pos))
     {
         const HelloWorld::sConnectedClient & client = mClientList.valueAtPosition(pos);

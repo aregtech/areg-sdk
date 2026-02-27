@@ -72,7 +72,7 @@ namespace areg
                 for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
                 {
                     areg::ServerInfo si;
-                    ClientList clientList;
+                    areg::ClientList clientList;
 
                     mServerList.getAtPosition( mapPos, si, clientList );
                     for ( auto listPos = clientList.firstPosition( ); clientList.isValidPosition( listPos ); listPos = clientList.nextPosition( listPos ) )
@@ -191,14 +191,14 @@ namespace areg
                 for ( areg::ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
                 {
                     const areg::StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                    const ClientList & clientList = mServerList.valueAtPosition( posMap );
+                    const areg::ClientList & clientList = mServerList.valueAtPosition( posMap );
 
                     if ( server.isServicePublic( ) && server.isLocalAddress( ) && server.isValid( ) )
                     {
                         registerProvider.registerServiceProvider( server );
                     }
 
-                    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                    for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
                     {
                         const areg::ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
                         if ( proxy.isServicePublic( ) && (proxy.isTargetLocal( ) == false) && proxy.isValid( ) )
@@ -221,14 +221,14 @@ namespace areg
                 for ( areg::ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
                 {
                     const areg::StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                    const ClientList & clientList = mServerList.valueAtPosition( posMap );
+                    const areg::ClientList & clientList = mServerList.valueAtPosition( posMap );
 
                     if ( server.isServicePublic( ) && server.isRemoteAddress( ) && server.isValid( ) )
                     {
                         stubList.add( server );
                     }
 
-                    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                    for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
                     {
                         const areg::ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
                         if ( proxy.isServicePublic( ) && proxy.isRemoteAddress( ) && proxy.isValid( ) )
@@ -290,7 +290,7 @@ namespace areg
             registerProvider.registerServiceProvider( whichServer );
         }
 
-        ClientList clientList;
+        areg::ClientList clientList;
 
     #if AREG_LOGS
         const areg::ServerInfo & server = mServerList.registerServer( whichServer, clientList );
@@ -302,7 +302,7 @@ namespace areg
         mServerList.registerServer( whichServer, clientList );
     #endif  // !AREG_LOGS
 
-        for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+        for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
         {
             const ClientInfo & client{ clientList.valueAtPosition( pos ) };
             if ( client.isConnected( ) )
@@ -321,7 +321,7 @@ namespace areg
             registerProvider.unregisterServiceProvider( whichServer, reason );
         }
 
-        ClientList clientList;
+        areg::ClientList clientList;
 
     #if AREG_LOGS
         areg::ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
@@ -338,7 +338,7 @@ namespace areg
     #endif  // AREG_LOGS
 
         areg::ServiceConnectionState status = areg::serviceConnection( reason );
-        for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+        for ( areg::ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
         {
             const ClientInfo & client{ clientList.valueAtPosition( pos ) };
             if ( client.isConnected( ) )

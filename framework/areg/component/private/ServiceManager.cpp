@@ -311,7 +311,7 @@ namespace areg
         for (areg::ServerList::MAPPOS posMap = serverList.firstPosition(); serverList.isValidPosition(posMap); posMap = serverList.nextPosition(posMap) )
         {
             const areg::StubAddress & server      = serverList.keyAtPosition(posMap).getAddress();
-            const ClientList & clientList   = serverList.valueAtPosition(posMap);
+            const areg::ClientList & clientList   = serverList.valueAtPosition(posMap);
 
             if ( server.isValid() && ((cookie == areg::COOKIE_ANY) || (server.getCookie() == cookie)) )
             {
@@ -319,7 +319,7 @@ namespace areg
                 out_listStubs.add(server);
             }
 
-            for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
+            for (areg::ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
             {
                 const areg::ProxyAddress & proxy = clientList.valueAtPosition(pos).getAddress();
                 if ( proxy.isValid() && ((cookie == areg::COOKIE_ANY) || (proxy.getCookie() == cookie)) )

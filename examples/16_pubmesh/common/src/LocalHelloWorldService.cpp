@@ -29,7 +29,7 @@ void LocalHelloWorldService::requestHelloWorld( const areg::String & roleName )
     LOG_SCOPE( examples_16_pubmesh_common_LocalHelloWorldService_requestHelloWorld );
 
     LocalHelloWorld::sConnectedClient theClient;
-    ClientList::LISTPOS pos = mClientList.firstPosition( );
+    areg::ClientList::LISTPOS pos = mClientList.firstPosition( );
     for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
         const LocalHelloWorld::sConnectedClient & client = mClientList.valueAtPosition( pos );

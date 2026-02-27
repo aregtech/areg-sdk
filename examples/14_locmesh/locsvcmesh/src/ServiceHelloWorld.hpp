@@ -66,7 +66,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////
 private:
     const bool  mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
-    ClientList  mClientList;    //!< The list of connected clients.
+    areg::ClientList  mClientList;    //!< The list of connected clients.
     int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
     //////////////////////////////////////////////////////////////////////////

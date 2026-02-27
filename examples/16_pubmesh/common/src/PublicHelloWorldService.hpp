@@ -82,7 +82,7 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    ClientList      mClientList;    //!< The list of registered clients
+    areg::ClientList      mClientList;    //!< The list of registered clients
     uint32_t    mNumMessages;   //!< The number or processed messages on console.
 
 //////////////////////////////////////////////////////////////////////////

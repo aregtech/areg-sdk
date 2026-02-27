@@ -37,7 +37,7 @@ void PublicHelloWorldService::requestRegister( const areg::String & name, const 
         , process.getString( ) );
 
     PublicHelloWorld::sClientRegister theClient;
-    ClientList::LISTPOS pos = mClientList.firstPosition( );
+    areg::ClientList::LISTPOS pos = mClientList.firstPosition( );
     for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
         const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );
@@ -69,7 +69,7 @@ void PublicHelloWorldService::requestUnregister( const PublicHelloWorld::sClient
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestUnregister );
     LOG_DBG( "The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString( ), client.crID );
 
-    for ( ClientList::LISTPOS pos = mClientList.firstPosition( ); mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
+    for ( areg::ClientList::LISTPOS pos = mClientList.firstPosition( ); mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
         const PublicHelloWorld::sClientRegister & entry = mClientList.valueAtPosition( pos );
         if ( entry == client )
@@ -86,7 +86,7 @@ void PublicHelloWorldService::requestHelloWorld( uint32_t clientID )
     LOG_SCOPE( examples_16_pubmesh_common_PublicHelloWorldService_requestHelloWorld );
 
     PublicHelloWorld::sClientRegister theClient;
-    ClientList::LISTPOS pos = mClientList.firstPosition( );
+    areg::ClientList::LISTPOS pos = mClientList.firstPosition( );
     for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
     {
         const PublicHelloWorld::sClientRegister & client = mClientList.valueAtPosition( pos );

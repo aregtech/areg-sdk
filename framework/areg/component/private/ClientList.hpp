@@ -28,128 +28,132 @@
 namespace areg { class ProxyAddress; }
 namespace areg { class ServerInfo; }
 
-using ClientListBase = areg::LinkedList<ClientInfo>;
 
-/**
- * \brief   ClientList is a linked list object containing the list
- *          of Client Info objects related to one server Stub address.
- *          The object is used in Router Service to control clients.
- **/
-class ClientList    : public ClientListBase
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Default constructor. Creates empty list.
-     **/
-    ClientList() = default;
+    using ClientListBase = areg::LinkedList<ClientInfo>;
 
     /**
-     * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
+     * \brief   ClientList is a linked list object containing the list
+     *          of Client Info objects related to one server Stub address.
+     *          The object is used in Router Service to control clients.
      **/
-    ClientList( const ClientList & src ) = default;
+    class ClientList    : public ClientListBase
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor. Creates empty list.
+         **/
+        ClientList() = default;
 
-    /**
-     * \brief   Move constructor.
-     * \param   src     The source of data to move.
-     **/
-    ClientList( ClientList && src ) noexcept = default;
+        /**
+         * \brief   Copy constructor.
+         * \param   src     The source of data to copy.
+         **/
+        ClientList( const ClientList & src ) = default;
 
-    /**
-     * \brief   Destructor
-     **/
-    ~ClientList() = default;
+        /**
+         * \brief   Move constructor.
+         * \param   src     The source of data to move.
+         **/
+        ClientList( ClientList && src ) noexcept = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Assigning operator. Copies the list of Client Info from given source
-     * \param   src     The source of Client Info list
-     **/
-    ClientList & operator = ( const ClientList & src ) = default;
+        /**
+         * \brief   Destructor
+         **/
+        ~ClientList() = default;
 
-    /**
-     * \brief   Move operator.
-     * \param   src     The source of Client Info list
-     **/
-    ClientList & operator = ( ClientList && src ) noexcept = default;
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Assigning operator. Copies the list of Client Info from given source
+         * \param   src     The source of Client Info list
+         **/
+        ClientList & operator = ( const ClientList & src ) = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
+        /**
+         * \brief   Move operator.
+         * \param   src     The source of Client Info list
+         **/
+        ClientList & operator = ( ClientList && src ) noexcept = default;
 
-    /**
-     * \brief   Checks whether there is a Client Info with specified Proxy address
-     *          exists in the list, and if exists, returns true.
-     *          Otherwise, it returns false.
-     * \param   client  The address of Proxy of client to check.
-     * \return  Returns true, if there is a Client Info object in the list
-     *          with specified Proxy address. Otherwise returns false.
-     **/
-    bool existClient( const areg::ProxyAddress & client ) const;
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Searches in the list Client Info object with specified address,
-     *          and there is Client Info object with specified Proxy address,
-     *          it will return valid Client Info. Otherwise, it will return
-     *          invalid client info object.
-     *          Check validation of Client Info or call existClient() method.
-     * \param   whichClient The address of Proxy of client to search.
-     * \return  If there is a Client Info object in the list with specified address
-     *          of Proxy of client, it will return valid object. Otherwise, it will return
-     *          invalid client info object.
-     **/
-    const ClientInfo & getClient( const areg::ProxyAddress & whichClient ) const;
+        /**
+         * \brief   Checks whether there is a Client Info with specified Proxy address
+         *          exists in the list, and if exists, returns true.
+         *          Otherwise, it returns false.
+         * \param   client  The address of Proxy of client to check.
+         * \return  Returns true, if there is a Client Info object in the list
+         *          with specified Proxy address. Otherwise returns false.
+         **/
+        bool existClient( const areg::ProxyAddress & client ) const;
 
-    /**
-     * \brief   Registers client in the list by given address of Proxy and Server Info, 
-     *          containing address of Stub and state of server, and returns 
-     *          Client Info object of registered client.  If there is  already 
-     *          Client Info object exists in the list, it will increase number
-     *          of instances and return existing object. Otherwise, it will add new 
-     *          Client Info element.
-     * \param   whichClient The address of Proxy of client
-     * \param   server      The Server Info object, containing Stub address.
-     * \return  If there is already registered client in the list, it will increase
-     *          the number of instances by one and will return existing Client Info
-     *          object. Otherwise, it will create new Client Info entry with initial
-     *          number of instances 1.
-     **/
-    const ClientInfo & registerClient( const areg::ProxyAddress & whichClient, const areg::ServerInfo & server );
+        /**
+         * \brief   Searches in the list Client Info object with specified address,
+         *          and there is Client Info object with specified Proxy address,
+         *          it will return valid Client Info. Otherwise, it will return
+         *          invalid client info object.
+         *          Check validation of Client Info or call existClient() method.
+         * \param   whichClient The address of Proxy of client to search.
+         * \return  If there is a Client Info object in the list with specified address
+         *          of Proxy of client, it will return valid object. Otherwise, it will return
+         *          invalid client info object.
+         **/
+        const ClientInfo & getClient( const areg::ProxyAddress & whichClient ) const;
 
-    /**
-     * \brief   It searches servicing Client entry in the list by the given address of Proxy.
-     *          If requested proxy address found in the list of servicing client, on output, 
-     *          the out_client contains information of unregistered client. Otherwise, it is unchanged.
-     * \param   whichClient The address of Proxy to search
-     * \param   out_client  If a servicing client with given proxy address exists, on output, this 
-     *                      will contains information of unregistered client.
-     * \return  Return true if found an entry with specified proxy and operation to unregister client succeeded.
-     **/
-    bool unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
+        /**
+         * \brief   Registers client in the list by given address of Proxy and Server Info, 
+         *          containing address of Stub and state of server, and returns 
+         *          Client Info object of registered client.  If there is  already 
+         *          Client Info object exists in the list, it will increase number
+         *          of instances and return existing object. Otherwise, it will add new 
+         *          Client Info element.
+         * \param   whichClient The address of Proxy of client
+         * \param   server      The Server Info object, containing Stub address.
+         * \return  If there is already registered client in the list, it will increase
+         *          the number of instances by one and will return existing Client Info
+         *          object. Otherwise, it will create new Client Info entry with initial
+         *          number of instances 1.
+         **/
+        const ClientInfo & registerClient( const areg::ProxyAddress & whichClient, const areg::ServerInfo & server );
 
-    /**
-     * \brief   Call to notify all pending clients the servicing server availability.
-     *          The function changes states of waiting for connection clients and on output, 
-     *          the out_clientList parameter contains list of all clients.
-     * \param   whichServer     The servicing server helper object, which is available.
-     * \param   out_clientList  On output it contains list of connected clients.
-     **/
-    void serverAvailable( const areg::ServerInfo & whichServer, ClientList & out_clientList );
+        /**
+         * \brief   It searches servicing Client entry in the list by the given address of Proxy.
+         *          If requested proxy address found in the list of servicing client, on output, 
+         *          the out_client contains information of unregistered client. Otherwise, it is unchanged.
+         * \param   whichClient The address of Proxy to search
+         * \param   out_client  If a servicing client with given proxy address exists, on output, this 
+         *                      will contains information of unregistered client.
+         * \return  Return true if found an entry with specified proxy and operation to unregister client succeeded.
+         **/
+        bool unregisterClient( const areg::ProxyAddress & whichClient, ClientInfo & out_client );
 
-    /**
-     * \brief   Called to change the state of connected clients when server is disconnected. 
-     *          If there are connected clients, on output out_clientList parameter contains list of
-     *          disconnected clients.
-     * \param   out_clientList  On output, this contains list of disconnected client.
-     **/
-    void serverUnavailable( ClientList & out_clientList );
-};
+        /**
+         * \brief   Call to notify all pending clients the servicing server availability.
+         *          The function changes states of waiting for connection clients and on output, 
+         *          the out_clientList parameter contains list of all clients.
+         * \param   whichServer     The servicing server helper object, which is available.
+         * \param   out_clientList  On output it contains list of connected clients.
+         **/
+        void serverAvailable( const areg::ServerInfo & whichServer, ClientList & out_clientList );
 
+        /**
+         * \brief   Called to change the state of connected clients when server is disconnected. 
+         *          If there are connected clients, on output out_clientList parameter contains list of
+         *          disconnected clients.
+         * \param   out_clientList  On output, this contains list of disconnected client.
+         **/
+        void serverUnavailable( ClientList & out_clientList );
+    };
+
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP

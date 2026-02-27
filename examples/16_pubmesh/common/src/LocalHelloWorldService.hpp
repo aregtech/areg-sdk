@@ -53,7 +53,7 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientList      mClientList;    //!< The list of connected clients.
+    areg::ClientList      mClientList;    //!< The list of connected clients.
     uint32_t    mNumRequests;   //!< The number of executed requests.
 
 //////////////////////////////////////////////////////////////////////////

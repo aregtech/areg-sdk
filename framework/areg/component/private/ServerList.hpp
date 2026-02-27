@@ -40,7 +40,7 @@ namespace areg
     /**
      * \brief   Server List helper class.
      **/
-    using ServerListBase    = areg::HashMap<areg::ServerInfo, ClientList>;
+    using ServerListBase    = areg::HashMap<areg::ServerInfo, areg::ClientList>;
     
     /**
      * \brief   Server List is a Hash Map class containing information
@@ -117,7 +117,7 @@ namespace areg
          *                                  Server to be connected.
          * \return  Returns updated and registered Server Info object.
          **/
-        const areg::ServerInfo & registerServer( const areg::StubAddress & addrStub, ClientList & out_clinetList );
+        const areg::ServerInfo & registerServer( const areg::StubAddress & addrStub, areg::ClientList & out_clinetList );
 
         /**
          * \brief   Unregisters specified Stub Server from the list and returns related
@@ -127,7 +127,7 @@ namespace areg
          *                                  objects that were previousely registered to the service provider (server).
          * \return  Returns updated and registered Server Info object.
          **/
-        areg::ServerInfo unregisterServer( const areg::StubAddress & whichServer, ClientList & out_clinetList );
+        areg::ServerInfo unregisterServer( const areg::StubAddress & whichServer, areg::ClientList & out_clinetList );
 
     //////////////////////////////////////////////////////////////////////////
     // Attributes
@@ -150,7 +150,7 @@ namespace areg
          * \return  Returns Client Info List related with specified server.
          *          If list is empty, there is no Client connected to server yet.
          **/
-        const ClientList & getClientList( const areg::StubAddress & whichServer ) const;
+        const areg::ClientList & getClientList( const areg::StubAddress & whichServer ) const;
 
         /**
          * \brief   Searches the server info object for given client.

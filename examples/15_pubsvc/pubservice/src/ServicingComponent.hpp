@@ -64,7 +64,7 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientList  mClientList;    //!< The list of connected clients.
+    areg::ClientList  mClientList;    //!< The list of connected clients.
     int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
 //////////////////////////////////////////////////////////////////////////
