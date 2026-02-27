@@ -33,51 +33,51 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
 namespace aregext
 {
 
-    ServiceApplicationBase::ServiceApplicationBase(aregext::ServiceCommunicationBase& commBase)
-        : aregext::SystemServiceBase ( commBase )
+    ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBase)
+        : SystemServiceBase ( commBase )
         , mServiceSetup     (false)
     {
     }
 
-    int32_t ServiceApplicationBase::serviceMain(aregext::ServiceOption optStartup, const char* argument)
+    int32_t ServiceApplicationBase::serviceMain(ServiceOption optStartup, const char* argument)
     {
         int32_t result{ RESULT_SUCCEEDED };
         areg::Application::setWorkingDirectory(nullptr);
         mSystemServiceOption = optStartup;
         switch (optStartup)
         {
-        case aregext::ServiceOption::CMD_Install:
+        case ServiceOption::CMD_Install:
             if (serviceInstall() == false)
             {
                 result = ServiceApplicationBase::RESULT_FAILED_INSTALL;
             }
             break;
 
-        case aregext::ServiceOption::CMD_Uninstall:
+        case ServiceOption::CMD_Uninstall:
             serviceUninstall();
             break;
 
-        case aregext::ServiceOption::CMD_Service:
+        case ServiceOption::CMD_Service:
             result = startServiceDispatcher( );
             if (result == RESULT_IGNORED)
             {
-                result = aregext::SystemServiceBase::serviceMain(optStartup, argument);
+                result = SystemServiceBase::serviceMain(optStartup, argument);
                 mCommunication.waitToComplete();
             }
             break;
 
-        case aregext::ServiceOption::CMD_Load:     // fall through
-        case aregext::ServiceOption::CMD_Console:  // fall through
-        case aregext::ServiceOption::CMD_Custom:
-            result = aregext::SystemServiceBase::serviceMain(optStartup, argument);
+        case ServiceOption::CMD_Load:     // fall through
+        case ServiceOption::CMD_Console:  // fall through
+        case ServiceOption::CMD_Custom:
+            result = SystemServiceBase::serviceMain(optStartup, argument);
             mCommunication.waitToComplete();
             break;
 
-        case aregext::ServiceOption::CMD_Help:
-        case aregext::ServiceOption::CMD_Verbose:
+        case ServiceOption::CMD_Help:
+        case ServiceOption::CMD_Verbose:
         break;
 
-        case aregext::ServiceOption::CMD_Undefined:
+        case ServiceOption::CMD_Undefined:
         default:
             ASSERT(false);  // unexpected
             break;
@@ -86,7 +86,7 @@ namespace aregext
         return result;
     }
 
-    bool ServiceApplicationBase::serviceInitialize(aregext::ServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
+    bool ServiceApplicationBase::serviceInitialize(ServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
     {
         // Start only tracing and timer manager.
         if (areg::isEmpty(fileConfig))
@@ -159,7 +159,7 @@ namespace aregext
             if (mCommunication.setupServiceConnectionData(serviceType, static_cast<uint32_t>(connectType)) &&
                 mCommunication.connectServiceHost())
             {
-                result = setState(aregext::ServicePhase::Running);
+                result = setState(ServicePhase::Running);
             }
             else
             {
@@ -175,10 +175,10 @@ namespace aregext
         LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
         LOG_DBG("Pausing [ %s ] system service", getServiceNameA());
 
-        setState(aregext::ServicePhase::Pausing);
+        setState(ServicePhase::Pausing);
         mCommunication.disconnectServiceHost();
         mCommunication.waitToComplete();
-        setState(aregext::ServicePhase::Paused);
+        setState(ServicePhase::Paused);
     }
 
     bool ServiceApplicationBase::serviceContinue()
@@ -187,11 +187,11 @@ namespace aregext
         LOG_DBG("Resume and continuing paused [ %s ] system service", getServiceNameA());
 
         bool result = false;
-        setState(aregext::ServicePhase::Continuing);
+        setState(ServicePhase::Continuing);
         if (mCommunication.isServiceHostSetup() && mCommunication.connectServiceHost())
         {
             result = true;
-            setState(aregext::ServicePhase::Running);
+            setState(ServicePhase::Running);
         }
         else
         {
@@ -206,7 +206,7 @@ namespace aregext
     {
         LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
         LOG_WARN("Stopping [ %s ] system service", getServiceNameA());
-        setState(aregext::ServicePhase::Stopping);
+        setState(ServicePhase::Stopping);
         mCommunication.disconnectServiceHost();
         mCommunication.waitToComplete();
         areg::Application::signalAppQuit();
@@ -217,13 +217,13 @@ namespace aregext
         serviceStop();
     }
 
-    bool ServiceApplicationBase::setState(aregext::ServicePhase newState)
+    bool ServiceApplicationBase::setState(ServicePhase newState)
     {
         LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
         LOG_DBG( "Changing [ %s ] system service state. Old state [ %s ], new state [ %s ]"
                     , getServiceNameA()
-                    , aregext::getString( mSystemServiceState )
-                    , aregext::getString( newState ) );
+                    , getString( mSystemServiceState )
+                    , getString( newState ) );
         return _osSetState(newState);
     }
 
@@ -269,6 +269,6 @@ namespace aregext
 
     bool ServiceApplicationBase::inputConsoleData(char* buffer, uint32_t bufSize)
     {
-        return aregext::Console::readConsoleData(buffer, bufSize);
+        return Console::readConsoleData(buffer, bufSize);
     }
 } // namespace aregext

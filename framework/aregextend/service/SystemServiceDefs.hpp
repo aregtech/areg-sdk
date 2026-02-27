@@ -55,24 +55,24 @@ namespace aregext
     /**
      * \brief   The default setup for the system service executable options.
      **/
-    const aregext::OptionParser::OptionSetup ServiceOptionSetup[ ]
+    const OptionParser::OptionSetup ServiceOptionSetup[ ]
     {
           //!< Default command.
-          { ""  , ""            , static_cast<int32_t>(ServiceOption::CMD_Console)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+          { ""  , ""            , static_cast<int32_t>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a console application.
-        , { "-c", "--console"   , static_cast<int32_t>(ServiceOption::CMD_Console)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-c", "--console"   , static_cast<int32_t>(ServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display help on console.
-        , { "-h", "--help"      , static_cast<int32_t>(ServiceOption::CMD_Help)        , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-h", "--help"      , static_cast<int32_t>(ServiceOption::CMD_Help)        , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to display the error message.
-        , { "-l", "--load"      , static_cast<int32_t>(ServiceOption::CMD_Load)        , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+        , { "-l", "--load"      , static_cast<int32_t>(ServiceOption::CMD_Load)        , OptionParser::STRING_NO_RANGE , {}, {}, {} }
           //!< Command to install service. Valid for Windows OS, ignored in other cases.
-        , { "-i", "--install"   , static_cast<int32_t>(ServiceOption::CMD_Install)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-i", "--install"   , static_cast<int32_t>(ServiceOption::CMD_Install)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to run process as a system service process.
-        , { "-s", "--service"   , static_cast<int32_t>(ServiceOption::CMD_Service)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-s", "--service"   , static_cast<int32_t>(ServiceOption::CMD_Service)     , OptionParser::NO_DATA         , {}, {}, {} }
           //!< Command to uninstall service. Valid for Windows OS, ignored in other cases.
-        , { "-u", "--uninstall" , static_cast<int32_t>(ServiceOption::CMD_Uninstall)  , aregext::OptionParser::NO_DATA          , {}, {}, {} }
+        , { "-u", "--uninstall" , static_cast<int32_t>(ServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA          , {}, {}, {} }
           //!< Command to display data rate when run as console application.
-        , { "-v", "--verbose"   , static_cast<int32_t>(ServiceOption::CMD_Verbose)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-v", "--verbose"   , static_cast<int32_t>(ServiceOption::CMD_Verbose)     , OptionParser::NO_DATA         , {}, {}, {} }
     };
 
     /**
@@ -134,36 +134,36 @@ namespace aregext
     /**
      * \brief   Coordinate to display the application title.
      **/
-    constexpr aregext::Console::Coord    COORD_TITLE         { 0, 1 };
+    constexpr Console::Coord    COORD_TITLE         { 0, 1 };
     /**
      * \brief   Coordinate to display the underscore.
      **/
-    constexpr aregext::Console::Coord    COORD_SUBTITLE      { 0, 2 };
+    constexpr Console::Coord    COORD_SUBTITLE      { 0, 2 };
 
     /**
      * \brief   Coordinate to start to display send data rate message.
      **/
-    constexpr aregext::Console::Coord    COORD_SEND_RATE     { 0, 3 };
+    constexpr Console::Coord    COORD_SEND_RATE     { 0, 3 };
     /**
      * \brief   Coordinate to start to display receive data rate message.
      **/
-    constexpr aregext::Console::Coord    COORD_RECV_RATE     { 0, 4 };
+    constexpr Console::Coord    COORD_RECV_RATE     { 0, 4 };
     /**
      * \brief   Coordinate to display the status message.
      **/
-    constexpr aregext::Console::Coord    COORD_STATUS_MSG    { 0, 5 };
+    constexpr Console::Coord    COORD_STATUS_MSG    { 0, 5 };
     /**
      * \brief   Coordinate to start to display user input message.
      **/
-    constexpr aregext::Console::Coord    COORD_USER_INPUT    { 0, 6 };
+    constexpr Console::Coord    COORD_USER_INPUT    { 0, 6 };
     /**
      * \brief   Coordinate to start to display error message.
      **/
-    constexpr aregext::Console::Coord    COORD_ERROR_MSG     { 0, 7 };
+    constexpr Console::Coord    COORD_ERROR_MSG     { 0, 7 };
     /**
      * \brief   Coordinate to start to display information message.
      **/
-    constexpr aregext::Console::Coord    COORD_INFO_MSG      { 0, 8 };
+    constexpr Console::Coord    COORD_INFO_MSG      { 0, 8 };
 
     /**
      * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'.

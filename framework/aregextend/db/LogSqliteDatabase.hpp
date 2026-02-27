@@ -111,11 +111,11 @@ namespace aregext
         /**
          * \brief   Return SQLite database object
          **/
-        inline aregext::SqliteDatabase& getDatabase();
-        inline const aregext::SqliteDatabase& getDatabase() const;
+        inline SqliteDatabase& getDatabase();
+        inline const SqliteDatabase& getDatabase() const;
 
-        inline aregext::SqliteStatement& getStatement();
-        inline const aregext::SqliteStatement& getStatement() const;
+        inline SqliteStatement& getStatement();
+        inline const SqliteStatement& getStatement() const;
 
         /**
          * \brief   Checks whether the specified table exists or not.
@@ -376,7 +376,7 @@ namespace aregext
          * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
          * \return  Returns number of entries added to the vector.
          **/
-        static int32_t getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, aregext::SqliteStatement& stmt, int32_t maxEntries = -1);
+        static int32_t getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, int32_t maxEntries = -1);
 
         /**
          * \brief   Call to get log messages using SQLite Statement object. The SQLite Statement should be already initialized
@@ -388,7 +388,7 @@ namespace aregext
          * \param[in]   maxEntries  The maximum number of entries to extract. If `-1`, it extracts all entries.
          * \return  Returns number of entries added to the vector.
          **/
-        static int32_t getLogMessages(std::vector<areg::SharedBuffer>& logs, aregext::SqliteStatement& stmt, int32_t maxEntries = -1);
+        static int32_t getLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries = -1);
 
         /**
          * \brief   Fills log instances in the specified array. The array should be initialized and it should have enough space to set data.
@@ -400,7 +400,7 @@ namespace aregext
          *                              and prepared to extract instance information.
          * \return  Returns number of entries set in the array.
          **/
-        static int32_t fillLogInstances(std::vector< areg::ConnectedInstance>& infos, aregext::SqliteStatement& stmt);
+        static int32_t fillLogInstances(std::vector< areg::ConnectedInstance>& infos, SqliteStatement& stmt);
 
         /**
          * \brief   Fills scope data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -417,7 +417,7 @@ namespace aregext
          * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
          * \return  Returns number of entries set in the array.
          **/
-        static int32_t fillInstScopes(std::vector<areg::ScopeEntry>& scopes, aregext::SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
+        static int32_t fillInstScopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
 
         /**
          * \brief   Fills log message data in the specified array. The array should be initialized and it should have enough space to set data.
@@ -434,7 +434,7 @@ namespace aregext
          * \param[in]   maxEntries      The maximum number of entries to extract. If `-1`, it extracts all entries.
          * \return  Returns number of entries set in the array.
          **/
-        static int32_t fillLogMessages(std::vector<areg::SharedBuffer>& logs, aregext::SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
+        static int32_t fillLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries = -1);
 
         /**
          * \brief   Call to setup statement to read the list of logging scopes from log database.
@@ -445,7 +445,7 @@ namespace aregext
          * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `areg::TARGET_ALL`.
          * @return  Returns number of scopes of specified instance.
          **/
-        uint32_t setupStatementReadScopes(aregext::SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
+        uint32_t setupStatementReadScopes(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
         /**
          * \brief   Call to setup statement to read the list of logs from logging database.
@@ -456,7 +456,7 @@ namespace aregext
          * \param[in]   instId  The ID of the instance to bind to fetch scopes. If fetches all scopes if equal to `areg::TARGET_ALL`.
          * @return  Returns number of log messages of specified instance ID.
          **/
-        uint32_t setupStatementReadLogs(aregext::SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
+        uint32_t setupStatementReadLogs(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
         /**
          * \brief   Sets up the log filters
@@ -472,7 +472,7 @@ namespace aregext
          * \param[in]   instId  The ID of the instance to apply the filter or areg::TARGET_ALL if the filter is applied to all instances.
          * \return  Returns number of log entries after applying filter.
          **/
-        uint32_t setupStatementReadFilterLogs(aregext::SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
+        uint32_t setupStatementReadFilterLogs(SqliteStatement& stmt, ITEM_ID instId = areg::TARGET_ALL);
 
         /**
          * \brief   Returns number of log messages of specified instance ID.
@@ -544,21 +544,21 @@ namespace aregext
          * \param   stmt    The SqliteStatement to extract the log message.
          * \param   buf     The SharedBuffer to copy the log message.
          **/
-        inline static void _copyLogMessage(aregext::SqliteStatement& stmt, areg::SharedBuffer & buf);
+        inline static void _copyLogMessage(SqliteStatement& stmt, areg::SharedBuffer & buf);
 
         /**
          * \brief   Extracts the log instance from the SqliteStatement and copies it to the areg::ConnectedInstance.
          * \param   stmt    The SqliteStatement to extract the log instance.
          * \param   inst    The areg::ConnectedInstance to copy the log instance.
          **/
-        inline static void _copyLogInstances(aregext::SqliteStatement& stmt, areg::ConnectedInstance & inst);
+        inline static void _copyLogInstances(SqliteStatement& stmt, areg::ConnectedInstance & inst);
 
         /**
          * \brief   Extracts the log scope from the SqliteStatement and copies it to the areg::ScopeEntry.
          * \param   stmt    The SqliteStatement to extract the log scope.
          * \param   scope   The areg::ScopeEntry to copy the log scope.
          **/
-        inline static void _copyLogScopes(aregext::SqliteStatement& stmt, areg::ScopeEntry& scope);
+        inline static void _copyLogScopes(SqliteStatement& stmt, areg::ScopeEntry& scope);
 
         /**
          * \brief   Updates the filter information for the specified instance.
@@ -573,10 +573,10 @@ namespace aregext
     //////////////////////////////////////////////////////////////////////////
     protected:
         //!< The path to the SQLite database file.
-        aregext::SqliteDatabase  mDatabase;
+        SqliteDatabase  mDatabase;
 
         //!< The statement to log messages in the database.
-        aregext::SqliteStatement mStmtLogs;
+        SqliteStatement mStmtLogs;
 
         //!< The initial path to the SQLIte database file. The path may contain mask like timestamp.
         areg::String          mDbInitPath;
@@ -621,22 +621,22 @@ namespace aregext
         return mDbInitPath;
     }
 
-    inline aregext::SqliteDatabase& LogSqliteDatabase::getDatabase()
+    inline SqliteDatabase& LogSqliteDatabase::getDatabase()
     {
         return mDatabase;
     }
 
-    inline const aregext::SqliteDatabase& LogSqliteDatabase::getDatabase() const
+    inline const SqliteDatabase& LogSqliteDatabase::getDatabase() const
     {
         return mDatabase;
     }
 
-    inline aregext::SqliteStatement& LogSqliteDatabase::getStatement()
+    inline SqliteStatement& LogSqliteDatabase::getStatement()
     {
         return mStmtLogs;
     }
 
-    inline const aregext::SqliteStatement& LogSqliteDatabase::getStatement() const
+    inline const SqliteStatement& LogSqliteDatabase::getStatement() const
     {
         return mStmtLogs;
     }

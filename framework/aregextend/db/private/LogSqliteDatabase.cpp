@@ -521,7 +521,7 @@ namespace aregext
         VERIFY(mDatabase.execute(sql));
     }
 
-    inline void LogSqliteDatabase::_copyLogMessage(aregext::SqliteStatement& stmt, areg::SharedBuffer& buf)
+    inline void LogSqliteDatabase::_copyLogMessage(SqliteStatement& stmt, areg::SharedBuffer& buf)
     {
         constexpr uint32_t _logSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
         buf.reserve(_logSize, false);
@@ -557,7 +557,7 @@ namespace aregext
         areg::copyStringFast(log->logModule, module.getString(), module.getLength());
     }
 
-    inline void LogSqliteDatabase::_copyLogInstances(aregext::SqliteStatement& stmt, areg::ConnectedInstance& inst)
+    inline void LogSqliteDatabase::_copyLogInstances(SqliteStatement& stmt, areg::ConnectedInstance& inst)
     {
         inst.ciSource   = static_cast<areg::MessageSource>(  stmt.getUint32(0));
         inst.ciBitness  = static_cast<areg::InstanceBitness>(stmt.getUint32(1));
@@ -567,7 +567,7 @@ namespace aregext
         inst.ciLocation = stmt.getText(5);
     }
 
-    inline void LogSqliteDatabase::_copyLogScopes(aregext::SqliteStatement& stmt, areg::ScopeEntry& scope)
+    inline void LogSqliteDatabase::_copyLogScopes(SqliteStatement& stmt, areg::ScopeEntry& scope)
     {
         scope.scopeName = stmt.getText(0);
         scope.scopeId   = static_cast<uint32_t>(stmt.getUint32(1));
@@ -667,7 +667,7 @@ namespace aregext
         mStmtLogs.bindUint64(11, static_cast<uint64_t>(message.logReceived));
         mStmtLogs.bindUint32(12, static_cast<uint64_t>(message.logDuration));
 
-        bool result{ mStmtLogs.next() == aregext::SqliteStatement::QueryResult::HasNoMore };
+        bool result{ mStmtLogs.next() == SqliteStatement::QueryResult::HasNoMore };
         mStmtLogs.reset();
         mStmtLogs.clearBindings();
         return result;
@@ -722,7 +722,7 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         uint32_t result{ 0 };
-        aregext::SqliteStatement stmt(mDatabase, _sqlInsertScope);
+        SqliteStatement stmt(mDatabase, _sqlInsertScope);
         for (const auto& scope : scopes.getData())
         {
             stmt.bindUint32(0, static_cast<uint32_t>(scope.scopeId));
@@ -730,7 +730,7 @@ namespace aregext
             stmt.bindUint32(2, static_cast<uint32_t>(scope.scopePrio));
             stmt.bindText(  3, scope.scopeName.getString());
             stmt.bindUint64(4, static_cast<uint64_t>(timestamp.getTime()));
-            result += stmt.next() == aregext::SqliteStatement::QueryResult::HasMore ? 1 : 0;
+            result += stmt.next() == SqliteStatement::QueryResult::HasMore ? 1 : 0;
             stmt.reset();
             stmt.clearBindings();
         }
@@ -789,10 +789,10 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         names.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetInstanceName);
+        SqliteStatement stmt(mDatabase, _sqlGetInstanceName);
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::String instName{ stmt.getText(0) };
                 if (instName.isEmpty() == false)
@@ -816,10 +816,10 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         ids.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetInstanceIds);
+        SqliteStatement stmt(mDatabase, _sqlGetInstanceIds);
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
                 ids.push_back(instId);
@@ -840,10 +840,10 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         names.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetThreadNames);
+        SqliteStatement stmt(mDatabase, _sqlGetThreadNames);
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::String instName{ stmt.getText(0) };
                 names.push_back(instName);
@@ -864,10 +864,10 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         ids.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetThreadIds);
+        SqliteStatement stmt(mDatabase, _sqlGetThreadIds);
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 ITEM_ID instId{ static_cast<ITEM_ID>(stmt.getInt64(0)) };
                 ids.push_back(instId);
@@ -909,10 +909,10 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         infos.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetLogInstances);
+        SqliteStatement stmt(mDatabase, _sqlGetLogInstances);
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::ConnectedInstance inst;
                 _copyLogInstances(stmt, inst);
@@ -934,11 +934,11 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         scopes.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetLogScopes);
+        SqliteStatement stmt(mDatabase, _sqlGetLogScopes);
         if (stmt.isValid())
         {
             stmt.bindUint64(0, static_cast<uint64_t>(instId));
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::ScopeEntry scope;
                 _copyLogScopes(stmt, scope);
@@ -960,10 +960,10 @@ namespace aregext
     {
         areg::Lock lock(mLock);
         messages.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
+        SqliteStatement stmt(mDatabase, _sqlGetAllLogMessages);
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::SharedBuffer buf;
                 _copyLogMessage(stmt, buf);
@@ -991,11 +991,11 @@ namespace aregext
 
         areg::Lock lock(mLock);
         messages.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
+        SqliteStatement stmt(mDatabase, _sqlGetInstLogMessages);
         if (stmt.isValid())
         {
             stmt.bindUint64(0, static_cast<uint64_t>(instId));
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::SharedBuffer buf;
                 _copyLogMessage(stmt, buf);
@@ -1023,11 +1023,11 @@ namespace aregext
 
         areg::Lock lock(mLock);
         messages.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetScopeLogMessages);
+        SqliteStatement stmt(mDatabase, _sqlGetScopeLogMessages);
         if (stmt.isValid())
         {
             stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::SharedBuffer buf;
                 _copyLogMessage(stmt, buf);
@@ -1051,12 +1051,12 @@ namespace aregext
 
         areg::Lock lock(mLock);
         std::vector<areg::SharedBuffer> result;
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
+        SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
         if (stmt.isValid())
         {
             stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
             stmt.bindUint64(1, static_cast<uint64_t>(instId));
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::SharedBuffer buf;
                 _copyLogMessage(stmt, buf);
@@ -1086,12 +1086,12 @@ namespace aregext
 
         areg::Lock lock(mLock);
         messages.clear();
-        aregext::SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
+        SqliteStatement stmt(mDatabase, _sqlGetInstScopeLogMessages);
         if (stmt.isValid())
         {
             stmt.bindUint32(0, static_cast<uint32_t>(scopeId));
             stmt.bindUint64(1, static_cast<uint64_t>(instId));
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::SharedBuffer buf;
                 _copyLogMessage(stmt, buf);
@@ -1102,12 +1102,12 @@ namespace aregext
         ASSERT(stmt.getRowPos() == static_cast<uint32_t>(messages.size()));
     }
 
-    int32_t LogSqliteDatabase::getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, aregext::SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
+    int32_t LogSqliteDatabase::getLogInstScopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
     {
         int32_t result{ 0 };
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::ScopeEntry scope;
                 _copyLogScopes(stmt, scope);
@@ -1121,12 +1121,12 @@ namespace aregext
         return result;
     }
 
-    int32_t LogSqliteDatabase::getLogMessages(std::vector<areg::SharedBuffer>& logs, aregext::SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
+    int32_t LogSqliteDatabase::getLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, int32_t maxEntries /*= -1*/)
     {
         int32_t result{ 0 };
         if (stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 areg::SharedBuffer log;
                 _copyLogMessage(stmt, log);
@@ -1140,12 +1140,12 @@ namespace aregext
         return result;
     }
 
-    int32_t LogSqliteDatabase::fillLogInstances(std::vector<areg::ConnectedInstance>& infos, aregext::SqliteStatement& stmt)
+    int32_t LogSqliteDatabase::fillLogInstances(std::vector<areg::ConnectedInstance>& infos, SqliteStatement& stmt)
     {
         int32_t result{ 0 };
         if ((static_cast<uint32_t>(infos.size()) != 0) && stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 ASSERT(static_cast<uint32_t>(infos.size()) > static_cast<uint32_t>(result));
                 areg::ConnectedInstance& inst{ infos[result] };
@@ -1157,12 +1157,12 @@ namespace aregext
         return result;
     }
 
-    int32_t LogSqliteDatabase::fillInstScopes(std::vector<areg::ScopeEntry>& scopes, aregext::SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
+    int32_t LogSqliteDatabase::fillInstScopes(std::vector<areg::ScopeEntry>& scopes, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
     {
         int32_t result{ 0 };
         if ((static_cast<uint32_t>(scopes.size()) > startAt) && stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 ASSERT(static_cast<uint32_t>(scopes.size()) > (startAt + static_cast<uint32_t>(result)));
                 areg::ScopeEntry& scope{ scopes[startAt + static_cast<uint32_t>(result)] };
@@ -1176,12 +1176,12 @@ namespace aregext
         return result;
     }
 
-    int32_t LogSqliteDatabase::fillLogMessages(std::vector<areg::SharedBuffer>& logs, aregext::SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
+    int32_t LogSqliteDatabase::fillLogMessages(std::vector<areg::SharedBuffer>& logs, SqliteStatement& stmt, uint32_t startAt, int32_t maxEntries)
     {
         int32_t result{ 0 };
         if ((static_cast<uint32_t>(logs.size()) > startAt) && stmt.isValid())
         {
-            while (stmt.next() == aregext::SqliteStatement::QueryResult::HasMore)
+            while (stmt.next() == SqliteStatement::QueryResult::HasMore)
             {
                 ASSERT(static_cast<uint32_t>(logs.size()) > (startAt + static_cast<uint32_t>(result)));
                 areg::SharedBuffer& log{ logs[startAt + static_cast<uint32_t>(result)] };
@@ -1195,7 +1195,7 @@ namespace aregext
         return result;
     }
 
-    uint32_t LogSqliteDatabase::setupStatementReadScopes(aregext::SqliteStatement& stmt, ITEM_ID instId)
+    uint32_t LogSqliteDatabase::setupStatementReadScopes(SqliteStatement& stmt, ITEM_ID instId)
     {
         stmt.reset();
         if (instId == areg::TARGET_ALL)
@@ -1208,7 +1208,7 @@ namespace aregext
         }
     }
 
-    uint32_t LogSqliteDatabase::setupStatementReadLogs(aregext::SqliteStatement& stmt, ITEM_ID instId)
+    uint32_t LogSqliteDatabase::setupStatementReadLogs(SqliteStatement& stmt, ITEM_ID instId)
     {
         stmt.reset();
         if (instId == areg::TARGET_ALL)
@@ -1232,7 +1232,7 @@ namespace aregext
         if (tableExists("filter_rules", _temp) == false)
         {
             mDatabase.begin();
-            aregext::SqliteStatement stmt(mDatabase, _sqlCreateTempScopes);
+            SqliteStatement stmt(mDatabase, _sqlCreateTempScopes);
             if (stmt.execute() == false)
             {
                 commit(false);
@@ -1259,7 +1259,7 @@ namespace aregext
         return _updaeFilterLogScopes(instId, filter);
     }
 
-    uint32_t LogSqliteDatabase::setupStatementReadFilterLogs(aregext::SqliteStatement& stmt, ITEM_ID instId)
+    uint32_t LogSqliteDatabase::setupStatementReadFilterLogs(SqliteStatement& stmt, ITEM_ID instId)
     {
         areg::Lock lock(mLock);
         stmt.reset();
@@ -1297,7 +1297,7 @@ namespace aregext
                 sql.format(_sqlUpdateFilterRuleInst.data(), instId);
 
             mDatabase.begin();
-            aregext::SqliteStatement stmt(mDatabase, sql);
+            SqliteStatement stmt(mDatabase, sql);
             for (const auto& scope : filter.getData())
             {
                 stmt.bindUint32(0, scope.scopePrio);
@@ -1328,7 +1328,7 @@ namespace aregext
         if (mDatabase.isOperable() == false)
             return 0u;
 
-        aregext::SqliteStatement stmt(mDatabase);
+        SqliteStatement stmt(mDatabase);
         if (instId == areg::TARGET_ALL)
         {
             VERIFY(stmt.prepare(_sqlCountAllLogs));
@@ -1338,7 +1338,7 @@ namespace aregext
             stmt.bindInt64(0, instId);
         }
 
-        return (stmt.next() != aregext::SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
+        return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
     }
 
     uint32_t LogSqliteDatabase::countScopeEntries(ITEM_ID instId)
@@ -1347,7 +1347,7 @@ namespace aregext
         if (mDatabase.isOperable() == false)
             return 0;
 
-        aregext::SqliteStatement stmt(mDatabase);
+        SqliteStatement stmt(mDatabase);
         if (instId == areg::TARGET_ALL)
         {
             VERIFY(stmt.prepare(_sqlCountAllScopes));
@@ -1357,7 +1357,7 @@ namespace aregext
             stmt.bindInt64(0, instId);
         }
 
-        return (stmt.next() != aregext::SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
+        return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
     }
 
     uint32_t LogSqliteDatabase::countLogInstances()
@@ -1366,8 +1366,8 @@ namespace aregext
         if (mDatabase.isOperable() == false)
             return 0;
 
-        aregext::SqliteStatement stmt(mDatabase, _sqlCountInstances);
-        return (stmt.next() != aregext::SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
+        SqliteStatement stmt(mDatabase, _sqlCountInstances);
+        return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
     }
 
     uint32_t LogSqliteDatabase::countFilterLogs(ITEM_ID instId)
@@ -1376,7 +1376,7 @@ namespace aregext
         if (mDatabase.isOperable() == false)
             return 0;
 
-        aregext::SqliteStatement stmt(mDatabase);
+        SqliteStatement stmt(mDatabase);
         if (instId == areg::TARGET_ALL)
         {
             VERIFY(stmt.prepare(_sqlFilterScopeLogsCountAll));
@@ -1386,7 +1386,7 @@ namespace aregext
             stmt.bindInt64(0, instId);
         }
 
-        return (stmt.next() != aregext::SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
+        return (stmt.next() != SqliteStatement::QueryResult::Failed ? stmt.getUint32(0) : 0);
     }
 
     bool LogSqliteDatabase::resetFilterMask(ITEM_ID instId /*= areg::TARGET_ALL*/)
@@ -1394,7 +1394,7 @@ namespace aregext
         if (tableExists("filter_rules", _temp) == false)
             return false;
 
-        aregext::SqliteStatement stmt(mDatabase);
+        SqliteStatement stmt(mDatabase);
         if (instId == areg::TARGET_ALL)
         {
             VERIFY(stmt.prepare(_sqlResetFilterScopesAll));
@@ -1413,7 +1413,7 @@ namespace aregext
         if (tableExists("filter_rules", _temp) == false)
             return false;
 
-        aregext::SqliteStatement stmt(mDatabase);
+        SqliteStatement stmt(mDatabase);
         if (instId == areg::TARGET_ALL)
         {
             VERIFY(stmt.prepare(_sqlDisableFilterScopesAll));
@@ -1435,8 +1435,8 @@ namespace aregext
         {
             areg::String sql;
             sql.format(_sqlCheckTable.data(), master, table);
-            aregext::SqliteStatement stmt(mDatabase, sql);
-            result = (aregext::SqliteStatement::QueryResult::HasMore == stmt.next());
+            SqliteStatement stmt(mDatabase, sql);
+            result = (SqliteStatement::QueryResult::HasMore == stmt.next());
         }
 
         return result;
@@ -1450,7 +1450,7 @@ namespace aregext
 
         areg::String sql;
         sql.format(_sqlDropTable.data(), table);
-        aregext::SqliteStatement stmt(mDatabase, sql);
+        SqliteStatement stmt(mDatabase, sql);
         bool result = stmt.execute();
         stmt.finalize();
         return result;

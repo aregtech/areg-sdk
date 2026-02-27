@@ -99,7 +99,7 @@ namespace aregext
         /**
          * \brief   Initializes instance of message router service.
          **/
-        SystemServiceBase( aregext::ServiceCommunicationBase & commBase );
+        SystemServiceBase( ServiceCommunicationBase & commBase );
         /**
          * \brief   Destructor.
          **/
@@ -133,8 +133,8 @@ namespace aregext
          *          found no failure and the application can continue working.
          *          To interrupt the application, return false.
          **/
-        virtual bool parseOptions( int32_t argc, const char ** argv, const aregext::OptionParser::OptionSetup * optSetup, uint32_t optCount );
-        virtual bool parseOptions( int32_t argc, char** argv, const aregext::OptionParser::OptionSetup* optSetup, uint32_t optCount);
+        virtual bool parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount );
+        virtual bool parseOptions( int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount);
 
         /**
          * \brief   Checks the listed options and prepares to dispatch.
@@ -146,7 +146,7 @@ namespace aregext
          * \return  Returns true if found no failure and the application can continue working.
          *          To interrupt the application, return false.
          **/
-        virtual bool prepareOptions(const aregext::OptionParser::InputOptionList& opts);
+        virtual bool prepareOptions(const OptionParser::InputOptionList& opts);
 
         /**
          * \brief   Dispatches the option, makes basic initialization like setting configuration file or set verbose flag.
@@ -154,7 +154,7 @@ namespace aregext
          * \return  If operation succeeded, returns true. Otherwise, if the option is not recognized or value is unexpected,
          *          returns false.
          **/
-        virtual bool dispatchOption(const aregext::OptionParser::InputOption& opt);
+        virtual bool dispatchOption(const OptionParser::InputOption& opt);
 
         /**
          * \brief   Is the main entry point to install, uninstall, register and start service.
@@ -165,7 +165,7 @@ namespace aregext
          *                      or need to use default value.
          * \return  The result of execution.
          **/
-        virtual int32_t serviceMain(aregext::ServiceOption optStartup, const char* argument);
+        virtual int32_t serviceMain(ServiceOption optStartup, const char* argument);
 
         /**
          * \brief   Sends remote message to the target specified in the message structure.
@@ -181,7 +181,7 @@ namespace aregext
          * \return  Returns true if succeeded to initialize application and the application can run.
          *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
          **/
-        virtual bool serviceInitialize(aregext::ServiceOption option, const char* value, const char* fileConfig) = 0;
+        virtual bool serviceInitialize(ServiceOption option, const char* value, const char* fileConfig) = 0;
 
         /**
          * \brief   Triggered when service application is going to exit.
@@ -239,7 +239,7 @@ namespace aregext
         /**
          * \brief   Sets the state of the system service.
          **/
-        virtual bool setState( aregext::ServicePhase newState ) = 0;
+        virtual bool setState( ServicePhase newState ) = 0;
 
         /**
          * \brief   Called to setup service and start service dispatcher.
@@ -257,28 +257,28 @@ namespace aregext
         /**
          * \brief   Returns current command of message router service.
          **/
-        inline aregext::ServiceOption getCurrentOption() const;
+        inline ServiceOption getCurrentOption() const;
 
         /**
          * \brief   Sets the current command of message router service.
          * \param   optService  The router service command option to set.
          **/
-        inline void setCurrentOption( aregext::ServiceOption optService );
+        inline void setCurrentOption( ServiceOption optService );
 
         /**
          * \brief   Returns the state of message router service.
          **/
-        inline aregext::ServicePhase getState() const;
+        inline ServicePhase getState() const;
 
         /**
          * \brief   Returns the instance of data rate helper object to use when computing data rate.
          **/
-        inline aregext::DataRateHelper& getDataRateHelper() const;
+        inline DataRateHelper& getDataRateHelper() const;
 
         /**
          * \brief   Return the instance of the communication controller object.
          **/
-        inline aregext::ServiceCommunicationBase& getCommunicationController() const;
+        inline ServiceCommunicationBase& getCommunicationController() const;
 
         /**
          * \brief   Resets default options.
@@ -317,7 +317,7 @@ namespace aregext
         /**
          * \brief   Triggered to receive a function to validate and check the input option values.
          **/
-        virtual aregext::Console::CallBack getOptionCheckCallback() const = 0;
+        virtual Console::CallBack getOptionCheckCallback() const = 0;
 
         /**
          * \brief   Triggered if need to run console with extended features.
@@ -339,15 +339,15 @@ namespace aregext
     // Member variables.
     //////////////////////////////////////////////////////////////////////////
     protected:
-        aregext::ServiceCommunicationBase &               mCommunication;
+        ServiceCommunicationBase &               mCommunication;
         /**
          * \brief   The message router service state.
          **/
-        aregext::ServicePhase    mSystemServiceState;
+        ServicePhase    mSystemServiceState;
         /**
          * \brief   The current command to execute by message router service.
          **/
-        aregext::ServiceOption         mSystemServiceOption;
+        ServiceOption         mSystemServiceOption;
         /**
          * \brief   OS specific service handle
          **/
@@ -372,27 +372,27 @@ namespace aregext
     // SystemServiceBase class inline methods.
     //////////////////////////////////////////////////////////////////////////
 
-    inline aregext::ServicePhase SystemServiceBase::getState() const
+    inline ServicePhase SystemServiceBase::getState() const
     {
         return mSystemServiceState;
     }
 
-    inline aregext::DataRateHelper& SystemServiceBase::getDataRateHelper() const
+    inline DataRateHelper& SystemServiceBase::getDataRateHelper() const
     {
         return  mCommunication.getDataRateHelper();
     }
 
-    inline aregext::ServiceCommunicationBase& SystemServiceBase::getCommunicationController() const
+    inline ServiceCommunicationBase& SystemServiceBase::getCommunicationController() const
     {
-        return const_cast<aregext::ServiceCommunicationBase&>(mCommunication);
+        return const_cast<ServiceCommunicationBase&>(mCommunication);
     }
 
-    inline aregext::ServiceOption SystemServiceBase::getCurrentOption() const
+    inline ServiceOption SystemServiceBase::getCurrentOption() const
     {
         return mSystemServiceOption;
     }
 
-    inline void SystemServiceBase::setCurrentOption( aregext::ServiceOption optService )
+    inline void SystemServiceBase::setCurrentOption( ServiceOption optService )
     {
         mSystemServiceOption = optService;
     }

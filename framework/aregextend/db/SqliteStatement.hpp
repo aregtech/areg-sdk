@@ -21,8 +21,11 @@
 #include "areg/base/String.hpp"
 #include "aregextend/db/SqliteRow.hpp"
 
-namespace aregext { class SqliteDatabase; }
-namespace aregext { class SqliteRow; }
+namespace aregext
+{
+    class SqliteDatabase;
+    class SqliteRow;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SqliteStatement class declaration
@@ -35,7 +38,7 @@ namespace aregext
      **/
     class SqliteStatement
     {
-        friend class aregext::SqliteRow;
+        friend class SqliteRow;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal types and constants
@@ -74,14 +77,14 @@ namespace aregext
          * \param   db      Reference to the SqliteDatabase object.
          * \param   sql     The SQL statement to prepare.
          */
-        SqliteStatement(aregext::SqliteDatabase& db, const areg::String& sql);
+        SqliteStatement(SqliteDatabase& db, const areg::String& sql);
 
         /**
          * \brief   Constructs a SqliteStatement associated with the given database.
          *          The statement is not prepared until prepare() is called.
          * \param   db      Reference to the SqliteDatabase object.
          */
-        SqliteStatement(aregext::SqliteDatabase& db);
+        SqliteStatement(SqliteDatabase& db);
 
         /**
          * \brief   Destructor. Finalizes the statement and releases resources.
@@ -287,13 +290,13 @@ namespace aregext
          * \brief   Returns a SqliteRow object representing the current row.
          * \return  The current SqliteRow.
          */
-        aregext::SqliteRow row() const;
+        SqliteRow row() const;
 
         /**
          * \brief   Advances to the next row and returns a SqliteRow object for it.
          * \return  The next SqliteRow.
          */
-        aregext::SqliteRow nextRow() const;
+        SqliteRow nextRow() const;
 
         /**
          * \brief   Advances to the next row in the result set (const overload).
@@ -305,7 +308,7 @@ namespace aregext
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     protected:
-        aregext::SqliteDatabase& mDatabase;  //!< The SQLite database object, which owns this statement.
+        SqliteDatabase& mDatabase;  //!< The SQLite database object, which owns this statement.
         void *          mStatement; //!< The SQLite statement object.
         uint32_t        mRowPos;    //!< The current row position.
 

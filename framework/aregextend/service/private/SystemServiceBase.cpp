@@ -32,10 +32,10 @@ namespace aregext
     //////////////////////////////////////////////////////////////////////////
     // MultitargetRouter class implementation
     //////////////////////////////////////////////////////////////////////////
-    SystemServiceBase::SystemServiceBase( aregext::ServiceCommunicationBase & commBase )
+    SystemServiceBase::SystemServiceBase( ServiceCommunicationBase & commBase )
         : mCommunication        ( commBase )
-        , mSystemServiceState   ( aregext::ServicePhase::Stopped )
-        , mSystemServiceOption  ( aregext::DEFAULT_OPTION )
+        , mSystemServiceState   ( ServicePhase::Stopped )
+        , mSystemServiceOption  ( DEFAULT_OPTION )
         , mSvcHandle            ( nullptr )
         , mSeMHandle            ( nullptr )
         , mFileConfig           ( areg::DEFAULT_CONFIG_FILE )
@@ -44,18 +44,18 @@ namespace aregext
 
     void SystemServiceBase::resetDefaultOptions()
     {
-        mSystemServiceOption = aregext::DEFAULT_OPTION;
+        mSystemServiceOption = DEFAULT_OPTION;
         mFileConfig = areg::DEFAULT_CONFIG_FILE;
-        mCommunication.enableCalculateDataRate(aregext::DEFAULT_VERBOSE);
+        mCommunication.enableCalculateDataRate(DEFAULT_VERBOSE);
     }
 
-    bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const aregext::OptionParser::OptionSetup * optSetup, uint32_t optCount )
+    bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount )
     {
         bool result{ false };
 
         if (argc > 1)
         {
-            aregext::OptionParser parser(optSetup, optCount);
+            OptionParser parser(optSetup, optCount);
             if (parser.parseCommandLine(argv, argc > 1 ? static_cast<uint32_t>(argc) : 0))
             {
                 result = prepareOptions(parser.getOptions());
@@ -75,13 +75,13 @@ namespace aregext
         return result;
     }
 
-    bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const aregext::OptionParser::OptionSetup* optSetup, uint32_t optCount)
+    bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount)
     {
         bool result{ false };
 
         if (argc > 1)
         {
-            aregext::OptionParser parser(optSetup, optCount);
+            OptionParser parser(optSetup, optCount);
             if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
             {
                 parser.sort();
@@ -102,35 +102,35 @@ namespace aregext
         return result;
     }
 
-    bool SystemServiceBase::prepareOptions(const aregext::OptionParser::InputOptionList& opts)
+    bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
     {
         bool result{ true };
 
         for (uint32_t i = 0; i < opts.getSize(); ++i)
         {
-            const aregext::OptionParser::InputOption& opt = opts[i];
+            const OptionParser::InputOption& opt = opts[i];
             result &= dispatchOption(opt);
         }
 
         return result;
     }
 
-    bool SystemServiceBase::dispatchOption(const aregext::OptionParser::InputOption& opt)
+    bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
     {
         bool result{ false };
         bool outHelp{ false };
 
-        switch (static_cast<aregext::ServiceOption>(opt.inCommand))
+        switch (static_cast<ServiceOption>(opt.inCommand))
         {
-        case aregext::ServiceOption::CMD_Install:  // fall through
-        case aregext::ServiceOption::CMD_Uninstall:// fall through
-        case aregext::ServiceOption::CMD_Service:  // fall through
-        case aregext::ServiceOption::CMD_Console:
+        case ServiceOption::CMD_Install:  // fall through
+        case ServiceOption::CMD_Uninstall:// fall through
+        case ServiceOption::CMD_Service:  // fall through
+        case ServiceOption::CMD_Console:
             result = true;
-            setCurrentOption(static_cast<aregext::ServiceOption>(opt.inCommand));
+            setCurrentOption(static_cast<ServiceOption>(opt.inCommand));
             break;
 
-        case aregext::ServiceOption::CMD_Load:
+        case ServiceOption::CMD_Load:
         {
             areg::String filePath(opt.inString[0]);
             result = areg::File::existFile(filePath);
@@ -141,20 +141,20 @@ namespace aregext
         }
         break;
 
-        case aregext::ServiceOption::CMD_Verbose:
+        case ServiceOption::CMD_Verbose:
             mCommunication.enableCalculateDataRate(true);
-            setCurrentOption(aregext::ServiceOption::CMD_Console);
+            setCurrentOption(ServiceOption::CMD_Console);
             result = true;
             break;
 
-        case aregext::ServiceOption::CMD_Help:
+        case ServiceOption::CMD_Help:
             outHelp = true;
             break;
 
-        case aregext::ServiceOption::CMD_Undefined:// fall through
-        case aregext::ServiceOption::CMD_Custom:   // fall through
+        case ServiceOption::CMD_Undefined:// fall through
+        case ServiceOption::CMD_Custom:   // fall through
         default:
-            setCurrentOption(aregext::ServiceOption::CMD_Undefined);
+            setCurrentOption(ServiceOption::CMD_Undefined);
             outHelp = true;
             break;
         }
@@ -168,32 +168,32 @@ namespace aregext
         return result;
     }
 
-    int32_t SystemServiceBase::serviceMain(aregext::ServiceOption optStartup, const char* argument)
+    int32_t SystemServiceBase::serviceMain(ServiceOption optStartup, const char* argument)
     {
         int32_t result{ RESULT_SUCCEEDED };
         if (serviceInitialize(optStartup, argument, nullptr))
         {
             LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);
-            LOG_DBG( "Starting log collector service, the current option [ %s ]", aregext::getString(optStartup) );
-            setState(aregext::ServicePhase::Starting);
+            LOG_DBG( "Starting log collector service, the current option [ %s ]", getString(optStartup) );
+            setState(ServicePhase::Starting);
 
             if (registerService())
             {
                 LOG_DBG("Registered service, starting service");
                 serviceStart();
             }
-            else if (mSystemServiceOption == aregext::ServiceOption::CMD_Console)
+            else if (mSystemServiceOption == ServiceOption::CMD_Console)
             {
                 LOG_DBG("Starting in console mode, starting service");
                 serviceStart();
             }
 
-            if (mSystemServiceOption == aregext::ServiceOption::CMD_Service)
+            if (mSystemServiceOption == ServiceOption::CMD_Service)
             {
                 LOG_DBG("Starts to run service...");
                 runService();
             }
-            else if (mSystemServiceOption == aregext::ServiceOption::CMD_Console)
+            else if (mSystemServiceOption == ServiceOption::CMD_Console)
             {
                 LOG_DBG("Entering console mode...");
     #if AREG_EXTENDED
@@ -204,7 +204,7 @@ namespace aregext
             }
             else
             {
-                LOG_DBG("Unexpected option [ %s ]", aregext::getString(mSystemServiceOption));
+                LOG_DBG("Unexpected option [ %s ]", getString(mSystemServiceOption));
             }
 
             serviceStop();
@@ -216,7 +216,7 @@ namespace aregext
         }
 
         serviceRelease();
-        setState(aregext::ServicePhase::Stopped);
+        setState(ServicePhase::Stopped);
 
         return result;
     }

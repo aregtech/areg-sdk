@@ -37,7 +37,7 @@ namespace aregext
     {
     }
 
-    SqliteRow::SqliteRow(aregext::SqliteStatement& statement)
+    SqliteRow::SqliteRow(SqliteStatement& statement)
         : mStatement(statement.mStatement)
     {
     }

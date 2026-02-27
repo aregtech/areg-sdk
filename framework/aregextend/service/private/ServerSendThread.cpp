@@ -26,7 +26,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServerSendThread_processEvent);
 namespace aregext
 {
 
-    ServerSendThread::ServerSendThread(areg::RemoteMessageHandler& remoteService, aregext::ServerConnection & connection)
+    ServerSendThread::ServerSendThread(areg::RemoteMessageHandler& remoteService, ServerConnection & connection)
         : areg::DispatcherThread          ( areg::SERVER_SEND_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
         , areg::SendMessageEventConsumer( )
         , mRemoteService            ( remoteService )

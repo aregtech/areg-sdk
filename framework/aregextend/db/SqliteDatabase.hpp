@@ -39,7 +39,7 @@ namespace aregext
      **/
     class SqliteDatabase  : public areg::DatabaseEngine
     {
-        friend class aregext::SqliteStatement;
+        friend class SqliteStatement;
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////

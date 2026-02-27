@@ -29,7 +29,7 @@ namespace aregext
     //////////////////////////////////////////////////////////////////////////
     // SystemServiceConsole class implementation
     //////////////////////////////////////////////////////////////////////////
-    SystemServiceConsole::SystemServiceConsole(aregext::DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner)
         : areg::Component         ( entry, owner )
         , areg::StubBase          ( self( ), areg::getEmptyInterface( ) )
         , areg::TimerConsumer   ( )
@@ -43,19 +43,19 @@ namespace aregext
     {
         areg::StubBase::startupServiceInterface( holder );
 
-        aregext::Console & console = aregext::Console::getInstance( );
+        Console & console = Console::getInstance( );
         console.lockConsole( );
 
         if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
         {
 
-            console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( COORD_SEND_RATE, FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( COORD_RECV_RATE, FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
         }
 
         mTimer.startTimer( areg::TIMEOUT_1_SEC, areg::Timer::CONTINUOUSLY );
 
-        console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
+        console.outputTxt( COORD_USER_INPUT, FORMAT_WAIT_QUIT );
         console.enableConsoleInput( true );
         console.refreshScreen( );
         console.unlockConsole( );
@@ -101,16 +101,16 @@ namespace aregext
 
     inline void SystemServiceConsole::_outputDataRate()
     {
-        aregext::Console& console = aregext::Console::getInstance();
+        Console& console = Console::getInstance();
         console.lockConsole( );
         if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
         {
-            aregext::DataRateHelper::DataRate rateSend{ mDataRateHelper->queryBytesSentWithLiterals() };
-            aregext::DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
+            DataRateHelper::DataRate rateSend{ mDataRateHelper->queryBytesSentWithLiterals() };
+            DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
 
             console.saveCursorPosition( );
-            console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
-            console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
+            console.outputMsg( COORD_SEND_RATE, FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
+            console.outputMsg( COORD_RECV_RATE, FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
             console.restoreCursorPosition( );
             console.refreshScreen( );
         }

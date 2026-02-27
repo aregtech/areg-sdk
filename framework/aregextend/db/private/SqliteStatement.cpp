@@ -41,7 +41,7 @@ namespace
 namespace aregext
 {
 
-    SqliteStatement::SqliteStatement(aregext::SqliteDatabase& db, const areg::String& sql)
+    SqliteStatement::SqliteStatement(SqliteDatabase& db, const areg::String& sql)
         : mDatabase (db)
         , mStatement(nullptr)
         , mRowPos   (0)
@@ -52,7 +52,7 @@ namespace aregext
         }
     }
 
-    SqliteStatement::SqliteStatement(aregext::SqliteDatabase& db)
+    SqliteStatement::SqliteStatement(SqliteDatabase& db)
         : mDatabase (db)
         , mStatement(nullptr)
         , mRowPos   (0)

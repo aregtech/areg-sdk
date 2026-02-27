@@ -29,7 +29,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServerReceiveThread_runDispatcher);
 namespace aregext
 {
 
-    ServerReceiveThread::ServerReceiveThread( aregext::ConnectionHandler & connectHandler, areg::RemoteMessageHandler & remoteService, aregext::ServerConnection & connection )
+    ServerReceiveThread::ServerReceiveThread( ConnectionHandler & connectHandler, areg::RemoteMessageHandler & remoteService, ServerConnection & connection )
         : areg::DispatcherThread  ( areg::SERVER_RECEIVE_MESSAGE_THREAD, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
         , mConnectHandler   ( connectHandler )
         , mRemoteService    ( remoteService )

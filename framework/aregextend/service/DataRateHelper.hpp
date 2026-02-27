@@ -27,8 +27,11 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace aregext { class ServerSendThread; }
-namespace aregext { class ServerReceiveThread; }
+namespace aregext
+{
+    class ServerSendThread;
+    class ServerReceiveThread;
+}
 
 namespace aregext
 {
@@ -71,7 +74,7 @@ namespace aregext
          * \param   verbose         The flag, indicating whether the actual size should be
          *                          computed or should return zero.
          **/
-        DataRateHelper(aregext::ServerSendThread& sendThread, aregext::ServerReceiveThread& receiveThread, bool verbose);
+        DataRateHelper(ServerSendThread& sendThread, ServerReceiveThread& receiveThread, bool verbose);
 
         ~DataRateHelper() = default;
 
@@ -122,8 +125,8 @@ namespace aregext
     // Hidden member variables.
     //////////////////////////////////////////////////////////////////////////
     private:
-        aregext::ServerSendThread &      mSendThread;    //!< The thread to query the sent data size in bytes.
-        aregext::ServerReceiveThread &   mReceiveThread; //!< The thread to query the received data size in bytes.
+        ServerSendThread &      mSendThread;    //!< The thread to query the sent data size in bytes.
+        ServerReceiveThread &   mReceiveThread; //!< The thread to query the received data size in bytes.
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.

@@ -38,7 +38,7 @@ namespace aregext
      *          and implements basic methods. As well as it provides interface
      *          of configuration listener.
      **/
-    class ServiceApplicationBase    : public    aregext::SystemServiceBase
+    class ServiceApplicationBase    : public    SystemServiceBase
                                     , protected areg::ConfigListener
     {
     //////////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ namespace aregext
          *                      that provides the connection implementation, sends and receives messages.
          *                      The object is required by base class of the System Service.
          **/
-        ServiceApplicationBase(aregext::ServiceCommunicationBase& commBase);
+        ServiceApplicationBase(ServiceCommunicationBase& commBase);
 
         virtual ~ServiceApplicationBase() = default;
 
@@ -83,7 +83,7 @@ namespace aregext
          *          where the first entry is the pointer to the list and second entry is
          *          the number of elements in the list
          **/
-        virtual std::pair<const aregext::OptionParser::OptionSetup*, int32_t> getAppOptions() const = 0;
+        virtual std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const = 0;
 
         /**
          * \brief   Returns the UNICODE name of the service application.
@@ -148,7 +148,7 @@ namespace aregext
          *                      or need to use default value.
          * \return  The result of execution.
          **/
-        int32_t serviceMain(aregext::ServiceOption optStartup, const char* argument) override;
+        int32_t serviceMain(ServiceOption optStartup, const char* argument) override;
 
         /**
          * \brief   Triggered to initialize the service application.
@@ -158,7 +158,7 @@ namespace aregext
          * \return  Returns true if succeeded to initialize application and the application can run.
          *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
          **/
-        bool serviceInitialize(aregext::ServiceOption option, const char* value, const char* fileConfig) override;
+        bool serviceInitialize(ServiceOption option, const char* value, const char* fileConfig) override;
 
         /**
          * \brief   Triggered when application is going to exit.
@@ -216,7 +216,7 @@ namespace aregext
         /**
          * \brief   Sets the state of message router service.
          **/
-        bool setState( aregext::ServicePhase newState ) override;
+        bool setState( ServicePhase newState ) override;
 
         /**
          * \brief   Run application as a background process without input or output on console.
@@ -315,7 +315,7 @@ namespace aregext
         /**
          * \brief   OS specific implementation of changing the state of the log collector service.
          **/
-        bool _osSetState( aregext::ServicePhase newState );
+        bool _osSetState( ServicePhase newState );
 
         /**
          * \brief   OS specific implementation to setup the service and start the dispatcher.

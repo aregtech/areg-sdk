@@ -28,7 +28,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace aregext { class DataRateHelper; }
+namespace aregext
+{
+    class DataRateHelper;
+}
 
 namespace aregext
 {
@@ -55,7 +58,7 @@ namespace aregext
          * \param   entry       The component entry object set in the model.
          * \param   owner       The instance of component owner thread.
          **/
-        SystemServiceConsole(aregext::DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner );
+        SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
         /**
          * \brief   Destructor.
@@ -171,7 +174,7 @@ namespace aregext
     // Hidden member variables
     //////////////////////////////////////////////////////////////////////////
     private:
-        aregext::DataRateHelper* mDataRateHelper;//!< The pointer to utility object to retrieve data rate info.
+        DataRateHelper* mDataRateHelper;//!< The pointer to utility object to retrieve data rate info.
         areg::Timer           mTimer;         //!< The timer to run in component thread.
 
     //////////////////////////////////////////////////////////////////////////

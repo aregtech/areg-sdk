@@ -23,7 +23,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace aregext { class SqliteStatement; }
+namespace aregext
+{
+    class SqliteStatement;
+}
 
 namespace aregext
 {
@@ -49,7 +52,7 @@ namespace aregext
          * \brief   Constructs a SqliteRow from a SqliteStatement.
          * \param   statement   Reference to the SqliteStatement object.
          */
-        SqliteRow(aregext::SqliteStatement& statement);
+        SqliteRow(SqliteStatement& statement);
 
         /**
          * \brief   Constructs a SqliteRow from a raw statement pointer.
