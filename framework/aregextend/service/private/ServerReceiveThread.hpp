@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 namespace areg { class RemoteMessageHandler; }
 namespace aregext { class ServerConnection; }
 
@@ -51,7 +51,7 @@ public:
      * \param   remoteService   The instance of remote servicing handler
      * \param   connection      The instance of server connection object.
      **/
-    ServerReceiveThread( ConnectionHandler & connectHandler, areg::RemoteMessageHandler& remoteService, aregext::ServerConnection & connection );
+    ServerReceiveThread( aregext::ConnectionHandler & connectHandler, areg::RemoteMessageHandler& remoteService, aregext::ServerConnection & connection );
     /**
      * \brief   Destructor
      **/
@@ -100,7 +100,7 @@ private:
     /**
      * \brief   Service connection handler.
      **/
-    ConnectionHandler& mConnectHandler;
+    aregext::ConnectionHandler& mConnectHandler;
     /**
      * \brief   The instance of remote service message handler.
      **/

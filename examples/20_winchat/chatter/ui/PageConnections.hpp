@@ -9,7 +9,7 @@
 namespace areg { class Component; }
 class ConnectionList;
 namespace areg { class DispatcherThread; }
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 
 // PageConnections dialog
 
@@ -19,7 +19,7 @@ class PageConnections : public CPropertyPage
 	DECLARE_DYNAMIC(PageConnections)
 
 public:
-	PageConnections(ConnectionHandler & handlerConnection);
+	PageConnections(aregext::ConnectionHandler & handlerConnection);
 	virtual ~PageConnections();
 
 // Dialog Data
@@ -85,6 +85,6 @@ private:
     // The name of generated direct connection service
     areg::String              mDirectConnectService;
     // The instance of connection handler object
-    ConnectionHandler & mConnectionHandler;
+    aregext::ConnectionHandler & mConnectionHandler;
     BOOL                mChatEnable;
 };

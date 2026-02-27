@@ -57,7 +57,7 @@ namespace aregext
         , areg::ConnectionProvider   ( )
         , areg::DispatcherThread              ( dispatcher, areg::DEFAULT_BLOCK_SIZE, areg::QUEUE_SIZE_MAXIMUM )
         , areg::ServiceEventConsumer    ( )
-        , ConnectionHandler    ( )
+        , aregext::ConnectionHandler    ( )
 
         , mConnectBehavior  ( behavior )
         , mService          ( service )
@@ -65,7 +65,7 @@ namespace aregext
         , mServerConnection ( serviceId )
         , mTimerConnect     ( static_cast<areg::TimerConsumer &>(mTimerConsumer), areg::SERVER_CONNECT_TIMER_NAME.data( ) )
         , mThreadSend       ( static_cast<areg::RemoteMessageHandler&>(self()), mServerConnection )
-        , mThreadReceive    ( static_cast<ConnectionHandler&>(self()), static_cast<areg::RemoteMessageHandler&>(self()), mServerConnection )
+        , mThreadReceive    ( static_cast<aregext::ConnectionHandler&>(self()), static_cast<areg::RemoteMessageHandler&>(self()), mServerConnection )
         , mDataRateHelper   ( mThreadSend, mThreadReceive, aregext::DEFAULT_VERBOSE )
         , mWhiteList        ( )
         , mBlackList        ( )

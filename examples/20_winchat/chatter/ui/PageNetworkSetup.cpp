@@ -23,7 +23,7 @@
 
 IMPLEMENT_DYNAMIC(PageNetworkSetup, CPropertyPage)
 
-PageNetworkSetup::PageNetworkSetup( ConnectionHandler & handlerConnection)
+PageNetworkSetup::PageNetworkSetup( aregext::ConnectionHandler & handlerConnection)
 	: CPropertyPage (PageNetworkSetup::IDD)
 
     , mCtrlAddress      ( )

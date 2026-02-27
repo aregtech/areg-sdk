@@ -2,13 +2,13 @@
 #include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
 
 namespace areg { class Component; }
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 
 class ConnectionList : public ConnectionManagerClientBase
 {
 public:
-    ConnectionList( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection );
-    ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -65,7 +65,7 @@ protected:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionHandler &   mConnectionHandler;
+    aregext::ConnectionHandler &   mConnectionHandler;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

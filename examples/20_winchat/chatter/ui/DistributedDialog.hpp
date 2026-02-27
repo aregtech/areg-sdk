@@ -26,7 +26,7 @@ class PageChat;
 typedef areg::StringHashMap<PageChat *>   MapChatPages;
 
 class DistributedDialog : public CPropertySheet
-                        , public ConnectionHandler
+                        , public aregext::ConnectionHandler
 {
 public:
     static bool OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat:: MessageData * data );

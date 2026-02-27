@@ -2,12 +2,12 @@
 #include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
 
 namespace areg { class Component; }
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 
 class NetworkSetup :  public ConnectionManagerClientBase
 {
 public:
-    NetworkSetup( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection );
+    NetworkSetup( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection );
     virtual ~NetworkSetup( ) = default;
 
     void DisconnectServicing();
@@ -52,7 +52,7 @@ protected:
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionHandler &   mConnectionHandler;
+    aregext::ConnectionHandler &   mConnectionHandler;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

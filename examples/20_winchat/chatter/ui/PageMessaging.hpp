@@ -9,7 +9,7 @@
 namespace areg { class Component; }
 namespace areg { class DispatcherThread; }
 class CentralMessaging;
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 class ConnectionList;
 
 // PageMessaging dialog
@@ -21,7 +21,7 @@ class PageMessaging : public CPropertyPage
 	DECLARE_DYNAMIC(PageMessaging)
 
 public:
-	PageMessaging( ConnectionHandler & handlerConnection );
+	PageMessaging( aregext::ConnectionHandler & handlerConnection );
 	virtual ~PageMessaging();
 
 // Dialog Data
@@ -90,6 +90,6 @@ private:
     // typed string
     CString             mTextMsg;
     // instance of connection handler object
-    ConnectionHandler & mConnectionHandler;
+    aregext::ConnectionHandler & mConnectionHandler;
     BOOL                mSendEnabled;
 };

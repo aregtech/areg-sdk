@@ -75,11 +75,11 @@ bool DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand cmd,
 
 DistributedDialog::DistributedDialog( )
     : CPropertySheet    (DistributedDialog::TITLE, nullptr )
-    , ConnectionHandler( )
+    , aregext::ConnectionHandler( )
 
-    , mPageSetup        ( static_cast<ConnectionHandler &>(self()) )
-    , mPageMessaging    ( static_cast<ConnectionHandler &>(self()) )
-    , mPageConnections  ( static_cast<ConnectionHandler &>(self()) )
+    , mPageSetup        ( static_cast<aregext::ConnectionHandler &>(self()) )
+    , mPageMessaging    ( static_cast<aregext::ConnectionHandler &>(self()) )
+    , mPageConnections  ( static_cast<aregext::ConnectionHandler &>(self()) )
 
     , mMapChatPages     ( )
     , mCaption          ( _T("") )

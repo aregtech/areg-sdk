@@ -21,7 +21,7 @@ LPCTSTR PageMessaging::HEADER_TITILES[] =
 };
 
 
-PageMessaging::PageMessaging( ConnectionHandler & handlerConnection )
+PageMessaging::PageMessaging( aregext::ConnectionHandler & handlerConnection )
 	: CPropertyPage     (PageMessaging::IDD)
     , mIsBroadcast      ( TRUE )
     , mIsKeytype        ( TRUE )

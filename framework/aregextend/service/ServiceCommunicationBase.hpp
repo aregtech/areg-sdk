@@ -49,7 +49,7 @@ namespace aregext
                                     , public    areg::ConnectionProvider
                                     , protected areg::DispatcherThread
                                     , protected areg::ServiceEventConsumer
-                                    , protected ConnectionHandler
+                                    , protected aregext::ConnectionHandler
     {
     //////////////////////////////////////////////////////////////////////////
     // The internal types and constants

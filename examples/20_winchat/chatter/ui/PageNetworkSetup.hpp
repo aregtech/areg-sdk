@@ -7,7 +7,7 @@
 namespace areg { class Component; }
 class NetworkSetup;
 namespace areg { class DispatcherThread; }
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 
 // PageNetworkSetup dialog
 
@@ -16,7 +16,7 @@ class PageNetworkSetup : public CPropertyPage
 	DECLARE_DYNAMIC(PageNetworkSetup)
 
 public:
-	PageNetworkSetup( ConnectionHandler & handlerConnection);
+	PageNetworkSetup( aregext::ConnectionHandler & handlerConnection);
 	virtual ~PageNetworkSetup();
 
 // Dialog Data
@@ -77,7 +77,7 @@ private:
     // Network setup service client
     NetworkSetup *        mNetworkSetup;
     // Flag, indicating whether the network connection is pending or not
-    ConnectionHandler &   mConnectionHandler;
+    aregext::ConnectionHandler &   mConnectionHandler;
     bool                    mConnectPending;
     bool                    mRegisterPending;
     BOOL                    mConnectEnable;

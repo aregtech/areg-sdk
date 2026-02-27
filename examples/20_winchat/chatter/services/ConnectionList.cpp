@@ -10,14 +10,14 @@
 DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
 DEF_LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
 
-ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, ConnectionHandler & handlerConnection )
+ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase ( roleName, owner.getMasterThread() )
     , mConnectionHandler            ( handlerConnection )
 {
 
 }
 
-ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, ConnectionHandler & handlerConnection )
+ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase ( roleName, dispThread )
     , mConnectionHandler            ( handlerConnection )
 {

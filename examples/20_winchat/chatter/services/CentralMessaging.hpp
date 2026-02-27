@@ -8,7 +8,7 @@
 #include "examples/20_winchat/services/CentralMessagerClientBase.hpp"
 
 namespace areg { class DispatcherThread; }
-class ConnectionHandler;
+namespace aregext { class ConnectionHandler; }
 
 class CentralMessaging    : public CentralMessagerClientBase
 {
@@ -16,7 +16,7 @@ class CentralMessaging    : public CentralMessagerClientBase
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, ConnectionHandler & handlerConnection );
+    CentralMessaging( const char * roleName, areg::DispatcherThread & ownerThread, aregext::ConnectionHandler & handlerConnection );
     virtual ~CentralMessaging() = default;
 
 public:
@@ -87,7 +87,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Hidden variables
 //////////////////////////////////////////////////////////////////////////
-    ConnectionHandler &   mConnectionHandler;
+    aregext::ConnectionHandler &   mConnectionHandler;
     bool        mReceiveMessages;
     bool        mReceiveTyping;
     bool        mReceiveBroadcast;

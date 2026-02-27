@@ -30,7 +30,7 @@ LPCTSTR PageConnections::HEADER_TITILES[] =
     , _T("Connected at...")
 };
 
-PageConnections::PageConnections(ConnectionHandler & handlerConnection)
+PageConnections::PageConnections(aregext::ConnectionHandler & handlerConnection)
 	: CPropertyPage(PageConnections::IDD)
 
     , mCtrlConnections      ( )
