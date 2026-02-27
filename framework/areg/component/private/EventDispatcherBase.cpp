@@ -244,7 +244,7 @@ bool EventDispatcherBase::runDispatcher()
                     int32_t eventLock = multiLock.lock(areg::DO_NOT_WAIT);
                     if ( eventLock == areg::MultiLock::LOCK_INDEX_TIMEOUT ||  eventLock == static_cast<int32_t>(EventDispatcherBase::EventSignal::Queue) )
                     {
-                        eventElem = static_cast<EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
+                        eventElem = static_cast<areg::EventQueue &>(mInternalEvents).isEmpty() == false ? mInternalEvents.popEvent() : nullptr;
                     }
 
                 } while (eventElem != nullptr);

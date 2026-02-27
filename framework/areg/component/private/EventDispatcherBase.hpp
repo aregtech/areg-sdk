@@ -307,13 +307,13 @@ protected:
      * \brief   External Event Queue element. One External queue per one dispatcher.
      *          It is locking queue. Any thread can queue elements
      **/
-    ExternalEventQueue  mExternalEvents;
+    areg::ExternalEventQueue  mExternalEvents;
 
     /**
      * \brief   Internal Event Queue element. One Internal queue per one dispatcher.
      *          It is non-locking queue, only current owning thread can queue elements.
      **/
-    InternalEventQueue  mInternalEvents;
+    areg::InternalEventQueue  mInternalEvents;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)

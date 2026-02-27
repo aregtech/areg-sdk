@@ -60,7 +60,7 @@ namespace areg
 
                     postDispatchEvent(eventElem);
 
-                    ASSERT(static_cast<EventQueue&>(mInternalEvents).isEmpty());
+                    ASSERT(static_cast<areg::EventQueue&>(mInternalEvents).isEmpty());
                 }
             }
             else
@@ -73,7 +73,7 @@ namespace areg
         readyForEvents(false);
         removeAllEvents();
 
-        ASSERT(static_cast<EventQueue&>(mInternalEvents).isEmpty());
+        ASSERT(static_cast<areg::EventQueue&>(mInternalEvents).isEmpty());
 
         return (whichEvent == static_cast<int32_t>(EventDispatcherBase::EventSignal::Exit));
     }
