@@ -35,7 +35,7 @@ namespace areg
 
     ScopeNodeBase::ScopeNodeBase()
         : mNodeType     ( ScopeNodeBase::NodeType::Invalid )
-        , mPrioStates   ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+        , mPrioStates   ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
         , mNodeName     ( )
         , mGrouping     ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
     {
@@ -43,13 +43,13 @@ namespace areg
 
     ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType )
         : mNodeType     ( nodeType )
-        , mPrioStates   ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+        , mPrioStates   ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
         , mNodeName     ( )
         , mGrouping    ( static_cast<uint32_t>(ScopeNodeBase::Grouping::None) )
     {
     }
 
-    ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const areg::String & nodeName, uint32_t prio /*= static_cast<uint32_t>(areg::LogPriority::PrioNotset)*/ )
+    ScopeNodeBase::ScopeNodeBase( ScopeNodeBase::NodeType nodeType, const String & nodeName, uint32_t prio /*= static_cast<uint32_t>(areg::LogPriority::PrioNotset)*/ )
         : mNodeType     ( nodeType )
         , mPrioStates   ( prio )
         , mNodeName     ( nodeName )
@@ -73,28 +73,28 @@ namespace areg
     {
     }
 
-    areg::String ScopeNodeBase::extractNodeName( areg::String & scopeName )
+    String ScopeNodeBase::extractNodeName( String & scopeName )
     {
-        areg::String result(scopeName);
-        areg::CharPos startPos = areg::START_POS;
+        String result(scopeName);
+        CharPos startPos = START_POS;
         const char * str = scopeName.getString( );
 
         // move position forward if a node starts with '_', which should
         // be included in the node name.
-        while ( *(str + startPos) == areg::SYNTAX_SCOPE_SEPARATOR )
+        while ( *(str + startPos) == SYNTAX_SCOPE_SEPARATOR )
         {
             ++ startPos;
         }
 
-        areg::CharPos pos = scopeName.findFirst(areg::SYNTAX_SCOPE_SEPARATOR, startPos );
-        if ( areg::isPositionValid(pos) )
+        CharPos pos = scopeName.findFirst(SYNTAX_SCOPE_SEPARATOR, startPos );
+        if ( isPositionValid(pos) )
         {
             result.substring( 0, pos );
             scopeName.substring( pos + 1 );
         }
         else
         {
-            scopeName = areg::String::EmptyString;
+            scopeName = String::EmptyString;
         }
 
         return result;
@@ -146,10 +146,10 @@ namespace areg
         return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
     }
 
-    const ScopeNodeBase & ScopeNodeBase::makeChildNode( areg::String & scopePath, uint32_t /* prioStates */ ) const
+    const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & scopePath, uint32_t /* prioStates */ ) const
     {
         static ScopeNodeBase _invalidNode;
-        scopePath = areg::String::EmptyString;
+        scopePath = String::EmptyString;
         return _invalidNode;
     }
 
@@ -158,12 +158,12 @@ namespace areg
         return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
     }
 
-    std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( areg::String & /* scopePath */, uint32_t /* prioStates */ )
+    std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & /* scopePath */, uint32_t /* prioStates */ )
     {
         return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
     }
 
-    areg::String ScopeNodeBase::makeScopePath( const areg::String & prefix ) const
+    String ScopeNodeBase::makeScopePath( const String & prefix ) const
     {
         return prefix;
     }
@@ -173,20 +173,20 @@ namespace areg
         return 0;
     }
 
-    uint32_t ScopeNodeBase::updateConfigNode(areg::ConfigManager& /*config*/, const areg::String& /*parentPath*/) const
+    uint32_t ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const String& /*parentPath*/) const
     {
         return 0;
     }
 
-    uint32_t ScopeNodeBase::addChildRecursive( areg::String & scopePath, uint32_t prioStates )
+    uint32_t ScopeNodeBase::addChildRecursive( String & scopePath, uint32_t prioStates )
     {
         std::pair<ScopeNodeBase &, bool> node = addChildNode( scopePath, prioStates );
         return (node.first.isValid() ? (1 + node.first.addChildRecursive(scopePath, prioStates)) : 0);
     }
 
-    uint32_t ScopeNodeBase::addChildRecursive( const areg::LogScope & logScope )
+    uint32_t ScopeNodeBase::addChildRecursive( const LogScope & logScope )
     {
-        areg::String scopeName( logScope.getScopeName( ) );
+        String scopeName( logScope.getScopeName( ) );
         return addChildRecursive( scopeName, logScope.getPriority( ) );
     }
 
@@ -195,13 +195,13 @@ namespace areg
         return 0;
     }
 
-    areg::String ScopeNodeBase::makeConfigString( const areg::String & parent ) const
+    String ScopeNodeBase::makeConfigString( const String & parent ) const
     {
         if (isValid())
         {
-            char scope[areg::LOG_MESSAGE_IZE];
-            uint32_t len = static_cast<uint32_t>(areg::String::formatString(scope, areg::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
-            return areg::String(scope, len);
+            char scope[LOG_MESSAGE_IZE];
+            uint32_t len = static_cast<uint32_t>(String::formatString(scope, LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
+            return String(scope, len);
         }
         else
         {

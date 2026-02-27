@@ -28,7 +28,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class LogConfiguration; }
+namespace areg
+{
+    class LogConfiguration;
+}
 
 namespace areg
 {
@@ -69,7 +72,7 @@ namespace areg
          * \param   logConfig   An instance of the log configuration object containing
          *                      settings for initialization and message output.
          **/
-        explicit LoggerBase(areg::LogConfiguration& logConfig);
+        explicit LoggerBase(LogConfiguration& logConfig);
 
         /**
          * \brief   Destructor
@@ -104,7 +107,7 @@ namespace areg
          * \brief   Called when message should be logged.
          *          Every logger should implement method to process logger specific logging.
          **/
-        virtual void logMessage( const areg::LogEntry & logMessage ) = 0;
+        virtual void logMessage( const LogEntry & logMessage ) = 0;
 
         /**
          * \brief   Returns true if logger is initialized (opened).
@@ -124,22 +127,22 @@ namespace areg
         /**
          * \brief   Return instance of log configuration object.
          **/
-        inline const areg::LogConfiguration & getLogConfiguration() const;
+        inline const LogConfiguration & getLogConfiguration() const;
 
         /**
          * \return  Returns the layout object to print messages.
          **/
-        inline const areg::LayoutManager & getLayoutMessage() const;
+        inline const LayoutManager & getLayoutMessage() const;
 
         /**
          * \return  Returns the layout object to print "enter scope" message.
          **/
-        inline const areg::LayoutManager & getLayoutEnterScope() const;
+        inline const LayoutManager & getLayoutEnterScope() const;
 
         /**
          * \return  Returns the layout object to output "exit scope" message.
          **/
-        inline const areg::LayoutManager & getLayoutExitScope() const;
+        inline const LayoutManager & getLayoutExitScope() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Protected overrides
@@ -163,21 +166,21 @@ namespace areg
         /**
          * \brief   The instance of log configurations object.
          **/
-        areg::LogConfiguration &  mLogConfiguration;
+        LogConfiguration &  mLogConfiguration;
 
     private:
         /**
          * \brief   Message layouts to create messages
          **/
-        areg::LayoutManager       mLayoutsMessage;
+        LayoutManager       mLayoutsMessage;
         /**
          * \brief   Message layouts to create "Enter scope" message
          **/
-        areg::LayoutManager       mLayoutsScopeEnter;
+        LayoutManager       mLayoutsScopeEnter;
         /**
          * \brief   Message layouts to create "Exit scope" message
          **/
-        areg::LayoutManager       mLayoutsScopeExit;
+        LayoutManager       mLayoutsScopeExit;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden calls.
@@ -196,22 +199,22 @@ namespace areg
         return openLogger();
     }
 
-    inline const areg::LogConfiguration & LoggerBase::getLogConfiguration() const
+    inline const LogConfiguration & LoggerBase::getLogConfiguration() const
     {
         return mLogConfiguration;
     }
 
-    inline const areg::LayoutManager & LoggerBase::getLayoutMessage() const
+    inline const LayoutManager & LoggerBase::getLayoutMessage() const
     {
         return mLayoutsMessage;
     }
 
-    inline const areg::LayoutManager & LoggerBase::getLayoutEnterScope() const
+    inline const LayoutManager & LoggerBase::getLayoutEnterScope() const
     {
         return mLayoutsScopeEnter;
     }
 
-    inline const areg::LayoutManager & LoggerBase::getLayoutExitScope() const
+    inline const LayoutManager & LoggerBase::getLayoutExitScope() const
     {
         return mLayoutsScopeExit;
     }

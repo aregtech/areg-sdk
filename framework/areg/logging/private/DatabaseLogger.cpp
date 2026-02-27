@@ -30,8 +30,8 @@ namespace areg
 
     #if AREG_LOGS
 
-    DatabaseLogger::DatabaseLogger(areg::LogConfiguration& logConfig)
-        : areg::LoggerBase    (logConfig)
+    DatabaseLogger::DatabaseLogger(LogConfiguration& logConfig)
+        : LoggerBase    (logConfig)
         , mDatabase     (nullptr)
         , mLock         (false)
     {
@@ -39,7 +39,7 @@ namespace areg
 
     DatabaseLogger::~DatabaseLogger()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         if (mDatabase != nullptr)
         {
             mDatabase->disconnect();
@@ -49,16 +49,16 @@ namespace areg
 
     bool DatabaseLogger::openLogger()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         bool result{ false };
 
-        areg::String dbFile;
+        String dbFile;
         if (isValid())
         {
             if (mLogConfiguration.isDatabaseLoggingEnabled())
             {
-                areg::String fileName(mLogConfiguration.getDatabaseFullPath());
-                dbFile = areg::File::normalizePath(fileName.getString());
+                String fileName(mLogConfiguration.getDatabaseFullPath());
+                dbFile = File::normalizePath(fileName.getString());
 
                 if (mDatabase->connect(dbFile, false))
                 {
@@ -72,16 +72,16 @@ namespace areg
 
     void DatabaseLogger::closeLogger()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         if (isValid())
         {
             mDatabase->disconnect();
         }
     }
 
-    void DatabaseLogger::logMessage(const areg::LogEntry& logMessage)
+    void DatabaseLogger::logMessage(const LogEntry& logMessage)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         if (isValid())
         {
             mDatabase->logMessage(logMessage);
@@ -95,7 +95,7 @@ namespace areg
 
     void DatabaseLogger::flushLogs()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
 
         if (isValid())
         {

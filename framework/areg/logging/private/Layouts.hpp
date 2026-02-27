@@ -26,7 +26,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class OutStream; }
+namespace areg
+{
+    class OutStream;
+}
 
 /************************************************************************
  * \brief   This file contains declaration of layout objects used
@@ -39,20 +42,23 @@ namespace areg { class OutStream; }
 /************************************************************************
  * Declarations and hierarchies.
  ************************************************************************/
-namespace areg { class LogLayout; }
-    namespace areg { class TickCountLayout; }
-    namespace areg { class DayTimeLayout; }
-    namespace areg { class ModuleIdLayout; }
-    namespace areg { class MessageLayout; }
-    namespace areg { class EndOfLineLayout; }
-    namespace areg { class PriorityLayout; }
-    namespace areg { class ScopeIdLayout; }
-    namespace areg { class ThreadIdLayout; }
-    namespace areg { class ModuleNameLayout; }
-    namespace areg { class ThreadNameLayout; }
-    namespace areg { class ScopeNameLayout; }
-    namespace areg { class AnyTextLayout; }
-    namespace areg { class CookieIdLayout; }
+namespace areg
+{
+    class LogLayout;
+    class TickCountLayout;
+    class DayTimeLayout;
+    class ModuleIdLayout;
+    class MessageLayout;
+    class EndOfLineLayout;
+    class PriorityLayout;
+    class ScopeIdLayout;
+    class ThreadIdLayout;
+    class ModuleNameLayout;
+    class ThreadNameLayout;
+    class ScopeNameLayout;
+    class AnyTextLayout;
+    class CookieIdLayout;
+}
 
 namespace areg
 {

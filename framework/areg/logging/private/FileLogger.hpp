@@ -35,7 +35,7 @@ namespace areg
      *          At the moment the output logger supports only ASCII messages
      *          and any Unicode character might output wrong.
      **/
-    class FileLogger    : public    areg::LoggerBase
+    class FileLogger    : public    LoggerBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -47,7 +47,7 @@ namespace areg
          * \param   logConfig   An instance of the log configuration object containing
          *                      settings for initialization and message output.
          **/
-        explicit FileLogger( areg::LogConfiguration & logConfig );
+        explicit FileLogger( LogConfiguration & logConfig );
 
         /**
          * \brief   Destructor
@@ -82,7 +82,7 @@ namespace areg
          * \brief   Called when message should be logged.
          *          Every logger should implement method to process logger specific logging.
          **/
-        void logMessage( const areg::LogEntry & logMessage ) override;
+        void logMessage( const LogEntry & logMessage ) override;
 
         /**
          * \brief   Returns true if logger is initialized (opened).
@@ -102,7 +102,7 @@ namespace areg
         /**
          * \brief   The log file object
          **/
-        areg::File              mLogFile;
+        File              mLogFile;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden calls.

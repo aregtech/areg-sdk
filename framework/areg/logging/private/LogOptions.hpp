@@ -120,14 +120,14 @@ namespace areg
     /**
      * \brief   The default logging priority
      **/
-    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(areg::LogPriority::PrioNotset) };
+    constexpr uint32_t      DEFAULT_LOG_PRIORITY                { static_cast<uint32_t>(LogPriority::PrioNotset) };
 
     /**
      * \brief   The default scopes to activate or deactivate
      **/
     constexpr std::pair<std::string_view, uint32_t>  DEFAULT_LOG_ENABLED_SCOPES[]
     {
-          { {"*"}       , static_cast<uint32_t>(areg::LogPriority::PrioNotset) }
+          { {"*"}       , static_cast<uint32_t>(LogPriority::PrioNotset) }
     };
 }
 

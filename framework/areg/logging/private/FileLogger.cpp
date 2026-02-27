@@ -23,8 +23,8 @@ namespace areg
 
     #if AREG_LOGS
 
-    FileLogger::FileLogger( areg::LogConfiguration & logConfig)
-        : areg::LoggerBase(logConfig)
+    FileLogger::FileLogger( LogConfiguration & logConfig)
+        : LoggerBase(logConfig)
         , mLogFile  ( )
     {
     }
@@ -33,34 +33,34 @@ namespace areg
     {
         if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
         {
-            areg::String fileName(mLogConfiguration.getLogFile() );
+            String fileName(mLogConfiguration.getLogFile() );
             if ( fileName.isEmpty() == false )
             {
                 bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
-                uint32_t mode = static_cast<uint32_t>(areg::File::OpenMode::Write) | 
-                                    static_cast<uint32_t>(areg::File::OpenMode::Read) |
-                                    static_cast<uint32_t>(areg::File::OpenMode::ShareRead) |
-                                    static_cast<uint32_t>(areg::File::OpenMode::ShareWrite) |
-                                    static_cast<uint32_t>(areg::File::OpenMode::Text);
+                uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write) | 
+                                    static_cast<uint32_t>(File::OpenMode::Read) |
+                                    static_cast<uint32_t>(File::OpenMode::ShareRead) |
+                                    static_cast<uint32_t>(File::OpenMode::ShareWrite) |
+                                    static_cast<uint32_t>(File::OpenMode::Text);
 
-                if (areg::File::existFile(fileName))
+                if (File::existFile(fileName))
                 {
-                    mode |= newFile ? static_cast<uint32_t>(areg::File::OpenMode::Truncate) : static_cast<uint32_t>(areg::File::OpenMode::Exist);
+                    mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
                 }
                 else
                 {
-                    mode |= static_cast<uint32_t>(areg::File::OpenMode::Create);
+                    mode |= static_cast<uint32_t>(File::OpenMode::Create);
                 }
 
                 if ( mLogFile.open( fileName, mode) && createLayouts() )
                 {
                     
-                    areg::Process & curProcess = areg::Process::getInstance();
-                    areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                    areg::String::formatString( logMsgHello.logMessage
-                                        , areg::LOG_MESSAGE_IZE
-                                        , areg::LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                        , areg::Process::getString(curProcess.getEnvironment())
+                    Process & curProcess = Process::getInstance();
+                    LogEntry logMsgHello(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+                    String::formatString( logMsgHello.logMessage
+                                        , LOG_MESSAGE_IZE
+                                        , LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                        , Process::getString(curProcess.getEnvironment())
                                         , curProcess.getFullPath().getString()
                                         , logMsgHello.logModuleId);
 
@@ -76,12 +76,12 @@ namespace areg
     {
         if ( mLogFile.isOpened() )
         {
-            areg::Process & curProcess = areg::Process::getInstance();
-            areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-            areg::String::formatString(logMsgGoodbye.logMessage
-                                , areg::LOG_MESSAGE_IZE
-                                , areg::LoggerBase::FORMAT_MESSAGE_BYE.data()
-                                , areg::Process::getString(curProcess.getEnvironment())
+            Process & curProcess = Process::getInstance();
+            LogEntry logMsgGoodbye(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+            String::formatString(logMsgGoodbye.logMessage
+                                , LOG_MESSAGE_IZE
+                                , LoggerBase::FORMAT_MESSAGE_BYE.data()
+                                , Process::getString(curProcess.getEnvironment())
                                 , curProcess.getFullPath().getString()
                                 , logMsgGoodbye.logModuleId);
 
@@ -92,25 +92,25 @@ namespace areg
         mLogFile.close();
     }
 
-    void FileLogger::logMessage( const areg::LogEntry & logMessage )
+    void FileLogger::logMessage( const LogEntry & logMessage )
     {
         if (mLogFile.isOpened())
         {
             switch (logMessage.logMsgType)
             {
-            case areg::LogMessageType::MessageText:
-                getLayoutMessage().logMessage(logMessage, static_cast<areg::OutStream&>(mLogFile));
+            case LogMessageType::MessageText:
+                getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(mLogFile));
                 break;
 
-            case areg::LogMessageType::ScopeEnter:
-                getLayoutEnterScope().logMessage( logMessage, static_cast<areg::OutStream &>(mLogFile) );
+            case LogMessageType::ScopeEnter:
+                getLayoutEnterScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
                 break;
 
-            case areg::LogMessageType::ScopeExit:
-                getLayoutExitScope().logMessage( logMessage, static_cast<areg::OutStream &>(mLogFile) );
+            case LogMessageType::ScopeExit:
+                getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
                 break;
 
-            case areg::LogMessageType::Undefined: // fall through
+            case LogMessageType::Undefined: // fall through
             default:
                 ASSERT(false);  // unexpected message to log
                 break;

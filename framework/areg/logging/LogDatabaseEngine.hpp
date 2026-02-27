@@ -25,7 +25,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class DateTime; }
+namespace areg
+{
+    class DateTime;
+}
 namespace areg {
     struct ConnectedInstance;
 }
@@ -38,7 +41,7 @@ namespace areg
     /**
      * \brief   The interface to logging database engine used to save messages in the database.
      **/
-    class AREG_API LogDatabaseEngine  : public areg::DatabaseEngine
+    class AREG_API LogDatabaseEngine  : public DatabaseEngine
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / destructor
@@ -66,7 +69,7 @@ namespace areg
          * \param   message     The structure of the message to log.
          * \return  Returns true if succeeded to save the log in the database.
          **/
-        virtual bool logMessage(const areg::LogEntry & message) = 0;
+        virtual bool logMessage(const LogEntry & message) = 0;
 
         /**
          * \brief   Called when need to log information about log source instance.
@@ -74,7 +77,7 @@ namespace areg
          * \param   timestamp   The timestamp to register when the instance is logged.
          * \return  Returns true if succeeded to save the log instance in the database.
          **/
-        virtual bool logInstanceConnected(const areg::ConnectedInstance & instance, const areg::DateTime & timestamp) = 0;
+        virtual bool logInstanceConnected(const ConnectedInstance & instance, const DateTime & timestamp) = 0;
 
         /**
          * \brief   Called when an instance of log source is disconnected.
@@ -83,7 +86,7 @@ namespace areg
          * \param   timestamp   The deactivation timestamp to set.
          * \return  Returns true if operation succeeded.
          **/
-        virtual bool logInstanceDisconnected(const ITEM_ID & cookie, const areg::DateTime & timestamp) = 0;
+        virtual bool logInstanceDisconnected(const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
         /**
          * \brief   Called when need to log the information of the scope in the database.
@@ -92,7 +95,7 @@ namespace areg
          * \param   timestamp   The timestamp to register when the scope is logged.
          * \return  Returns true if succeeded to save the log scope in the database.
          **/
-        virtual bool logScopeActivate(const areg::ScopeEntry & scope, const ITEM_ID & cookie, const areg::DateTime & timestamp) = 0;
+        virtual bool logScopeActivate(const ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
         /**
          * \brief   Called when need to log the information of the scope in the database.
@@ -103,7 +106,7 @@ namespace areg
          * \param   timestamp   The timestamp to register when the scope is logged.
          * \return  Returns true if succeeded to save the log scope in the database.
          **/
-        virtual bool logScopeActivate(const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const areg::DateTime & timestamp) = 0;
+        virtual bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
         /**
          * \brief   Called when need to log the information of the list of scopes in the database.
@@ -112,7 +115,7 @@ namespace areg
          * \param   timestamp   The timestamp to register when the scope is logged.
          * \return  Returns the number of scope entries saved in the database.
          **/
-        virtual uint32_t logScopesActivate(const areg::ScopeNames& scopes, const ITEM_ID& cookie, const areg::DateTime& timestamp) = 0;
+        virtual uint32_t logScopesActivate(const ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) = 0;
 
         /**
          * \brief   Call to deactivate all scopes related with the specified cookie ID.
@@ -120,7 +123,7 @@ namespace areg
          * \param   timestamp   The deactivation timestamp to set.
          * \return  Returns true if operation succeeded.
          **/
-        virtual bool logScopesDeactivate(const ITEM_ID & cookie, const areg::DateTime & timestamp) = 0;
+        virtual bool logScopesDeactivate(const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
         /**
          * \brief   Call to deactivate a single scope related with the specified cookie ID.
@@ -129,7 +132,7 @@ namespace areg
          * \param   timestamp   The deactivation timestamp to set.
          * \return  Returns true if operation succeeded.
          **/
-        virtual bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const areg::DateTime & timestamp) = 0;
+        virtual bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.

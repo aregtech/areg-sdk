@@ -20,7 +20,7 @@ namespace areg
 
     #if AREG_LOGS
 
-    LoggerBase::LoggerBase( areg::LogConfiguration & logConfig)
+    LoggerBase::LoggerBase( LogConfiguration & logConfig)
         : mLogConfiguration (logConfig)
         , mLayoutsMessage   ( )
         , mLayoutsScopeEnter( )

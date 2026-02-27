@@ -30,7 +30,10 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class ScopeController; }
+namespace areg
+{
+    class ScopeController;
+}
 
 namespace areg
 {
@@ -93,30 +96,30 @@ namespace areg
          *                      is enabled or disabled. If true, the logging for specified type
          *                      is enabled.
          **/
-        void setLogEnabled(areg::LogTarget logType, bool isEnabled);
+        void setLogEnabled(LogTarget logType, bool isEnabled);
 
         /**
          * \brief   Gets and sets the property value of logging version.
          **/
-        areg::Version getVersion() const;
+        Version getVersion() const;
 
         /**
          * \brief   Gets and sets property value of layout format of scope enter.
          **/
-        areg::String getLayoutEnter() const;
-        void setLayoutEnter( const areg::String & prop );
+        String getLayoutEnter() const;
+        void setLayoutEnter( const String & prop );
 
         /**
          * \brief   Gets and sets property value of layout format form message text output.
          **/
-        areg::String getLayoutMessage() const;
-        void setLayoutMessage( const areg::String & prop );
+        String getLayoutMessage() const;
+        void setLayoutMessage( const String & prop );
 
         /**
          * \brief   Gets and sets property value of layout format of scope exit.
          **/
-        areg::String getLayoutExit() const;
-        void setLayoutExit( const areg::String & prop );
+        String getLayoutExit() const;
+        void setLayoutExit( const String & prop );
 
         /**
          * \brief   Gets and sets property value of stack size.
@@ -139,8 +142,8 @@ namespace areg
         /**
          * \brief   Gets and sets property value of file logging setting.
          **/
-        areg::String getLogFile() const;
-        void setLogFile( const areg::String & prop );
+        String getLogFile() const;
+        void setLogFile( const String & prop );
 
         /**
          * \brief   Gets and sets property value of remote logging enable setting.
@@ -151,8 +154,8 @@ namespace areg
         /**
          * \brief   Gets and sets property value of remote host name logging setting.
          **/
-        areg::String getRemoteTcpAddress() const;
-        void setRemoteTcpAddress( const areg::String & prop, bool isTemporary = false);
+        String getRemoteTcpAddress() const;
+        void setRemoteTcpAddress( const String & prop, bool isTemporary = false);
 
         /**
          * \brief   Gets and sets property value of remote host port logging setting.
@@ -169,54 +172,54 @@ namespace areg
         /**
          * \brief   Gets and sets module (process) specific log scopes.
          **/
-        uint32_t getModuleScopes(std::vector<areg::Property>& scopeList);
-        void setModuleScopes(const std::vector<areg::Property>& scopeList);
+        uint32_t getModuleScopes(std::vector<Property>& scopeList);
+        void setModuleScopes(const std::vector<Property>& scopeList);
 
         /**
          * \brief   Gets and sets the name of database engine such as `sqlite`.
          **/
-        areg::String getDatabaseEngine() const;
-        void setDatabaseEngine(const areg::String & dbEngine, bool isTemporary = false);
+        String getDatabaseEngine() const;
+        void setDatabaseEngine(const String & dbEngine, bool isTemporary = false);
 
         /**
          * \brief   Gets and sets the full path of the database file.
          *          When gets, it adds database file name to the location.
          *          Wehn sets, it splits file path to 2 parts: database name and database location.
          **/
-        areg::String getDatabaseFullPath() const;
-        void setDatabaseFullPath(const areg::String & dbFullPath, bool isTemporary = false);
+        String getDatabaseFullPath() const;
+        void setDatabaseFullPath(const String & dbFullPath, bool isTemporary = false);
 
         /**
          * \brief   Gets and sets the database name like "SQLite" or "MySQL", etc.
          **/
-        areg::String getDatabaseName() const;
-        void setDatabaseName(const areg::String & dbName, bool isTemporary = false);
+        String getDatabaseName() const;
+        void setDatabaseName(const String & dbName, bool isTemporary = false);
 
         /**
          * \brief   Gets and sets the database location. The location can be full or relative file path, or an URI.
          **/
-        areg::String getDatabaseLocation() const;
-        void setDatabaseLocation(const areg::String& dbLocation, bool isTemporary = false);
+        String getDatabaseLocation() const;
+        void setDatabaseLocation(const String& dbLocation, bool isTemporary = false);
 
         /**
          * \brief   Gets and sets the database driver, if needed.
          **/
-        areg::String getDatabaseDriver() const;
-        void setDatabaseDriver(const areg::String& dbDriver, bool isTemporary = false);
+        String getDatabaseDriver() const;
+        void setDatabaseDriver(const String& dbDriver, bool isTemporary = false);
 
         /**
          * \brief   Gets and sets the database service address that contains IP-address and port number.
          **/
-        areg::SocketAddress getDatabaseAddress() const;
-        void setDatabaseAddress(const areg::SocketAddress& dbAddress, bool isTemporary = false);
-        void setDatabaseAddress(const areg::String& dbAddress, uint16_t dbPort, bool isTemporary = false);
+        SocketAddress getDatabaseAddress() const;
+        void setDatabaseAddress(const SocketAddress& dbAddress, bool isTemporary = false);
+        void setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
 
         /**
          * \brief   Gets and sets the database user name and user password.
          **/
-        areg::UserData getDatabaseUser() const;
-        void setDatabaseUser(const areg::UserData& dbUser, bool isTemporary = false);
-        void setDatabaseUser(const areg::String& dbUserName, const areg::String& dbUserPassword, bool isTemporary = false);
+        UserData getDatabaseUser() const;
+        void setDatabaseUser(const UserData& dbUser, bool isTemporary = false);
+        void setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
 
         /**
          * \brief   Saves the configuration in the current config file.
@@ -227,7 +230,7 @@ namespace areg
          * \brief   Updates the list of scopes in the application configuration by setting the current state of scopes in configuration.
          * \param   scopeController     The instance of the scope controller to read states of the scopes.
          **/
-        void updateScopeConfiguration(const areg::ScopeController & scopeController) const;
+        void updateScopeConfiguration(const ScopeController & scopeController) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

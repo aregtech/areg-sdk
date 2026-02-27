@@ -37,8 +37,8 @@ namespace areg
      *          At the moment the output logger supports only ASCII messages
      *          and any Unicode character might output wrong.
      **/
-    class DebugOutputLogger : public    areg::LoggerBase
-                            , private   areg::OutStream
+    class DebugOutputLogger : public    LoggerBase
+                            , private   OutStream
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -51,7 +51,7 @@ namespace areg
          * \param   logConfig   An instance of the log configuration object containing
          *                      settings for initialization and message output.
          **/
-        explicit DebugOutputLogger( areg::LogConfiguration & logConfig);
+        explicit DebugOutputLogger( LogConfiguration & logConfig);
 
         /**
          * \brief   Destructor
@@ -86,7 +86,7 @@ namespace areg
          * \brief   Called when message should be logged.
          *          Every logger should implement method to process logger specific logging.
          **/
-        void logMessage( const areg::LogEntry & logMessage ) override;
+        void logMessage( const LogEntry & logMessage ) override;
 
         /**
          * \brief   Returns true if logger is initialized (opened).
@@ -118,7 +118,7 @@ namespace areg
          * \param	buffer	The instance of Byte Buffer object containing data to stream to Output Stream.
          * \return	Returns the size in bytes of written data
          **/
-        uint32_t write( const areg::ByteBuffer & buffer ) override;
+        uint32_t write( const ByteBuffer & buffer ) override;
 
         /**
          * \brief   Writes string data from given ASCII String object to output stream object.
@@ -126,7 +126,7 @@ namespace areg
          * \param   ascii     The buffer of String containing data to stream to Output Stream.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t write( const areg::String & ascii ) override;
+        uint32_t write( const String & ascii ) override;
 
         /**
          * \brief   Writes string data from given wide-char String object to output stream object.
@@ -134,7 +134,7 @@ namespace areg
          * \param   wide  The buffer of String containing data to stream to Output Stream.
          * \return  Returns the size in bytes of copied string data.
          **/
-        uint32_t write( const areg::WideString & wide ) override;
+        uint32_t write( const WideString & wide ) override;
 
         /**
          * \brief	Flushes cached data to output stream object.
@@ -163,7 +163,7 @@ namespace areg
         /**
          * \brief   The generated ASCII message to output.
          **/
-        areg::String  mOutputMessageA;
+        String  mOutputMessageA;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden calls.

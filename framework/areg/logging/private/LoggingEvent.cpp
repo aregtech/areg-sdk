@@ -32,50 +32,50 @@ namespace areg
 {
     #if AREG_LOGS
 
-    areg::LoggingEventData::LoggingEventData()
-        : mAction       ( areg::LoggingEventData::LogAction::Undefined )
+    LoggingEventData::LoggingEventData()
+        : mAction       ( LoggingEventData::LogAction::Undefined )
         , mDataBuffer   ( )
     {
     }
 
-    areg::LoggingEventData::LoggingEventData( areg::LoggingEventData::LogAction action )
+    LoggingEventData::LoggingEventData( LoggingEventData::LogAction action )
         : mAction       ( action )
         , mDataBuffer   ( )
     {
     }
 
-    areg::LoggingEventData::LoggingEventData( areg::LoggingEventData::LogAction action, const areg::SharedBuffer & dataBuffer )
+    LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer )
         : mAction       ( action )
         , mDataBuffer   ( dataBuffer )
     {
     }
 
-    areg::LoggingEventData::LoggingEventData( areg::LoggingEventData::LogAction action, const areg::LogEntry & logData )
+    LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const LogEntry & logData )
         : mAction       ( action )
         , mDataBuffer   (_logMessageSize, reinterpret_cast<const uint8_t *>(&logData), _logLocalMessage)
     {
     }
 
-    areg::LoggingEventData::LoggingEventData( const areg::LoggingEventData & src )
+    LoggingEventData::LoggingEventData( const LoggingEventData & src )
         : mAction       ( src.mAction )
         , mDataBuffer   ( src.mDataBuffer )
     {
     }
 
-    areg::LoggingEventData::LoggingEventData( areg::LoggingEventData && src ) noexcept
+    LoggingEventData::LoggingEventData( LoggingEventData && src ) noexcept
         : mAction       ( src.mAction )
         , mDataBuffer   ( std::move(src.mDataBuffer) )
     {
     }
 
-    areg::LoggingEventData & areg::LoggingEventData::operator = (const areg::LoggingEventData & src)
+    LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src)
     {
         mAction = src.mAction;
         mDataBuffer = src.mDataBuffer;
         return (*this);
     }
 
-    areg::LoggingEventData & areg::LoggingEventData::operator = ( areg::LoggingEventData && src ) noexcept
+    LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noexcept
     {
         mAction = src.mAction;
         mDataBuffer = std::move(src.mDataBuffer);

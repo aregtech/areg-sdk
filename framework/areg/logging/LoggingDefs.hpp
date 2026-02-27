@@ -31,8 +31,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class LogDatabaseEngine; }
-namespace areg { class LogScope; }
+namespace areg
+{
+    class LogDatabaseEngine;
+    class LogScope;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // NELogging namespace declaration
@@ -53,7 +56,7 @@ namespace areg
      * \brief   The list of the scopes. It is a pair, where the key is the ID of the scope
      *          and the value is the pointer to the scope.
      **/
-    using ScopeList     = HashMap<uint32_t, areg::LogScope*>;
+    using ScopeList     = HashMap<uint32_t, LogScope*>;
 
     /**
      * \brief   Alias of the map position.
@@ -86,7 +89,7 @@ namespace areg
     };
 
     //!< The list of scope update structure.
-    using ScopeNames    = areg::ArrayList<ScopeEntry>;
+    using ScopeNames    = ArrayList<ScopeEntry>;
 
     /**
      * \brief   LogTarget
@@ -398,7 +401,7 @@ namespace areg
      *          However, if the configuration specifies a priority other than PrioNotset,
      *          messages within that scope will be logged according to the specified priority.
      **/
-    AREG_API void activateScope( areg::LogScope & logScope );
+    AREG_API void activateScope( LogScope & logScope );
 
     /**
      * \brief   Returns true if logging has been started.
@@ -584,7 +587,7 @@ namespace areg
     /**
      * \brief   Call to set external logging database engine.
      **/
-    AREG_API void setLogDatabaseEngine(areg::LogDatabaseEngine* dbEngine);
+    AREG_API void setLogDatabaseEngine(LogDatabaseEngine* dbEngine);
 
     //////////////////////////////////////////////////////////////////////////////
     // NELogging namespace streamable types

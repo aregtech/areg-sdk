@@ -23,7 +23,10 @@
 #include "areg/base/IOStream.hpp"
 #include <atomic>
 
-namespace areg { class ScopeMessage; }
+namespace areg
+{
+    class ScopeMessage;
+}
 
 namespace areg
 {
@@ -44,7 +47,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////////
     // friend class declaration to access internals
     //////////////////////////////////////////////////////////////////////////////
-        friend class areg::ScopeMessage;
+        friend class ScopeMessage;
     //////////////////////////////////////////////////////////////////////////////
     // Internal types and constants
     //////////////////////////////////////////////////////////////////////////////
@@ -61,13 +64,13 @@ namespace areg
          * \param   scopeName   The unique name of the log scope.
          * \param   priority    The message priority of log scope.
          **/
-        LogScope( const char * scopeName, areg::LogPriority priority = areg::LogPriority::PrioNotset );
+        LogScope( const char * scopeName, LogPriority priority = LogPriority::PrioNotset );
 
         /**
          * \brief   Initializes the logging scope object from the stream.
          * \param   stream  The streaming object that contains the scope attributes.
          **/
-        LogScope(const areg::InStream & stream);
+        LogScope(const InStream & stream);
 
         /**
          * \brief   Destructor.
@@ -93,7 +96,7 @@ namespace areg
          * \param   stream  The stream object to write data.
          * \param   output  The scope to write into the stream object.
          **/
-        inline friend areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output );
+        inline friend OutStream & operator << ( OutStream & stream, const LogScope & output );
 
     //////////////////////////////////////////////////////////////////////////////
     // Attributes and operations
@@ -110,14 +113,14 @@ namespace areg
          * \param   newPrio     The name of the log priority level to add.
          **/
         inline void setPriority( const char * newPrio );
-        inline void setPriority( const areg::String & newPrio );
+        inline void setPriority( const String & newPrio );
 
         /**
          * \brief   Adds priority level to the existing priority level of the scope.
          *          The priority level is added bitwise.
          * \param   addPrio     The log message priority level to add.
          **/
-        inline void addPriority( areg::LogPriority addPrio );
+        inline void addPriority( LogPriority addPrio );
 
         /**
          * \brief   Adds priority level to the existing priority level of the scope,
@@ -126,14 +129,14 @@ namespace areg
          * \param   addPrio     The name of the log priority level to add.
          **/
         inline void addPriority( const char * addPrio );
-        inline void addPriority( const areg::String & addPrio );
+        inline void addPriority( const String & addPrio );
 
         /**
          * \brief   Removes priority level from the existing priority level of the scope.
          *          The operation is made bitwise.
          * \param   remPrio     The log priority level to remove.
          **/
-        inline void removePriority( areg::LogPriority remPrio );
+        inline void removePriority( LogPriority remPrio );
 
         /**
          * \brief   Removes priority level from the existing priority level of the scope,
@@ -142,7 +145,7 @@ namespace areg
          * \param   remPrio     The name of the log priority level to remove.
          **/
         inline void removePriority( const char * remPrio );
-        inline void removePriority( const areg::String & remPrio );
+        inline void removePriority( const String & remPrio );
 
         /**
          * \brief   Returns the value of log message priority.
@@ -157,7 +160,7 @@ namespace areg
         /**
          * \brief   Returns the name of the log scope.
          **/
-        inline const areg::String & getScopeName() const;
+        inline const String & getScopeName() const;
 
         /**
          * \brief   Returns the session ID of the log scope, used to identify the scope in the session.
@@ -179,7 +182,7 @@ namespace areg
         /**
          * \brief   The name of log scope. It cannot be changed
          **/
-        const areg::String        mScopeName;
+        const String        mScopeName;
         /**
          * \brief   The log scope is active or not.
          **/
@@ -220,7 +223,7 @@ namespace areg
     // inline functions implementation
     //////////////////////////////////////////////////////////////////////////////
 
-    inline areg::OutStream & operator << ( areg::OutStream & stream, const LogScope & output )
+    inline OutStream & operator << ( OutStream & stream, const LogScope & output )
     {
         stream << output.mScopeId;
         stream << output.mScopePrio;
@@ -253,34 +256,34 @@ namespace areg
         mScopePrio  = newPrio;
     }
 
-    inline void LogScope::addPriority( areg::LogPriority addPrio )
+    inline void LogScope::addPriority( LogPriority addPrio )
     {
         mScopePrio  |= static_cast<uint32_t>(addPrio);
     }
 
     void LogScope::addPriority( const char * addPrio )
     {
-        addPriority( areg::stringToLogPrio(addPrio) );
+        addPriority( stringToLogPrio(addPrio) );
     }
 
-    void LogScope::addPriority( const areg::String & addPrio )
+    void LogScope::addPriority( const String & addPrio )
     {
-        addPriority( areg::stringToLogPrio(addPrio) );
+        addPriority( stringToLogPrio(addPrio) );
     }
 
-    inline void LogScope::removePriority( areg::LogPriority remPrio )
+    inline void LogScope::removePriority( LogPriority remPrio )
     {
         mScopePrio  &= ~static_cast<uint32_t>(remPrio);
     }
 
     void LogScope::removePriority( const char * remPrio )
     {
-        removePriority( areg::stringToLogPrio(remPrio) );
+        removePriority( stringToLogPrio(remPrio) );
     }
 
-    void LogScope::removePriority( const areg::String & remPrio )
+    void LogScope::removePriority( const String & remPrio )
     {
-        removePriority( areg::stringToLogPrio(remPrio) );
+        removePriority( stringToLogPrio(remPrio) );
     }
 
     inline uint32_t LogScope::getPriority() const
@@ -293,7 +296,7 @@ namespace areg
         return mScopeId;
     }
 
-    inline const areg::String & LogScope::getScopeName() const
+    inline const String & LogScope::getScopeName() const
     {
         return mScopeName;
     }

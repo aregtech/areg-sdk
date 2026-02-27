@@ -39,10 +39,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class DispatcherThread; }
-namespace areg { class LogConfiguration; }
-namespace areg { class ScopeController; }
-namespace areg { class SharedBuffer; }
+namespace areg
+{
+    class DispatcherThread;
+    class LogConfiguration;
+    class ScopeController;
+    class SharedBuffer;
+}
 
 namespace areg
 {
@@ -54,17 +57,17 @@ namespace areg
      *          The object uses TCP/IP connection to the remote log collector service
      *          and forwards log messages to the remote service.
      **/
-    class NetTcpLogger  : public    areg::LoggerBase
-                        , public    areg::ServiceClientConnectionBase
-                        , private   areg::ConnectionConsumer
-                        , private   areg::RemoteMessageHandler
+    class NetTcpLogger  : public    LoggerBase
+                        , public    ServiceClientConnectionBase
+                        , private   ConnectionConsumer
+                        , private   RemoteMessageHandler
     {
     //////////////////////////////////////////////////////////////////////////
     // Internal types and constants.
     //////////////////////////////////////////////////////////////////////////
     private:
         //!< The ring buffer of logging message to queue if logging service is not available.
-        using RingStack = areg::RingStack<areg::RemoteMessage>;
+        using RingStack = areg::RingStack<RemoteMessage>;
 
         //!< A prefix to add in front of thread and timer names.
         static constexpr std::string_view   PREFIX_THREAD{ "logger_" };
@@ -79,7 +82,7 @@ namespace areg
          * \param   scopeController The scope controller object, which contains and controls the scopes in application.
          * \param   dispatchThread  The dispatcher thread to dispatch events and messages.
          **/
-        NetTcpLogger(areg::LogConfiguration & logConfig, areg::ScopeController & scopeController, areg::DispatcherThread & dispatchThread);
+        NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread);
 
         /**
          * \brief   Destructor.
@@ -114,7 +117,7 @@ namespace areg
          * \brief   Called when message should be logged.
          *          Every logger should implement method to process logger specific logging.
          **/
-        void logMessage( const areg::LogEntry & logMessage ) override;
+        void logMessage( const LogEntry & logMessage ) override;
 
         /**
          * \brief   Returns true if logger is initialized (opened).
@@ -134,13 +137,13 @@ namespace areg
          * \brief   Triggered when remote service connection and communication channel is established.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        void connectedRemoteServiceChannel(const areg::Channel& channel) override;
+        void connectedRemoteServiceChannel(const Channel& channel) override;
 
         /**
          * \brief   Triggered when disconnected remote service connection and communication channel.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        void disconnectedRemoteServiceChannel(const areg::Channel& channel) override;
+        void disconnectedRemoteServiceChannel(const Channel& channel) override;
 
         /**
          * \brief   Triggered when remote service connection and communication channel is lost.
@@ -148,7 +151,7 @@ namespace areg
          *          receive data, and it was not stopped by API call.
          * \param   channel     The connection and communication channel of remote service.
          **/
-        void lostRemoteServiceChannel(const areg::Channel& channel) override;
+        void lostRemoteServiceChannel(const Channel& channel) override;
 
     /************************************************************************/
     // RemoteMessageHandler interface overrides
@@ -159,27 +162,27 @@ namespace areg
          * \param   msgFailed   The message, which failed to send.
          * \param   whichTarget The target socket to send message.
          **/
-        void failedSendMessage( const areg::RemoteMessage & msgFailed, areg::Socket & whichTarget ) override;
+        void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
         /**
          * \brief   Triggered, when failed to receive message.
          * \param   whichSource Indicates the failed source socket to receive message.
          **/
-        void failedReceiveMessage( areg::Socket & whichSource ) override;
+        void failedReceiveMessage( Socket & whichSource ) override;
 
         /**
          * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
          *          In case of request message processing, the source should receive error notification.
          * \param   msgUnprocessed  Unprocessed message data.
          **/
-        void failedProcessMessage( const areg::RemoteMessage & msgUnprocessed ) override;
+        void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
         /**
          * \brief   Triggered, when need to process received message.
          * \param   msgReceived Received message to process.
          * \param   whichSource The source socket, which received message.
          **/
-        void processReceivedMessage( const areg::RemoteMessage & msgReceived, areg::Socket & whichSource ) override;
+        void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -197,7 +200,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     private:
         //!< The instance of scope controller
-        areg::ScopeController &   mScopeController;
+        ScopeController &   mScopeController;
         //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
         bool                mIsEnabled;
         //!< The ring stack to queue log messages if the connection setup did not complete yet.

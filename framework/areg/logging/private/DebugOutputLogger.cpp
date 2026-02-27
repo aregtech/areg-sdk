@@ -30,9 +30,9 @@ namespace areg
 
     #if AREG_LOGS
 
-    DebugOutputLogger::DebugOutputLogger( areg::LogConfiguration & logConfig)
-        : areg::LoggerBase        ( logConfig )
-        , areg::OutStream       ( )
+    DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
+        : LoggerBase        ( logConfig )
+        , OutStream       ( )
 
         , mIsOpened         ( false )
         , mOutputMessageA   ( )
@@ -50,12 +50,12 @@ namespace areg
 
                 if (mIsOpened)
                 {
-                    areg::Process& curProcess = areg::Process::getInstance();
-                    areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                    areg::String::formatString( logMsgHello.logMessage
-                                        , areg::LOG_MESSAGE_IZE
-                                        , areg::LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                        , areg::Process::getString(curProcess.getEnvironment())
+                    Process& curProcess = Process::getInstance();
+                    LogEntry logMsgHello(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+                    String::formatString( logMsgHello.logMessage
+                                        , LOG_MESSAGE_IZE
+                                        , LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                        , Process::getString(curProcess.getEnvironment())
                                         , curProcess.getFullPath().getString()
                                         , logMsgHello.logModuleId);
 
@@ -73,12 +73,12 @@ namespace areg
     #if defined(OUTPUT_DEBUG)
         if ( mIsOpened )
         {
-            areg::Process & curProcess = areg::Process::getInstance();
-            areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-            areg::String::formatString( logMsgGoodbye.logMessage
-                                , areg::LOG_MESSAGE_IZE
-                                , areg::LoggerBase::FORMAT_MESSAGE_BYE.data()
-                                , areg::Process::getString(curProcess.getEnvironment())
+            Process & curProcess = Process::getInstance();
+            LogEntry logMsgGoodbye(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+            String::formatString( logMsgGoodbye.logMessage
+                                , LOG_MESSAGE_IZE
+                                , LoggerBase::FORMAT_MESSAGE_BYE.data()
+                                , Process::getString(curProcess.getEnvironment())
                                 , curProcess.getFullPath().getString()
                                 , logMsgGoodbye.logModuleId);
             logMessage(logMsgGoodbye);
@@ -91,22 +91,22 @@ namespace areg
 
     #if defined(OUTPUT_DEBUG)
 
-    void DebugOutputLogger::logMessage(const areg::LogEntry & logMessage)
+    void DebugOutputLogger::logMessage(const LogEntry & logMessage)
     {
         if ( mIsOpened )
         {
             switch (logMessage.logMsgType)
             {
-            case areg::LogMessageType::MessageText:
-                getLayoutMessage().logMessage(logMessage, static_cast<areg::OutStream&>(*this));
+            case LogMessageType::MessageText:
+                getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(*this));
                 break;
 
-            case areg::LogMessageType::ScopeEnter:
-                getLayoutEnterScope().logMessage(logMessage, static_cast<areg::OutStream&>(*this));
+            case LogMessageType::ScopeEnter:
+                getLayoutEnterScope().logMessage(logMessage, static_cast<OutStream&>(*this));
                 break;
 
-            case areg::LogMessageType::ScopeExit:
-                getLayoutExitScope().logMessage( logMessage, static_cast<areg::OutStream &>(*this) );
+            case LogMessageType::ScopeExit:
+                getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(*this) );
                 break;
 
             default:
@@ -120,7 +120,7 @@ namespace areg
 
     #else // !defined(OUTPUT_DEBUG)
 
-    void DebugOutputLogger::logMessage(const areg::LogEntry & /*logMessage*/)
+    void DebugOutputLogger::logMessage(const LogEntry & /*logMessage*/)
     {
     }
 
@@ -145,12 +145,12 @@ namespace areg
     }
     #endif  // defined(OUTPUT_DEBUG)
 
-    uint32_t DebugOutputLogger::write(const areg::ByteBuffer & buffer)
+    uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
     {
         return write(buffer.getBuffer(), buffer.getSizeUsed());
     }
 
-    uint32_t DebugOutputLogger::write( const areg::String & ascii )
+    uint32_t DebugOutputLogger::write( const String & ascii )
     {
     #if defined(OUTPUT_DEBUG)
         mOutputMessageA += ascii;
@@ -158,7 +158,7 @@ namespace areg
         return ascii.getSpace();
     }
 
-    uint32_t DebugOutputLogger::write( const areg::WideString & wide )
+    uint32_t DebugOutputLogger::write( const WideString & wide )
     {
     #if defined(OUTPUT_DEBUG)
         mOutputMessageA += wide;
@@ -169,7 +169,7 @@ namespace areg
     void DebugOutputLogger::flush()
     {
     #if defined(OUTPUT_DEBUG)
-        areg::outputMessageOS(mOutputMessageA.getString());
+        outputMessageOS(mOutputMessageA.getString());
     #endif // !defined(OUTPUT_DEBUG)
 
         mOutputMessageA.clear();

@@ -31,28 +31,28 @@ namespace areg
 
     #if AREG_LOGS
 
-    NetTcpLogger::NetTcpLogger(areg::LogConfiguration & logConfig, areg::ScopeController & scopeController, areg::DispatcherThread & dispatchThread)
-        : areg::LoggerBase                    (logConfig)
-        , areg::ServiceClientConnectionBase   ( areg::COOKIE_LOGGER
-                                        , areg::RemoteServiceKind::Logger
-                                        , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
-                                        , areg::MessageSource::SourceClient
-                                        , static_cast<areg::ConnectionConsumer &>(self())
-                                        , static_cast<areg::RemoteMessageHandler &>(self())
+    NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread)
+        : LoggerBase                    (logConfig)
+        , ServiceClientConnectionBase   ( COOKIE_LOGGER
+                                        , RemoteServiceKind::Logger
+                                        , static_cast<uint32_t>(ConnectionType::Tcpip)
+                                        , MessageSource::SourceClient
+                                        , static_cast<ConnectionConsumer &>(self())
+                                        , static_cast<RemoteMessageHandler &>(self())
                                         , dispatchThread
                                         , NetTcpLogger::PREFIX_THREAD)
-        , areg::ConnectionConsumer   ( )
-        , areg::RemoteMessageHandler        ( )
+        , ConnectionConsumer   ( )
+        , RemoteMessageHandler        ( )
 
         , mScopeController  ( scopeController )
         , mIsEnabled        ( false )
-        , mRingStack        ( 0, areg::OverlapPolicy::Shift )
+        , mRingStack        ( 0, OverlapPolicy::Shift )
     {
     }
 
     bool NetTcpLogger::openLogger()
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
         bool result{ false };
 
         if (mClientConnection.isValid() == false)
@@ -63,7 +63,7 @@ namespace areg
                 registerForServiceClientCommands();
                 mRingStack.reserve(mLogConfiguration.getStackSize());
 
-                areg::String host{ mLogConfiguration.getRemoteTcpAddress()};
+                String host{ mLogConfiguration.getRemoteTcpAddress()};
                 uint16_t port{ mLogConfiguration.getRemoteTcpPort() };
                 mIsEnabled = true;
                 applyServiceConnectionData(host, port);
@@ -90,58 +90,58 @@ namespace areg
         unregisterForServiceClientCommands();
     }
 
-    void NetTcpLogger::logMessage(const areg::LogEntry& logMessage)
+    void NetTcpLogger::logMessage(const LogEntry& logMessage)
     {
         if (mIsEnabled)
         {
             if (mChannel.isValid() && isConnectState())
             {
-                sendMessage(areg::createLogMessage(logMessage, areg::LogDataType::Remote, mChannel.getCookie()), areg::Event::EventPriority::NormalPrio);
+                sendMessage(createLogMessage(logMessage, LogDataType::Remote, mChannel.getCookie()), Event::EventPriority::NormalPrio);
             }
             else if (mRingStack.capacity() != 0)
             {
-                mRingStack.push(areg::createLogMessage(logMessage, areg::LogDataType::Remote, mChannel.getCookie()));
+                mRingStack.push(createLogMessage(logMessage, LogDataType::Remote, mChannel.getCookie()));
             }
         }
     }
 
     bool NetTcpLogger::isLoggerOpened() const
     {
-        areg::Lock lock( mLock );
+        Lock lock( mLock );
         return isConnectedState();
     }
 
-    void NetTcpLogger::connectedRemoteServiceChannel(const areg::Channel & channel)
+    void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
     {
         ASSERT(channel.isValid());
-        ASSERT(channel.getCookie() >= areg::COOKIE_REMOTE_SERVICE);
+        ASSERT(channel.getCookie() >= COOKIE_REMOTE_SERVICE);
         ASSERT(mChannel.isValid());
 
         mIsEnabled = true;
         const ITEM_ID& cookie = channel.getCookie();
         while (mRingStack.isEmpty() == false)
         {
-            areg::RemoteMessage msgLog{ mRingStack.pop() };
+            RemoteMessage msgLog{ mRingStack.pop() };
             msgLog.setSource(cookie);
-            reinterpret_cast<areg::LogEntry*>(msgLog.getBuffer())->logCookie = cookie;
-            sendMessage(msgLog, areg::Event::EventPriority::NormalPrio);
+            reinterpret_cast<LogEntry*>(msgLog.getBuffer())->logCookie = cookie;
+            sendMessage(msgLog, Event::EventPriority::NormalPrio);
         }
     }
 
-    void NetTcpLogger::disconnectedRemoteServiceChannel(const areg::Channel & /* channel */)
+    void NetTcpLogger::disconnectedRemoteServiceChannel(const Channel & /* channel */)
     {
         ASSERT(mChannel.isValid() == false);
         mIsEnabled = false;
-        mClientConnection.setCookie(areg::COOKIE_UNKNOWN);
+        mClientConnection.setCookie(COOKIE_UNKNOWN);
     }
 
-    void NetTcpLogger::lostRemoteServiceChannel(const areg::Channel & /* channel */)
+    void NetTcpLogger::lostRemoteServiceChannel(const Channel & /* channel */)
     {
         ASSERT(mChannel.isValid() == false);
-        mClientConnection.setCookie(areg::COOKIE_UNKNOWN);
+        mClientConnection.setCookie(COOKIE_UNKNOWN);
     }
 
-    void NetTcpLogger::failedSendMessage(const areg::RemoteMessage & msgFailed, areg::Socket & /* whichTarget */)
+    void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /* whichTarget */)
     {
         ASSERT(mIsEnabled);
         if (mLogConfiguration.getStackSize() > 0)
@@ -149,87 +149,87 @@ namespace areg
             mRingStack.push(msgFailed);
         }
 
-        sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceLost);
+        sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
     }
 
-    void NetTcpLogger::failedReceiveMessage(areg::Socket & /* whichSource */)
+    void NetTcpLogger::failedReceiveMessage(Socket & /* whichSource */)
     {
-        sendCommand(areg::ServiceEventData::ServiceCommand::CMD_ServiceLost);
+        sendCommand(ServiceEventData::ServiceCommand::CMD_ServiceLost);
     }
 
-    void NetTcpLogger::failedProcessMessage(const areg::RemoteMessage & /* msgUnprocessed */)
+    void NetTcpLogger::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
     {
     }
 
-    void NetTcpLogger::processReceivedMessage(const areg::RemoteMessage & msgReceived, areg::Socket & whichSource)
+    void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
     {
         if (msgReceived.isValid() && whichSource.isValid())
         {
-            areg::FuncIdRange msgId = static_cast<areg::FuncIdRange>(msgReceived.getMessageId());
+            FuncIdRange msgId = static_cast<FuncIdRange>(msgReceived.getMessageId());
             switch (msgId)
             {
-            case areg::FuncIdRange::SystemServiceNotifyConnection:
+            case FuncIdRange::SystemServiceNotifyConnection:
                 serviceConnectionEvent(msgReceived);
                 break;
 
-            case areg::FuncIdRange::ServiceLogUpdateScopes:
+            case FuncIdRange::ServiceLogUpdateScopes:
                 {
                     uint32_t scopeCount{ 0 };
-                    areg::ScopeEntry scopeInfo{};
+                    ScopeEntry scopeInfo{};
                     msgReceived >> scopeCount;
                     for ( uint32_t i = 0; i < scopeCount; ++ i)
                     {
                         msgReceived >> scopeInfo;
-                        areg::LogManager::updateScopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
+                        LogManager::updateScopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
                     }
 
                     if (scopeCount != 0)
                     {
-                        const areg::ScopeList& scopes{ static_cast<const areg::ScopeList&>(mScopeController.getScopeList()) };
-                        sendMessage(areg::messageScopesUpdated(mChannel.getCookie(), areg::COOKIE_LOGGER, scopes));
+                        const ScopeList& scopes{ static_cast<const ScopeList&>(mScopeController.getScopeList()) };
+                        sendMessage(messageScopesUpdated(mChannel.getCookie(), COOKIE_LOGGER, scopes));
                     }
                 }
                 break;
 
-            case areg::FuncIdRange::ServiceLogQueryScopes:
+            case FuncIdRange::ServiceLogQueryScopes:
                 {
-                    const areg::ScopeList & scopes{ static_cast<const areg::ScopeList &>(mScopeController.getScopeList()) };
+                    const ScopeList & scopes{ static_cast<const ScopeList &>(mScopeController.getScopeList()) };
                     const ITEM_ID & targetId{ msgReceived.getSource() };
-                    sendMessage(areg::messageRegisterScopes(mChannel.getCookie(), targetId, scopes));
+                    sendMessage(messageRegisterScopes(mChannel.getCookie(), targetId, scopes));
                 }
                 break;
 
-            case areg::FuncIdRange::ServiceSaveLogConfiguration:
-                if (areg::LogManager::saveLogConfig())
+            case FuncIdRange::ServiceSaveLogConfiguration:
+                if (LogManager::saveLogConfig())
                 {
-                    sendMessage(areg::messageConfigurationSaved());
+                    sendMessage(messageConfigurationSaved());
                 }
                 break;
 
-            case areg::FuncIdRange::SystemServiceNotifyRegister:      // fall through
-            case areg::FuncIdRange::ServiceLastId:                    // fall through
-            case areg::FuncIdRange::SystemServiceQueryInstances:      // fall through
-            case areg::FuncIdRange::SystemServiceRequestRegister:     // fall through
-            case areg::FuncIdRange::SystemServiceDisconnect:          // fall through
-            case areg::FuncIdRange::SystemServiceConnect:             // fall through
-            case areg::FuncIdRange::ResponseServiceProviderConnection:// fall through
-            case areg::FuncIdRange::RequestServiceProviderConnection: // fall through
-            case areg::FuncIdRange::ResponseServiceProviderVersion:   // fall through
-            case areg::FuncIdRange::RequestServiceProviderVersion:    // fall through
-            case areg::FuncIdRange::RequestRegisterService:           // fall through
-            case areg::FuncIdRange::ComponentCleanup:                 // fall through
-            case areg::FuncIdRange::SystemServiceNotifyInstances:     // fall through
-            case areg::FuncIdRange::ServiceLogRegisterScopes:         // fall through
-            case areg::FuncIdRange::ServiceLogScopesUpdated:          // fall through
-            case areg::FuncIdRange::ServiceLogConfigurationSaved:     // fall through
-            case areg::FuncIdRange::ServiceLogMessage:                // fall through
-            case areg::FuncIdRange::AttributeLastId:                  // fall through
-            case areg::FuncIdRange::AttributeFirstId:                 // fall through
-            case areg::FuncIdRange::ResponseLastId:                   // fall through
-            case areg::FuncIdRange::ResponseFirstId:                  // fall through
-            case areg::FuncIdRange::RequestLastId:                    // fall through
-            case areg::FuncIdRange::RequestFirstId:                   // fall through
-            case areg::FuncIdRange::EmptyFunctionId:                  // fall through
+            case FuncIdRange::SystemServiceNotifyRegister:      // fall through
+            case FuncIdRange::ServiceLastId:                    // fall through
+            case FuncIdRange::SystemServiceQueryInstances:      // fall through
+            case FuncIdRange::SystemServiceRequestRegister:     // fall through
+            case FuncIdRange::SystemServiceDisconnect:          // fall through
+            case FuncIdRange::SystemServiceConnect:             // fall through
+            case FuncIdRange::ResponseServiceProviderConnection:// fall through
+            case FuncIdRange::RequestServiceProviderConnection: // fall through
+            case FuncIdRange::ResponseServiceProviderVersion:   // fall through
+            case FuncIdRange::RequestServiceProviderVersion:    // fall through
+            case FuncIdRange::RequestRegisterService:           // fall through
+            case FuncIdRange::ComponentCleanup:                 // fall through
+            case FuncIdRange::SystemServiceNotifyInstances:     // fall through
+            case FuncIdRange::ServiceLogRegisterScopes:         // fall through
+            case FuncIdRange::ServiceLogScopesUpdated:          // fall through
+            case FuncIdRange::ServiceLogConfigurationSaved:     // fall through
+            case FuncIdRange::ServiceLogMessage:                // fall through
+            case FuncIdRange::AttributeLastId:                  // fall through
+            case FuncIdRange::AttributeFirstId:                 // fall through
+            case FuncIdRange::ResponseLastId:                   // fall through
+            case FuncIdRange::ResponseFirstId:                  // fall through
+            case FuncIdRange::RequestLastId:                    // fall through
+            case FuncIdRange::RequestFirstId:                   // fall through
+            case FuncIdRange::EmptyFunctionId:                  // fall through
             default:
                 ASSERT(false);
             }

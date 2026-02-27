@@ -41,37 +41,37 @@ namespace areg
         return _theLogManager;
     }
 
-    void LogManager::logMessage(const areg::LogEntry& logData )
+    void LogManager::logMessage(const LogEntry& logData )
     {
-        LogManager::getInstance().sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::LogMessage, logData) );
+        LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
     }
 
-    void LogManager::logMessage(const areg::SharedBuffer& logData)
+    void LogManager::logMessage(const SharedBuffer& logData)
     {
-        LogManager::getInstance().sendLogEvent(areg::LoggingEventData(areg::LoggingEventData::LogAction::LogMessage, logData));
+        LogManager::getInstance().sendLogEvent(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
     }
 
-    void LogManager::logMessage(const areg::RemoteMessage& logData)
+    void LogManager::logMessage(const RemoteMessage& logData)
     {
-        LogManager::getInstance().sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::LogMessage, logData) );
+        LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
     }
 
-    void LogManager::sendCommandMessage(areg::LoggingEventData::LogAction cmd, const areg::SharedBuffer& data)
+    void LogManager::sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data)
     {
-        LogManager::getInstance().sendLogEvent(areg::LoggingEventData(cmd, data));
+        LogManager::getInstance().sendLogEvent(LoggingEventData(cmd, data));
     }
 
     bool LogManager::readLogConfig( const char* configFile /*= nullptr*/ )
     {
-        return areg::Application::loadConfiguration(configFile);
+        return Application::loadConfiguration(configFile);
     }
 
     bool LogManager::startLogging(const char* configFile /*= nullptr*/ )
     {
-        areg::Application::loadConfiguration(configFile);
+        Application::loadConfiguration(configFile);
 
         LogManager& logManager = LogManager::getInstance();
-        areg::Lock lock(logManager.mLock);
+        Lock lock(logManager.mLock);
         if (logManager.isReady() == false)
         {
             lock.unlock();
@@ -85,15 +85,15 @@ namespace areg
     bool LogManager::saveLogConfig(const char* configFile /*= nullptr*/ )
     {
         LogManager::updateScopeConfiguration();
-        return areg::Application::saveConfiguration(configFile);
+        return Application::saveConfiguration(configFile);
     }
 
     void LogManager::updateScopeConfiguration()
     {
         LogManager& logManager = LogManager::getInstance();
-        areg::Lock lock(logManager.mLock);
+        Lock lock(logManager.mLock);
 
-        areg::LogConfiguration config;
+        LogConfiguration config;
         config.updateScopeConfiguration(logManager.mScopeController);
     }
 
@@ -104,7 +104,7 @@ namespace areg
 
     bool LogManager::isLoggingConfigured()
     {
-        return areg::Application::isConfigured();
+        return Application::isConfigured();
     }
 
     bool LogManager::forceActivateLogging()
@@ -113,9 +113,9 @@ namespace areg
         LogManager & logManager = LogManager::getInstance();
         if ( logManager.isLoggingStarted() == false )
         {
-            areg::Lock lock( logManager.mLock );
+            Lock lock( logManager.mLock );
             logManager.mLogConfig.setStatus(true);
-            logManager.mLogConfig.setLogEnabled(areg::LogTarget::File, true);
+            logManager.mLogConfig.setLogEnabled(LogTarget::File, true);
             logManager.mScopeController.activateDefaults( );
             result = logManager.startLoggingThread( );
         }
@@ -125,17 +125,17 @@ namespace areg
 
     void LogManager::setDefaultConfiguration(bool overwriteExisting)
     {
-        if (overwriteExisting || areg::Application::isConfigured() == false)
+        if (overwriteExisting || Application::isConfigured() == false)
         {
-            areg::Application::setupDefaultConfiguration();
+            Application::setupDefaultConfiguration();
         }
     }
 
     bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
     {
-        areg::ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-        uint32_t scopeId = areg::makeScopeId( scopeName );
-        const areg::LogScope * scope = ctrScope.getScope( scopeId );
+        ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
+        uint32_t scopeId = makeScopeId( scopeName );
+        const LogScope * scope = ctrScope.getScope( scopeId );
         bool result{ scope != nullptr };
         if ( result && (scope->getPriority() != newPrio))
         {
@@ -145,22 +145,22 @@ namespace areg
         return result;
     }
 
-    void LogManager::updateScopes(const areg::String & scopeName, uint32_t scopeId, uint32_t newPrio)
+    void LogManager::updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio)
     {
-        areg::ScopeController & ctrScope = LogManager::getInstance().mScopeController;
+        ScopeController & ctrScope = LogManager::getInstance().mScopeController;
         ctrScope.clearConfigScopes();
         ctrScope.changeScopeActivityStatus(scopeName, scopeId, newPrio);
     }
 
     uint32_t LogManager::getScopePriority( const char * scopeName )
     {
-        areg::ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-        uint32_t scopeId = areg::makeScopeId( scopeName );
-        const areg::LogScope * scope = ctrScope.getScope( scopeId );
-        return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(areg::LogPriority::PrioInvalid));
+        ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
+        uint32_t scopeId = makeScopeId( scopeName );
+        const LogScope * scope = ctrScope.getScope( scopeId );
+        return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(LogPriority::PrioInvalid));
     }
 
-    void LogManager::setLogDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
+    void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
     {
         LogManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
     }
@@ -179,14 +179,14 @@ namespace areg
     {
         LogManager& logManager = LogManager::getInstance();
         logManager.mLogConfig.setStatus(true);
-        logManager.mLogConfig.setLogEnabled(areg::LogTarget::File, true);
+        logManager.mLogConfig.setLogEnabled(LogTarget::File, true);
     }
 
     //////////////////////////////////////////////////////////////////////////
     // LogManager class constructor / destructor
     //////////////////////////////////////////////////////////////////////////
     LogManager::LogManager()
-        : areg::DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
+        : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), STACK_SIZE_DEFAULT, QUEUE_SIZE_MAXIMUM )
         , LoggingEventConsumer  ( )
 
         , mScopeController  ( )
@@ -195,7 +195,7 @@ namespace areg
 
         , mLoggerFile       ( mLogConfig )
         , mLoggerDebug      ( mLogConfig )
-        , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<areg::DispatcherThread &>(self()) )
+        , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
         , mLoggerDatabase   ( mLogConfig )
         , mEventProcessor   ( self() )
 
@@ -209,13 +209,13 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     void LogManager::clearConfigData()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mScopeController.clearConfigScopes( );
     }
 
     void LogManager::resetScopes()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mScopeController.resetScopes();
     }
 
@@ -243,12 +243,12 @@ namespace areg
     {
         ASSERT((isRunning() == false) && (isReady() == false));
         mLogStarted.resetEvent( );
-        if ( createThread(areg::WAIT_INFINITE) )
+        if ( createThread(WAIT_INFINITE) )
         {
-            if ( waitForDispatcherStart(areg::WAIT_INFINITE) )
+            if ( waitForDispatcherStart(WAIT_INFINITE) )
             {
-                sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::StartLogs) );
-                mLogStarted.lock( areg::WAIT_INFINITE );
+                sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StartLogs) );
+                mLogStarted.lock( WAIT_INFINITE );
             }
         }
     #ifdef  DEBUG
@@ -263,34 +263,34 @@ namespace areg
 
     void LogManager::stopLoggingThread(bool waitComplete)
     {
-        sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::StopLogs) );
+        sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
         mIsStarted = false;
 
         if (waitComplete)
         {
-            completionWait(areg::WAIT_INFINITE);
-            shutdownThread(areg::DO_NOT_WAIT);
+            completionWait(WAIT_INFINITE);
+            shutdownThread(DO_NOT_WAIT);
         }
     }
 
     void LogManager::waitLoggingThreadEnd()
     {
         mIsStarted = false;
-        completionWait(areg::WAIT_INFINITE);
-        shutdownThread(areg::DO_NOT_WAIT);
+        completionWait(WAIT_INFINITE);
+        shutdownThread(DO_NOT_WAIT);
     }
 
     void LogManager::readyForEvents( bool isReady )
     {
         if ( isReady )
         {
-            LoggingEvent::addListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
-            areg::DispatcherThread::readyForEvents( true );
+            LoggingEvent::addListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+            DispatcherThread::readyForEvents( true );
         }
         else
         {
-            areg::DispatcherThread::readyForEvents( false );
-            LoggingEvent::removeListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )) );
+            DispatcherThread::readyForEvents( false );
+            LoggingEvent::removeListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
             // When we are here, all loggers should be already closed.
             ASSERT(mLoggerFile.isLoggerOpened() == false);
@@ -300,7 +300,7 @@ namespace areg
         }
     }
 
-    void LogManager::processEvent( const areg::LoggingEventData & data )
+    void LogManager::processEvent( const LoggingEventData & data )
     {
         mEventProcessor.processLogEvent( data.getLoggingAction( ), data.getReadableStream( ) );
     }
@@ -352,7 +352,7 @@ namespace areg
         triggerExit( );
     }
 
-    void LogManager::writeLogMessage( const areg::LogEntry & logMessage )
+    void LogManager::writeLogMessage( const LogEntry & logMessage )
     {
         mLoggerFile.logMessage( logMessage );
         mLoggerDebug.logMessage( logMessage );
@@ -366,17 +366,17 @@ namespace areg
         }
     }
 
-    bool LogManager::postEvent(areg::Event & eventElem)
+    bool LogManager::postEvent(Event & eventElem)
     {
-        return areg::EventDispatcher::postEvent(eventElem);
+        return EventDispatcher::postEvent(eventElem);
     }
 
-    inline void LogManager::sendLogEvent( const areg::LoggingEventData & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+    inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
     {
-        LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )), eventPrio );
+        LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
     }
 
-    void LogManager::changeScopePriority( const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio )
+    void LogManager::changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio )
     {
         mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
     }

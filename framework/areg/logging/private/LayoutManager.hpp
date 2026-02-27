@@ -26,8 +26,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class LogLayout; }
-namespace areg { class OutStream; }
+namespace areg
+{
+    class LogLayout;
+    class OutStream;
+}
 
 namespace areg
 {

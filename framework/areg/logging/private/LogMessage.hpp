@@ -25,10 +25,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class InStream; }
-namespace areg { class OutStream; }
-namespace areg { class ScopeMessage; }
-namespace areg { class LogScope; }
+namespace areg
+{
+    class InStream;
+    class OutStream;
+    class ScopeMessage;
+    class LogScope;
+}
 
 namespace areg
 {
@@ -42,12 +45,12 @@ namespace areg
      *          Different types of constructor allow to initialize message log
      *          structure with certain log types and priorities.
      **/
-    class LogMessage  : public areg::LogEntry
+    class LogMessage  : public LogEntry
     {
     //////////////////////////////////////////////////////////////////////////
     // Friend classes
     //////////////////////////////////////////////////////////////////////////
-        friend class areg::ScopeMessage;    // need to access message log structure
+        friend class ScopeMessage;    // need to access message log structure
 
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor
@@ -58,7 +61,7 @@ namespace areg
          * \brief   Initializes message log structure and sets the logging type value.
          * \param   msgType     The type of message to initialize
          **/
-        inline explicit LogMessage( areg::LogMessageType msgType );
+        inline explicit LogMessage( LogMessageType msgType );
 
         /**
          * \brief   Initializes message log structure, sets the logging type value,
@@ -71,7 +74,7 @@ namespace areg
          * \param   msgPrio     The priority of message to log.
          * \param   message     The text message to log.
          **/
-        inline LogMessage(areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const areg::String & message );
+        inline LogMessage(LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const String & message );
 
         /**
          * \brief   Initializes message log structure, sets the logging type value,
@@ -85,7 +88,7 @@ namespace areg
          * \param   message     The text message to log.
          * \param   msgLen      The length of the message to log.
          **/
-        inline LogMessage( areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * message, uint32_t msgLen );
+        inline LogMessage( LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const char * message, uint32_t msgLen );
 
         /**
          * \brief   Initializes message log structure for scope enter or exit event.
@@ -97,7 +100,7 @@ namespace areg
          *                      The duration is ignored and set to 0 if the scopeStamp is 0.
          * \param   logScope    The log scope object with scope name and ID to set.
          **/
-        LogMessage( areg::LogMessageType msgType, uint32_t sessionid, TIME64 scopeStamp, const areg::LogScope & logScope );
+        LogMessage( LogMessageType msgType, uint32_t sessionid, TIME64 scopeStamp, const LogScope & logScope );
 
         /**
          * \brief   Copies logging message data from given source.
@@ -109,7 +112,7 @@ namespace areg
          * \brief   Initialization constructor.
          *          Initializes log message data from stream.
          **/
-        inline LogMessage( const areg::InStream & stream );
+        inline LogMessage( const InStream & stream );
 
         /**
          * \brief   Destructor.
@@ -126,12 +129,12 @@ namespace areg
         /**
          * \brief   Returns instance of Log message structure
          **/
-        inline const areg::LogEntry & getLogData() const;
+        inline const LogEntry & getLogData() const;
 
         /**
          * \brief   Returns log type value
          **/
-        inline areg::LogMessageType getMessageType() const;
+        inline LogMessageType getMessageType() const;
 
         /**
          * \brief   Return the ID of thread where the message was initialized.
@@ -146,12 +149,12 @@ namespace areg
         /**
          * \brief   Returns the time-stamp of created message log.
          **/
-        inline const areg::DateTime getTimestamp() const;
+        inline const DateTime getTimestamp() const;
 
         /**
          * \brief   Returns the time-stamp when the message log was received.
          **/
-        inline const areg::DateTime getTimeReceived() const;
+        inline const DateTime getTimeReceived() const;
 
         /**
          * \brief   Returns the duration in microseconds since scope message object was instantiated.
@@ -191,12 +194,12 @@ namespace areg
         /**
          * \brief   Returns the priority ob message log
          **/
-        inline areg::LogPriority getMessagePrio() const;
+        inline LogPriority getMessagePrio() const;
 
         /**
          * \brief   Sets the priority of message log
          **/
-        inline void setMessagePrio( areg::LogPriority msgPrio );
+        inline void setMessagePrio( LogPriority msgPrio );
 
         /**
          * \brief   Returns message text, if there is any.
@@ -221,33 +224,33 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     // LogMessage class inline methods
     //////////////////////////////////////////////////////////////////////////
-    inline LogMessage::LogMessage( areg::LogMessageType msgType )
-        : areg::LogEntry(msgType)
+    inline LogMessage::LogMessage( LogMessageType msgType )
+        : LogEntry(msgType)
     {
     }
 
-    inline LogMessage::LogMessage( areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const areg::String & message )
-        : areg::LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
+    inline LogMessage::LogMessage( LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const String & message )
+        : LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
     {
     }
 
-    inline LogMessage::LogMessage( areg::LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * message, uint32_t msgLen )
-        : areg::LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message, msgLen )
+    inline LogMessage::LogMessage( LogMessageType msgType, uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const char * message, uint32_t msgLen )
+        : LogEntry( msgType, scopeId, sessionId, scopeStamp, msgPrio, message, msgLen )
     {
     }
 
-    inline LogMessage::LogMessage( const areg::InStream & stream )
-        : areg::LogEntry( )
+    inline LogMessage::LogMessage( const InStream & stream )
+        : LogEntry( )
     {
-        stream >> static_cast<areg::LogEntry &>(*this);
+        stream >> static_cast<LogEntry &>(*this);
     }
 
-    inline const areg::LogEntry & LogMessage::getLogData() const
+    inline const LogEntry & LogMessage::getLogData() const
     {
-        return static_cast<const areg::LogEntry &>(*this);
+        return static_cast<const LogEntry &>(*this);
     }
 
-    inline areg::LogMessageType LogMessage::getMessageType() const
+    inline LogMessageType LogMessage::getMessageType() const
     {
         return this->logMsgType;
     }
@@ -262,14 +265,14 @@ namespace areg
         return this->logScopeId;
     }
 
-    inline const areg::DateTime LogMessage::getTimestamp() const
+    inline const DateTime LogMessage::getTimestamp() const
     {
-        return static_cast<areg::DateTime>(this->logTimestamp);
+        return static_cast<DateTime>(this->logTimestamp);
     }
 
-    inline const areg::DateTime LogMessage::getTimeReceived() const
+    inline const DateTime LogMessage::getTimeReceived() const
     {
-        return static_cast<areg::DateTime>(this->logReceived);
+        return static_cast<DateTime>(this->logReceived);
     }
 
     inline uint32_t LogMessage::getDuration() const
@@ -287,12 +290,12 @@ namespace areg
         this->logModuleId = moduleId;
     }
 
-    inline areg::LogPriority LogMessage::getMessagePrio() const
+    inline LogPriority LogMessage::getMessagePrio() const
     {
         return this->logMessagePrio;
     }
 
-    inline void LogMessage::setMessagePrio(const areg::LogPriority msgPrio)
+    inline void LogMessage::setMessagePrio(const LogPriority msgPrio)
     {
         this->logMessagePrio = msgPrio;
     }
@@ -314,25 +317,25 @@ namespace areg
 
     #else   // AREG_LOGS
 
-    inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/)
-        : areg::LogEntry()
+    inline LogMessage::LogMessage(LogMessageType /*msgType*/)
+        : LogEntry()
     {
     }
 
-    inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const areg::String& /*message*/)
-        : areg::LogEntry()
+    inline LogMessage::LogMessage(LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, LogPriority /*msgPrio*/, const String& /*message*/)
+        : LogEntry()
     {
     }
 
-    inline LogMessage::LogMessage(areg::LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, areg::LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
-        : areg::LogEntry()
+    inline LogMessage::LogMessage(LogMessageType /*msgType*/, uint32_t /*scopeId*/, uint32_t /*sessionId*/, TIME64 /*scopeStamp*/, LogPriority /*msgPrio*/, const char* /*message*/, uint32_t /*msgLen*/)
+        : LogEntry()
     {
     }
 
-    inline LogMessage::LogMessage(const areg::InStream& stream)
-        : areg::LogEntry()
+    inline LogMessage::LogMessage(const InStream& stream)
+        : LogEntry()
     {
-        stream >> static_cast<areg::LogEntry&>(*this);
+        stream >> static_cast<LogEntry&>(*this);
     }
 
     #endif  // AREG_LOGS

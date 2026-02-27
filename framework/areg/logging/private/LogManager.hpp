@@ -40,14 +40,20 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class LogDatabaseEngine; }
-namespace areg { class LogScope; }
-namespace areg { class LogMessage; }
+namespace areg
+{
+    class LogDatabaseEngine;
+    class LogScope;
+    class LogMessage;
+}
 namespace areg
 {
     struct LogEntry;
 }
-namespace areg { class LogEventProcessor; }
+namespace areg
+{
+    class LogEventProcessor;
+}
 
 namespace areg
 {
@@ -61,10 +67,10 @@ namespace areg
      *          Log Manager and unregistered when destroyed. Before logging, it should 
      *          be started and the configuration should be loaded.
      **/
-    class LogManager    : public    areg::DispatcherThread
+    class LogManager    : public    DispatcherThread
                         , private   LoggingEventConsumer
     {
-        friend class areg::LogEventProcessor;
+        friend class LogEventProcessor;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal types and constants
@@ -75,10 +81,10 @@ namespace areg
         static constexpr std::string_view   LOGGING_THREAD_NAME          { "_AREG_LOGGING_THREAD_" };
 
         //!< Logging activation waiting maximum timeout
-        static constexpr uint32_t       LOG_START_WAITING_TIME      { areg::WAIT_10_SECONDS };
+        static constexpr uint32_t       LOG_START_WAITING_TIME      { WAIT_10_SECONDS };
 
         //!< Reconnect timeout in milliseconds
-        static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { areg::TIMEOUT_1_SEC * 5 };
+        static constexpr uint32_t       LOG_RECONNECT_TIMEOUT       { TIMEOUT_1_SEC * 5 };
 
     public:
 
@@ -86,27 +92,27 @@ namespace areg
          * \brief   Triggers an event to log message created locally in the same process.
          * \param   logData The logging message object, which will be sent to all loggers.
          **/
-        static void logMessage( const areg::LogEntry & logData );
+        static void logMessage( const LogEntry & logData );
 
         /**
          * \brief   Triggers an event to log message contained in the shared buffer.
          * \param   logData     The instance of message in shared buffer to log.
          **/
-        static void logMessage(const areg::SharedBuffer& logData);
+        static void logMessage(const SharedBuffer& logData);
 
         /**
          * \brief   Triggers an event to log remote message.
          * \param   logData     The instance of remote message buffer, which contains the
          *                      log message from another process.
          **/
-        static void logMessage( const areg::RemoteMessage& logData );
+        static void logMessage( const RemoteMessage& logData );
 
         /**
          * \brief   Generates and queues a message to execute internal command.
          * \param   cmd     The command to execute.
          * \param   data    The binary data to pass in the command.
          **/
-        static void sendCommandMessage(areg::LoggingEventData::LogAction cmd, const areg::SharedBuffer& data);
+        static void sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data);
 
         /**
          * \brief   Call to configure logging. The passed configuration file name should be either
@@ -163,13 +169,13 @@ namespace areg
          * \brief   Registers instance of log scope object in log manager.
          * \param   scope   The instance of log scope object to register.
          **/
-        inline static void registerLogScope( areg::LogScope & scope );
+        inline static void registerLogScope( LogScope & scope );
 
         /**
          * \brief   Unregisters instance of log scope object from log manager.
          * \param   scope   The instance of log scope to unregister.
          **/
-        inline static void unregisterLogScope( areg::LogScope & scope );
+        inline static void unregisterLogScope( LogScope & scope );
 
         /**
          * \brief   Activates log scope. Finds priority in priority list
@@ -177,7 +183,7 @@ namespace areg
          * \param   scope   The instance of log scope object to activate
          *                  and set logging priority.
          **/
-        inline static void activateLogScope( areg::LogScope & scope );
+        inline static void activateLogScope( LogScope & scope );
 
         /**
          * \brief   Returns true if logging has started
@@ -244,7 +250,7 @@ namespace areg
          * \param   scopeId     The ID of the scope, ignored in case of scope group.
          * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
          **/
-        static void updateScopes(const areg::String & scopeName, uint32_t scopeId, uint32_t newPrio);
+        static void updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio);
 
         /**
          * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
@@ -260,7 +266,7 @@ namespace areg
          *          Otherwise, ignores to write the log messages.
          * \param   dbEngine    The pointer to the log database engine to set.
          **/
-        static void setLogDatabaseEngine(areg::LogDatabaseEngine * dbEngine);
+        static void setLogDatabaseEngine(LogDatabaseEngine * dbEngine);
 
         /**
          * \brief   Returns true if database and data tables are initialized and the
@@ -315,7 +321,7 @@ namespace areg
          * \param	eventElem	Event object to post
          * \return	In this class it always returns true.
          **/
-        bool postEvent( areg::Event & eventElem ) override;
+        bool postEvent( Event & eventElem ) override;
 
     /************************************************************************/
     // DispatcherThread overrides
@@ -335,7 +341,7 @@ namespace areg
          * \brief   Called by event dispatcher when processes the logging event data.
          * \param   data    The logging event data to process.
          **/
-        void processEvent( const areg::LoggingEventData & data ) override;
+        void processEvent( const LoggingEventData & data ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -415,13 +421,13 @@ namespace areg
          * \brief   Writes a log message to the existing loggers.
          * \param   logMessage  The message to log.
          **/
-        void writeLogMessage( const areg::LogEntry & logMessage );
+        void writeLogMessage( const LogEntry & logMessage );
 
         /**
          * \brief   Sends log event with the preferred priority.
          *          By default, it the priority is Normal.
          **/
-        void sendLogEvent( const areg::LoggingEventData & data, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio);
+        void sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio = Event::EventPriority::NormalPrio);
 
         /**
          * \brief   Changes the scope priority. It can be either a single scope or scope group.
@@ -429,12 +435,12 @@ namespace areg
          * \param   scopeId     The ID of the scope. If it is a scope group, the value is ignored.
          * \param   scopePrio   The new priority to set to the scope or scope group.
          **/
-        void changeScopePriority( const areg::String & scopeName, uint32_t scopeId, uint32_t scopePrio );
+        void changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio );
 
         /**
          * \brief   Returns read-only list of registered scopes.
          **/
-        inline const areg::HashMap<uint32_t, areg::LogScope *> & getScopeList() const;
+        inline const HashMap<uint32_t, LogScope *> & getScopeList() const;
 
         /**
          * \brief   Returns instance of log manager.
@@ -448,7 +454,7 @@ namespace areg
         /**
          * \brief   Scope controller object to activate / deactivate and change priority of the scopes.
          **/
-        areg::ScopeController     mScopeController;
+        ScopeController     mScopeController;
         /**
          * \brief   Flag, indicating whether the logging is started or not
          **/
@@ -456,35 +462,35 @@ namespace areg
         /**
          * \brief   Logging configuration
          **/
-        areg::LogConfiguration    mLogConfig;
+        LogConfiguration    mLogConfig;
         /**
          * \brief   File logging  object, to output logs in the file.
          **/
-        areg::FileLogger          mLoggerFile;
+        FileLogger          mLoggerFile;
         /**
          * \brief   The debug output logging to output logs in the output device (window).
          **/
-        areg::DebugOutputLogger   mLoggerDebug;
+        DebugOutputLogger   mLoggerDebug;
         /**
          * \brief   The remote TCP/IP logging service.
          **/
-        areg::NetTcpLogger        mLoggerTcp;
+        NetTcpLogger        mLoggerTcp;
         /**
          * \brief   The database logging object to write logs in the DB.
          **/
-        areg::DatabaseLogger      mLoggerDatabase;
+        DatabaseLogger      mLoggerDatabase;
         /**
          * \brief   The log event processor helper object.
          **/
-        areg::LogEventProcessor   mEventProcessor;
+        LogEventProcessor   mEventProcessor;
         /**
          * \brief   An event, indicating that the logging has been started.
          */
-        areg::SyncEvent           mLogStarted;
+        SyncEvent           mLogStarted;
         /**
          * \brief   Synchronization object used to synchronize data access.
          **/
-        mutable areg::ResourceLock    mLock;
+        mutable ResourceLock    mLock;
 
     private:
     //////////////////////////////////////////////////////////////////////////
@@ -507,17 +513,17 @@ namespace areg
         getInstance().waitLoggingThreadEnd();
     }
 
-    inline void LogManager::registerLogScope(areg::LogScope& scope)
+    inline void LogManager::registerLogScope(LogScope& scope)
     {
         getInstance().mScopeController.registerScope(scope);
     }
 
-    inline void LogManager::unregisterLogScope( areg::LogScope & scope )
+    inline void LogManager::unregisterLogScope( LogScope & scope )
     {
         getInstance( ).mScopeController.unregisterScope( scope );
     }
 
-    inline void LogManager::activateLogScope(areg::LogScope& scope)
+    inline void LogManager::activateLogScope(LogScope& scope)
     {
         getInstance().mScopeController.activateScope(scope);
     }
@@ -527,7 +533,7 @@ namespace areg
         return LogManager::getInstance().mLoggerTcp.getConnectionCookie();
     }
 
-    inline const areg::HashMap<uint32_t, areg::LogScope *> & LogManager::getScopeList() const
+    inline const HashMap<uint32_t, LogScope *> & LogManager::getScopeList() const
     {
         return mScopeController.getScopeList( );
     }
@@ -539,7 +545,7 @@ namespace areg
 
     inline bool LogManager::isLoggingStarted()
     {
-        areg::Lock lock(getInstance().mLock);
+        Lock lock(getInstance().mLock);
         return getInstance().mIsStarted;
     }
 

@@ -32,17 +32,17 @@ namespace areg
 
     #if AREG_LOGS
 
-    LogScope::LogScope( const char * scopeName, areg::LogPriority priority /*= areg::PrioNotset*/ )
-        : mScopeId      ( areg::makeScopeId(scopeName)  )
+    LogScope::LogScope( const char * scopeName, LogPriority priority /*= areg::PrioNotset*/ )
+        : mScopeId      ( makeScopeId(scopeName)  )
         , mScopePrio    ( static_cast<uint32_t>(priority) )
         , mScopeName    ( scopeName != nullptr ? scopeName : "" )
         , mIsRegistered ( true )
         , mSessionId    ( 0 )
     {
-        areg::LogManager::registerLogScope( self() );
+        LogManager::registerLogScope( self() );
     }
 
-    LogScope::LogScope(const areg::InStream & stream)
+    LogScope::LogScope(const InStream & stream)
         : mScopeId      ( stream.read32Bits() )
         , mScopePrio    ( stream.read32Bits() )
         , mScopeName    ( stream )
@@ -55,33 +55,33 @@ namespace areg
     {
         if (mIsRegistered)
         {
-            areg::LogManager::unregisterLogScope(self());
+            LogManager::unregisterLogScope(self());
         }
     }
 
     void LogScope::setPriority(const char* newPrio)
     {
-        setPriority(static_cast<uint32_t>(areg::stringToLogPrio(newPrio)));
+        setPriority(static_cast<uint32_t>(stringToLogPrio(newPrio)));
     }
 
-    void LogScope::setPriority(const areg::String& newPrio)
+    void LogScope::setPriority(const String& newPrio)
     {
-        setPriority(static_cast<uint32_t>(areg::stringToLogPrio(newPrio)));
+        setPriority(static_cast<uint32_t>(stringToLogPrio(newPrio)));
     }
 
     #else   // AREG_LOGS
 
-    LogScope::LogScope(const char* /*scopeName*/, areg::LogPriority /*priority*/ /*= areg::PrioNotset*/)
+    LogScope::LogScope(const char* /*scopeName*/, LogPriority /*priority*/ /*= areg::PrioNotset*/)
         : mScopeId      ( 0 )
-        , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+        , mScopePrio    ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
         , mScopeName    ( )
         , mIsRegistered (false)
     {
     }
 
-    LogScope::LogScope(const areg::InStream& /*stream*/ )
+    LogScope::LogScope(const InStream& /*stream*/ )
         : mScopeId      ( 0 )
-        , mScopePrio    ( static_cast<uint32_t>(areg::LogPriority::PrioInvalid) )
+        , mScopePrio    ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
         , mScopeName    ( )
         , mIsRegistered (false)
     {

@@ -29,44 +29,44 @@ namespace areg
 
     #if AREG_LOGS
 
-    LogEventProcessor::LogEventProcessor( areg::LogManager & logManager )
+    LogEventProcessor::LogEventProcessor( LogManager & logManager )
         : mLogManager (logManager)
     {
     }
 
-    void LogEventProcessor::processLogEvent( areg::LoggingEventData::LogAction cmdLog, const areg::SharedBuffer & stream )
+    void LogEventProcessor::processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream )
     {
         stream.moveToBegin( );
 
         switch ( cmdLog )
         {
-        case areg::LoggingEventData::LogAction::StartLogs:
+        case LoggingEventData::LogAction::StartLogs:
             _loggingStartLogs( );
             break;
 
-        case areg::LoggingEventData::LogAction::StopLogs:
+        case LoggingEventData::LogAction::StopLogs:
             _loggingStopLogs( );
             break;
 
-        case areg::LoggingEventData::LogAction::EnableLogs:
+        case LoggingEventData::LogAction::EnableLogs:
             _loggingSetEnableLogs( true );
             break;
 
-        case areg::LoggingEventData::LogAction::DisableLogs:
+        case LoggingEventData::LogAction::DisableLogs:
             _loggingSetEnableLogs( false );
             break;
 
-        case areg::LoggingEventData::LogAction::SaveScopes:
+        case LoggingEventData::LogAction::SaveScopes:
             _loggingSaveScopes( );
             break;
 
-        case areg::LoggingEventData::LogAction::LogMessage:
+        case LoggingEventData::LogAction::LogMessage:
             _loggingLogMessage( stream );
             break;
 
-        case areg::LoggingEventData::LogAction::UpdateScopes:   // fall through
-        case areg::LoggingEventData::LogAction::QueryScopes:    // fall through
-        case areg::LoggingEventData::LogAction::Undefined:      // fall through
+        case LoggingEventData::LogAction::UpdateScopes:   // fall through
+        case LoggingEventData::LogAction::QueryScopes:    // fall through
+        case LoggingEventData::LogAction::Undefined:      // fall through
         default:
             break; // ignore, do nothing
         }
@@ -92,16 +92,16 @@ namespace areg
         mLogManager.mLogConfig.saveConfiguration( );
     }
 
-    inline void LogEventProcessor::_loggingLogMessage( const areg::SharedBuffer & data )
+    inline void LogEventProcessor::_loggingLogMessage( const SharedBuffer & data )
     {
-        const areg::LogEntry * logMessage = reinterpret_cast<const areg::LogEntry *>(data.getBuffer( ));
+        const LogEntry * logMessage = reinterpret_cast<const LogEntry *>(data.getBuffer( ));
         ASSERT( logMessage != nullptr );
         mLogManager.writeLogMessage( *logMessage );
     }
 
-    inline void LogEventProcessor::_changeScopePriority( const areg::SharedBuffer & stream, uint32_t scopeCount )
+    inline void LogEventProcessor::_changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount )
     {
-        areg::String scopeName{ };
+        String scopeName{ };
         uint32_t scopeId{ };
         uint32_t scopePrio{ };
 

@@ -24,8 +24,11 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class LogScope; }
-namespace areg { class LogMessage; }
+namespace areg
+{
+    class LogScope;
+    class LogMessage;
+}
 
 namespace areg
 {
@@ -55,7 +58,7 @@ namespace areg
          *          and sends it to configured logging targets.
          * \param   logScope    Instance of Log Scope object containing log priority values.
          **/
-        ScopeMessage( const areg::LogScope & logScope );
+        ScopeMessage( const LogScope & logScope );
 
         /**
          * \brief   If Scope Priority is enabled for the Log Scope, creates an 
@@ -73,7 +76,7 @@ namespace areg
          * \param   logPrio The priority level of the message for logging targets.
          * \param   format  The formatted message string to forward.
          **/
-        static void log( areg::LogPriority logPrio, const char * format, ... );
+        static void log( LogPriority logPrio, const char * format, ... );
 
         /**
          * \brief   Outputs a Debug priority message to logging targets.
@@ -121,7 +124,7 @@ namespace areg
          * \param   logPrio The priority of the message.
          * \param   format  The formatted message string to log.
          **/
-        void logMessage( areg::LogPriority logPrio, const char * format, ...);
+        void logMessage( LogPriority logPrio, const char * format, ...);
 
         /**
          * \brief   Checks if Scope Priority logging is enabled for the Log Scope.
@@ -163,7 +166,7 @@ namespace areg
          * \param   msgPrio     The priority level of the message to check.
          * \return  Returns true if the specified priority is enabled; otherwise, false.
          **/
-        inline bool isPrioEnabled( areg::LogPriority msgPrio ) const;
+        inline bool isPrioEnabled( LogPriority msgPrio ) const;
 
     //////////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -179,13 +182,13 @@ namespace areg
          * \param   format      The formatted text to output.
          * \param   args        The list of arguments to apply to the formatted text.
          **/
-        static void _sendLog( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, areg::LogPriority msgPrio, const char * format, va_list args );
+        static void _sendLog( uint32_t scopeId, uint32_t sessionId, TIME64 scopeStamp, LogPriority msgPrio, const char * format, va_list args );
 
     //////////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////////
     private:
-        const areg::String &      mScopeName; //!< Name of the logging scope.
+        const String &      mScopeName; //!< Name of the logging scope.
         const uint32_t  mScopeId;   //!< ID of the logging scope.
         const uint32_t  mSessionId; //!< Priority of the logging scope.
         const TIME64        mTimestamp; //!< The timestamp when the scope message object was instantiated.
@@ -209,42 +212,42 @@ namespace areg
 
     inline bool ScopeMessage::isScopeEnabled() const
     {
-        return (mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope));
+        return (mScopePrio &  static_cast<uint32_t>(LogPriority::PrioScope));
     }
 
     inline bool ScopeMessage::isDbgEnabled() const
     {
-        return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioDebug));
+        return (mScopePrio >= static_cast<uint32_t>(LogPriority::PrioDebug));
     }
 
     inline bool ScopeMessage::isInfoEnabled() const
     {
-        return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioInfo));
+        return (mScopePrio >= static_cast<uint32_t>(LogPriority::PrioInfo));
     }
 
     inline bool ScopeMessage::isWarnEnabled() const
     {
-        return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioWarning));
+        return (mScopePrio >= static_cast<uint32_t>(LogPriority::PrioWarning));
     }
 
     inline bool ScopeMessage::isErrEnabled() const
     {
-        return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioError));
+        return (mScopePrio >= static_cast<uint32_t>(LogPriority::PrioError));
     }
 
     inline bool ScopeMessage::isFatalEnabled() const
     {
-        return (mScopePrio >= static_cast<uint32_t>(areg::LogPriority::PrioFatal));
+        return (mScopePrio >= static_cast<uint32_t>(LogPriority::PrioFatal));
     }
 
     inline bool ScopeMessage::isLogEnabled() const
     {
-        return (mScopePrio != static_cast<uint32_t>(areg::LogPriority::PrioNotset));
+        return (mScopePrio != static_cast<uint32_t>(LogPriority::PrioNotset));
     }
 
-    inline bool ScopeMessage::isPrioEnabled(areg::LogPriority msgPrio) const
+    inline bool ScopeMessage::isPrioEnabled(LogPriority msgPrio) const
     {
-        return (msgPrio == areg::LogPriority::PrioScope ? mScopePrio &  static_cast<uint32_t>(areg::LogPriority::PrioScope) : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
+        return (msgPrio == LogPriority::PrioScope ? mScopePrio &  static_cast<uint32_t>(LogPriority::PrioScope) : mScopePrio >= static_cast<uint32_t>(msgPrio)) ;
     }
 
     #endif  // AREG_LOGS

@@ -28,10 +28,13 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace areg { class LogScope; }
-namespace areg { class Property; }
-namespace areg { class LogManager; }
-namespace areg { class NetTcpLogger; }
+namespace areg
+{
+    class LogScope;
+    class Property;
+    class LogManager;
+    class NetTcpLogger;
+}
 
 namespace areg
 {
@@ -52,9 +55,9 @@ namespace areg
      **/
     class LogScopeMap   : public ConcurrentResourceMap<uint32_t, LogScope *, MapLogScope, ImplLogScope>
     {
-        friend class areg::NetTcpLogger;
+        friend class NetTcpLogger;
         friend class ScopeController;
-        friend class areg::LogManager;
+        friend class LogManager;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor

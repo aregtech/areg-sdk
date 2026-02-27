@@ -28,7 +28,10 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg { class LogDatabaseEngine; }
+namespace areg
+{
+    class LogDatabaseEngine;
+}
 
 namespace areg
 {
@@ -41,7 +44,7 @@ namespace areg
      *          the database, should be manually set. This class is forwarding
      *          the log messages to database engine handle for further processing.
      **/
-    class DatabaseLogger : public areg::LoggerBase
+    class DatabaseLogger : public LoggerBase
     {
     public:
          /**
@@ -52,7 +55,7 @@ namespace areg
           * \param  logConfig   An instance of the log configuration object containing
           *                     settings for initialization and message output.
           **/
-        explicit DatabaseLogger(areg::LogConfiguration & logConfig);
+        explicit DatabaseLogger(LogConfiguration & logConfig);
 
         virtual ~DatabaseLogger();
 
@@ -65,8 +68,8 @@ namespace areg
          * \brief   Returns the pointer to the database engine handler object,
          *          which is responsible to handle the database.
          **/
-        inline const areg::LogDatabaseEngine * getDatabaseEngine() const;
-        inline areg::LogDatabaseEngine * getDatabaseEngine();
+        inline const LogDatabaseEngine * getDatabaseEngine() const;
+        inline LogDatabaseEngine * getDatabaseEngine();
 
         /**
          * \brief   Call to set the logging database engine object.
@@ -76,7 +79,7 @@ namespace areg
          * \param   dbEngine    The pointer to the log database engine to save log messages.
          *                      If nullptr, no message is forwarded to the database engine.
          **/
-        inline void setDatabaseEngine(areg::LogDatabaseEngine * dbEngine);
+        inline void setDatabaseEngine(LogDatabaseEngine * dbEngine);
 
         /**
          * \brief   Returns true if the logging database engine is nut null.
@@ -111,7 +114,7 @@ namespace areg
          * \brief   Called when message should be logged.
          *          Every logger should implement method to process logger specific logging.
          **/
-        void logMessage( const areg::LogEntry & logMessage ) override;
+        void logMessage( const LogEntry & logMessage ) override;
 
         /**
          * \brief   Returns true if logger is initialized (opened).
@@ -144,10 +147,10 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
     private:
         //!< The pointer to the database engine.
-        areg::LogDatabaseEngine *   mDatabase;
+        LogDatabaseEngine *   mDatabase;
 
         //!< Locking object.
-        mutable areg::Mutex           mLock;
+        mutable Mutex           mLock;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.
@@ -161,27 +164,27 @@ namespace areg
     // DatabaseLogger class inline methods.
     //////////////////////////////////////////////////////////////////////////
 
-    inline const areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
+    inline const LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mDatabase;
     }
 
-    inline areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
+    inline LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return mDatabase;
     }
 
-    inline void DatabaseLogger::setDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
+    inline void DatabaseLogger::setDatabaseEngine(LogDatabaseEngine * dbEngine)
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         mDatabase = dbEngine;
     }
 
     inline bool DatabaseLogger::isValid() const
     {
-        areg::Lock lock(mLock);
+        Lock lock(mLock);
         return (mDatabase != nullptr);
     }
 

@@ -21,7 +21,7 @@ namespace areg
 {
 
     LogDatabaseEngine::LogDatabaseEngine()
-        : areg::DatabaseEngine  ( )
+        : DatabaseEngine  ( )
     {
     }
 
