@@ -27,87 +27,90 @@
 namespace areg { class RuntimeClassID; }
 namespace areg { class String; }
 
-//////////////////////////////////////////////////////////////////////////
-// RuntimeBase class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   This is base class of Runtime objects.
- *          All runtime object should derive this object.
- *          The runtime objects give possibility to define type of class
- *          without dynamic casting.
- *          Every runtime objects have runtime ClassID and name.
- **/
-class AREG_API RuntimeBase
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Hidden static calls.
-//////////////////////////////////////////////////////////////////////////
-private:
+    //////////////////////////////////////////////////////////////////////////
+    // RuntimeBase class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Returns the ClassID object of RuntimeBase class.
+     * \brief   This is base class of Runtime objects.
+     *          All runtime object should derive this object.
+     *          The runtime objects give possibility to define type of class
+     *          without dynamic casting.
+     *          Every runtime objects have runtime ClassID and name.
      **/
-    static const areg::RuntimeClassID & _getClassId();
+    class AREG_API RuntimeBase
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden static calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Returns the ClassID object of RuntimeBase class.
+         **/
+        static const areg::RuntimeClassID & _getClassId();
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Default constructor, initializes runtime object.
-     **/
-    RuntimeBase() = default;
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Default constructor, initializes runtime object.
+         **/
+        RuntimeBase() = default;
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~RuntimeBase() = default;
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~RuntimeBase() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Override attributes
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Override attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Returns the Class Identifier object
-     **/
-    virtual const areg::RuntimeClassID & getRuntimeClassId() const;
+        /**
+         * \brief   Returns the Class Identifier object
+         **/
+        virtual const areg::RuntimeClassID & getRuntimeClassId() const;
 
-    /**
-     * \brief   Returns the class name, i.e. the name of Class Identifier
-     **/
-    virtual const areg::String& getRuntimeClassName() const;
+        /**
+         * \brief   Returns the class name, i.e. the name of Class Identifier
+         **/
+        virtual const areg::String& getRuntimeClassName() const;
 
-    /**
-     * \brief   Returns the calculated number of runtime class.
-     **/
-    virtual uint32_t getRuntimeClassNumber() const;
+        /**
+         * \brief   Returns the calculated number of runtime class.
+         **/
+        virtual uint32_t getRuntimeClassNumber() const;
 
-    /**
-     * \brief   Checks class instance by name.
-     * \param   className   The name of class to check.
-     **/
-    virtual bool isInstanceOfRuntimeClass( const char* className ) const;
-    virtual bool isInstanceOfRuntimeClass( const areg::String& className ) const;
+        /**
+         * \brief   Checks class instance by name.
+         * \param   className   The name of class to check.
+         **/
+        virtual bool isInstanceOfRuntimeClass( const char* className ) const;
+        virtual bool isInstanceOfRuntimeClass( const areg::String& className ) const;
 
-    /**
-     * \brief   Checks class instance by name.
-     * \param   classMagic  The magic number related with the  name of the class to check.
-     **/
-    virtual bool isInstanceOfRuntimeClass( uint32_t classMagic ) const;
+        /**
+         * \brief   Checks class instance by name.
+         * \param   classMagic  The magic number related with the  name of the class to check.
+         **/
+        virtual bool isInstanceOfRuntimeClass( uint32_t classMagic ) const;
 
-    /**
-     * \brief   Checks class instance by Class Identifier.
-     * \param   classId     The Class Identifier to check.
-     **/
-    virtual bool isInstanceOfRuntimeClass( const areg::RuntimeClassID & classId ) const;
+        /**
+         * \brief   Checks class instance by Class Identifier.
+         * \param   classId     The Class Identifier to check.
+         **/
+        virtual bool isInstanceOfRuntimeClass( const areg::RuntimeClassID & classId ) const;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( RuntimeBase );
-    bool operator == ( const RuntimeBase & /*other*/ ) const = delete;
-    bool operator != ( const RuntimeBase & /*other*/ ) const = delete;
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( RuntimeBase );
+        bool operator == ( const RuntimeBase & /*other*/ ) const = delete;
+        bool operator != ( const RuntimeBase & /*other*/ ) const = delete;
+    };
 
+} // namespace areg
 #endif  // AREG_BASE_PRIVATE_RUNTIMEBASE_HPP

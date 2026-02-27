@@ -23,7 +23,7 @@
 /************************************************************************/
 // Implement runtime standard functions and initialize variables
 /************************************************************************/
-AREG_IMPLEMENT_RUNTIME(areg::RuntimeObject, RuntimeBase)
+AREG_IMPLEMENT_RUNTIME(areg::RuntimeObject, areg::RuntimeBase)
 
 namespace areg
 {

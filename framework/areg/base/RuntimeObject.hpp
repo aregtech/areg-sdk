@@ -185,7 +185,7 @@ namespace areg
      * \brief   Runtime class object is a base class for all Runtime classes,
      *          which contain class name used in Runtime operation.
      **/
-    class AREG_API RuntimeObject    : private   RuntimeBase   // Base Runtime class, declared as private
+    class AREG_API RuntimeObject    : private   areg::RuntimeBase   // Base Runtime class, declared as private
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
