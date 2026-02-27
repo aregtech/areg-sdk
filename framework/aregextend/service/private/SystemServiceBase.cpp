@@ -32,7 +32,7 @@ namespace aregext
     //////////////////////////////////////////////////////////////////////////
     // MultitargetRouter class implementation
     //////////////////////////////////////////////////////////////////////////
-    SystemServiceBase::SystemServiceBase( ServiceCommunicationBase & commBase )
+    SystemServiceBase::SystemServiceBase( aregext::ServiceCommunicationBase & commBase )
         : mCommunication        ( commBase )
         , mSystemServiceState   ( aregext::ServicePhase::Stopped )
         , mSystemServiceOption  ( aregext::DEFAULT_OPTION )

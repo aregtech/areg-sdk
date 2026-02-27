@@ -25,11 +25,11 @@ DEF_LOG_SCOPE(logcollector_service_LogCollectorServerService_onServiceMessageSen
 //////////////////////////////////////////////////////////////////////////
 
 LogCollectorServerService::LogCollectorServerService()
-    : ServiceCommunicationBase   ( areg::COOKIE_LOGGER
+    : aregext::ServiceCommunicationBase   ( areg::COOKIE_LOGGER
                                 , areg::RemoteServiceKind::Logger
                                 , static_cast<uint32_t>(areg::ConnectionType::Tcpip)
                                 , areg::SERVER_DISPATCH_MESSAGE_THREAD
-                                , ServiceCommunicationBase::ConnectionPolicy::Accept )
+                                , aregext::ServiceCommunicationBase::ConnectionPolicy::Accept )
     , areg::TimerConsumer           ( )
 
     , mLoggerProcessor          ( self() )
@@ -42,7 +42,7 @@ void LogCollectorServerService::addInstance(const ITEM_ID& cookie, const areg::C
 {
     areg::Lock lock(mLock);
 
-    ServiceCommunicationBase::addInstance(cookie, instance);
+    aregext::ServiceCommunicationBase::addInstance(cookie, instance);
     if (LogCollectorMessageProcessor::isLogSource(instance.ciSource))
     {
         areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
@@ -70,7 +70,7 @@ void LogCollectorServerService::removeInstance(const ITEM_ID & cookie)
     areg::ArrayList<ITEM_ID> listIds;
     areg::ConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
-    ServiceCommunicationBase::removeInstance(cookie);
+    aregext::ServiceCommunicationBase::removeInstance(cookie);
    
     mLoggerProcessor.clientDisconnected(cookie);
     if (exists && LogCollectorMessageProcessor::isLogSource(instance.ciSource))
@@ -114,7 +114,7 @@ void LogCollectorServerService::removeAllInstances()
         areg::LogEntry logMsgClose(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioAny, nullptr, 0);
         areg::String::formatString(logMsgClose.logMessage, areg::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
         areg::logAnyMessageLocal(logMsgClose);
-        ServiceCommunicationBase::removeAllInstances();
+        aregext::ServiceCommunicationBase::removeAllInstances();
 
         if (listIds.isEmpty() == false)
         {

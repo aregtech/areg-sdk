@@ -37,7 +37,7 @@ DEF_LOG_SCOPE(mtrouter_service_RouterServerService_onServiceMessageSend);
 //////////////////////////////////////////////////////////////////////////
 
 RouterServerService::RouterServerService()
-    : ServiceCommunicationBase   ( areg::COOKIE_ROUTER, areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip), areg::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicationBase::ConnectionPolicy::Accept )
+    : aregext::ServiceCommunicationBase   ( areg::COOKIE_ROUTER, areg::RemoteServiceKind::Router, static_cast<uint32_t>(areg::ConnectionType::Tcpip), areg::SERVER_DISPATCH_MESSAGE_THREAD, aregext::ServiceCommunicationBase::ConnectionPolicy::Accept )
     , areg::RegistrationConsumer ( )
     , areg::RegistrationProvider ( )
 
@@ -245,7 +245,7 @@ void RouterServerService::onServiceMessageSend(const areg::RemoteMessage &msgSen
 
 void RouterServerService::disconnectServices()
 {
-    ServiceCommunicationBase::disconnectServices( );
+    aregext::ServiceCommunicationBase::disconnectServices( );
 
     areg::ArrayList<areg::StubAddress>  stubList;
     areg::ArrayList<areg::ProxyAddress> proxyList;

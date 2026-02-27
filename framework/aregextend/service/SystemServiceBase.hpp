@@ -99,7 +99,7 @@ namespace aregext
         /**
          * \brief   Initializes instance of message router service.
          **/
-        SystemServiceBase( ServiceCommunicationBase & commBase );
+        SystemServiceBase( aregext::ServiceCommunicationBase & commBase );
         /**
          * \brief   Destructor.
          **/
@@ -278,7 +278,7 @@ namespace aregext
         /**
          * \brief   Return the instance of the communication controller object.
          **/
-        inline ServiceCommunicationBase& getCommunicationController() const;
+        inline aregext::ServiceCommunicationBase& getCommunicationController() const;
 
         /**
          * \brief   Resets default options.
@@ -339,7 +339,7 @@ namespace aregext
     // Member variables.
     //////////////////////////////////////////////////////////////////////////
     protected:
-        ServiceCommunicationBase &               mCommunication;
+        aregext::ServiceCommunicationBase &               mCommunication;
         /**
          * \brief   The message router service state.
          **/
@@ -382,9 +382,9 @@ namespace aregext
         return  mCommunication.getDataRateHelper();
     }
 
-    inline ServiceCommunicationBase& SystemServiceBase::getCommunicationController() const
+    inline aregext::ServiceCommunicationBase& SystemServiceBase::getCommunicationController() const
     {
-        return const_cast<ServiceCommunicationBase&>(mCommunication);
+        return const_cast<aregext::ServiceCommunicationBase&>(mCommunication);
     }
 
     inline aregext::ServiceOption SystemServiceBase::getCurrentOption() const

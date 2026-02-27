@@ -33,7 +33,7 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class RouterServerService   : public    ServiceCommunicationBase
+class RouterServerService   : public    aregext::ServiceCommunicationBase
                             , private   areg::RegistrationConsumer
                             , private   areg::RegistrationProvider
 {

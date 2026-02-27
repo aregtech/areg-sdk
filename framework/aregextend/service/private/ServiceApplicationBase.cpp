@@ -30,7 +30,7 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
 
-ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBase)
+ServiceApplicationBase::ServiceApplicationBase(aregext::ServiceCommunicationBase& commBase)
     : aregext::SystemServiceBase ( commBase )
     , mServiceSetup     (false)
 {
