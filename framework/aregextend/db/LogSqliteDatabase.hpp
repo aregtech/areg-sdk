@@ -109,8 +109,8 @@ public:
     /**
      * \brief   Return SQLite database object
      **/
-    inline SqliteDatabase& getDatabase();
-    inline const SqliteDatabase& getDatabase() const;
+    inline aregext::SqliteDatabase& getDatabase();
+    inline const aregext::SqliteDatabase& getDatabase() const;
 
     inline aregext::SqliteStatement& getStatement();
     inline const aregext::SqliteStatement& getStatement() const;
@@ -571,7 +571,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
     //!< The path to the SQLite database file.
-    SqliteDatabase  mDatabase;
+    aregext::SqliteDatabase  mDatabase;
 
     //!< The statement to log messages in the database.
     aregext::SqliteStatement mStmtLogs;
@@ -619,12 +619,12 @@ inline const areg::String& LogSqliteDatabase::getInitialDatabasePath() const
     return mDbInitPath;
 }
 
-inline SqliteDatabase& LogSqliteDatabase::getDatabase()
+inline aregext::SqliteDatabase& LogSqliteDatabase::getDatabase()
 {
     return mDatabase;
 }
 
-inline const SqliteDatabase& LogSqliteDatabase::getDatabase() const
+inline const aregext::SqliteDatabase& LogSqliteDatabase::getDatabase() const
 {
     return mDatabase;
 }

@@ -29,145 +29,148 @@ namespace aregext
     class SqliteStatement;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// SqliteDatabase class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The SQLite Database engine.
- **/
-class SqliteDatabase  : public areg::DatabaseEngine
+namespace aregext
 {
-    friend class aregext::SqliteStatement;
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // SqliteDatabase class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default constructor. Creates empty object, not connected to SQLite database.
+     * \brief   The SQLite Database engine.
      **/
-    SqliteDatabase();
+    class SqliteDatabase  : public areg::DatabaseEngine
+    {
+        friend class aregext::SqliteStatement;
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor. Creates empty object, not connected to SQLite database.
+         **/
+        SqliteDatabase();
 
-    /**
-     * \brief   Sets the SQLite database file path and connects to the database if 'open' flag is true.
-     * \param   dbPath  The relative or absolute path to the SQLite database file. The path may have a mask.
-     * \param   open    The flag, indicating whether it needs to connect to the database or not.
-     **/
-    SqliteDatabase(const areg::String & dbPath, bool open);
+        /**
+         * \brief   Sets the SQLite database file path and connects to the database if 'open' flag is true.
+         * \param   dbPath  The relative or absolute path to the SQLite database file. The path may have a mask.
+         * \param   open    The flag, indicating whether it needs to connect to the database or not.
+         **/
+        SqliteDatabase(const areg::String & dbPath, bool open);
 
-    /**
-     * \brief   Closes SQLite database file if it is still opened.
-     **/
-    virtual ~SqliteDatabase();
+        /**
+         * \brief   Closes SQLite database file if it is still opened.
+         **/
+        virtual ~SqliteDatabase();
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Returns the path to the SQLite database file.
-     **/
-    inline const areg::String & getPath() const;
+        /**
+         * \brief   Returns the path to the SQLite database file.
+         **/
+        inline const areg::String & getPath() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// DatabaseEngine class overrides.
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // DatabaseEngine class overrides.
+    /************************************************************************/
 
-    /**
-     * \brief   Returns true if SqliteDatabase engine is opened and operable.
-     *          Otherwise, returns false.
-     **/
-    bool isOperable() const override;
+        /**
+         * \brief   Returns true if SqliteDatabase engine is opened and operable.
+         *          Otherwise, returns false.
+         **/
+        bool isOperable() const override;
 
-    /**
-     * \brief   Connects to the specified database.
-     * \param   dbPath      The path to the database. If needed, the path may contain
-     *                      file path or URL, user name and password. It is up to
-     *                      Database engine to parse the path and initialize the connection.
-     *                      If the parameter is empty, it should take the data from the
-     *                      'areg.init' configuration file.
-     * \param   readOnly    If true, the database engine should connect in read-only mode.
-     * \return  Returns true if succeeded to connect. Otherwise, returns false.
-     **/
-    bool connect(const areg::String& dbPath, bool readOnly) override;
+        /**
+         * \brief   Connects to the specified database.
+         * \param   dbPath      The path to the database. If needed, the path may contain
+         *                      file path or URL, user name and password. It is up to
+         *                      Database engine to parse the path and initialize the connection.
+         *                      If the parameter is empty, it should take the data from the
+         *                      'areg.init' configuration file.
+         * \param   readOnly    If true, the database engine should connect in read-only mode.
+         * \return  Returns true if succeeded to connect. Otherwise, returns false.
+         **/
+        bool connect(const areg::String& dbPath, bool readOnly) override;
 
-    /**
-     * \brief   Disconnects connected SqliteDatabase.
-     **/
-    void disconnect() override;
+        /**
+         * \brief   Disconnects connected SqliteDatabase.
+         **/
+        void disconnect() override;
 
-    /**
-     * \brief   Execute the SQL script.
-     * \param   sql     The SQL script to execute.
-     * \return  Returns true if succeeds to execute the SQL script.
-     **/
-    bool execute(const areg::String & sql) override;
+        /**
+         * \brief   Execute the SQL script.
+         * \param   sql     The SQL script to execute.
+         * \return  Returns true if succeeds to execute the SQL script.
+         **/
+        bool execute(const areg::String & sql) override;
 
-    /**
-     * \brief   Call if need to make multiple operation. This call starts the transaction,
-     *          that is required either commit or rollback call to complete the transaction.
-     **/
-    bool begin() override;
+        /**
+         * \brief   Call if need to make multiple operation. This call starts the transaction,
+         *          that is required either commit or rollback call to complete the transaction.
+         **/
+        bool begin() override;
 
-    /**
-     * \brief   Commits or rolls back the SqliteDatabase changes and returns true if succeeded.
-     * \param   doCommit    If true, the SqliteDatabase engine should commit the changes.
-     *                      Otherwise, the SqliteDatabase engine should rollback the changes.
-     * \return  Returns true if operation succeeded. Otherwise, returns false.
-     **/
-    bool commit(bool doCommit) override;
+        /**
+         * \brief   Commits or rolls back the SqliteDatabase changes and returns true if succeeded.
+         * \param   doCommit    If true, the SqliteDatabase engine should commit the changes.
+         *                      Otherwise, the SqliteDatabase engine should rollback the changes.
+         * \return  Returns true if operation succeeded. Otherwise, returns false.
+         **/
+        bool commit(bool doCommit) override;
 
-    /**
-     * \brief   Rolls back the database changes and returns true if succeeded.
-     **/
-    bool rollback() override;
+        /**
+         * \brief   Rolls back the database changes and returns true if succeeded.
+         **/
+        bool rollback() override;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
 
-    /**
-     * \brief   Opens or creates the specified database file.
-     * \param   dbPath      The relative or absolute path the database file.
-     *                      The file path may contain a mask.
-     * \return  Returns true if succeeded to open or create the database file.
-     **/
-    inline bool _open(const areg::String& dbPath);
+        /**
+         * \brief   Opens or creates the specified database file.
+         * \param   dbPath      The relative or absolute path the database file.
+         *                      The file path may contain a mask.
+         * \return  Returns true if succeeded to open or create the database file.
+         **/
+        inline bool _open(const areg::String& dbPath);
 
-    /**
-     * \brief   Closes previously opened database and releases resources.
-     **/
-    inline void _close();
+        /**
+         * \brief   Closes previously opened database and releases resources.
+         **/
+        inline void _close();
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-protected:
-    //!< The path to the SQLite database file.
-    areg::String      mDbPath;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables.
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        //!< The path to the SQLite database file.
+        areg::String      mDbPath;
 
-    //!< The SQLite database object.
-    void *      mDbObject;
+        //!< The SQLite database object.
+        void *      mDbObject;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE(SqliteDatabase);
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE(SqliteDatabase);
+    };
 
-//////////////////////////////////////////////////////////////////////////
-// SqliteDatabase class inline methods
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // SqliteDatabase class inline methods
+    //////////////////////////////////////////////////////////////////////////
 
-inline const areg::String& SqliteDatabase::getPath() const
-{
-    return mDbPath;
-}
+    inline const areg::String& SqliteDatabase::getPath() const
+    {
+        return mDbPath;
+    }
 
+} // namespace aregext
 #endif // AREG_AREGEXTEND_DB_SQLITEDATABASE_HPP

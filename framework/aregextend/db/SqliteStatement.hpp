@@ -21,7 +21,7 @@
 #include "areg/base/String.hpp"
 #include "aregextend/db/SqliteRow.hpp"
 
-class SqliteDatabase;
+namespace aregext { class SqliteDatabase; }
 namespace aregext { class SqliteRow; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,14 +74,14 @@ namespace aregext
          * \param   db      Reference to the SqliteDatabase object.
          * \param   sql     The SQL statement to prepare.
          */
-        SqliteStatement(SqliteDatabase& db, const areg::String& sql);
+        SqliteStatement(aregext::SqliteDatabase& db, const areg::String& sql);
 
         /**
          * \brief   Constructs a SqliteStatement associated with the given database.
          *          The statement is not prepared until prepare() is called.
          * \param   db      Reference to the SqliteDatabase object.
          */
-        SqliteStatement(SqliteDatabase& db);
+        SqliteStatement(aregext::SqliteDatabase& db);
 
         /**
          * \brief   Destructor. Finalizes the statement and releases resources.
@@ -305,7 +305,7 @@ namespace aregext
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     protected:
-        SqliteDatabase& mDatabase;  //!< The SQLite database object, which owns this statement.
+        aregext::SqliteDatabase& mDatabase;  //!< The SQLite database object, which owns this statement.
         void *          mStatement; //!< The SQLite statement object.
         uint32_t        mRowPos;    //!< The current row position.
 
