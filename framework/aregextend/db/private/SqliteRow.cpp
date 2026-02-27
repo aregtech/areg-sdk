@@ -34,7 +34,7 @@ SqliteRow::SqliteRow()
 {
 }
 
-SqliteRow::SqliteRow(SqliteStatement& statement)
+SqliteRow::SqliteRow(aregext::SqliteStatement& statement)
     : mStatement(statement.mStatement)
 {
 }

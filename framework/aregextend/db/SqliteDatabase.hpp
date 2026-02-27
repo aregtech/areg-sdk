@@ -21,6 +21,14 @@
 #include "areg/persist/DatabaseEngine.hpp"
 #include "areg/base/String.hpp"
 
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+namespace aregext
+{
+    class SqliteStatement;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // SqliteDatabase class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -29,7 +37,7 @@
  **/
 class SqliteDatabase  : public areg::DatabaseEngine
 {
-    friend class SqliteStatement;
+    friend class aregext::SqliteStatement;
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
