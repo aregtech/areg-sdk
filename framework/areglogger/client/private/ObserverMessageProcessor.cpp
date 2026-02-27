@@ -34,7 +34,7 @@
 namespace areglogger
 {
 
-    ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
+    ObserverMessageProcessor::ObserverMessageProcessor(areglogger::LoggerClient& loggerClient)
         : mLoggerClient (loggerClient)
     {
     }

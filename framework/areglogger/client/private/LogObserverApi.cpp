@@ -122,7 +122,7 @@ namespace areglogger
 
         if (_isInitialized(theObserver.losState) == false)
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             theObserver.losState = ObserverState::ObserverDisconnected;
             _setCallbacks(theObserver.losEvents, callbacks);
             client.setCallbacks(&theObserver.losEvents);
@@ -139,7 +139,7 @@ namespace areglogger
 
         if (_isDisconnected(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             client.openLoggingDatabase(dbPath);
             if (client.startLoggerClient(ipAddress, portNr))
             {
@@ -157,7 +157,7 @@ namespace areglogger
 
         if (_isConnected(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             client.stopLoggerClient();
             client.closeLoggingDatabase();
             theObserver.losState = ObserverState::ObserverDisconnected;
@@ -173,7 +173,7 @@ namespace areglogger
         if (_isConnected(theObserver.losState))
         {
             theObserver.losState = doPause ? ObserverState::ObserverPaused : ObserverState::ObserverConnected;
-            LoggerClient::getInstance().setPaused(doPause);
+            areglogger::LoggerClient::getInstance().setPaused(doPause);
         }
 
         return result;
@@ -186,7 +186,7 @@ namespace areglogger
         bool result{ false };
         if (_isConnected(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             if (doStop)
             {
                 theObserver.losState = ObserverState::ObserverPaused;
@@ -226,7 +226,7 @@ namespace areglogger
 
         if ((theObserver.losCounter == 0) && _isInitialized(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             client.setCallbacks(nullptr);
             client.stopLoggerClient();
             areg::Application::releaseApplication();
@@ -249,7 +249,7 @@ namespace areglogger
         bool result{ false };
         if (_isInitialized(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             result = client.isConnectedState();
         }
 
@@ -270,7 +270,7 @@ namespace areglogger
         const char * result{ nullptr };
         if (_isInitialized(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             result = client.getAddress().getHostAddress().getString();
         }
 
@@ -284,7 +284,7 @@ namespace areglogger
         uint16_t result{ areg::InvalidPort };
         if (_isInitialized(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             result = client.getAddress().getHostPort();
         }
 
@@ -298,7 +298,7 @@ namespace areglogger
         bool result{ false };
         if (_isInitialized(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             result = client.isConfigLoggerConnectEnabled();
         }
 
@@ -312,7 +312,7 @@ namespace areglogger
         bool result{ false };
         if (_isInitialized(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             areg::String addr{ client.getConfigLoggerAddress() };
             if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<areg::CharCount>(space)))
             {
@@ -330,7 +330,7 @@ namespace areglogger
         uint16_t result{ areg::InvalidPort };
         if (_isInitialized(theObserver.losState))
         {
-            LoggerClient& client = LoggerClient::getInstance();
+            areglogger::LoggerClient& client = areglogger::LoggerClient::getInstance();
             result = client.getConfigLoggerPort();
         }
 
@@ -344,7 +344,7 @@ namespace areglogger
         areg::Lock lock(theObserver.losLock);
         if (_isInitialized(theObserver.losState))
         {
-            result = LoggerClient::getInstance().requestConnectedInstances();
+            result = areglogger::LoggerClient::getInstance().requestConnectedInstances();
         }
 
         return result;
@@ -357,7 +357,7 @@ namespace areglogger
         areg::Lock lock(theObserver.losLock);
         if (_isInitialized(theObserver.losState))
         {
-            result = LoggerClient::getInstance().requestScopes(target);
+            result = areglogger::LoggerClient::getInstance().requestScopes(target);
         }
 
         return result;
@@ -376,7 +376,7 @@ namespace areglogger
                 scopeList.add(areg::ScopeEntry(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
             }
 
-            result = LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
+            result = areglogger::LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
         }
 
         return result;
@@ -389,7 +389,7 @@ namespace areglogger
         areg::Lock lock(theObserver.losLock);
         if (_isInitialized(theObserver.losState))
         {
-            result = LoggerClient::getInstance().requestSaveConfiguration(target);
+            result = areglogger::LoggerClient::getInstance().requestSaveConfiguration(target);
         }
 
         return result;
@@ -397,7 +397,7 @@ namespace areglogger
 
     LOGGER_API_IMPL int32_t logObserverGetActiveDatabasePath(char* dbPath, int32_t space)
     {
-        areg::String path{ LoggerClient::getInstance().getActiveDatabasePath() };
+        areg::String path{ areglogger::LoggerClient::getInstance().getActiveDatabasePath() };
         if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
         {
             return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
@@ -410,7 +410,7 @@ namespace areglogger
 
     LOGGER_API_IMPL int32_t logObserverGetInitialDatabasePath(char* dbPath, int32_t space)
     {
-        areg::String path{ LoggerClient::getInstance().getInitialDatabasePath() };
+        areg::String path{ areglogger::LoggerClient::getInstance().getInitialDatabasePath() };
         if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
         {
             return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
@@ -423,7 +423,7 @@ namespace areglogger
 
     LOGGER_API_IMPL int32_t logObserverGetConfigDatabasePath(char* dbPath, int32_t space)
     {
-        areg::String path{ LoggerClient::getInstance().getConfigDatabasePath() };
+        areg::String path{ areglogger::LoggerClient::getInstance().getConfigDatabasePath() };
         if ((dbPath != nullptr) && (path.getLength() > static_cast<areg::CharCount>(space)))
         {
             return static_cast<int32_t>(areg::copyString<char, char>(dbPath, static_cast<areg::CharCount>(space), path.getString(), path.getLength()));
@@ -436,7 +436,7 @@ namespace areglogger
 
     LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseLocation(char* dbLocation, int32_t space)
     {
-        areg::String location{ LoggerClient::getInstance().getConfigDatabaseLocation() };
+        areg::String location{ areglogger::LoggerClient::getInstance().getConfigDatabaseLocation() };
         if ((dbLocation != nullptr) && (location.getLength() > static_cast<areg::CharCount>(space)))
         {
             return static_cast<int32_t>(areg::copyString<char, char>(dbLocation, static_cast<areg::CharCount>(space), location.getString(), location.getLength()));
@@ -449,12 +449,12 @@ namespace areglogger
 
     LOGGER_API_IMPL bool logObserverSetConfigDatabaseLocation(const char* dbLocation)
     {
-        return LoggerClient::getInstance().setConfigDatabaseLocation(dbLocation);
+        return areglogger::LoggerClient::getInstance().setConfigDatabaseLocation(dbLocation);
     }
 
     LOGGER_API_IMPL int32_t logObserverGetConfigDatabaseName(char* dbName, int32_t space)
     {
-        areg::String name{ LoggerClient::getInstance().getConfigDatabaseName() };
+        areg::String name{ areglogger::LoggerClient::getInstance().getConfigDatabaseName() };
         if ((dbName != nullptr) && (name.getLength() > static_cast<areg::CharCount>(space)))
         {
             return static_cast<int32_t>(areg::copyString<char, char>(dbName, static_cast<areg::CharCount>(space), name.getString(), name.getLength()));
@@ -467,12 +467,12 @@ namespace areglogger
 
     LOGGER_API_IMPL bool logObserverSetConfigDatabaseName(const char* dbName)
     {
-        return LoggerClient::getInstance().setConfigDatabaseName(dbName);
+        return areglogger::LoggerClient::getInstance().setConfigDatabaseName(dbName);
     }
 
     LOGGER_API_IMPL bool logObserverConfigUpdate(const char* address, uint16_t port, const char* dbFilePath, bool makeSave)
     {
-        LoggerClient& logger = LoggerClient::getInstance();
+        areglogger::LoggerClient& logger = areglogger::LoggerClient::getInstance();
         bool result{ false };
         if (logger.setConfigLoggerConnection(address, port) && logger.setConfigDatabasePath(dbFilePath, true))
         {

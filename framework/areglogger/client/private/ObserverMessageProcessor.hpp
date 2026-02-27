@@ -24,7 +24,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LoggerClient;
+namespace areglogger { class LoggerClient; }
 namespace areg { class RemoteMessage; }
 namespace areg {
     struct LogEntry;
@@ -43,7 +43,7 @@ namespace areglogger
     // Default constructor and destructor.
     //////////////////////////////////////////////////////////////////////////
     public:
-        ObserverMessageProcessor(LoggerClient& loggerClient);
+        ObserverMessageProcessor(areglogger::LoggerClient& loggerClient);
         ~ObserverMessageProcessor() = default;
 
     //////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ namespace areglogger
     // Hidden members.
     //////////////////////////////////////////////////////////////////////////
     private:
-        LoggerClient &  mLoggerClient;  //!< The object of the observer client.
+        areglogger::LoggerClient &  mLoggerClient;  //!< The object of the observer client.
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls.

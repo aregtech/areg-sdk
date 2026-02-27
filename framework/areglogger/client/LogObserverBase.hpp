@@ -34,7 +34,7 @@
  * Dependencies.
  ************************************************************************/
 namespace areg { class SharedBuffer; }
-class LoggerClient;
+namespace areglogger { class LoggerClient; }
 namespace areglogger { class ObserverMessageProcessor; }
 
 namespace areglogger
@@ -53,7 +53,7 @@ namespace areglogger
     //////////////////////////////////////////////////////////////////////////
     // Friend classes
     //////////////////////////////////////////////////////////////////////////
-        friend class ::LoggerClient;
+        friend class areglogger::LoggerClient;
         friend class areglogger::ObserverMessageProcessor;
 
     //////////////////////////////////////////////////////////////////////////
