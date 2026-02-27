@@ -140,9 +140,9 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const areg::RemoteMessage
 
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogRegisterScopes(cookie, scopes, count);
+        areglogger::LogObserverBase::_theLogObserver->onLogRegisterScopes(cookie, scopes, count);
     }
     else if (callback != nullptr)
     {
@@ -190,9 +190,9 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const areg::RemoteMessage& 
 
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogUpdateScopes(cookie, scopes, count);
+        areglogger::LogObserverBase::_theLogObserver->onLogUpdateScopes(cookie, scopes, count);
     }
     else if (callback != nullptr)
     {
@@ -228,9 +228,9 @@ void ObserverMessageProcessor::notifyLogMessage(const areg::RemoteMessage& msgRe
 
         mLoggerClient.mLogDatabase.commit(true);
 
-        if (LogObserverBase::_theLogObserver != nullptr)
+        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogMessage(msgReceived);
+            areglogger::LogObserverBase::_theLogObserver->onLogMessage(msgReceived);
         }
         else if (mLoggerClient.mCallbacks != nullptr)
         {
@@ -289,7 +289,7 @@ void ObserverMessageProcessor::_clientsConnected(const areg::RemoteMessage& msgR
         areg::Lock lock(mLoggerClient.mLock);
         areg::DateTime now(areg::DateTime::getNow());
 
-        if (LogObserverBase::_theLogObserver != nullptr)
+        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
         {
             for (int i = 0; i < size; ++i)
             {
@@ -355,9 +355,9 @@ void ObserverMessageProcessor::_clientsConnected(const areg::RemoteMessage& msgR
         }
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
+        areglogger::LogObserverBase::_theLogObserver->onLogInstancesConnect(listConnected.getData());
     }
     else if (callback != nullptr)
     {
@@ -385,7 +385,7 @@ void ObserverMessageProcessor::_clientsDisconnected(const areg::RemoteMessage& m
     {
         areg::Lock lock(mLoggerClient.mLock);
 
-        if (LogObserverBase::_theLogObserver == nullptr)
+        if (areglogger::LogObserverBase::_theLogObserver == nullptr)
         {
             callback = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstDisconnected : nullptr;
         }
@@ -421,9 +421,9 @@ void ObserverMessageProcessor::_clientsDisconnected(const areg::RemoteMessage& m
     } while (false);
 
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
+        areglogger::LogObserverBase::_theLogObserver->onLogInstancesDisconnect(listDisconnected.getData());
     }
     else if (callback != nullptr)
     {

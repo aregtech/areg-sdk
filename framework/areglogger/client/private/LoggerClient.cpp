@@ -105,9 +105,9 @@ void LoggerClient::setPaused(bool doPause)
         isStarted = mIsPaused ? false : isConnectionStarted();
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
+        areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
     }
     else if (callback != nullptr)
     {
@@ -242,9 +242,9 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
 
     bool result{ mLogDatabase.connect(filePath, false) };
     FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().getData());
+        areglogger::LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().getData());
     }
     else if (callback != nullptr)
     {
@@ -407,10 +407,10 @@ void LoggerClient::postReadConfiguration(areg::ConfigManager& config)
         }
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
-        LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(areg::LogTarget::Database), dbName.getData(), dbLocation.getData(), dbUser.getData());
+        areglogger::LogObserverBase::_theLogObserver->onLogObserverConfigured(true, address.getData(), port);
+        areglogger::LogObserverBase::_theLogObserver->onLogDbConfigured(config.getLogEnabled(areg::LogTarget::Database), dbName.getData(), dbLocation.getData(), dbUser.getData());
     }
     else
     {
@@ -475,9 +475,9 @@ void LoggerClient::disconnectServiceHost()
     if (isRunning())
     {
         FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
-        if (LogObserverBase::_theLogObserver != nullptr)
+        if (areglogger::LogObserverBase::_theLogObserver != nullptr)
         {
-            LogObserverBase::_theLogObserver->onLogServiceDisconnected();
+            areglogger::LogObserverBase::_theLogObserver->onLogServiceDisconnected();
         }
         else if (callback != nullptr)
         {
@@ -527,10 +527,10 @@ void LoggerClient::connectedRemoteServiceChannel(const areg::Channel& channel)
 
     sendMessage(areg::messageQueryInstances(channel.getCookie(), LoggerClient::TARGET_ID));
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogServiceConnected(true, address.getData(), port);
-        LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
+        areglogger::LogObserverBase::_theLogObserver->onLogServiceConnected(true, address.getData(), port);
+        areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(isStarted);
     }
     else
     {
@@ -562,10 +562,10 @@ void LoggerClient::disconnectedRemoteServiceChannel(const areg::Channel& /* chan
         }
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverStarted(false);
-        LogObserverBase::_theLogObserver->onLogServiceConnected(false, address.getData(), port);
+        areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(false);
+        areglogger::LogObserverBase::_theLogObserver->onLogServiceConnected(false, address.getData(), port);
     }
     else
     {
@@ -587,9 +587,9 @@ void LoggerClient::lostRemoteServiceChannel(const areg::Channel& /* channel */)
         mInstances.clear();
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogObserverStarted(false);
+        areglogger::LogObserverBase::_theLogObserver->onLogObserverStarted(false);
     }
     else if (callback != nullptr)
     {
@@ -606,9 +606,9 @@ void LoggerClient::failedSendMessage(const areg::RemoteMessage& /* msgFailed */,
         callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogMessagingFailed();
+        areglogger::LogObserverBase::_theLogObserver->onLogMessagingFailed();
     }
     else if (callback != nullptr)
     {
@@ -625,9 +625,9 @@ void LoggerClient::failedReceiveMessage(areg::Socket& /* whichSource */)
         callback = mCallbacks != nullptr ? mCallbacks->evtMessagingFailed : nullptr;
     } while (false);
 
-    if (LogObserverBase::_theLogObserver != nullptr)
+    if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
-        LogObserverBase::_theLogObserver->onLogMessagingFailed();
+        areglogger::LogObserverBase::_theLogObserver->onLogMessagingFailed();
     }
     else if (callback != nullptr)
     {
