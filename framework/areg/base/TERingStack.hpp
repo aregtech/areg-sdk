@@ -37,7 +37,7 @@
  *          Tracks operation success, current size, and any removed element.
  **/
 template <typename VALUE>
-struct SRingStackOperationResult
+struct RSOperationResult
 {
     /**
      * \brief   Current number of elements in the ring stack after the operation
@@ -283,7 +283,7 @@ public:
      * \param   newElement  New element to set at the end of Ring Stack.
      * \return  Returns size of stack.
      **/
-    uint32_t push( const VALUE& newElement );
+    RSOperationResult<VALUE> push( const VALUE& newElement );
 
     /**
      * \brief   Removes element from head and returns value, decreases number of element by one.
@@ -922,9 +922,12 @@ void TERingStack<VALUE>::freeExtra(void)
 }
 
 template <typename VALUE>
-uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
+RSOperationResult<VALUE> TERingStack<VALUE>::push( const VALUE& newElement )
 {
     Lock lock(mSyncObj);
+
+    VALUE removedElement{ };
+    bool wasRemoved = false;
 
     if ( mElemCount < mCapacity )
     {
@@ -947,6 +950,8 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
         NEMemory::constructElems<VALUE>(block, 1);
         *block = newElement;
         ++mElemCount;
+
+        return RSOperationResult<VALUE>(mElemCount, true, wasRemoved, removedElement);
     }
     else
     {
@@ -956,6 +961,8 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             if (mCapacity != 0u)
             {
                 ASSERT(mStackList != nullptr);
+                removedElement = mStackList[mHeadPos];
+                wasRemoved = true;
                 mTailPos = (mTailPos + 1u) % mCapacity;
                 mHeadPos = (mHeadPos + 1u) % mCapacity;
                 VALUE* block = mStackList + mTailPos;
@@ -963,8 +970,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
             }
-            // else capacity == 0 => nothing to do
-            break;
+            return RSOperationResult<VALUE>(mElemCount, true, wasRemoved, removedElement);
 
         case NECommon::eRingOverlap::ResizeOnOverlap:
             // grow buffer (double or at least 1)
@@ -977,20 +983,18 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
                 *block = newElement;
                 ++ mElemCount;
             }
-            break;
+            return RSOperationResult<VALUE>(mElemCount, true, false, removedElement);
 
         case NECommon::eRingOverlap::StopOnOverlap:
             OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
-            break;  // do nothing
+            return RSOperationResult<VALUE>(mElemCount, false, false, removedElement);
 
         default:
             OUTPUT_ERR("Invalid Overlap action in TERingStack::push()");
             ASSERT(false);
-            break;
+            return RSOperationResult<VALUE>(mElemCount, false, false, removedElement);
         }
     }
-
-    return mElemCount;
 }
 
 template <typename VALUE>
