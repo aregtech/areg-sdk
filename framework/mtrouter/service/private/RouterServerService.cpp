@@ -280,7 +280,7 @@ namespace mtrouter
         LOG_DBG("Going to register remote stub [ %s ]", areg::StubAddress::convAddressToPath(stub).getString());
         if ( mServiceRegistry.getServiceStatus(stub) != areg::ServiceConnectionState::Connected )
         {
-            ListServiceProxies listProxies;
+            mtrouter::ListServiceProxies listProxies;
             const mtrouter::ServiceStub & stubService = mServiceRegistry.registerServiceStub(stub, listProxies);
             if ( stubService.getServiceStatus() == areg::ServiceConnectionState::Connected && listProxies.isEmpty() == false )
             {
@@ -406,7 +406,7 @@ namespace mtrouter
         LOG_SCOPE(mtrouter_service_RouterServerService_unregisteredRemoteServiceProvider);
         if ( mServiceRegistry.getServiceStatus(stub) == areg::ServiceConnectionState::Connected )
         {
-            ListServiceProxies listProxies;
+            mtrouter::ListServiceProxies listProxies;
             mServiceRegistry.unregisterServiceStub(stub, listProxies);
             LOG_DBG("Unregistered stub [ %s ], [ %d ] proxies are going to be notified"
                             , stub.convToString().getString()

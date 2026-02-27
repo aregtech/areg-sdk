@@ -30,7 +30,7 @@ namespace mtrouter
     //////////////////////////////////////////////////////////////////////////
     // ServiceRegistry class declaration
     //////////////////////////////////////////////////////////////////////////
-    using ServiceRegistryBase = areg::HashMap<mtrouter::ServiceStub, ListServiceProxies>;
+    using ServiceRegistryBase = areg::HashMap<mtrouter::ServiceStub, mtrouter::ListServiceProxies>;
     /**
      * \brief   The remote services registration map, which is a map of stub and list of connected proxies.
      **/
@@ -50,7 +50,7 @@ namespace mtrouter
          * \brief   ServiceRegistry::EmptyProxiesList
          *          Defines empty list of remote connected proxies.
          **/
-        static const ListServiceProxies   EmptyProxiesList;
+        static const mtrouter::ListServiceProxies   EmptyProxiesList;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor
@@ -112,7 +112,7 @@ namespace mtrouter
          * \return  Returns not empty list if there is any proxy requested connection.
          *          Otherwise, returns empty list.
          **/
-        const ListServiceProxies & getProxyServiceList( const areg::ServiceAddress & addrService ) const;
+        const mtrouter::ListServiceProxies & getProxyServiceList( const areg::ServiceAddress & addrService ) const;
 
         /**
          * \brief   By given Proxy address, searches and returns the registered proxy service object.
@@ -148,7 +148,7 @@ namespace mtrouter
          * \param[out]  out_listProxies     On output, contains list of remote service proxy waiting for connection
          * \return  Returns servicing stub object with remote stub address and connection status data.
          **/
-        const mtrouter::ServiceStub & registerServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
+        const mtrouter::ServiceStub & registerServiceStub( const areg::StubAddress & addrStub, mtrouter::ListServiceProxies & out_listProxies );
 
         /**
          * \brief   Unregisters remote Stub address and returns the registered stub service object.
@@ -157,7 +157,7 @@ namespace mtrouter
          * \param[out]  out_listProxies     On output, contains list of remote service proxy previously connected to Stub
          * \return  Returns servicing stub object with remote stub address and connection status data.
          **/
-        const mtrouter::ServiceStub & unregisterServiceStub( const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies );
+        const mtrouter::ServiceStub & unregisterServiceStub( const areg::StubAddress & addrStub, mtrouter::ListServiceProxies & out_listProxies );
 
         /**
          * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 

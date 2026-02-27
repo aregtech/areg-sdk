@@ -37,7 +37,7 @@ namespace mtrouter
 
     const mtrouter::ServiceStub         ServiceRegistry::InvalidStubService;
 
-    const ListServiceProxies  ServiceRegistry::EmptyProxiesList;
+    const mtrouter::ListServiceProxies  ServiceRegistry::EmptyProxiesList;
 
     //////////////////////////////////////////////////////////////////////////
     // ServiceRegistry class methods
@@ -59,7 +59,7 @@ namespace mtrouter
         return ( isValidPosition(pos) ? keyAtPosition(pos) : ServiceRegistry::InvalidStubService);
     }
 
-    const ListServiceProxies & ServiceRegistry::getProxyServiceList( const areg::ServiceAddress & addrService ) const
+    const mtrouter::ListServiceProxies & ServiceRegistry::getProxyServiceList( const areg::ServiceAddress & addrService ) const
     {
         MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrService) );
         return (isValidPosition(pos) ? valueAtPosition(pos) : ServiceRegistry::EmptyProxiesList );
@@ -87,7 +87,7 @@ namespace mtrouter
         ASSERT(isValidPosition(pos.first));
 
         const mtrouter::ServiceStub & result = keyAtPosition(pos.first);
-        ListServiceProxies& proxies = valueAtPosition(pos.first);
+        mtrouter::ListServiceProxies& proxies = valueAtPosition(pos.first);
         if ( pos.second )
         {
             LOG_DBG("Proxy [ %s ] registers new entry and wait for service"
@@ -115,7 +115,7 @@ namespace mtrouter
         if ( isValidPosition(pos) )
         {
             const mtrouter::ServiceStub & stub = keyAtPosition(pos);
-            ListServiceProxies & proxies = valueAtPosition(pos);
+            mtrouter::ListServiceProxies & proxies = valueAtPosition(pos);
             out_proxyService = proxies.unregisterService(addrProxy);
             if ( proxies.isEmpty() && (stub.isValid() == false) )
             {
@@ -143,14 +143,14 @@ namespace mtrouter
         return (isValidPosition( pos ) ? keyAtPosition( pos ) : ServiceRegistry::InvalidStubService);
     }
 
-    const mtrouter::ServiceStub & ServiceRegistry::registerServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
+    const mtrouter::ServiceStub & ServiceRegistry::registerServiceStub(const areg::StubAddress & addrStub, mtrouter::ListServiceProxies & out_listProxies)
     {
         LOG_SCOPE(mtrouter_service_private_ServiceRegistry_registerServiceStub);
 
         std::pair<MAPPOS, bool> pos = addIfUnique( mtrouter::ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
         ASSERT(isValidPosition(pos.first));
         mtrouter::ServiceStub& result = keyAtPosition(pos.first);
-        ListServiceProxies& proxies = valueAtPosition(pos.first);
+        mtrouter::ListServiceProxies& proxies = valueAtPosition(pos.first);
 
         if ( pos.second )
         {
@@ -174,7 +174,7 @@ namespace mtrouter
         return result;
     }
 
-    const mtrouter::ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddress & addrStub, ListServiceProxies & out_listProxies)
+    const mtrouter::ServiceStub & ServiceRegistry::unregisterServiceStub(const areg::StubAddress & addrStub, mtrouter::ListServiceProxies & out_listProxies)
     {
         LOG_SCOPE(mtrouter_service_private_ServiceRegistry_unregisterServiceStub);
 
@@ -182,7 +182,7 @@ namespace mtrouter
         if ( isValidPosition(pos) )
         {
             mtrouter::ServiceStub & stub = keyAtPosition(pos);
-            ListServiceProxies & proxies = valueAtPosition(pos);
+            mtrouter::ListServiceProxies & proxies = valueAtPosition(pos);
 
             stub.setServiceStatus( areg::ServiceConnectionState::Pending );
             proxies.stubServiceUnavailable( );
@@ -226,7 +226,7 @@ namespace mtrouter
         {
             const mtrouter::ServiceStub & svcStub  = keyAtPosition(posMap);
             const areg::StubAddress & addrStub = svcStub.getServiceAddress();
-            const ListServiceProxies & listProxies = valueAtPosition(posMap);
+            const mtrouter::ListServiceProxies & listProxies = valueAtPosition(posMap);
 
             if ( svcStub.isValid() && ((cookie == areg::COOKIE_ANY) || (addrStub.getCookie() == cookie)) )
             {
@@ -278,7 +278,7 @@ namespace mtrouter
         {
             const mtrouter::ServiceStub & svcStub  = keyAtPosition(posMap);
             const areg::StubAddress & addrStub = svcStub.getServiceAddress();
-            const ListServiceProxies & listProxies = valueAtPosition(posMap);
+            const mtrouter::ListServiceProxies & listProxies = valueAtPosition(posMap);
 
             if (svcStub.isValid() && (cookie == addrStub.getSource()))
             {
@@ -316,7 +316,7 @@ namespace mtrouter
         MAPPOS pos = findService( static_cast<const areg::ServiceAddress &>(addrProxy) );
         if ( isValidPosition(pos) )
         {
-            ListServiceProxies & proxies = valueAtPosition(pos);
+            mtrouter::ListServiceProxies & proxies = valueAtPosition(pos);
             mtrouter::ServiceProxy * svcProxy = proxies.getService(addrProxy);
             if ((svcProxy != nullptr) && svcProxy->isValid())
             {
