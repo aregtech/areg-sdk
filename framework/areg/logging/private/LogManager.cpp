@@ -43,22 +43,22 @@ namespace areg
 
     void LogManager::logMessage(const areg::LogEntry& logData )
     {
-        LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
+        LogManager::getInstance().sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::LogMessage, logData) );
     }
 
     void LogManager::logMessage(const areg::SharedBuffer& logData)
     {
-        LogManager::getInstance().sendLogEvent(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
+        LogManager::getInstance().sendLogEvent(areg::LoggingEventData(areg::LoggingEventData::LogAction::LogMessage, logData));
     }
 
     void LogManager::logMessage(const areg::RemoteMessage& logData)
     {
-        LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
+        LogManager::getInstance().sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::LogMessage, logData) );
     }
 
-    void LogManager::sendCommandMessage(LoggingEventData::LogAction cmd, const areg::SharedBuffer& data)
+    void LogManager::sendCommandMessage(areg::LoggingEventData::LogAction cmd, const areg::SharedBuffer& data)
     {
-        LogManager::getInstance().sendLogEvent(LoggingEventData(cmd, data));
+        LogManager::getInstance().sendLogEvent(areg::LoggingEventData(cmd, data));
     }
 
     bool LogManager::readLogConfig( const char* configFile /*= nullptr*/ )
@@ -247,7 +247,7 @@ namespace areg
         {
             if ( waitForDispatcherStart(areg::WAIT_INFINITE) )
             {
-                sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StartLogs) );
+                sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::StartLogs) );
                 mLogStarted.lock( areg::WAIT_INFINITE );
             }
         }
@@ -263,7 +263,7 @@ namespace areg
 
     void LogManager::stopLoggingThread(bool waitComplete)
     {
-        sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
+        sendLogEvent( areg::LoggingEventData(areg::LoggingEventData::LogAction::StopLogs) );
         mIsStarted = false;
 
         if (waitComplete)
@@ -300,7 +300,7 @@ namespace areg
         }
     }
 
-    void LogManager::processEvent( const LoggingEventData & data )
+    void LogManager::processEvent( const areg::LoggingEventData & data )
     {
         mEventProcessor.processLogEvent( data.getLoggingAction( ), data.getReadableStream( ) );
     }
@@ -371,7 +371,7 @@ namespace areg
         return areg::EventDispatcher::postEvent(eventElem);
     }
 
-    inline void LogManager::sendLogEvent( const LoggingEventData & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+    inline void LogManager::sendLogEvent( const areg::LoggingEventData & data, areg::Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
     {
         LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<areg::DispatcherThread &>(self( )), eventPrio );
     }

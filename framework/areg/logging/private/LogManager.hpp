@@ -106,7 +106,7 @@ namespace areg
          * \param   cmd     The command to execute.
          * \param   data    The binary data to pass in the command.
          **/
-        static void sendCommandMessage(LoggingEventData::LogAction cmd, const areg::SharedBuffer& data);
+        static void sendCommandMessage(areg::LoggingEventData::LogAction cmd, const areg::SharedBuffer& data);
 
         /**
          * \brief   Call to configure logging. The passed configuration file name should be either
@@ -335,7 +335,7 @@ namespace areg
          * \brief   Called by event dispatcher when processes the logging event data.
          * \param   data    The logging event data to process.
          **/
-        void processEvent( const LoggingEventData & data ) override;
+        void processEvent( const areg::LoggingEventData & data ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden methods
@@ -421,7 +421,7 @@ namespace areg
          * \brief   Sends log event with the preferred priority.
          *          By default, it the priority is Normal.
          **/
-        void sendLogEvent( const LoggingEventData & data, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio);
+        void sendLogEvent( const areg::LoggingEventData & data, areg::Event::EventPriority eventPrio = areg::Event::EventPriority::NormalPrio);
 
         /**
          * \brief   Changes the scope priority. It can be either a single scope or scope group.

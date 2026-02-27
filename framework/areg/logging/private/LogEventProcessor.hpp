@@ -61,7 +61,7 @@ public:
      * \param   cmdLog  The log command to process.
      * \param   stream  The serialized data of the event.
      **/
-    void processLogEvent( LoggingEventData::LogAction cmdLog, const areg::SharedBuffer & stream );
+    void processLogEvent( areg::LoggingEventData::LogAction cmdLog, const areg::SharedBuffer & stream );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
