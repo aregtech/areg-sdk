@@ -28,7 +28,7 @@
  ************************************************************************/
 class ConnectionHandler;
 namespace areg { class RemoteMessageHandler; }
-class ServerConnection;
+namespace aregext { class ServerConnection; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class declaration.
@@ -51,7 +51,7 @@ public:
      * \param   remoteService   The instance of remote servicing handler
      * \param   connection      The instance of server connection object.
      **/
-    ServerReceiveThread( ConnectionHandler & connectHandler, areg::RemoteMessageHandler& remoteService, ServerConnection & connection );
+    ServerReceiveThread( ConnectionHandler & connectHandler, areg::RemoteMessageHandler& remoteService, aregext::ServerConnection & connection );
     /**
      * \brief   Destructor
      **/
@@ -108,7 +108,7 @@ private:
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &          mConnection;
+    aregext::ServerConnection &          mConnection;
     /**
      * \brief   Accumulative value of received data size.
      */

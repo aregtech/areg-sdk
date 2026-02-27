@@ -488,7 +488,7 @@ namespace aregext
         const ConnectionPolicy               mConnectBehavior;   //!< The default connection behavior.
         const areg::RemoteServiceKind  mService;           //!< The remote service type.
         const uint32_t                      mConnectTypes;      //!< The bitwise flags of remote service connections.
-        ServerConnection                        mServerConnection;  //!< The instance of server connection object.
+        aregext::ServerConnection                        mServerConnection;  //!< The instance of server connection object.
         areg::Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
         ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
         ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients

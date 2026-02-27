@@ -28,7 +28,7 @@
  * Dependencies
  ************************************************************************/
 namespace areg { class RemoteMessageHandler; }
-class ServerConnection;
+namespace aregext { class ServerConnection; }
 
 //////////////////////////////////////////////////////////////////////////
 // ServerSendThread class declaration.
@@ -48,7 +48,7 @@ public:
      * \param   remoteService   The instance of remote servicing handle to set.
      * \param   connection      The instance of server socket connection object.
      **/
-    ServerSendThread(areg::RemoteMessageHandler& remoteService, ServerConnection & connection );
+    ServerSendThread(areg::RemoteMessageHandler& remoteService, aregext::ServerConnection & connection );
 
     /**
      * \brief   Destructor
@@ -128,7 +128,7 @@ private:
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &          mConnection;
+    aregext::ServerConnection &          mConnection;
     /**
      * \brief   Accumulative value of sent data size.
      **/
