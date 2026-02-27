@@ -18,111 +18,115 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 
-#if AREG_LOGS
-
-FileLogger::FileLogger( areg::LogConfiguration & logConfig)
-    : areg::LoggerBase(logConfig)
-    , mLogFile  ( )
+namespace areg
 {
-}
 
-bool FileLogger::openLogger()
-{
-    if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
+    #if AREG_LOGS
+
+    FileLogger::FileLogger( areg::LogConfiguration & logConfig)
+        : areg::LoggerBase(logConfig)
+        , mLogFile  ( )
     {
-        areg::String fileName(mLogConfiguration.getLogFile() );
-        if ( fileName.isEmpty() == false )
+    }
+
+    bool FileLogger::openLogger()
+    {
+        if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
         {
-            bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
-            uint32_t mode = static_cast<uint32_t>(areg::File::OpenMode::Write) | 
-                                static_cast<uint32_t>(areg::File::OpenMode::Read) |
-                                static_cast<uint32_t>(areg::File::OpenMode::ShareRead) |
-                                static_cast<uint32_t>(areg::File::OpenMode::ShareWrite) |
-                                static_cast<uint32_t>(areg::File::OpenMode::Text);
+            areg::String fileName(mLogConfiguration.getLogFile() );
+            if ( fileName.isEmpty() == false )
+            {
+                bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
+                uint32_t mode = static_cast<uint32_t>(areg::File::OpenMode::Write) | 
+                                    static_cast<uint32_t>(areg::File::OpenMode::Read) |
+                                    static_cast<uint32_t>(areg::File::OpenMode::ShareRead) |
+                                    static_cast<uint32_t>(areg::File::OpenMode::ShareWrite) |
+                                    static_cast<uint32_t>(areg::File::OpenMode::Text);
 
-            if (areg::File::existFile(fileName))
-            {
-                mode |= newFile ? static_cast<uint32_t>(areg::File::OpenMode::Truncate) : static_cast<uint32_t>(areg::File::OpenMode::Exist);
-            }
-            else
-            {
-                mode |= static_cast<uint32_t>(areg::File::OpenMode::Create);
-            }
+                if (areg::File::existFile(fileName))
+                {
+                    mode |= newFile ? static_cast<uint32_t>(areg::File::OpenMode::Truncate) : static_cast<uint32_t>(areg::File::OpenMode::Exist);
+                }
+                else
+                {
+                    mode |= static_cast<uint32_t>(areg::File::OpenMode::Create);
+                }
 
-            if ( mLogFile.open( fileName, mode) && createLayouts() )
-            {
+                if ( mLogFile.open( fileName, mode) && createLayouts() )
+                {
                     
-                areg::Process & curProcess = areg::Process::getInstance();
-                areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                areg::String::formatString( logMsgHello.logMessage
-                                    , areg::LOG_MESSAGE_IZE
-                                    , areg::LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                    , areg::Process::getString(curProcess.getEnvironment())
-                                    , curProcess.getFullPath().getString()
-                                    , logMsgHello.logModuleId);
+                    areg::Process & curProcess = areg::Process::getInstance();
+                    areg::LogEntry logMsgHello(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
+                    areg::String::formatString( logMsgHello.logMessage
+                                        , areg::LOG_MESSAGE_IZE
+                                        , areg::LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                        , areg::Process::getString(curProcess.getEnvironment())
+                                        , curProcess.getFullPath().getString()
+                                        , logMsgHello.logModuleId);
 
-                logMessage(logMsgHello);
+                    logMessage(logMsgHello);
+                }
+            }
+        }
+
+        return mLogFile.isOpened();
+    }
+
+    void FileLogger::closeLogger()
+    {
+        if ( mLogFile.isOpened() )
+        {
+            areg::Process & curProcess = areg::Process::getInstance();
+            areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
+            areg::String::formatString(logMsgGoodbye.logMessage
+                                , areg::LOG_MESSAGE_IZE
+                                , areg::LoggerBase::FORMAT_MESSAGE_BYE.data()
+                                , areg::Process::getString(curProcess.getEnvironment())
+                                , curProcess.getFullPath().getString()
+                                , logMsgGoodbye.logModuleId);
+
+            logMessage(logMsgGoodbye);
+        }
+
+        releaseLayouts();
+        mLogFile.close();
+    }
+
+    void FileLogger::logMessage( const areg::LogEntry & logMessage )
+    {
+        if (mLogFile.isOpened())
+        {
+            switch (logMessage.logMsgType)
+            {
+            case areg::LogMessageType::MessageText:
+                getLayoutMessage().logMessage(logMessage, static_cast<areg::OutStream&>(mLogFile));
+                break;
+
+            case areg::LogMessageType::ScopeEnter:
+                getLayoutEnterScope().logMessage( logMessage, static_cast<areg::OutStream &>(mLogFile) );
+                break;
+
+            case areg::LogMessageType::ScopeExit:
+                getLayoutExitScope().logMessage( logMessage, static_cast<areg::OutStream &>(mLogFile) );
+                break;
+
+            case areg::LogMessageType::Undefined: // fall through
+            default:
+                ASSERT(false);  // unexpected message to log
+                break;
             }
         }
     }
 
-    return mLogFile.isOpened();
-}
-
-void FileLogger::closeLogger()
-{
-    if ( mLogFile.isOpened() )
+    bool FileLogger::isLoggerOpened() const
     {
-        areg::Process & curProcess = areg::Process::getInstance();
-        areg::LogEntry logMsgGoodbye(areg::LogMessageType::MessageText, 0u, 0u, 0u, areg::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        areg::String::formatString(logMsgGoodbye.logMessage
-                            , areg::LOG_MESSAGE_IZE
-                            , areg::LoggerBase::FORMAT_MESSAGE_BYE.data()
-                            , areg::Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath().getString()
-                            , logMsgGoodbye.logModuleId);
-
-        logMessage(logMsgGoodbye);
+        return mLogFile.isOpened();
     }
 
-    releaseLayouts();
-    mLogFile.close();
-}
-
-void FileLogger::logMessage( const areg::LogEntry & logMessage )
-{
-    if (mLogFile.isOpened())
+    void FileLogger::flushLogs()
     {
-        switch (logMessage.logMsgType)
-        {
-        case areg::LogMessageType::MessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<areg::OutStream&>(mLogFile));
-            break;
-
-        case areg::LogMessageType::ScopeEnter:
-            getLayoutEnterScope().logMessage( logMessage, static_cast<areg::OutStream &>(mLogFile) );
-            break;
-
-        case areg::LogMessageType::ScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<areg::OutStream &>(mLogFile) );
-            break;
-
-        case areg::LogMessageType::Undefined: // fall through
-        default:
-            ASSERT(false);  // unexpected message to log
-            break;
-        }
+        mLogFile.flush();
     }
-}
 
-bool FileLogger::isLoggerOpened() const
-{
-    return mLogFile.isOpened();
-}
-
-void FileLogger::flushLogs()
-{
-    mLogFile.flush();
-}
-
-#endif // AREG_LOGS
+    #endif // AREG_LOGS
+} // namespace areg

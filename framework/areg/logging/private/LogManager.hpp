@@ -460,7 +460,7 @@ namespace areg
         /**
          * \brief   File logging  object, to output logs in the file.
          **/
-        FileLogger          mLoggerFile;
+        areg::FileLogger          mLoggerFile;
         /**
          * \brief   The debug output logging to output logs in the output device (window).
          **/
