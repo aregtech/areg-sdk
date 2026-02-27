@@ -20,14 +20,14 @@
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
 //! \brief   A demo of servicing component with requests, response and broadcasts.
-class ServicingComponent    : public    Component
+class ServicingComponent    : public    areg::Component
                             , protected HelloWorldStub
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
@@ -40,7 +40,7 @@ protected:
      * \param   roleName    The role name of client component that requested to print hello world
      * \see     responseHelloWorld
      **/
-    void requestHelloWorld( const String & roleName ) override;
+    void requestHelloWorld( const areg::String & roleName ) override;
 
     /**
      * \brief   Request call.

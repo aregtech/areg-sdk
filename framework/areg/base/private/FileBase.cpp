@@ -45,22 +45,22 @@ inline int32_t _readString(const FileBase & file, ClassType & outValue)
     uint32_t length     { 0 };
     do 
     {
-        buffer[0]               = NEString::EndOfString;
+        buffer[0]               = areg::EndOfString;
         uint32_t oldPos     = file.getPosition();
         uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
         readLength              = std::min(strLength, readLength);
-        buffer[readLength]      = NEString::EndOfString;
+        buffer[readLength]      = areg::EndOfString;
 
         length = readLength;
         if ( readLength != 0 )
         {
-            const CharType * str = NEString::getPrintable<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
+            const CharType * str = areg::getPrintable<CharType>( buffer, static_cast<areg::CharCount>(readLength), &context );
             length = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
 
             outValue    += str;
             result      += length;
             int32_t newPos   = static_cast<int32_t>(result * sizeof(CharType)) + static_cast<int32_t>(oldPos);
-            file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+            file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -89,21 +89,21 @@ inline int32_t _readLine(const FileBase & file, ClassType & outValue)
     uint32_t length     { 0 };
     do 
     {
-        buffer[0]               = NEString::EndOfString;
+        buffer[0]               = areg::EndOfString;
         uint32_t oldPos     = file.getPosition();
         uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
         readLength              = std::min(strLength, readLength);
-        buffer[readLength]      = NEString::EndOfString;
+        buffer[readLength]      = areg::EndOfString;
 
         length = readLength;
         if ( readLength != 0 )
         {
-            const CharType * str = NEString::getLine<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
+            const CharType * str = areg::getLine<CharType>( buffer, static_cast<areg::CharCount>(readLength), &context );
             length   = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
             outValue+= str;
             result  += length;
             int32_t newPos  = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-            file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+            file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             if ( context != (buffer + readLength) )
             {
                 length = 0; // break loop
@@ -123,20 +123,20 @@ inline int32_t _readString(const FileBase & file, CharType * buffer, int32_t cha
         if ((buffer != nullptr) && (charCount > 1))
         {
             uint32_t strLength  = static_cast<uint32_t>(charCount) - 1;
-            buffer[0]               = NEString::EndOfString;
+            buffer[0]               = areg::EndOfString;
             uint32_t oldPos     = file.getPosition();
             CharType * context      = nullptr;
             uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
             readLength              = std::min(strLength, readLength);
-            buffer[readLength]      = NEString::EndOfString;
+            buffer[readLength]      = areg::EndOfString;
 
             if ( readLength != 0 )
             {
-                NEString::getPrintable<CharType>( buffer, charCount, &context );
+                areg::getPrintable<CharType>( buffer, charCount, &context );
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>( context - buffer ) : readLength;
                 int32_t newPos = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+                file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -153,19 +153,19 @@ inline int32_t _readLine(const FileBase & file, CharType * buffer, int32_t charC
         if ((buffer != nullptr) && (charCount > 1))
         {
             uint32_t strLength  = static_cast<uint32_t>(charCount) - 1;
-            buffer[0]               = NEString::EndOfString;
+            buffer[0]               = areg::EndOfString;
             uint32_t oldPos     = file.getPosition();
             CharType * context      = nullptr;
             uint32_t readLength = file.read(reinterpret_cast<uint8_t *>(buffer), strLength * sizeof(CharType)) / sizeof(CharType);
             readLength              = std::min(strLength, readLength);
-            buffer[readLength]      = NEString::EndOfString;
+            buffer[readLength]      = areg::EndOfString;
             if ( readLength != 0 )
             {
-                NEString::getLine<CharType>(buffer, charCount, &context);
+                areg::getLine<CharType>(buffer, charCount, &context);
                 ASSERT((context == nullptr) || (context >= buffer));
                 result = context != nullptr ? static_cast<uint32_t>(context - buffer) : readLength;
                 int32_t newPos = static_cast<int32_t>( (result * sizeof(CharType)) + oldPos );
-                file.setPosition(newPos, Cursor::SeekOrigin::Begin);
+                file.setPosition(newPos, areg::Cursor::SeekOrigin::Begin);
             }
         }
     }
@@ -174,14 +174,14 @@ inline int32_t _readLine(const FileBase & file, CharType * buffer, int32_t charC
 }
 
 template<typename CharType>
-inline bool _writeString(FileBase & file, const CharType * buffer, int32_t strLen = static_cast<int32_t>(NEString::COUNT_ALL) )
+inline bool _writeString(FileBase & file, const CharType * buffer, int32_t strLen = static_cast<int32_t>(areg::COUNT_ALL) )
 {
     bool result = false;
     if (file.isOpened() && file.canWrite())
     {
         if (buffer != nullptr)
         {
-            uint32_t len = strLen >= 0 ? static_cast<uint32_t>(strLen) : static_cast<uint32_t>(NEString::getStringLength<CharType>( buffer ));
+            uint32_t len = strLen >= 0 ? static_cast<uint32_t>(strLen) : static_cast<uint32_t>(areg::getStringLength<CharType>( buffer ));
             len += file.isBinaryMode() ? 1 : 0;
             len *= sizeof(CharType);
 
@@ -200,10 +200,10 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
     {
         if (buffer != nullptr)
         {
-            uint32_t len = static_cast<uint32_t>(NEString::getStringLineLength<CharType>(buffer));
+            uint32_t len = static_cast<uint32_t>(areg::getStringLineLength<CharType>(buffer));
             len *= sizeof(CharType);
             if ( file.write(reinterpret_cast<const uint8_t *>(buffer), len) == len )
-                result = file.writeChar( StringBase<CharType>::NewLine );
+                result = file.writeChar( areg::StringBase<CharType>::NewLine );
         }
     }
 
@@ -211,7 +211,7 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
 }
 
 template<typename DataType>
-NEMath::Ordering _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<NEMath::Ordering( const DataType *, const DataType * )> func )
+areg::Ordering _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<areg::Ordering( const DataType *, const DataType * )> func )
 {
     return func( memBuffer1, memBuffer2 );
 }
@@ -219,22 +219,22 @@ NEMath::Ordering _compareData( const DataType * memBuffer1, const DataType * mem
 template<typename CharType>
 uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType * text, uint32_t length, bool sensitive )
 {
-    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
-    if ( file.canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION) )
+    uint32_t result{ areg::Cursor::INVALID_CURSOR_POSITION };
+    if ( file.canRead( ) && (startPos != areg::Cursor::INVALID_CURSOR_POSITION) )
     {
-        uint32_t posSearch = file.setPosition( static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin );
-        if ( (NEString::isEmpty<CharType>(text) == false) && (length != 0) )
+        uint32_t posSearch = file.setPosition( static_cast<int32_t>(startPos), areg::Cursor::SeekOrigin::Begin );
+        if ( (areg::isEmpty<CharType>(text) == false) && (length != 0) )
         {
             uint32_t dataLen = length * 2;
             uint32_t bufLen  = length + 1;
             uint32_t readLen = 0;
             CharType * fileData = new CharType[ bufLen ];
 
-            while ( result == Cursor::INVALID_CURSOR_POSITION )
+            while ( result == areg::Cursor::INVALID_CURSOR_POSITION )
             {
                 if ( readLen != 0 )
                 {
-                    NEMemory::memMove( fileData, fileData + length, readLen - length );
+                    areg::memMove( fileData, fileData + length, readLen - length );
                     readLen -= length;
                 }
 
@@ -246,15 +246,15 @@ uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType *
                 readLen += inBuf;
                 for ( uint32_t i = 0; (readLen - i) >= static_cast<uint32_t>(length); ++i )
                 {
-                    NEMath::Ordering comp = _compareData<CharType>( (fileData + i)
+                    areg::Ordering comp = _compareData<CharType>( (fileData + i)
                                                                 , text
-                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> NEMath::Ordering
+                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> areg::Ordering
                                                                 {
-                                                                    return NEString::compareStrings<CharType, CharType>( buf1, buf2, static_cast<NEString::CharCount>(length), sensitive );
+                                                                    return areg::compareStrings<CharType, CharType>( buf1, buf2, static_cast<areg::CharCount>(length), sensitive );
                                                                 }
                     );
 
-                    if ( comp == NEMath::Ordering::Equal )
+                    if ( comp == areg::Ordering::Equal )
                     {
                         posSearch += i * sizeof(CharType);
                         result = posSearch;
@@ -282,13 +282,13 @@ uint32_t _searchText( const FileBase & file, uint32_t startPos, const CharType *
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 FileBase::FileBase()
-    : IOStream        ( )
-    , Cursor  ( )
+    : areg::IOStream        ( )
+    , areg::Cursor  ( )
 
-    , mFileName         (String::getEmptyString())
+    , mFileName         (areg::String::getEmptyString())
     , mFileMode         (static_cast<uint32_t>(OpenMode::Invalid))
-    , mReadConvert      (static_cast<InStream &>(self()), static_cast<Cursor &>(self()) )
-    , mWriteConvert     (static_cast<OutStream &>(self()), static_cast<Cursor &>(self()) )
+    , mReadConvert      (static_cast<areg::InStream &>(self()), static_cast<areg::Cursor &>(self()) )
+    , mWriteConvert     (static_cast<areg::OutStream &>(self()), static_cast<areg::Cursor &>(self()) )
 {
 }
 
@@ -448,14 +448,14 @@ int32_t FileBase::readString( wchar_t * buffer, int32_t charCount ) const
     return _readString<wchar_t>(self(), buffer, charCount);
 }
 
-int32_t FileBase::readString(String & outValue ) const
+int32_t FileBase::readString(areg::String & outValue ) const
 {
-    return _readString<char, String>(self(), outValue);
+    return _readString<char, areg::String>(self(), outValue);
 }
 
-int32_t FileBase::readString(WideString & outValue) const
+int32_t FileBase::readString(areg::WideString & outValue) const
 {
-    return _readString<char, WideString>(self(), outValue);
+    return _readString<char, areg::WideString>(self(), outValue);
 }
 
 int32_t FileBase::readLine( char * buffer, int32_t charCount) const
@@ -468,14 +468,14 @@ int32_t FileBase::readLine( wchar_t * buffer, int32_t charCount ) const
     return _readLine<wchar_t>(self(), buffer, charCount);
 }
 
-int32_t FileBase::readLine( String & buffer) const
+int32_t FileBase::readLine( areg::String & buffer) const
 {
-    return _readLine<char, String>(self(), buffer);
+    return _readLine<char, areg::String>(self(), buffer);
 }
 
-int32_t FileBase::readLine(WideString & buffer) const
+int32_t FileBase::readLine(areg::WideString & buffer) const
 {
-    return _readLine<wchar_t, WideString>(self(), buffer);
+    return _readLine<wchar_t, areg::WideString>(self(), buffer);
 }
 
 bool FileBase::writeString( const char* buffer )
@@ -488,12 +488,12 @@ bool FileBase::writeString( const wchar_t* buffer)
     return _writeString<wchar_t>(self(), buffer, -1);
 }
 
-bool FileBase::writeString(const String& buffer)
+bool FileBase::writeString(const areg::String& buffer)
 {
     return _writeString<char>(self(), buffer.getString(), static_cast<int32_t>(buffer.getLength()));
 }
 
-bool FileBase::writeString(const WideString& buffer)
+bool FileBase::writeString(const areg::WideString& buffer)
 {
     return _writeString<wchar_t>(self(), buffer.getString(), static_cast<int32_t>(buffer.getLength()));
 }
@@ -508,12 +508,12 @@ bool FileBase::writeLine( const wchar_t* buffer)
     return _writeLine<wchar_t>(self(), buffer);
 }
 
-bool FileBase::writeLine(const String& buffer)
+bool FileBase::writeLine(const areg::String& buffer)
 {
     return _writeLine<char>(self(), buffer);
 }
 
-bool FileBase::writeLine(const WideString& buffer)
+bool FileBase::writeLine(const areg::WideString& buffer)
 {
     return _writeLine<wchar_t>(self(), buffer);
 }
@@ -526,9 +526,9 @@ uint32_t FileBase::resizeAndFill(uint32_t newSize, uint8_t fillValue )
     if (newSize > 0)
     {
         uint32_t newPos = reserve(newSize);
-        if ((newPos != Cursor::INVALID_CURSOR_POSITION) && (newPos > curPos))
+        if ((newPos != areg::Cursor::INVALID_CURSOR_POSITION) && (newPos > curPos))
         {
-            setPosition(static_cast<int32_t>(curPos), Cursor::SeekOrigin::Begin);
+            setPosition(static_cast<int32_t>(curPos), areg::Cursor::SeekOrigin::Begin);
             for (uint32_t i = 0; i < newPos; ++ i)
             {
                 write( &fillValue, sizeof( uint8_t ) );
@@ -544,10 +544,10 @@ uint32_t FileBase::resizeAndFill(uint32_t newSize, uint8_t fillValue )
 
 void FileBase::resetCursor() const
 {
-    setPosition(0, Cursor::SeekOrigin::Begin);
+    setPosition(0, areg::Cursor::SeekOrigin::Begin);
 }
 
-uint32_t FileBase::read(ByteBuffer & buffer) const
+uint32_t FileBase::read(areg::ByteBuffer & buffer) const
 {
     uint32_t result = 0;
     buffer.invalidate();
@@ -571,17 +571,17 @@ uint32_t FileBase::read(ByteBuffer & buffer) const
     return result;
 }
 
-uint32_t FileBase::read(String & ascii) const
+uint32_t FileBase::read(areg::String & ascii) const
 {
     return static_cast<uint32_t>(readString(ascii));
 }
 
-uint32_t FileBase::read(WideString & wide) const
+uint32_t FileBase::read(areg::WideString & wide) const
 {
     return static_cast<uint32_t>(readString(wide));
 }
 
-uint32_t FileBase::write(const ByteBuffer & buffer)
+uint32_t FileBase::write(const areg::ByteBuffer & buffer)
 {
     uint32_t result = 0;
 
@@ -599,7 +599,7 @@ uint32_t FileBase::write(const ByteBuffer & buffer)
     return result;
 }
 
-uint32_t FileBase::write(const String & ascii)
+uint32_t FileBase::write(const areg::String & ascii)
 {
     const char * buffer = ascii.getString();
     uint32_t space  = isTextMode() != 0 ? static_cast<uint32_t>(ascii.getLength()) * sizeof(char) : ascii.getSpace();
@@ -607,7 +607,7 @@ uint32_t FileBase::write(const String & ascii)
     return write(reinterpret_cast<const uint8_t *>(buffer), space);
 }
 
-uint32_t FileBase::write(const WideString & wide)
+uint32_t FileBase::write(const areg::WideString & wide)
 {
     const wchar_t * buffer  = wide.getString();
     uint32_t space      = isTextMode() != 0 ? static_cast<uint32_t>(wide.getLength()) * sizeof(wchar_t) : wide.getSpace();
@@ -627,21 +627,21 @@ bool FileBase::write(const wchar_t * wide)
 
 uint32_t FileBase::searchData( uint32_t startPos, const uint8_t * buffer, uint32_t length ) const
 {
-    uint32_t result{ Cursor::INVALID_CURSOR_POSITION };
-    if ( canRead( ) && (startPos != Cursor::INVALID_CURSOR_POSITION))
+    uint32_t result{ areg::Cursor::INVALID_CURSOR_POSITION };
+    if ( canRead( ) && (startPos != areg::Cursor::INVALID_CURSOR_POSITION))
     {
-        uint32_t posSearch = setPosition( static_cast<int32_t>(startPos), Cursor::SeekOrigin::Begin );
+        uint32_t posSearch = setPosition( static_cast<int32_t>(startPos), areg::Cursor::SeekOrigin::Begin );
         if ( (buffer != nullptr) && (length != 0) )
         {
             uint32_t dataLen = length * 2;
             uint32_t readLen = 0;
             uint8_t * fileData = new uint8_t[ dataLen ];
 
-            while ((result == Cursor::INVALID_CURSOR_POSITION) && (posSearch != Cursor::INVALID_CURSOR_POSITION))
+            while ((result == areg::Cursor::INVALID_CURSOR_POSITION) && (posSearch != areg::Cursor::INVALID_CURSOR_POSITION))
             {
                 if ( readLen != 0 )
                 {
-                    NEMemory::memMove( fileData, fileData + length, readLen - length );
+                    areg::memMove( fileData, fileData + length, readLen - length );
                     readLen = length;
                 }
 
@@ -651,15 +651,15 @@ uint32_t FileBase::searchData( uint32_t startPos, const uint8_t * buffer, uint32
 
                 for ( uint32_t i = 0; (readLen - i) >= length; ++i )
                 {
-                    NEMath::Ordering comp = _compareData<uint8_t>( (fileData + i)
+                    areg::Ordering comp = _compareData<uint8_t>( (fileData + i)
                                                                        , buffer
-                                                                       , [length]( const uint8_t * buf1, const uint8_t * buf2 ) -> NEMath::Ordering
+                                                                       , [length]( const uint8_t * buf1, const uint8_t * buf2 ) -> areg::Ordering
                                                                          {
-                                                                             return NEMemory::memCompare( buf1, buf2, length );
+                                                                             return areg::memCompare( buf1, buf2, length );
                                                                          }
                                                                         );
 
-                    if ( comp == NEMath::Ordering::Equal )
+                    if ( comp == areg::Ordering::Equal )
                     {
                         posSearch += i;
                         result = posSearch;
@@ -677,27 +677,27 @@ uint32_t FileBase::searchData( uint32_t startPos, const uint8_t * buffer, uint32
     return result;
 }
 
-uint32_t FileBase::searchData( uint32_t startPos, const ByteBuffer & buffer ) const
+uint32_t FileBase::searchData( uint32_t startPos, const areg::ByteBuffer & buffer ) const
 {
     return searchData(startPos, buffer.getBuffer(), buffer.getSizeUsed());
 }
 
 uint32_t FileBase::searchText( uint32_t startPos, const char * text, bool caseSensitive ) const
 {
-    return _searchText<char>( *this, startPos, text, static_cast<uint32_t>(NEString::getStringLength<char>( text )), caseSensitive );
+    return _searchText<char>( *this, startPos, text, static_cast<uint32_t>(areg::getStringLength<char>( text )), caseSensitive );
 }
 
 uint32_t FileBase::searchText( uint32_t startPos, const wchar_t * text, bool caseSensitive ) const
 {
-    return _searchText<wchar_t>( *this, startPos, text, static_cast<uint32_t>(NEString::getStringLength<wchar_t>( text )), caseSensitive );
+    return _searchText<wchar_t>( *this, startPos, text, static_cast<uint32_t>(areg::getStringLength<wchar_t>( text )), caseSensitive );
 }
 
-uint32_t FileBase::searchText( uint32_t startPos, const String & text, bool caseSensitive ) const
+uint32_t FileBase::searchText( uint32_t startPos, const areg::String & text, bool caseSensitive ) const
 {
     return _searchText<char>( *this, startPos, text.getString(), static_cast<uint32_t>(text.getLength()), caseSensitive );
 }
 
-uint32_t FileBase::searchText( uint32_t startPos, const WideString & text, bool caseSensitive ) const
+uint32_t FileBase::searchText( uint32_t startPos, const areg::WideString & text, bool caseSensitive ) const
 {
     return _searchText<wchar_t>( *this, startPos, text.getString( ), static_cast<uint32_t>(text.getLength( )), caseSensitive );
 }
@@ -706,16 +706,16 @@ void FileBase::flush()
 {
 }
 
-void FileBase::normalizeName(String & name)
+void FileBase::normalizeName(areg::String & name)
 {
     // replace all "%time%"
     char fmt[128] { 0 };
-    NEUtilities::CalendarTime st;
-    DateTime::getNow(st, true);
-    String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
-    name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, NEString::START_POS, true);
+    areg::CalendarTime st;
+    areg::DateTime::getNow(st, true);
+    areg::String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
+    name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, areg::START_POS, true);
 
     // replace all "%appname%"
-    const String & appName = Process::getInstance().getAppName();
-    name.replace(FileBase::FILE_MASK_APPNAME, appName, NEString::START_POS, true);
+    const areg::String & appName = areg::Process::getInstance().getAppName();
+    name.replace(FileBase::FILE_MASK_APPNAME, appName, areg::START_POS, true);
 }

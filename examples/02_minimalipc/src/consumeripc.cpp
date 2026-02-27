@@ -23,34 +23,34 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceConsumer declaration
 //////////////////////////////////////////////////////////////////////////
-class ServiceConsumer   : public    Component
+class ServiceConsumer   : public    areg::Component
                         , protected HelloServiceClientBase
 {
 public:
-    ServiceConsumer(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-		: Component             ( entry, owner )
+    ServiceConsumer(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+		: areg::Component             ( entry, owner )
 		, HelloServiceClientBase( entry.mDependencyServices[0].mRoleName, owner )
 	{   }
 
 protected:
     //!< Service discovery notification. Called when the "ServiceProvder" is available and unavailable.
     //!< The `status` parameter contains availability flag. Return `true` if the service connection notification is relevant.
-    virtual bool serviceConnected(NEService::ServiceConnectionState status, ProxyBase& proxy) override
+    virtual bool serviceConnected(areg::ServiceConnectionState status, areg::ProxyBase& proxy) override
     {
-        if (HelloServiceClientBase::serviceConnected(status, proxy) && NEService::isServiceConnected(status))
+        if (HelloServiceClientBase::serviceConnected(status, proxy) && areg::isServiceConnected(status))
             requestHelloService();  // Call of method of remote "ServiceProvider" object.
-        else if (NEService::isServiceConnected(status) == false)
-            Application::signalAppQuit(); // quit application if service connection is lost.
+        else if (areg::isServiceConnected(status) == false)
+            areg::Application::signalAppQuit(); // quit application if service connection is lost.
 
         // Return `true` if the service connection notification is relevant. "Relevance" can be checked via proxy.
-        return (static_cast<const ProxyBase *>(getProxy()) == static_cast<const ProxyBase *>(&proxy));
+        return (static_cast<const areg::ProxyBase *>(getProxy()) == static_cast<const areg::ProxyBase *>(&proxy));
     }
 
     //!< The response from Service Provider
     virtual void responseHelloService() override
     {
         std::cout << "\'Good bye Service!\'" << std::endl;
-        Application::signalAppQuit();   // quit application is if received response
+        areg::Application::signalAppQuit();   // quit application is if received response
     }
 };
 
@@ -74,12 +74,12 @@ END_MODEL("ConsumerModel")
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog, using default settings.
-    Application::initApplication();
+    areg::Application::initApplication();
     // load model to initialize components
-    Application::loadModel("ConsumerModel");
+    areg::Application::loadModel("ConsumerModel");
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::releaseApplication();
     return 0;
 }

@@ -30,9 +30,9 @@ DEF_LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_processTimer);
 
 namespace
 {
-    String generateString(uint32_t seqNr)
+    areg::String generateString(uint32_t seqNr)
     {
-        String result;
+        areg::String result;
         return result.format("string_%u", seqNr);
     }
 
@@ -50,12 +50,12 @@ namespace
         "\'h\' or \'help\'      - to print this help.\n"
     };
 
-    constexpr Console::Coord    _coordTitle     { 0, 1 };
-    constexpr Console::Coord    _coordSubtitle  { 0, 2 };
-    constexpr Console::Coord    _coordUserInput { 0, 4 };
-    constexpr Console::Coord    _coordSeparate  { 0, 6 };
-    constexpr Console::Coord    _coordErrorMsg  { 0, 7 };
-    constexpr Console::Coord    _coordInfoMsg   { 0, 8 };
+    constexpr aregext::Console::Coord    _coordTitle     { 0, 1 };
+    constexpr aregext::Console::Coord    _coordSubtitle  { 0, 2 };
+    constexpr aregext::Console::Coord    _coordUserInput { 0, 4 };
+    constexpr aregext::Console::Coord    _coordSeparate  { 0, 6 };
+    constexpr aregext::Console::Coord    _coordErrorMsg  { 0, 7 };
+    constexpr aregext::Console::Coord    _coordInfoMsg   { 0, 8 };
 
 }
 
@@ -63,27 +63,27 @@ namespace
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::OptionSetup Publisher::ValidOptions[]
+const aregext::OptionParser::OptionSetup Publisher::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
 // Publisher class methods
 //////////////////////////////////////////////////////////////////////////
 
-Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( entry, owner )
-    , PubSubStub        ( static_cast<Component &>(self()) )
-    , TimerConsumer   ( )
-    , ThreadConsumer  ( )
+Publisher::Publisher( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component         ( entry, owner )
+    , PubSubStub        ( static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer   ( )
+    , areg::ThreadConsumer  ( )
 
-    , mTimerOnChange    (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
-    , mTimerAlways      (static_cast<TimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
+    , mTimerOnChange    (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName + "_OnUpdateTimer")
+    , mTimerAlways      (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName + "_AlwaysTimer")
     , mClientCount      (0)
 
     , mSeqString        (0)
@@ -92,30 +92,30 @@ Publisher::Publisher( const NERegistry::ComponentEntry & entry, ComponentThread 
     , mSeqInteger       (0)
     , mCountInteger     (0)
 
-    , mConsoleThread    (static_cast<ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
+    , mConsoleThread    (static_cast<areg::ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
     , mLock             (false)
 {
 }
 
-void Publisher::startupComponent(ComponentThread & comThread)
+void Publisher::startupComponent(areg::ComponentThread & comThread)
 {
-    Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    areg::Component::startupComponent(comThread);
+    mConsoleThread.createThread(areg::WAIT_INFINITE);
 }
 
-void Publisher::shutdownComponent(ComponentThread & comThread)
+void Publisher::shutdownComponent(areg::ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
-    Component::shutdownComponent(comThread);
+    mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
+    areg::Component::shutdownComponent(comThread);
 }
 
-bool Publisher::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status)
+bool Publisher::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_clientConnected);
     bool result = PubSubStub::clientConnected(client, status);
 
-    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::getString(status), ProxyAddress::convAddressToPath(client).getString());
-    mClientCount += (NEService::isServiceConnected(status) ? 1 : -1);
+    LOG_DBG("Connection status [ %s ] of the consumer [ %s ]", areg::getString(status), areg::ProxyAddress::convAddressToPath(client).getString());
+    mClientCount += (areg::isServiceConnected(status) ? 1 : -1);
     LOG_DBG("There are [ %d ] connected service consumers", mClientCount);
 
     if (isServiceProviderStateValid() == false)
@@ -130,7 +130,7 @@ void Publisher::start()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_start);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
 
     mTimerAlways.stopTimer();
@@ -150,15 +150,15 @@ void Publisher::start()
         setStringOnChange(generateString(mSeqString));
     }
 
-    mTimerAlways.startTimer(PubSub::TimeoutAlways, getComponentThread(), Timer::CONTINUOUSLY);
-    mTimerOnChange.startTimer(PubSub::TimeoutOnChange, getComponentThread(), Timer::CONTINUOUSLY);
+    mTimerAlways.startTimer(PubSub::TimeoutAlways, getComponentThread(), areg::Timer::CONTINUOUSLY);
+    mTimerOnChange.startTimer(PubSub::TimeoutOnChange, getComponentThread(), areg::Timer::CONTINUOUSLY);
 }
 
 void Publisher::stop()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_stop);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
 
     mTimerAlways.stopTimer();
@@ -171,7 +171,7 @@ void Publisher::invalidate()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_invalidate);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
 
     mCountString = 0;
@@ -189,23 +189,23 @@ void Publisher::quit()
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_quit);
 
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     LOG_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
 
     mTimerAlways.stopTimer();
     mTimerOnChange.stopTimer();
 
     setServiceProviderState(PubSub::RunState::Shutdown);
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }
 
-void Publisher::processTimer(Timer & timer)
+void Publisher::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_27_pubsubmulti_publisher_Publisher_processTimer);
 
     if (&timer == &mTimerAlways)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         if (++ mCountInteger > PubSub::CycleAlways)
         {
             ++ mSeqInteger;
@@ -217,14 +217,14 @@ void Publisher::processTimer(Timer & timer)
     }
     else if (&timer == &mTimerOnChange)
     {
-        Lock lock(mLock);
+        areg::Lock lock(mLock);
         if (++ mCountString > PubSub::CycleAlways)
         {
             ++ mSeqString;
             mCountString = 0;
         }
 
-        String data(generateString(mSeqString));
+        areg::String data(generateString(mSeqString));
         LOG_DBG("Timer \'Update OnChange\' has expired, String is [ %s ], the data should be updated only on update", data.getString());
         setStringOnChange(data);
     }
@@ -236,22 +236,22 @@ void Publisher::processTimer(Timer & timer)
 
 void Publisher::onThreadRuns()
 {
-    Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, std::size(ValidOptions));
+    aregext::Console & console = aregext::Console::getInstance();
+    aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
-    printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
+    printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
-        String message;
-        String usrInput = console.readString();
+        areg::String message;
+        areg::String usrInput = console.readString();
 
         if (parser.parseOptionLine(usrInput.getString()))
         {
-            const OptionParser::InputOptionList & opts = parser.getOptions();
+            const aregext::OptionParser::InputOptionList & opts = parser.getOptions();
             cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
@@ -298,9 +298,9 @@ void Publisher::onThreadRuns()
 }
 
 
-inline void Publisher::printMessage(const String & message, OptionFlag cmd)
+inline void Publisher::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.clearScreen();
     console.outputStr(_coordTitle       , _title);
     console.outputStr(_coordSubtitle    , _separator);

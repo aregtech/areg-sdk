@@ -15,129 +15,133 @@
 
 #include "areg/ipc/ServiceEventConsumer.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// ReconnectTimerConsumer class implementation
-//////////////////////////////////////////////////////////////////////////
-
-ReconnectTimerConsumer::ReconnectTimerConsumer(ServiceEventConsumer& eventConsumer )
-    : TimerConsumer       ( )
-    , mServiceEventConsumer ( eventConsumer )
+namespace areg
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // ReconnectTimerConsumer class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-void ReconnectTimerConsumer::processTimer(Timer& /* timer */)
-{
-    mServiceEventConsumer.onServiceReconnectTimerExpired();
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ServiceClientConsumer class implementation
-//////////////////////////////////////////////////////////////////////////
-
-ServiceClientConsumer::ServiceClientConsumer(ServiceEventConsumer& eventConsumer)
-    : ServiceClientEventConsumer( )
-    , mServiceEventConsumer     ( eventConsumer )
-{
-}
-
-void ServiceClientConsumer::processEvent(const ServiceEventData& data)
-{
-    switch (data.getCommand())
+    ReconnectTimerConsumer::ReconnectTimerConsumer(ServiceEventConsumer& eventConsumer )
+        : TimerConsumer       ( )
+        , mServiceEventConsumer ( eventConsumer )
     {
-    case ServiceEventData::ServiceCommand::CMD_StartService:
-        mServiceEventConsumer.onServiceStart();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_StopService:
-        mServiceEventConsumer.onServiceStop();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_RestartService:
-        mServiceEventConsumer.onServiceRestart();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
-        mServiceEventConsumer.onServiceConnectionStarted();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
-        mServiceEventConsumer.onServiceConnectionStopped();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceLost:
-        mServiceEventConsumer.onServiceConnectionLost();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceExit:
-        mServiceEventConsumer.onServiceExit();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
-        mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
-        mServiceEventConsumer.onServiceMessageSend(data.getMessage());
-        break;
-
-    default:
-        ASSERT(false);
-        break;
     }
-}
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceServerConsumer class implementation
-//////////////////////////////////////////////////////////////////////////
-
-ServiceServerConsumer::ServiceServerConsumer(ServiceEventConsumer& serviceEventConsumer)
-    : ServiceServerEventConsumer( )
-    , mServiceEventConsumer     ( serviceEventConsumer )
-{
-}
-
-void ServiceServerConsumer::processEvent(const ServiceEventData& data)
-{
-    switch (data.getCommand())
+    void ReconnectTimerConsumer::processTimer(Timer& /* timer */)
     {
-    case ServiceEventData::ServiceCommand::CMD_StartService:
-        mServiceEventConsumer.onServiceStart();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_StopService:
-        mServiceEventConsumer.onServiceStop();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_RestartService:
-        mServiceEventConsumer.onServiceRestart();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
-        mServiceEventConsumer.onServiceConnectionStarted();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
-        mServiceEventConsumer.onServiceConnectionStopped();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceLost:
-        mServiceEventConsumer.onServiceConnectionLost();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceExit:
-        mServiceEventConsumer.onServiceExit();
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
-        mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
-        break;
-
-    case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
-        mServiceEventConsumer.onServiceMessageSend(data.getMessage());
-        break;
-
-    default:
-        ASSERT(false);
-        break;
+        mServiceEventConsumer.onServiceReconnectTimerExpired();
     }
-}
+
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceClientConsumer class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    ServiceClientConsumer::ServiceClientConsumer(ServiceEventConsumer& eventConsumer)
+        : ServiceClientEventConsumer( )
+        , mServiceEventConsumer     ( eventConsumer )
+    {
+    }
+
+    void ServiceClientConsumer::processEvent(const ServiceEventData& data)
+    {
+        switch (data.getCommand())
+        {
+        case ServiceEventData::ServiceCommand::CMD_StartService:
+            mServiceEventConsumer.onServiceStart();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_StopService:
+            mServiceEventConsumer.onServiceStop();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_RestartService:
+            mServiceEventConsumer.onServiceRestart();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
+            mServiceEventConsumer.onServiceConnectionStarted();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
+            mServiceEventConsumer.onServiceConnectionStopped();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceLost:
+            mServiceEventConsumer.onServiceConnectionLost();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceExit:
+            mServiceEventConsumer.onServiceExit();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
+            mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
+            mServiceEventConsumer.onServiceMessageSend(data.getMessage());
+            break;
+
+        default:
+            ASSERT(false);
+            break;
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceServerConsumer class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    ServiceServerConsumer::ServiceServerConsumer(ServiceEventConsumer& serviceEventConsumer)
+        : ServiceServerEventConsumer( )
+        , mServiceEventConsumer     ( serviceEventConsumer )
+    {
+    }
+
+    void ServiceServerConsumer::processEvent(const ServiceEventData& data)
+    {
+        switch (data.getCommand())
+        {
+        case ServiceEventData::ServiceCommand::CMD_StartService:
+            mServiceEventConsumer.onServiceStart();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_StopService:
+            mServiceEventConsumer.onServiceStop();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_RestartService:
+            mServiceEventConsumer.onServiceRestart();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceStarted:
+            mServiceEventConsumer.onServiceConnectionStarted();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceStopped:
+            mServiceEventConsumer.onServiceConnectionStopped();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceLost:
+            mServiceEventConsumer.onServiceConnectionLost();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceExit:
+            mServiceEventConsumer.onServiceExit();
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceReceivedMsg:
+            mServiceEventConsumer.onServiceMessageReceived(data.getMessage());
+            break;
+
+        case ServiceEventData::ServiceCommand::CMD_ServiceSendMsg:
+            mServiceEventConsumer.onServiceMessageSend(data.getMessage());
+            break;
+
+        default:
+            ASSERT(false);
+            break;
+        }
+    }
+
+} // namespace areg

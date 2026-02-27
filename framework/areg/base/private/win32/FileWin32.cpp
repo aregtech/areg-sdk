@@ -65,16 +65,16 @@
  *
  * \return	If succeeded, returns the full path to file (including file name). Otherwise returned string is empty.
  **/
-static String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
+static areg::String _searchFile( const char* fileName, const char* fileExtension, const char* searchInDirectory )
 {
-    String result;
-    if ( NEString::isEmpty<char>(fileName) == false )
+    areg::String result;
+    if ( areg::isEmpty<char>(fileName) == false )
     {
         fileExtension = fileExtension != nullptr && *fileExtension == '.' ? fileExtension : nullptr;
-        String searchPath = File::NameHasCurrentFolder(searchInDirectory) ? File::GetCurrentDir() : searchInDirectory;
-        char * buffer = DEBUG_NEW char[File::MAXIMUM_PATH + 1];
-        uint32_t length = ::SearchPathA(searchPath, fileName, fileExtension, File::MAXIMUM_PATH, buffer, &fileName);
-        result = length != 0 && length <= File::MAXIMUM_PATH ? buffer : "";
+        areg::String searchPath = areg::File::NameHasCurrentFolder(searchInDirectory) ? areg::File::GetCurrentDir() : searchInDirectory;
+        char * buffer = DEBUG_NEW char[areg::File::MAXIMUM_PATH + 1];
+        uint32_t length = ::SearchPathA(searchPath, fileName, fileExtension, areg::File::MAXIMUM_PATH, buffer, &fileName);
+        result = length != 0 && length <= areg::File::MAXIMUM_PATH ? buffer : "";
 
         delete [] buffer;
     }
@@ -88,22 +88,22 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_osGetInvalidHandle()
+FILEHANDLE areg::File::_osGetInvalidHandle()
 {
     return static_cast<FILEHANDLE>(INVALID_HANDLE_VALUE);
 }
 
-void File::_osCloseFile()
+void areg::File::_osCloseFile()
 {
     if ( isOpened( ) )
     {
         ::CloseHandle(static_cast<HANDLE>(mFileHandle));
     }
 
-    mFileHandle = File::_osGetInvalidHandle();
+    mFileHandle = areg::File::_osGetInvalidHandle();
 }
 
-bool File::_osOpenFile()
+bool areg::File::_osOpenFile()
 {
     bool result{ isOpened( ) };
     if ( result == false)
@@ -145,7 +145,7 @@ bool File::_osOpenFile()
             
             if ((mFileMode & static_cast<uint32_t>(FileBase::OpenFlag::BitCreate)) != 0)
             {
-                File::createDirCascaded( File::getFileDirectory(mFileName) );
+                areg::File::createDirCascaded( areg::File::getFileDirectory(mFileName) );
             }
 
             mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr));
@@ -156,7 +156,7 @@ bool File::_osOpenFile()
     return result;
 }
 
-uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
+uint32_t areg::File::_osReadFile(uint8_t* buffer, uint32_t size) const
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size > 0));
@@ -172,7 +172,7 @@ uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
+uint32_t areg::File::_osWriteFile(const uint8_t* buffer, uint32_t size)
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
@@ -183,7 +183,7 @@ uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
     return static_cast<uint32_t>(sizeWrite);
 }
 
-uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t areg::File::_osSetPositionFile(int32_t offset, areg::Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
 
@@ -191,15 +191,15 @@ uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) co
     unsigned long moveOffset = static_cast<unsigned long>(offset);
     switch (startAt)
     {
-    case    Cursor::SeekOrigin::Begin:
+    case    areg::Cursor::SeekOrigin::Begin:
         moveMethod = FILE_BEGIN;
         break;
 
-    case    Cursor::SeekOrigin::Current:
+    case    areg::Cursor::SeekOrigin::Current:
         moveMethod = FILE_CURRENT;
         break;
 
-    case    Cursor::SeekOrigin::End:
+    case    areg::Cursor::SeekOrigin::End:
         moveMethod = FILE_END;
         break;
 
@@ -212,16 +212,16 @@ uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) co
     return static_cast<uint32_t>(SetFilePointer(static_cast<HANDLE>(mFileHandle), static_cast<LONG>(moveOffset), nullptr, static_cast<DWORD>(moveMethod)));
 }
 
-uint32_t File::_osGetPositionFile() const
+uint32_t areg::File::_osGetPositionFile() const
 {
     ASSERT(mFileHandle != nullptr);
     return static_cast<uint32_t>( SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_CURRENT) );
 }
 
-bool File::_osTruncateFile()
+bool areg::File::_osTruncateFile()
 {
     bool result{ false };
-    if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != Cursor::INVALID_CURSOR_POSITION)
+    if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != areg::Cursor::INVALID_CURSOR_POSITION)
     {
         result = SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? true : false;
     }
@@ -229,7 +229,7 @@ bool File::_osTruncateFile()
     return result;
 }
 
-void File::_osFlushFile()
+void areg::File::_osFlushFile()
 {
     ASSERT(mFileHandle != nullptr);
     ::FlushFileBuffers(static_cast<HANDLE>(mFileHandle));
@@ -239,7 +239,7 @@ void File::_osFlushFile()
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t unique)
+uint32_t areg::File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t unique)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
@@ -255,27 +255,27 @@ uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const cha
  * \return  If function succeeds, the return value is full path of special folder.
  *          Otherwise, it returns empty string.
  **/
-uint32_t File::_osGetSpecialDir(char* buffer, uint32_t length, const File::SpecialFolder specialFolder)
+uint32_t areg::File::_osGetSpecialDir(char* buffer, uint32_t length, const areg::File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
+    buffer[0] = areg::EndOfString;
 
     int32_t csidl = -1;
     switch (specialFolder)
     {
-    case File::SpecialFolder::UserHome:
+    case areg::File::SpecialFolder::UserHome:
         csidl = CSIDL_PROFILE;
         break;
 
-    case File::SpecialFolder::Personal:
+    case areg::File::SpecialFolder::Personal:
         csidl = CSIDL_PERSONAL;
         break;
 
-    case File::SpecialFolder::AppData:
+    case areg::File::SpecialFolder::AppData:
         csidl = CSIDL_APPDATA;
         break;
 
-    case File::SpecialFolder::Temp:
+    case areg::File::SpecialFolder::Temp:
         GetTempPathA(length, buffer);
         break;
 

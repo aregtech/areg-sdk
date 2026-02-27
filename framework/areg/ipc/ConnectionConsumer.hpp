@@ -23,61 +23,67 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Channel;
-
-//////////////////////////////////////////////////////////////////////////
-// ConnectionConsumer interface declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The remote service connection consumer interface with callbacks, which are
- *          triggered when connection state update is requested.
- **/
-class AREG_API ConnectionConsumer
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Protected constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    class Channel;
+}
+
+namespace areg
+{
+    //////////////////////////////////////////////////////////////////////////
+    // ConnectionConsumer interface declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default destructor
+     * \brief   The remote service connection consumer interface with callbacks, which are
+     *          triggered when connection state update is requested.
      **/
-    ConnectionConsumer() = default;
+    class AREG_API ConnectionConsumer
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Protected constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Default destructor
+         **/
+        ConnectionConsumer() = default;
 
-    virtual ~ConnectionConsumer() = default;
+        virtual ~ConnectionConsumer() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// ConnectionConsumer
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // ConnectionConsumer
+    /************************************************************************/
 
-    /**
-     * \brief   Triggered when remote service connection and communication channel is established.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void connectedRemoteServiceChannel(const Channel& channel) = 0;
+        /**
+         * \brief   Triggered when remote service connection and communication channel is established.
+         * \param   channel     The connection and communication channel of remote service.
+         **/
+        virtual void connectedRemoteServiceChannel(const Channel& channel) = 0;
 
-    /**
-     * \brief   Triggered when disconnected remote service connection and communication channel.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void disconnectedRemoteServiceChannel(const Channel& channel) = 0;
+        /**
+         * \brief   Triggered when disconnected remote service connection and communication channel.
+         * \param   channel     The connection and communication channel of remote service.
+         **/
+        virtual void disconnectedRemoteServiceChannel(const Channel& channel) = 0;
 
-    /**
-     * \brief   Triggered when remote service connection and communication channel is lost.
-     *          The connection is considered lost if it not possible to read or
-     *          receive data, and it was not stopped by API call.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void lostRemoteServiceChannel(const Channel& channel) = 0;
+        /**
+         * \brief   Triggered when remote service connection and communication channel is lost.
+         *          The connection is considered lost if it not possible to read or
+         *          receive data, and it was not stopped by API call.
+         * \param   channel     The connection and communication channel of remote service.
+         **/
+        virtual void lostRemoteServiceChannel(const Channel& channel) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE(ConnectionConsumer);
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE(ConnectionConsumer);
+    };
 
+} // namespace areg
 #endif  // AREG_IPC_CONNECTIONCONSUMER_HPP

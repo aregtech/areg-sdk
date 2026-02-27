@@ -25,13 +25,13 @@
 
 
 PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumerName, PatientInformationStub & infoPatient)
-    : WorkerThreadConsumer( NEUtilities::createComponentItemName( worker::ServiceNamePatientInfo, consumerName) )
+    : areg::WorkerThreadConsumer( areg::createComponentItemName( worker::ServiceNamePatientInfo, consumerName) )
 
     , mStubPatienInfo       ( infoPatient )
 {
 }
 
-void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* workThread */, ComponentThread & /* masterThread */ )
+void PatientServiceWorkerConsumer::registerEventConsumers(areg::WorkerThread & /* workThread */, areg::ComponentThread & /* masterThread */ )
 {
     bool quitApp = false;
 
@@ -104,9 +104,9 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* work
     } while (!quitApp);
 
     mStubPatienInfo.invalidatePatient();
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }
 
-void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & /* workThread */)
+void PatientServiceWorkerConsumer::unregisterEventConsumers(areg::WorkerThread & /* workThread */)
 {
 }

@@ -26,18 +26,18 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_broadcastService
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
 
-PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout)
+PublicHelloWorldClient::PublicHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
     : PublicHelloWorldClientBase( dependency, owner )
     , SystemShutdownClientBase  ( mesh::PublicControllerService, owner )
-    , TimerConsumer             ( )
+    , areg::TimerConsumer             ( )
 
     , mMsTimeout                ( timeout )
-    , mTimer                    ( static_cast<TimerConsumer &>(self()), timerName(owner) )
+    , mTimer                    ( static_cast<areg::TimerConsumer &>(self()), timerName(owner) )
     , mClient                   ( )
 {
 }
 
-bool PublicHelloWorldClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool PublicHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_serviceConnected);
     bool result{ true };
@@ -50,13 +50,13 @@ bool PublicHelloWorldClient::serviceConnected( NEService::ServiceConnectionState
         if ( PublicHelloWorldClientBase::isConnected() )
         {
             LOG_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.getName().getString());
-            requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), Process::getInstance().getAppName());
+            requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), areg::Process::getInstance().getAppName());
         }
         else
         {
             LOG_DBG( "Disconnected [ %s : %s ]"
                     , proxy.getStubAddress( ).isSourcePublic( ) ? "LOCAL PUBLIC" : "REMOTE PUBLIC"
-                    , StubAddress::convAddressToPath( proxy.getStubAddress()).getString());
+                    , areg::StubAddress::convAddressToPath( proxy.getStubAddress()).getString());
             printf("----- Disconnected %s service consumer -----\n", proxy.getStubAddress().isSourcePublic() ? "LOCAL PUBLIC" : "REMOTE PUBLIC");
             mTimer.stopTimer( );
         }
@@ -66,7 +66,7 @@ bool PublicHelloWorldClient::serviceConnected( NEService::ServiceConnectionState
         bool connected = SystemShutdownClientBase::isConnected();
         LOG_DBG("Consumer [ %p : %s ] is [ %s ]"
                   , this
-                  , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
+                  , areg::ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
                   , connected ? "CONNECTED" : "DISCONNECTED");
         notifyOnServiceStateUpdate( connected );
     }
@@ -118,16 +118,16 @@ void PublicHelloWorldClient::responseHelloWorld(uint32_t clientID)
     }
 }
 
-void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState ServiceState, NEService::DataState state )
+void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState ServiceState, areg::DataState state )
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_onServiceStateUpdate);
     LOG_DBG("Service state updated [ %s ], data state [ %s ], client [ %d : %s ]"
                , SystemShutdown::getString(ServiceState)
-               , NEService::getString(state)
+               , areg::getString(state)
                , mClient.crID
                , mClient.crName.getString());
 
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         if (ServiceState == SystemShutdown::RunState::Shutdown)
         {
@@ -145,8 +145,8 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
                 }
 
                 requestSystemShutdown( );
-                Application::signalAppQuit( );
-                Thread::switchThread();
+                areg::Application::signalAppQuit( );
+                areg::Thread::switchThread();
             }
             else
             {
@@ -169,16 +169,16 @@ void PublicHelloWorldClient::onServiceStateUpdate( SystemShutdown::RunState Serv
     }
 }
 
-void PublicHelloWorldClient::processTimer(Timer & timer)
+void PublicHelloWorldClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_16_pubmesh_common_PublicHelloWorldClient_processTimer);
     ASSERT(&timer == &mTimer);
 
     LOG_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
 
-    NEService::DataState dataState { NEService::DataState::DataIsUndefined };
+    areg::DataState dataState { areg::DataState::DataIsUndefined };
     SystemShutdown::RunState serviceState = getServiceState( dataState );
-    if ( dataState == NEService::DataState::DataIsOK )
+    if ( dataState == areg::DataState::DataIsOK )
     {
         if ( serviceState == SystemShutdown::RunState::ServiceReady )
         {
@@ -192,16 +192,16 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
     }
     else
     {
-        LOG_WARN( "Ignored sending request, the data state is [ %s ]", NEService::getString( dataState ) );
+        LOG_WARN( "Ignored sending request, the data state is [ %s ]", areg::getString( dataState ) );
     }
 }
 
-inline String PublicHelloWorldClient::timerName( Component & owner ) const
+inline areg::String PublicHelloWorldClient::timerName( areg::Component & owner ) const
 {
-    String result;
+    areg::String result;
     result.append("Public_")
           .append( owner.getRoleName( ) )
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::DEFAULT_SPECIAL_CHAR)
           .append(PublicHelloWorldClientBase::getServiceName());
 
     return result;

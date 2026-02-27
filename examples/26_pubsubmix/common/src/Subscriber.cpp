@@ -24,7 +24,7 @@ DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
 DEF_LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
 
-Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & owner, int32_t position)
+Subscriber::Subscriber(const areg::DependencyEntry & entry, areg::Component & owner, int32_t position)
     : PubSubMixClientBase   ( entry, owner )
     , mOldInteger   ( {0, entry.mRoleName } )
     , mOldState     ( false )
@@ -36,17 +36,17 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
     pubsub::CoordInfoMsg.posY = std::max(pubsub::CoordInfoMsg.posY + 1, pubsub::CoordSeparator.posY);
 }
 
-bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_serviceConnected);
     PubSubMixClientBase::serviceConnected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
     if (connected == false)
@@ -64,7 +64,7 @@ bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, Pro
         }
         else
         {
-            console.outputMsg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), NEService::getString(status));
+            console.outputMsg(pubsub::CoordStatus, pubsub::FormatDisconnect.data(), areg::getString(status));
         }
     }
 
@@ -76,13 +76,13 @@ bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, Pro
     return true;
 }
 
-void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, NEService::DataState state)
+void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChange, areg::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         ASSERT(StringOnChange.name == mOldString.name);
 
@@ -131,14 +131,14 @@ void Subscriber::onStringOnChangeUpdate(const PubSubMix::sString & StringOnChang
     console.unlockConsole();
 }
 
-void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, NEService::DataState state)
+void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways, areg::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     console.lockConsole();
-    String oldInt = mOldState ? String::makeString(mOldInteger.value) : pubsub::Invalid;
+    areg::String oldInt = mOldState ? areg::String::makeString(mOldInteger.value) : pubsub::Invalid;
     console.saveCursorPosition();
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         bool isChanged = mOldInteger == IntegerAlways;
         LOG_INFO("The [ %s ] names INTEGER (Always) data is OK, old is [ %s ], new [ %u ], { %s }"
@@ -151,7 +151,7 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
                           , pubsub::FormatInteger.data()
                           , IntegerAlways.name.getString()
                           , oldInt.getString()
-                          , String::makeString(IntegerAlways.value).getString()
+                          , areg::String::makeString(IntegerAlways.value).getString()
                           , isChanged ? "CHANGED" : "UNCHANGED");
 
         mOldInteger = IntegerAlways;
@@ -187,10 +187,10 @@ void Subscriber::onIntegerAlwaysUpdate(const PubSubMix::sInteger & IntegerAlways
     console.unlockConsole();
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, NEService::DataState state)
+void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProviderState, areg::DataState state)
 {
     LOG_SCOPE(examples_26_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {
@@ -208,7 +208,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSubMix::RunState ServiceProvide
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            areg::Application::signalAppQuit();
         }
     }
 }

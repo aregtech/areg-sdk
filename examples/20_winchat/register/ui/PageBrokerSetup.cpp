@@ -63,14 +63,14 @@ void PageBrokerSetup::OnBnClickedBrokerConnect( )
     BYTE ip1, ip2, ip3, ip4;
     mCtrlPort.GetWindowText( port );
  
-    String check( port.GetBuffer( ) );
+    areg::String check( port.GetBuffer( ) );
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
         uint32_t temp = check.toUInt32( );
         if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
         {
             mBrokerPort = static_cast<USHORT>(temp);
-            String ipAddress;
+            areg::String ipAddress;
             ipAddress.format("%u.%u.%u.%u", ip1, ip2, ip3, ip4);
             mIsConnected = CentralDialog::StartConnection(ipAddress, static_cast<uint16_t>(mBrokerPort) );
         }
@@ -87,8 +87,8 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
             ::PostMessage(sheet->m_hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdServiceConnection), static_cast<WPARAM>(false), 0 );
         }
 
-        Application::unloadModel( chat::MODEL_NAME_CENTRAL_SERVER );
-        Application::stopMessageRouting();
+        areg::Application::unloadModel( chat::MODEL_NAME_CENTRAL_SERVER );
+        areg::Application::stopMessageRouting();
         mIsConnected = false;
     }
 }
@@ -104,7 +104,7 @@ void PageBrokerSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     BYTE ip1, ip2, ip3, ip4;
     mCtrlPort.GetWindowText( port );
 
-    String check( port.GetBuffer( ) );
+    areg::String check( port.GetBuffer( ) );
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
         uint32_t temp = check.toUInt32();
@@ -167,12 +167,12 @@ BOOL PageBrokerSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
+    areg::ConnectionConfiguration config(NERemoteService::RemoteServiceKind::Router, NERemoteService::ConnectionType::Tcpip);
     uint8_t field0, field1, field2, field3;
     if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {
         mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
-        CString port(String::makeString(mBrokerPort).getString());
+        CString port(areg::String::makeString(mBrokerPort).getString());
         mCtrlAddress.SetAddress(field0, field1, field2, field3);
         mCtrlPort.SetWindowText(port);
     }

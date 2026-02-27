@@ -30,241 +30,245 @@ DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
 DEF_LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
 
-ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBase)
-    : SystemServiceBase ( commBase )
-    , mServiceSetup     (false)
+namespace aregext
 {
-}
 
-int32_t ServiceApplicationBase::serviceMain(NESystemService::ServiceOption optStartup, const char* argument)
-{
-    int32_t result{ RESULT_SUCCEEDED };
-    Application::setWorkingDirectory(nullptr);
-    mSystemServiceOption = optStartup;
-    switch (optStartup)
+    ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicationBase& commBase)
+        : SystemServiceBase ( commBase )
+        , mServiceSetup     (false)
     {
-    case NESystemService::ServiceOption::CMD_Install:
-        if (serviceInstall() == false)
-        {
-            result = ServiceApplicationBase::RESULT_FAILED_INSTALL;
-        }
-        break;
+    }
 
-    case NESystemService::ServiceOption::CMD_Uninstall:
-        serviceUninstall();
-        break;
-
-    case NESystemService::ServiceOption::CMD_Service:
-        result = startServiceDispatcher( );
-        if (result == RESULT_IGNORED)
+    int32_t ServiceApplicationBase::serviceMain(ServiceOption optStartup, const char* argument)
+    {
+        int32_t result{ RESULT_SUCCEEDED };
+        areg::Application::setWorkingDirectory(nullptr);
+        mSystemServiceOption = optStartup;
+        switch (optStartup)
         {
+        case ServiceOption::CMD_Install:
+            if (serviceInstall() == false)
+            {
+                result = ServiceApplicationBase::RESULT_FAILED_INSTALL;
+            }
+            break;
+
+        case ServiceOption::CMD_Uninstall:
+            serviceUninstall();
+            break;
+
+        case ServiceOption::CMD_Service:
+            result = startServiceDispatcher( );
+            if (result == RESULT_IGNORED)
+            {
+                result = SystemServiceBase::serviceMain(optStartup, argument);
+                mCommunication.waitToComplete();
+            }
+            break;
+
+        case ServiceOption::CMD_Load:     // fall through
+        case ServiceOption::CMD_Console:  // fall through
+        case ServiceOption::CMD_Custom:
             result = SystemServiceBase::serviceMain(optStartup, argument);
             mCommunication.waitToComplete();
-        }
+            break;
+
+        case ServiceOption::CMD_Help:
+        case ServiceOption::CMD_Verbose:
         break;
 
-    case NESystemService::ServiceOption::CMD_Load:     // fall through
-    case NESystemService::ServiceOption::CMD_Console:  // fall through
-    case NESystemService::ServiceOption::CMD_Custom:
-        result = SystemServiceBase::serviceMain(optStartup, argument);
+        case ServiceOption::CMD_Undefined:
+        default:
+            ASSERT(false);  // unexpected
+            break;
+        }
+
+        return result;
+    }
+
+    bool ServiceApplicationBase::serviceInitialize(ServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
+    {
+        // Start only tracing and timer manager.
+        if (areg::isEmpty(fileConfig))
+        {
+            if (mFileConfig.isEmpty())
+            {
+                fileConfig = areg::DEFAULT_CONFIG_FILE.data();
+            }
+            else
+            {
+                fileConfig = mFileConfig.getString();
+            }
+        }
+
+        areg::Application::initApplication( true
+                                    , true
+                                    , false
+                                    , true
+                                    , false
+                                    , fileConfig
+                                    , static_cast<areg::ConfigListener*>(this));
+        return _osInitializeService();
+    }
+
+    void ServiceApplicationBase::serviceRelease()
+    {
+        areg::Application::releaseApplication();
+    }
+
+    bool ServiceApplicationBase::serviceInstall()
+    {
+        if (_osOpenService() == false)
+        {
+            _osCreateService();
+        }
+
+        return _osIsValid();
+    }
+
+    void ServiceApplicationBase::serviceUninstall()
+    {
+        if (_osOpenService())
+        {
+            _osDeleteService();
+        }
+
+        _osFreeResources();
+    }
+
+    bool ServiceApplicationBase::registerService()
+    {
+        return _osRegisterService();
+    }
+
+    bool ServiceApplicationBase::serviceOpen()
+    {
+        return _osOpenService();
+    }
+
+    bool ServiceApplicationBase::serviceStart()
+    {
+        LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
+        LOG_DBG("Starting [ %s ] system service", getServiceNameA());
+
+        bool result{ false };
+        areg::RemoteServiceKind serviceType = getServiceType();
+        areg::ConnectionType connectType = getConnectionType();
+        if (serviceType != areg::RemoteServiceKind::Unknown)
+        {
+            if (mCommunication.setupServiceConnectionData(serviceType, static_cast<uint32_t>(connectType)) &&
+                mCommunication.connectServiceHost())
+            {
+                result = setState(ServicePhase::Running);
+            }
+            else
+            {
+                areg::Application::signalAppQuit();
+            }
+        }
+
+        return result;
+    }
+
+    void ServiceApplicationBase::servicePause()
+    {
+        LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
+        LOG_DBG("Pausing [ %s ] system service", getServiceNameA());
+
+        setState(ServicePhase::Pausing);
+        mCommunication.disconnectServiceHost();
         mCommunication.waitToComplete();
-        break;
-
-    case NESystemService::ServiceOption::CMD_Help:
-    case NESystemService::ServiceOption::CMD_Verbose:
-    break;
-
-    case NESystemService::ServiceOption::CMD_Undefined:
-    default:
-        ASSERT(false);  // unexpected
-        break;
+        setState(ServicePhase::Paused);
     }
 
-    return result;
-}
-
-bool ServiceApplicationBase::serviceInitialize(NESystemService::ServiceOption /*option*/, const char* /*value*/, const char * fileConfig)
-{
-    // Start only tracing and timer manager.
-    if (NEString::isEmpty(fileConfig))
+    bool ServiceApplicationBase::serviceContinue()
     {
-        if (mFileConfig.isEmpty())
+        LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
+        LOG_DBG("Resume and continuing paused [ %s ] system service", getServiceNameA());
+
+        bool result = false;
+        setState(ServicePhase::Continuing);
+        if (mCommunication.isServiceHostSetup() && mCommunication.connectServiceHost())
         {
-            fileConfig = NEApplication::DEFAULT_CONFIG_FILE.data();
+            result = true;
+            setState(ServicePhase::Running);
         }
         else
         {
-            fileConfig = mFileConfig.getString();
+            LOG_ERR("Failed to resume [ %s ] system service", getServiceNameA());
+            areg::Application::signalAppQuit();
         }
+
+        return result;
     }
 
-    Application::initApplication( true
-                                , true
-                                , false
-                                , true
-                                , false
-                                , fileConfig
-                                , static_cast<ConfigListener*>(this));
-    return _osInitializeService();
-}
-
-void ServiceApplicationBase::serviceRelease()
-{
-    Application::releaseApplication();
-}
-
-bool ServiceApplicationBase::serviceInstall()
-{
-    if (_osOpenService() == false)
+    void ServiceApplicationBase::serviceStop()
     {
-        _osCreateService();
+        LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
+        LOG_WARN("Stopping [ %s ] system service", getServiceNameA());
+        setState(ServicePhase::Stopping);
+        mCommunication.disconnectServiceHost();
+        mCommunication.waitToComplete();
+        areg::Application::signalAppQuit();
     }
 
-    return _osIsValid();
-}
-
-void ServiceApplicationBase::serviceUninstall()
-{
-    if (_osOpenService())
+    void ServiceApplicationBase::serviceShutdown()
     {
-        _osDeleteService();
+        serviceStop();
     }
 
-    _osFreeResources();
-}
-
-bool ServiceApplicationBase::registerService()
-{
-    return _osRegisterService();
-}
-
-bool ServiceApplicationBase::serviceOpen()
-{
-    return _osOpenService();
-}
-
-bool ServiceApplicationBase::serviceStart()
-{
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStart);
-    LOG_DBG("Starting [ %s ] system service", getServiceNameA());
-
-    bool result{ false };
-    NERemoteService::RemoteServiceKind serviceType = getServiceType();
-    NERemoteService::ConnectionType connectType = getConnectionType();
-    if (serviceType != NERemoteService::RemoteServiceKind::Unknown)
+    bool ServiceApplicationBase::setState(ServicePhase newState)
     {
-        if (mCommunication.setupServiceConnectionData(serviceType, static_cast<uint32_t>(connectType)) &&
-            mCommunication.connectServiceHost())
+        LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
+        LOG_DBG( "Changing [ %s ] system service state. Old state [ %s ], new state [ %s ]"
+                    , getServiceNameA()
+                    , getString( mSystemServiceState )
+                    , getString( newState ) );
+        return _osSetState(newState);
+    }
+
+    void ServiceApplicationBase::runService()
+    {
+        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
+    }
+
+    int32_t ServiceApplicationBase::startServiceDispatcher()
+    {
+        int32_t result{ RESULT_IGNORED };
+        if (mServiceSetup == false)
         {
-            result = setState(NESystemService::ServicePhase::Running);
+            mServiceSetup = true;
+            result = _osStartServiceDispatcher();
+            mServiceSetup = (result == RESULT_SUCCEEDED) || (result == RESULT_IGNORED);
         }
-        else
-        {
-            Application::signalAppQuit();
-        }
+
+        return result;
     }
 
-    return result;
-}
-
-void ServiceApplicationBase::servicePause()
-{
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_servicePause);
-    LOG_DBG("Pausing [ %s ] system service", getServiceNameA());
-
-    setState(NESystemService::ServicePhase::Pausing);
-    mCommunication.disconnectServiceHost();
-    mCommunication.waitToComplete();
-    setState(NESystemService::ServicePhase::Paused);
-}
-
-bool ServiceApplicationBase::serviceContinue()
-{
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceContinue);
-    LOG_DBG("Resume and continuing paused [ %s ] system service", getServiceNameA());
-
-    bool result = false;
-    setState(NESystemService::ServicePhase::Continuing);
-    if (mCommunication.isServiceHostSetup() && mCommunication.connectServiceHost())
+    void ServiceApplicationBase::prepareSaveConfiguration(areg::ConfigManager& /* config */)
     {
-        result = true;
-        setState(NESystemService::ServicePhase::Running);
     }
-    else
+
+    void ServiceApplicationBase::postSaveConfiguration(areg::ConfigManager& /* config */)
     {
-        LOG_ERR("Failed to resume [ %s ] system service", getServiceNameA());
-        Application::signalAppQuit();
     }
 
-    return result;
-}
-
-void ServiceApplicationBase::serviceStop()
-{
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_serviceStop);
-    LOG_WARN("Stopping [ %s ] system service", getServiceNameA());
-    setState(NESystemService::ServicePhase::Stopping);
-    mCommunication.disconnectServiceHost();
-    mCommunication.waitToComplete();
-    Application::signalAppQuit();
-}
-
-void ServiceApplicationBase::serviceShutdown()
-{
-    serviceStop();
-}
-
-bool ServiceApplicationBase::setState(NESystemService::ServicePhase newState)
-{
-    LOG_SCOPE(areg_aregextend_service_ServiceApplicationBase_setState);
-    LOG_DBG( "Changing [ %s ] system service state. Old state [ %s ], new state [ %s ]"
-                , getServiceNameA()
-                , NESystemService::getString( mSystemServiceState )
-                , NESystemService::getString( newState ) );
-    return _osSetState(newState);
-}
-
-void ServiceApplicationBase::runService()
-{
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
-}
-
-int32_t ServiceApplicationBase::startServiceDispatcher()
-{
-    int32_t result{ RESULT_IGNORED };
-    if (mServiceSetup == false)
+    void ServiceApplicationBase::prepareReadConfiguration(areg::ConfigManager& /* config */)
     {
-        mServiceSetup = true;
-        result = _osStartServiceDispatcher();
-        mServiceSetup = (result == RESULT_SUCCEEDED) || (result == RESULT_IGNORED);
     }
 
-    return result;
-}
+    void ServiceApplicationBase::postReadConfiguration(areg::ConfigManager& /* config */)
+    {
+    }
 
-void ServiceApplicationBase::prepareSaveConfiguration(ConfigManager& /* config */)
-{
-}
+    void ServiceApplicationBase::onSetupConfiguration( const areg::ListProperties& /* listReadonly */
+                                                     , const areg::ListProperties& /* listWritable */
+                                                     , areg::ConfigManager& /* config */)
+    {
+    }
 
-void ServiceApplicationBase::postSaveConfiguration(ConfigManager& /* config */)
-{
-}
-
-void ServiceApplicationBase::prepareReadConfiguration(ConfigManager& /* config */)
-{
-}
-
-void ServiceApplicationBase::postReadConfiguration(ConfigManager& /* config */)
-{
-}
-
-void ServiceApplicationBase::onSetupConfiguration( const NEPersistence::ListProperties& /* listReadonly */
-                                                 , const NEPersistence::ListProperties& /* listWritable */
-                                                 , ConfigManager& /* config */)
-{
-}
-
-bool ServiceApplicationBase::inputConsoleData(char* buffer, uint32_t bufSize)
-{
-    return Console::readConsoleData(buffer, bufSize);
-}
+    bool ServiceApplicationBase::inputConsoleData(char* buffer, uint32_t bufSize)
+    {
+        return Console::readConsoleData(buffer, bufSize);
+    }
+} // namespace aregext

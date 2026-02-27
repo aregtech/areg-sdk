@@ -24,268 +24,273 @@
 #include "areg/component/ServiceDefs.hpp"
 #include "areg/base/IOStream.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// Channel class declaration.
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Channel class, which provides connection of services.
- *          Every connection, independent whether it is local or remote,
- *          has a communication channel. Each registered service gets associated
- *          channel given by system and contains information of communication source and target.
- **/
-class AREG_API Channel
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Local types and constants
-//////////////////////////////////////////////////////////////////////////
-public:
+
+    //////////////////////////////////////////////////////////////////////////
+    // Channel class declaration.
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Defines invalid channel object.
+     * \brief   Channel class, which provides connection of services.
+     *          Every connection, independent whether it is local or remote,
+     *          has a communication channel. Each registered service gets associated
+     *          channel given by system and contains information of communication source and target.
      **/
-    static const Channel & getInvalidChannel();                //!< Invalid channel
+    class AREG_API Channel
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Local types and constants
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Defines invalid channel object.
+         **/
+        static const Channel & getInvalidChannel();                //!< Invalid channel
 
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Default constructor
-     **/
-    Channel();
+        /**
+         * \brief   Default constructor
+         **/
+        Channel();
 
-    /**
-     * \brief   Constructor. Sets channel data, which are the communication source and target IDs, and the cookie set by system.
-     * \param   source  The channel communication source ID set by system.
-     * \param   target  The channel communication target ID set by system.
-     * \param   cookie  The ID assigned by system.
-     **/
-    explicit Channel( const ITEM_ID & source, const ITEM_ID & target = NEService::TARGET_UNKNOWN, const ITEM_ID & cookie = NEService::COOKIE_UNKNOWN );
+        /**
+         * \brief   Constructor. Sets channel data, which are the communication source and target IDs, and the cookie set by system.
+         * \param   source  The channel communication source ID set by system.
+         * \param   target  The channel communication target ID set by system.
+         * \param   cookie  The ID assigned by system.
+         **/
+        explicit Channel( const ITEM_ID & source, const ITEM_ID & target = TARGET_UNKNOWN, const ITEM_ID & cookie = COOKIE_UNKNOWN );
 
-    /**
-     * \brief   Copy constructor.
-     * \param   source  The source of data to copy.
-     **/
-    Channel( const Channel & source );
+        /**
+         * \brief   Copy constructor.
+         * \param   source  The source of data to copy.
+         **/
+        Channel( const Channel & source );
 
-    /**
-     * \brief   Move constructor.
-     * \param   source  The source of data to move.
-     **/
-    Channel( Channel && source ) noexcept;
+        /**
+         * \brief   Move constructor.
+         * \param   source  The source of data to move.
+         **/
+        Channel( Channel && source ) noexcept;
 
-    /**
-     * \brief   Destructor
-     **/
-    ~Channel() = default;
+        /**
+         * \brief   Destructor
+         **/
+        ~Channel() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies channel data from given source
-     * \param   source  The source of data to copy.
-     **/
-    Channel & operator = ( const Channel & source );
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Copies channel data from given source
+         * \param   source  The source of data to copy.
+         **/
+        Channel & operator = ( const Channel & source );
 
-    /**
-     * \brief   Moves channel data from given source
-     * \param   source  The source of data to move.
-     **/
-    Channel & operator = ( Channel && source ) noexcept;
+        /**
+         * \brief   Moves channel data from given source
+         * \param   source  The source of data to move.
+         **/
+        Channel & operator = ( Channel && source ) noexcept;
 
-    /**
-     * \brief   Checks equality of 2 channels and returns true if they are equal.
-     *          Channels are equal if source, target and cookies are equal.
-     * \param   other   The Channel object to compare
-     **/
-    inline bool operator == ( const Channel & other ) const;
+        /**
+         * \brief   Checks equality of 2 channels and returns true if they are equal.
+         *          Channels are equal if source, target and cookies are equal.
+         * \param   other   The Channel object to compare
+         **/
+        inline bool operator == ( const Channel & other ) const;
 
-    /**
-     * \brief   Checks inequality of 2 channels and returns true if they are not equal.
-     *          Channels are not equal if source, target or cookies are not equal.
-     * \param   other   The Channel object to compare
-     **/
-    inline bool operator != ( const Channel & other ) const;
+        /**
+         * \brief   Checks inequality of 2 channels and returns true if they are not equal.
+         *          Channels are not equal if source, target or cookies are not equal.
+         * \param   other   The Channel object to compare
+         **/
+        inline bool operator != ( const Channel & other ) const;
 
-    /**
-     * \brief   Converts channel object to 32-bit unsigned integer value.
-     **/
-    inline explicit operator const ITEM_ID & () const;
+        /**
+         * \brief   Converts channel object to 32-bit unsigned integer value.
+         **/
+        inline explicit operator const ITEM_ID & () const;
 
-/************************************************************************/
-// Friend global operators for streaming
-/************************************************************************/
+    /************************************************************************/
+    // Friend global operators for streaming
+    /************************************************************************/
 
-    /**
-     * \brief   Streaming operator. Reads from stream and initialize connection channel data.
-     * \param   stream  The streaming object to read data.
-     * \param   input   Connection channel to initialize.
-     **/
-    friend inline const InStream & operator >> ( const InStream & stream, Channel & input );
+        /**
+         * \brief   Streaming operator. Reads from stream and initialize connection channel data.
+         * \param   stream  The streaming object to read data.
+         * \param   input   Connection channel to initialize.
+         **/
+        friend inline const InStream & operator >> ( const InStream & stream, Channel & input );
 
-    /**
-     * \brief   Streaming operator. Writes connection channel data into stream.
-     * \param   stream  The streaming object to write data.
-     * \param   output  Connection channel to stream.
-     **/
-    friend inline OutStream & operator << ( OutStream & stream, const Channel & output);
+        /**
+         * \brief   Streaming operator. Writes connection channel data into stream.
+         * \param   stream  The streaming object to write data.
+         * \param   output  Connection channel to stream.
+         **/
+        friend inline OutStream & operator << ( OutStream & stream, const Channel & output);
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Returns the source ID of channel.
-     **/
-    inline const ITEM_ID & getSource() const;
+        /**
+         * \brief   Returns the source ID of channel.
+         **/
+        inline const ITEM_ID & getSource() const;
 
-    /**
-     * \brief   Sets the source ID of channel.
-     * \param   source  The new source ID to set in channel
-     **/
-    inline void setSource(const ITEM_ID & source );
+        /**
+         * \brief   Sets the source ID of channel.
+         * \param   source  The new source ID to set in channel
+         **/
+        inline void setSource(const ITEM_ID & source );
 
-    /**
-     * \brief   Returns the target ID of channel.
-     **/
-    inline const ITEM_ID & getTarget() const;
-    /**
-     * \brief   Sets the source ID of channel.
-     * \param   target  The new target ID to set in channel
-     **/
+        /**
+         * \brief   Returns the target ID of channel.
+         **/
+        inline const ITEM_ID & getTarget() const;
+        /**
+         * \brief   Sets the source ID of channel.
+         * \param   target  The new target ID to set in channel
+         **/
 
-    inline void setTarget(const ITEM_ID & target );
+        inline void setTarget(const ITEM_ID & target );
 
-    /**
-     * \brief   Returns the cookie ID of channel.
-     **/
-    inline const ITEM_ID & getCookie() const;
+        /**
+         * \brief   Returns the cookie ID of channel.
+         **/
+        inline const ITEM_ID & getCookie() const;
 
-    /**
-     * \brief   Sets the source ID of channel.
-     * \param   cookie  The new cookie ID to set in channel
-     **/
-    inline void setCookie(const ITEM_ID & cookie );
+        /**
+         * \brief   Sets the source ID of channel.
+         * \param   cookie  The new cookie ID to set in channel
+         **/
+        inline void setCookie(const ITEM_ID & cookie );
 
-    /**
-     * \brief   Returns true, if channel data is valid.
-     **/
-    inline bool isValid() const;
+        /**
+         * \brief   Returns true, if channel data is valid.
+         **/
+        inline bool isValid() const;
 
-    /**
-     * \brief   Invalidates channel.
-     **/
-    inline void invalidate();
+        /**
+         * \brief   Invalidates channel.
+         **/
+        inline void invalidate();
 
-public:
-    /**
-     * \brief   Converts channel data to string
-     **/
-    String convToString() const;
+    public:
+        /**
+         * \brief   Converts channel data to string
+         **/
+        String convToString() const;
 
-    /**
-     * \brief   Creates channel data from string
-     * \param   channel     Null-terminated string, which contains channel data.
-     **/
-    const Channel & convFromString( const String & channel );
+        /**
+         * \brief   Creates channel data from string
+         * \param   channel     Null-terminated string, which contains channel data.
+         **/
+        const Channel & convFromString( const String & channel );
 
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden members
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Channel source ID
-     **/
-    ITEM_ID     mSource;
-    /**
-     * \brief   Channel Target ID
-     **/
-    ITEM_ID     mTarget;
-    /**
-     * \brief   Channel Cookie assigned by system
-     **/
-    ITEM_ID     mCookie;
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden members
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Channel source ID
+         **/
+        ITEM_ID     mSource;
+        /**
+         * \brief   Channel Target ID
+         **/
+        ITEM_ID     mTarget;
+        /**
+         * \brief   Channel Cookie assigned by system
+         **/
+        ITEM_ID     mCookie;
+    };
 
-//////////////////////////////////////////////////////////////////////////
-// Channel class inline methods.
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Channel class inline methods.
+    //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID & Channel::getSource() const
-{
-    return mSource;
-}
+    inline const ITEM_ID & Channel::getSource() const
+    {
+        return mSource;
+    }
 
-inline void Channel::setSource(const ITEM_ID & source)
-{
-    mSource = source;
-}
+    inline void Channel::setSource(const ITEM_ID & source)
+    {
+        mSource = source;
+    }
 
-inline const ITEM_ID & Channel::getTarget() const
-{
-    return mTarget;
-}
+    inline const ITEM_ID & Channel::getTarget() const
+    {
+        return mTarget;
+    }
 
-inline void Channel::setTarget(const ITEM_ID & target)
-{
-    mTarget = target;
-}
+    inline void Channel::setTarget(const ITEM_ID & target)
+    {
+        mTarget = target;
+    }
 
-inline const ITEM_ID & Channel::getCookie() const
-{
-    return mCookie;
-}
+    inline const ITEM_ID & Channel::getCookie() const
+    {
+        return mCookie;
+    }
 
-inline void Channel::setCookie(const ITEM_ID & cookie)
-{
-    mCookie = cookie;
-}
+    inline void Channel::setCookie(const ITEM_ID & cookie)
+    {
+        mCookie = cookie;
+    }
 
-inline bool Channel::operator == ( const Channel & other ) const
-{
-    return ( this != & other ? (mCookie == other.mCookie) && (mTarget == other.mTarget) && (mSource == other.mSource) : true );
-}
+    inline bool Channel::operator == ( const Channel & other ) const
+    {
+        return ( this != & other ? (mCookie == other.mCookie) && (mTarget == other.mTarget) && (mSource == other.mSource) : true );
+    }
 
-inline bool Channel::operator!=(const Channel & other) const
-{
-    return ( this != & other ? (mCookie != other.mCookie) || (mTarget != other.mTarget) || (mSource != other.mSource) : false );
-}
+    inline bool Channel::operator!=(const Channel & other) const
+    {
+        return ( this != & other ? (mCookie != other.mCookie) || (mTarget != other.mTarget) || (mSource != other.mSource) : false );
+    }
 
-inline Channel::operator const ITEM_ID & () const
-{
-    return mSource;
-}
+    inline Channel::operator const ITEM_ID & () const
+    {
+        return mSource;
+    }
 
-inline bool Channel::isValid() const
-{
-    return (mCookie != NEService::COOKIE_UNKNOWN);
-}
+    inline bool Channel::isValid() const
+    {
+        return (mCookie != COOKIE_UNKNOWN);
+    }
 
-inline void Channel::invalidate()
-{
-    mSource = NEService::SOURCE_UNKNOWN;
-    mTarget = NEService::TARGET_UNKNOWN;
-    mCookie = NEService::COOKIE_UNKNOWN;
-}
+    inline void Channel::invalidate()
+    {
+        mSource = SOURCE_UNKNOWN;
+        mTarget = TARGET_UNKNOWN;
+        mCookie = COOKIE_UNKNOWN;
+    }
 
-inline const InStream & operator >> ( const InStream & stream, Channel & input )
-{
-    stream >> input.mSource;
-    stream >> input.mTarget;
-    stream >> input.mCookie;
-    return stream;
-}
+    inline const InStream & operator >> ( const InStream & stream, Channel & input )
+    {
+        stream >> input.mSource;
+        stream >> input.mTarget;
+        stream >> input.mCookie;
+        return stream;
+    }
 
-inline OutStream & operator << ( OutStream & stream, const Channel & output)
-{
-    stream << output.mSource;
-    stream << output.mTarget;
-    stream << output.mCookie;
-    return stream;
-}
+    inline OutStream & operator << ( OutStream & stream, const Channel & output)
+    {
+        stream << output.mSource;
+        stream << output.mTarget;
+        stream << output.mCookie;
+        return stream;
+    }
+
+} // namespace areg
 
 #endif  // AREG_COMPONENT_CHANNEL_HPP

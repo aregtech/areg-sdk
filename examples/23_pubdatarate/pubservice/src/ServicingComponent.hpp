@@ -32,7 +32,7 @@
 #include <string_view>
 
 //!< Declare as a class to use in namespace.
-class OptionData : public NEUtilities::OptionValues
+class OptionData : public areg::OptionValues
 {
 };
 
@@ -46,9 +46,9 @@ AREG_DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  *          and sends to the clients. This demo show the data rate when generates data
  *          and when sends data to the clients.
  **/
-class ServicingComponent    : public    Component
+class ServicingComponent    : public    areg::Component
                             , protected LargeDataStub
-                            , protected ThreadConsumer
+                            , protected areg::ThreadConsumer
 {
     friend class OptionConsumer;
     friend class ServicingTimerConsumer;
@@ -96,11 +96,11 @@ class ServicingComponent    : public    Component
 // ServicingComponent::ServicingTimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
     //!< The timer consumer object
-    class ServicingTimerConsumer : public    TimerConsumer
+    class ServicingTimerConsumer : public    areg::TimerConsumer
     {
     public:
         ServicingTimerConsumer( ServicingComponent & service )
-            : TimerConsumer ( )
+            : areg::TimerConsumer ( )
             , mService      ( service )
             {
             }
@@ -116,7 +116,7 @@ class ServicingComponent    : public    Component
          * \brief   Triggered when Timer is expired. 
          * \param   timer   The timer object that is expired.
          **/
-        void processTimer( Timer & timer ) override;
+        void processTimer( areg::Timer & timer ) override;
 
     private:
         ServicingComponent &    mService;   //!< The service, which handles the options
@@ -133,27 +133,27 @@ class ServicingComponent    : public    Component
 //////////////////////////////////////////////////////////////////////////
 
     //!< Coordinates to output application title / headline
-    static constexpr Console::Coord     COORD_TITLE     { 1, 2 };
+    static constexpr aregext::Console::Coord     COORD_TITLE     { 1, 2 };
 
-    static constexpr Console::Coord     COORD_COMM_RATE { 1, 3 };
+    static constexpr aregext::Console::Coord     COORD_COMM_RATE { 1, 3 };
 
     //!< Coordinates to output data rate
-    static constexpr Console::Coord     COORD_DATA_RATE { 1, 4 };
+    static constexpr aregext::Console::Coord     COORD_DATA_RATE { 1, 4 };
 
     //!< Coordinates to output item rate
-    static constexpr Console::Coord     COORD_ITEM_RATE { 1, 5 };
+    static constexpr aregext::Console::Coord     COORD_ITEM_RATE { 1, 5 };
 
     //!< Coordinates to output information of thread suspend statistics
-    static constexpr Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
+    static constexpr aregext::Console::Coord     COORD_INFO_SLEEP{ 1, 6 };
 
     //!< Coordinates to input the option commands
-    static constexpr Console::Coord     COORD_OPTIONS   { 1, 7 };
+    static constexpr aregext::Console::Coord     COORD_OPTIONS   { 1, 7 };
 
     //!< Coordinates to output the error information.
-    static constexpr Console::Coord     COORD_ERROR_INFO{ 1, 8 };
+    static constexpr aregext::Console::Coord     COORD_ERROR_INFO{ 1, 8 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr Console::Coord     COORD_OPT_INFO  { 1, 10 };
+    static constexpr aregext::Console::Coord     COORD_OPT_INFO  { 1, 10 };
 
     //!< Message to output as application title / headline
     static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part...\n" };
@@ -188,7 +188,7 @@ class ServicingComponent    : public    Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -206,7 +206,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -214,7 +214,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( areg::Component & holder ) override;
 
 /************************************************************************/
 // StubBase overrides
@@ -225,7 +225,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status ) override;
+    bool clientConnected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -264,20 +264,20 @@ private:
     //!< List of generated image blocks.
     std::vector<ImageBlock>     mBlockList;
     //! The timer to trigger to output data
-    Timer                       mTimer;
+    areg::Timer                       mTimer;
     //! The thread to input from console.
-    Thread                      mInputThread;
+    areg::Thread                      mInputThread;
     //! The thread to generate image data.
-    Thread                      mImageThread;
+    areg::Thread                      mImageThread;
     //! The actual options.
-    NEUtilities::OptionValues    mOptions;
+    areg::OptionValues    mOptions;
     //! The atomic object to quit input thread.
     std::atomic_bool            mQuitThread;
     //! The atomic object to notify that options changed.
     std::atomic_bool            mOptionChanged;
     //! The event to pause generate image.
     //! The data generating thread should be paused when non-signaled and should run when signaled.
-    SyncEvent                   mPauseEvent;
+    areg::SyncEvent                   mPauseEvent;
     //!< Number of connected clients.
     int32_t                     mClients;
     //!< Data Rate in bytes
@@ -293,7 +293,7 @@ private:
     //!< The object to receive timer expired event
     ServicingTimerConsumer      mTimerConsumer;
     //!< The synchronization item.
-    CriticalSection             mLock;
+    areg::CriticalSection             mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
@@ -330,7 +330,7 @@ private:
      *                      data or ignored. It is used to compute blocks that were put in 
      *                      sleep or ignored.
      */
-    void _updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult);
+    void _updateData(uint64_t genData, uint32_t genBlocks, areg::Wait::WaitResolution waitResult);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

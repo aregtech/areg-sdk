@@ -20,271 +20,274 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IOStream.hpp"
 
-/**
- * \brief   The KeyValuePair class template is an implementation of a pair of data,
- *          where one member plays role of a Key and other is a Value. It is used
- *          in the Property List where keys are unique entries.
- * \tparam  KEY     The type of property Key.
- * \tparam  VALUE   The type of property Value.
- **/
-template <typename KEY, typename VALUE>
-class KeyValuePair
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
     /**
-     * \brief   Constructors
+     * \brief   The KeyValuePair class template is an implementation of a pair of data,
+     *          where one member plays role of a Key and other is a Value. It is used
+     *          in the Property List where keys are unique entries.
+     * \tparam  KEY     The type of property Key.
+     * \tparam  VALUE   The type of property Value.
      **/
-    KeyValuePair() = default;
-    KeyValuePair(const KeyValuePair<KEY, VALUE>& src) = default;
-    KeyValuePair(KeyValuePair<KEY, VALUE>&& src)  noexcept = default;
+    template <typename KEY, typename VALUE>
+    class KeyValuePair
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Constructors
+         **/
+        KeyValuePair() = default;
+        KeyValuePair(const KeyValuePair<KEY, VALUE>& src) = default;
+        KeyValuePair(KeyValuePair<KEY, VALUE>&& src)  noexcept = default;
 
-    /**
-     * \brief   Initializes key and value pairs.
-     **/
-    KeyValuePair( const KEY & Key, const VALUE & Value );
-    KeyValuePair(KEY && Key, VALUE && Value);
+        /**
+         * \brief   Initializes key and value pairs.
+         **/
+        KeyValuePair( const KEY & Key, const VALUE & Value );
+        KeyValuePair(KEY && Key, VALUE && Value);
 
-    /**
-     * \brief   Destructor
-     **/
-    ~KeyValuePair() = default;
+        /**
+         * \brief   Destructor
+         **/
+        ~KeyValuePair() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Assignment operators.
-     **/
-    inline KeyValuePair<KEY, VALUE> & operator = (const KeyValuePair<KEY, VALUE> & src);
-    inline KeyValuePair<KEY, VALUE> & operator = ( KeyValuePair<KEY, VALUE> && src ) noexcept;
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Assignment operators.
+         **/
+        inline KeyValuePair<KEY, VALUE> & operator = (const KeyValuePair<KEY, VALUE> & src);
+        inline KeyValuePair<KEY, VALUE> & operator = ( KeyValuePair<KEY, VALUE> && src ) noexcept;
 
-    /**
-     * \brief	Checks equality of 2 property objects, and returns true if they are equal.
-     * \param	other	The property object to compare.
-     **/
-    inline bool operator == ( const KeyValuePair<KEY, VALUE> & other ) const;
+        /**
+         * \brief	Checks equality of 2 property objects, and returns true if they are equal.
+         * \param	other	The property object to compare.
+         **/
+        inline bool operator == ( const KeyValuePair<KEY, VALUE> & other ) const;
 
-    /**
-     * \brief	Checks inequality of 2 property objects, and returns true if they are not equal.
-     * \param	other	The property object to compare.
-     **/
-    inline bool operator != ( const KeyValuePair<KEY, VALUE> & other ) const;
+        /**
+         * \brief	Checks inequality of 2 property objects, and returns true if they are not equal.
+         * \param	other	The property object to compare.
+         **/
+        inline bool operator != ( const KeyValuePair<KEY, VALUE> & other ) const;
 
-/************************************************************************/
-// Friend global operators to make property streamable
-/************************************************************************/
+    /************************************************************************/
+    // Friend global operators to make property streamable
+    /************************************************************************/
 
-    /**
-     * \brief   Reads out from the stream the key and value pairs of the property.
-     *          If property previously had key and value, they will be removed and new data
-     *          from the stream will be set. There should be possibility to initialize
-     *          key and value from streaming object and if KEY or VALUE are not primitives,
-     *          but objects, they should have implemented streaming operator.
-     * \param   stream  The streaming object to read values.
-     * \param   input   The property object to save initialized values.
-     **/
+        /**
+         * \brief   Reads out from the stream the key and value pairs of the property.
+         *          If property previously had key and value, they will be removed and new data
+         *          from the stream will be set. There should be possibility to initialize
+         *          key and value from streaming object and if KEY or VALUE are not primitives,
+         *          but objects, they should have implemented streaming operator.
+         * \param   stream  The streaming object to read values.
+         * \param   input   The property object to save initialized values.
+         **/
+        template < typename K, typename V >
+        friend inline const InStream & operator >> ( const InStream & stream, KeyValuePair<K, V> & input);
+
+        /**
+         * \brief   Writes to the stream the key and value pairs of the property.
+         *          The values will be written to the stream as a KEY and VALUE.
+         *          There should be possibility to stream key and value pairs and if KEY or VALUE
+         *          are not primitives, but objects, they should have implemented streaming operator.
+         * \param   stream  The stream to write values.
+         * \param   output  The property object containing value to stream.
+         **/
+        template < typename K, typename V >
+        friend inline OutStream & operator << ( OutStream & stream, const KeyValuePair<K, V> & output );
+
+    //////////////////////////////////////////////////////////////////////////
+    // Operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
+
+        /**
+         * \brief   Copies the key and value data of the pair from the given source.
+         * \param   Key     The key data to set in the pair.
+         * \param   Value   The value data to set in the pair.
+         **/
+        inline void setData(const KEY & Key, const VALUE & Value);
+
+        /**
+         * \brief   Moves the key and value data of the pair from the given source.
+         * \param   Key     The key data to set in the pair.
+         * \param   Value   The value data to set in the pair.
+         **/
+        inline void setData(KEY && Key, VALUE && Value);
+
+        /**
+         * \brief   Sets the key data of the pair from the given source.
+         * \param   Key     The key data to set in the pair.
+         **/
+        inline void setKey(const KEY & Key);
+        inline void setKey(KEY && Key);
+
+        /**
+         * \brief   Returns the Key data of the pair object.
+         **/
+        inline const KEY & getKey() const;
+        inline KEY & getKey();
+
+        /**
+         * \brief   Sets the Value data of the pair from the given source.
+         * \param   Value   The key data to set in the pair.
+         **/
+        inline void setValue(const VALUE & Value);
+        inline void setValue(VALUE && Value);
+
+        /**
+         * \brief   Returns the Value data of the pair object.
+         **/
+        inline const VALUE& getValue() const;
+        inline VALUE& getValue();
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variable
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   The pair object.Declared public for the fast access because
+         *          this object does not contain any special logic.
+         **/
+        std::pair<KEY, VALUE>   mValue;
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // Function Implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // KeyValuePair<KEY, VALUE> class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    template <typename KEY, typename VALUE>
+    KeyValuePair<KEY, VALUE>::KeyValuePair( const KEY & Key, const VALUE & Value )
+        : mValue( Key, Value )
+    {
+    }
+
+    template <typename KEY, typename VALUE>
+    KeyValuePair<KEY, VALUE>::KeyValuePair(KEY && Key, VALUE && Value)
+        : mValue( std::move(Key), std::move(Value) )
+    {
+    }
+
+    template <typename KEY, typename VALUE>
+    inline KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (const KeyValuePair<KEY, VALUE>& src)
+    {
+        mValue = src.mValue;
+        return (*this);
+    }
+
+    template <typename KEY, typename VALUE>
+    inline KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (KeyValuePair<KEY, VALUE> && src) noexcept
+    {
+        mValue = std::move(src.mValue);
+        return (*this);
+    }
+
+    template <typename KEY, typename VALUE>
+    inline bool KeyValuePair<KEY, VALUE>::operator == ( const KeyValuePair<KEY, VALUE> & other ) const
+    {
+        return ((this == &other) || (mValue.first == other.mValue.first));
+    }
+
+    template <typename KEY, typename VALUE>
+    inline bool KeyValuePair<KEY, VALUE>::operator != ( const KeyValuePair<KEY, VALUE> & other ) const
+    {
+        return ((this != &other) && (mValue.first != other.mValue.first));
+    }
+
+    template <typename KEY, typename VALUE>
+    inline void KeyValuePair<KEY, VALUE>::setData(const KEY& Key, const VALUE& Value)
+    {
+        mValue.first    = Key;
+        mValue.second   = Value;
+    }
+
+    template <typename KEY, typename VALUE>
+    inline void KeyValuePair<KEY, VALUE>::setData(KEY && Key, VALUE && Value)
+    {
+        mValue.first    = std::move(Key);
+        mValue.second   = std::move(Value);
+    }
+
+    template <typename KEY, typename VALUE>
+    inline void KeyValuePair<KEY, VALUE>::setKey(const KEY& Key)
+    {
+        mValue.first = Key;
+    }
+
+    template <typename KEY, typename VALUE>
+    inline void KeyValuePair<KEY, VALUE>::setKey(KEY && Key)
+    {
+        mValue.first = std::move(Key);
+    }
+
+    template <typename KEY, typename VALUE>
+    inline const KEY& KeyValuePair<KEY, VALUE>::getKey() const
+    {
+        return mValue.first;
+    }
+
+    template <typename KEY, typename VALUE>
+    inline KEY& KeyValuePair<KEY, VALUE>::getKey()
+    {
+        return mValue.first;
+    }
+
+    template <typename KEY, typename VALUE>
+    inline void KeyValuePair<KEY, VALUE>::setValue(const VALUE& Value)
+    {
+        mValue.second = Value;
+    }
+
+    template <typename KEY, typename VALUE>
+    inline void KeyValuePair<KEY, VALUE>::setValue(VALUE && Value)
+    {
+        mValue.second = std::move(Value);
+    }
+
+    template <typename KEY, typename VALUE>
+    inline const VALUE& KeyValuePair<KEY, VALUE>::getValue() const
+    {
+        return mValue.second;
+    }
+
+    template <typename KEY, typename VALUE>
+    inline VALUE& KeyValuePair<KEY, VALUE>::getValue()
+    {
+        return mValue.second;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // KeyValuePair<KEY, VALUE> class friend methods
+    //////////////////////////////////////////////////////////////////////////
+
     template < typename K, typename V >
-    friend inline const InStream & operator >> ( const InStream & stream, KeyValuePair<K, V> & input);
+    inline const InStream& operator >> (const InStream& stream, KeyValuePair<K, V>& input)
+    {
+        K key;
+        V value;
+        stream >> key >> value;
+        input.setData(std::move(key), std::move(value));
+        return stream;
+    }
 
-    /**
-     * \brief   Writes to the stream the key and value pairs of the property.
-     *          The values will be written to the stream as a KEY and VALUE.
-     *          There should be possibility to stream key and value pairs and if KEY or VALUE
-     *          are not primitives, but objects, they should have implemented streaming operator.
-     * \param   stream  The stream to write values.
-     * \param   output  The property object containing value to stream.
-     **/
     template < typename K, typename V >
-    friend inline OutStream & operator << ( OutStream & stream, const KeyValuePair<K, V> & output );
+    inline OutStream& operator << (OutStream& stream, const KeyValuePair<K, V>& output)
+    {
+        stream << output.mValue.first;
+        stream << output.mValue.second;
+        return stream;
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Copies the key and value data of the pair from the given source.
-     * \param   Key     The key data to set in the pair.
-     * \param   Value   The value data to set in the pair.
-     **/
-    inline void setData(const KEY & Key, const VALUE & Value);
-
-    /**
-     * \brief   Moves the key and value data of the pair from the given source.
-     * \param   Key     The key data to set in the pair.
-     * \param   Value   The value data to set in the pair.
-     **/
-    inline void setData(KEY && Key, VALUE && Value);
-
-    /**
-     * \brief   Sets the key data of the pair from the given source.
-     * \param   Key     The key data to set in the pair.
-     **/
-    inline void setKey(const KEY & Key);
-    inline void setKey(KEY && Key);
-
-    /**
-     * \brief   Returns the Key data of the pair object.
-     **/
-    inline const KEY & getKey() const;
-    inline KEY & getKey();
-
-    /**
-     * \brief   Sets the Value data of the pair from the given source.
-     * \param   Value   The key data to set in the pair.
-     **/
-    inline void setValue(const VALUE & Value);
-    inline void setValue(VALUE && Value);
-
-    /**
-     * \brief   Returns the Value data of the pair object.
-     **/
-    inline const VALUE& getValue() const;
-    inline VALUE& getValue();
-
-//////////////////////////////////////////////////////////////////////////
-// Member variable
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   The pair object.Declared public for the fast access because
-     *          this object does not contain any special logic.
-     **/
-    std::pair<KEY, VALUE>   mValue;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// Function Implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// KeyValuePair<KEY, VALUE> class implementation
-//////////////////////////////////////////////////////////////////////////
-
-template <typename KEY, typename VALUE>
-KeyValuePair<KEY, VALUE>::KeyValuePair( const KEY & Key, const VALUE & Value )
-    : mValue( Key, Value )
-{
-}
-
-template <typename KEY, typename VALUE>
-KeyValuePair<KEY, VALUE>::KeyValuePair(KEY && Key, VALUE && Value)
-    : mValue( std::move(Key), std::move(Value) )
-{
-}
-
-template <typename KEY, typename VALUE>
-inline KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (const KeyValuePair<KEY, VALUE>& src)
-{
-    mValue = src.mValue;
-    return (*this);
-}
-
-template <typename KEY, typename VALUE>
-inline KeyValuePair<KEY, VALUE>& KeyValuePair<KEY, VALUE>::operator = (KeyValuePair<KEY, VALUE> && src) noexcept
-{
-    mValue = std::move(src.mValue);
-    return (*this);
-}
-
-template <typename KEY, typename VALUE>
-inline bool KeyValuePair<KEY, VALUE>::operator == ( const KeyValuePair<KEY, VALUE> & other ) const
-{
-    return ((this == &other) || (mValue.first == other.mValue.first));
-}
-
-template <typename KEY, typename VALUE>
-inline bool KeyValuePair<KEY, VALUE>::operator != ( const KeyValuePair<KEY, VALUE> & other ) const
-{
-    return ((this != &other) && (mValue.first != other.mValue.first));
-}
-
-template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::setData(const KEY& Key, const VALUE& Value)
-{
-    mValue.first    = Key;
-    mValue.second   = Value;
-}
-
-template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::setData(KEY && Key, VALUE && Value)
-{
-    mValue.first    = std::move(Key);
-    mValue.second   = std::move(Value);
-}
-
-template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::setKey(const KEY& Key)
-{
-    mValue.first = Key;
-}
-
-template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::setKey(KEY && Key)
-{
-    mValue.first = std::move(Key);
-}
-
-template <typename KEY, typename VALUE>
-inline const KEY& KeyValuePair<KEY, VALUE>::getKey() const
-{
-    return mValue.first;
-}
-
-template <typename KEY, typename VALUE>
-inline KEY& KeyValuePair<KEY, VALUE>::getKey()
-{
-    return mValue.first;
-}
-
-template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::setValue(const VALUE& Value)
-{
-    mValue.second = Value;
-}
-
-template <typename KEY, typename VALUE>
-inline void KeyValuePair<KEY, VALUE>::setValue(VALUE && Value)
-{
-    mValue.second = std::move(Value);
-}
-
-template <typename KEY, typename VALUE>
-inline const VALUE& KeyValuePair<KEY, VALUE>::getValue() const
-{
-    return mValue.second;
-}
-
-template <typename KEY, typename VALUE>
-inline VALUE& KeyValuePair<KEY, VALUE>::getValue()
-{
-    return mValue.second;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// KeyValuePair<KEY, VALUE> class friend methods
-//////////////////////////////////////////////////////////////////////////
-
-template < typename K, typename V >
-inline const InStream& operator >> (const InStream& stream, KeyValuePair<K, V>& input)
-{
-    K key;
-    V value;
-    stream >> key >> value;
-    input.setData(std::move(key), std::move(value));
-    return stream;
-}
-
-template < typename K, typename V >
-inline OutStream& operator << (OutStream& stream, const KeyValuePair<K, V>& output)
-{
-    stream << output.mValue.first;
-    stream << output.mValue.second;
-    return stream;
-}
-
+} // namespace areg
 #endif  // AREG_BASE_KEYVALUEPAIR_HPP

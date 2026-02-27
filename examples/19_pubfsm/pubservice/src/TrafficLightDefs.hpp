@@ -121,7 +121,7 @@ AREG_DECLARE_INTERNAL_EVENT(FsmEventData, FsmEvent, IEFsmEventConsumer);
 
     /**
      * \brief   NETrafficLightFSM::FsmTimer
-                TrafficLight State Machine available Timer IDs
+                TrafficLight State Machine available areg::Timer IDs
      *          
      **/
     enum class FsmTimer

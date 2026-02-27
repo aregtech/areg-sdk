@@ -24,74 +24,82 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
-
-//////////////////////////////////////////////////////////////////////////
-// EventConsumer class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Every Event requires to have Event Consumer object registered 
- *          in dispatcher. When Dispatcher receives an event it triggers
- *          methods to process the event.
- *          The Event Consumers require registration in Dispatcher. Register
- *          consumer by calling add / remove consumer of Event class. 
- *          By default the consumer is registered in the current dispatcher
- *          of the current thread. Otherwise, register by specifying certain
- *          dispatcher. All event consumers are instances of EventConsumer.
- **/
-class AREG_API EventConsumer
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    class Event;
+}
+
+namespace areg
+{
+
+    //////////////////////////////////////////////////////////////////////////
+    // EventConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Protected constructor and destructor.
+     * \brief   Every Event requires to have Event Consumer object registered
+     *          in dispatcher. When Dispatcher receives an event it triggers
+     *          methods to process the event.
+     *          The Event Consumers require registration in Dispatcher. Register
+     *          consumer by calling add / remove consumer of Event class.
+     *          By default the consumer is registered in the current dispatcher
+     *          of the current thread. Otherwise, register by specifying certain
+     *          dispatcher. All event consumers are instances of EventConsumer.
      **/
-    EventConsumer() = default;
-    virtual ~EventConsumer() = default;
+    class AREG_API EventConsumer
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Protected constructor and destructor.
+         **/
+        EventConsumer() = default;
+        virtual ~EventConsumer() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Override operations
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// EventConsumer interface overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Override operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // EventConsumer interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Triggered by Dispatcher object when starts dispatch event.
-     *          This pure virtual method should be overwritten by child
-     *          class to process event.
-     * \param   eventElem   Event object, which currently dispatcher is
-     *                      processing. As soon as event is finished processing
-     *                      it will be destroyed.
-     **/
-    virtual void startEventProcessing( Event & eventElem ) = 0;
+        /**
+         * \brief   Triggered by Dispatcher object when starts dispatch event.
+         *          This pure virtual method should be overwritten by child
+         *          class to process event.
+         * \param   eventElem   Event object, which currently dispatcher is
+         *                      processing. As soon as event is finished processing
+         *                      it will be destroyed.
+         **/
+        virtual void startEventProcessing( Event & eventElem ) = 0;
 
-    /**
-     * \brief   Triggered, when consumer has been registered / unregistered.
-     * \param   isRegistered    Flag indicating whether consumer is registered
-     *                          or not.
-     **/
-    virtual void consumerRegistered( bool isRegistered );
+        /**
+         * \brief   Triggered, when consumer has been registered / unregistered.
+         * \param   isRegistered    Flag indicating whether consumer is registered
+         *                          or not.
+         **/
+        virtual void consumerRegistered( bool isRegistered );
 
-    /**
-     * \brief   Method called before Event Started to be processed.
-     *          If method returns true, the event is passed to be processed.
-     *          Otherwise, processing ignored and event is dropped.
-     * \param   eventElem   The Event object which is going to be sent for processing.
-     * \return  Return true if Event object should be processed by Consumer. 
-     *          Returns false if Event processing should be interrupted and 
-     *          the Event object should be dropped.
-     **/
-    virtual bool preprocessEvent( Event & eventElem );
+        /**
+         * \brief   Method called before Event Started to be processed.
+         *          If method returns true, the event is passed to be processed.
+         *          Otherwise, processing ignored and event is dropped.
+         * \param   eventElem   The Event object which is going to be sent for processing.
+         * \return  Return true if Event object should be processed by Consumer.
+         *          Returns false if Event processing should be interrupted and
+         *          the Event object should be dropped.
+         **/
+        virtual bool preprocessEvent( Event & eventElem );
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden method calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( EventConsumer );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden / Forbidden method calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( EventConsumer );
+    };
+
+} // namespace areg
 
 #endif  // AREG_COMPONENT_EVENTCONSUMER_HPP

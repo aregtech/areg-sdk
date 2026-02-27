@@ -23,307 +23,310 @@
 #include "areg/base/Identifier.hpp"
 #include "areg/base/ArrayList.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// PropertyValue class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Property Value object, which is saved as a string.
- **/
-class AREG_API PropertyValue
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructors / destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // PropertyValue class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default constructor
+     * \brief   The Property Value object, which is saved as a string.
      **/
-    PropertyValue() = default;
-    /**
-     * \brief   Initializes Value from string.
-     * \param   value       The Value as a string to parse.
-     **/
-    explicit PropertyValue( const char * value );
-    /**
-     * \brief   Initializes Value from 32-bit unsigned integer.
-     * \param   intValue    The Value as 32-bit unsigned integer to set.
-     **/
-    explicit PropertyValue( uint32_t intValue );
-    /**
-     * \brief   Initializes Value from digit with floating point.
-     * \param   dValue      The Value as a digit with floating point to set.
-     **/
-    explicit PropertyValue( double dValue );
-    /**
-     * \brief   Initializes Value from digit with floating point.
-     * \param   bValue    The Value as a boolean value.
-     **/
-    explicit PropertyValue(bool bValue);
-    /**
-     * \brief   Initializes Value from list of identifiers.
-     * \param   idList  The Value as a list of identifiers to set.
-     **/
-    explicit PropertyValue( const std::vector<Identifier> & idList );
-    /**
-     * \brief   Copies value from given source
-     * \param   value   The source to copy value
-     **/
-    explicit PropertyValue( const String & value );
-    explicit PropertyValue( String && value ) noexcept;
-    /**
-     * \brief   Copies data from given source
-     * \param   source  The source to copy data
-     **/
-    PropertyValue( const PropertyValue & source );
-    /**
-     * \brief   Moves data from given source
-     * \param   source  The source to move data
-     **/
-    PropertyValue( PropertyValue && source ) noexcept;
-    /**
-     * \brief   Destructor
-     **/
-    ~PropertyValue() = default;
+    class AREG_API PropertyValue
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor
+         **/
+        PropertyValue() = default;
+        /**
+         * \brief   Initializes Value from string.
+         * \param   value       The Value as a string to parse.
+         **/
+        explicit PropertyValue( const char * value );
+        /**
+         * \brief   Initializes Value from 32-bit unsigned integer.
+         * \param   intValue    The Value as 32-bit unsigned integer to set.
+         **/
+        explicit PropertyValue( uint32_t intValue );
+        /**
+         * \brief   Initializes Value from digit with floating point.
+         * \param   dValue      The Value as a digit with floating point to set.
+         **/
+        explicit PropertyValue( double dValue );
+        /**
+         * \brief   Initializes Value from digit with floating point.
+         * \param   bValue    The Value as a boolean value.
+         **/
+        explicit PropertyValue(bool bValue);
+        /**
+         * \brief   Initializes Value from list of identifiers.
+         * \param   idList  The Value as a list of identifiers to set.
+         **/
+        explicit PropertyValue( const std::vector<Identifier> & idList );
+        /**
+         * \brief   Copies value from given source
+         * \param   value   The source to copy value
+         **/
+        explicit PropertyValue( const String & value );
+        explicit PropertyValue( String && value ) noexcept;
+        /**
+         * \brief   Copies data from given source
+         * \param   source  The source to copy data
+         **/
+        PropertyValue( const PropertyValue & source );
+        /**
+         * \brief   Moves data from given source
+         * \param   source  The source to move data
+         **/
+        PropertyValue( PropertyValue && source ) noexcept;
+        /**
+         * \brief   Destructor
+         **/
+        ~PropertyValue() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies property Value from given source
-     * \param   source  The source to copy data.
-     **/
-    PropertyValue & operator = ( const PropertyValue & source );
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Copies property Value from given source
+         * \param   source  The source to copy data.
+         **/
+        PropertyValue & operator = ( const PropertyValue & source );
 
-    /**
-     * \brief   Moves property Value from given source
-     * \param   source  The source to move data.
-     **/
-    PropertyValue & operator = ( PropertyValue && source ) noexcept;
+        /**
+         * \brief   Moves property Value from given source
+         * \param   source  The source to move data.
+         **/
+        PropertyValue & operator = ( PropertyValue && source ) noexcept;
 
-    /**
-     * \brief   Copies property Value from given source as a string
-     * \param   value   The source as string to parse and copy data.
-     **/
-    PropertyValue & operator = ( const String & value );
-    PropertyValue & operator = ( String && value ) noexcept;
+        /**
+         * \brief   Copies property Value from given source as a string
+         * \param   value   The source as string to parse and copy data.
+         **/
+        PropertyValue & operator = ( const String & value );
+        PropertyValue & operator = ( String && value ) noexcept;
 
-    /**
-     * \brief   Copies property Value from given source as a 32-bit unsigned integer
-     * \param   intValue    The 32-bit digit data to convert.
-     **/
-    PropertyValue & operator = ( uint32_t intValue );
+        /**
+         * \brief   Copies property Value from given source as a 32-bit unsigned integer
+         * \param   intValue    The 32-bit digit data to convert.
+         **/
+        PropertyValue & operator = ( uint32_t intValue );
 
-    /**
-     * \brief   Copies property Value from given source as a digit with floating point
-     * \param   dValue      The digit with the floating point to convert.
-     **/
-    PropertyValue & operator = ( double dValue );
+        /**
+         * \brief   Copies property Value from given source as a digit with floating point
+         * \param   dValue      The digit with the floating point to convert.
+         **/
+        PropertyValue & operator = ( double dValue );
 
-    /**
-     * \brief   Copies property Value from given source as a digit with floating point
-     * \param   bValue      The boolean data to convert.
-     **/
-    PropertyValue& operator = (bool bValue);
+        /**
+         * \brief   Copies property Value from given source as a digit with floating point
+         * \param   bValue      The boolean data to convert.
+         **/
+        PropertyValue& operator = (bool bValue);
 
-    /**
-     * \brief   Copies property Value from given source as a list of identifiers
-     * \param   idList      The data to convert.
-     **/
-    PropertyValue & operator = ( const std::vector<Identifier> & idList );
+        /**
+         * \brief   Copies property Value from given source as a list of identifiers
+         * \param   idList      The data to convert.
+         **/
+        PropertyValue & operator = ( const std::vector<Identifier> & idList );
 
-    /**
-     * \brief   Checks equality of two Value objects.
-     * \param   other   The Value object to check.
-     * \return  Returns true if Value objects are equal.
-     **/
-    bool operator == ( const PropertyValue & other ) const;
+        /**
+         * \brief   Checks equality of two Value objects.
+         * \param   other   The Value object to check.
+         * \return  Returns true if Value objects are equal.
+         **/
+        bool operator == ( const PropertyValue & other ) const;
 
-    /**
-     * \brief   Checks inequality of two Value objects.
-     * \param   other   The Value object to check.
-     * \return  Returns true if Value objects are not equal.
-     **/
-    bool operator != ( const PropertyValue & other ) const;
+        /**
+         * \brief   Checks inequality of two Value objects.
+         * \param   other   The Value object to check.
+         * \return  Returns true if Value objects are not equal.
+         **/
+        bool operator != ( const PropertyValue & other ) const;
 
-    /**
-     * \brief   Converts the property value into the 32-bit unsigned integer.
-     **/
-    operator uint32_t() const;
+        /**
+         * \brief   Converts the property value into the 32-bit unsigned integer.
+         **/
+        operator uint32_t() const;
 
-    /**
-     * \brief   Converts the property value into the string.
-     **/
-    operator const String& () const;
+        /**
+         * \brief   Converts the property value into the string.
+         **/
+        operator const String& () const;
 
-    /**
-     * \brief   Converts the property value into the floating point digit.
-     **/
-    operator double() const;
+        /**
+         * \brief   Converts the property value into the floating point digit.
+         **/
+        operator double() const;
 
-    /**
-     * \brief   Converts the property value into the boolean.
-     **/
-    operator bool() const;
+        /**
+         * \brief   Converts the property value into the boolean.
+         **/
+        operator bool() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Operations and properties
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Operations and properties
+    //////////////////////////////////////////////////////////////////////////
 
-    /**
-     * \brief   Returns data of Value
-     **/
-    const String & getValue() const;
+        /**
+         * \brief   Returns data of Value
+         **/
+        const String & getValue() const;
 
-    /**
-     * \brief   Sets data of Value
-     * \param   value    The value as string to set
-     **/
-    void setValue( const char * value );
+        /**
+         * \brief   Sets data of Value
+         * \param   value    The value as string to set
+         **/
+        void setValue( const char * value );
 
-    /**
-     * \brief   Sets data of Value
-     * \param   value    The value as string to set
-     **/
-    void setValue( const String & value );
+        /**
+         * \brief   Sets data of Value
+         * \param   value    The value as string to set
+         **/
+        void setValue( const String & value );
 
-    /**
-     * \brief   Sets data of Value
-     * \param   value    The value as string to set
-     **/
-    void setValue( String && value );
+        /**
+         * \brief   Sets data of Value
+         * \param   value    The value as string to set
+         **/
+        void setValue( String && value );
 
-    /**
-     * \brief   Returns value as a string
-     **/
-    const String & getString() const;
+        /**
+         * \brief   Returns value as a string
+         **/
+        const String & getString() const;
 
-    /**
-     * \brief   Sets value as a string
-     * \param   value    The value as a string to set
-     **/
-    void setString( const char * value );
+        /**
+         * \brief   Sets value as a string
+         * \param   value    The value as a string to set
+         **/
+        void setString( const char * value );
 
-    /**
-     * \brief   Returns the boolean value of the property value
-     **/
-    bool getBoolean() const;
+        /**
+         * \brief   Returns the boolean value of the property value
+         **/
+        bool getBoolean() const;
 
-    /**
-     * \brief   Sets the boolean value.
-     **/
-    void setBoolean(bool newValue);
+        /**
+         * \brief   Sets the boolean value.
+         **/
+        void setBoolean(bool newValue);
 
-    /**
-     * \brief   Returns value as a 32-bit unsigned integer
-     **/
-    uint32_t getInteger( NEString::Radix radix = NEString::Radix::Decimal ) const;
+        /**
+         * \brief   Returns value as a 32-bit unsigned integer
+         **/
+        uint32_t getInteger( Radix radix = Radix::Decimal ) const;
 
-    /**
-     * \brief   Converts and sets value as a 32-bit unsigned integer
-     * \param   intValue    The value as a 32-bit unsigned integer to convert and set
-     * \param   radix       The conversion criteria of integer. By default, the passed integer is converted as a decimal.
-     **/
-    void setInteger( uint32_t intValue, NEString::Radix radix = NEString::Radix::Decimal );
+        /**
+         * \brief   Converts and sets value as a 32-bit unsigned integer
+         * \param   intValue    The value as a 32-bit unsigned integer to convert and set
+         * \param   radix       The conversion criteria of integer. By default, the passed integer is converted as a decimal.
+         **/
+        void setInteger( uint32_t intValue, Radix radix = Radix::Decimal );
 
-    /**
-     * \brief   Returns value as a digit with floating point
-     **/
-    double getDouble() const;
+        /**
+         * \brief   Returns value as a digit with floating point
+         **/
+        double getDouble() const;
 
-    /**
-     * \brief   Converts and sets value as a digit with floating point
-     * \param   dValue      The value as a digit with floating point to convert and set
-     **/
-    void setDouble( double dValue );
+        /**
+         * \brief   Converts and sets value as a digit with floating point
+         * \param   dValue      The value as a digit with floating point to convert and set
+         **/
+        void setDouble( double dValue );
 
-    /**
-     * \brief   Returns combined digital value of the identifiers.
-     * \param   lookupList  The lookup list to convert literal identifiers into integer values.
-     * \return  Combined with logical OR operation digital value of the identifiers.
-     **/
-    uint32_t getIndetifier( const std::vector<Identifier> & lookupList) const;
+        /**
+         * \brief   Returns combined digital value of the identifiers.
+         * \param   lookupList  The lookup list to convert literal identifiers into integer values.
+         * \return  Combined with logical OR operation digital value of the identifiers.
+         **/
+        uint32_t getIndetifier( const std::vector<Identifier> & lookupList) const;
 
-    /**
-     * \brief   Converts and sets value as a list of Identifiers
-     * \param   idList      The list of Identifiers to convert and set.
-     **/
-    void setIndentifier( const std::vector<Identifier> & idList );
+        /**
+         * \brief   Converts and sets value as a list of Identifiers
+         * \param   idList      The list of Identifiers to convert and set.
+         **/
+        void setIndentifier( const std::vector<Identifier> & idList );
 
-    /**
-     * \brief   Parses the value and returns the list of identifiers.
-     * \param   lookupList  The lookup list to convert literal identifiers into integer values.
-     * \return  Combined with logical OR ('|') operation digital value of the identifiers.
-     **/
-    ArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
+        /**
+         * \brief   Parses the value and returns the list of identifiers.
+         * \param   lookupList  The lookup list to convert literal identifiers into integer values.
+         * \return  Combined with logical OR ('|') operation digital value of the identifiers.
+         **/
+        ArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
 
-    /**
-     * \brief   Sets as a string the list of values of the property.
-     * \param   idBits      The bitwise set of IDs.
-     * \param   lookupList  The lookup list to find entry and convert to the string.
-     **/
-    void setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList);
+        /**
+         * \brief   Sets as a string the list of values of the property.
+         * \param   idBits      The bitwise set of IDs.
+         * \param   lookupList  The lookup list to find entry and convert to the string.
+         **/
+        void setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList);
 
-    /**
-     * \brief   Parses the value and returns the list of string. The strings in the value should be
-     *          separated by logical OR ('|') symbol to get the list. Otherwise, the returned array
-     *          has one entry and that entry is equal to the value.
-     * \param   makeUnique  Flag, indicating whether the entries in the result should be unique or not.
-     *                      If the flag is 'false', the entries in the result list are not checked.
-     * \return  Returns the list of strings.
-     **/
-    ArrayList<String> getValueList(bool makeUnique = false) const;
+        /**
+         * \brief   Parses the value and returns the list of string. The strings in the value should be
+         *          separated by logical OR ('|') symbol to get the list. Otherwise, the returned array
+         *          has one entry and that entry is equal to the value.
+         * \param   makeUnique  Flag, indicating whether the entries in the result should be unique or not.
+         *                      If the flag is 'false', the entries in the result list are not checked.
+         * \return  Returns the list of strings.
+         **/
+        ArrayList<String> getValueList(bool makeUnique = false) const;
 
-    /**
-     * \brief   Sets a list of string as a value.
-     * \param   list    The list of strings to set as a value;
-     **/
-    void setValueList(const std::vector<String>& list);
+        /**
+         * \brief   Sets a list of string as a value.
+         * \param   list    The list of strings to set as a value;
+         **/
+        void setValueList(const std::vector<String>& list);
 
-    /**
-     * \brief   Parses given string, extracts Value data.
-     * \param   value    The string, which contains data for Value.
-     **/
-    void parseValue( const char * value );
+        /**
+         * \brief   Parses given string, extracts Value data.
+         * \param   value    The string, which contains data for Value.
+         **/
+        void parseValue( const char * value );
 
-    /**
-     * \brief   Parses given string, extracts Value data.
-     * \param   value    The string, which contains data for Value.
-     **/
-    void parseValue( const String & value );
+        /**
+         * \brief   Parses given string, extracts Value data.
+         * \param   value    The string, which contains data for Value.
+         **/
+        void parseValue( const String & value );
 
-    /**
-     * \brief   Parses given string, extracts Value data.
-     * \param   value    The string, which contains data for Value.
-     **/
-    void parseValue( String && value );
+        /**
+         * \brief   Parses given string, extracts Value data.
+         * \param   value    The string, which contains data for Value.
+         **/
+        void parseValue( String && value );
 
-    /**
-     * \brief   Resets and invalidates Value
-     **/
-    void resetValue();
+        /**
+         * \brief   Resets and invalidates Value
+         **/
+        void resetValue();
 
-    /**
-     * \brief   Converts and Value data to the string.
-     **/
-    String convToString() const;
+        /**
+         * \brief   Converts and Value data to the string.
+         **/
+        String convToString() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden members
-//////////////////////////////////////////////////////////////////////////
-private:
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden members
+    //////////////////////////////////////////////////////////////////////////
+    private:
 
-    //! Parses and normalizes the value data.
-    inline void _parseValue();
+        //! Parses and normalizes the value data.
+        inline void _parseValue();
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   String as a data of Value.
-     **/
-    String mValue;
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   String as a data of Value.
+         **/
+        String mValue;
+    };
 
+} // namespace areg
 #endif  // AREG_PERSIST_PROPERTYVALUE_HPP

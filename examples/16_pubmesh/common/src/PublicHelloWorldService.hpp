@@ -19,7 +19,7 @@
 //! \brief  Implementation of a public service to receive requests from remote clients.
 class PublicHelloWorldService : private PublicHelloWorldStub
 {
-    using ClientList = LinkedList< PublicHelloWorld::sClientRegister >;
+    using ClientList = areg::LinkedList< PublicHelloWorld::sClientRegister >;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -31,7 +31,7 @@ public:
      * \param   masterComp  The master component object, which is initializing service Stub.
      * \note    Before constructor is called, the instance of Component must be already initialized.
      **/
-    PublicHelloWorldService(Component & masterComp);
+    PublicHelloWorldService(areg::Component & masterComp);
 
     /**
      * \brief   Destructor.
@@ -52,7 +52,7 @@ protected:
      * \param   process The name of process. Optional parameter, used to make output in logs.
      * \see     responseRegister
      **/
-    void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process ) override;
+    void requestRegister( const areg::String & name, const areg::ServiceAddress & service, const areg::String & thread, const areg::String & process ) override;
 
     /**
      * \brief   Request call.
@@ -76,13 +76,13 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected( const ProxyAddress & client, NEService::ServiceConnectionState status ) override;
+    bool clientConnected( const areg::ProxyAddress & client, areg::ServiceConnectionState status ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    ClientList      mClientList;    //!< The list of registered clients
+    areg::ClientList      mClientList;    //!< The list of registered clients
     uint32_t    mNumMessages;   //!< The number or processed messages on console.
 
 //////////////////////////////////////////////////////////////////////////

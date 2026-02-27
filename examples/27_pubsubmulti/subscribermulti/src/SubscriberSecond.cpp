@@ -16,16 +16,16 @@
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
 
-SubscriberSecond::SubscriberSecond( const NERegistry::DependencyEntry & entry, Component & owner )
+SubscriberSecond::SubscriberSecond( const areg::DependencyEntry & entry, areg::Component & owner )
     : SubscriberBase    ( entry, owner, pubsub::Coord2Integer, pubsub::Coord2String )
 {
 }
 
-bool SubscriberSecond::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool SubscriberSecond::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_serviceConnected);
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
-    if (NEService::isServiceDisconnected(status))
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
+    if (areg::isServiceDisconnected(status))
     {
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
@@ -35,10 +35,10 @@ bool SubscriberSecond::serviceConnected( NEService::ServiceConnectionState statu
     return PubSubClientBase::serviceConnected( status, proxy );
 }
 
-void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
+void SubscriberSecond::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_SubscriberSecond_onServiceProviderStateUpdate);
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)
         {

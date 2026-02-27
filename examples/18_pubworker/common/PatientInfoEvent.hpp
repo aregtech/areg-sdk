@@ -47,7 +47,7 @@ public:
     /**
      * \brief   Sets the shared buffer that already contains patient information data.
      **/
-    inline PatientInfoEventData( const SharedBuffer & data );
+    inline PatientInfoEventData( const areg::SharedBuffer & data );
 
     /**
      * \brief   Copies patient information data from given source.
@@ -72,7 +72,7 @@ public:
     /**
      * \brief   Gets buffer that contains patient information.
      **/
-    inline const SharedBuffer & getData() const;
+    inline const areg::SharedBuffer & getData() const;
 
     /**
      * \brief   Declare PatientInfoEventData::UpdateCommands as streamable.
@@ -84,7 +84,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    SharedBuffer    mData;  //!< The shared buffer that contains patient information.
+    areg::SharedBuffer    mData;  //!< The shared buffer that contains patient information.
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -116,7 +116,7 @@ inline PatientInfoEventData::PatientInfoEventData( const PatientInformation::Pat
     mData << infoPatient;
 }
 
-inline PatientInfoEventData::PatientInfoEventData( const SharedBuffer & data )
+inline PatientInfoEventData::PatientInfoEventData( const areg::SharedBuffer & data )
     : mData ( data )
 {
 }
@@ -127,11 +127,11 @@ inline PatientInfoEventData::PatientInfoEventData( const PatientInfoEventData & 
 }
 
 inline PatientInfoEventData::PatientInfoEventData( PatientInfoEventData && src ) noexcept
-    : mData ( static_cast<SharedBuffer &&>(src.mData) )
+    : mData ( static_cast<areg::SharedBuffer &&>(src.mData) )
 {
 }
 
-inline const SharedBuffer & PatientInfoEventData::getData() const
+inline const areg::SharedBuffer & PatientInfoEventData::getData() const
 {
     return mData;
 }

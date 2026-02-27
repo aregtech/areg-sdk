@@ -17,80 +17,85 @@
 #include "areg/component/Channel.hpp"
 #include "areg/base/CommonDefs.hpp"
 
-const Channel & Channel::getInvalidChannel()
+namespace areg
 {
-    static const Channel _invalidChannel( NEService::SOURCE_UNKNOWN, NEService::TARGET_UNKNOWN, NEService::COOKIE_UNKNOWN );
-    return _invalidChannel;
-}
 
-Channel::Channel()
-    : mSource( NEService::SOURCE_UNKNOWN )
-    , mTarget( NEService::TARGET_UNKNOWN )
-    , mCookie( NEService::COOKIE_UNKNOWN ) 
-{
-}
+    const Channel & Channel::getInvalidChannel()
+    {
+        static const Channel _invalidChannel( SOURCE_UNKNOWN, TARGET_UNKNOWN, COOKIE_UNKNOWN );
+        return _invalidChannel;
+    }
 
-Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= NEService::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= NEService::COOKIE_UNKNOWN*/ )
-    : mSource( source )
-    , mTarget( target )
-    , mCookie( cookie )
-{
-}
+    Channel::Channel()
+        : mSource( SOURCE_UNKNOWN )
+        , mTarget( TARGET_UNKNOWN )
+        , mCookie( COOKIE_UNKNOWN )
+    {
+    }
 
-Channel::Channel( const Channel & source )
-    : mSource( source.mSource )
-    , mTarget( source.mTarget )
-    , mCookie( source.mCookie )
-{
-}
+    Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= areg::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= areg::COOKIE_UNKNOWN*/ )
+        : mSource( source )
+        , mTarget( target )
+        , mCookie( cookie )
+    {
+    }
 
-Channel::Channel( Channel && source ) noexcept
-    : mSource( source.mSource )
-    , mTarget( source.mTarget )
-    , mCookie( source.mCookie )
-{
-}
+    Channel::Channel( const Channel & source )
+        : mSource( source.mSource )
+        , mTarget( source.mTarget )
+        , mCookie( source.mCookie )
+    {
+    }
 
-Channel & Channel::operator = ( const Channel & source )
-{
-    mSource = source.mSource;
-    mTarget = source.mTarget;
-    mCookie = source.mCookie;
-    return (*this);
-}
+    Channel::Channel( Channel && source ) noexcept
+        : mSource( source.mSource )
+        , mTarget( source.mTarget )
+        , mCookie( source.mCookie )
+    {
+    }
 
-Channel & Channel::operator = ( Channel && source ) noexcept
-{
-    mSource = source.mSource;
-    mTarget = source.mTarget;
-    mCookie = source.mCookie;
-    return (*this);
-}
+    Channel & Channel::operator = ( const Channel & source )
+    {
+        mSource = source.mSource;
+        mTarget = source.mTarget;
+        mCookie = source.mCookie;
+        return (*this);
+    }
 
-String Channel::convToString() const
-{
-    constexpr const char * format{ "%llu.%llu.%llu" };
+    Channel & Channel::operator = ( Channel && source ) noexcept
+    {
+        mSource = source.mSource;
+        mTarget = source.mTarget;
+        mCookie = source.mCookie;
+        return (*this);
+    }
 
-    char buffer[ 128 ]{ 0 };
-    int32_t len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
-}
+    String Channel::convToString() const
+    {
+        constexpr const char * format{ "%llu.%llu.%llu" };
 
-const Channel & Channel::convFromString(const String & channel)
-{
-    mSource = NEService::SOURCE_UNKNOWN;
-    mTarget = NEService::TARGET_UNKNOWN;
-    mCookie = NEService::COOKIE_UNKNOWN;
+        char buffer[ 128 ]{ 0 };
+        int32_t len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
+        return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
+    }
 
-    String source, target, cookie;
-    NEString::CharPos pos = NEString::START_POS;
-    pos = channel.substring( source, NECommon::OBJECT_SEPARATOR, pos );
-    pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
-    channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
+    const Channel & Channel::convFromString(const String & channel)
+    {
+        mSource = SOURCE_UNKNOWN;
+        mTarget = TARGET_UNKNOWN;
+        mCookie = COOKIE_UNKNOWN;
 
-    mSource = static_cast<ITEM_ID>( source.toUInt64() );
-    mTarget = static_cast<ITEM_ID>( target.toUInt64() );
-    mCookie = static_cast<ITEM_ID>( cookie.toUInt64() );
+        String source, target, cookie;
+        CharPos pos = START_POS;
+        pos = channel.substring( source, OBJECT_SEPARATOR, pos );
+        pos = channel.substring( target, OBJECT_SEPARATOR, pos );
+        channel.substring( cookie, OBJECT_SEPARATOR, pos );
 
-    return (*this);
-}
+        mSource = static_cast<ITEM_ID>( source.toUInt64() );
+        mTarget = static_cast<ITEM_ID>( target.toUInt64() );
+        mCookie = static_cast<ITEM_ID>( cookie.toUInt64() );
+
+        return (*this);
+    }
+
+} // namespace areg

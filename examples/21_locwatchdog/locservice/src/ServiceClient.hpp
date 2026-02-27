@@ -26,7 +26,7 @@
  *          terminates the thread and components and restarts again.
  *          After reaching certain amount of restarts, the application quits.
  **/
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , protected HelloWatchdogClientBase
 {
 //////////////////////////////////////////////////////////////////////////
@@ -39,7 +39,7 @@ public:
      * \param   entry   The entry of registry, which describes the component.
      * \param   owner   The component owning thread.
      **/
-    ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -55,7 +55,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state ) override;
+    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) override;
 
     /**
      * \brief   Response callback.
@@ -81,7 +81,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

@@ -39,36 +39,36 @@
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
+void areg::TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
 {
-    TimerManager & timerManager = TimerManager::getInstance( );
+    areg::TimerManager & timerManager = areg::TimerManager::getInstance( );
     ASSERT( argPtr != nullptr );
     TIMERHANDLE handle = reinterpret_cast<void *>(argPtr);
-    Timer * timer = timerManager.mTimerResource.findResourceObject( handle );
+    areg::Timer * timer = timerManager.mTimerResource.findResourceObject( handle );
     if ( timer != nullptr )
     {
         timerManager._processExpiredTimer( timer, handle, highValue, lowValue );
     }
 }
 
-void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
+void areg::TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {
 
     ASSERT( timerHandle != nullptr );
     ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
 }
 
-bool TimerManager::_osSystemTimerStart( Timer & timer )
+bool areg::TimerManager::_osSystemTimerStart( areg::Timer & timer )
 {
     ASSERT(timer.getHandle() != nullptr);
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = timer.getEventCount() > 1 ? static_cast<long>(timer.getTimeout()) : 0;
-    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(timer.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(timer.getTimeout()) * areg::MILLISEC_TO_100NS);  // timer from now
     dueTime *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger;
-    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::loDword(dueTime));
-    timeTrigger.HighPart = static_cast<LONG >(NEMath::hiDword(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::loDword(dueTime));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hiDword(dueTime));
 
     FILETIME fileTime;
     ::GetSystemTimeAsFileTime( &fileTime );
@@ -77,7 +77,7 @@ bool TimerManager::_osSystemTimerStart( Timer & timer )
     return ( ::SetWaitableTimer(  timer.getHandle()
                                 , &timeTrigger
                                 , period
-                                , (PTIMERAPCROUTINE)(&TimerManager::_windowsTimerExpiredRoutine)
+                                , (PTIMERAPCROUTINE)(&areg::TimerManager::_windowsTimerExpiredRoutine)
                                 , static_cast<void *>(timer.getHandle()), FALSE ) == TRUE );
 }
 

@@ -384,7 +384,7 @@ inline bool SimpleBitmap::save(const std::string& fileName)
     bool result{ false };
     if (mBitmap != nullptr)
     {
-        File file(fileName, static_cast<uint32_t>(File::OpenMode::Write) | static_cast<uint32_t>(File::OpenMode::Binary));
+        areg::File file(fileName, static_cast<uint32_t>(areg::File::OpenMode::Write) | static_cast<uint32_t>(areg::File::OpenMode::Binary));
         if (file.open() && (file.write(reinterpret_cast<uint8_t*>(mBitmap), mBitmap->bmpFile.bmfSize) == mBitmap->bmpFile.bmfSize))
         {
             result = true;
@@ -400,7 +400,7 @@ inline bool SimpleBitmap::open(const std::string& fileName)
     bool result{ false };
 
     _release();
-    File file(fileName, static_cast<uint32_t>(File::OpenMode::Read) | static_cast<uint32_t>(File::OpenMode::Binary));
+    areg::File file(fileName, static_cast<uint32_t>(areg::File::OpenMode::Read) | static_cast<uint32_t>(areg::File::OpenMode::Binary));
     if (file.open())
     {
         BitmapFileHeader bmf;
@@ -470,10 +470,10 @@ inline NELargeData::ImageBlock SimpleBitmap::getBlock(uint32_t rowIndex, uint32_
     block->frameWidth = width;
     block->imageData.imgHeight = lines;
     block->imageData.imgRBGLen = sizePixels;
-    block->imageData.imgStartPos = NEMath::Coord{ 0, static_cast<int32_t>(rowIndex) };
+    block->imageData.imgStartPos = areg::Coord{ 0, static_cast<int32_t>(rowIndex) };
     block->imageData.imgWidth = width;
 
-    NEMemory::copyElems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
+    areg::copyElems<uint8_t>(reinterpret_cast<uint8_t*>(block->imageData.imgRGB), getPixels(0, rowIndex), sizePixels);
     return result;
 }
 

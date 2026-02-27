@@ -15,11 +15,11 @@
 #include "mtrouter/app/MTRouterNames.hpp"
 #include "areg/appbase/AppDefs.hpp"
 
-char *      NEMultitargetRouterSettings::SERVICE_NAME_ASCII    { NEApplication::ROUTER_SERVICE_NAME_ASCII };
+char *      mtrouter::SERVICE_NAME_ASCII    { areg::ROUTER_SERVICE_NAME_ASCII };
 
-wchar_t *   NEMultitargetRouterSettings::SERVICE_NAME_WIDE     { NEApplication::ROUTER_SERVICE_NAME_WIDE };
+wchar_t *   mtrouter::SERVICE_NAME_WIDE     { areg::ROUTER_SERVICE_NAME_WIDE };
 
-char        NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII[]
+char        mtrouter::SERVICE_DISPLAY_NAME_ASCII[]
 {
           'A', 'r', 'e', 'g', ' '
         , 'M', 'u', 'l', 't', 'i', 't', 'a', 'r', 'g', 'e', 't', ' '
@@ -27,7 +27,7 @@ char        NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII[]
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
-wchar_t     NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE[]
+wchar_t     mtrouter::SERVICE_DISPLAY_NAME_WIDE[]
 {
           'A', 'r', 'e', 'g', ' '
         , 'M', 'u', 'l', 't', 'i', 't', 'a', 'r', 'g', 'e', 't', ' '
@@ -35,7 +35,7 @@ wchar_t     NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE[]
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
-char        NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII[]
+char        mtrouter::SERVICE_DESCRIBE_ASCII[]
 {
           'A', 'r', 'e', 'g', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
@@ -46,7 +46,7 @@ char        NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII[]
         , 'm', 'e', 's', 's', 'a', 'g', 'i', 'n', 'g', '.', '\0'
 };
 
-wchar_t     NEMultitargetRouterSettings::SERVICE_DESCRIBE_WIDE[]
+wchar_t     mtrouter::SERVICE_DESCRIBE_WIDE[]
 {
           'A', 'r', 'e', 'g', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '

@@ -41,19 +41,19 @@
  *          URL: https://en.cppreference.com/w/cpp/thread/condition_variable.html
  *          Compare the version of STL and Areg. Both do the same.
  **/
-SyncEvent   gEvtReady(true, true);      //!< non-signaled, auto-reset event
-SyncEvent   gEvtProcess(true, true);    //!< non-signaled, auto-reset event
+areg::SyncEvent   gEvtReady(true, true);      //!< non-signaled, auto-reset event
+areg::SyncEvent   gEvtProcess(true, true);    //!< non-signaled, auto-reset event
 std::string gData{};                    //!< A text to output
 
 //! \brief  This callback is triggered when thread runs and fully operable.
-void WorkerThread()
+void areg::WorkerThread()
 {
-    TIME64 start = DateTime::getNow();
-    Thread::sleep(NECommon::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait
+    TIME64 start = areg::DateTime::getNow();
+    areg::Thread::sleep(areg::WAIT_1_SECOND); // simulate some work, force the event to be signaled before wait
     VERIFY(gEvtReady.lock()); // Verify that the event is signaled
 
     // after the wait, we own the lock
-    std::chrono::nanoseconds ns{ DateTime::getNow() - start };
+    std::chrono::nanoseconds ns{ areg::DateTime::getNow() - start };
     std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns) };
 
     std::cout << "Worker thread is processing data. Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
@@ -65,25 +65,25 @@ void WorkerThread()
 
 int main()
 {
-    VERIFY(!gEvtReady.lock(NECommon::WAIT_100_MILLISECONDS));   // should timeout, since event is non-signaled
-    VERIFY(!gEvtProcess.lock(NECommon::WAIT_100_MILLISECONDS)); // should timeout, since event is non-signaled
+    VERIFY(!gEvtReady.lock(areg::WAIT_100_MILLISECONDS));   // should timeout, since event is non-signaled
+    VERIFY(!gEvtProcess.lock(areg::WAIT_100_MILLISECONDS)); // should timeout, since event is non-signaled
 
     gData = "Example data";
     std::cout << "29_syncevent::main() signals data ready for processing\n";
     VERIFY(gEvtReady.setEvent());   // verify and signal auto-reset event before worker thread starts and owns
 
-    std::thread worker(WorkerThread);
+    std::thread worker(areg::WorkerThread);
 
     // simulate some work to make sure that the worker thread signaled event before it is locked
-    TIME64 start = DateTime::getNow();
-    Thread::sleep(NECommon::WAIT_1_SECOND * 2);
+    TIME64 start = areg::DateTime::getNow();
+    areg::Thread::sleep(areg::WAIT_1_SECOND * 2);
 
     // make sure that the `gEvtReady` event remains in non-signaled state even when worker thread completed job.
-    VERIFY(!gEvtReady.lock(NECommon::WAIT_10_MILLISECONDS));
+    VERIFY(!gEvtReady.lock(areg::WAIT_10_MILLISECONDS));
     gEvtProcess.lock();   // wait for worker thread to signal
 
     // after the wait, we own the lock
-    std::chrono::nanoseconds ns{ DateTime::getNow() - start };
+    std::chrono::nanoseconds ns{ areg::DateTime::getNow() - start };
     std::chrono::microseconds ms{ std::chrono::duration_cast<std::chrono::microseconds>(ns) };
     std::cout << "Back in main(), data = " << gData << ". Wait timeout: " << (static_cast<float>(ms.count()) / 1000.0f) << " ms\n";
 

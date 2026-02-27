@@ -1,14 +1,14 @@
 #pragma once
 #include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
 
-class Component;
-class ConnectionHandler;
+namespace areg { class Component; }
+namespace aregext { class ConnectionHandler; }
 
 class ConnectionList : public ConnectionManagerClientBase
 {
 public:
-    ConnectionList( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
-    ConnectionList( const char * roleName, DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection );
+    ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -59,13 +59,13 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionHandler &   mConnectionHandler;
+    aregext::ConnectionHandler &   mConnectionHandler;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

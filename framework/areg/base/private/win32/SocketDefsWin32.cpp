@@ -47,7 +47,7 @@ namespace
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace NESocket
+namespace areg
 {
     bool _osInitSocket()
     {
@@ -83,7 +83,7 @@ namespace NESocket
 
     int32_t _osSendData(SOCKETHANDLE hSocket, const uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
-        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        ASSERT(hSocket != InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
@@ -104,7 +104,7 @@ namespace NESocket
                 if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxSendSize(hSocket));
+                    blockMaxSize = static_cast<int32_t>(getMaxSendSize(hSocket));
                 }
                 else
                 {
@@ -120,7 +120,7 @@ namespace NESocket
 
     int32_t _osRecvData(SOCKETHANDLE hSocket, uint8_t* dataBuffer, int32_t dataLength, int32_t blockMaxSize)
     {
-        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        ASSERT(hSocket != InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));
         ASSERT(blockMaxSize > 0);
 
@@ -146,7 +146,7 @@ namespace NESocket
                 if (errCode == static_cast<int32_t>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxReceiveSize(hSocket));
+                    blockMaxSize = static_cast<int32_t>(getMaxReceiveSize(hSocket));
                 }
                 else
                 {
@@ -162,17 +162,17 @@ namespace NESocket
 
     bool _osControl(SOCKETHANDLE hSocket, int32_t cmd, unsigned long& arg)
     {
-        ASSERT(hSocket != NESocket::InvalidSocketHandle);
-        return (NECommon::RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
+        ASSERT(hSocket != InvalidSocketHandle);
+        return (RETURNED_OK == ::ioctlsocket(hSocket, cmd, &arg));
     }
 
     bool _osGetOption(SOCKETHANDLE hSocket, int32_t level, int32_t name, unsigned long& value)
     {
-        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+        ASSERT(hSocket != InvalidSocketHandle);
         int32_t len{ sizeof(unsigned long) };
-        return (NECommon::RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char *>(&value), &len));
+        return (RETURNED_OK == ::getsockopt(static_cast<SOCKET>(hSocket), level, name, reinterpret_cast<char *>(&value), &len));
     }
 
-} // namespace NESocket
+} // namespace areg
 
 #endif  // _WIN32

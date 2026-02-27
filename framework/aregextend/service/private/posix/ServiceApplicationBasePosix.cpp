@@ -24,42 +24,42 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceApplicationBase class POSIX specific implementation
 //////////////////////////////////////////////////////////////////////////
-bool ServiceApplicationBase::_osIsValid() const
+bool aregext::ServiceApplicationBase::_osIsValid() const
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osRegisterService()
+bool aregext::ServiceApplicationBase::_osRegisterService()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osFreeResources()
+void aregext::ServiceApplicationBase::_osFreeResources()
 {
     mSvcHandle = nullptr;
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService()
+bool aregext::ServiceApplicationBase::_osInitializeService()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService()
+bool aregext::ServiceApplicationBase::_osOpenService()
 {
     return true;
 }
 
-bool ServiceApplicationBase::_osCreateService()
+bool aregext::ServiceApplicationBase::_osCreateService()
 {
     return true;
 }
 
-void ServiceApplicationBase::_osDeleteService()
+void aregext::ServiceApplicationBase::_osDeleteService()
 {
 }
 
-bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
+bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -67,25 +67,25 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     {
         switch (newState)
         {
-        case NESystemService::ServicePhase::Stopped:
+        case aregext::ServicePhase::Stopped:
             break;
 
-        case NESystemService::ServicePhase::Starting:
+        case aregext::ServicePhase::Starting:
             break;
 
-        case NESystemService::ServicePhase::Stopping:
+        case aregext::ServicePhase::Stopping:
             break;
 
-        case NESystemService::ServicePhase::Running:
+        case aregext::ServicePhase::Running:
             break;
 
-        case NESystemService::ServicePhase::Continuing:
+        case aregext::ServicePhase::Continuing:
             break;
 
-        case NESystemService::ServicePhase::Pausing:
+        case aregext::ServicePhase::Pausing:
             break;
 
-        case NESystemService::ServicePhase::Paused:
+        case aregext::ServicePhase::Paused:
             break;
 
         default:
@@ -98,7 +98,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     return result;
 }
 
-int32_t ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t aregext::ServiceApplicationBase::_osStartServiceDispatcher()
 {
     return RESULT_IGNORED;
 }

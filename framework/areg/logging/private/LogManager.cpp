@@ -23,359 +23,363 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogMessage.hpp"
 
-#if AREG_LOGS
-//////////////////////////////////////////////////////////////////////////
-// LogManager class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// LogManager static methods
-//////////////////////////////////////////////////////////////////////////
-
-LogManager & LogManager::getInstance()
+namespace areg
 {
-    static LogManager	_theLogManager;
-    return _theLogManager;
-}
 
-void LogManager::logMessage(const NELogging::LogEntry& logData )
-{
-    LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
-}
+    #if AREG_LOGS
+    //////////////////////////////////////////////////////////////////////////
+    // LogManager class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-void LogManager::logMessage(const SharedBuffer& logData)
-{
-    LogManager::getInstance().sendLogEvent(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
-}
+    //////////////////////////////////////////////////////////////////////////
+    // LogManager static methods
+    //////////////////////////////////////////////////////////////////////////
 
-void LogManager::logMessage(const RemoteMessage& logData)
-{
-    LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
-}
-
-void LogManager::sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data)
-{
-    LogManager::getInstance().sendLogEvent(LoggingEventData(cmd, data));
-}
-
-bool LogManager::readLogConfig( const char* configFile /*= nullptr*/ )
-{
-    return Application::loadConfiguration(configFile);
-}
-
-bool LogManager::startLogging(const char* configFile /*= nullptr*/ )
-{
-    Application::loadConfiguration(configFile);
-
-    LogManager& logManager = LogManager::getInstance();
-    Lock lock(logManager.mLock);
-    if (logManager.isReady() == false)
+    LogManager & LogManager::getInstance()
     {
-        lock.unlock();
-        VERIFY(logManager.startLoggingThread());
-        lock.lock();
+        static LogManager	_theLogManager;
+        return _theLogManager;
     }
 
-    return logManager.mIsStarted;
-}
-
-bool LogManager::saveLogConfig(const char* configFile /*= nullptr*/ )
-{
-    LogManager::updateScopeConfiguration();
-    return Application::saveConfiguration(configFile);
-}
-
-void LogManager::updateScopeConfiguration()
-{
-    LogManager& logManager = LogManager::getInstance();
-    Lock lock(logManager.mLock);
-
-    LogConfiguration config;
-    config.updateScopeConfiguration(logManager.mScopeController);
-}
-
-bool LogManager::isLoggingEnabled()
-{
-    return LogManager::getInstance().mLogConfig.isLoggingEnabled();
-}
-
-bool LogManager::isLoggingConfigured()
-{
-    return Application::isConfigured();
-}
-
-bool LogManager::forceActivateLogging()
-{
-    bool result = false;
-    LogManager & logManager = LogManager::getInstance();
-    if ( logManager.isLoggingStarted() == false )
+    void LogManager::logMessage(const LogEntry& logData )
     {
-        Lock lock( logManager.mLock );
+        LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
+    }
+
+    void LogManager::logMessage(const SharedBuffer& logData)
+    {
+        LogManager::getInstance().sendLogEvent(LoggingEventData(LoggingEventData::LogAction::LogMessage, logData));
+    }
+
+    void LogManager::logMessage(const RemoteMessage& logData)
+    {
+        LogManager::getInstance().sendLogEvent( LoggingEventData(LoggingEventData::LogAction::LogMessage, logData) );
+    }
+
+    void LogManager::sendCommandMessage(LoggingEventData::LogAction cmd, const SharedBuffer& data)
+    {
+        LogManager::getInstance().sendLogEvent(LoggingEventData(cmd, data));
+    }
+
+    bool LogManager::readLogConfig( const char* configFile /*= nullptr*/ )
+    {
+        return Application::loadConfiguration(configFile);
+    }
+
+    bool LogManager::startLogging(const char* configFile /*= nullptr*/ )
+    {
+        Application::loadConfiguration(configFile);
+
+        LogManager& logManager = LogManager::getInstance();
+        Lock lock(logManager.mLock);
+        if (logManager.isReady() == false)
+        {
+            lock.unlock();
+            VERIFY(logManager.startLoggingThread());
+            lock.lock();
+        }
+
+        return logManager.mIsStarted;
+    }
+
+    bool LogManager::saveLogConfig(const char* configFile /*= nullptr*/ )
+    {
+        LogManager::updateScopeConfiguration();
+        return Application::saveConfiguration(configFile);
+    }
+
+    void LogManager::updateScopeConfiguration()
+    {
+        LogManager& logManager = LogManager::getInstance();
+        Lock lock(logManager.mLock);
+
+        LogConfiguration config;
+        config.updateScopeConfiguration(logManager.mScopeController);
+    }
+
+    bool LogManager::isLoggingEnabled()
+    {
+        return LogManager::getInstance().mLogConfig.isLoggingEnabled();
+    }
+
+    bool LogManager::isLoggingConfigured()
+    {
+        return Application::isConfigured();
+    }
+
+    bool LogManager::forceActivateLogging()
+    {
+        bool result = false;
+        LogManager & logManager = LogManager::getInstance();
+        if ( logManager.isLoggingStarted() == false )
+        {
+            Lock lock( logManager.mLock );
+            logManager.mLogConfig.setStatus(true);
+            logManager.mLogConfig.setLogEnabled(LogTarget::File, true);
+            logManager.mScopeController.activateDefaults( );
+            result = logManager.startLoggingThread( );
+        }
+
+        return result;
+    }
+
+    void LogManager::setDefaultConfiguration(bool overwriteExisting)
+    {
+        if (overwriteExisting || Application::isConfigured() == false)
+        {
+            Application::setupDefaultConfiguration();
+        }
+    }
+
+    bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
+    {
+        ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
+        uint32_t scopeId = makeScopeId( scopeName );
+        const LogScope * scope = ctrScope.getScope( scopeId );
+        bool result{ scope != nullptr };
+        if ( result && (scope->getPriority() != newPrio))
+        {
+            ctrScope.setScopePriority( scopeId, newPrio );
+        }
+
+        return result;
+    }
+
+    void LogManager::updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio)
+    {
+        ScopeController & ctrScope = LogManager::getInstance().mScopeController;
+        ctrScope.clearConfigScopes();
+        ctrScope.changeScopeActivityStatus(scopeName, scopeId, newPrio);
+    }
+
+    uint32_t LogManager::getScopePriority( const char * scopeName )
+    {
+        ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
+        uint32_t scopeId = makeScopeId( scopeName );
+        const LogScope * scope = ctrScope.getScope( scopeId );
+        return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(LogPriority::PrioInvalid));
+    }
+
+    void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
+    {
+        LogManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
+    }
+
+    bool LogManager::isLogDabaseEngineInitialized()
+    {
+        return LogManager::getInstance().mLoggerDatabase.isValid();
+    }
+
+    bool LogManager::isLogDatabaseEnabled()
+    {
+        return LogManager::getInstance().mLogConfig.getDatabaseEnable();
+    }
+
+    void LogManager::forceEnableLogging()
+    {
+        LogManager& logManager = LogManager::getInstance();
         logManager.mLogConfig.setStatus(true);
-        logManager.mLogConfig.setLogEnabled(NELogging::LogTarget::File, true);
-        logManager.mScopeController.activateDefaults( );
-        result = logManager.startLoggingThread( );
+        logManager.mLogConfig.setLogEnabled(LogTarget::File, true);
     }
 
-    return result;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // LogManager class constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    LogManager::LogManager()
+        : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), STACK_SIZE_DEFAULT, QUEUE_SIZE_MAXIMUM )
+        , LoggingEventConsumer  ( )
 
-void LogManager::setDefaultConfiguration(bool overwriteExisting)
-{
-    if (overwriteExisting || Application::isConfigured() == false)
+        , mScopeController  ( )
+    	, mIsStarted		( false )
+        , mLogConfig        ( )
+
+        , mLoggerFile       ( mLogConfig )
+        , mLoggerDebug      ( mLogConfig )
+        , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
+        , mLoggerDatabase   ( mLogConfig )
+        , mEventProcessor   ( self() )
+
+        , mLogStarted       ( false, false )
+        , mLock             ( )
     {
-        Application::setupDefaultConfiguration();
     }
-}
 
-bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
-{
-    ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-    uint32_t scopeId = NELogging::makeScopeId( scopeName );
-    const LogScope * scope = ctrScope.getScope( scopeId );
-    bool result{ scope != nullptr };
-    if ( result && (scope->getPriority() != newPrio))
+    //////////////////////////////////////////////////////////////////////////
+    // LogManager class methods
+    //////////////////////////////////////////////////////////////////////////
+    void LogManager::clearConfigData()
     {
-        ctrScope.setScopePriority( scopeId, newPrio );
+        Lock lock(mLock);
+        mScopeController.clearConfigScopes( );
     }
 
-    return result;
-}
-
-void LogManager::updateScopes(const String & scopeName, uint32_t scopeId, uint32_t newPrio)
-{
-    ScopeController & ctrScope = LogManager::getInstance().mScopeController;
-    ctrScope.clearConfigScopes();
-    ctrScope.changeScopeActivityStatus(scopeName, scopeId, newPrio);
-}
-
-uint32_t LogManager::getScopePriority( const char * scopeName )
-{
-    ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
-    uint32_t scopeId = NELogging::makeScopeId( scopeName );
-    const LogScope * scope = ctrScope.getScope( scopeId );
-    return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid));
-}
-
-void LogManager::setLogDatabaseEngine(LogDatabaseEngine * dbEngine)
-{
-    LogManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
-}
-
-bool LogManager::isLogDabaseEngineInitialized()
-{
-    return LogManager::getInstance().mLoggerDatabase.isValid();
-}
-
-bool LogManager::isLogDatabaseEnabled()
-{
-    return LogManager::getInstance().mLogConfig.getDatabaseEnable();
-}
-
-void LogManager::forceEnableLogging()
-{
-    LogManager& logManager = LogManager::getInstance();
-    logManager.mLogConfig.setStatus(true);
-    logManager.mLogConfig.setLogEnabled(NELogging::LogTarget::File, true);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// LogManager class constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-LogManager::LogManager()
-    : DispatcherThread      ( LogManager::LOGGING_THREAD_NAME.data(), NECommon::STACK_SIZE_DEFAULT, NECommon::QUEUE_SIZE_MAXIMUM )
-    , LoggingEventConsumer  ( )
-
-    , mScopeController  ( )
-	, mIsStarted		( false )
-    , mLogConfig        ( )
-
-    , mLoggerFile       ( mLogConfig )
-    , mLoggerDebug      ( mLogConfig )
-    , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
-    , mLoggerDatabase   ( mLogConfig )
-    , mEventProcessor   ( self() )
-
-    , mLogStarted       ( false, false )
-    , mLock             ( )
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-// LogManager class methods
-//////////////////////////////////////////////////////////////////////////
-void LogManager::clearConfigData()
-{
-    Lock lock(mLock);
-    mScopeController.clearConfigScopes( );
-}
-
-void LogManager::resetScopes()
-{
-    Lock lock(mLock);
-    mScopeController.resetScopes();
-}
-
-bool LogManager::isRemoteLoggingEnabled() const
-{
-    return mLogConfig.isRemoteLoggingEnabled();
-}
-
-bool LogManager::isDatabaseLoggingEnabled() const
-{
-    return mLogConfig.isDatabaseLoggingEnabled();
-}
-
-bool LogManager::isFileLoggingEnabled() const
-{
-    return mLogConfig.isFileLoggingEnabled();
-}
-
-bool LogManager::isDebugOutputLoggingEnabled() const
-{
-    return mLogConfig.isDebugOutputLoggingEnabled();
-}
-
-bool LogManager::startLoggingThread()
-{
-    ASSERT((isRunning() == false) && (isReady() == false));
-    mLogStarted.resetEvent( );
-    if ( createThread(NECommon::WAIT_INFINITE) )
+    void LogManager::resetScopes()
     {
-        if ( waitForDispatcherStart(NECommon::WAIT_INFINITE) )
+        Lock lock(mLock);
+        mScopeController.resetScopes();
+    }
+
+    bool LogManager::isRemoteLoggingEnabled() const
+    {
+        return mLogConfig.isRemoteLoggingEnabled();
+    }
+
+    bool LogManager::isDatabaseLoggingEnabled() const
+    {
+        return mLogConfig.isDatabaseLoggingEnabled();
+    }
+
+    bool LogManager::isFileLoggingEnabled() const
+    {
+        return mLogConfig.isFileLoggingEnabled();
+    }
+
+    bool LogManager::isDebugOutputLoggingEnabled() const
+    {
+        return mLogConfig.isDebugOutputLoggingEnabled();
+    }
+
+    bool LogManager::startLoggingThread()
+    {
+        ASSERT((isRunning() == false) && (isReady() == false));
+        mLogStarted.resetEvent( );
+        if ( createThread(WAIT_INFINITE) )
         {
-            sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StartLogs) );
-            mLogStarted.lock( NECommon::WAIT_INFINITE );
+            if ( waitForDispatcherStart(WAIT_INFINITE) )
+            {
+                sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StartLogs) );
+                mLogStarted.lock( WAIT_INFINITE );
+            }
         }
-    }
-#ifdef  DEBUG
-    else
-    {
-        ASSERT( false );
-    }
-#endif  // DEBUG
-
-    return mIsStarted;
-}
-
-void LogManager::stopLoggingThread(bool waitComplete)
-{
-    sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
-    mIsStarted = false;
-
-    if (waitComplete)
-    {
-        completionWait(NECommon::WAIT_INFINITE);
-        shutdownThread(NECommon::DO_NOT_WAIT);
-    }
-}
-
-void LogManager::waitLoggingThreadEnd()
-{
-    mIsStarted = false;
-    completionWait(NECommon::WAIT_INFINITE);
-    shutdownThread(NECommon::DO_NOT_WAIT);
-}
-
-void LogManager::readyForEvents( bool isReady )
-{
-    if ( isReady )
-    {
-        LoggingEvent::addListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
-        DispatcherThread::readyForEvents( true );
-    }
-    else
-    {
-        DispatcherThread::readyForEvents( false );
-        LoggingEvent::removeListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
-
-        // When we are here, all loggers should be already closed.
-        ASSERT(mLoggerFile.isLoggerOpened() == false);
-        ASSERT(mLoggerDebug.isLoggerOpened() == false);
-        ASSERT(mLoggerTcp.isLoggerOpened() == false);
-        ASSERT(mLoggerDatabase.isLoggerOpened() == false);
-    }
-}
-
-void LogManager::processEvent( const LoggingEventData & data )
-{
-    mEventProcessor.processLogEvent( data.getLoggingAction( ), data.getReadableStream( ) );
-}
-
-void LogManager::startLogs()
-{
-    if ( mLogConfig.isLoggingEnabled() )
-    {
-        mScopeController.configureScopes();
-        mScopeController.changeScopeActivityStatus( true );
-        if (mLoggerFile.isLoggerOpened() == false)
+    #ifdef  DEBUG
+        else
         {
-            mLoggerFile.openLogger();
+            ASSERT( false );
         }
+    #endif  // DEBUG
 
-#if defined(OUTPUT_DEBUG)
-        if (mLoggerDebug.isLoggerOpened() == false)
-        {
-            mLoggerDebug.openLogger();
-        }
-#endif // !defined(OUTPUT_DEBUG)
+        return mIsStarted;
+    }
 
-        if (mLoggerTcp.isLoggerOpened() == false)
-        {
-            mLoggerTcp.openLogger();
-        }
+    void LogManager::stopLoggingThread(bool waitComplete)
+    {
+        sendLogEvent( LoggingEventData(LoggingEventData::LogAction::StopLogs) );
+        mIsStarted = false;
 
-        if (mLoggerDatabase.isLoggerOpened() == false)
+        if (waitComplete)
         {
-            mLoggerDatabase.openLogger();
+            completionWait(WAIT_INFINITE);
+            shutdownThread(DO_NOT_WAIT);
         }
     }
 
-    mIsStarted = true;
-    mLogStarted.setEvent( );
-}
-
-void LogManager::stopLogs()
-{
-    mScopeController.changeScopeActivityStatus( false );
-    mLogStarted.resetEvent( );
-
-    mIsStarted = false;
-
-    mLoggerDebug.closeLogger( );
-    mLoggerFile.closeLogger( );
-    mLoggerTcp.closeLogger( );
-    mLoggerDatabase.closeLogger();
-    triggerExit( );
-}
-
-void LogManager::writeLogMessage( const NELogging::LogEntry & logMessage )
-{
-    mLoggerFile.logMessage( logMessage );
-    mLoggerDebug.logMessage( logMessage );
-    mLoggerTcp.logMessage( logMessage );
-    mLoggerDatabase.logMessage(logMessage);
-
-    if ( hasMoreEvents() == false )
+    void LogManager::waitLoggingThreadEnd()
     {
-        mLoggerFile.flushLogs();
-        mLoggerDatabase.flushLogs();
+        mIsStarted = false;
+        completionWait(WAIT_INFINITE);
+        shutdownThread(DO_NOT_WAIT);
     }
-}
 
-bool LogManager::postEvent(Event & eventElem)
-{
-    return EventDispatcher::postEvent(eventElem);
-}
+    void LogManager::readyForEvents( bool isReady )
+    {
+        if ( isReady )
+        {
+            LoggingEvent::addListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+            DispatcherThread::readyForEvents( true );
+        }
+        else
+        {
+            DispatcherThread::readyForEvents( false );
+            LoggingEvent::removeListener( static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
-inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
-{
-    LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
-}
+            // When we are here, all loggers should be already closed.
+            ASSERT(mLoggerFile.isLoggerOpened() == false);
+            ASSERT(mLoggerDebug.isLoggerOpened() == false);
+            ASSERT(mLoggerTcp.isLoggerOpened() == false);
+            ASSERT(mLoggerDatabase.isLoggerOpened() == false);
+        }
+    }
 
-void LogManager::changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio )
-{
-    mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
-}
+    void LogManager::processEvent( const LoggingEventData & data )
+    {
+        mEventProcessor.processLogEvent( data.getLoggingAction( ), data.getReadableStream( ) );
+    }
 
-#endif  // AREG_LOGS
+    void LogManager::startLogs()
+    {
+        if ( mLogConfig.isLoggingEnabled() )
+        {
+            mScopeController.configureScopes();
+            mScopeController.changeScopeActivityStatus( true );
+            if (mLoggerFile.isLoggerOpened() == false)
+            {
+                mLoggerFile.openLogger();
+            }
+
+    #if defined(OUTPUT_DEBUG)
+            if (mLoggerDebug.isLoggerOpened() == false)
+            {
+                mLoggerDebug.openLogger();
+            }
+    #endif // !defined(OUTPUT_DEBUG)
+
+            if (mLoggerTcp.isLoggerOpened() == false)
+            {
+                mLoggerTcp.openLogger();
+            }
+
+            if (mLoggerDatabase.isLoggerOpened() == false)
+            {
+                mLoggerDatabase.openLogger();
+            }
+        }
+
+        mIsStarted = true;
+        mLogStarted.setEvent( );
+    }
+
+    void LogManager::stopLogs()
+    {
+        mScopeController.changeScopeActivityStatus( false );
+        mLogStarted.resetEvent( );
+
+        mIsStarted = false;
+
+        mLoggerDebug.closeLogger( );
+        mLoggerFile.closeLogger( );
+        mLoggerTcp.closeLogger( );
+        mLoggerDatabase.closeLogger();
+        triggerExit( );
+    }
+
+    void LogManager::writeLogMessage( const LogEntry & logMessage )
+    {
+        mLoggerFile.logMessage( logMessage );
+        mLoggerDebug.logMessage( logMessage );
+        mLoggerTcp.logMessage( logMessage );
+        mLoggerDatabase.logMessage(logMessage);
+
+        if ( hasMoreEvents() == false )
+        {
+            mLoggerFile.flushLogs();
+            mLoggerDatabase.flushLogs();
+        }
+    }
+
+    bool LogManager::postEvent(Event & eventElem)
+    {
+        return EventDispatcher::postEvent(eventElem);
+    }
+
+    inline void LogManager::sendLogEvent( const LoggingEventData & data, Event::EventPriority eventPrio /*= Event::EventPriority::NormalPrio*/ )
+    {
+        LoggingEvent::sendEvent( data, static_cast<LoggingEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
+    }
+
+    void LogManager::changeScopePriority( const String & scopeName, uint32_t scopeId, uint32_t scopePrio )
+    {
+        mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
+    }
+
+    #endif  // AREG_LOGS
+} // namespace areg

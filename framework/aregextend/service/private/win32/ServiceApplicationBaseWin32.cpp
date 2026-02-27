@@ -58,12 +58,12 @@ namespace
 // ServiceApplicationBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool ServiceApplicationBase::_osIsValid() const
+bool aregext::ServiceApplicationBase::_osIsValid() const
 {
     return (mSeMHandle != nullptr && mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osFreeResources()
+void aregext::ServiceApplicationBase::_osFreeResources()
 {
     if (mSvcHandle != nullptr)
     {
@@ -79,9 +79,9 @@ void ServiceApplicationBase::_osFreeResources()
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService()
+bool aregext::ServiceApplicationBase::_osInitializeService()
 {
-    NEMemory::zeroElement<SERVICE_STATUS>(_serviceStatus);
+    areg::zeroElement<SERVICE_STATUS>(_serviceStatus);
     _serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
     _serviceStatus.dwCurrentState = SERVICE_STOPPED;
     _serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
@@ -93,7 +93,7 @@ bool ServiceApplicationBase::_osInitializeService()
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService()
+bool aregext::ServiceApplicationBase::_osOpenService()
 {
     if (mSeMHandle == nullptr)
     {
@@ -108,7 +108,7 @@ bool ServiceApplicationBase::_osOpenService()
     return (mSvcHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osCreateService()
+bool aregext::ServiceApplicationBase::_osCreateService()
 {
     if (mSeMHandle == nullptr)
     {
@@ -120,7 +120,7 @@ bool ServiceApplicationBase::_osCreateService()
         TCHAR szPath[MAX_PATH];
         if (::GetModuleFileName(nullptr, szPath, MAX_PATH))
         {
-            StringBase<TCHAR> modulePath{ _T('\"') };
+            areg::StringBase<TCHAR> modulePath{ _T('\"') };
             modulePath += szPath;
             modulePath += _T("\" --service");
 
@@ -156,22 +156,22 @@ bool ServiceApplicationBase::_osCreateService()
                 failures.lpsaActions    = actions;
 
                 // first failure
-                actions[0].Delay        = NECommon::WAIT_1_SECOND;
+                actions[0].Delay        = areg::WAIT_1_SECOND;
                 actions[0].Type         = SC_ACTION_RESTART;
 
                 // first second
-                actions[1].Delay        = NECommon::WAIT_1_SECOND;
+                actions[1].Delay        = areg::WAIT_1_SECOND;
                 actions[1].Type         = SC_ACTION_RESTART;
 
                 // third failure
-                actions[2].Delay        = NECommon::WAIT_5_SECONDS;
+                actions[2].Delay        = areg::WAIT_5_SECONDS;
                 actions[2].Type         = SC_ACTION_RESTART;
 
                 // fourth failure
-                actions[3].Delay        = NECommon::WAIT_10_SECONDS;
+                actions[3].Delay        = areg::WAIT_10_SECONDS;
                 actions[3].Type         = SC_ACTION_RESTART;
 
-                actions[count - 1].Delay= NECommon::DO_NOT_WAIT;
+                actions[count - 1].Delay= areg::DO_NOT_WAIT;
                 actions[count - 1].Type = SC_ACTION_NONE;
 
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS, &failures);
@@ -188,7 +188,7 @@ bool ServiceApplicationBase::_osCreateService()
     return (mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osDeleteService()
+void aregext::ServiceApplicationBase::_osDeleteService()
 {
     if (mSvcHandle != nullptr)
     {
@@ -196,9 +196,9 @@ void ServiceApplicationBase::_osDeleteService()
     }
 }
 
-bool ServiceApplicationBase::_osRegisterService()
+bool aregext::ServiceApplicationBase::_osRegisterService()
 {
-    if (mSystemServiceOption == NESystemService::ServiceOption::CMD_Service)
+    if (mSystemServiceOption == aregext::ServiceOption::CMD_Service)
     {
         _statusHandle = ::RegisterServiceCtrlHandler(getServiceName(), &::_win32ServiceCtrlHandler);
     }
@@ -206,7 +206,7 @@ bool ServiceApplicationBase::_osRegisterService()
     return (_statusHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
+bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -217,40 +217,40 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     {
         switch (newState)
         {
-        case NESystemService::ServicePhase::Stopped:
+        case aregext::ServicePhase::Stopped:
             _serviceStatus.dwCurrentState       = SERVICE_STOPPED;
             _serviceStatus.dwControlsAccepted   = 0;
             _serviceStatus.dwCheckPoint         = 7;
             _serviceStatus.dwWin32ExitCode      = ERROR_SUCCESS;
             break;
 
-        case NESystemService::ServicePhase::Starting:
+        case aregext::ServicePhase::Starting:
             _serviceStatus.dwCurrentState       = SERVICE_START_PENDING;
             _serviceStatus.dwCheckPoint         = 1;
             break;
 
-        case NESystemService::ServicePhase::Stopping:
+        case aregext::ServicePhase::Stopping:
             _serviceStatus.dwCurrentState       = SERVICE_STOP_PENDING;
             _serviceStatus.dwCheckPoint         = 6;
             break;
 
-        case NESystemService::ServicePhase::Running:
+        case aregext::ServicePhase::Running:
             _serviceStatus.dwCurrentState       = SERVICE_RUNNING;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 2;
             break;
 
-        case NESystemService::ServicePhase::Continuing:
+        case aregext::ServicePhase::Continuing:
             _serviceStatus.dwCurrentState       = SERVICE_CONTINUE_PENDING;
             _serviceStatus.dwCheckPoint         = 5;
             break;
 
-        case NESystemService::ServicePhase::Pausing:
+        case aregext::ServicePhase::Pausing:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSE_PENDING;
             _serviceStatus.dwCheckPoint         = 3;
             break;
 
-        case NESystemService::ServicePhase::Paused:
+        case aregext::ServicePhase::Paused:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSED;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 4;
@@ -270,7 +270,7 @@ bool ServiceApplicationBase::_osSetState(NESystemService::ServicePhase newState)
     return result;
 }
 
-int32_t ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t aregext::ServiceApplicationBase::_osStartServiceDispatcher()
 {
     _serviceTable[0].lpServiceName = getServiceName();
     _serviceTable[0].lpServiceProc = &::_win32ServiceMain;

@@ -16,9 +16,9 @@ public:
     virtual ~ConnectionHandler();
 
 public:
-    inline void SetNickName( const String & nickName );
+    inline void SetNickName( const areg::String & nickName );
 
-    inline const String & GetNickName() const;
+    inline const areg::String & GetNickName() const;
 
     void SetCookie( uint32_t cookie );
 
@@ -38,13 +38,13 @@ public:
 
     inline bool GetRegistered() const;
 
-    inline void SetTimeConnect( const DateTime & dateTime );
+    inline void SetTimeConnect( const areg::DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnect() const;
+    inline const areg::DateTime & GetTimeConnect() const;
 
-    inline void SetTimeConnected( const DateTime & dateTime );
+    inline void SetTimeConnected( const areg::DateTime & dateTime );
 
-    inline const DateTime & GetTimeConnected() const;
+    inline const areg::DateTime & GetTimeConnected() const;
 
     inline bool HasName() const;
 
@@ -74,14 +74,14 @@ private:
 
 private:
     chat::ListConnections mListConnections;
-    String        mNickName;
+    areg::String        mNickName;
     uint32_t      mCookie;
     uint32_t      mConnectCookie;
-    DateTime      mTimeConnect;
-    DateTime      mTimeConnected;
+    areg::DateTime      mTimeConnect;
+    areg::DateTime      mTimeConnected;
     bool          mIsRegistered;
     bool          mIsConnected;
-    mutable Mutex mLock;
+    mutable areg::Mutex mLock;
 
 private:
     ConnectionHandler( const ConnectionHandler & /*src*/ );
@@ -89,89 +89,89 @@ private:
 };
 
 
-inline void ConnectionHandler::SetNickName(const String & nickName)
+inline void ConnectionHandler::SetNickName(const areg::String & nickName)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mIsRegistered = mNickName != nickName ? false : mIsRegistered;
     mNickName   = nickName;
 }
 
-inline const String & ConnectionHandler::GetNickName() const
+inline const areg::String & ConnectionHandler::GetNickName() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mNickName;
 }
 
 inline void ConnectionHandler::SetConnected(bool isConnected)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mIsConnected    = isConnected;
     mIsRegistered   = mIsConnected ? mIsRegistered : false;
 }
 
 inline bool ConnectionHandler::GetConnected() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mIsConnected;
 }
 
 inline void ConnectionHandler::SetRegistered(bool isRegistered)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mIsRegistered   = isRegistered;
 }
 
 inline bool ConnectionHandler::GetRegistered() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mIsRegistered;
 }
 
-inline void ConnectionHandler::SetTimeConnect(const DateTime & dateTime)
+inline void ConnectionHandler::SetTimeConnect(const areg::DateTime & dateTime)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mTimeConnect    = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnect() const
+inline const areg::DateTime & ConnectionHandler::GetTimeConnect() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mTimeConnect;
 }
 
-inline void ConnectionHandler::SetTimeConnected(const DateTime & dateTime)
+inline void ConnectionHandler::SetTimeConnected(const areg::DateTime & dateTime)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mTimeConnected  = dateTime;
 }
 
-inline const DateTime & ConnectionHandler::GetTimeConnected() const
+inline const areg::DateTime & ConnectionHandler::GetTimeConnected() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return mTimeConnected;
 }
 
 inline bool ConnectionHandler::HasName() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return (mNickName.isEmpty() == false);
 }
 
 inline bool ConnectionHandler::CanRegister() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return (mNickName.isEmpty() == false) && (mCookie != chat::InvalidCookie) && (mIsRegistered == false);
 }
 
 inline bool ConnectionHandler::CanConnect() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     return (mNickName.isEmpty( ) == false) && (mCookie == chat::InvalidCookie);
 }
 
 inline void ConnectionHandler::RemoveConnections()
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mListConnections.clear();
 }
 

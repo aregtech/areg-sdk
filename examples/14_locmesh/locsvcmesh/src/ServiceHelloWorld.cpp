@@ -18,7 +18,7 @@
 DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
 DEF_LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
 
-ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
+ServiceHelloWorld::ServiceHelloWorld( areg::Component & masterComp, bool isMain )
     : HelloWorldStub( masterComp )
     , mIsMain( isMain )
     , mClientList( )
@@ -26,13 +26,13 @@ ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
 {
 }
 
-void ServiceHelloWorld::requestHelloWorld( const String & roleName )
+void ServiceHelloWorld::requestHelloWorld( const areg::String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
     uint32_t clientId = 0;
     if ( mClientList.find( roleName, clientId ) == false )
     {
-        clientId = NEUtilities::generateUniqueId( );
+        clientId = areg::generateUniqueId( );
         mClientList.setAt( roleName, clientId );
     }
 
@@ -58,7 +58,7 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
 
 #if AREG_LOGS
 
-void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const String & roleName )
+void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const areg::String & roleName )
 {
     LOG_SCOPE( examples_14_locsvcmesh_ServiceHelloWorld_requestShutdownService );
     LOG_DBG( "A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString( ), clientID );
@@ -66,17 +66,17 @@ void ServiceHelloWorld::requestShutdownService( uint32_t clientID, const String 
     if ( mIsMain )
     {
         LOG_INFO( "All clients are set message to shutdown, all [ %d ] messages are output, going to shutdown application", HelloWorld::MaxMessages );
-        Application::signalAppQuit( );
+        areg::Application::signalAppQuit( );
     }
 }
 
 #else  // AREG_LOGS
 
-void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const String & /*roleName*/ )
+void ServiceHelloWorld::requestShutdownService( uint32_t /*clientID*/, const areg::String & /*roleName*/ )
 {
     if ( mIsMain )
     {
-        Application::signalAppQuit( );
+        areg::Application::signalAppQuit( );
     }
 }
 

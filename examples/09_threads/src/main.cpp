@@ -29,14 +29,14 @@
 DEF_LOG_SCOPE(threads_main_HelloThread_Ctor);
 DEF_LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
 
-Mutex gSync(false);
+areg::Mutex gSync(false);
 
-class HelloThread   : public Thread
-                    , protected ThreadConsumer
+class HelloThread   : public areg::Thread
+                    , protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(*this, "HelloThread")
+        : areg::Thread(*this, "HelloThread")
     {
         LOG_SCOPE(threads_main_HelloThread_Ctor);
         LOG_DBG("Initialized thread [HelloThread]");
@@ -51,15 +51,15 @@ protected:
     {
         LOG_SCOPE(threads_main_HelloThread_onThreadRuns);
         LOG_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
-        LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS);
+        LOG_INFO("The thread [%s] runs, sleeping %u ms", getName().getString(), areg::WAIT_500_MILLISECONDS);
         do
         {
-            Lock lock(gSync);
-            std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << NECommon::WAIT_500_MILLISECONDS << " ms" << std::endl;
+            areg::Lock lock(gSync);
+            std::cout << "The thread [" << getName().getString() << "] runs, sleeping " << areg::WAIT_500_MILLISECONDS << " ms" << std::endl;
 
         } while (false);
 
-        Thread::sleep(NECommon::WAIT_500_MILLISECONDS);
+        areg::Thread::sleep(areg::WAIT_500_MILLISECONDS);
     }
 };
 
@@ -72,13 +72,13 @@ DEF_LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
 DEF_LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
 
-class HelloDispatcher   : public DispatcherThread
-                        , private TimerConsumer
+class HelloDispatcher   : public areg::DispatcherThread
+                        , private areg::TimerConsumer
 {
 public:
     HelloDispatcher() 
-        : DispatcherThread("HelloDispatcher", NECommon::DEFAULT_BLOCK_SIZE, NECommon::IGNORE_VALUE )
-        , TimerConsumer()
+        : areg::DispatcherThread("HelloDispatcher", areg::DEFAULT_BLOCK_SIZE, areg::IGNORE_VALUE )
+        , areg::TimerConsumer()
         , mTimer(*this, "aTimer")
     {
         LOG_SCOPE(threads_main_HelloDispatcher_Ctor);
@@ -92,10 +92,10 @@ protected:
     void readyForEvents(bool isReady) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_readyForEvents);
-        DispatcherThread::readyForEvents(isReady);
+        areg::DispatcherThread::readyForEvents(isReady);
         if (isReady)
         {
-            Lock lock(gSync);
+            areg::Lock lock(gSync);
             LOG_DBG("Dispatcher thread is ready for event dispatching");
             std::cout << "Dispatcher thread is ready for event dispatching" << std::endl;
             mTimer.startTimer(100);
@@ -109,31 +109,31 @@ protected:
 /************************************************************************/
 // EventRouter interface overrides
 /************************************************************************/
-    bool dispatchEvent(Event & eventElem) override
+    bool dispatchEvent(areg::Event & eventElem) override
     {
         LOG_SCOPE(threads_main_HelloDispatcher_dispatchEvent);
         LOG_DBG("Received event [%s], custom dispatching here", eventElem.getRuntimeClassName().getString());
 
-        Lock lock(gSync);
+        areg::Lock lock(gSync);
         std::cout << "Received event [" << eventElem.getRuntimeClassName().getString() << "], custom dispatching here" << std::endl;
         return true; // prevent processTimer()
     }
 
-    virtual bool postEvent( Event & eventElem ) override
+    virtual bool postEvent( areg::Event & eventElem ) override
     {
-        return EventDispatcher::postEvent( eventElem );
+        return areg::EventDispatcher::postEvent( eventElem );
     }
 
 /************************************************************************/
 // TimerConsumer interface overrides.
 /************************************************************************/
-    void processTimer(Timer &) override
+    void processTimer(areg::Timer &) override
     {
         ASSERT(false);  // this never happens, because we interrupt in dispatchEvent()
     }
 
 private:
-    Timer mTimer;
+    areg::Timer mTimer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -150,21 +150,21 @@ int main()
     {
         LOG_SCOPE(threads_main_main);
 
-        Application::startTimerManager();
+        areg::Application::startTimerManager();
 
         HelloThread helloThread;
-        helloThread.createThread(NECommon::WAIT_INFINITE);
+        helloThread.createThread(areg::WAIT_INFINITE);
 
         HelloDispatcher helloDispatcher;
-        helloDispatcher.createThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.createThread(areg::WAIT_INFINITE);
 
-        Thread::sleep(NECommon::WAIT_1_SECOND);
+        areg::Thread::sleep(areg::WAIT_1_SECOND);
 
         LOG_INFO("Stopping dispatcher [%s]", helloDispatcher.getName().getString());
-        helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.shutdownThread(areg::WAIT_INFINITE);
 
         LOG_INFO("Stopping thread [%s]", helloThread.getName().getString());
-        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdownThread(areg::WAIT_INFINITE);
     } while (false);
 
     LOGGING_STOP();

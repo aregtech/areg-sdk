@@ -31,7 +31,7 @@ protected:
      * \param   entry   The dependency entry.
      * \param   owner   The owning component.
      **/
-    SubscriberBase(const NERegistry::DependencyEntry & entry, Component & owner, NEMath::Coord coordInt, NEMath::Coord coordStr);
+    SubscriberBase(const areg::DependencyEntry & entry, areg::Component & owner, areg::Coord coordInt, areg::Coord coordStr);
 
     virtual ~SubscriberBase() = default;
 
@@ -51,7 +51,7 @@ protected:
      * \param   StringOnChange  The value of StringOnChange attribute.
      * \param   state           The data validation flag.
      **/
-    void onStringOnChangeUpdate( const String & StringOnChange, NEService::DataState state ) override;
+    void onStringOnChangeUpdate( const areg::String & StringOnChange, areg::DataState state ) override;
 
     /**
      * \brief   Triggered, when IntegerAlways attribute is updated. The function contains
@@ -62,18 +62,18 @@ protected:
      * \param   IntegerAlways   The value of IntegerAlways attribute.
      * \param   state           The data validation flag.
      **/
-    void onIntegerAlwaysUpdate( uint32_t IntegerAlways, NEService::DataState state ) override;
+    void onIntegerAlwaysUpdate( uint32_t IntegerAlways, areg::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    const NEMath::Coord    mCoordInteger;      //!< The coordinates to print integer value change information
-    const NEMath::Coord    mCoordString;       //!< The coordinates to print string value change information
+    const areg::Coord    mCoordInteger;      //!< The coordinates to print integer value change information
+    const areg::Coord    mCoordString;       //!< The coordinates to print string value change information
     uint32_t                mOldInteger;        //!< Old integer value to compare when output on console.
     bool                    mOldState;          //!< Flag, indicating whether the old integer value is valid or not.
-    String                  mOldString;         //!< Old string value to compare when output on console.
+    areg::String                  mOldString;         //!< Old string value to compare when output on console.
     uint32_t            mIntEventCount;     //!< The event count of the integer value change
     uint32_t            mStrEventCount;     //!< The event count of the string value change
 

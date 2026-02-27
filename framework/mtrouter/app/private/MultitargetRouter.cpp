@@ -34,7 +34,7 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static String _modelName("mtrouterModel");
+static areg::String _modelName("mtrouterModel");
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
@@ -42,11 +42,11 @@ BEGIN_MODEL(_modelName)
     // define console service thread.
     BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread" )
         // Define the console service
-        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
+        BEGIN_REGISTER_COMPONENT(mtrouter::RouterConsoleService::SERVICE_NAME, mtrouter::RouterConsoleService)
             // register dummy 'empty service'.
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
+        END_REGISTER_COMPONENT(mtrouter::RouterConsoleService::SERVICE_NAME )
     // end of thread description
     END_REGISTER_THREAD( "RouterConsoleServiceThread" )
 
@@ -58,7 +58,7 @@ namespace
     constexpr std::string_view _msgHelp []
     {
           {"Usage of Areg Multi-target Message Router (mtrouter) :"}
-        , NESystemService::MSG_SEPARATOR
+        , aregext::MSG_SEPARATOR
         , {"-c, --console   : Command to run mtrouter as a console application (default option). Usage: \'mtrouter --console\'"}
         , {"-h, --help      : Command to display this message on console."}
         , {"-i, --install   : Command to install mtrouter as a service. Valid only for Windows OS. Usage: \'mtrouter --install\'"}
@@ -71,7 +71,7 @@ namespace
         , {"-t, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
         , {"-u, --uninstall : Command to uninstall mtrouter as a service. Valid only for Windows OS. Usage: \'mtrouter --uninstall\'"}
         , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
-        , NESystemService::MSG_SEPARATOR
+        , aregext::MSG_SEPARATOR
     };
 }
 
@@ -88,478 +88,482 @@ DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceInstall);
 DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_serviceUninstall);
 DEF_LOG_SCOPE(mtrouter_app_MultitargetRouter_setState);
 
-//////////////////////////////////////////////////////////////////////////
-// MultitargetRouter class implementation
-//////////////////////////////////////////////////////////////////////////
-
-const OptionParser::OptionSetup MultitargetRouter::ValidOptions[ ]
-{
-      { "-c", "--console"   , static_cast<int32_t>(RouterOption::CMD_RouterConsole)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int32_t>(RouterOption::CMD_RouterPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int32_t>(RouterOption::CMD_RouterInstall)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--load"      , static_cast<int32_t>(RouterOption::CMD_RouterLoad)      , OptionParser::STRING_NO_RANGE , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int32_t>(RouterOption::CMD_RouterInstances) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int32_t>(RouterOption::CMD_RouterPause)     , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int32_t>(RouterOption::CMD_RouterQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int32_t>(RouterOption::CMD_RouterRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int32_t>(RouterOption::CMD_RouterService)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , { "-t", "--silent"    , static_cast<int32_t>(RouterOption::CMD_RouterSilent)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int32_t>(RouterOption::CMD_RouterUninstall) , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int32_t>(RouterOption::CMD_RouterVerbose)   , OptionParser::NO_DATA         , {}, {}, {} }
-};
-
-MultitargetRouter & MultitargetRouter::getInstance()
-{
-    static MultitargetRouter _messageRouter;
-    return _messageRouter;
-}
-
-#if AREG_EXTENDED
-void MultitargetRouter::printStatus(const String& status)
+namespace mtrouter
 {
 
-    if (MultitargetRouter::getInstance().getCurrentOption() == NESystemService::ServiceOption::CMD_Console)
+    //////////////////////////////////////////////////////////////////////////
+    // MultitargetRouter class implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    const aregext::OptionParser::OptionSetup MultitargetRouter::ValidOptions[ ]
     {
-        Console& console{ Console::getInstance() };
-        Console::Coord curPos{ console.getCursorCurPosition() };
-        MultitargetRouter::_outputInfo(status);
-        console.setCursorCurPosition(curPos);
-    }
-}
-#else   // AREG_EXTENDED
-void MultitargetRouter::printStatus(const String& /* status */)
-{
-}
-#endif  // AREG_EXTENDED
+          { "-c", "--console"   , static_cast<int32_t>(RouterOption::CMD_RouterConsole)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-h", "--help"      , static_cast<int32_t>(RouterOption::CMD_RouterPrintHelp) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-i", "--install"   , static_cast<int32_t>(RouterOption::CMD_RouterInstall)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-l", "--load"      , static_cast<int32_t>(RouterOption::CMD_RouterLoad)      , aregext::OptionParser::STRING_NO_RANGE , {}, {}, {} }
+        , { "-n", "--instances" , static_cast<int32_t>(RouterOption::CMD_RouterInstances) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-p", "--pause"     , static_cast<int32_t>(RouterOption::CMD_RouterPause)     , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-q", "--quit"      , static_cast<int32_t>(RouterOption::CMD_RouterQuit)      , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-r", "--restart"   , static_cast<int32_t>(RouterOption::CMD_RouterRestart)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-s", "--service"   , static_cast<int32_t>(RouterOption::CMD_RouterService)   , aregext::OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+        , { "-t", "--silent"    , static_cast<int32_t>(RouterOption::CMD_RouterSilent)    , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-u", "--uninstall" , static_cast<int32_t>(RouterOption::CMD_RouterUninstall) , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+        , { "-v", "--verbose"   , static_cast<int32_t>(RouterOption::CMD_RouterVerbose)   , aregext::OptionParser::NO_DATA         , {}, {}, {} }
+    };
 
-MultitargetRouter::MultitargetRouter()
-    : ServiceApplicationBase( mServiceServer )
-    , mServiceServer        ( )
-{
-}
-
-Console::CallBack MultitargetRouter::getOptionCheckCallback() const
-{
-    return Console::CallBack( MultitargetRouter::_checkCommand );
-}
-
-void MultitargetRouter::runConsoleInputExtended()
-{
-#if AREG_EXTENDED
-
-    Console & console = Console::getInstance( );
-    MultitargetRouter::_outputTitle( );
-
-    if (getDataRateHelper().isVerbose())
+    MultitargetRouter & MultitargetRouter::getInstance()
     {
-        // Disable to block user input until Console Service is up and running.
-        console.enableConsoleInput( false );
-        startConsoleService( );
-        // Blocked until user input
-        console.waitForInput( getOptionCheckCallback( ) );
-        stopConsoleService( );
-    }
-    else
-    {
-        // No verbose mode.
-        // Set local callback, output message and wait for user input.
-        console.enableConsoleInput( true );
-        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
-        console.waitForInput( getOptionCheckCallback( ) );
+        static MultitargetRouter _messageRouter;
+        return _messageRouter;
     }
 
-    console.moveCursorOneLineDown( );
-    console.clearScreen( );
-    console.uninitialize( );
-
-#endif   // !AREG_EXTENDED
-}
-
-void MultitargetRouter::runConsoleInputSimple()
-{
-    constexpr uint32_t bufSize{ 512 };
-    char cmd[bufSize]{ 0 };
-    bool quit{ false };
-
-    MultitargetRouter::_outputTitle( );
-
-    do
+    #if AREG_EXTENDED
+    void MultitargetRouter::printStatus(const areg::String& status)
     {
-        printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        if (inputConsoleData(cmd, bufSize) == false)
-            continue;
 
-        quit = MultitargetRouter::_checkCommand( cmd );
-
-    } while ( quit == false );
-}
-
-std::pair<const OptionParser::OptionSetup*, int32_t> MultitargetRouter::getAppOptions() const
-{
-    static  std::pair< const OptionParser::OptionSetup*, int32_t> _opts(std::pair< const OptionParser::OptionSetup*, int32_t>(MultitargetRouter::ValidOptions, static_cast<int32_t>(std::size(MultitargetRouter::ValidOptions))));
-    return _opts;
-}
-
-wchar_t* MultitargetRouter::getServiceNameW() const
-{
-    return NEMultitargetRouterSettings::SERVICE_NAME_WIDE;
-}
-
-char* MultitargetRouter::getServiceNameA() const
-{
-    return NEMultitargetRouterSettings::SERVICE_NAME_ASCII;
-}
-
-wchar_t* MultitargetRouter::getServiceDisplayNameW() const
-{
-    return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_WIDE;
-}
-
-char* MultitargetRouter::getServiceDisplayNameA() const
-{
-    return NEMultitargetRouterSettings::SERVICE_DISPLAY_NAME_ASCII;
-}
-
-wchar_t* MultitargetRouter::getServiceDescriptionW() const
-{
-    return NEMultitargetRouterSettings::SERVICE_DESCRIBE_WIDE;
-}
-
-char* MultitargetRouter::getServiceDescriptionA() const
-{
-    return NEMultitargetRouterSettings::SERVICE_DESCRIBE_ASCII;
-}
-
-NERemoteService::RemoteServiceKind MultitargetRouter::getServiceType() const
-{
-    return NERemoteService::RemoteServiceKind::Router;
-}
-
-NERemoteService::ConnectionType MultitargetRouter::getConnectionType() const
-{
-    return NERemoteService::ConnectionType::Tcpip;
-}
-
-void MultitargetRouter::printHelp( bool /* isCmdLine */ )
-{
-#if     AREG_EXTENDED
-
-    Console::Coord line{ NESystemService::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
-    console.lockConsole();
-    for (const auto& text : _msgHelp)
-    {
-        console.outputTxt(line, text);
-        ++line.posY;
-    }
-
-    console.unlockConsole();
-
-#else   // AREG_EXTENDED
-
-    for (const auto& line : _msgHelp)
-    {
-        std::cout << line << std::endl;
-    }
-
-    std::cout << std::ends;
-
-#endif  // AREG_EXTENDED
-}
-
-void MultitargetRouter::startConsoleService()
-{
-    Application::loadModel( _modelName );
-}
-
-void MultitargetRouter::stopConsoleService()
-{
-    Application::unloadModel( _modelName );
-}
-
-bool MultitargetRouter::_checkCommand(const String& cmd)
-{
-    OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
-    bool quit{ false };
-    bool hasError{ false };
-
-    MultitargetRouter::_cleanHelp();
-
-    if ( parser.parseOptionLine( cmd ) )
-    {
-        MultitargetRouter & router = MultitargetRouter::getInstance( );
-        const OptionParser::InputOptionList & opts = parser.getOptions( );
-        for (uint32_t i = 0; i < opts.getSize( ); ++ i )
+        if (MultitargetRouter::getInstance().getCurrentOption() == aregext::ServiceOption::CMD_Console)
         {
-            const OptionParser::InputOption & opt = opts[ i ];
-            switch ( static_cast<MultitargetRouter::RouterOption>(opt.inCommand) )
-            {
-            case MultitargetRouter::RouterOption::CMD_RouterPause:
-                MultitargetRouter::_outputInfo( "Pausing message router ..." );
-                router.getCommunicationController().disconnectServiceHost( );
-                router.mServiceServer.waitToComplete( );
-                MultitargetRouter::_outputInfo( "Message router is paused ..." );
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterRestart:
-                MultitargetRouter::_outputInfo( "Restarting message router ..." );
-                router.getCommunicationController( ).connectServiceHost( );
-                MultitargetRouter::_outputInfo( "Message router is restarted ..." );
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterInstances:
-                MultitargetRouter::_outputInstances( router.getConnetedInstances() );
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterVerbose:
-                MultitargetRouter::_setVerboseMode( true );
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterSilent:
-                MultitargetRouter::_setVerboseMode( false );
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterPrintHelp:
-                router.printHelp( false );
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterQuit:
-                quit = true;
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterConsole:    // pass through
-            case MultitargetRouter::RouterOption::CMD_RouterInstall:    // pass through
-            case MultitargetRouter::RouterOption::CMD_RouterUninstall:  // pass through
-            case MultitargetRouter::RouterOption::CMD_RouterService:    // pass through
-            case MultitargetRouter::RouterOption::CMD_RouterLoad:
-                MultitargetRouter::_outputInfo("This command should be used in command line ...");
-                break;
-
-            case MultitargetRouter::RouterOption::CMD_RouterUndefined:  // pass through
-            default:
-                hasError = true;
-                break;
-            }
+            aregext::Console& console{ aregext::Console::getInstance() };
+            aregext::Console::Coord curPos{ console.getCursorCurPosition() };
+            MultitargetRouter::_outputInfo(status);
+            console.setCursorCurPosition(curPos);
         }
     }
-    else
+    #else   // AREG_EXTENDED
+    void MultitargetRouter::printStatus(const areg::String& /* status */)
     {
-        hasError = true;
+    }
+    #endif  // AREG_EXTENDED
+
+    MultitargetRouter::MultitargetRouter()
+        : aregext::ServiceApplicationBase( mServiceServer )
+        , mServiceServer        ( )
+    {
     }
 
-#if AREG_EXTENDED
-    
-    Console & console = Console::getInstance( );
-    console.lockConsole();
-    if ( quit == false )
+    aregext::Console::CallBack MultitargetRouter::getOptionCheckCallback() const
     {
-        if ( hasError )
+        return aregext::Console::CallBack( MultitargetRouter::_checkCommand );
+    }
+
+    void MultitargetRouter::runConsoleInputExtended()
+    {
+    #if AREG_EXTENDED
+
+        aregext::Console & console = aregext::Console::getInstance( );
+        MultitargetRouter::_outputTitle( );
+
+        if (getDataRateHelper().isVerbose())
         {
-            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
-        }
-
-        console.clearLine( NESystemService::COORD_USER_INPUT );
-        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
-    }
-    else
-    {
-        console.outputTxt( NESystemService::COORD_INFO_MSG, NESystemService::FORMAT_QUIT_APP );
-    }
-
-    console.refreshScreen( );
-    console.unlockConsole( );
-
-#else   // !AREG_EXTENDED
-
-    if ( quit == false )
-    {
-        if ( hasError )
-        {
-            printf( NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString() );
-            printf( "\n" );
-        }
-    }
-    else
-    {
-        printf( "%s\n", NESystemService::FORMAT_QUIT_APP.data( ) );
-    }
-
-#endif  // AREG_EXTENDED
-
-    return quit;
-}
-
-void MultitargetRouter::_outputTitle()
-{
-#if AREG_EXTENDED
-
-    Console & console = Console::getInstance( );
-    console.lockConsole();
-    console.outputTxt( NESystemService::COORD_TITLE, NEMultitargetRouterSettings::APP_TITLE.data( ) );
-    console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
-    console.unlockConsole();
-
-#else   // !AREG_EXTENDED
-
-    printf( "%s\n", NEMultitargetRouterSettings::APP_TITLE.data( ) );
-    printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
-
-#endif  // AREG_EXTENDED
-}
-
-void MultitargetRouter::_outputInfo( const String & info )
-{
-#if AREG_EXTENDED
-
-    Console & console = Console::getInstance( );
-    Console::Coord coord{NESystemService::COORD_INFO_MSG};
-    console.lockConsole( );
-
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
-    ++ coord.posY;
-    console.outputStr( coord, info );
-
-    console.unlockConsole( );
-
-#else   // !AREG_EXTENDED
-
-    printf( "%s\n", info.getString() );
-
-#endif  // AREG_EXTENDED
-}
-
-void MultitargetRouter::_outputInstances( const NEService::MapInstances & instances )
-{
-    static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
-    static constexpr std::string_view _empty{ "There are no connected instances ..." };
-
-#if AREG_EXTENDED
-
-    Console & console = Console::getInstance( );
-    Console::Coord coord{NESystemService::COORD_INFO_MSG};
-    console.lockConsole( );
-
-    if ( instances.isEmpty( ) )
-    {
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
-        ++ coord.posY;
-        console.outputStr( coord, _empty );
-        ++ coord.posY;
-    }
-    else
-    {
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
-        ++ coord.posY;
-        console.outputTxt( coord, _table );
-        ++ coord.posY;
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
-        ++ coord.posY;
-        int32_t i{ 1 };
-        for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
-        {
-            ITEM_ID cookie{ 0 };
-            NEService::ConnectedInstance instance;
-            instances.getAtPosition( pos, cookie, instance);
-            uint32_t id{ static_cast<uint32_t>(cookie) };
-
-            console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
-            ++ coord.posY;
-        }
-    }
-
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
-    console.unlockConsole( );
-
-#else   // !AREG_EXTENDED
-
-    if ( instances.isEmpty( ) )
-    {
-        printf( "%s\n", _empty.data() );
-    }
-    else
-    {
-        printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
-        printf( "%s\n", _table.data() );
-        printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
-
-        int32_t i{ 1 };
-        for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
-        {
-            ITEM_ID cookie{ 0 };
-            NEService::ConnectedInstance instance;
-            instances.getAtPosition( pos, cookie, instance);
-            uint32_t id{ static_cast<uint32_t>(cookie) };
-
-            printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
-        }
-    }
-
-    printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
-
-#endif  // AREG_EXTENDED
-}
-
-#if AREG_EXTENDED
-void MultitargetRouter::_setVerboseMode( bool makeVerbose )
-{
-    static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
-    static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
-    MultitargetRouter & router = MultitargetRouter::getInstance( );
-    Console & console = Console::getInstance( );
-    console.lockConsole( );
-    if ( router.getDataRateHelper().isVerbose() != makeVerbose )
-    {
-        router.getDataRateHelper().setVerbose(makeVerbose);
-
-        if ( makeVerbose == false )
-        {
-            console.clearLine( NESystemService::COORD_SEND_RATE );
-            console.clearLine( NESystemService::COORD_RECV_RATE );
-            console.outputTxt( NESystemService::COORD_INFO_MSG, _silence );
+            // Disable to block user input until Console Service is up and running.
+            console.enableConsoleInput( false );
+            startConsoleService( );
+            // Blocked until user input
+            console.waitForInput( getOptionCheckCallback( ) );
+            stopConsoleService( );
         }
         else
         {
-            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
+            // No verbose mode.
+            // Set local callback, output message and wait for user input.
+            console.enableConsoleInput( true );
+            console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
+            console.waitForInput( getOptionCheckCallback( ) );
+        }
+
+        console.moveCursorOneLineDown( );
+        console.clearScreen( );
+        console.uninitialize( );
+
+    #endif   // !AREG_EXTENDED
+    }
+
+    void MultitargetRouter::runConsoleInputSimple()
+    {
+        constexpr uint32_t bufSize{ 512 };
+        char cmd[bufSize]{ 0 };
+        bool quit{ false };
+
+        MultitargetRouter::_outputTitle( );
+
+        do
+        {
+            printf( "%s", aregext::FORMAT_WAIT_QUIT.data( ) );
+            if (inputConsoleData(cmd, bufSize) == false)
+                continue;
+
+            quit = MultitargetRouter::_checkCommand( cmd );
+
+        } while ( quit == false );
+    }
+
+    std::pair<const aregext::OptionParser::OptionSetup*, int32_t> MultitargetRouter::getAppOptions() const
+    {
+        static  std::pair< const aregext::OptionParser::OptionSetup*, int32_t> _opts(std::pair< const aregext::OptionParser::OptionSetup*, int32_t>(MultitargetRouter::ValidOptions, static_cast<int32_t>(std::size(MultitargetRouter::ValidOptions))));
+        return _opts;
+    }
+
+    wchar_t* MultitargetRouter::getServiceNameW() const
+    {
+        return mtrouter::SERVICE_NAME_WIDE;
+    }
+
+    char* MultitargetRouter::getServiceNameA() const
+    {
+        return mtrouter::SERVICE_NAME_ASCII;
+    }
+
+    wchar_t* MultitargetRouter::getServiceDisplayNameW() const
+    {
+        return mtrouter::SERVICE_DISPLAY_NAME_WIDE;
+    }
+
+    char* MultitargetRouter::getServiceDisplayNameA() const
+    {
+        return mtrouter::SERVICE_DISPLAY_NAME_ASCII;
+    }
+
+    wchar_t* MultitargetRouter::getServiceDescriptionW() const
+    {
+        return mtrouter::SERVICE_DESCRIBE_WIDE;
+    }
+
+    char* MultitargetRouter::getServiceDescriptionA() const
+    {
+        return mtrouter::SERVICE_DESCRIBE_ASCII;
+    }
+
+    areg::RemoteServiceKind MultitargetRouter::getServiceType() const
+    {
+        return areg::RemoteServiceKind::Router;
+    }
+
+    areg::ConnectionType MultitargetRouter::getConnectionType() const
+    {
+        return areg::ConnectionType::Tcpip;
+    }
+
+    void MultitargetRouter::printHelp( bool /* isCmdLine */ )
+    {
+    #if     AREG_EXTENDED
+
+        aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+        aregext::Console& console = aregext::Console::getInstance();
+        console.lockConsole();
+        for (const auto& text : _msgHelp)
+        {
+            console.outputTxt(line, text);
+            ++line.posY;
+        }
+
+        console.unlockConsole();
+
+    #else   // AREG_EXTENDED
+
+        for (const auto& line : _msgHelp)
+        {
+            std::cout << line << std::endl;
+        }
+
+        std::cout << std::ends;
+
+    #endif  // AREG_EXTENDED
+    }
+
+    void MultitargetRouter::startConsoleService()
+    {
+        areg::Application::loadModel( _modelName );
+    }
+
+    void MultitargetRouter::stopConsoleService()
+    {
+        areg::Application::unloadModel( _modelName );
+    }
+
+    bool MultitargetRouter::_checkCommand(const areg::String& cmd)
+    {
+        aregext::OptionParser parser( MultitargetRouter::ValidOptions, std::size( MultitargetRouter::ValidOptions) );
+        bool quit{ false };
+        bool hasError{ false };
+
+        MultitargetRouter::_cleanHelp();
+
+        if ( parser.parseOptionLine( cmd ) )
+        {
+            MultitargetRouter & router = MultitargetRouter::getInstance( );
+            const aregext::OptionParser::InputOptionList & opts = parser.getOptions( );
+            for (uint32_t i = 0; i < opts.getSize( ); ++ i )
+            {
+                const aregext::OptionParser::InputOption & opt = opts[ i ];
+                switch ( static_cast<MultitargetRouter::RouterOption>(opt.inCommand) )
+                {
+                case MultitargetRouter::RouterOption::CMD_RouterPause:
+                    MultitargetRouter::_outputInfo( "Pausing message router ..." );
+                    router.getCommunicationController().disconnectServiceHost( );
+                    router.mServiceServer.waitToComplete( );
+                    MultitargetRouter::_outputInfo( "Message router is paused ..." );
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterRestart:
+                    MultitargetRouter::_outputInfo( "Restarting message router ..." );
+                    router.getCommunicationController( ).connectServiceHost( );
+                    MultitargetRouter::_outputInfo( "Message router is restarted ..." );
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterInstances:
+                    MultitargetRouter::_outputInstances( router.getConnetedInstances() );
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterVerbose:
+                    MultitargetRouter::_setVerboseMode( true );
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterSilent:
+                    MultitargetRouter::_setVerboseMode( false );
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterPrintHelp:
+                    router.printHelp( false );
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterQuit:
+                    quit = true;
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterConsole:    // pass through
+                case MultitargetRouter::RouterOption::CMD_RouterInstall:    // pass through
+                case MultitargetRouter::RouterOption::CMD_RouterUninstall:  // pass through
+                case MultitargetRouter::RouterOption::CMD_RouterService:    // pass through
+                case MultitargetRouter::RouterOption::CMD_RouterLoad:
+                    MultitargetRouter::_outputInfo("This command should be used in command line ...");
+                    break;
+
+                case MultitargetRouter::RouterOption::CMD_RouterUndefined:  // pass through
+                default:
+                    hasError = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            hasError = true;
+        }
+
+    #if AREG_EXTENDED
+    
+        aregext::Console & console = aregext::Console::getInstance( );
+        console.lockConsole();
+        if ( quit == false )
+        {
+            if ( hasError )
+            {
+                console.outputMsg( aregext::COORD_ERROR_MSG, aregext::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
+            }
+
+            console.clearLine( aregext::COORD_USER_INPUT );
+            console.outputTxt( aregext::COORD_USER_INPUT, aregext::FORMAT_WAIT_QUIT );
+        }
+        else
+        {
+            console.outputTxt( aregext::COORD_INFO_MSG, aregext::FORMAT_QUIT_APP );
         }
 
         console.refreshScreen( );
+        console.unlockConsole( );
+
+    #else   // !AREG_EXTENDED
+
+        if ( quit == false )
+        {
+            if ( hasError )
+            {
+                printf( aregext::FORMAT_MSG_ERROR.data( ), cmd.getString() );
+                printf( "\n" );
+            }
+        }
+        else
+        {
+            printf( "%s\n", aregext::FORMAT_QUIT_APP.data( ) );
+        }
+
+    #endif  // AREG_EXTENDED
+
+        return quit;
     }
 
-    console.unlockConsole( );
-
-    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
-    printf( "%s\n", _unsupported.data( ) );
-}
-
-#else   // !AREG_EXTENDED
-
-void MultitargetRouter::_setVerboseMode( bool /* makeVerbose */ )
-{
-    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
-    printf( "%s\n", _unsupported.data( ) );
-}
-
-#endif  // AREG_EXTENDED
-
-void MultitargetRouter::_cleanHelp()
-{
-#if     AREG_EXTENDED
-
-    Console::Coord line{ NESystemService::COORD_INFO_MSG };
-    Console& console = Console::getInstance();
-    console.lockConsole();
-
-    console.clearLine(NESystemService::COORD_USER_INPUT);
-    uint32_t count = std::size(_msgHelp);
-    for (uint32_t i = 0; i < count; ++ i)
+    void MultitargetRouter::_outputTitle()
     {
-        console.clearLine(line);
-        ++line.posY;
+    #if AREG_EXTENDED
+
+        aregext::Console & console = aregext::Console::getInstance( );
+        console.lockConsole();
+        console.outputTxt( aregext::COORD_TITLE, mtrouter::APP_TITLE.data( ) );
+        console.outputTxt( aregext::COORD_SUBTITLE, aregext::MSG_SEPARATOR.data( ) );
+        console.unlockConsole();
+
+    #else   // !AREG_EXTENDED
+
+        printf( "%s\n", mtrouter::APP_TITLE.data( ) );
+        printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
+
+    #endif  // AREG_EXTENDED
     }
 
-    console.unlockConsole();
+    void MultitargetRouter::_outputInfo( const areg::String & info )
+    {
+    #if AREG_EXTENDED
 
-#endif  // AREG_EXTENDED
-}
+        aregext::Console & console = aregext::Console::getInstance( );
+        aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
+        console.lockConsole( );
+
+        console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
+        ++ coord.posY;
+        console.outputStr( coord, info );
+
+        console.unlockConsole( );
+
+    #else   // !AREG_EXTENDED
+
+        printf( "%s\n", info.getString() );
+
+    #endif  // AREG_EXTENDED
+    }
+
+    void MultitargetRouter::_outputInstances( const areg::MapInstances & instances )
+    {
+        static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
+        static constexpr std::string_view _empty{ "There are no connected instances ..." };
+
+    #if AREG_EXTENDED
+
+        aregext::Console & console = aregext::Console::getInstance( );
+        aregext::Console::Coord coord{aregext::COORD_INFO_MSG};
+        console.lockConsole( );
+
+        if ( instances.isEmpty( ) )
+        {
+            console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
+            ++ coord.posY;
+            console.outputStr( coord, _empty );
+            ++ coord.posY;
+        }
+        else
+        {
+            console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
+            ++ coord.posY;
+            console.outputTxt( coord, _table );
+            ++ coord.posY;
+            console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
+            ++ coord.posY;
+            int32_t i{ 1 };
+            for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
+            {
+                ITEM_ID cookie{ 0 };
+                areg::ConnectedInstance instance;
+                instances.getAtPosition( pos, cookie, instance);
+                uint32_t id{ static_cast<uint32_t>(cookie) };
+
+                console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
+                ++ coord.posY;
+            }
+        }
+
+        console.outputTxt( coord, aregext::MSG_SEPARATOR.data( ) );
+        console.unlockConsole( );
+
+    #else   // !AREG_EXTENDED
+
+        if ( instances.isEmpty( ) )
+        {
+            printf( "%s\n", _empty.data() );
+        }
+        else
+        {
+            printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
+            printf( "%s\n", _table.data() );
+            printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
+
+            int32_t i{ 1 };
+            for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
+            {
+                ITEM_ID cookie{ 0 };
+                areg::ConnectedInstance instance;
+                instances.getAtPosition( pos, cookie, instance);
+                uint32_t id{ static_cast<uint32_t>(cookie) };
+
+                printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.c_str());
+            }
+        }
+
+        printf( "%s\n", aregext::MSG_SEPARATOR.data( ) );
+
+    #endif  // AREG_EXTENDED
+    }
+
+    #if AREG_EXTENDED
+    void MultitargetRouter::_setVerboseMode( bool makeVerbose )
+    {
+        static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
+        static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
+        MultitargetRouter & router = MultitargetRouter::getInstance( );
+        aregext::Console & console = aregext::Console::getInstance( );
+        console.lockConsole( );
+        if ( router.getDataRateHelper().isVerbose() != makeVerbose )
+        {
+            router.getDataRateHelper().setVerbose(makeVerbose);
+
+            if ( makeVerbose == false )
+            {
+                console.clearLine( aregext::COORD_SEND_RATE );
+                console.clearLine( aregext::COORD_RECV_RATE );
+                console.outputTxt( aregext::COORD_INFO_MSG, _silence );
+            }
+            else
+            {
+                console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
+                console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
+                console.outputTxt( aregext::COORD_INFO_MSG, _verbose);
+            }
+
+            console.refreshScreen( );
+        }
+
+        console.unlockConsole( );
+
+        static constexpr std::string_view _unsupported{"This option is available only with extended features"};
+        printf( "%s\n", _unsupported.data( ) );
+    }
+
+    #else   // !AREG_EXTENDED
+
+    void MultitargetRouter::_setVerboseMode( bool /* makeVerbose */ )
+    {
+        static constexpr std::string_view _unsupported{"This option is available only with extended features"};
+        printf( "%s\n", _unsupported.data( ) );
+    }
+
+    #endif  // AREG_EXTENDED
+
+    void MultitargetRouter::_cleanHelp()
+    {
+    #if     AREG_EXTENDED
+
+        aregext::Console::Coord line{ aregext::COORD_INFO_MSG };
+        aregext::Console& console = aregext::Console::getInstance();
+        console.lockConsole();
+
+        console.clearLine(aregext::COORD_USER_INPUT);
+        uint32_t count = std::size(_msgHelp);
+        for (uint32_t i = 0; i < count; ++ i)
+        {
+            console.clearLine(line);
+            ++line.posY;
+        }
+
+        console.unlockConsole();
+
+    #endif  // AREG_EXTENDED
+    }
+} // namespace mtrouter

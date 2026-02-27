@@ -21,137 +21,139 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
-
-//////////////////////////////////////////////////////////////////////////
-// ConnectionConfiguration class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The connected configuration class. The object loads configuration file,
- *          parses and initializes properties such as connection enable / disable,
- *          connection type (protocol), host name and port number, etc.
- **/
-class AREG_API ConnectionConfiguration
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // ConnectionConfiguration class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Initializes connection configuration object to use properties based
-     *          on specified service and connection type.
-     * \param   service     The name of the service to read configuration properties.
-     * \param   connectType The name of the connection type to read configuration properties.
+     * \brief   The connected configuration class. The object loads configuration file,
+     *          parses and initializes properties such as connection enable / disable,
+     *          connection type (protocol), host name and port number, etc.
      **/
-    ConnectionConfiguration( const String & service, const String & connectType );
+    class AREG_API ConnectionConfiguration
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initializes connection configuration object to use properties based
+         *          on specified service and connection type.
+         * \param   service     The name of the service to read configuration properties.
+         * \param   connectType The name of the connection type to read configuration properties.
+         **/
+        ConnectionConfiguration( const String & service, const String & connectType );
 
-    /**
-     * \brief   Initializes connection configuration object to use properties based
-     *          on specified service and connection type.
-     * \param   service     The type of the service to read configuration properties.
-     * \param   connectType The type of the connection to read configuration properties.
-     **/
-    ConnectionConfiguration(NERemoteService::RemoteServiceKind service, NERemoteService::ConnectionType connectType);
+        /**
+         * \brief   Initializes connection configuration object to use properties based
+         *          on specified service and connection type.
+         * \param   service     The type of the service to read configuration properties.
+         * \param   connectType The type of the connection to read configuration properties.
+         **/
+        ConnectionConfiguration(RemoteServiceKind service, ConnectionType connectType);
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~ConnectionConfiguration() = default;
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~ConnectionConfiguration() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations.
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations.
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Returns the optional name of the remote service.
-     **/
-    inline const String& getRemoteServiceName() const;
+        /**
+         * \brief   Returns the optional name of the remote service.
+         **/
+        inline const String& getRemoteServiceName() const;
 
-    /**
-     * \brief   Returns the name of the connection type of the remote service.
-     **/
-    inline const String& getConnectionType() const;
+        /**
+         * \brief   Returns the name of the connection type of the remote service.
+         **/
+        inline const String& getConnectionType() const;
 
-    /**
-     * \brief   Returns true if the application already configured by reading configuration file or by default configuration.
-     **/
-    bool isConfigured() const;
+        /**
+         * \brief   Returns true if the application already configured by reading configuration file or by default configuration.
+         **/
+        bool isConfigured() const;
 
-    /**
-     * \brief   Returns connection enabled / disabled flag of the remote service and type.
-     **/
-    bool getConnectionEnableFlag() const;
+        /**
+         * \brief   Returns connection enabled / disabled flag of the remote service and type.
+         **/
+        bool getConnectionEnableFlag() const;
 
-    /**
-     * \brief   Set service connection enable flag of the remote service and type.
-     **/
-    void setConnectionEnableFlag(bool isEnabled);
+        /**
+         * \brief   Set service connection enable flag of the remote service and type.
+         **/
+        void setConnectionEnableFlag(bool isEnabled);
 
-    /**
-     * \brief   Returns the connection port number of the remote service and type.
-     **/
-    uint16_t getConnectionPort() const;
+        /**
+         * \brief   Returns the connection port number of the remote service and type.
+         **/
+        uint16_t getConnectionPort() const;
 
-    /**
-     * \brief   Sets the connection port number of the remote service and type.
-     **/
-    void setConnectionPort(uint16_t portNr);
+        /**
+         * \brief   Sets the connection port number of the remote service and type.
+         **/
+        void setConnectionPort(uint16_t portNr);
 
-    /**
-     * \brief   Returns the connection address of the remote service and type.
-     **/
-    String getConnectionAddress() const;
+        /**
+         * \brief   Returns the connection address of the remote service and type.
+         **/
+        String getConnectionAddress() const;
 
-    /**
-     * \brief   Sets the connection address of the remote service and type.
-     **/
-    void setConnectionAddress(const String& address);
+        /**
+         * \brief   Sets the connection address of the remote service and type.
+         **/
+        void setConnectionAddress(const String& address);
 
-    /**
-     * \brief   Sets the connection address and port number of the remote service and type.
-     * \param   address     The connection address.
-     * \param   portNr      The connection port number.
-     **/
-    void setConnectionData(const String& address, uint16_t portNr);
+        /**
+         * \brief   Sets the connection address and port number of the remote service and type.
+         * \param   address     The connection address.
+         * \param   portNr      The connection port number.
+         **/
+        void setConnectionData(const String& address, uint16_t portNr);
 
-    /**
-     * \brief   Returns byte sets of connection host IP address of given connection section.
-     **/
-    bool getConnectionIpAddress( uint8_t & field0
-                               , uint8_t & field1
-                               , uint8_t & field2
-                               , uint8_t & field3);
+        /**
+         * \brief   Returns byte sets of connection host IP address of given connection section.
+         **/
+        bool getConnectionIpAddress( uint8_t & field0
+                                , uint8_t & field1
+                                , uint8_t & field2
+                                , uint8_t & field3);
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations.
-//////////////////////////////////////////////////////////////////////////
-private:
-    //! The name of the remote connection service name to look in configuration.
-    const String    mServiceName;
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        //! The name of the remote connection service name to look in configuration.
+        const String    mServiceName;
 
-    //! The name of the connection type to look in configuration.
-    const String    mConnectType;
+        //! The name of the connection type to look in configuration.
+        const String    mConnectType;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    ConnectionConfiguration() = delete;
-    AREG_NOCOPY_NOMOVE( ConnectionConfiguration );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ConnectionConfiguration() = delete;
+        AREG_NOCOPY_NOMOVE( ConnectionConfiguration );
+    };
 
-//////////////////////////////////////////////////////////////////////////
-// ConnectionConfiguration inline methods.
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // ConnectionConfiguration inline methods.
+    //////////////////////////////////////////////////////////////////////////
 
-inline const String& ConnectionConfiguration::getRemoteServiceName() const
-{
-    return mServiceName;
-}
+    inline const String& ConnectionConfiguration::getRemoteServiceName() const
+    {
+        return mServiceName;
+    }
 
-inline const String& ConnectionConfiguration::getConnectionType() const
-{
-    return mConnectType;
-}
+    inline const String& ConnectionConfiguration::getConnectionType() const
+    {
+        return mConnectType;
+    }
 
+} // namespace areg
 #endif  // AREG_IPC_CONNECTIONCONFIGURATION_HPP

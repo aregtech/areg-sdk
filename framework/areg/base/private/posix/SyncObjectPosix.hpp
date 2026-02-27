@@ -30,120 +30,126 @@
 //////////////////////////////////////////////////////////////////////////
 // Declared classes and hierarchies.
 //////////////////////////////////////////////////////////////////////////
-class SyncObjectPosix;
+
+namespace areg::os
+{
+    class SyncObjectPosix;
     class MutexPosix;
-        class WaitableBaseIX;
-            class WaitableEventPosix;
-            class WaitableMutexPosix;
-
-//////////////////////////////////////////////////////////////////////////
-// SyncObjectPosix class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   POSIX specific Synchronization object base class.
- *          All synchronization objects should inherit from this class.
- **/
-class SyncObjectPosix
-{
-//////////////////////////////////////////////////////////////////////////
-// Constants, types and static members.
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   The length of synchronization object name, including null-termination symbol.
-     **/
-    static constexpr int32_t    _MAX_NAME_LENGTH    { 32 };
-
-//////////////////////////////////////////////////////////////////////////
-// Protected constructor.
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Initialization constructor.
-     * \param   syncType    The type of synchronization object.
-     * \param   asciiName   The name of synchronization object.
-     **/
-    SyncObjectPosix( NESyncTypesIX::SyncKind syncType, const char* asciiName = nullptr );
-
-//////////////////////////////////////////////////////////////////////////
-// Public destructor.
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~SyncObjectPosix() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// SyncObjectPosix attributes.
-/************************************************************************/
-    
-    /**
-     * \brief   Returns the type of synchronization object.
-     **/
-    inline NESyncTypesIX::SyncKind getSyncType() const;
-
-    /**
-     * \brief   Returns synchronization object name.
-     **/
-    inline const String & getName() const;
-
-/************************************************************************/
-// SyncObjectPosix overrides.
-/************************************************************************/
-    
-    /**
-     * \brief   Returns true if synchronization object is valid.
-     **/
-    virtual bool isValid() const = 0;
-
-    /**
-     * \brief   Triggered when synchronization object is going to be deleted.
-     *          This should free all resources.
-     **/
-    virtual void freeResources() = 0;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   The type of synchronization object.
-     **/
-    const NESyncTypesIX::SyncKind  mSyncType;
-
-    /**
-     * \brief   The name of synchronization object.
-     **/
-    String  mSyncName;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    SyncObjectPosix() = delete;
-    AREG_NOCOPY_NOMOVE( SyncObjectPosix );
-};
-
-
-//////////////////////////////////////////////////////////////////////////
-// SyncObjectPosix class inline implementation
-//////////////////////////////////////////////////////////////////////////
-inline NESyncTypesIX::SyncKind SyncObjectPosix::getSyncType() const
-{
-    return mSyncType;
+    class WaitableEventPosix;
+    class WaitableMutexPosix;
 }
 
-inline const String & SyncObjectPosix::getName() const
+namespace areg::os
 {
-    return mSyncName;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // SyncObjectPosix class declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   POSIX specific Synchronization object base class.
+     *          All synchronization objects should inherit from this class.
+     **/
+    class SyncObjectPosix
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constants, types and static members.
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   The length of synchronization object name, including null-termination symbol.
+         **/
+        static constexpr int32_t    _MAX_NAME_LENGTH    { 32 };
 
+    //////////////////////////////////////////////////////////////////////////
+    // Protected constructor.
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Initialization constructor.
+         * \param   syncType    The type of synchronization object.
+         * \param   asciiName   The name of synchronization object.
+         **/
+        SyncObjectPosix( SyncKind syncType, const char* asciiName = nullptr );
+
+    //////////////////////////////////////////////////////////////////////////
+    // Public destructor.
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~SyncObjectPosix() = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // SyncObjectPosix attributes.
+    /************************************************************************/
+        
+        /**
+         * \brief   Returns the type of synchronization object.
+         **/
+        inline SyncKind getSyncType() const;
+
+        /**
+         * \brief   Returns synchronization object name.
+         **/
+        inline const areg::String & getName() const;
+
+    /************************************************************************/
+    // SyncObjectPosix overrides.
+    /************************************************************************/
+        
+        /**
+         * \brief   Returns true if synchronization object is valid.
+         **/
+        virtual bool isValid() const = 0;
+
+        /**
+         * \brief   Triggered when synchronization object is going to be deleted.
+         *          This should free all resources.
+         **/
+        virtual void freeResources() = 0;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables.
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+
+        /**
+         * \brief   The type of synchronization object.
+         **/
+        const SyncKind  mSyncType;
+
+        /**
+         * \brief   The name of synchronization object.
+         **/
+        areg::String  mSyncName;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        SyncObjectPosix() = delete;
+        AREG_NOCOPY_NOMOVE( SyncObjectPosix );
+    };
+
+
+    //////////////////////////////////////////////////////////////////////////
+    // SyncObjectPosix class inline implementation
+    //////////////////////////////////////////////////////////////////////////
+    inline SyncKind SyncObjectPosix::getSyncType() const
+    {
+        return mSyncType;
+    }
+
+    inline const areg::String & SyncObjectPosix::getName() const
+    {
+        return mSyncName;
+    }
+
+} // namespace areg::os
 #endif //  defined(_POSIX) || defined(POSIX)
 
 #endif // AREG_BASE_PRIVATE_POSIX_SYNCOBJECTBASEIX_HPP

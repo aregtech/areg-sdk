@@ -136,7 +136,7 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
 ////////////////////////////////////////////////////////////////////////////////
 
 TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLightFSM & fsm )
-    : TimerConsumer   ( )
+    : areg::TimerConsumer   ( )
     , mFsm              ( fsm )
 {
 }
@@ -147,7 +147,7 @@ TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLi
 /* --------------------------------------------------------------------- */
 DEF_LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
 /* --------------------------------------------------------------------- */
-void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
+void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( areg::Timer & timer )
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
     LOG_DBG("Processing Timer < %s >.", timer.getName().getString());
@@ -208,15 +208,15 @@ void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
 TrafficLightFSM::TrafficLightFSM( TrafficLightActionHandler & actionHandler, const std::string_view & instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
     : mActionHandler  ( actionHandler )
     
-    , mTimerRed( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
-    , mTimerYellowRed( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowRed" )
-    , mTimerGreen( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Green" )
-    , mTimerYellowGreen( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowGreen" )
-    , mTimerPedestrianWalk( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::PedestrianWalk" )
-    , mTimerVehicleWait( static_cast< TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
+    , mTimerRed( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
+    , mTimerYellowRed( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowRed" )
+    , mTimerGreen( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Green" )
+    , mTimerYellowGreen( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowGreen" )
+    , mTimerPedestrianWalk( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::PedestrianWalk" )
+    , mTimerVehicleWait( static_cast< areg::TimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
     
 
-    , mFsmName      ( String("TrafficLightFSM:") + instanceName )
+    , mFsmName      ( areg::String("TrafficLightFSM:") + instanceName )
     , mMasterThread ( nullptr )
     , mProcessing   ( false )
     , mState        ( TrafficLightFSM::FsmState::UNDEFINED )
@@ -534,7 +534,7 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::FsmState curStat
 /**
  * Call to initialize State Machine. Initialize before calling any trigger.
  **/
-void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
+void TrafficLightFSM::initFSM( areg::DispatcherThread * ownerThread /*= nullptr*/ )
 {
     LOG_SCOPE(generated_src_private_TrafficLightFSM_initFSM);
     if (mState != TrafficLightFSM::FsmState::UNDEFINED)
@@ -543,7 +543,7 @@ void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
         ASSERT(false);
     }
 
-    mMasterThread   = ownerThread != nullptr ? ownerThread : &(DispatcherThread::getCurrentDispatcherThread( ));
+    mMasterThread   = ownerThread != nullptr ? ownerThread : &(areg::DispatcherThread::getCurrentDispatcherThread( ));
     NETrafficLightFSM::FsmEvent::addListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
     
     mCurrentStates[static_cast<int32_t>(FsmState::UNDEFINED)] = TrafficLightFSM::FsmState::UNDEFINED;

@@ -18,361 +18,365 @@
 
 #include <utility>
 
-PropertyValue::PropertyValue(const PropertyValue & source)
-    : mValue( source.mValue )
+namespace areg
 {
-}
 
-PropertyValue::PropertyValue( PropertyValue && source ) noexcept
-    : mValue( std::move( source.mValue ) )
-{
-}
-
-PropertyValue::PropertyValue( const String & value )
-    : mValue( )
-{
-    parseValue( static_cast<const String &>(value) );
-}
-
-PropertyValue::PropertyValue(String&& value) noexcept
-    : mValue()
-{
-    parseValue(std::move(value));
-}
-
-PropertyValue::PropertyValue( const char * value )
-    : mValue( )
-{
-    parseValue(value);
-}
-
-PropertyValue::PropertyValue(uint32_t intValue)
-    : mValue( String::makeString(intValue, NEString::Radix::Decimal) )
-{
-}
-
-PropertyValue::PropertyValue(double dValue)
-    : mValue( String::makeString( dValue ) )
-{
-}
-
-PropertyValue::PropertyValue(bool bValue)
-    : mValue(String::makeString(bValue))
-{
-}
-
-PropertyValue::PropertyValue(const std::vector<Identifier> & idList)
-    : mValue( )
-{
-    setIndentifier(idList);
-}
-
-PropertyValue & PropertyValue::operator = ( const PropertyValue & source )
-{
-    mValue  = source.mValue;
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = ( PropertyValue && source ) noexcept
-{
-    mValue  = std::move(source.mValue);
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = ( const String & value )
-{
-    parseValue(value);
-    return (*this);
-}
-
-PropertyValue& PropertyValue::operator = (String && value) noexcept
-{
-    parseValue(std::move(value));
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = (uint32_t intValue)
-{
-    mValue.fromUInt32(intValue);
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = (double dValue)
-{
-    mValue.fromDouble(dValue);
-    return (*this);
-}
-
-PropertyValue& PropertyValue::operator = (bool bValue)
-{
-    mValue.fromBool(bValue);
-    return (*this);
-}
-
-PropertyValue & PropertyValue::operator = (const std::vector<Identifier> & idList)
-{
-    setIndentifier(idList);
-    return (*this);
-}
-
-bool PropertyValue::operator == ( const PropertyValue & other ) const
-{
-    return (mValue == other.mValue);
-}
-
-bool PropertyValue::operator != ( const PropertyValue & other ) const
-{
-    return (mValue != other.mValue);
-}
-
-PropertyValue::operator uint32_t() const
-{
-    return getInteger(NEString::Radix::Decimal);
-}
-
-PropertyValue::operator const String& () const
-{
-    return getString();
-}
-
-PropertyValue::operator double() const
-{
-    return getDouble();
-}
-
-PropertyValue::operator bool() const
-{
-    return getBoolean();
-}
-
-const String & PropertyValue::getValue() const
-{
-    return mValue;
-}
-
-void PropertyValue::setValue( const char * value )
-{
-    parseValue(value);
-}
-
-void PropertyValue::setValue( const String & value )
-{
-    parseValue( static_cast<const String &>(value) );
-}
-
-void PropertyValue::setValue( String && value )
-{
-    parseValue( std::move(value) );
-}
-
-const String & PropertyValue::getString() const
-{
-    return mValue;
-}
-
-uint32_t PropertyValue::getInteger( NEString::Radix radix /*= NEString::Decimal*/ ) const
-{
-    return mValue.toUInt32( static_cast<NEString::Radix>(radix) );
-}
-
-double PropertyValue::getDouble() const
-{
-    return mValue.toDouble( );
-}
-
-uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) const
-{
-    uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
-    if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
+    PropertyValue::PropertyValue(const PropertyValue & source)
+        : mValue( source.mValue )
     {
-        std::vector<StringBase<char>> list { mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
-        for (auto& entry : list)
+    }
+
+    PropertyValue::PropertyValue( PropertyValue && source ) noexcept
+        : mValue( std::move( source.mValue ) )
+    {
+    }
+
+    PropertyValue::PropertyValue( const String & value )
+        : mValue( )
+    {
+        parseValue( static_cast<const String &>(value) );
+    }
+
+    PropertyValue::PropertyValue(String&& value) noexcept
+        : mValue()
+    {
+        parseValue(std::move(value));
+    }
+
+    PropertyValue::PropertyValue( const char * value )
+        : mValue( )
+    {
+        parseValue(value);
+    }
+
+    PropertyValue::PropertyValue(uint32_t intValue)
+        : mValue( String::makeString(intValue, Radix::Decimal) )
+    {
+    }
+
+    PropertyValue::PropertyValue(double dValue)
+        : mValue( String::makeString( dValue ) )
+    {
+    }
+
+    PropertyValue::PropertyValue(bool bValue)
+        : mValue(String::makeString(bValue))
+    {
+    }
+
+    PropertyValue::PropertyValue(const std::vector<Identifier> & idList)
+        : mValue( )
+    {
+        setIndentifier(idList);
+    }
+
+    PropertyValue & PropertyValue::operator = ( const PropertyValue & source )
+    {
+        mValue  = source.mValue;
+        return (*this);
+    }
+
+    PropertyValue & PropertyValue::operator = ( PropertyValue && source ) noexcept
+    {
+        mValue  = std::move(source.mValue);
+        return (*this);
+    }
+
+    PropertyValue & PropertyValue::operator = ( const String & value )
+    {
+        parseValue(value);
+        return (*this);
+    }
+
+    PropertyValue& PropertyValue::operator = (String && value) noexcept
+    {
+        parseValue(std::move(value));
+        return (*this);
+    }
+
+    PropertyValue & PropertyValue::operator = (uint32_t intValue)
+    {
+        mValue.fromUInt32(intValue);
+        return (*this);
+    }
+
+    PropertyValue & PropertyValue::operator = (double dValue)
+    {
+        mValue.fromDouble(dValue);
+        return (*this);
+    }
+
+    PropertyValue& PropertyValue::operator = (bool bValue)
+    {
+        mValue.fromBool(bValue);
+        return (*this);
+    }
+
+    PropertyValue & PropertyValue::operator = (const std::vector<Identifier> & idList)
+    {
+        setIndentifier(idList);
+        return (*this);
+    }
+
+    bool PropertyValue::operator == ( const PropertyValue & other ) const
+    {
+        return (mValue == other.mValue);
+    }
+
+    bool PropertyValue::operator != ( const PropertyValue & other ) const
+    {
+        return (mValue != other.mValue);
+    }
+
+    PropertyValue::operator uint32_t() const
+    {
+        return getInteger(Radix::Decimal);
+    }
+
+    PropertyValue::operator const String& () const
+    {
+        return getString();
+    }
+
+    PropertyValue::operator double() const
+    {
+        return getDouble();
+    }
+
+    PropertyValue::operator bool() const
+    {
+        return getBoolean();
+    }
+
+    const String & PropertyValue::getValue() const
+    {
+        return mValue;
+    }
+
+    void PropertyValue::setValue( const char * value )
+    {
+        parseValue(value);
+    }
+
+    void PropertyValue::setValue( const String & value )
+    {
+        parseValue( static_cast<const String &>(value) );
+    }
+
+    void PropertyValue::setValue( String && value )
+    {
+        parseValue( std::move(value) );
+    }
+
+    const String & PropertyValue::getString() const
+    {
+        return mValue;
+    }
+
+    uint32_t PropertyValue::getInteger( Radix radix /*= areg::Decimal*/ ) const
+    {
+        return mValue.toUInt32( static_cast<Radix>(radix) );
+    }
+
+    double PropertyValue::getDouble() const
+    {
+        return mValue.toDouble( );
+    }
+
+    uint32_t PropertyValue::getIndetifier( const std::vector<Identifier> & idList ) const
+    {
+        uint32_t result = Identifier::BAD_IDENTIFIER_VALUE;
+        if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
         {
-            String value{ entry.trimAll() };
-            for (const auto& id : idList)
+            std::vector<StringBase<char>> list { mValue.split(SYNTAX_VALUE_LIST_DELIMITER) };
+            for (auto& entry : list)
             {
-                const String& idName = id.getName();
-                if (value == idName)
+                String value{ entry.trimAll() };
+                for (const auto& id : idList)
                 {
-                    if (result == Identifier::BAD_IDENTIFIER_VALUE)
+                    const String& idName = id.getName();
+                    if (value == idName)
                     {
-                        result = id.getValue();
-                    }
-                    else
-                    {
-                        result |= id.getValue();
+                        if (result == Identifier::BAD_IDENTIFIER_VALUE)
+                        {
+                            result = id.getValue();
+                        }
+                        else
+                        {
+                            result |= id.getValue();
+                        }
                     }
                 }
             }
         }
+
+        return result;
     }
 
-    return result;
-}
-
-void PropertyValue::setString(const char * value)
-{
-    parseValue( value );
-}
-
-bool PropertyValue::getBoolean() const
-{
-    return mValue.toBool();
-}
-
-void PropertyValue::setBoolean(bool newValue)
-{
-    mValue = String::makeString(newValue);
-}
-
-void PropertyValue::setInteger(uint32_t intValue, NEString::Radix radix /*= NEString::Decimal*/ )
-{
-    mValue = String::makeString(intValue, radix);
-}
-
-void PropertyValue::setDouble(double dValue)
-{
-    mValue = String::makeString( dValue );
-}
-
-ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
-{
-    ArrayList<Identifier> result;
-    if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
+    void PropertyValue::setString(const char * value)
     {
-        std::vector<StringBase<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
-        for (auto& entry : list)
+        parseValue( value );
+    }
+
+    bool PropertyValue::getBoolean() const
+    {
+        return mValue.toBool();
+    }
+
+    void PropertyValue::setBoolean(bool newValue)
+    {
+        mValue = String::makeString(newValue);
+    }
+
+    void PropertyValue::setInteger(uint32_t intValue, Radix radix /*= areg::Decimal*/ )
+    {
+        mValue = String::makeString(intValue, radix);
+    }
+
+    void PropertyValue::setDouble(double dValue)
+    {
+        mValue = String::makeString( dValue );
+    }
+
+    ArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const
+    {
+        ArrayList<Identifier> result;
+        if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
         {
-            String value{ entry.trimAll() };
-            for (const auto& id : lookupList)
+            std::vector<StringBase<char>> list{ mValue.split(SYNTAX_VALUE_LIST_DELIMITER) };
+            for (auto& entry : list)
             {
-                const String& idName = id.getName();
-                if (value == idName)
+                String value{ entry.trimAll() };
+                for (const auto& id : lookupList)
                 {
-                    result.addIfUnique(id);
-                    break; // found and added, break the loop
+                    const String& idName = id.getName();
+                    if (value == idName)
+                    {
+                        result.addIfUnique(id);
+                        break; // found and added, break the loop
+                    }
                 }
+            }
+        }
+
+        return result;
+    }
+
+    void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList)
+    {
+        mValue.clear();
+        for (const auto& entry : lookupList)
+        {
+            if ((idBits & entry.getValue()) != 0)
+            {
+                if (mValue.isEmpty() == false)
+                {
+                    mValue.append(SYNTAX_WHITESPACE_DELIMITER)
+                          .append(SYNTAX_VALUE_LIST_DELIMITER)
+                          .append(SYNTAX_WHITESPACE_DELIMITER);
+                }
+
+                mValue += entry.getName();
             }
         }
     }
 
-    return result;
-}
-
-void PropertyValue::setIdentifierList(uint32_t idBits, const std::vector<Identifier>& lookupList)
-{
-    mValue.clear();
-    for (const auto& entry : lookupList)
+    void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
     {
-        if ((idBits & entry.getValue()) != 0)
+        mValue.clear();
+        for ( const auto& entry : idList )
         {
-            if (mValue.isEmpty() == false)
+            if ( mValue.isEmpty() == false )
             {
-                mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                      .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                      .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+                mValue.append(SYNTAX_WHITESPACE_DELIMITER)
+                      .append(SYNTAX_VALUE_LIST_DELIMITER)
+                      .append(SYNTAX_WHITESPACE_DELIMITER);
             }
 
             mValue += entry.getName();
         }
     }
-}
 
-void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
-{
-    mValue.clear();
-    for ( const auto& entry : idList )
+    ArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
     {
-        if ( mValue.isEmpty() == false )
-        {
-            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
-        }
-
-        mValue += entry.getName();
-    }
-}
-
-ArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
-{
-    ArrayList<String> result;
-    if (mValue.isEmpty() == false)
-    {
-        std::vector<StringBase<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
-        for (auto& entry : list)
-        {
-            String value{ entry.trimAll() };
-            if (makeUnique)
-            {
-                result.addIfUnique(value);
-            }
-            else
-            {
-                result.add(value);
-            }
-        }
-    }
-
-    return result;
-}
-
-void PropertyValue::setValueList(const std::vector<String>& list)
-{
-    mValue.clear();
-    for (const auto& entry : list)
-    {
+        ArrayList<String> result;
         if (mValue.isEmpty() == false)
         {
-            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
-                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+            std::vector<StringBase<char>> list{ mValue.split(SYNTAX_VALUE_LIST_DELIMITER) };
+            for (auto& entry : list)
+            {
+                String value{ entry.trimAll() };
+                if (makeUnique)
+                {
+                    result.addIfUnique(value);
+                }
+                else
+                {
+                    result.add(value);
+                }
+            }
         }
 
-        mValue += entry;
+        return result;
     }
-}
 
-void PropertyValue::parseValue(const char * value)
-{
-    mValue  = value;
-    _parseValue();
-}
-
-void PropertyValue::parseValue( const String & value )
-{
-    mValue  = value;
-    _parseValue();
-}
-
-void PropertyValue::parseValue( String && value )
-{
-    mValue  = std::move(value);
-    _parseValue();
-}
-
-void PropertyValue::resetValue()
-{
-    mValue.clear();
-}
-
-String PropertyValue::convToString() const
-{
-    String result (mValue);
-    if (mValue.isEmpty() == false)
+    void PropertyValue::setValueList(const std::vector<String>& list)
     {
-        result += NEPersistence::SYNTAX_END_COMMAND;
+        mValue.clear();
+        for (const auto& entry : list)
+        {
+            if (mValue.isEmpty() == false)
+            {
+                mValue.append(SYNTAX_WHITESPACE_DELIMITER)
+                      .append(SYNTAX_VALUE_LIST_DELIMITER)
+                      .append(SYNTAX_WHITESPACE_DELIMITER);
+            }
+
+            mValue += entry;
+        }
     }
 
-    return result;
-}
-
-inline void PropertyValue::_parseValue()
-{
-    mValue.trimAll();
-    int32_t len = mValue.getLength();
-    while ((len != 0) && (mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND))
+    void PropertyValue::parseValue(const char * value)
     {
-        len = mValue.resize(len - 1).getLength();
+        mValue  = value;
+        _parseValue();
     }
-}
+
+    void PropertyValue::parseValue( const String & value )
+    {
+        mValue  = value;
+        _parseValue();
+    }
+
+    void PropertyValue::parseValue( String && value )
+    {
+        mValue  = std::move(value);
+        _parseValue();
+    }
+
+    void PropertyValue::resetValue()
+    {
+        mValue.clear();
+    }
+
+    String PropertyValue::convToString() const
+    {
+        String result (mValue);
+        if (mValue.isEmpty() == false)
+        {
+            result += SYNTAX_END_COMMAND;
+        }
+
+        return result;
+    }
+
+    inline void PropertyValue::_parseValue()
+    {
+        mValue.trimAll();
+        int32_t len = mValue.getLength();
+        while ((len != 0) && (mValue[len - 1] == SYNTAX_END_COMMAND))
+        {
+            len = mValue.resize(len - 1).getLength();
+        }
+    }
+} // namespace areg

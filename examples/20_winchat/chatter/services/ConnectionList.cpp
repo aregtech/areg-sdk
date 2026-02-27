@@ -10,21 +10,21 @@
 DEF_LOG_SCOPE(chatter_ConnectionList_serviceConnected);
 DEF_LOG_SCOPE(chatter_ConnectionList_responseRegisterConnection);
 
-ConnectionList::ConnectionList( const char * roleName, Component & owner, ConnectionHandler & handlerConnection )
+ConnectionList::ConnectionList( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase ( roleName, owner.getMasterThread() )
     , mConnectionHandler            ( handlerConnection )
 {
 
 }
 
-ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispThread, ConnectionHandler & handlerConnection )
+ConnectionList::ConnectionList( const char * roleName, areg::DispatcherThread & dispThread, aregext::ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase ( roleName, dispThread )
     , mConnectionHandler            ( handlerConnection )
 {
 
 }
 
-bool ConnectionList::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool ConnectionList::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_ConnectionList_serviceConnected);
     bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
@@ -79,8 +79,8 @@ void ConnectionList::responseRegisterConnection( const ConnectionManager::Connec
     {
         mConnectionHandler.SetRegistered( false );
         mConnectionHandler.SetCookie( ConnectionManager::InvalidCookie );
-        mConnectionHandler.SetTimeConnect( DateTime( ) );
-        mConnectionHandler.SetTimeConnected( DateTime( ) );
+        mConnectionHandler.SetTimeConnect( areg::DateTime( ) );
+        mConnectionHandler.SetTimeConnected( areg::DateTime( ) );
         mConnectionHandler.RemoveConnections();
         DistributedDialog::PostServiceMessage(NEDistributedApp::WindowCommand::CmdClientRegistration, 0, 0);
     }

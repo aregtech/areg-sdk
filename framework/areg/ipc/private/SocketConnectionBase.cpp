@@ -20,58 +20,62 @@
 
 #include "areg/logging/GELog.h"
 
-int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
+namespace areg
 {
-    int32_t result{ -1 };
-    if ( in_message.isValid() && clientSocket.isValid() )
+    int32_t SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const Socket & clientSocket) const
     {
-        in_message.bufferCompletionFix();
-        const NEMemory::MessageHeader & buffer = reinterpret_cast<const NEMemory::MessageHeader &>( *in_message.getByteBuffer() );
-        result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(NEMemory::MessageHeader) );
-        if ((result == sizeof(NEMemory::MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
+        int32_t result{ -1 };
+        if ( in_message.isValid() && clientSocket.isValid() )
         {
-            ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
-            // send the aligned length.
-            result += clientSocket.sendData(in_message.getBuffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
-        }
-    }
-
-    return result;
-}
-
-int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
-{
-    int32_t result{ -1 };
-    if ( clientSocket.isValid() && clientSocket.isAlive() )
-    {
-        NEMemory::MessageHeader msgHeader{};
-
-        out_message.invalidate();
-        result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(NEMemory::MessageHeader));
-        if ( result == sizeof(NEMemory::MessageHeader) )
-        {
-            result = sizeof(NEMemory::MessageHeader);
-            uint8_t * buffer = out_message.initMessage( msgHeader );
-            if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
+            in_message.bufferCompletionFix();
+            const MessageHeader & buffer = reinterpret_cast<const MessageHeader &>( *in_message.getByteBuffer() );
+            result = clientSocket.sendData( reinterpret_cast<const uint8_t *>(&buffer), sizeof(MessageHeader) );
+            if ((result == sizeof(MessageHeader)) && (buffer.rbhBufHeader.biUsed != 0))
             {
-                ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
-
-                // receive aligned length of data.
-                result += clientSocket.receiveData(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
-            }
-
-            out_message.moveToBegin();
-            if ( out_message.isChecksumValid() == false )
-            {
-                result = 0;
-                out_message.invalidate();
+                ASSERT(buffer.rbhBufHeader.biLength >= buffer.rbhBufHeader.biUsed);
+                // send the aligned length.
+                result += clientSocket.sendData(in_message.getBuffer(), static_cast<int32_t>(buffer.rbhBufHeader.biLength));
             }
         }
-        else
-        {
-            result = (result > 0) && (result != sizeof(NEMemory::MessageHeader)) ? 0 : result;
-        }
+
+        return result;
     }
 
-    return result;
-}
+    int32_t SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Socket & clientSocket) const
+    {
+        int32_t result{ -1 };
+        if ( clientSocket.isValid() && clientSocket.isAlive() )
+        {
+            MessageHeader msgHeader{};
+
+            out_message.invalidate();
+            result = clientSocket.receiveData(reinterpret_cast<uint8_t *>(&msgHeader), sizeof(MessageHeader));
+            if ( result == sizeof(MessageHeader) )
+            {
+                result = sizeof(MessageHeader);
+                uint8_t * buffer = out_message.initMessage( msgHeader );
+                if ( (buffer != nullptr) && (msgHeader.rbhBufHeader.biUsed > 0))
+                {
+                    ASSERT(msgHeader.rbhBufHeader.biLength >= msgHeader.rbhBufHeader.biUsed);
+
+                    // receive aligned length of data.
+                    result += clientSocket.receiveData(buffer, static_cast<int32_t>(msgHeader.rbhBufHeader.biLength));
+                }
+
+                out_message.moveToBegin();
+                if ( out_message.isChecksumValid() == false )
+                {
+                    result = 0;
+                    out_message.invalidate();
+                }
+            }
+            else
+            {
+                result = (result > 0) && (result != sizeof(MessageHeader)) ? 0 : result;
+            }
+        }
+
+        return result;
+    }
+
+} // namespace areg

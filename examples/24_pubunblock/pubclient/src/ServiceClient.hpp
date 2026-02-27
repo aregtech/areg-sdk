@@ -23,23 +23,23 @@
  * \brief   This service client sends a request every 200 ms (HelloUnblock::ClientTimeot).
  *          Since the service responses with the timeout 500 ms, if do not manually
  *          unblock the request it will fail with reason 'the request is busy'
- *          (NEService::ResultType::RequestBusy).
+ *          (areg::ResultType::RequestBusy).
  *          This client demonstrate that all requests are processed and sent to the client.
  *          Start multiple instances of the client to make sure that all clients properly
  *          receive requests.
  **/
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , private   HelloUnblockClientBase
-                    , private   TimerConsumer
+                    , private   areg::TimerConsumer
 {
     //!< The list of generated sequence IDs to check the request.
-    using SequenceList = Stack<uint32_t>;
+    using SequenceList = areg::Stack<uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    ServiceClient( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -59,7 +59,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************
  * Response HelloUnblock
@@ -90,11 +90,11 @@ protected:
      *          It may happen if the request is busy and not completed.
      *          Since the request is manually unblocked on service side,
      *          we override this method to make sure that it never fails
-     *          with reason NEService::ResultType::RequestBusy, which happens
+     *          with reason areg::ResultType::RequestBusy, which happens
      *          if the request is still pending.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestHelloUblockFailed( NEService::ResultType FailureReason ) override;
+    void requestHelloUblockFailed( areg::ResultType FailureReason ) override;
 
     /**
      * \brief   Triggered, when HelloServiceState attribute is updated. The function contains
@@ -105,13 +105,13 @@ protected:
      * \param   HelloServiceState   The value of HelloServiceState attribute.
      * \param   state               The data validation flag.
      **/
-    void onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, NEService::DataState state ) override;
+    void onHelloServiceStateUpdate( HelloUnblock::RunState HelloServiceState, areg::DataState state ) override;
 
     /**
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -130,7 +130,7 @@ private:
     uint32_t        mSequenceId;    //!< Current sequence ID.
     uint32_t        mRespReceived;  //!< The total number of requests sent
     SequenceList    mSequenceList;  //!< The list of generated sequences.
-    Timer           mTimer;         //!< The timer to send requests.
+    areg::Timer           mTimer;         //!< The timer to send requests.
 #ifdef DEBUG
     uint32_t        mReqCount;      //!< The number of requests. Test only in Debug build.
 #endif // DEBUG

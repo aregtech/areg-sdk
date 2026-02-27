@@ -20,20 +20,20 @@
 #include "areg/component/Timer.hpp"
 
 //! \brief   A demo of simple servicing component with timer without component servicing (request) methods.
-class ServicingComponent    : public    Component
-                            , protected StubBase
-                            , protected TimerConsumer
+class ServicingComponent    : public    areg::Component
+                            , protected areg::StubBase
+                            , protected areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static const uint32_t   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
+    static const uint32_t   TIMER_TIMEOUT   { areg::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
     static const int32_t            TIMER_EVENTS    { 10 };   					    //!< Fired timer count.
 
 public:
     //!< Init component object.
-    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread);
+    ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread);
 
 protected:
 /************************************************************************/
@@ -44,13 +44,13 @@ protected:
      * \brief   This function is triggered by Component when starts up.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
      * \param   holder  The holder component of service interface of Stub.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( areg::Component & holder ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -60,7 +60,7 @@ protected:
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
@@ -91,19 +91,19 @@ protected:
     /**
      * \brief   Triggered to process service request event.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & /*eventElem*/ ) override
+    virtual void processRequestEvent( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 
     /**
      * \brief   Triggered to process attribute update notification event.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & /*eventElem*/ ) override
+    virtual void processAttributeEvent( areg::ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 
 private:
-    Timer   mTimer; //!< The timer to run in component thread.
+    areg::Timer   mTimer; //!< The timer to run in component thread.
     int32_t     mCount; //!< The timer event count.
 
 private:

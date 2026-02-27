@@ -31,17 +31,17 @@
  *          generated image data. It outputs the statistics of received
  *          data and item blocks.
  **/
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , protected LargeDataClientBase
-                    , protected TimerConsumer
+                    , protected areg::TimerConsumer
 {
 private:
 
     //!< The coordinates to output client application title / headline.
-    static constexpr Console::Coord     COORD_TITLE     { 1, 2 };
+    static constexpr aregext::Console::Coord     COORD_TITLE     { 1, 2 };
 
     //!< Coordinates to output data rate information of large data client.
-    static constexpr Console::Coord     COORD_DATA_RATE { 1, 3 };
+    static constexpr aregext::Console::Coord     COORD_DATA_RATE { 1, 3 };
 
     //!< File name to save bitmap image.
     static constexpr std::string_view   FILE_NAME       { ".\\SimpleImage.bmp" };
@@ -59,7 +59,7 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 protected:
 
@@ -72,7 +72,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief   Server broadcast.
@@ -105,7 +105,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -117,7 +117,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
@@ -133,7 +133,7 @@ private:
     uint32_t        mBlockCount;
 
     //!< Timer to output message.
-    Timer           mTimer;
+    areg::Timer           mTimer;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

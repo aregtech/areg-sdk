@@ -26,7 +26,7 @@
  *          terminates the thread and components and restarts again.
  *          After reaching certain amount of restarts, the application quits.
  **/
-class ServiceClient : public    Component
+class ServiceClient : public    areg::Component
                     , protected HelloWatchdogClientBase
 {
 private:
@@ -39,7 +39,7 @@ private:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 protected:
 
@@ -52,7 +52,7 @@ protected:
      * \param   ServiceState    The value of ServiceState attribute.
      * \param   state           The data validation flag.
      **/
-    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state ) override;
+    void onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state ) override;
 
     /**
      * \brief   Response callback.
@@ -69,19 +69,19 @@ protected:
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestStartSleepFailed( NEService::ResultType FailureReason ) override;
+    void requestStartSleepFailed( areg::ResultType FailureReason ) override;
 
     /**
      * \brief   Overwrite to handle error of StopService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestStopServiceFailed( NEService::ResultType FailureReason ) override;
+    void requestStopServiceFailed( areg::ResultType FailureReason ) override;
 
     /**
      * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    void requestShutdownServiceFailed( NEService::ResultType FailureReason ) override;
+    void requestShutdownServiceFailed( areg::ResultType FailureReason ) override;
 #endif  // AREG_LOGS
 
 /************************************************************************/
@@ -98,7 +98,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // hidden methods

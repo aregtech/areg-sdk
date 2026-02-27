@@ -27,84 +27,90 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class StreamableEvent;
-class Channel;
-
-//////////////////////////////////////////////////////////////////////////
-// RegistrationConsumer interface declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The remote service provider and consumer interface with callbacks,
- *          which are triggered when serves change the states.
- **/
-class AREG_API RegistrationConsumer
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Protected constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    class StreamableEvent;
+    class Channel;
+}
+
+namespace areg
+{
+    //////////////////////////////////////////////////////////////////////////
+    // RegistrationConsumer interface declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default destructor
+     * \brief   The remote service provider and consumer interface with callbacks,
+     *          which are triggered when serves change the states.
      **/
-    RegistrationConsumer() = default;
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~RegistrationConsumer() = default;
+    class AREG_API RegistrationConsumer
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Protected constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Default destructor
+         **/
+        RegistrationConsumer() = default;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~RegistrationConsumer() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// RegistrationConsumer
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // RegistrationConsumer
+    /************************************************************************/
 
-    /**
-     * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
-     *          If cookie value is 'NEService::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
-     *          On output listProviders and listConsumers contain the list of remote services.
-     * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering.
-     * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
-     * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
-     **/
-    virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const = 0;
+        /**
+         * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
+         *          If cookie value is 'areg::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
+         *          On output listProviders and listConsumers contain the list of remote services.
+         * \param[in]   cookie          The cookie to filter. Pass areg::COOKIE_ANY to ignore filtering.
+         * \param[out]  listProviders   On output this contains the list of address of the remote service providers of specified cookie.
+         * \param[out]  listConsumers   On output this contains the list of address of the remote service consumers of specified cookie.
+         **/
+        virtual void extractRemoteServiceAddresses(const ITEM_ID & cookie, ArrayList<StubAddress> & listProviders, ArrayList<ProxyAddress> & listConsumers ) const = 0;
 
-    /**
-     * \brief   Triggered when a remote service provider is registered in the system.
-     * \param   stub    The address of remote service provider that has been registered.
-     **/
-    virtual void registeredRemoteServiceProvider( const StubAddress & stub ) = 0;
+        /**
+         * \brief   Triggered when a remote service provider is registered in the system.
+         * \param   stub    The address of remote service provider that has been registered.
+         **/
+        virtual void registeredRemoteServiceProvider( const StubAddress & stub ) = 0;
 
-    /**
-     * \brief   Triggered when a remote service consumer is registered in the system.
-     * \param   proxy   The address of remote service consumer that has been registered.
-     **/
-    virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) = 0;
+        /**
+         * \brief   Triggered when a remote service consumer is registered in the system.
+         * \param   proxy   The address of remote service consumer that has been registered.
+         **/
+        virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) = 0;
 
-    /**
-     * \brief   Triggered when a remote service provider is unregistered from the system.
-     * \param   stub    The address of the remote service provider that has been unregistered.
-     * \param   reason  The reason that remote service provider is unregistered.
-     * \param   cookie  The cookie of source that has initiated to unregister provider.
-     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
-     **/
-    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+        /**
+         * \brief   Triggered when a remote service provider is unregistered from the system.
+         * \param   stub    The address of the remote service provider that has been unregistered.
+         * \param   reason  The reason that remote service provider is unregistered.
+         * \param   cookie  The cookie of source that has initiated to unregister provider.
+         *                  The parameter is ignored if 'areg::COOKIE_ANY'.
+         **/
+        virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
 
-    /**
-     * \brief   Triggered when a remote service consumer is unregistered from the system.
-     * \param   proxy   The address of the remote service consumer that has been unregistered.
-     * \param   reason  The reason that remote service consumer is unregistered.
-     * \param   cookie  The cookie of source that has initiated to unregister consumer.
-     *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
-     **/
-    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::DisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+        /**
+         * \brief   Triggered when a remote service consumer is unregistered from the system.
+         * \param   proxy   The address of the remote service consumer that has been unregistered.
+         * \param   reason  The reason that remote service consumer is unregistered.
+         * \param   cookie  The cookie of source that has initiated to unregister consumer.
+         *                  The parameter is ignored if 'areg::COOKIE_ANY'.
+         **/
+        virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, DisconnectReason reason, const ITEM_ID & cookie /*= areg::COOKIE_ANY*/ ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( RegistrationConsumer );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( RegistrationConsumer );
+    };
 
+} // namespace areg
 #endif  // AREG_IPC_REGISTRATIONCONSUMER_HPP

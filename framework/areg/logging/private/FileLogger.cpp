@@ -18,111 +18,115 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 
-#if AREG_LOGS
-
-FileLogger::FileLogger( LogConfiguration & logConfig)
-    : LoggerBase(logConfig)
-    , mLogFile  ( )
+namespace areg
 {
-}
 
-bool FileLogger::openLogger()
-{
-    if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
+    #if AREG_LOGS
+
+    FileLogger::FileLogger( LogConfiguration & logConfig)
+        : LoggerBase(logConfig)
+        , mLogFile  ( )
     {
-        String fileName(mLogConfiguration.getLogFile() );
-        if ( fileName.isEmpty() == false )
+    }
+
+    bool FileLogger::openLogger()
+    {
+        if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
         {
-            bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
-            uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write) | 
-                                static_cast<uint32_t>(File::OpenMode::Read) |
-                                static_cast<uint32_t>(File::OpenMode::ShareRead) |
-                                static_cast<uint32_t>(File::OpenMode::ShareWrite) |
-                                static_cast<uint32_t>(File::OpenMode::Text);
+            String fileName(mLogConfiguration.getLogFile() );
+            if ( fileName.isEmpty() == false )
+            {
+                bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
+                uint32_t mode = static_cast<uint32_t>(File::OpenMode::Write) | 
+                                    static_cast<uint32_t>(File::OpenMode::Read) |
+                                    static_cast<uint32_t>(File::OpenMode::ShareRead) |
+                                    static_cast<uint32_t>(File::OpenMode::ShareWrite) |
+                                    static_cast<uint32_t>(File::OpenMode::Text);
 
-            if (File::existFile(fileName))
-            {
-                mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
-            }
-            else
-            {
-                mode |= static_cast<uint32_t>(File::OpenMode::Create);
-            }
+                if (File::existFile(fileName))
+                {
+                    mode |= newFile ? static_cast<uint32_t>(File::OpenMode::Truncate) : static_cast<uint32_t>(File::OpenMode::Exist);
+                }
+                else
+                {
+                    mode |= static_cast<uint32_t>(File::OpenMode::Create);
+                }
 
-            if ( mLogFile.open( fileName, mode) && createLayouts() )
-            {
+                if ( mLogFile.open( fileName, mode) && createLayouts() )
+                {
                     
-                Process & curProcess = Process::getInstance();
-                NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::formatString( logMsgHello.logMessage
-                                    , NELogging::LOG_MESSAGE_IZE
-                                    , LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                    , Process::getString(curProcess.getEnvironment())
-                                    , curProcess.getFullPath().getString()
-                                    , logMsgHello.logModuleId);
+                    Process & curProcess = Process::getInstance();
+                    LogEntry logMsgHello(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+                    String::formatString( logMsgHello.logMessage
+                                        , LOG_MESSAGE_IZE
+                                        , LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                        , Process::getString(curProcess.getEnvironment())
+                                        , curProcess.getFullPath().getString()
+                                        , logMsgHello.logModuleId);
 
-                logMessage(logMsgHello);
+                    logMessage(logMsgHello);
+                }
+            }
+        }
+
+        return mLogFile.isOpened();
+    }
+
+    void FileLogger::closeLogger()
+    {
+        if ( mLogFile.isOpened() )
+        {
+            Process & curProcess = Process::getInstance();
+            LogEntry logMsgGoodbye(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+            String::formatString(logMsgGoodbye.logMessage
+                                , LOG_MESSAGE_IZE
+                                , LoggerBase::FORMAT_MESSAGE_BYE.data()
+                                , Process::getString(curProcess.getEnvironment())
+                                , curProcess.getFullPath().getString()
+                                , logMsgGoodbye.logModuleId);
+
+            logMessage(logMsgGoodbye);
+        }
+
+        releaseLayouts();
+        mLogFile.close();
+    }
+
+    void FileLogger::logMessage( const LogEntry & logMessage )
+    {
+        if (mLogFile.isOpened())
+        {
+            switch (logMessage.logMsgType)
+            {
+            case LogMessageType::MessageText:
+                getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(mLogFile));
+                break;
+
+            case LogMessageType::ScopeEnter:
+                getLayoutEnterScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
+                break;
+
+            case LogMessageType::ScopeExit:
+                getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
+                break;
+
+            case LogMessageType::Undefined: // fall through
+            default:
+                ASSERT(false);  // unexpected message to log
+                break;
             }
         }
     }
 
-    return mLogFile.isOpened();
-}
-
-void FileLogger::closeLogger()
-{
-    if ( mLogFile.isOpened() )
+    bool FileLogger::isLoggerOpened() const
     {
-        Process & curProcess = Process::getInstance();
-        NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::formatString(logMsgGoodbye.logMessage
-                            , NELogging::LOG_MESSAGE_IZE
-                            , LoggerBase::FORMAT_MESSAGE_BYE.data()
-                            , Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath().getString()
-                            , logMsgGoodbye.logModuleId);
-
-        logMessage(logMsgGoodbye);
+        return mLogFile.isOpened();
     }
 
-    releaseLayouts();
-    mLogFile.close();
-}
-
-void FileLogger::logMessage( const NELogging::LogEntry & logMessage )
-{
-    if (mLogFile.isOpened())
+    void FileLogger::flushLogs()
     {
-        switch (logMessage.logMsgType)
-        {
-        case NELogging::LogMessageType::MessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(mLogFile));
-            break;
-
-        case NELogging::LogMessageType::ScopeEnter:
-            getLayoutEnterScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
-            break;
-
-        case NELogging::LogMessageType::ScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(mLogFile) );
-            break;
-
-        case NELogging::LogMessageType::Undefined: // fall through
-        default:
-            ASSERT(false);  // unexpected message to log
-            break;
-        }
+        mLogFile.flush();
     }
-}
 
-bool FileLogger::isLoggerOpened() const
-{
-    return mLogFile.isOpened();
-}
-
-void FileLogger::flushLogs()
-{
-    mLogFile.flush();
-}
-
-#endif // AREG_LOGS
+    #endif // AREG_LOGS
+} // namespace areg

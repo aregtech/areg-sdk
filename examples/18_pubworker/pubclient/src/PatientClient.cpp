@@ -12,9 +12,9 @@
 #include "pubclient/src/PatientClient.hpp"
 #include "areg/appbase/Application.hpp"
 
-PatientClient::PatientClient(const NERegistry::ComponentEntry & entry, ComponentThread & /* owner */)
-    : Component                     ( entry.mRoleName )
-    , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+PatientClient::PatientClient(const areg::ComponentEntry & entry, areg::ComponentThread & /* owner */)
+    : areg::Component                     ( entry.mRoleName )
+    , PatientInformationClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
 
     , mHwWorker ( entry.mWorkerThreads[0].mConsumerName )
 {
@@ -25,7 +25,7 @@ PatientClient & PatientClient::self()
     return (*this);
 }
 
-WorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
+areg::WorkerThreadConsumer * PatientClient::workerThreadConsumer(const areg::String & consumerName, const areg::String & workerThreadName)
 {
     if ( mHwWorker.getConsumerName() == consumerName)
     {
@@ -33,11 +33,11 @@ WorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & consum
     }
     else
     {
-        return Component::workerThreadConsumer(consumerName, workerThreadName);
+        return areg::Component::workerThreadConsumer(consumerName, workerThreadName);
     }
 }
 
-bool PatientClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool PatientClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     bool result = PatientInformationClientBase::serviceConnected( status, proxy );
     if ( isConnected( ) )
@@ -47,15 +47,15 @@ bool PatientClient::serviceConnected( NEService::ServiceConnectionState status, 
     else
     {
         notifyOnPatientUpdate( false );
-        Application::signalAppQuit( );
+        areg::Application::signalAppQuit( );
     }
 
     return result;
 }
 
-void PatientClient::onPatientUpdate(const PatientInformation::PatientInfo & Patient, NEService::DataState state)
+void PatientClient::onPatientUpdate(const PatientInformation::PatientInfo & Patient, areg::DataState state)
 {
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
         PatientInfoEvent::sendEvent( PatientInfoEventData(Patient) );
     }

@@ -20,11 +20,11 @@ DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
 DEF_LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
 
-ServiceClient::ServiceClient(const String & roleName, Component & owner)
+ServiceClient::ServiceClient(const areg::String & roleName, areg::Component & owner)
     : HelloWorldClientBase  ( roleName, owner )
-    , TimerConsumer       ( )
+    , areg::TimerConsumer       ( )
 
-    , mTimer                ( static_cast<TimerConsumer &>(self()), timerName( owner ) )
+    , mTimer                ( static_cast<areg::TimerConsumer &>(self()), timerName( owner ) )
     , mID                   ( 0 )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_ServiceClient);
@@ -34,10 +34,10 @@ ServiceClient::ServiceClient(const String & roleName, Component & owner)
                     , owner.getRoleName().getString()
                     , owner.getMasterThread().getName().getString()
                     , mTimer.getName().getString());
-    LOG_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
+    LOG_DBG("Proxy: [ %s ]", areg::ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );
@@ -55,7 +55,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
     return result;
 }
 
-void ServiceClient::responseHelloWorld( const String & clientName, uint32_t clientId )
+void ServiceClient::responseHelloWorld( const areg::String & clientName, uint32_t clientId )
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_responseHelloWorld);
     LOG_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientName.getString(), clientId);
@@ -70,7 +70,7 @@ void ServiceClient::broadcastReachedMaximum( int32_t /* maxNumber */ )
     requestShutdownService(mID, mTimer.getName());
 }
 
-void ServiceClient::processTimer(Timer & timer)
+void ServiceClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_14_locsvcmesh_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);
@@ -79,12 +79,12 @@ void ServiceClient::processTimer(Timer & timer)
     requestHelloWorld(timer.getName());
 }
 
-inline String ServiceClient::timerName( Component & /* owner */ ) const
+inline areg::String ServiceClient::timerName( areg::Component & /* owner */ ) const
 {
     ASSERT( getProxy( ) != nullptr );
-    String result = "";
+    areg::String result = "";
     result.append( getServiceRole( ) )
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::DEFAULT_SPECIAL_CHAR)
           .append(getServiceName());
 
     return result;

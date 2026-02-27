@@ -19,7 +19,7 @@
 class ServiceHelloWorld : protected HelloWorldStub
 {
     //!< The type of list of connected clients.
-    using ClientList = OrderedMap<String, uint32_t>;
+    using ClientList = areg::OrderedMap<areg::String, uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -32,7 +32,7 @@ public:
      * \param   isMain      The flag indicating whether it is a main controller
      *                      that can trigger application shutdown or not.
      **/
-    ServiceHelloWorld( Component & masterComp, bool isMain );
+    ServiceHelloWorld( areg::Component & masterComp, bool isMain );
 
     /**
      * \brief   Destructor.
@@ -50,7 +50,7 @@ protected:
      * \param   roleName    The role name of client component that requested to print hello world
      * \see     responseHelloWorld
      **/
-    void requestHelloWorld( const String & roleName ) override;
+    void requestHelloWorld( const areg::String & roleName ) override;
 
     /**
      * \brief   Request call.
@@ -59,14 +59,14 @@ protected:
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    void requestShutdownService( uint32_t clientID, const String & roleName ) override;
+    void requestShutdownService( uint32_t clientID, const areg::String & roleName ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
 private:
     const bool  mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
-    ClientList  mClientList;    //!< The list of connected clients.
+    areg::ClientList  mClientList;    //!< The list of connected clients.
     int16_t     mRemainRequest; //!< The maximum number of processing requests.
 
     //////////////////////////////////////////////////////////////////////////

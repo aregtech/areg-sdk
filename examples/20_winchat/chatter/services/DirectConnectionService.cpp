@@ -27,35 +27,35 @@ DirectConnectionService * DirectConnectionService::GetService()
     return DirectConnectionService::mService;
 }
 
-String DirectConnectionService::GetGeneratedService( const String & nickName, uint32_t cookie )
+areg::String DirectConnectionService::GetGeneratedService( const areg::String & nickName, uint32_t cookie )
 {
     return NEDistributedApp::getConnectionServiceRole(nickName, cookie);
 }
 
-NERegistry::Model DirectConnectionService::GetModel( const String & nickName, uint32_t cookie, std::any data )
+areg::Model DirectConnectionService::GetModel( const areg::String & nickName, uint32_t cookie, std::any data )
 {
-    String    roleName    = DirectConnectionService::GetGeneratedService(nickName, cookie);
-    String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
-    String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
+    areg::String    roleName    = DirectConnectionService::GetGeneratedService(nickName, cookie);
+    areg::String    threadName  = NEDistributedApp::PREFIX_TRHEAD   + roleName;
+    areg::String    modelName   = NEDistributedApp::PREFIX_MODEL    + roleName;
 
-    NERegistry::ServiceEntry          serviceEntry( DirectConnection::ServiceName, DirectConnection::InterfaceVersion );
-    NERegistry::ServiceList           serviceList( serviceEntry );
-    NERegistry::ComponentEntry        componentEntry(threadName, roleName
+    areg::ServiceEntry          serviceEntry( DirectConnection::ServiceName, DirectConnection::InterfaceVersion );
+    areg::ServiceList           serviceList( serviceEntry );
+    areg::ComponentEntry        componentEntry(threadName, roleName
                                                     , FUNC_CREATE_COMP(DirectConnectionService)
                                                     , FUNC_DELETE_COMP
-                                                    , serviceList, NERegistry::DependencyList(), NERegistry::WorkerThreadList());
+                                                    , serviceList, areg::DependencyList(), areg::WorkerThreadList());
     componentEntry.setData(data);
-    NERegistry::ComponentList         componentList(componentEntry);
-    NERegistry::ComponentThreadEntry  threadEntry(threadName, componentList);
-    NERegistry::ComponentThreadList   threadList( threadEntry );
-    NERegistry::Model                 model(modelName, threadList);
+    areg::ComponentList         componentList(componentEntry);
+    areg::ComponentThreadEntry  threadEntry(threadName, componentList);
+    areg::ComponentThreadList   threadList( threadEntry );
+    areg::Model                 model(modelName, threadList);
     
     return model;
 }
 
-DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
-    : Component             ( entry, ownerThread )
-    , DirectConnectionStub  ( static_cast<Component &>(self()) )
+DirectConnectionService::DirectConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
+    : areg::Component             ( entry, ownerThread )
+    , DirectConnectionStub  ( static_cast<areg::Component &>(self()) )
 
     , mNickName             ( std::any_cast<PageConnections *>(entry.getData())->GetRegisteredName() )
     , mCookie               ( std::any_cast<PageConnections *>(entry.getData())->GetRegisteredCookie() )
@@ -113,7 +113,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] initiated chat with [ %d ] clients. Setting up chat."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer()
+                            , areg::DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
 
             uint64_t sessionID = getSession(listParticipants);
@@ -141,7 +141,7 @@ void DirectConnectionService::requestConnectoinSetup( const DirectConnection::sI
             const DirectConnection::ListParticipants & tempList = mapParticipants.getAt(initiator);
             LOG_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
                             , participant.nickName.getString()
-                            , DateTime(initiator.sessionId).formatTime().getString()
+                            , areg::DateTime(initiator.sessionId).formatTime().getString()
                             , mapParticipants.getSize() );
             participant.sessionId = getSession(tempList);
             responseConnectoinSetup( true, participant, initiator, tempList );
@@ -167,7 +167,7 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] is adding chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer()
+                            , areg::DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
 
             DirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
@@ -183,7 +183,7 @@ void DirectConnectionService::requestAddParticipant( const DirectConnection::sIn
         {
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to add participants."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer() );
+                            , areg::DateTime(initiator.sessionId).formatTime().getBuffer() );
             responseAddParticipant(false, DirectConnection::ListParticipants());
         }
     }
@@ -204,7 +204,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
         {
             LOG_DBG("[ %s ] at time-stamps [ %s ] is removing chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer()
+                            , areg::DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
 
             DirectConnection::MapParticipants & mapParticpants = getInitiatedConnections( );
@@ -239,7 +239,7 @@ void DirectConnectionService::requestRemoveParticipant( const DirectConnection::
         {
             LOG_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to remove participants."
                             , initiator.nickName.getBuffer()
-                            , DateTime(initiator.sessionId).formatTime().getBuffer() );
+                            , areg::DateTime(initiator.sessionId).formatTime().getBuffer() );
             responseRemoveParticipant(false, DirectConnection::ListParticipants());
         }
     }

@@ -32,7 +32,7 @@ void TrafficLightService::TrafficSwitchConsumer::processEvent(const TrafficSwitc
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightService::TrafficLightTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
-void TrafficLightService::TrafficLightTimerConsumer::processTimer( Timer & timer )
+void TrafficLightService::TrafficLightTimerConsumer::processTimer( areg::Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -44,11 +44,11 @@ void TrafficLightService::TrafficLightTimerConsumer::processTimer( Timer & timer
 // TrafficLightService class implementation
 //////////////////////////////////////////////////////////////////////////
 
-TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                 ( entry, owner )
-    , SimpleTrafficLightStub    ( static_cast<Component &>(self()) )
+TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component                 ( entry, owner )
+    , SimpleTrafficLightStub    ( static_cast<areg::Component &>(self()) )
 
-    , mTimer                    ( static_cast<TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
+    , mTimer                    ( static_cast<areg::TimerConsumer &>(mTimerConsumer), "SimpleTrafficTimer")
     , mPrevState                ( SimpleTrafficLight::TrafficLight::LightOff )
     , mEventConsumer            ( self() )
     , mTimerConsumer            ( self() )
@@ -123,13 +123,13 @@ void TrafficLightService::onTimerExpired()
     }
 }
 
-void TrafficLightService::startupServiceInterface(Component & holder)
+void TrafficLightService::startupServiceInterface(areg::Component & holder)
 {
     SimpleTrafficLightStub::startupServiceInterface(holder);
     TrafficSwitchEvent::addListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );
 }
 
-void TrafficLightService::shutdownServiceInterface(Component & holder)
+void TrafficLightService::shutdownServiceInterface(areg::Component & holder)
 {
     SimpleTrafficLightStub::shutdownServiceInterface(holder);
     TrafficSwitchEvent::removeListener( static_cast<IETrafficSwitchConsumer &>(mEventConsumer), holder.getMasterThread() );

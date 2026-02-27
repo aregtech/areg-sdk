@@ -3,5 +3,5 @@
 
 namespace pubsub
 {
-    Console::Coord    CoordInfoMsg   { 0, 0 };
+    aregext::Console::Coord    CoordInfoMsg   { 0, 0 };
 }

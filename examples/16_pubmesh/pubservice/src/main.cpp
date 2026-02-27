@@ -28,15 +28,15 @@
 #endif // _MSC_VER
 
 //!<\brief  The local service component.
-class LocalServiceComponent : public Component
+class LocalServiceComponent : public areg::Component
 {
     static constexpr uint32_t TIMEOUT_CONTROLLER_SERVICE_CLIENT{ 500 };
 
 public:
-    LocalServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component         ( entry, owner )
-        , mLocalService     ( static_cast<Component &>(self()) )
-        , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
+    LocalServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : areg::Component         ( entry, owner )
+        , mLocalService     ( static_cast<areg::Component &>(self()) )
+        , mControllerClient ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), TIMEOUT_CONTROLLER_SERVICE_CLIENT )
     {
     }
 
@@ -105,7 +105,7 @@ int main()
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::initApplication( );
 
     do 
     {
@@ -115,20 +115,20 @@ int main()
         std::cout << "Loading services, wait for services ..." << std::endl;
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::loadModel( _modelName );
 
         LOG_DBG("Servicing model is loaded");
         
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::releaseApplication();
 
     } while (false);
     

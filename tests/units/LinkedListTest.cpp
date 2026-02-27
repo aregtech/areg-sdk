@@ -25,7 +25,7 @@
   **/
 TEST(LinkedListTest, TestConstructors)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     constexpr uint32_t count{ 10 };
 
     LinkedList empty, init;
@@ -57,7 +57,7 @@ TEST(LinkedListTest, TestConstructors)
  **/
 TEST(LinkedListTest, TestOperators)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     using POS = LinkedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -98,7 +98,7 @@ TEST(LinkedListTest, TestOperators)
  **/
 TEST(LinkedListTest, TestPositionAttributes)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     using POS = LinkedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -165,7 +165,7 @@ TEST(LinkedListTest, TestPositionAttributes)
  **/
 TEST(LinkedListTest, TestPositionOperations)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     using POS = LinkedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -208,7 +208,7 @@ TEST(LinkedListTest, TestPositionOperations)
  **/
 TEST(LinkedListTest, TestPositionManipulation)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     using POS = LinkedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -263,7 +263,7 @@ TEST(LinkedListTest, TestPositionManipulation)
  **/
 TEST(LinkedListTest, TestSearching)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     using POS = LinkedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -293,7 +293,7 @@ TEST(LinkedListTest, TestSearching)
  **/
 TEST(LinkedListTest, TestMerging)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     using POS = LinkedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
@@ -430,7 +430,7 @@ TEST(LinkedListTest, TestMerging)
  **/
 TEST(LinkedListTest, TestPushUnique)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     constexpr uint32_t count{ 10 };
 
     constexpr int unique[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -470,7 +470,7 @@ TEST(LinkedListTest, TestPushUnique)
  **/
 TEST(LinkedListTest, TestInserting)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     using POS = LinkedList::LISTPOS;
 
     constexpr int notunique[]{ 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5 };
@@ -524,7 +524,7 @@ TEST(LinkedListTest, TestInserting)
  **/
 TEST(LinkedListTest, TestRemoveEntries)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     constexpr int32_t count{ 10 };
 
     LinkedList list;
@@ -551,7 +551,7 @@ TEST(LinkedListTest, TestRemoveEntries)
  **/
 TEST(LinkedListTest, TestStreaming)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     constexpr int32_t count{ 10 };
 
     LinkedList src;
@@ -560,7 +560,7 @@ TEST(LinkedListTest, TestStreaming)
         src.pushLast(i);
     }
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << src;
 
     EXPECT_FALSE(stream.isEmpty());
@@ -577,7 +577,7 @@ TEST(LinkedListTest, TestStreaming)
  **/
 TEST(LinkedListTest, TestAscending)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     constexpr int _arr1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr int _res1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr uint32_t _len{ std::size(_arr1) };
@@ -586,9 +586,9 @@ TEST(LinkedListTest, TestAscending)
     LinkedList list1(_arr1, _len), res1(_res1, _len);
     list1.sort([](const int elem1, const int elem2) { return (elem1 < elem2); });
     list1.getElements(_dat1, _len);
-    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::Ordering::Equal);
+    EXPECT_NE(areg::memCompare(_dat1, _arr1, _len), areg::Ordering::Equal);
     EXPECT_EQ(list1.getSize(), _len);
-    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::Ordering::Equal);
+    EXPECT_EQ(areg::memCompare(_dat1, _res1, _len), areg::Ordering::Equal);
 }
 
 /**
@@ -596,7 +596,7 @@ TEST(LinkedListTest, TestAscending)
  **/
 TEST(LinkedListTest, TestDescending)
 {
-    using LinkedList = LinkedList<int>;
+    using LinkedList = areg::LinkedList<int>;
     constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr int _res1[]{ 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
     constexpr uint32_t _len{ std::size(_arr1) };
@@ -605,7 +605,7 @@ TEST(LinkedListTest, TestDescending)
     LinkedList list1(_arr1, _len), res1(_res1, _len);
     list1.sort([](const int elem1, const int elem2) { return (elem1 > elem2); });
     list1.getElements(_dat1, _len);
-    EXPECT_NE(NEMemory::memCompare(_dat1, _arr1, _len), NEMath::Ordering::Equal);
+    EXPECT_NE(areg::memCompare(_dat1, _arr1, _len), areg::Ordering::Equal);
     EXPECT_EQ(list1.getSize(), _len);
-    EXPECT_EQ(NEMemory::memCompare(_dat1, _res1, _len), NEMath::Ordering::Equal);
+    EXPECT_EQ(areg::memCompare(_dat1, _res1, _len), areg::Ordering::Equal);
 }

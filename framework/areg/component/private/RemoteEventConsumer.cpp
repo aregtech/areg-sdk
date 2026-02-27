@@ -17,30 +17,34 @@
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
 
-void RemoteEventConsumer::startEventProcessing(Event & eventElem)
+namespace areg
 {
-    if ( Event::isRemote(eventElem.getEventType()) )
+    void RemoteEventConsumer::startEventProcessing(Event & eventElem)
     {
-        RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
-        if ( requestEvent != nullptr )
+        if ( Event::isRemote(eventElem.getEventType()) )
         {
-            processRemoteRequestEvent(*requestEvent);
-        }
-        else
-        {
-            RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
-            if ( responseEvent != nullptr )
+            RemoteRequestEvent * requestEvent = AREG_RUNTIME_CAST(&eventElem, RemoteRequestEvent);
+            if ( requestEvent != nullptr )
             {
-                processRemoteResponseEvent(*responseEvent);
+                processRemoteRequestEvent(*requestEvent);
             }
             else
             {
-                RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
-                if (requestNotifyEvent != nullptr)
+                RemoteResponseEvent * responseEvent = AREG_RUNTIME_CAST(&eventElem, RemoteResponseEvent);
+                if ( responseEvent != nullptr )
                 {
-                    processRemoteNotifyRequestEvent(*requestNotifyEvent);
+                    processRemoteResponseEvent(*responseEvent);
+                }
+                else
+                {
+                    RemoteNotifyRequestEvent * requestNotifyEvent = AREG_RUNTIME_CAST(&eventElem, RemoteNotifyRequestEvent);
+                    if (requestNotifyEvent != nullptr)
+                    {
+                        processRemoteNotifyRequestEvent(*requestNotifyEvent);
+                    }
                 }
             }
         }
     }
-}
+
+} // namespace areg

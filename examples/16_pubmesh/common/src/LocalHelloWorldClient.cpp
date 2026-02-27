@@ -20,17 +20,17 @@ DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_responseHelloWorl
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
 
-LocalHelloWorldClient::LocalHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, uint32_t timeout)
+LocalHelloWorldClient::LocalHelloWorldClient( const areg::DependencyEntry & dependency, areg::Component & owner, uint32_t timeout)
     : LocalHelloWorldClientBase ( dependency, owner )
-    , TimerConsumer           ( )
+    , areg::TimerConsumer           ( )
 
     , mMsTimeout                ( timeout )
-    , mTimer                    ( static_cast<TimerConsumer &>(self()), timerName( owner ) )
+    , mTimer                    ( static_cast<areg::TimerConsumer &>(self()), timerName( owner ) )
     , mID                       ( 0 )
 {
 }
 
-bool LocalHelloWorldClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool LocalHelloWorldClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_serviceConnected);
 
@@ -62,7 +62,7 @@ void LocalHelloWorldClient::responseHelloWorld(const LocalHelloWorld::sConnected
     mID = clientInfo.ccID;
 }
 
-void LocalHelloWorldClient::processTimer(Timer & timer)
+void LocalHelloWorldClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_16_pubmesh_common_LocalHelloWorldClient_processTimer);
     ASSERT( &timer == &mTimer );
@@ -71,12 +71,12 @@ void LocalHelloWorldClient::processTimer(Timer & timer)
     requestHelloWorld( timer.getName( ) );
 }
 
-inline String LocalHelloWorldClient::timerName( Component & owner ) const
+inline areg::String LocalHelloWorldClient::timerName( areg::Component & owner ) const
 {
-    String result;
+    areg::String result;
     result.append("Local_")
           .append(owner.getRoleName())
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(areg::DEFAULT_SPECIAL_CHAR)
           .append(LocalHelloWorldClientBase::getServiceName());
 
     return result;

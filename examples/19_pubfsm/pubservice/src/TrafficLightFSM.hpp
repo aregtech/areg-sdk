@@ -36,7 +36,7 @@
  * Dependencies
  ************************************************************************/
 class TrafficLightActionHandler;
-class DispatcherThread;
+namespace areg { class DispatcherThread; }
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM class declaration 
@@ -108,7 +108,7 @@ private:
     /**
      * \brief   TrafficLight state-machine timer consumer to dispatch the timer events. 
      **/
-    class TrafficLightTimerConsumer : public TimerConsumer
+    class TrafficLightTimerConsumer : public areg::TimerConsumer
     {
     public:
         /**
@@ -126,7 +126,7 @@ private:
         /**
          * \brief   Process State Machine timers.
          **/
-        void processTimer( Timer & timer ) override;
+        void processTimer( areg::Timer & timer ) override;
     
     private:
     /************************************************************************/
@@ -207,7 +207,7 @@ public:
      * \brief   Initialize State Machine. Call before calling any trigger.
      * \param   ownerThread The pointer of master thread to process internal events and timers.
      **/
-    void initFSM( DispatcherThread * ownerThread = nullptr );
+    void initFSM( areg::DispatcherThread * ownerThread = nullptr );
 
     /**
      * \brief   Release State Machine. Call when complete working with FSM.
@@ -283,7 +283,7 @@ private:
     /**
      * \brief   Timer Red object
      **/
-    Timer     mTimerRed;
+    areg::Timer     mTimerRed;
     /**
      * \brief   Timer Red trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -293,7 +293,7 @@ private:
     /**
      * \brief   Timer YellowRed object
      **/
-    Timer     mTimerYellowRed;
+    areg::Timer     mTimerYellowRed;
     /**
      * \brief   Timer YellowRed trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -303,7 +303,7 @@ private:
     /**
      * \brief   Timer Green object
      **/
-    Timer     mTimerGreen;
+    areg::Timer     mTimerGreen;
     /**
      * \brief   Timer Green trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -313,7 +313,7 @@ private:
     /**
      * \brief   Timer YellowGreen object
      **/
-    Timer     mTimerYellowGreen;
+    areg::Timer     mTimerYellowGreen;
     /**
      * \brief   Timer YellowGreen trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -323,7 +323,7 @@ private:
     /**
      * \brief   Timer PedestrianWalk object
      **/
-    Timer     mTimerPedestrianWalk;
+    areg::Timer     mTimerPedestrianWalk;
     /**
      * \brief   Timer PedestrianWalk trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -333,7 +333,7 @@ private:
     /**
      * \brief   Timer VehicleWait object
      **/
-    Timer     mTimerVehicleWait;
+    areg::Timer     mTimerVehicleWait;
     /**
      * \brief   Timer VehicleWait trigger
      * \return  Returns true if timer was processed in the current state. Otherwise it returns false.
@@ -414,11 +414,11 @@ private:
     /**
      * \brief   The name of State Machine.
      **/
-    const String                mFsmName;
+    const areg::String                mFsmName;
     /**
      * \brief   The master thread where event and timers should be processed. If nullptr, the current dispatcher value will be used.
      **/
-    DispatcherThread *          mMasterThread;
+    areg::DispatcherThread *          mMasterThread;
     /**
      * \brief   The flag, indicating whether State Machine is currently processing trigger or not.
      **/

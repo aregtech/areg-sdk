@@ -18,17 +18,17 @@ DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_broadcastReachedMaximum);
 DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( NEUtilities::generateName(entry.mRoleName), owner )
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , TimerConsumer       ( )
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component             ( areg::generateName(entry.mRoleName), owner )
+    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer       ( )
 
-    , mTimer                (static_cast<TimerConsumer &>(self()), entry.mRoleName)
+    , mTimer                (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName)
     , mID                   ( 0 )
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE( examples_15_pubclient_ServiceClient_serviceConnected );
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );
@@ -39,7 +39,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
     {
         mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
     }
-    else if ( NEService::isServiceConnectionLost( status ) )
+    else if ( areg::isServiceConnectionLost( status ) )
     {
         LOG_WARN( "The connection is lost! Waiting for connection recovery!" );
         mTimer.stopTimer( );
@@ -48,7 +48,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
     {
         LOG_WARN("Shutting down application!");
         mTimer.stopTimer( );
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
 
     return result;
@@ -78,7 +78,7 @@ void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 }
 #endif  // AREG_LOGS
 
-void ServiceClient::processTimer(Timer & timer)
+void ServiceClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_15_pubclient_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);

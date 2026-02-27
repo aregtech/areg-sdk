@@ -23,18 +23,18 @@ DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestHelloUblock );
 DEF_LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
 
-ServiceComponent::ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( entry, owner )
-    , HelloUnblockStub  ( static_cast<Component &>(self()) )
-    , TimerConsumer   ( )
+ServiceComponent::ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component         ( entry, owner )
+    , HelloUnblockStub  ( static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer   ( )
 
     , mSessionList      ( )
-    , mTimer            ( static_cast<TimerConsumer &>(self()), entry.mRoleName )
+    , mTimer            ( static_cast<areg::TimerConsumer &>(self()), entry.mRoleName )
 {
     setHelloServiceState( HelloUnblock::RunState::ServiceUndefined );
 }
 
-void ServiceComponent::startupServiceInterface( Component & holder )
+void ServiceComponent::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_startupServiceInterface );
 
@@ -46,7 +46,7 @@ void ServiceComponent::startupServiceInterface( Component & holder )
 void ServiceComponent::requestIdentifier()
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_requestIdentifier );
-    uint32_t clientId = NEUtilities::generateUniqueId( );
+    uint32_t clientId = areg::generateUniqueId( );
     LOG_DBG( "Generated ID for the clinet: %u ", clientId );
     responseIdentifier( clientId );
 }
@@ -57,7 +57,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
 
     ASSERT( clientId != HelloUnblock::InvalidId );
 
-    String timestamp( DateTime::getNow( ).formatTime( ) );
+    areg::String timestamp( areg::DateTime::getNow( ).formatTime( ) );
     uint32_t sessionId = unblockCurrentRequest( );
 
     LOG_DBG( "Received request: client [ %u ], sequence Nr [ %u ], unlock session [ %u ]", clientId, seqNr, sessionId );
@@ -65,7 +65,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
     {
         ASSERT( mTimer.isActive( ) == false );
         LOG_DBG( "First request with valid ID, trigger timer to send response every [ %u ] ms", HelloUnblock::ServiceTimeout );
-        mTimer.startTimer( HelloUnblock::ServiceTimeout, Timer::CONTINUOUSLY );
+        mTimer.startTimer( HelloUnblock::ServiceTimeout, areg::Timer::CONTINUOUSLY );
     }
 
     mSessionList.pushLast( SessionEtnry{ clientId, seqNr, sessionId } );
@@ -75,7 +75,7 @@ void ServiceComponent::requestHelloUblock( uint32_t clientId, uint32_t seqNr )
               << " Session = " << sessionId << std::endl;
 }
 
-void ServiceComponent::processTimer( Timer & /* timer */ )
+void ServiceComponent::processTimer( areg::Timer & /* timer */ )
 {
     LOG_SCOPE( examples_24_pubservice_ServiceComponent_processTimer );
     SessionEtnry entry = mSessionList.popFirst( );
@@ -84,7 +84,7 @@ void ServiceComponent::processTimer( Timer & /* timer */ )
 
     if ( prepareResponse( entry.id ) )
     {
-        String timestamp( DateTime::getNow( ).formatTime( ) );
+        areg::String timestamp( areg::DateTime::getNow( ).formatTime( ) );
         responseHelloUnblock( entry.clientId, entry.seqNr );
         LOG_DBG( "Succeeded to send response to client [ %u ], sequence [ %u ]", entry.clientId, entry.seqNr );
 
@@ -104,6 +104,6 @@ void ServiceComponent::processTimer( Timer & /* timer */ )
         setHelloServiceState( HelloUnblock::RunState::Shutdown );
 
         LOG_WARN( "No more saved sessions in the list, quit application!" );
-        Application::signalAppQuit( );
+        areg::Application::signalAppQuit( );
     }
 }

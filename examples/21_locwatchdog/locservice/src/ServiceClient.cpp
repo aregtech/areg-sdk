@@ -17,16 +17,16 @@ DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
 DEF_LOG_SCOPE(examples_21_locwatchdog_ServiceClient_responseStartSleep);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component              ( entry, owner )
-    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component              ( entry, owner )
+    , HelloWatchdogClientBase( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
 
     , mSleepTimeout          ( 0 )
     , mRestarts              ( 0 )
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_serviceConnected);
     bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
@@ -46,7 +46,7 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
         {
             LOG_DBG("Reached maximum number of service restarts, exit application");
             printf("Reached maximum number of service restarts, exit application ...\n");
-            Application::signalAppQuit();
+            areg::Application::signalAppQuit();
         }
     }
     else
@@ -61,15 +61,15 @@ bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, 
 
 #if AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, NEService::DataState state )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState ServiceState, areg::DataState state )
 {
     LOG_SCOPE(examples_21_locwatchdog_ServiceClient_onServiceStateUpdate);
-    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), NEService::getString(state));
+    LOG_DBG("Current service state is [ %s ], data state is [ %s ]", HelloWatchdog::getString(ServiceState), areg::getString(state));
 }
 
 #else  // AREG_LOGS
 
-void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*ServiceState*/, NEService::DataState /*state*/ )
+void ServiceClient::onServiceStateUpdate( HelloWatchdog::ComponentState /*ServiceState*/, areg::DataState /*state*/ )
 {
 }
 

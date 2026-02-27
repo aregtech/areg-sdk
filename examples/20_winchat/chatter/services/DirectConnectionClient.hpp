@@ -13,7 +13,7 @@ class ChatPrticipantHandler;
 class DirectConnectionClient  : public DirectConnectionClientBase
 {
 public:
-    DirectConnectionClient( Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
+    DirectConnectionClient( areg::Component & owner, ChatPrticipantHandler* participantsHandler, const DirectConnection::Participant & target );
     virtual ~DirectConnectionClient() = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members

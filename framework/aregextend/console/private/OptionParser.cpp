@@ -20,33 +20,33 @@
 namespace
 {
     template<typename CharType>
-    inline void _convertArguments( const CharType ** argv, int32_t argc, OptionParser::StrList & optList )
+    inline void _convertArguments( const CharType ** argv, int32_t argc, aregext::OptionParser::StrList & optList )
     {
         if ( (argv != nullptr) && (argc > 1) )
         {
             for ( int i = 1; i < argc; ++i )
             {
                 const CharType * opt = argv[i];
-                if (NEString::isEmpty<CharType>(opt))
+                if (areg::isEmpty<CharType>(opt))
                     break;
 
-                optList.push_back(String(opt));
+                optList.push_back(areg::String(opt));
             }
         }
     }
 
     template<typename CharType>
-    inline void _convertArguments(CharType** argv, int32_t argc, OptionParser::StrList& optList)
+    inline void _convertArguments(CharType** argv, int32_t argc, aregext::OptionParser::StrList& optList)
     {
         if ((argv != nullptr) && (argc > 1))
         {
             for (int i = 1; i < argc; ++i)
             {
                 const CharType* opt = argv[i];
-                if (NEString::isEmpty<CharType>(opt))
+                if (areg::isEmpty<CharType>(opt))
                     break;
 
-                optList.push_back(String(opt));
+                optList.push_back(areg::String(opt));
             }
         }
     }
@@ -88,11 +88,11 @@ namespace
     }
 
     template<typename CharType>
-    inline void _splitOptions( const CharType * optLine, OptionParser::StrList & optList )
+    inline void _splitOptions( const CharType * optLine, aregext::OptionParser::StrList & optList )
     {
-        constexpr CharType eos{ static_cast<CharType>(NEString::EndOfString) };
+        constexpr CharType eos{ static_cast<CharType>(areg::EndOfString) };
 
-        if ( NEString::isEmpty<CharType>( optLine ) )
+        if ( areg::isEmpty<CharType>( optLine ) )
             return;
 
         const CharType * begin = optLine;
@@ -103,13 +103,13 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
                 else if (isSpace<CharType>(*src) == false)
                 {
                     ++ src;
-                    String str(begin, static_cast<uint32_t>(src - begin));
+                    areg::String str(begin, static_cast<uint32_t>(src - begin));
                     optList.push_back(str);
                 }
                 else
@@ -128,7 +128,7 @@ namespace
             {
                 if ( begin != src )
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -143,13 +143,13 @@ namespace
                 {
                     if ( begin != src ++ )
                     {
-                        String str( begin, static_cast<uint32_t>( src - begin ) );
+                        areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                         optList.push_back( str );
                     }
                 }
                 else if (begin != src)
                 {
-                    String str( begin, static_cast<uint32_t>( src - begin ) );
+                    areg::String str( begin, static_cast<uint32_t>( src - begin ) );
                     optList.push_back( str );
                 }
 
@@ -163,415 +163,418 @@ namespace
 
         if ( begin != src )
         {
-            String str( begin, static_cast<uint32_t>( src - begin ) );
+            areg::String str( begin, static_cast<uint32_t>( src - begin ) );
             optList.push_back( str );
         }
     }
 } // namespace
 
-const OptionParser::OptionSetup OptionParser::getDefaultOptionSetup()
+namespace aregext
 {
-    static OptionSetup _defaultSetup{ "", "", 0, STRING_NO_RANGE, { }, { }, { } };
-    return _defaultSetup;
-}
+    const OptionParser::OptionSetup OptionParser::getDefaultOptionSetup()
+    {
+        static OptionSetup _defaultSetup{ "", "", 0, STRING_NO_RANGE, { }, { }, { } };
+        return _defaultSetup;
+    }
 
 
-OptionParser::OptionParser()
-    : mCmdLine      ( )
-    , mSetupOptions ( )
-    , mInputOptions ( )
-{
-    mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
-}
-
-OptionParser::OptionParser( const OptionSetupList & optList )
-    : mCmdLine      ( )
-    , mSetupOptions ( optList )
-    , mInputOptions ( )
-{
-    if ( mSetupOptions.isEmpty( ) )
+    OptionParser::OptionParser()
+        : mCmdLine      ( )
+        , mSetupOptions ( )
+        , mInputOptions ( )
     {
         mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
     }
-}
 
-OptionParser::OptionParser( const std::vector<OptionSetup> & initList )
-    : mCmdLine      ( )
-    , mSetupOptions ( initList )
-    , mInputOptions ( )
-{
-    if ( mSetupOptions.isEmpty( ) )
+    OptionParser::OptionParser( const OptionSetupList & optList )
+        : mCmdLine      ( )
+        , mSetupOptions ( optList )
+        , mInputOptions ( )
     {
-        mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
-    }
-}
-
-OptionParser::OptionParser( std::vector<OptionSetup> && initList ) noexcept
-    : mCmdLine      ( )
-    , mSetupOptions ( std::move(initList) )
-    , mInputOptions ( )
-{
-    if ( mSetupOptions.isEmpty( ) )
-    {
-        mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
-    }
-}
-
-OptionParser::OptionParser( const OptionSetup * initEntries, uint32_t count )
-    : mCmdLine      ( )
-    , mSetupOptions ( )
-    , mInputOptions ( )
-{
-    if ( initEntries != nullptr )
-    {
-        for ( uint32_t i = 0; i < count; ++ i )
+        if ( mSetupOptions.isEmpty( ) )
         {
-            mSetupOptions.add(initEntries[ i ]);
+            mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
         }
     }
 
-    if ( mSetupOptions.isEmpty( ) )
+    OptionParser::OptionParser( const std::vector<OptionSetup> & initList )
+        : mCmdLine      ( )
+        , mSetupOptions ( initList )
+        , mInputOptions ( )
     {
-        mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
-    }
-}
-
-OptionParser::OptionParser( const OptionParser & src )
-    : mCmdLine      ( src.mCmdLine )
-    , mSetupOptions ( src.mSetupOptions )
-    , mInputOptions ( src.mInputOptions)
-{
-}
-
-OptionParser::OptionParser( OptionParser && src ) noexcept
-    : mCmdLine      ( std::move( src.mCmdLine ))
-    , mSetupOptions ( std::move( src.mSetupOptions ))
-    , mInputOptions ( std::move( src.mInputOptions ))
-{
-}
-
-OptionParser & OptionParser::operator=( const OptionParser & src )
-{
-    if ( &src != static_cast<const OptionParser *>(this) )
-    {
-        mCmdLine        = src.mCmdLine;
-        mSetupOptions   = src.mSetupOptions;
-        mInputOptions   = src.mInputOptions;
-    }
-
-    return (*this);
-}
-
-OptionParser & OptionParser::operator=( OptionParser && src ) noexcept
-{
-    if ( &src != static_cast<OptionParser *>(this) )
-    {
-        mCmdLine        = std::move( src.mCmdLine );
-        mSetupOptions   = std::move( src.mSetupOptions );
-        mInputOptions   = std::move( src.mInputOptions );
-    }
-
-    return (*this);
-}
-
-bool OptionParser::parseCommandLine( const char ** cmdLine, uint32_t count )
-{
-    StrList optList;
-    _convertArguments<char>( cmdLine, static_cast<int32_t>(count), optList );
-    return parseOptions( optList );
-}
-
-bool OptionParser::parseCommandLine( const wchar_t ** cmdLine, uint32_t count )
-{
-    StrList optList;
-    _convertArguments<wchar_t>( cmdLine, static_cast<int32_t>(count), optList );
-    return parseOptions( optList );
-}
-
-bool OptionParser::parseCommandLine(char** cmdLine, uint32_t count)
-{
-    StrList optList;
-    _convertArguments<char>(cmdLine, static_cast<int32_t>(count), optList);
-    return parseOptions(optList);
-}
-
-bool OptionParser::parseCommandLine(wchar_t** cmdLine, uint32_t count)
-{
-    StrList optList;
-    _convertArguments<wchar_t>(cmdLine, static_cast<int32_t>(count), optList);
-    return parseOptions(optList);
-}
-
-bool OptionParser::parseOptionLine( const char * optLine )
-{
-    StrList optList;
-    _splitOptions<char>( optLine, optList );
-    return parseOptions( optList );
-}
-
-bool OptionParser::parseOptionLine( const wchar_t * optLine )
-{
-    StrList optList;
-    _splitOptions<wchar_t>( optLine, optList );
-    return parseOptions( optList );
-}
-
-bool OptionParser::parseOptions( StrList & optList )
-{
-    bool result{ true };
-    mInputOptions.clear( );
-    mCmdLine.clear( );
-    uint32_t initSize = mSetupOptions.getSize( );
-    for ( String & input : optList )
-    {
-        input.trimAll( );
-
-        mCmdLine += input;
-        mCmdLine += DELIMITER_SPACE;
-        InputOption opt;
-        ASSERT( opt.inRefSetup == NECommon::INVALID_INDEX );
-
-        for (uint32_t j = 0; j < initSize; ++ j )
+        if ( mSetupOptions.isEmpty( ) )
         {
-            const OptionSetup & entry = mSetupOptions[ j ];
-            if ( _matchOption(input, entry.optLong) )
+            mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
+        }
+    }
+
+    OptionParser::OptionParser( std::vector<OptionSetup> && initList ) noexcept
+        : mCmdLine      ( )
+        , mSetupOptions ( std::move(initList) )
+        , mInputOptions ( )
+    {
+        if ( mSetupOptions.isEmpty( ) )
+        {
+            mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
+        }
+    }
+
+    OptionParser::OptionParser( const OptionSetup * initEntries, uint32_t count )
+        : mCmdLine      ( )
+        , mSetupOptions ( )
+        , mInputOptions ( )
+    {
+        if ( initEntries != nullptr )
+        {
+            for ( uint32_t i = 0; i < count; ++ i )
             {
-                opt = _setupInput( false, input, j );
-                break;
-            }
-            else if ( _matchOption(input, entry.optShort) )
-            {
-                opt = _setupInput( true, input, j );
-                break;
+                mSetupOptions.add(initEntries[ i ]);
             }
         }
 
-        if ( opt.inRefSetup == NECommon::INVALID_INDEX )
+        if ( mSetupOptions.isEmpty( ) )
         {
-            if ( mInputOptions.isEmpty() == false )
+            mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
+        }
+    }
+
+    OptionParser::OptionParser( const OptionParser & src )
+        : mCmdLine      ( src.mCmdLine )
+        , mSetupOptions ( src.mSetupOptions )
+        , mInputOptions ( src.mInputOptions)
+    {
+    }
+
+    OptionParser::OptionParser( OptionParser && src ) noexcept
+        : mCmdLine      ( std::move( src.mCmdLine ))
+        , mSetupOptions ( std::move( src.mSetupOptions ))
+        , mInputOptions ( std::move( src.mInputOptions ))
+    {
+    }
+
+    OptionParser & OptionParser::operator=( const OptionParser & src )
+    {
+        if ( &src != static_cast<const OptionParser *>(this) )
+        {
+            mCmdLine        = src.mCmdLine;
+            mSetupOptions   = src.mSetupOptions;
+            mInputOptions   = src.mInputOptions;
+        }
+
+        return (*this);
+    }
+
+    OptionParser & OptionParser::operator=( OptionParser && src ) noexcept
+    {
+        if ( &src != static_cast<OptionParser *>(this) )
+        {
+            mCmdLine        = std::move( src.mCmdLine );
+            mSetupOptions   = std::move( src.mSetupOptions );
+            mInputOptions   = std::move( src.mInputOptions );
+        }
+
+        return (*this);
+    }
+
+    bool OptionParser::parseCommandLine( const char ** cmdLine, uint32_t count )
+    {
+        StrList optList;
+        _convertArguments<char>( cmdLine, static_cast<int32_t>(count), optList );
+        return parseOptions( optList );
+    }
+
+    bool OptionParser::parseCommandLine( const wchar_t ** cmdLine, uint32_t count )
+    {
+        StrList optList;
+        _convertArguments<wchar_t>( cmdLine, static_cast<int32_t>(count), optList );
+        return parseOptions( optList );
+    }
+
+    bool OptionParser::parseCommandLine(char** cmdLine, uint32_t count)
+    {
+        StrList optList;
+        _convertArguments<char>(cmdLine, static_cast<int32_t>(count), optList);
+        return parseOptions(optList);
+    }
+
+    bool OptionParser::parseCommandLine(wchar_t** cmdLine, uint32_t count)
+    {
+        StrList optList;
+        _convertArguments<wchar_t>(cmdLine, static_cast<int32_t>(count), optList);
+        return parseOptions(optList);
+    }
+
+    bool OptionParser::parseOptionLine( const char * optLine )
+    {
+        StrList optList;
+        _splitOptions<char>( optLine, optList );
+        return parseOptions( optList );
+    }
+
+    bool OptionParser::parseOptionLine( const wchar_t * optLine )
+    {
+        StrList optList;
+        _splitOptions<wchar_t>( optLine, optList );
+        return parseOptions( optList );
+    }
+
+    bool OptionParser::parseOptions( StrList & optList )
+    {
+        bool result{ true };
+        mInputOptions.clear( );
+        mCmdLine.clear( );
+        uint32_t initSize = mSetupOptions.getSize( );
+        for ( areg::String & input : optList )
+        {
+            input.trimAll( );
+
+            mCmdLine += input;
+            mCmdLine += DELIMITER_SPACE;
+            InputOption opt;
+            ASSERT( opt.inRefSetup == areg::INVALID_INDEX );
+
+            for (uint32_t j = 0; j < initSize; ++ j )
             {
-                InputOption & last = mInputOptions.lastEntry();
-                ASSERT( last.inRefSetup != NECommon::INVALID_INDEX );
-                _setInputValue( input, last, static_cast<uint32_t>(last.inRefSetup) );
-                result = OptionParser::hasInputError( static_cast<uint32_t>(last.inField) ) == false;
-            }
-            else if ( mSetupOptions.isEmpty() == false)
-            {
-                const OptionSetup & setup = mSetupOptions[ 0u ];
-                if ( setup.optShort.empty( ) && setup.optLong.empty( ) )
+                const OptionSetup & entry = mSetupOptions[ j ];
+                if ( _matchOption(input, entry.optLong) )
                 {
-                    // default option
-                    opt.inCommand = setup.optCmmand;
-                    opt.inRefSetup = 0;
+                    opt = _setupInput( false, input, j );
+                    break;
+                }
+                else if ( _matchOption(input, entry.optShort) )
+                {
+                    opt = _setupInput( true, input, j );
+                    break;
+                }
+            }
+
+            if ( opt.inRefSetup == areg::INVALID_INDEX )
+            {
+                if ( mInputOptions.isEmpty() == false )
+                {
+                    InputOption & last = mInputOptions.lastEntry();
+                    ASSERT( last.inRefSetup != areg::INVALID_INDEX );
+                    _setInputValue( input, last, static_cast<uint32_t>(last.inRefSetup) );
+                    result = OptionParser::hasInputError( static_cast<uint32_t>(last.inField) ) == false;
+                }
+                else if ( mSetupOptions.isEmpty() == false)
+                {
+                    const OptionSetup & setup = mSetupOptions[ 0u ];
+                    if ( setup.optShort.empty( ) && setup.optLong.empty( ) )
+                    {
+                        // default option
+                        opt.inCommand = setup.optCmmand;
+                        opt.inRefSetup = 0;
+                        opt.inField = FREESTYLE_DATA;
+                        opt.inString.push_back( input );
+                        mInputOptions.add( opt );
+                    }
+                    else
+                    {
+                        result = false;
+                    }
+                }
+                else
+                {
                     opt.inField = FREESTYLE_DATA;
                     opt.inString.push_back( input );
                     mInputOptions.add( opt );
                 }
-                else
-                {
-                    result = false;
-                }
             }
-            else
+            else 
             {
-                opt.inField = FREESTYLE_DATA;
-                opt.inString.push_back( input );
                 mInputOptions.add( opt );
+                result = OptionParser::hasInputError( static_cast<uint32_t>(opt.inField) ) == false;
             }
         }
-        else 
-        {
-            mInputOptions.add( opt );
-            result = OptionParser::hasInputError( static_cast<uint32_t>(opt.inField) ) == false;
-        }
+
+        return result;
     }
 
-    return result;
-}
-
-uint32_t OptionParser::findOption(int32_t optId) const
-{
-    uint32_t result{ NECommon::INVALID_POSITION };
-    for (uint32_t i = 0; i < mInputOptions.getSize(); ++i)
+    uint32_t OptionParser::findOption(int32_t optId) const
     {
-        if (mInputOptions.getAt(i).inCommand == optId)
+        uint32_t result{ areg::INVALID_POSITION };
+        for (uint32_t i = 0; i < mInputOptions.getSize(); ++i)
         {
-            result = i;
-            break;
-        }
-    }
-
-    return result;
-}
-
-void OptionParser::sort()
-{
-    mInputOptions.sort([](const OptionParser::InputOption& opt1, const OptionParser::InputOption& opt2)
-                        {
-                            // sort ascending
-                            return (opt1.inCommand < opt2.inCommand);
-                         });
-}
-
-OptionParser::InputOption OptionParser::_setupInput( bool isShort, String cmdLine, uint32_t refSetup )
-{
-    ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize()) );
-
-    const OptionSetup & setup = mSetupOptions[ refSetup ];
-    OptionParser::InputOption opt;
-    opt.inField     = setup.optField;
-    opt.inCommand   = setup.optCmmand;
-    opt.inRefSetup  = static_cast<int32_t>(refSetup);
-
-    cmdLine.substring( static_cast<NEString::CharPos>(isShort ? setup.optShort.length() : setup.optLong.length()) );
-    cmdLine.trimAll( );
-    if ( cmdLine.isEmpty( ) == false )
-    {
-        _setInputValue( cmdLine, opt, refSetup );
-    }
-
-    return opt;
-}
-
-void OptionParser::_setInputValue( String & newValue, InputOption & opt, uint32_t refSetup )
-{
-    const OptionSetup& setup{ mSetupOptions[refSetup] };
-
-    if ( newValue.startsWith( DELIMITER_EQUAL, true ) )
-    {
-        if ((OptionParser::isString(setup.optField) ==  false) || (opt.inString.size() == 0))
-        {
-            newValue.substring(1);
-            ASSERT(*newValue.getString() != *DELIMITER_SPACE.data());
-        }
-    }
-    else
-    {
-
-    }
-
-    bool cleaned = _cleanQuote( newValue );
-
-    if ( newValue.isEmpty( ) == false )
-    {
-        ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize( )) );
-        if ( OptionParser::isEmptyData( setup.optField ) )
-        {
-            // the option should not have data. It is an error
-            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-            opt.inString.push_back( newValue );
-        }
-        else if ( OptionParser::isInteger( setup.optField ) )
-        {
-            const char * end = nullptr;
-            int32_t val = String::makeInt32( newValue.getString( ), NEString::Radix::Decimal, &end );
-            _setValue( val, opt, setup );
-            if ( NEString::isEmpty<char>( end ) == false )
+            if (mInputOptions.getAt(i).inCommand == optId)
             {
-                opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-            }
-        }
-        else if ( OptionParser::isFloat( setup.optField ) )
-        {
-            const char * end = nullptr;
-            float val = String::makeFloat( newValue.getString( ), &end );
-            _setValue( val, opt, setup );
-            if ( NEString::isEmpty<char>( end ) == false )
-            {
-                opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-            }
-        }
-        else if ( OptionParser::isString( setup.optField ) )
-        {
-            _setValue( newValue, opt, setup );
-        }
-        else
-        {
-            // should not happen
-            ASSERT( false );
-        }
-    }
-
-    if ( cleaned == false )
-    {
-        opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-    }
-}
-
-inline void OptionParser::_setValue( int32_t newValue, InputOption & opt, const OptionSetup & setup )
-{
-    opt.inValue.valInt = newValue;
-    if ( OptionParser::hasRange( setup.optField ) )
-    {
-        if ( (newValue < setup.optRangeInt.valMin) || (newValue > setup.optRangeInt.valMax) )
-        {
-            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-        }
-    }
-}
-
-inline void OptionParser::_setValue( float newValue, InputOption & opt, const OptionSetup & setup )
-{
-    opt.inValue.valFloat = newValue;
-    if ( OptionParser::hasRange( setup.optField ) )
-    {
-        if ( (newValue < setup.optRangeFloat.valMin) || (newValue > setup.optRangeFloat.valMax) )
-        {
-            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-        }
-    }
-}
-
-inline void OptionParser::_setValue( const String & newValue, InputOption & opt, const OptionSetup & setup )
-{
-    opt.inString.push_back( newValue );
-    if ( OptionParser::isFreestyle(setup.optField) == false )
-    {
-        const std::vector<std::string_view> & range = setup.optRangeStrings;
-        opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
-        for ( const std::string_view & entry : range )
-        {
-            if ( newValue.compare( entry, false) == NEMath::Ordering::Equal)
-            {
-                opt.inField &= ~static_cast<uint32_t>(OptionFlag::Error);
+                result = i;
                 break;
             }
         }
-    }
-}
 
-inline bool OptionParser::_matchOption( const String & input, const String & optCmd ) const
-{
-    bool result{ false };
-    if ( input.startsWith( optCmd, true ) )
-    {
-        constexpr char eos{ '\0' };
-        constexpr char equal{ '=' };
-        constexpr char space{ ' ' };
-
-        char sym = input.getAt( optCmd.getLength( ) );
-        result = (sym == eos) || (sym == equal) || (sym == space);
+        return result;
     }
 
-    return result;
-}
-
-inline bool OptionParser::_cleanQuote( String & data ) const
-{
-    bool result{ true };
-    data.trimAll( );
-    if ( data.startsWith( DELIMITER_STRING ) )
+    void OptionParser::sort()
     {
-        if ( data.endsWith( DELIMITER_STRING ) )
+        mInputOptions.sort([](const OptionParser::InputOption& opt1, const OptionParser::InputOption& opt2)
+                            {
+                                // sort ascending
+                                return (opt1.inCommand < opt2.inCommand);
+                             });
+    }
+
+    OptionParser::InputOption OptionParser::_setupInput( bool isShort, areg::String cmdLine, uint32_t refSetup )
+    {
+        ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize()) );
+
+        const OptionSetup & setup = mSetupOptions[ refSetup ];
+        OptionParser::InputOption opt;
+        opt.inField     = setup.optField;
+        opt.inCommand   = setup.optCmmand;
+        opt.inRefSetup  = static_cast<int32_t>(refSetup);
+
+        cmdLine.substring( static_cast<areg::CharPos>(isShort ? setup.optShort.length() : setup.optLong.length()) );
+        cmdLine.trimAll( );
+        if ( cmdLine.isEmpty( ) == false )
         {
-            data.substring( 1, data.getLength( ) - 2 );
-            data.trimAll( );
+            _setInputValue( cmdLine, opt, refSetup );
+        }
+
+        return opt;
+    }
+
+    void OptionParser::_setInputValue( areg::String & newValue, InputOption & opt, uint32_t refSetup )
+    {
+        const OptionSetup& setup{ mSetupOptions[refSetup] };
+
+        if ( newValue.startsWith( DELIMITER_EQUAL, true ) )
+        {
+            if ((OptionParser::isString(setup.optField) ==  false) || (opt.inString.size() == 0))
+            {
+                newValue.substring(1);
+                ASSERT(*newValue.getString() != *DELIMITER_SPACE.data());
+            }
         }
         else
         {
-            result = false;
+
+        }
+
+        bool cleaned = _cleanQuote( newValue );
+
+        if ( newValue.isEmpty( ) == false )
+        {
+            ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize( )) );
+            if ( OptionParser::isEmptyData( setup.optField ) )
+            {
+                // the option should not have data. It is an error
+                opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
+                opt.inString.push_back( newValue );
+            }
+            else if ( OptionParser::isInteger( setup.optField ) )
+            {
+                const char * end = nullptr;
+                int32_t val = areg::String::makeInt32( newValue.getString( ), areg::Radix::Decimal, &end );
+                _setValue( val, opt, setup );
+                if ( areg::isEmpty<char>( end ) == false )
+                {
+                    opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
+                }
+            }
+            else if ( OptionParser::isFloat( setup.optField ) )
+            {
+                const char * end = nullptr;
+                float val = areg::String::makeFloat( newValue.getString( ), &end );
+                _setValue( val, opt, setup );
+                if ( areg::isEmpty<char>( end ) == false )
+                {
+                    opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
+                }
+            }
+            else if ( OptionParser::isString( setup.optField ) )
+            {
+                _setValue( newValue, opt, setup );
+            }
+            else
+            {
+                // should not happen
+                ASSERT( false );
+            }
+        }
+
+        if ( cleaned == false )
+        {
+            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
         }
     }
 
-    return result;
-}
+    inline void OptionParser::_setValue( int32_t newValue, InputOption & opt, const OptionSetup & setup )
+    {
+        opt.inValue.valInt = newValue;
+        if ( OptionParser::hasRange( setup.optField ) )
+        {
+            if ( (newValue < setup.optRangeInt.valMin) || (newValue > setup.optRangeInt.valMax) )
+            {
+                opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
+            }
+        }
+    }
+
+    inline void OptionParser::_setValue( float newValue, InputOption & opt, const OptionSetup & setup )
+    {
+        opt.inValue.valFloat = newValue;
+        if ( OptionParser::hasRange( setup.optField ) )
+        {
+            if ( (newValue < setup.optRangeFloat.valMin) || (newValue > setup.optRangeFloat.valMax) )
+            {
+                opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
+            }
+        }
+    }
+
+    inline void OptionParser::_setValue( const areg::String & newValue, InputOption & opt, const OptionSetup & setup )
+    {
+        opt.inString.push_back( newValue );
+        if ( OptionParser::isFreestyle(setup.optField) == false )
+        {
+            const std::vector<std::string_view> & range = setup.optRangeStrings;
+            opt.inField |= static_cast<uint32_t>(OptionFlag::Error);
+            for ( const std::string_view & entry : range )
+            {
+                if ( newValue.compare( entry, false) == areg::Ordering::Equal)
+                {
+                    opt.inField &= ~static_cast<uint32_t>(OptionFlag::Error);
+                    break;
+                }
+            }
+        }
+    }
+
+    inline bool OptionParser::_matchOption( const areg::String & input, const areg::String & optCmd ) const
+    {
+        bool result{ false };
+        if ( input.startsWith( optCmd, true ) )
+        {
+            constexpr char eos{ '\0' };
+            constexpr char equal{ '=' };
+            constexpr char space{ ' ' };
+
+            char sym = input.getAt( optCmd.getLength( ) );
+            result = (sym == eos) || (sym == equal) || (sym == space);
+        }
+
+        return result;
+    }
+
+    inline bool OptionParser::_cleanQuote( areg::String & data ) const
+    {
+        bool result{ true };
+        data.trimAll( );
+        if ( data.startsWith( DELIMITER_STRING ) )
+        {
+            if ( data.endsWith( DELIMITER_STRING ) )
+            {
+                data.substring( 1, data.getLength( ) - 2 );
+                data.trimAll( );
+            }
+            else
+            {
+                result = false;
+            }
+        }
+
+        return result;
+    }
+} // namespace aregext

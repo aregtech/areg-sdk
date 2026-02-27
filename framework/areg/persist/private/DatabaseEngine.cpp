@@ -17,10 +17,14 @@
  ************************************************************************/
 #include "areg/persist/DatabaseEngine.hpp"
 
-DatabaseEngine::DatabaseEngine()
+namespace areg
 {
-}
 
-DatabaseEngine::~DatabaseEngine()
-{
-}
+    DatabaseEngine::DatabaseEngine()
+    {
+    }
+
+    DatabaseEngine::~DatabaseEngine()
+    {
+    }
+} // namespace areg

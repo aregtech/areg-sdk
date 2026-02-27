@@ -6,11 +6,10 @@
 #include "examples/20_winchat/services/DirectConnection.hpp"
 #include "examples/20_winchat/services/ConnectionManager.hpp"
 
-class String;
-class Component;
+namespace areg { class Component; }
 class ConnectionList;
-class DispatcherThread;
-class ConnectionHandler;
+namespace areg { class DispatcherThread; }
+namespace aregext { class ConnectionHandler; }
 
 // PageConnections dialog
 
@@ -20,7 +19,7 @@ class PageConnections : public CPropertyPage
 	DECLARE_DYNAMIC(PageConnections)
 
 public:
-	PageConnections(ConnectionHandler & handlerConnection);
+	PageConnections(aregext::ConnectionHandler & handlerConnection);
 	virtual ~PageConnections();
 
 // Dialog Data
@@ -28,11 +27,11 @@ public:
 
 public:
 
-    void OnServiceStartup( bool isStarted, Component * owner );
-    void OnServiceNetwork( bool isConnected, DispatcherThread * ownerThread );
-    void OnServiceConnection( bool isConnected, DispatcherThread * ownerThread );
-    void OnClientConnection( bool isConnected, DispatcherThread *dispThread );
-    void OnClientRegistration( bool isRegistered, DispatcherThread * dispThread );
+    void OnServiceStartup( bool isStarted, areg::Component * owner );
+    void OnServiceNetwork( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnServiceConnection( bool isConnected, areg::DispatcherThread * ownerThread );
+    void OnClientConnection( bool isConnected, areg::DispatcherThread *dispThread );
+    void OnClientRegistration( bool isRegistered, areg::DispatcherThread * dispThread );
     void OnAddConnection( ConnectionManager::ConnectionRecord & data );
     void OnRemoveConnection( ConnectionManager::ConnectionRecord & data );
     void OnUpdateConnection();
@@ -42,7 +41,7 @@ public:
 
 public:
 
-    const String & GetRegisteredName() const;
+    const areg::String & GetRegisteredName() const;
 
     uint32_t GetRegisteredCookie() const;
 
@@ -74,7 +73,7 @@ private:
 
     inline void unloadModel();
 
-    inline bool loadModel( const String & nickName, const uint32_t cookie );
+    inline bool loadModel( const areg::String & nickName, const uint32_t cookie );
 
 private:
     // List of connections
@@ -82,10 +81,10 @@ private:
     // Connection list service client
     ConnectionList *    mClientConnections;
     // The name of direct connection model, which contains service
-    String              mDirectConnectModel;
+    areg::String              mDirectConnectModel;
     // The name of generated direct connection service
-    String              mDirectConnectService;
+    areg::String              mDirectConnectService;
     // The instance of connection handler object
-    ConnectionHandler & mConnectionHandler;
+    aregext::ConnectionHandler & mConnectionHandler;
     BOOL                mChatEnable;
 };

@@ -18,33 +18,33 @@ DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_clientConne
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
 DEF_LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
 
-PublicServiceComponent::PublicServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component                 ( entry, owner )
-    , SystemShutdownStub        ( static_cast<Component &>(self()) )
-    , PublicHelloWorldService   ( static_cast<Component &>(self()) )
-    , mLocalClient              ( entry.mDependencyServices[0], static_cast<Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
+PublicServiceComponent::PublicServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component                 ( entry, owner )
+    , SystemShutdownStub        ( static_cast<areg::Component &>(self()) )
+    , PublicHelloWorldService   ( static_cast<areg::Component &>(self()) )
+    , mLocalClient              ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), PublicServiceComponent::LOCAL_TIMEOUT )
 {
     // initially set invalid that the connected clients ignore the value.
     SystemShutdownStub::invalidateServiceState( );
 }
 
-void PublicServiceComponent::startupComponent( ComponentThread & comThread )
+void PublicServiceComponent::startupComponent( areg::ComponentThread & comThread )
 {
-    Component::startupComponent( comThread );
+    areg::Component::startupComponent( comThread );
 
     // Notify service is available and ready to operate.
     SystemShutdownStub::setServiceState( SystemShutdown::RunState::ServiceReady );
 }
 
-bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status)
+bool PublicServiceComponent::clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status)
 {
     LOG_SCOPE(examples_16_pubmesh_pubservice_PublicServiceComponent_clientConnected);
-    LOG_INFO("The consumer [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(client).getString(), NEService::getString(status));
+    LOG_INFO("The consumer [ %s ] is [ %s ]", areg::ProxyAddress::convAddressToPath(client).getString(), areg::getString(status));
 
     bool result{ true };
     if (SystemShutdownStub::clientConnected(client, status))
     {
-        if (status == NEService::ServiceConnectionState::Connected)
+        if (status == areg::ServiceConnectionState::Connected)
         {
             if (SystemShutdownStub::isServiceStateValid() == false)
             {
@@ -84,5 +84,5 @@ void PublicServiceComponent::requestSystemShutdown()
     LOG_SCOPE( examples_16_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
     LOG_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
     printf("Processing the system shutdown!\n");
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }

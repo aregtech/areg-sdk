@@ -46,7 +46,7 @@ private:
 AREG_DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
 //! \brief  Traffic light public service to demonstrate subscription on data update.
-class TrafficLightService   : public    Component
+class TrafficLightService   : public    areg::Component
                             , protected SimpleTrafficLightStub
 {
     friend class TrafficSwitchConsumer;
@@ -97,11 +97,11 @@ private:
     // TrafficLightService::TrafficLightTimerConsumer class declaration
     //////////////////////////////////////////////////////////////////////////
     //!< Traffic Light timer consumer object
-    class TrafficLightTimerConsumer : public    TimerConsumer
+    class TrafficLightTimerConsumer : public    areg::TimerConsumer
     {
     public:
         TrafficLightTimerConsumer( TrafficLightService & service )
-            : TimerConsumer   ( )
+            : areg::TimerConsumer   ( )
             , mService          ( service )
             {
             }
@@ -116,7 +116,7 @@ private:
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   timer   The Timer Event Data object containing Timer object.
          **/
-        void processTimer( Timer & timer ) override;
+        void processTimer( areg::Timer & timer ) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden variables.
@@ -134,7 +134,7 @@ private:
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
+    TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner);
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitch Interface Requests
@@ -152,7 +152,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
@@ -160,7 +160,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which shuts down.
      **/
-    void shutdownServiceInterface ( Component & holder ) override;
+    void shutdownServiceInterface ( areg::Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls.
@@ -185,7 +185,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    Timer                               mTimer;         //!< The timer to switch lights
+    areg::Timer                               mTimer;         //!< The timer to switch lights
 
     SimpleTrafficLight::TrafficLight mPrevState;     //!< Previous state for yellow light switch
 

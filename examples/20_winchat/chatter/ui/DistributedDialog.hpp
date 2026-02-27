@@ -23,10 +23,10 @@
 #include "areg/base/Containers.hpp"
 
 class PageChat;
-typedef StringHashMap<PageChat *>   MapChatPages;
+typedef areg::StringHashMap<PageChat *>   MapChatPages;
 
 class DistributedDialog : public CPropertySheet
-                        , public ConnectionHandler
+                        , public aregext::ConnectionHandler
 {
 public:
     static bool OutputMessage( NEDistributedApp::WindowCommand cmd, void * sender, chat:: MessageData * data );
@@ -52,7 +52,7 @@ public:
 
     PageChat * AddChatPage( const DirectConnection::sInitiator & initiator, const DirectConnection::ListParticipants & listParties, bool isInitiator );
 
-    bool RemoveChatPage( const String & connectName );
+    bool RemoveChatPage( const areg::String & connectName );
 
     void RemoveAllChatPages();
 

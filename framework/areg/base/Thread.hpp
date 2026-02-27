@@ -37,10 +37,15 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ThreadLocalStorage;
-class ThreadConsumer;
-class InStream;
-class String;
+namespace areg
+{
+    class ThreadLocalStorage;
+    class ThreadConsumer;
+    class InStream;
+}
+
+namespace areg
+{
 
 //////////////////////////////////////////////////////////////////////////
 // Thread class declaration
@@ -146,9 +151,9 @@ public:
      *                          If nullptr or the name is duplicated, the system will not
      *                          be able to track the thread by name.
      * \param   stackSizeKb     The stack size of the thread in kilobytes (1 KB = 1024 Bytes).
-     *                          Pass `NECommon::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
+     *                          Pass `areg::STACK_SIZE_DEFAULT` (0) to ignore changing stack size and use system default stack size.
      **/
-    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = NECommon::STACK_SIZE_DEFAULT);
+    Thread( ThreadConsumer & threadConsumer, const String & threadName, uint32_t stackSizeKb = STACK_SIZE_DEFAULT);
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -176,7 +181,7 @@ public:
      *                              until thread starts running or timeout expires.
      * \return	Returns true if new thread is successfully created and started.
      **/
-    virtual bool createThread( uint32_t waitForStartMs = NECommon::DO_NOT_WAIT );
+    virtual bool createThread( uint32_t waitForStartMs = DO_NOT_WAIT );
 
     /**
      * \brief   Override the method to trigger exist event for the threads.
@@ -198,17 +203,17 @@ public:
      *              Thread::Completed   -- The thread was valid and completed normally;
      *              Thread::Invalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = NECommon::DO_NOT_WAIT );
+    virtual Thread::ThreadCompletion shutdownThread( uint32_t waitForStopMs = DO_NOT_WAIT );
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
      *          The function waits as long, until the thread is completed or timeout is expired.
      *          It will return true if thread has been completed and exits normally, or the waiting 
-     *          timeout is NECommon::DO_NOT_WAIT.
+     *          timeout is areg::DO_NOT_WAIT.
      * \param   waitForCompleteMs   The timeout in milliseconds to wait for completion.
-     * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
+     * \return  Returns true if either thread completed or the waiting timeout is areg::DO_NOT_WAIT.
      **/
-    virtual bool completionWait( uint32_t waitForCompleteMs = NECommon::WAIT_INFINITE );
+    virtual bool completionWait( uint32_t waitForCompleteMs = WAIT_INFINITE );
 
     /**
      * \brief   It calls shutdownThread() with waiting timeout 10 ms. If waiting time is expired, 
@@ -285,7 +290,7 @@ public:
 
     /**
      * \brief   Returns predefined stack size of the thread.
-     *          The value `NECommon::STACK_SIZE_DEFAULT` (0) means that the stack size of the thread was not changed
+     *          The value `areg::STACK_SIZE_DEFAULT` (0) means that the stack size of the thread was not changed
      *          and the system default stack size is used.
      **/
     inline uint32_t getPredefinedStackSize() const;
@@ -813,7 +818,7 @@ inline void Thread::sleep( uint32_t ms )
 
 inline void Thread::switchThread()
 {
-    Thread::_osSleep( NECommon::WAIT_SWITCH );
+    Thread::_osSleep( WAIT_SWITCH );
 }
 
 inline id_type Thread::getCurrentThreadId()
@@ -846,5 +851,7 @@ inline const char * Thread::getString( Thread::ThreadPriority threadPriority )
         return "ERR: Invalid Thread::ThreadPriority value!";
     }
 }
+
+} // namespace areg
 
 #endif  // AREG_BASE_THREAD_HPP

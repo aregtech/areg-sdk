@@ -10,18 +10,18 @@
 DEF_LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 DEF_LOG_SCOPE(chatter_NetworkSetup_responseConnect);
 
-NetworkSetup::NetworkSetup( const char * roleName, Component & owner, ConnectionHandler & handlerConnection )
+NetworkSetup::NetworkSetup( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection )
     : ConnectionManagerClientBase (roleName, owner.getMasterThread() )
 
     , mConnectionHandler( handlerConnection )
 {
 }
 
-void NetworkSetup::responseConnect( const String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result )
+void NetworkSetup::responseConnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result )
 {
     LOG_SCOPE(chatter_NetworkSetup_responseConnect);
     LOG_DBG("Got connection [ %s ], cookie [ %u ], connection result [ %s ]", nickName.getString(), cookie, ConnectionManager::getString(result));
-    DateTime timeConnected = DateTime::getNow();
+    areg::DateTime timeConnected = areg::DateTime::getNow();
 
     if (result == ConnectionManager::ConnectionResult::Accepted)
     {
@@ -35,17 +35,17 @@ void NetworkSetup::responseConnect( const String & nickName, uint32_t cookie, co
         mConnectionHandler.SetNickName(nickName);
         mConnectionHandler.SetCookie(ConnectionManager::InvalidCookie);
         mConnectionHandler.SetConnectCookie(ConnectionManager::InvalidCookie);
-        mConnectionHandler.SetTimeConnect(DateTime());
-        mConnectionHandler.SetTimeConnected(DateTime());
+        mConnectionHandler.SetTimeConnect(areg::DateTime());
+        mConnectionHandler.SetTimeConnected(areg::DateTime());
     }
 
     mConnectionHandler.SetRegistered( false );
     bool isConnected = result == ConnectionManager::ConnectionResult::Accepted;
-    DispatcherThread *dispThread = getDispatcherThread();
+    areg::DispatcherThread *dispThread = getDispatcherThread();
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool NetworkSetup::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool NetworkSetup::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(chatter_NetworkSetup_serviceConnected);
 

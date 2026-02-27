@@ -1,13 +1,13 @@
 #pragma once
 #include "examples/20_winchat/services/ConnectionManagerClientBase.hpp"
 
-class Component;
-class ConnectionHandler;
+namespace areg { class Component; }
+namespace aregext { class ConnectionHandler; }
 
 class NetworkSetup :  public ConnectionManagerClientBase
 {
 public:
-    NetworkSetup( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
+    NetworkSetup( const char * roleName, areg::Component & owner, aregext::ConnectionHandler & handlerConnection );
     virtual ~NetworkSetup( ) = default;
 
     void DisconnectServicing();
@@ -30,7 +30,7 @@ protected:
      * \param   result      The connection operation result
      * \see     requestConnect
      **/
-    void responseConnect( const String & nickName, uint32_t cookie, const DateTime & dateTime, ConnectionManager::ConnectionResult result ) override;
+    void responseConnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime, ConnectionManager::ConnectionResult result ) override;
 
 /************************************************************************/
 // ProxyListener Overrides
@@ -46,13 +46,13 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionHandler &   mConnectionHandler;
+    aregext::ConnectionHandler &   mConnectionHandler;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

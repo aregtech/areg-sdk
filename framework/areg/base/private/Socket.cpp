@@ -21,159 +21,163 @@
 #include <atomic>
 #include <utility>
 
-//////////////////////////////////////////////////////////////////////////
-// Socket class implementation
-//////////////////////////////////////////////////////////////////////////
-
-Socket::Socket()
-    : mSocket   ( )
-    , mAddress  ( )
-    , mSendSize ( NESocket::PACKET_DEFAULT_SIZE)
-    , mRecvSize ( NESocket::PACKET_DEFAULT_SIZE)
+namespace areg
 {
-    static_cast<void>(NESocket::socketInitialize( ));
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Socket class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-Socket::Socket(const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress)
-    : mSocket   ( std::make_shared<SOCKETHANDLE>(hSocket) )
-    , mAddress  ( sockAddress )
-    , mSendSize ( NESocket::PACKET_DEFAULT_SIZE )
-    , mRecvSize ( NESocket::PACKET_DEFAULT_SIZE )
-{
-    static_cast<void>(NESocket::socketInitialize( ));
-    mSendSize = getSendPacketSize();
-    mRecvSize = getRecvPacketSize();
-}
-
-Socket::Socket( const Socket & source )
-    : mSocket   ( source.mSocket )
-    , mAddress  ( source.mAddress )
-    , mSendSize ( source.mSendSize )
-    , mRecvSize ( source.mRecvSize )
-{
-    static_cast<void>(NESocket::socketInitialize( ));
-}
-
-Socket::Socket( Socket && source ) noexcept
-    : mSocket   ( std::move(source.mSocket)  )
-    , mAddress  ( std::move(source.mAddress) )
-    , mSendSize ( source.mSendSize )
-    , mRecvSize ( source.mRecvSize )
-{
-    static_cast<void>(NESocket::socketInitialize( ));
-}
-
-Socket::~Socket()
-{
-    decreaseLock();
-    static_cast<void>(NESocket::socketRelease());
-}
-
-Socket & Socket::operator = ( const Socket & src )
-{
-	if ( this != &src )
-	{
-		decreaseLock();
-
-		this->mSocket 	= src.mSocket;
-		this->mAddress	= src.mAddress;
-        this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mSendSize;
-	}
-
-	return (*this);
-}
-
-Socket & Socket::operator = ( Socket && src ) noexcept
-{
-	if ( this != &src )
-	{
-		decreaseLock();
-
-		this->mSocket 	= src.mSocket;
-		this->mAddress	= std::move(src.mAddress);
-        this->mSendSize = src.mSendSize;
-        this->mRecvSize = src.mSendSize;
+    Socket::Socket()
+        : mSocket   ( )
+        , mAddress  ( )
+        , mSendSize ( PACKET_DEFAULT_SIZE)
+        , mRecvSize ( PACKET_DEFAULT_SIZE)
+    {
+        static_cast<void>(socketInitialize( ));
     }
 
-	return (*this);
-}
-
-void Socket::closeSocket()
-{
-    decreaseLock( );
-}
-
-int32_t Socket::sendData( const uint8_t * buffer, int32_t length ) const
-{
-    return (isValid() ? NESocket::sendData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mSendSize) ) : -1);
-}
-
-int32_t Socket::receiveData( uint8_t * buffer, int32_t length ) const
-{
-    return (isValid( ) ? NESocket::receiveData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
-}
-
-bool Socket::setAddress(const char * hostName, uint16_t portNr, bool isServer)
-{
-    if ( isValid() && (mAddress.isEqualAddress(hostName, portNr) == false))
+    Socket::Socket(const SOCKETHANDLE hSocket, const SocketAddress & sockAddress)
+        : mSocket   ( std::make_shared<SOCKETHANDLE>(hSocket) )
+        , mAddress  ( sockAddress )
+        , mSendSize ( PACKET_DEFAULT_SIZE )
+        , mRecvSize ( PACKET_DEFAULT_SIZE )
     {
-        ASSERT(mSocket.get() != nullptr);
+        static_cast<void>(socketInitialize( ));
+        mSendSize = getSendPacketSize();
+        mRecvSize = getRecvPacketSize();
+    }
+
+    Socket::Socket( const Socket & source )
+        : mSocket   ( source.mSocket )
+        , mAddress  ( source.mAddress )
+        , mSendSize ( source.mSendSize )
+        , mRecvSize ( source.mRecvSize )
+    {
+        static_cast<void>(socketInitialize( ));
+    }
+
+    Socket::Socket( Socket && source ) noexcept
+        : mSocket   ( std::move(source.mSocket)  )
+        , mAddress  ( std::move(source.mAddress) )
+        , mSendSize ( source.mSendSize )
+        , mRecvSize ( source.mRecvSize )
+    {
+        static_cast<void>(socketInitialize( ));
+    }
+
+    Socket::~Socket()
+    {
+        decreaseLock();
+        static_cast<void>(socketRelease());
+    }
+
+    Socket & Socket::operator = ( const Socket & src )
+    {
+        if ( this != &src )
+        {
+            decreaseLock();
+
+            this->mSocket 	= src.mSocket;
+            this->mAddress	= src.mAddress;
+            this->mSendSize = src.mSendSize;
+            this->mRecvSize = src.mSendSize;
+        }
+
+        return (*this);
+    }
+
+    Socket & Socket::operator = ( Socket && src ) noexcept
+    {
+        if ( this != &src )
+        {
+            decreaseLock();
+
+            this->mSocket 	= src.mSocket;
+            this->mAddress	= std::move(src.mAddress);
+            this->mSendSize = src.mSendSize;
+            this->mRecvSize = src.mSendSize;
+        }
+
+        return (*this);
+    }
+
+    void Socket::closeSocket()
+    {
         decreaseLock( );
     }
 
-    return mAddress.resolveAddress(hostName, portNr, isServer);
-}
-
-void Socket::decreaseLock()
-{
-    if ( isValid() )
+    int32_t Socket::sendData( const uint8_t * buffer, int32_t length ) const
     {
-        ASSERT( (mSocket.get( ) != nullptr) && (mSocket.use_count() != 0) );
+        return (isValid() ? areg::sendData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mSendSize) ) : -1);
+    }
 
-        if ( mSocket.use_count() == 1 )
+    int32_t Socket::receiveData( uint8_t * buffer, int32_t length ) const
+    {
+        return (isValid( ) ? areg::receiveData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
+    }
+
+    bool Socket::setAddress(const char * hostName, uint16_t portNr, bool isServer)
+    {
+        if ( isValid() && (mAddress.isEqualAddress(hostName, portNr) == false))
         {
-            closeSocketHandle( *mSocket );
+            ASSERT(mSocket.get() != nullptr);
+            decreaseLock( );
         }
 
-        mSocket.reset();
+        return mAddress.resolveAddress(hostName, portNr, isServer);
     }
-}
 
-void Socket::closeSocketHandle( SOCKETHANDLE hSocket )
-{
-    if ( hSocket != NESocket::InvalidSocketHandle )
+    void Socket::decreaseLock()
     {
-        NESocket::socketClose(hSocket);
-    }
-}
+        if ( isValid() )
+        {
+            ASSERT( (mSocket.get( ) != nullptr) && (mSocket.use_count() != 0) );
 
-uint32_t Socket::setSendPacketSize(uint32_t sendSize, bool force /*= false*/) const
-{
-    if (isValid() == false)
+            if ( mSocket.use_count() == 1 )
+            {
+                closeSocketHandle( *mSocket );
+            }
+
+            mSocket.reset();
+        }
+    }
+
+    void Socket::closeSocketHandle( SOCKETHANDLE hSocket )
     {
-        return NESocket::PACKET_INVALID_SIZE;
+        if ( hSocket != InvalidSocketHandle )
+        {
+            socketClose(hSocket);
+        }
     }
 
-    if (force || (sendSize > mSendSize))
+    uint32_t Socket::setSendPacketSize(uint32_t sendSize, bool force /*= false*/) const
     {
-        mSendSize = NESocket::setMaxSendSize(*mSocket, sendSize);
+        if (isValid() == false)
+        {
+            return PACKET_INVALID_SIZE;
+        }
+
+        if (force || (sendSize > mSendSize))
+        {
+            mSendSize = setMaxSendSize(*mSocket, sendSize);
+        }
+
+        return mSendSize;
     }
 
-    return mSendSize;
-}
-
-uint32_t Socket::setRecvPacketSize(uint32_t recvSize, bool force /*= false*/) const
-{
-    if (isValid() == false)
+    uint32_t Socket::setRecvPacketSize(uint32_t recvSize, bool force /*= false*/) const
     {
-        return NESocket::PACKET_INVALID_SIZE;
+        if (isValid() == false)
+        {
+            return PACKET_INVALID_SIZE;
+        }
+
+        if (force || (recvSize > mRecvSize))
+        {
+            mRecvSize = setMaxReceiveSize(*mSocket, recvSize);
+        }
+
+        return mRecvSize;
     }
 
-    if (force || (recvSize > mRecvSize))
-    {
-        mRecvSize = NESocket::setMaxReceiveSize(*mSocket, recvSize);
-    }
-
-    return mRecvSize;
-}
+} // namespace areg

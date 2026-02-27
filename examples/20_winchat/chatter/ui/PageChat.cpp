@@ -25,7 +25,7 @@ LPCTSTR PageChat::HEADER_TITILES[] =
 
 IMPLEMENT_DYNAMIC(PageChat, CPropertyPage)
 
-PageChat::PageChat( const String & serviceName
+PageChat::PageChat( const areg::String & serviceName
                       , const DirectConnection::sInitiator & initiator
                       , const DirectConnection::ListParticipants & listParties
                       , const DirectConnection::Participant & ownerConnection
@@ -111,8 +111,8 @@ BOOL PageChat::OnInitDialog( )
     const DirectConnection::sInitiator & initiator    = GetInitiator();
     const DirectConnection::ListParticipants & parties= GetParticipantList();
     const DirectConnection::Participant & owner      = GetConnectionOwner( );
-    String message("");
-    String comma("");
+    areg::String message("");
+    areg::String comma("");
 
     for ( uint32_t i = 0; i < parties.getSize(); ++ i )
     {
@@ -125,7 +125,7 @@ BOOL PageChat::OnInitDialog( )
         }
     }
 
-    String caption = "[ " + owner.nickName + " ]: " + message;
+    areg::String caption = "[ " + owner.nickName + " ]: " + message;
     mTitle = CString( caption.getString() );
     setTabTitle(caption);
     message = "Parties: " + message;
@@ -133,17 +133,17 @@ BOOL PageChat::OnInitDialog( )
     std::any data = std::make_any< ChatPrticipantHandler *>(this);
     ASSERT(mModelName.isEmpty());
 
-    NERegistry::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
-    if ( ComponentLoader::isModelLoaded(model.getModelName()) == false )
+    areg::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
+    if ( areg::ComponentLoader::isModelLoaded(model.getModelName()) == false )
     {
         mModelName = model.getModelName();
-        ComponentLoader::addModelUnique( model );
-        ComponentLoader::loadComponentModel( mModelName );    
+        areg::ComponentLoader::addModelUnique( model );
+        areg::ComponentLoader::loadComponentModel( mModelName );    
     }
     else
     {
-        String nickName = mIsChatInitiator ? "[ " + initiator.nickName + " ]" : initiator.nickName;
-        outputMessage( CString( nickName.getString( ) ), CString( "Is already registered..." ), CString( DateTime::getNow().formatTime( ).getString( ) ), CString( ), 0 );
+        areg::String nickName = mIsChatInitiator ? "[ " + initiator.nickName + " ]" : initiator.nickName;
+        outputMessage( CString( nickName.getString( ) ), CString( "Is already registered..." ), CString( areg::DateTime::getNow().formatTime( ).getString( ) ), CString( ), 0 );
     }
 
     return TRUE;
@@ -194,7 +194,7 @@ void PageChat::OnClickedButtonChatSend( )
     if ( client != nullptr )
     {
         UpdateData( TRUE );
-        client->requestMessageSend( GetConnectionOwner( ), String( mChatMsg.GetString( ) ), DateTime::getNow() );
+        client->requestMessageSend( GetConnectionOwner( ), areg::String( mChatMsg.GetString( ) ), areg::DateTime::getNow() );
         mChatMsg= _T( "" );
         UpdateData( FALSE );
         GetDlgItem( IDC_EDIT_CHAT )->SetFocus( );
@@ -214,7 +214,7 @@ void PageChat::OnDestroy( )
 
     if (mModelName.isEmpty() == false)
     {
-        ComponentLoader::unloadComponentModel(true, mModelName);
+        areg::ComponentLoader::unloadComponentModel(true, mModelName);
         mModelName.clear();
 
         ChatPrticipantHandler::Invalidate();
@@ -234,8 +234,8 @@ void PageChat::OnClickedButtonCloseChat( )
         SetChatClient(nullptr);
     }
 
-    String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel(true, modelName );
+    areg::String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
+    areg::ComponentLoader::unloadComponentModel(true, modelName );
 
     ChatPrticipantHandler::Invalidate();
 
@@ -294,7 +294,7 @@ void PageChat::setHeaders()
     {
         CString str( HEADER_TITILES[i] );
         LVCOLUMN lv;
-        NEMemory::zeroElement<LVCOLUMN>( lv );
+        areg::zeroElement<LVCOLUMN>( lv );
         lv.mask         = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lv.fmt          = LVCFMT_LEFT;
         lv.cx           = i == 0 ? width1 : width2;
@@ -319,7 +319,7 @@ void PageChat::outputMessage( CString nickName
         removeTyping(nickName, cookie);
 
     LVITEM lv;
-    NEMemory::zeroElement<LVITEM>( lv );
+    areg::zeroElement<LVITEM>( lv );
 
     // Column nickname
     lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -357,7 +357,7 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;
-            NEMemory::zeroElement<LVITEM>( lv );
+            areg::zeroElement<LVITEM>( lv );
 
             // Column nickname
             lv.mask     = LVIF_TEXT | LVIF_PARAM;
@@ -392,11 +392,11 @@ BOOL PageChat::OnKillActive( )
 BOOL PageChat::OnSetActive( )
 {
     DistributedDialog::ChangeCaption(mTitle);
-    setTabTitle( String(mTitle.GetString()) );
+    setTabTitle( areg::String(mTitle.GetString()) );
     return CPropertyPage::OnSetActive( );
 }
 
-void PageChat::setTabTitle( const String & title )
+void PageChat::setTabTitle( const areg::String & title )
 {
     CString tabTitle( title.getString() );
 
@@ -417,13 +417,13 @@ LRESULT PageChat::OnCmdChatMessage( WPARAM /*wParam*/, LPARAM lParam)
     {
         outputMessage( CString( data->nickName )
                      , CString( data->message )
-                     , CString( data->timeSend      != 0 ? DateTime(data->timeSend).formatTime().getString()     : "" )
-                     , CString( data->timeReceived  != 0 ? DateTime(data->timeReceived).formatTime().getString() : "" )
+                     , CString( data->timeSend      != 0 ? areg::DateTime(data->timeSend).formatTime().getString()     : "" )
+                     , CString( data->timeReceived  != 0 ? areg::DateTime(data->timeReceived).formatTime().getString() : "" )
                      , static_cast<uint32_t>(data->dataSave));
         delete data;
 
         if ( isActivePage() == false )
-            setTabTitle( "(*) " + String(mTitle.GetString()) );
+            setTabTitle( "(*) " + areg::String(mTitle.GetString()) );
     }
     return 0;
 }
@@ -483,7 +483,7 @@ void PageChat::sendType()
     DirectMessagingClient* client = this->GetChatClient();
     if (client != nullptr)
     {
-        client->requestMessageType(GetConnectionOwner(), String(mChatMsg.GetString()));
+        client->requestMessageType(GetConnectionOwner(), areg::String(mChatMsg.GetString()));
     }
 }
 
@@ -541,7 +541,7 @@ void PageChat::OnTimer(UINT_PTR nIDEvent)
 {
     
     char ch = rand() % 126;
-    while (NEString::isAlphanumeric<char>(ch) == false)
+    while (areg::isAlphanumeric<char>(ch) == false)
     {
         if (++ch > 126)
             ch = 'a';

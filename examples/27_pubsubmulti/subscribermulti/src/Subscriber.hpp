@@ -30,7 +30,7 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Subscriber: public    Component
+class Subscriber: public    areg::Component
                 , protected SubscriberBase
 {
 
@@ -38,7 +38,7 @@ class Subscriber: public    Component
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -58,7 +58,7 @@ protected:
      * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    bool serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy ) override;
+    bool serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy ) override;
 
 /************************************************************************/
 // PubSubClientBase Overrides
@@ -72,7 +72,7 @@ protected:
      * \param   ServiceProviderState    The value of ServiceProviderState attribute.
      * \param   state                   The data validation flag.
      **/
-    void onServiceProviderStateUpdate( PubSub::RunState ServiceProviderState, NEService::DataState state ) override;
+    void onServiceProviderStateUpdate( PubSub::RunState ServiceProviderState, areg::DataState state ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

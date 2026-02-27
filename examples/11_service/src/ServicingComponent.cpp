@@ -19,38 +19,38 @@ DEF_LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
 DEF_LOG_SCOPE(examples_11_service_ServicingComponent_processTimer);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread)
-    : Component ( entry, ownerThread )
-    , StubBase  ( self(), NEService::getEmptyInterface() )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread)
+    : areg::Component ( entry, ownerThread )
+    , areg::StubBase  ( self(), areg::getEmptyInterface() )
 
     , mTimer    ( self(), "ServicingTimer" )
     , mCount    ( 0 )
 {
 }
 
-void ServicingComponent::startupServiceInterface(Component & holder)
+void ServicingComponent::startupServiceInterface(areg::Component & holder)
 {
     LOG_SCOPE(examples_11_service_ServicingComponent_startupServiceInterface);
-    LOG_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_INFO("The service [ %s ] of component [ %s ] has been started", areg::StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
-    StubBase::startupServiceInterface(holder);
+    areg::StubBase::startupServiceInterface(holder);
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
 
     printf("Local servicing started, waits for [ %u ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
-void ServicingComponent::shutdownServiceInterface(Component & holder)
+void ServicingComponent::shutdownServiceInterface(areg::Component & holder)
 {
     LOG_SCOPE(examples_11_service_ServicingComponent_shutdownServiceIntrface);
-    LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
+    LOG_WARN("The service [ %s ] of component [ %s ] is shutting down", areg::StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
     mTimer.stopTimer();
-    StubBase::shutdownServiceInterface(holder);
+    areg::StubBase::shutdownServiceInterface(holder);
 
     std::cout << "Local servicing stopped..." << std::endl;
 }
 
-void ServicingComponent::processTimer(Timer & timer)
+void ServicingComponent::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_11_service_ServicingComponent_processTimer);
     LOG_DBG("The timer [ %s ] has expired", timer.getName().getString());
@@ -77,6 +77,6 @@ void ServicingComponent::processTimer(Timer & timer)
         ASSERT(mCount == TIMER_EVENTS);
 
         LOG_INFO("The timer is not active anymore, signaling quit event");
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
 }

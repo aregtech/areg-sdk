@@ -17,22 +17,22 @@
 class DirectConnectionClient;
 class ChatPrticipantHandler;
 
-class DirectChatService : public Component
+class DirectChatService : public areg::Component
                         , public DirectMessagerStub
                           
 {
-    using HashMapDirectConnections      = OrderedMap<String, DirectChatService *>;
-    using MapDirectConnections          = ConcurrentResourceMap<String, DirectChatService *, HashMapDirectConnections>;
-    using ListDirectConnectionClients   = ArrayList<DirectConnectionClient *>;
+    using HashMapDirectConnections      = areg::OrderedMap<areg::String, DirectChatService *>;
+    using MapDirectConnections          = areg::ConcurrentResourceMap<areg::String, DirectChatService *, HashMapDirectConnections>;
+    using ListDirectConnectionClients   = areg::ArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
 //////////////////////////////////////////////////////////////////////////
 public:
-    static NERegistry::Model GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
+    static areg::Model GetModel( const DirectMessager::Participant & initiator, const DirectMessager::ListParticipants & listParticipants, std::any data );
 
 public:
-    DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread );
+    DirectChatService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread );
     virtual ~DirectChatService();
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ protected:
      * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
-    void requestChatJoin( const DirectMessager::Participant & participant, const DateTime & timeConnect ) override;
+    void requestChatJoin( const DirectMessager::Participant & participant, const areg::DateTime & timeConnect ) override;
 
     /**
      * \brief   Request call.
@@ -57,7 +57,7 @@ protected:
      * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
-    void requestMessageSend( const DirectMessager::Participant & sender, const String & msgText, const DateTime & timeSent ) override;
+    void requestMessageSend( const DirectMessager::Participant & sender, const areg::String & msgText, const areg::DateTime & timeSent ) override;
 
     /**
      * \brief   Request call.
@@ -66,7 +66,7 @@ protected:
      * \param   msgText     The text message while typing.
      * \note    Has no response
      **/
-    void requestMessageType( const DirectMessager::Participant & participant, const String & msgText ) override;
+    void requestMessageType( const DirectMessager::Participant & participant, const areg::String & msgText ) override;
 
     /**
      * \brief   Request call.
@@ -75,7 +75,7 @@ protected:
      * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
-    void requestChatLeave( const DirectMessager::Participant & participant, const DateTime & timeLeave ) override;
+    void requestChatLeave( const DirectMessager::Participant & participant, const areg::DateTime & timeLeave ) override;
 
 protected:
 
@@ -88,7 +88,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent( ComponentThread & comThread ) override;
+    void startupComponent( areg::ComponentThread & comThread ) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -96,7 +96,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( areg::ComponentThread & comThread ) override;
 
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
@@ -109,7 +109,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
     
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

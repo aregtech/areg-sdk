@@ -25,168 +25,171 @@
 
 #include "areg/base/private/posix/WaitablePosix.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// WaitableEventPosix class declaration.
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The synchronization event object. As a waitable object, the event has signaled
- *          and non-signaled state. When the event is in signaled state, all threads that
- *          wait for the signal are notified and released depending whether they wait
- *          for all events or any event. There can be 2 types of events:
- *              - Manual-reset: The Event remains in signaled state so long, until signal is 
- *                              manually reset. The signal and non-signaled states are set
- *                              by explicit call. Multiple waiting threads can be released
- *                              at the same time.
- *              - Auto-reset:   The Event remains in signaled state so long, until any waiting
- *                              thread is not released. As soon as at least one thread is released
- *                              the event automatically switches to not signaled state. Multiple 
- *                              waiting threads can be released at the same time. The threads are
- *                              released by priority order.
- *          A thread can wait for one, any or all events. For more details see @SyncLockAndWaitPosix.
- *          If Event is in signaled state, multiple calls to signal Event are ignored.
- *          If Event is in non-signaled state, multiple calls to reset signal state are ignored.
- *
- * \see     SyncLockAndWaitPosix
- **/
-class WaitableEventPosix : public WaitablePosix
+namespace areg::os
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor.
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // WaitableEventPosix class declaration.
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Initializes the synchronization Event object, sets the type and initial signaled state.
-     * \param   isInitSignaled  If true, the Event is initially in signaled state. While it is
-     *                          in signaled state, the waiting threads can be released. If is it in 
-     *                          non-signaled state, any thread that waits for signal is blocked.
-     * \param   isAutoReset     If true, the Event object is auto-reset; otherwise, it is manual reset Event.
-     *                          - manual-reset: The manual reset Events are manually switched to signaled and 
-     *                                          non-signaled state. While the Event is in signaled state,
-     *                                          the waiting thread is immediately released and continue run.
-     *                                          Otherwise, it is in blocked until the Event is not manually signaled.
-     *                          - auto-reset:   If the event is signaled, it remains in signaled state so long until
-     *                                          at least one waiting thread is released. As soon as at least one thread
-     *                                          is released, the signal state is automatically set to non-signaled.
-     *                                          The auto-reset Events are manually signaled and all waiting threads 
-     *                                          are released and the signal state is changed.
-     * \param   asciiName       The name of synchronization Event.
+     * \brief   The synchronization event object. As a waitable object, the event has signaled
+     *          and non-signaled state. When the event is in signaled state, all threads that
+     *          wait for the signal are notified and released depending whether they wait
+     *          for all events or any event. There can be 2 types of events:
+     *              - Manual-reset: The Event remains in signaled state so long, until signal is 
+     *                              manually reset. The signal and non-signaled states are set
+     *                              by explicit call. Multiple waiting threads can be released
+     *                              at the same time.
+     *              - Auto-reset:   The Event remains in signaled state so long, until any waiting
+     *                              thread is not released. As soon as at least one thread is released
+     *                              the event automatically switches to not signaled state. Multiple 
+     *                              waiting threads can be released at the same time. The threads are
+     *                              released by priority order.
+     *          A thread can wait for one, any or all events. For more details see @SyncLockAndWaitPosix.
+     *          If Event is in signaled state, multiple calls to signal Event are ignored.
+     *          If Event is in non-signaled state, multiple calls to reset signal state are ignored.
+     *
+     * \see     SyncLockAndWaitPosix
      **/
-    WaitableEventPosix(bool isInitSignaled, bool isAutoReset, const char * asciiName = nullptr);
+    class WaitableEventPosix : public WaitablePosix
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor.
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initializes the synchronization Event object, sets the type and initial signaled state.
+         * \param   isInitSignaled  If true, the Event is initially in signaled state. While it is
+         *                          in signaled state, the waiting threads can be released. If is it in 
+         *                          non-signaled state, any thread that waits for signal is blocked.
+         * \param   isAutoReset     If true, the Event object is auto-reset; otherwise, it is manual reset Event.
+         *                          - manual-reset: The manual reset Events are manually switched to signaled and 
+         *                                          non-signaled state. While the Event is in signaled state,
+         *                                          the waiting thread is immediately released and continue run.
+         *                                          Otherwise, it is in blocked until the Event is not manually signaled.
+         *                          - auto-reset:   If the event is signaled, it remains in signaled state so long until
+         *                                          at least one waiting thread is released. As soon as at least one thread
+         *                                          is released, the signal state is automatically set to non-signaled.
+         *                                          The auto-reset Events are manually signaled and all waiting threads 
+         *                                          are released and the signal state is changed.
+         * \param   asciiName       The name of synchronization Event.
+         **/
+        WaitableEventPosix(bool isInitSignaled, bool isAutoReset, const char * asciiName = nullptr);
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~WaitableEventPosix() = default;
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~WaitableEventPosix() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations.
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Returns the reset information of synchronization Event.
-     *          The Event object can be either NESyncTypesIX::Manual
-     *          or NESyncTypesIX::Automatic. The Manual
-     *          reset Events are manually set to signaled and non-signaled state.
-     *          The Automatic Events are manually signaled and
-     *          automatically reset as soon as any waiting thread is released.
-     **/
-    inline NESyncTypesIX::ResetMode  getResetInfo() const;
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations.
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Returns the reset information of synchronization Event.
+         *          The Event object can be either Manual
+         *          or Automatic. The Manual
+         *          reset Events are manually set to signaled and non-signaled state.
+         *          The Automatic Events are manually signaled and
+         *          automatically reset as soon as any waiting thread is released.
+         **/
+        inline ResetMode  getResetInfo() const;
 
-    /**
-     * \brief   Call to set waitable Event signaled. If Event is signaled, all waiting threads
-     *          are released. If Event type is NESyncTypesIX::Automatic, it is
-     *          automatically reset. Otherwise, it remains signaled until it is not manually reset.
-     *          Waitable Event signal are received by all waiting threads.
-     * \return  Returns true if operation succeeded.
-     **/
-    bool setEvent();
+        /**
+         * \brief   Call to set waitable Event signaled. If Event is signaled, all waiting threads
+         *          are released. If Event type is Automatic, it is
+         *          automatically reset. Otherwise, it remains signaled until it is not manually reset.
+         *          Waitable Event signal are received by all waiting threads.
+         * \return  Returns true if operation succeeded.
+         **/
+        bool setEvent();
 
-    /**
-     * \brief   Call to reset the signal state of waitable Event, i.e. make non-signaled.
-     *          Only NESyncTypesIX::Manual type Events can be manually reset.
-     *          The call is ignored if event type is NESyncTypesIX::Automatic,
-     *          because automatic events are automatically reset after threads get released.
-     * \return  Returns true if operation succeeded. The operation may fail if the waitable
-     *          Event is created with auto-reset flag.
-     **/
-    bool resetEvent();
+        /**
+         * \brief   Call to reset the signal state of waitable Event, i.e. make non-signaled.
+         *          Only Manual type Events can be manually reset.
+         *          The call is ignored if event type is Automatic,
+         *          because automatic events are automatically reset after threads get released.
+         * \return  Returns true if operation succeeded. The operation may fail if the waitable
+         *          Event is created with auto-reset flag.
+         **/
+        bool resetEvent();
 
-    /**
-     * \brief   Call to pulse event. If Event is in non-signaled state,
-     *          indifferent whether it is manual- or auto-reset, it is
-     *          switched to signaled state and immediately reset to non-signaled.
-     *          If signaled, all waiting threads are immediately released.
-     **/
-    void pulseEvent();
+        /**
+         * \brief   Call to pulse event. If Event is in non-signaled state,
+         *          indifferent whether it is manual- or auto-reset, it is
+         *          switched to signaled state and immediately reset to non-signaled.
+         *          If signaled, all waiting threads are immediately released.
+         **/
+        void pulseEvent();
 
-/************************************************************************/
-// WaitablePosix callback overrides.
-/************************************************************************/
+    /************************************************************************/
+    // WaitablePosix callback overrides.
+    /************************************************************************/
 
-    /**
-     * \brief   This callback is called to check the signals state of waitable object.
-     * \param   contextThread   The thread ID where the lock and wait happened.
-     *                          This parameter not used for waitable event.
-     * \return  Returns true if the object is signaled. Otherwise, returns false.
-     **/
-    bool checkSignaled( pthread_t contextThread ) const override;
+        /**
+         * \brief   This callback is called to check the signals state of waitable object.
+         * \param   contextThread   The thread ID where the lock and wait happened.
+         *                          This parameter not used for waitable event.
+         * \return  Returns true if the object is signaled. Otherwise, returns false.
+         **/
+        bool checkSignaled( pthread_t contextThread ) const override;
 
-    /**
-     * \brief   This callback is triggered when a waiting thread is released to continue to run.
-     *          Waitable Event always return true.
-     * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
-     * \return  Waitable Event always returns true.
-     **/
-    bool notifyRequestOwnership( pthread_t ownerThread ) override;
+        /**
+         * \brief   This callback is triggered when a waiting thread is released to continue to run.
+         *          Waitable Event always return true.
+         * \param   ownerThread     Indicates the POSIX thread ID that completed to wait.
+         * \return  Waitable Event always returns true.
+         **/
+        bool notifyRequestOwnership( pthread_t ownerThread ) override;
 
-    /**
-     * \brief   This callback is triggered to when a system needs to know whether waitable
-     *          can signal multiple threads. Returned 'true' value indicates that there can be
-     *          multiple threads can get waitable signaled state. For example, waitable Mutex 
-     *          signals only one thread, when waitable Event can signal multiple threads.
-     **/
-    bool checkCanSignalMultipleThreads() const override;
+        /**
+         * \brief   This callback is triggered to when a system needs to know whether waitable
+         *          can signal multiple threads. Returned 'true' value indicates that there can be
+         *          multiple threads can get waitable signaled state. For example, waitable Mutex 
+         *          signals only one thread, when waitable Event can signal multiple threads.
+         **/
+        bool checkCanSignalMultipleThreads() const override;
 
-    /**
-     * \brief   This callback is called to notify the object the amount of
-     *          threads that were leased when the object is in signaled state.
-     * \param   numThreads  The number of threads that where released when the
-     *                      object is in signaled state. 0 means that no thread
-     *                      was released by the object.
-     **/
-    void notifyReleasedThreads( int32_t numThreads ) override;
+        /**
+         * \brief   This callback is called to notify the object the amount of
+         *          threads that were leased when the object is in signaled state.
+         * \param   numThreads  The number of threads that where released when the
+         *                      object is in signaled state. 0 means that no thread
+         *                      was released by the object.
+         **/
+        void notifyReleasedThreads( int32_t numThreads ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Specifies whether the event is manual- or auto-reset.
-     **/
-    const NESyncTypesIX::ResetMode   mEventReset;
-    /**
-     * \brief   Flag that indicates the signaled state of the event.
-     **/
-    mutable bool                            mIsSignaled;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Specifies whether the event is manual- or auto-reset.
+         **/
+        const ResetMode   mEventReset;
+        /**
+         * \brief   Flag that indicates the signaled state of the event.
+         **/
+        mutable bool                            mIsSignaled;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    WaitableEventPosix() = delete;
-    AREG_NOCOPY_NOMOVE( WaitableEventPosix );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        WaitableEventPosix() = delete;
+        AREG_NOCOPY_NOMOVE( WaitableEventPosix );
+    };
 
-//////////////////////////////////////////////////////////////////////////
-// WaitableEventPosix class inline implementation
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // WaitableEventPosix class inline implementation
+    //////////////////////////////////////////////////////////////////////////
 
-inline NESyncTypesIX::ResetMode WaitableEventPosix::getResetInfo() const
-{
-    ObjectLockPosix lock(*this);
-    return mEventReset;
-}
+    inline ResetMode WaitableEventPosix::getResetInfo() const
+    {
+        ObjectLockPosix lock(*this);
+        return mEventReset;
+    }
+
+} // namespace areg::os
 
 #endif  // defined(_POSIX) || defined(POSIX)
-
 #endif  // AREG_BASE_PRIVATE_POSIX_WAITABLEEVENTIX_HPP

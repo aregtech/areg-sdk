@@ -22,104 +22,111 @@
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 
-#if AREG_LOGS
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogManager;
-class LogConfiguration;
-class LoggerBase;
-class InStream;
-
-//////////////////////////////////////////////////////////////////////////
-// LogEventProcessor class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   This is a helper class to process the events received
- *          by LogManager.
- **/
-class LogEventProcessor
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    class LogManager;
+    class LogConfiguration;
+    class LoggerBase;
+    class InStream;
+}
+
+namespace areg
+{
+    #if AREG_LOGS
+
+    //////////////////////////////////////////////////////////////////////////
+    // LogEventProcessor class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Initializes the logging event processor and set the instance of log manager.
+     * \brief   This is a helper class to process the events received
+     *          by LogManager.
      **/
-    LogEventProcessor( LogManager & logManager );
+    class LogEventProcessor
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initializes the logging event processor and set the instance of log manager.
+         **/
+        LogEventProcessor( LogManager & logManager );
 
-    ~LogEventProcessor() = default;
+        ~LogEventProcessor() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Dispatches and processes the log event.
-     * \param   cmdLog  The log command to process.
-     * \param   stream  The serialized data of the event.
-     **/
-    void processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream );
+        /**
+         * \brief   Dispatches and processes the log event.
+         * \param   cmdLog  The log command to process.
+         * \param   stream  The serialized data of the event.
+         **/
+        void processLogEvent( LoggingEventData::LogAction cmdLog, const SharedBuffer & stream );
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-/************************************************************************/
-// Logging commands
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
+    /************************************************************************/
+    // Logging commands
+    /************************************************************************/
 
-    /**
-     * \brief   Start the logging.
-     **/
-    void _loggingStartLogs();
+        /**
+         * \brief   Start the logging.
+         **/
+        void _loggingStartLogs();
 
-    /**
-     * \brief   Stop logging
-     **/
-    void _loggingStopLogs();
+        /**
+         * \brief   Stop logging
+         **/
+        void _loggingStopLogs();
 
-    /**
-     * \brief   Enables or disables logs.
-     **/
-    void _loggingSetEnableLogs( bool logsEnable );
+        /**
+         * \brief   Enables or disables logs.
+         **/
+        void _loggingSetEnableLogs( bool logsEnable );
 
-    /**
-     * \brief   Saves log configuration in the file.
-     **/
-    void _loggingSaveScopes();
+        /**
+         * \brief   Saves log configuration in the file.
+         **/
+        void _loggingSaveScopes();
 
-    /**
-     * \brief   Logs the message.
-     **/
-    void _loggingLogMessage( const SharedBuffer & data );
+        /**
+         * \brief   Logs the message.
+         **/
+        void _loggingLogMessage( const SharedBuffer & data );
 
-    /**
-     * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
-     *          with priority to change. Each scope entry can be either a single scope
-     *          or scope group. In case of scope group, the scope ID is ignored (should be 0).
-     * \param   stream      The buffer with scope name, scope ID and scope priority.
-     * \param   scopeCount  The number of scopes in the binary buffer.
-     **/
-    void _changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount );
+        /**
+         * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
+         *          with priority to change. Each scope entry can be either a single scope
+         *          or scope group. In case of scope group, the scope ID is ignored (should be 0).
+         * \param   stream      The buffer with scope name, scope ID and scope priority.
+         * \param   scopeCount  The number of scopes in the binary buffer.
+         **/
+        void _changeScopePriority( const SharedBuffer & stream, uint32_t scopeCount );
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
 
-    //!< The instance of log manager.
-    LogManager &      mLogManager;
+        //!< The instance of log manager.
+        LogManager &      mLogManager;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    LogEventProcessor() = delete;
-    AREG_NOCOPY_NOMOVE( LogEventProcessor );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        LogEventProcessor() = delete;
+        AREG_NOCOPY_NOMOVE( LogEventProcessor );
+    };
 
-#endif  // AREG_LOGS
+    #endif  // AREG_LOGS
+} // namespace areg
 #endif  // AREG_LOGGING_PRIVATE_LOGEVENTPROCESSOR_HPP

@@ -20,20 +20,20 @@
 DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 DEF_LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component     ( entry, owner )
-    , HelloWorldStub( static_cast<Component &>(self()) )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component     ( entry, owner )
+    , HelloWorldStub( static_cast<areg::Component &>(self()) )
     , mClientList   ( )
     , mRemainRequest( HelloWorld::MaxMessages )
 {
 }
 
-void ServicingComponent::requestHelloWorld(const String & roleName)
+void ServicingComponent::requestHelloWorld(const areg::String & roleName)
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestHelloWorld);
 
     HelloWorld::sConnectedClient theClient;
-    ClientList::LISTPOS pos = mClientList.firstPosition();
+    areg::ClientList::LISTPOS pos = mClientList.firstPosition();
     for ( ; mClientList.isValidPosition(pos); pos = mClientList.nextPosition(pos))
     {
         const HelloWorld::sConnectedClient & client = mClientList.valueAtPosition(pos);
@@ -47,7 +47,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 
     if ( mClientList.isInvalidPosition(pos))
     {
-        theClient = HelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
+        theClient = HelloWorld::sConnectedClient( areg::generateUniqueId(), roleName );
         mClientList.pushFirst( theClient );
         LOG_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }
@@ -72,15 +72,15 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 }
 
 #if AREG_LOGS
-void ServicingComponent::requestShutdownService(uint32_t clientID, const String & roleName)
+void ServicingComponent::requestShutdownService(uint32_t clientID, const areg::String & roleName)
 {
     LOG_SCOPE(examples_15_pubservice_ServicingComponent_requestShutdownService);
     LOG_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
-    Application::signalAppQuit( );
+    areg::Application::signalAppQuit( );
 }
 #else   // AREG_LOGS
-void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const String & /*roleName*/)
+void ServicingComponent::requestShutdownService(uint32_t /*clientID*/, const areg::String & /*roleName*/)
 {
-    Application::signalAppQuit( );
+    areg::Application::signalAppQuit( );
 }
 #endif  // AREG_LOGS

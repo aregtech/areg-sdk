@@ -38,10 +38,10 @@
  *              - Always   : this means to receive update notification each
  *                           the value is set even if the value is not updated.
  **/
-class Publisher : public    Component
+class Publisher : public    areg::Component
                 , protected PubSubStub
-                , private   TimerConsumer
-                , private   ThreadConsumer
+                , private   areg::TimerConsumer
+                , private   areg::ThreadConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // The list of internal types and constants
@@ -60,13 +60,13 @@ private:
     };
 
     //!< The list of valid options
-    static const OptionParser::OptionSetup ValidOptions[];
+    static const aregext::OptionParser::OptionSetup ValidOptions[];
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    Publisher( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    Publisher( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides.
@@ -83,7 +83,7 @@ protected:
      *          initialization in this function call.
      * \param	comThread	The component thread, which triggered startup command
      **/
-    void startupComponent(ComponentThread & comThread) override;
+    void startupComponent(areg::ComponentThread & comThread) override;
 
     /**
      * \brief	This function is triggered by component thread when it
@@ -91,7 +91,7 @@ protected:
      *          make cleanups in this function call.
      * \param	comThread	The component thread, which triggered shutdown command.
      **/
-    void shutdownComponent( ComponentThread & comThread ) override;
+    void shutdownComponent( areg::ComponentThread & comThread ) override;
 
 /************************************************************************/
 // TimerConsumer interface overrides.
@@ -103,7 +103,7 @@ protected:
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 /************************************************************************/
 // ThreadConsumer interface overrides
@@ -128,7 +128,7 @@ protected:
      * \param   status  The service consumer connection status.
      * \return  Returns true if connected service consumer is relevant to the provider.
      **/
-    bool clientConnected(const ProxyAddress & client, NEService::ServiceConnectionState status) override;
+    bool clientConnected(const areg::ProxyAddress & client, areg::ServiceConnectionState status) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -148,7 +148,7 @@ private:
     void quit();
 
     //! Outputs message on console
-    inline void printMessage(const String & message, OptionFlag cmd);
+    inline void printMessage(const areg::String & message, OptionFlag cmd);
 
     //! Wrapper of the this pointer
     inline Publisher & self();
@@ -157,15 +157,15 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
-    Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
+    areg::Timer       mTimerOnChange;     //!< The timer to update values with feature to notify on update
+    areg::Timer       mTimerAlways;       //!< The timer to update values with feature to notify always
     int32_t     mClientCount;       //!< The number of connected clients.
     uint32_t    mSeqString;         //!< The sequence number of the string.
     uint16_t    mCountString;       //!< The count number of the string to change.
     uint32_t    mSeqInteger;        //!< The sequence number of the integer.
     uint16_t    mCountInteger;      //!< The count number of the integer to change.
-    Thread      mConsoleThread;     //!< The thread to run console to interact with users.
-    Mutex       mLock;              //!< Synchronization object for multithreading environment.
+    areg::Thread      mConsoleThread;     //!< The thread to run console to interact with users.
+    areg::Mutex       mLock;              //!< Synchronization object for multithreading environment.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

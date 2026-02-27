@@ -17,16 +17,16 @@ DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_broadcastReachedMaximum);
 DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_responseHelloWorld);
 DEF_LOG_SCOPE(examples_13_locservice_ServiceClient_processTimer);
 
-ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( entry, owner )
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
-    , TimerConsumer       ( )
+ServiceClient::ServiceClient(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component             ( entry, owner )
+    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<areg::Component &>(self()) )
+    , areg::TimerConsumer       ( )
 
-    , mTimer                (static_cast<TimerConsumer &>(self()), entry.mRoleName)
+    , mTimer                (static_cast<areg::TimerConsumer &>(self()), entry.mRoleName)
 {
 }
 
-bool ServiceClient::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy)
 {
     LOG_SCOPE(examples_13_locservice_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected( status, proxy );
@@ -65,7 +65,7 @@ void ServiceClient::broadcastReachedMaximum( int32_t /*maxNumber*/ )
 }
 #endif  // AREG_LOGS
 
-void ServiceClient::processTimer(Timer & timer)
+void ServiceClient::processTimer(areg::Timer & timer)
 {
     LOG_SCOPE(examples_13_locservice_ServiceClient_processTimer);
     ASSERT(&timer == &mTimer);

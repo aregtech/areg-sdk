@@ -16,120 +16,124 @@
 #include "mtrouter/service/private/ServiceStub.hpp"
 #include "areg/component/StubAddress.hpp"
 
-const ServiceProxy     ListServiceProxies::InvalidProxyService;
-
-const ServiceProxy & ListServiceProxies::getService( const ProxyAddress & addrProxy ) const
+namespace mtrouter
 {
-    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    return ( isValidPosition(pos) ? static_cast<const ServiceProxy &>(valueAtPosition(pos)) : ListServiceProxies::InvalidProxyService );
-}
 
-ServiceProxy * ListServiceProxies::getService( const ProxyAddress & addrProxy )
-{
-    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    return ( isValidPosition(pos) ? static_cast<ServiceProxy *>(&valueAtPosition(pos)) : nullptr );
-}
+    const mtrouter::ServiceProxy     ListServiceProxies::InvalidProxyService;
 
-ServiceProxy & ListServiceProxies::registerService( const ProxyAddress & addrProxy )
-{
-    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    if ( isInvalidPosition(pos) )
+    const mtrouter::ServiceProxy & ListServiceProxies::getService( const areg::ProxyAddress & addrProxy ) const
     {
-        pushLast(ServiceProxy(addrProxy));
-        pos = lastPosition();
+        ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+        return ( isValidPosition(pos) ? static_cast<const mtrouter::ServiceProxy &>(valueAtPosition(pos)) : ListServiceProxies::InvalidProxyService );
     }
 
-    return static_cast<ServiceProxy &>(valueAtPosition(pos));
-}
-
-ServiceProxy & ListServiceProxies::registerService(const ProxyAddress & addrProxy, const ServiceStub & stubService)
-{
-    ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
-    if (isInvalidPosition(pos))
+    mtrouter::ServiceProxy * ListServiceProxies::getService( const areg::ProxyAddress & addrProxy )
     {
-        pushLast(ServiceProxy(addrProxy));
-        pos = lastPosition();
+        ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+        return ( isValidPosition(pos) ? static_cast<mtrouter::ServiceProxy *>(&valueAtPosition(pos)) : nullptr );
     }
 
-    const StubAddress & addrStub = stubService.getServiceAddress();
-    ServiceProxy & proxyService = valueAtPosition(pos);
-    if ( addrStub == addrProxy)
+    mtrouter::ServiceProxy & ListServiceProxies::registerService( const areg::ProxyAddress & addrProxy )
     {
-        if ( stubService.getServiceStatus() == NEService::ServiceConnectionState::Connected )
+        ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+        if ( isInvalidPosition(pos) )
         {
-            proxyService.stubAvailable( addrStub );
+            pushLast(mtrouter::ServiceProxy(addrProxy));
+            pos = lastPosition();
         }
-        else
+
+        return static_cast<mtrouter::ServiceProxy &>(valueAtPosition(pos));
+    }
+
+    mtrouter::ServiceProxy & ListServiceProxies::registerService(const areg::ProxyAddress & addrProxy, const mtrouter::ServiceStub & stubService)
+    {
+        ListServiceProxies::LISTPOS pos = _findProxy(addrProxy);
+        if (isInvalidPosition(pos))
         {
-            proxyService.stubUnavailable( );
+            pushLast(mtrouter::ServiceProxy(addrProxy));
+            pos = lastPosition();
         }
-    }
-    return proxyService;
-}
 
-ServiceProxy ListServiceProxies::unregisterService( const ProxyAddress & addrProxy )
-{
-    ServiceProxy result;
-    for (ListServiceProxies::LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
-    {
-        const ServiceProxy & proxyService = valueAtPosition(pos);
-        if ( proxyService == addrProxy )
+        const areg::StubAddress & addrStub = stubService.getServiceAddress();
+        mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
+        if ( addrStub == addrProxy)
         {
-            result = proxyService;
-            removeAt(pos);
-            break;
+            if ( stubService.getServiceStatus() == areg::ServiceConnectionState::Connected )
+            {
+                proxyService.stubAvailable( addrStub );
+            }
+            else
+            {
+                proxyService.stubUnavailable( );
+            }
         }
+        return proxyService;
     }
 
-    return result;
-}
-
-int32_t ListServiceProxies::stubServiceAvailable( const StubAddress & addrStub )
-{
-    int32_t result = 0;
-    for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
+    mtrouter::ServiceProxy ListServiceProxies::unregisterService( const areg::ProxyAddress & addrProxy )
     {
-        ServiceProxy & proxyService = valueAtPosition(pos);
-        result += proxyService.stubAvailable(addrStub) ? 1 : 0;
-    }
-
-    return result;
-}
-
-int32_t ListServiceProxies::stubServiceUnavailable()
-{
-    int32_t result = 0;
-    for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
-    {
-        ServiceProxy & proxyService = valueAtPosition(pos);
-        result += proxyService.stubUnavailable() ? 1 : 0;
-    }
-    return result;
-}
-
-int32_t ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies, const ITEM_ID & cookie)
-{
-    int32_t result = 0;
-    for ( LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
-    {
-        ServiceProxy & proxyService = valueAtPosition(pos);
-        if ( proxyService.getServiceAddress().getCookie() == cookie )
+        mtrouter::ServiceProxy result;
+        for (ListServiceProxies::LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
         {
-            result += 1;
-            out_listProxies.pushLast(proxyService);
+            const mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
+            if ( proxyService == addrProxy )
+            {
+                result = proxyService;
+                removeAt(pos);
+                break;
+            }
         }
-    }
-    return result;
-}
 
-ListServiceProxies::LISTPOS ListServiceProxies::_findProxy(const ProxyAddress & addrProxy) const
-{
-    LISTPOS pos = firstPosition( );
-    for ( ; isValidPosition(pos); pos = nextPosition(pos))
+        return result;
+    }
+
+    int32_t ListServiceProxies::stubServiceAvailable( const areg::StubAddress & addrStub )
     {
-        if ( valueAtPosition(pos) == addrProxy )
-            break;
+        int32_t result = 0;
+        for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
+        {
+            mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
+            result += proxyService.stubAvailable(addrStub) ? 1 : 0;
+        }
+
+        return result;
     }
 
-    return pos;
-}
+    int32_t ListServiceProxies::stubServiceUnavailable()
+    {
+        int32_t result = 0;
+        for ( LISTPOS pos = firstPosition(); isValidPosition(pos); pos = nextPosition(pos) )
+        {
+            mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
+            result += proxyService.stubUnavailable() ? 1 : 0;
+        }
+        return result;
+    }
+
+    int32_t ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies, const ITEM_ID & cookie)
+    {
+        int32_t result = 0;
+        for ( LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )
+        {
+            mtrouter::ServiceProxy & proxyService = valueAtPosition(pos);
+            if ( proxyService.getServiceAddress().getCookie() == cookie )
+            {
+                result += 1;
+                out_listProxies.pushLast(proxyService);
+            }
+        }
+        return result;
+    }
+
+    ListServiceProxies::LISTPOS ListServiceProxies::_findProxy(const areg::ProxyAddress & addrProxy) const
+    {
+        LISTPOS pos = firstPosition( );
+        for ( ; isValidPosition(pos); pos = nextPosition(pos))
+        {
+            if ( valueAtPosition(pos) == addrProxy )
+                break;
+        }
+
+        return pos;
+    }
+} // namespace mtrouter

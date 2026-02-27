@@ -19,73 +19,77 @@
 #include "areg/logging/LogScope.hpp"
 #include "areg/logging/private/LogManager.hpp"
 
-//////////////////////////////////////////////////////////////////////////////
-// LogScope class implementation
-//////////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////////
-
-#if AREG_LOGS
-
-LogScope::LogScope( const char * scopeName, NELogging::LogPriority priority /*= NELogging::PrioNotset*/ )
-    : mScopeId      ( NELogging::makeScopeId(scopeName)  )
-    , mScopePrio    ( static_cast<uint32_t>(priority) )
-    , mScopeName    ( scopeName != nullptr ? scopeName : "" )
-    , mIsRegistered ( true )
-    , mSessionId    ( 0 )
+namespace areg
 {
-    LogManager::registerLogScope( self() );
-}
 
-LogScope::LogScope(const InStream & stream)
-    : mScopeId      ( stream.read32Bits() )
-    , mScopePrio    ( stream.read32Bits() )
-    , mScopeName    ( stream )
-    , mIsRegistered ( false )
-    , mSessionId    ( 0 )
-{
-}
+    //////////////////////////////////////////////////////////////////////////////
+    // LogScope class implementation
+    //////////////////////////////////////////////////////////////////////////////
 
-LogScope::~LogScope()
-{
-    if (mIsRegistered)
+    //////////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////////
+
+    #if AREG_LOGS
+
+    LogScope::LogScope( const char * scopeName, LogPriority priority /*= areg::PrioNotset*/ )
+        : mScopeId      ( makeScopeId(scopeName)  )
+        , mScopePrio    ( static_cast<uint32_t>(priority) )
+        , mScopeName    ( scopeName != nullptr ? scopeName : "" )
+        , mIsRegistered ( true )
+        , mSessionId    ( 0 )
     {
-        LogManager::unregisterLogScope(self());
+        LogManager::registerLogScope( self() );
     }
-}
 
-void LogScope::setPriority(const char* newPrio)
-{
-    setPriority(static_cast<uint32_t>(NELogging::stringToLogPrio(newPrio)));
-}
+    LogScope::LogScope(const InStream & stream)
+        : mScopeId      ( stream.read32Bits() )
+        , mScopePrio    ( stream.read32Bits() )
+        , mScopeName    ( stream )
+        , mIsRegistered ( false )
+        , mSessionId    ( 0 )
+    {
+    }
 
-void LogScope::setPriority(const String& newPrio)
-{
-    setPriority(static_cast<uint32_t>(NELogging::stringToLogPrio(newPrio)));
-}
+    LogScope::~LogScope()
+    {
+        if (mIsRegistered)
+        {
+            LogManager::unregisterLogScope(self());
+        }
+    }
 
-#else   // AREG_LOGS
+    void LogScope::setPriority(const char* newPrio)
+    {
+        setPriority(static_cast<uint32_t>(stringToLogPrio(newPrio)));
+    }
 
-LogScope::LogScope(const char* /*scopeName*/, NELogging::LogPriority /*priority*/ /*= NELogging::PrioNotset*/)
-    : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
-    , mScopeName    ( )
-    , mIsRegistered (false)
-{
-}
+    void LogScope::setPriority(const String& newPrio)
+    {
+        setPriority(static_cast<uint32_t>(stringToLogPrio(newPrio)));
+    }
 
-LogScope::LogScope(const InStream& /*stream*/ )
-    : mScopeId      ( 0 )
-    , mScopePrio    ( static_cast<uint32_t>(NELogging::LogPriority::PrioInvalid) )
-    , mScopeName    ( )
-    , mIsRegistered (false)
-{
-}
+    #else   // AREG_LOGS
 
-LogScope::~LogScope()
-{
-}
+    LogScope::LogScope(const char* /*scopeName*/, LogPriority /*priority*/ /*= areg::PrioNotset*/)
+        : mScopeId      ( 0 )
+        , mScopePrio    ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
+        , mScopeName    ( )
+        , mIsRegistered (false)
+    {
+    }
 
-#endif  // AREG_LOGS
+    LogScope::LogScope(const InStream& /*stream*/ )
+        : mScopeId      ( 0 )
+        , mScopePrio    ( static_cast<uint32_t>(LogPriority::PrioInvalid) )
+        , mScopeName    ( )
+        , mIsRegistered (false)
+    {
+    }
+
+    LogScope::~LogScope()
+    {
+    }
+
+    #endif  // AREG_LOGS
+} // namespace areg

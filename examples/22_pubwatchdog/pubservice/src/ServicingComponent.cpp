@@ -20,13 +20,13 @@ DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface)
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStartSleep);
 DEF_LOG_SCOPE(examples_22_pubservice_ServicingComponent_requestStopService);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( entry, owner )
-    , HelloWatchdogStub ( static_cast<Component &>(self()) )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component         ( entry, owner )
+    , HelloWatchdogStub ( static_cast<areg::Component &>(self()) )
 {
 }
 
-void ServicingComponent::startupServiceInterface( Component & holder )
+void ServicingComponent::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE(examples_22_pubservice_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
@@ -46,7 +46,7 @@ void ServicingComponent::requestStartSleep( uint32_t timeoutSleep )
     {
         printf( "Hello Watchdog! Sleep [ %u ] ms, watchdog timeout [ %u ]\n", timeoutSleep, HelloWatchdog::TimeoutWatchdog );
         setServiceState( HelloWatchdog::ComponentState::Started );
-        Thread::sleep( timeoutSleep );
+        areg::Thread::sleep( timeoutSleep );
         responseStartSleep( timeoutSleep );
     }
     else
@@ -70,5 +70,5 @@ void ServicingComponent::requestShutdownService()
     LOG_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
     setServiceState( HelloWatchdog::ComponentState::Stopped );
-    Application::signalAppQuit();
+    areg::Application::signalAppQuit();
 }

@@ -15,11 +15,11 @@
 #include "logcollector/app/LogCollectorNames.hpp"
 #include "areg/appbase/AppDefs.hpp"
 
-char *      NELogCollectorSettings::SERVICE_NAME_ASCII    { NEApplication::LOGGER_SERVICE_NAME_ASCII };
+char *      logcollector::SERVICE_NAME_ASCII    { areg::LOGGER_SERVICE_NAME_ASCII };
 
-wchar_t *   NELogCollectorSettings::SERVICE_NAME_WIDE     { NEApplication::LOGGER_SERVICE_NAME_WIDE };
+wchar_t *   logcollector::SERVICE_NAME_WIDE     { areg::LOGGER_SERVICE_NAME_WIDE };
 
-char        NELogCollectorSettings::SERVICE_DISPLAY_NAME_ASCII[]
+char        logcollector::SERVICE_DISPLAY_NAME_ASCII[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'L', 'o', 'g', ' '
@@ -27,7 +27,7 @@ char        NELogCollectorSettings::SERVICE_DISPLAY_NAME_ASCII[]
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
-wchar_t     NELogCollectorSettings::SERVICE_DISPLAY_NAME_WIDE[]
+wchar_t     logcollector::SERVICE_DISPLAY_NAME_WIDE[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'L', 'o', 'g', ' '
@@ -35,7 +35,7 @@ wchar_t     NELogCollectorSettings::SERVICE_DISPLAY_NAME_WIDE[]
         , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
 };
 
-char        NELogCollectorSettings::SERVICE_DESCRIBE_ASCII[]
+char        logcollector::SERVICE_DESCRIBE_ASCII[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
@@ -46,7 +46,7 @@ char        NELogCollectorSettings::SERVICE_DESCRIBE_ASCII[]
         , 'l', 'o', 'g', 's', '.', '\0'
 };
 
-wchar_t     NELogCollectorSettings::SERVICE_DESCRIBE_WIDE[]
+wchar_t     logcollector::SERVICE_DESCRIBE_WIDE[]
 {
           'A', 'R', 'E', 'G', ' '
         , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '

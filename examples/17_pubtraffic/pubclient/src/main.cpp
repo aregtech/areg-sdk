@@ -43,10 +43,10 @@ int main()
         , {"quit"}
     };
 
-    String roleName( traffic::SimpleLightClientNamePrefix);
+    areg::String roleName( traffic::SimpleLightClientNamePrefix);
     char name[128];
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.enableConsoleInput( true );
     console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 
@@ -59,26 +59,26 @@ int main()
     console.outputTxt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
     console.outputTxt( { 0, 6 }, "................................................" );
     console.outputTxt( { 0, 7 }, "Type the choice: " );
-    console.waitForInput( [&]( const String cmd ) -> bool
+    console.waitForInput( [&]( const areg::String cmd ) -> bool
         {
             bool result{ false };
-            if ( cmd.compare( directions[0], false ) == NEMath::Ordering::Equal )
+            if ( cmd.compare( directions[0], false ) == areg::Ordering::Equal )
             {
                 trafficDirection = traffic::TrafficDirection::SouthNorth;
                 roleName += "SouthNorth";
-                roleName = NEUtilities::generateName( roleName, name, 128 );
+                roleName = areg::generateName( roleName, name, 128 );
                 result = true;
                 console.outputTxt( { 0, 8 }, "Selected direction is South - North" );
             }
-            else if ( cmd.compare( directions[1], false ) == NEMath::Ordering::Equal )
+            else if ( cmd.compare( directions[1], false ) == areg::Ordering::Equal )
             {
                 trafficDirection = traffic::TrafficDirection::EastWest;
                 roleName += "EastWest";
-                roleName = NEUtilities::generateName( roleName, name, 128 );
+                roleName = areg::generateName( roleName, name, 128 );
                 result = true;
                 console.outputTxt( { 0, 8 }, "Selected direction is East - West" );
             }
-            else if ( cmd.compare( directions[2], false ) == NEMath::Ordering::Equal )
+            else if ( cmd.compare( directions[2], false ) == areg::Ordering::Equal )
             {
                 result = true; // do not set the direction, just stop input
             }
@@ -92,15 +92,15 @@ int main()
     console.moveToLine( 10 );
 
     // Initialize application, use default settings: enable logging, servicing, routing, timer and watchdog.
-    Application::initApplication( );
+    areg::Application::initApplication( );
 
     // Create model manually during run-time.
-    NERegistry::Model model(_modelName);
+    areg::Model model(_modelName);
 
     // Add component thread entry.
-    NERegistry::ComponentThreadEntry & threadEntry = model.addThread("SimpleTrafficLighThread");
+    areg::ComponentThreadEntry & threadEntry = model.addThread("SimpleTrafficLighThread");
     // Add component in the thread and set the service dependency.
-    NERegistry::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
+    areg::ComponentEntry& component = threadEntry.addComponent<TrafficLightClient>(roleName);
     component.addDependencyService( traffic::SimpleLightControllerName);
     
     // Set component data, i.e. specify the traffic direction.
@@ -108,19 +108,19 @@ int main()
     component.setData( data );
     
     // Add created model to the model list.
-    ComponentLoader::addModelUnique(model);
+    areg::ComponentLoader::addModelUnique(model);
 
     // By passing nullptr, load all models to initialize components
-    Application::loadModel( nullptr );
+    areg::Application::loadModel( nullptr );
         
     // wait until Application quit signal is set.
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 
     // By passing nullptr, stop and unload all models.
-    Application::unloadModel( nullptr );
+    areg::Application::unloadModel( nullptr );
 
     // release and cleanup resources of application.
-    Application::releaseApplication();
+    areg::Application::releaseApplication();
     
 	return 0;
 }

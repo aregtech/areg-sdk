@@ -41,470 +41,474 @@ DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDi
 DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
 DEF_LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
 
-
-ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & serviceManager )
-    : mServiceManager   ( serviceManager )
-    , mServerList       ( )
+namespace areg
 {
-}
 
-void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
-                                                        , const InStream& stream
-                                                        , ConnectionProvider& connectProvider
-                                                        , RegistrationProvider& registerProvider )
-{
-    switch ( cmdService )
+
+    ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & serviceManager )
+        : mServiceManager   ( serviceManager )
+        , mServerList       ( )
     {
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
-        {
-            mServerList.clear( );
-            connectProvider.disconnectServiceHost( );
-            mServiceManager.removeAllEvents( );
-            mServiceManager.triggerExit( );
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
-        {
-            for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
-            {
-                ServerInfo si;
-                ClientList clientList;
-
-                mServerList.getAtPosition( mapPos, si, clientList );
-                for ( auto listPos = clientList.firstPosition( ); clientList.isValidPosition( listPos ); listPos = clientList.nextPosition( listPos ) )
-                {
-                    const ClientInfo & client = clientList.valueAtPosition( listPos );
-                    if ( client.isConnected( ) )
-                    {
-                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::ServiceConnectionState::Disconnected );
-                    }
-                }
-            }
-
-            mServerList.clear( );
-            connectProvider.disconnectServiceHost( );
-            mServiceManager.removeEvents( false );
-            mServiceManager.pulseExit( );
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
-        {
-            ProxyAddress  addrProxy;
-            Channel       channel;
-            stream >> addrProxy;
-            stream >> channel;
-            addrProxy.setChannel( channel );
-            _registerClient( addrProxy, registerProvider);
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
-        {
-            ProxyAddress  addrProxy;
-            Channel       channel;
-            NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
-            stream >> addrProxy;
-            stream >> channel;
-            stream >> reason;
-            addrProxy.setChannel( channel );
-            _unregisterClient( addrProxy, reason, registerProvider);
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
-        {
-            StubAddress   addrstub;
-            Channel       channel;
-            stream >> addrstub;
-            stream >> channel;
-            addrstub.setChannel( channel );
-            _registerServer( addrstub, registerProvider);
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
-        {
-            StubAddress   addrstub;
-            Channel       channel;
-            NEService::DisconnectReason reason{NEService::DisconnectReason::UndefinedReason};
-            stream >> addrstub;
-            stream >> channel;
-            stream >> reason;
-            addrstub.setChannel( channel );
-            _unregisterServer( addrstub, reason, registerProvider);
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
-        {
-            NERemoteService::RemoteServiceKind service{ NERemoteService::RemoteServiceKind::Unknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined) };
-            stream >> service;
-            stream >> connectTypes;
-
-            connectProvider.setupServiceConnectionData(service, connectTypes);
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
-        {
-            NERemoteService::RemoteServiceKind service{ NERemoteService::RemoteServiceKind::Unknown };
-            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::ConnectionType::Undefined) };
-            stream >> service;
-            stream >> connectTypes;
-
-            if (connectProvider.setupServiceConnectionData(service, connectTypes))
-            {
-                connectProvider.connectServiceHost();
-            }
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
-        {
-            String   ipAddress;
-            uint16_t portNr = 0;
-            stream >> ipAddress;
-            stream >> portNr;
-
-            connectProvider.applyServiceConnectionData( ipAddress, portNr );
-            if (connectProvider.isServiceHostSetup( ) )
-            {
-                connectProvider.connectServiceHost( );
-            }
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
-        {
-            connectProvider.disconnectServiceHost( );
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
-        {
-            for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
-            {
-                const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                const ClientList & clientList = mServerList.valueAtPosition( posMap );
-
-                if ( server.isServicePublic( ) && server.isLocalAddress( ) && server.isValid( ) )
-                {
-                    registerProvider.registerServiceProvider( server );
-                }
-
-                for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
-                {
-                    const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
-                    if ( proxy.isServicePublic( ) && (proxy.isTargetLocal( ) == false) && proxy.isValid( ) )
-                    {
-                        registerProvider.registerServiceConsumer( proxy );
-                    }
-                }
-            }
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
-        {
-            // Create service provider and service consumer list
-            // to be able to unregister entries, because they are removing
-            // elements from the existing list and it may invalidate position object.
-            ArrayList<StubAddress> stubList;
-            ArrayList<ProxyAddress> proxyList;
-            for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
-            {
-                const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
-                const ClientList & clientList = mServerList.valueAtPosition( posMap );
-
-                if ( server.isServicePublic( ) && server.isRemoteAddress( ) && server.isValid( ) )
-                {
-                    stubList.add( server );
-                }
-
-                for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
-                {
-                    const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
-                    if ( proxy.isServicePublic( ) && proxy.isRemoteAddress( ) && proxy.isValid( ) )
-                    {
-                        proxyList.add( proxy );
-                    }
-                }
-            }
-
-            NEService::DisconnectReason reason { NEService::DisconnectReason::ProviderDisconnected };
-            if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection )
-            {
-                reason = NEService::DisconnectReason::ServiceLost;
-            }
-
-            for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
-            {
-                _unregisterServer( stubList[ i ], reason, registerProvider);
-            }
-
-            for ( uint32_t i = 0; i < proxyList.getSize( ); ++i )
-            {
-                _unregisterClient( proxyList[ i ], reason, registerProvider);
-            }
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
-        {
-            String threadName;
-            stream >> threadName;
-            if ( _terminateComponentThread( threadName ) )
-            {
-                ServiceManager::_requestCreateThread( threadName );
-            }
-        }
-        break;
-
-    case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
-        {
-            String threadName;
-            stream >> threadName;
-            _startComponentThread( threadName );
-        }
-        break;
-
-    default:
-        ASSERT( false );
-        break;
-    }
-}
-
-void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider)
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
-
-    if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
-    {
-        registerProvider.registerServiceProvider( whichServer );
     }
 
-    ClientList clientList;
-
-#if AREG_LOGS
-    const ServerInfo & server = mServerList.registerServer( whichServer, clientList );
-    LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( server.getConnectionStatus( ) )
-               , clientList.getSize( ) );
-#else   // !AREG_LOGS
-    mServerList.registerServer( whichServer, clientList );
-#endif  // !AREG_LOGS
-
-    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+    void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::ServiceManagerCommand cmdService
+                                                            , const InStream& stream
+                                                            , ConnectionProvider& connectProvider
+                                                            , RegistrationProvider& registerProvider )
     {
-        const ClientInfo & client{ clientList.valueAtPosition( pos ) };
+        switch ( cmdService )
+        {
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_ShutdownService:
+            {
+                mServerList.clear( );
+                connectProvider.disconnectServiceHost( );
+                mServiceManager.removeAllEvents( );
+                mServiceManager.triggerExit( );
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StopRoutingClient:
+            {
+                for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
+                {
+                    ServerInfo si;
+                    ClientList clientList;
+
+                    mServerList.getAtPosition( mapPos, si, clientList );
+                    for ( auto listPos = clientList.firstPosition( ); clientList.isValidPosition( listPos ); listPos = clientList.nextPosition( listPos ) )
+                    {
+                        const ClientInfo & client = clientList.valueAtPosition( listPos );
+                        if ( client.isConnected( ) )
+                        {
+                            _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), ServiceConnectionState::Disconnected );
+                        }
+                    }
+                }
+
+                mServerList.clear( );
+                connectProvider.disconnectServiceHost( );
+                mServiceManager.removeEvents( false );
+                mServiceManager.pulseExit( );
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterProxy:
+            {
+                ProxyAddress  addrProxy;
+                Channel       channel;
+                stream >> addrProxy;
+                stream >> channel;
+                addrProxy.setChannel( channel );
+                _registerClient( addrProxy, registerProvider);
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterProxy:
+            {
+                ProxyAddress  addrProxy;
+                Channel       channel;
+                DisconnectReason reason{DisconnectReason::UndefinedReason};
+                stream >> addrProxy;
+                stream >> channel;
+                stream >> reason;
+                addrProxy.setChannel( channel );
+                _unregisterClient( addrProxy, reason, registerProvider);
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterStub:
+            {
+                StubAddress   addrstub;
+                Channel       channel;
+                stream >> addrstub;
+                stream >> channel;
+                addrstub.setChannel( channel );
+                _registerServer( addrstub, registerProvider);
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterStub:
+            {
+                StubAddress   addrstub;
+                Channel       channel;
+                DisconnectReason reason{DisconnectReason::UndefinedReason};
+                stream >> addrstub;
+                stream >> channel;
+                stream >> reason;
+                addrstub.setChannel( channel );
+                _unregisterServer( addrstub, reason, registerProvider);
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_ConfigureConnection:
+            {
+                RemoteServiceKind service{ RemoteServiceKind::Unknown };
+                uint32_t connectTypes{ static_cast<uint32_t>(ConnectionType::Undefined) };
+                stream >> service;
+                stream >> connectTypes;
+
+                connectProvider.setupServiceConnectionData(service, connectTypes);
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartConnection:
+            {
+                RemoteServiceKind service{ RemoteServiceKind::Unknown };
+                uint32_t connectTypes{ static_cast<uint32_t>(ConnectionType::Undefined) };
+                stream >> service;
+                stream >> connectTypes;
+
+                if (connectProvider.setupServiceConnectionData(service, connectTypes))
+                {
+                    connectProvider.connectServiceHost();
+                }
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartNetConnection:
+            {
+                String   ipAddress;
+                uint16_t portNr = 0;
+                stream >> ipAddress;
+                stream >> portNr;
+
+                connectProvider.applyServiceConnectionData( ipAddress, portNr );
+                if (connectProvider.isServiceHostSetup( ) )
+                {
+                    connectProvider.connectServiceHost( );
+                }
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StopConnection:
+            {
+                connectProvider.disconnectServiceHost( );
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_RegisterConnection:
+            {
+                for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+                {
+                    const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
+                    const ClientList & clientList = mServerList.valueAtPosition( posMap );
+
+                    if ( server.isServicePublic( ) && server.isLocalAddress( ) && server.isValid( ) )
+                    {
+                        registerProvider.registerServiceProvider( server );
+                    }
+
+                    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                    {
+                        const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
+                        if ( proxy.isServicePublic( ) && (proxy.isTargetLocal( ) == false) && proxy.isValid( ) )
+                        {
+                            registerProvider.registerServiceConsumer( proxy );
+                        }
+                    }
+                }
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_UnregisterConnection:
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection:
+            {
+                // Create service provider and service consumer list
+                // to be able to unregister entries, because they are removing
+                // elements from the existing list and it may invalidate position object.
+                ArrayList<StubAddress> stubList;
+                ArrayList<ProxyAddress> proxyList;
+                for ( ServerList::MAPPOS posMap = mServerList.firstPosition( ); mServerList.isValidPosition( posMap ); posMap = mServerList.nextPosition( posMap ) )
+                {
+                    const StubAddress & server = mServerList.keyAtPosition( posMap ).getAddress( );
+                    const ClientList & clientList = mServerList.valueAtPosition( posMap );
+
+                    if ( server.isServicePublic( ) && server.isRemoteAddress( ) && server.isValid( ) )
+                    {
+                        stubList.add( server );
+                    }
+
+                    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                    {
+                        const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
+                        if ( proxy.isServicePublic( ) && proxy.isRemoteAddress( ) && proxy.isValid( ) )
+                        {
+                            proxyList.add( proxy );
+                        }
+                    }
+                }
+
+                DisconnectReason reason { DisconnectReason::ProviderDisconnected };
+                if ( cmdService == ServiceManagerEventData::ServiceManagerCommand::CMD_LostConnection )
+                {
+                    reason = DisconnectReason::ServiceLost;
+                }
+
+                for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
+                {
+                    _unregisterServer( stubList[ i ], reason, registerProvider);
+                }
+
+                for ( uint32_t i = 0; i < proxyList.getSize( ); ++i )
+                {
+                    _unregisterClient( proxyList[ i ], reason, registerProvider);
+                }
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_TerminateComponentThread:
+            {
+                String threadName;
+                stream >> threadName;
+                if ( _terminateComponentThread( threadName ) )
+                {
+                    ServiceManager::_requestCreateThread( threadName );
+                }
+            }
+            break;
+
+        case ServiceManagerEventData::ServiceManagerCommand::CMD_StartComponentThread:
+            {
+                String threadName;
+                stream >> threadName;
+                _startComponentThread( threadName );
+            }
+            break;
+
+        default:
+            ASSERT( false );
+            break;
+        }
+    }
+
+    void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, RegistrationProvider& registerProvider)
+    {
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
+
+        if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
+        {
+            registerProvider.registerServiceProvider( whichServer );
+        }
+
+        ClientList clientList;
+
+    #if AREG_LOGS
+        const ServerInfo & server = mServerList.registerServer( whichServer, clientList );
+        LOG_DBG( "Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( server.getConnectionStatus( ) )
+                   , clientList.getSize( ) );
+    #else   // !AREG_LOGS
+        mServerList.registerServer( whichServer, clientList );
+    #endif  // !AREG_LOGS
+
+        for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+        {
+            const ClientInfo & client{ clientList.valueAtPosition( pos ) };
+            if ( client.isConnected( ) )
+            {
+                _sendClientConnectedEvent( client.getAddress( ), whichServer );
+            }
+        }
+    }
+
+    void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const DisconnectReason reason, RegistrationProvider& registerProvider)
+    {
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
+
+        if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
+        {
+            registerProvider.unregisterServiceProvider( whichServer, reason );
+        }
+
+        ClientList clientList;
+
+    #if AREG_LOGS
+        ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
+        LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( reason )
+                   , getString( server.getConnectionStatus( ) )
+                   , clientList.getSize( ) );
+
+    #else   // AREG_LOGS
+
+        static_cast<void>(mServerList.unregisterServer( whichServer, clientList ));
+
+    #endif  // AREG_LOGS
+
+        ServiceConnectionState status = serviceConnection( reason );
+        for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+        {
+            const ClientInfo & client{ clientList.valueAtPosition( pos ) };
+            if ( client.isConnected( ) )
+            {
+                _sendClientDisconnectEvent( client.getAddress( ), whichServer, status );
+            }
+        }
+    }
+
+    void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
+    {
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
+
+        if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
+        {
+            registerProvider.registerServiceConsumer( whichClient );
+        }
+
+        ClientInfo client;
+        const ServerInfo & server = mServerList.registerClient( whichClient, client );
+
+        LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
+                   , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( client.getConnectionStatus( ) ) );
+
         if ( client.isConnected( ) )
         {
-            _sendClientConnectedEvent( client.getAddress( ), whichServer );
-        }
-    }
-}
-
-void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
-
-    if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
-    {
-        registerProvider.unregisterServiceProvider( whichServer, reason );
-    }
-
-    ClientList clientList;
-
-#if AREG_LOGS
-    ServerInfo server( mServerList.unregisterServer( whichServer, clientList ) );
-    LOG_DBG( "Server [ %s ] is unregistered with reason [ %s ]. The service connection status was [ %s ], there are [ %d ] waiting clients"
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( reason )
-               , NEService::getString( server.getConnectionStatus( ) )
-               , clientList.getSize( ) );
-
-#else   // AREG_LOGS
-
-    static_cast<void>(mServerList.unregisterServer( whichServer, clientList ));
-
-#endif  // AREG_LOGS
-
-    NEService::ServiceConnectionState status = NEService::serviceConnection( reason );
-    for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
-    {
-        const ClientInfo & client{ clientList.valueAtPosition( pos ) };
-        if ( client.isConnected( ) )
-        {
-            _sendClientDisconnectEvent( client.getAddress( ), whichServer, status );
-        }
-    }
-}
-
-void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, RegistrationProvider& registerProvider)
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
-
-    if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
-    {
-        registerProvider.registerServiceConsumer( whichClient );
-    }
-
-    ClientInfo client;
-    const ServerInfo & server = mServerList.registerClient( whichClient, client );
-
-    LOG_DBG( "Client [ %s ] is registered for server [ %s ], connection status [ %s ]"
-               , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( client.getConnectionStatus( ) ) );
-
-    if ( client.isConnected( ) )
-    {
-        _sendClientConnectedEvent( client.getAddress(), server.getAddress( ) );
-    }
-    else
-    {
-        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
-    }
-}
-
-void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::DisconnectReason reason, RegistrationProvider& registerProvider)
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
-
-    if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
-    {
-        registerProvider.unregisterServiceConsumer( whichClient, reason );
-    }
-
-    ClientInfo client;
-
-    ServerInfo server = mServerList.unregisterClient( whichClient, client );
-    LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
-               , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
-               , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
-               , NEService::getString( client.getConnectionStatus( ) ) );
-
-    // Unregister client first, then send event that client does not receive notification
-    if ( client.isConnected( ) )
-    {
-        _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), NEService::serviceConnection( reason ) );
-    }
-    else
-    {
-        LOG_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
-    }
-}
-
-void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
-    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
-    {
-        LOG_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
-                   , StubAddress::convAddressToPath( server ).getString( )
-                   , ProxyAddress::convAddressToPath( client ).getString( ) );
-
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
-        if ( clientConnect != nullptr )
-        {
-            server.deliverServiceEvent( *clientConnect );
-        }
-    }
-
-    if ( client.isLocalAddress( ) && client.getSource( ) != NEService::SOURCE_UNKNOWN )
-    {
-        LOG_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
-                   , ProxyAddress::convAddressToPath( client ).getString( )
-                   , StubAddress::convAddressToPath( server ).getString( ) );
-
-        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::ServiceConnectionState::Connected );
-        if ( proxyConnect != nullptr )
-        {
-            client.deliverServiceEvent( *proxyConnect );
-        }
-    }
-}
-
-void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
-                                                             , const StubAddress & server
-                                                             , const NEService::ServiceConnectionState status ) const
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
-
-    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
-    {
-        LOG_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
-                   , StubAddress::convAddressToPath( server ).getString( )
-                   , ProxyAddress::convAddressToPath( client ).getString( ) );
-
-        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
-        if ( clientConnect != nullptr )
-        {
-            server.deliverServiceEvent( *clientConnect );
-        }
-    }
-
-    if ( client.isLocalAddress( ) )
-    {
-        LOG_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
-                   , ProxyAddress::convAddressToPath( client ).getString( )
-                   , StubAddress::convAddressToPath( server ).getString( ) );
-
-        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
-        if ( proxyConnect != nullptr )
-        {
-            client.deliverServiceEvent( *proxyConnect );
-        }
-    }
-}
-
-bool ServiceManagerEventProcessor::_terminateComponentThread( const String & threadName )
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
-
-    bool result{ false };
-
-    Thread * thread = Thread::findThreadByName( threadName );
-    ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
-    if ( compThread != nullptr )
-    {
-        LOG_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );
-        result = true;
-        compThread->terminateSelf( );
-    }
-    else
-    {
-        LOG_INFO( "Was not able to find component thread [ %s ] to terminate", threadName.getString( ) );
-    }
-
-    return result;
-}
-
-void ServiceManagerEventProcessor::_startComponentThread( const String & threadName )
-{
-    LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
-
-    const NERegistry::ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
-    Thread * thread = Thread::findThreadByName( threadName );
-    if ( entry.isValid( ) && (thread == nullptr) )
-    {
-        ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
-        if ( (compThread != nullptr) && compThread->createThread( NECommon::WAIT_INFINITE ) )
-        {
-            LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );
+            _sendClientConnectedEvent( client.getAddress(), server.getAddress( ) );
         }
         else
         {
-            LOG_WARN( "Failed to create and start component thread [ %s ]", threadName.getString( ) );
+            LOG_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
         }
     }
-    else
+
+    void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const DisconnectReason reason, RegistrationProvider& registerProvider)
     {
-        LOG_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.getString( ) );
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
+
+        if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
+        {
+            registerProvider.unregisterServiceConsumer( whichClient, reason );
+        }
+
+        ClientInfo client;
+
+        ServerInfo server = mServerList.unregisterClient( whichClient, client );
+        LOG_DBG( "Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
+                   , ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( )
+                   , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
+                   , getString( client.getConnectionStatus( ) ) );
+
+        // Unregister client first, then send event that client does not receive notification
+        if ( client.isConnected( ) )
+        {
+            _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), serviceConnection( reason ) );
+        }
+        else
+        {
+            LOG_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+        }
     }
-}
+
+    void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const
+    {
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
+        if ( server.isLocalAddress( ) && server.getSource( ) != SOURCE_UNKNOWN )
+        {
+            LOG_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
+                       , StubAddress::convAddressToPath( server ).getString( )
+                       , ProxyAddress::convAddressToPath( client ).getString( ) );
+
+            StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, ServiceConnectionState::Connected );
+            if ( clientConnect != nullptr )
+            {
+                server.deliverServiceEvent( *clientConnect );
+            }
+        }
+
+        if ( client.isLocalAddress( ) && client.getSource( ) != SOURCE_UNKNOWN )
+        {
+            LOG_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
+                       , ProxyAddress::convAddressToPath( client ).getString( )
+                       , StubAddress::convAddressToPath( server ).getString( ) );
+
+            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, ServiceConnectionState::Connected );
+            if ( proxyConnect != nullptr )
+            {
+                client.deliverServiceEvent( *proxyConnect );
+            }
+        }
+    }
+
+    void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
+                                                                 , const StubAddress & server
+                                                                 , const ServiceConnectionState status ) const
+    {
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
+
+        if ( server.isLocalAddress( ) && server.getSource( ) != SOURCE_UNKNOWN )
+        {
+            LOG_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
+                       , StubAddress::convAddressToPath( server ).getString( )
+                       , ProxyAddress::convAddressToPath( client ).getString( ) );
+
+            StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
+            if ( clientConnect != nullptr )
+            {
+                server.deliverServiceEvent( *clientConnect );
+            }
+        }
+
+        if ( client.isLocalAddress( ) )
+        {
+            LOG_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
+                       , ProxyAddress::convAddressToPath( client ).getString( )
+                       , StubAddress::convAddressToPath( server ).getString( ) );
+
+            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
+            if ( proxyConnect != nullptr )
+            {
+                client.deliverServiceEvent( *proxyConnect );
+            }
+        }
+    }
+
+    bool ServiceManagerEventProcessor::_terminateComponentThread( const String & threadName )
+    {
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__terminateComponentThread );
+
+        bool result{ false };
+
+        Thread * thread = Thread::findThreadByName( threadName );
+        ComponentThread * compThread = AREG_RUNTIME_CAST( thread, ComponentThread );
+        if ( compThread != nullptr )
+        {
+            LOG_WARN( "Terminating component thread [ %s ]", compThread->getName( ).getString( ) );
+            result = true;
+            compThread->terminateSelf( );
+        }
+        else
+        {
+            LOG_INFO( "Was not able to find component thread [ %s ] to terminate", threadName.getString( ) );
+        }
+
+        return result;
+    }
+
+    void ServiceManagerEventProcessor::_startComponentThread( const String & threadName )
+    {
+        LOG_SCOPE( areg_component_private_ServiceManagerEventProcessor__startComponentThread );
+
+        const ComponentThreadEntry & entry = ComponentLoader::findThreadEntry( threadName );
+        Thread * thread = Thread::findThreadByName( threadName );
+        if ( entry.isValid( ) && (thread == nullptr) )
+        {
+            ComponentThread * compThread = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
+            if ( (compThread != nullptr) && compThread->createThread( WAIT_INFINITE ) )
+            {
+                LOG_DBG( "Succeeded to create and start component thread [ %s ]", threadName.getString( ) );
+            }
+            else
+            {
+                LOG_WARN( "Failed to create and start component thread [ %s ]", threadName.getString( ) );
+            }
+        }
+        else
+        {
+            LOG_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.getString( ) );
+        }
+    }
+} // namespace areg

@@ -21,63 +21,67 @@
 
 #include <utility>
 
-#if AREG_LOGS
-
 namespace
 {
-    constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(NELogging::LogEntry)) };
-    constexpr const uint32_t _logNamesSize{ static_cast<uint32_t>(NELogging::LOG_NAMES_SIZE * 2) };
+    constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(areg::LogEntry)) };
+    constexpr const uint32_t _logNamesSize{ static_cast<uint32_t>(areg::LOG_NAMES_SIZE * 2) };
     constexpr const uint32_t _logLocalMessage{ _logMessageSize - _logNamesSize };
 }
 
-LoggingEventData::LoggingEventData()
-    : mAction       ( LoggingEventData::LogAction::Undefined )
-    , mDataBuffer   ( )
+namespace areg
 {
-}
+    #if AREG_LOGS
 
-LoggingEventData::LoggingEventData( LoggingEventData::LogAction action )
-    : mAction       ( action )
-    , mDataBuffer   ( )
-{
-}
+    LoggingEventData::LoggingEventData()
+        : mAction       ( LoggingEventData::LogAction::Undefined )
+        , mDataBuffer   ( )
+    {
+    }
 
-LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer )
-    : mAction       ( action )
-    , mDataBuffer   ( dataBuffer )
-{
-}
+    LoggingEventData::LoggingEventData( LoggingEventData::LogAction action )
+        : mAction       ( action )
+        , mDataBuffer   ( )
+    {
+    }
 
-LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const NELogging::LogEntry & logData )
-    : mAction       ( action )
-    , mDataBuffer   (_logMessageSize, reinterpret_cast<const uint8_t *>(&logData), _logLocalMessage)
-{
-}
+    LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const SharedBuffer & dataBuffer )
+        : mAction       ( action )
+        , mDataBuffer   ( dataBuffer )
+    {
+    }
 
-LoggingEventData::LoggingEventData( const LoggingEventData & src )
-    : mAction       ( src.mAction )
-    , mDataBuffer   ( src.mDataBuffer )
-{
-}
+    LoggingEventData::LoggingEventData( LoggingEventData::LogAction action, const LogEntry & logData )
+        : mAction       ( action )
+        , mDataBuffer   (_logMessageSize, reinterpret_cast<const uint8_t *>(&logData), _logLocalMessage)
+    {
+    }
 
-LoggingEventData::LoggingEventData( LoggingEventData && src ) noexcept
-    : mAction       ( src.mAction )
-    , mDataBuffer   ( std::move(src.mDataBuffer) )
-{
-}
+    LoggingEventData::LoggingEventData( const LoggingEventData & src )
+        : mAction       ( src.mAction )
+        , mDataBuffer   ( src.mDataBuffer )
+    {
+    }
 
-LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src)
-{
-    mAction = src.mAction;
-    mDataBuffer = src.mDataBuffer;
-    return (*this);
-}
+    LoggingEventData::LoggingEventData( LoggingEventData && src ) noexcept
+        : mAction       ( src.mAction )
+        , mDataBuffer   ( std::move(src.mDataBuffer) )
+    {
+    }
 
-LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noexcept
-{
-    mAction = src.mAction;
-    mDataBuffer = std::move(src.mDataBuffer);
-    return (*this);
-}
+    LoggingEventData & LoggingEventData::operator = (const LoggingEventData & src)
+    {
+        mAction = src.mAction;
+        mDataBuffer = src.mDataBuffer;
+        return (*this);
+    }
 
-#endif  // AREG_LOGS
+    LoggingEventData & LoggingEventData::operator = ( LoggingEventData && src ) noexcept
+    {
+        mAction = src.mAction;
+        mDataBuffer = std::move(src.mDataBuffer);
+        return (*this);
+    }
+
+    #endif  // AREG_LOGS
+
+} // namespace areg

@@ -40,10 +40,10 @@ namespace
     ConnectionController* _thisService{ nullptr };
 }
 
-ConnectionController::ConnectionController( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
-    : Component             ( entry, ownerThread )
-    , ConnectionManagerStub ( static_cast<Component &>(self()) )
-    , CentralMessagerStub   ( static_cast<Component &>(self()) )
+ConnectionController::ConnectionController( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
+    : areg::Component             ( entry, ownerThread )
+    , ConnectionManagerStub ( static_cast<areg::Component &>(self()) )
+    , CentralMessagerStub   ( static_cast<areg::Component &>(self()) )
 
     , mWnd                  ( std::any_cast<HWND>(entry.getData()) )
     , mCookies              ( ConnectionManager::InvalidCookie )
@@ -57,7 +57,7 @@ ConnectionController::~ConnectionController()
     mWnd    =   0;
 }
 
-void ConnectionController::startupServiceInterface( Component & holder )
+void ConnectionController::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE( centralapp_ConnectionController_startupServiceInterface );
     ConnectionManagerStub::startupServiceInterface( holder );
@@ -68,7 +68,7 @@ void ConnectionController::startupServiceInterface( Component & holder )
     setConnectionList(ConnectionManager::MapConnections( ) );
 }
 
-void ConnectionController::requestConnect( const String & nickName, const DateTime & dateTime )
+void ConnectionController::requestConnect( const areg::String & nickName, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestConnect );
     LOG_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime()));
@@ -111,7 +111,7 @@ void ConnectionController::requestConnect( const String & nickName, const DateTi
     }
 }
 
-void ConnectionController::requestRegisterConnection( const String & nickName, uint32_t cookie, uint32_t connectCookie, const DateTime & dateRegister )
+void ConnectionController::requestRegisterConnection( const areg::String & nickName, uint32_t cookie, uint32_t connectCookie, const areg::DateTime & dateRegister )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestRegisterConnection );
     LOG_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.formatTime( )) );
@@ -140,7 +140,7 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
 
                 uint32_t whichCookie = connection.cookie != ConnectionManager::InvalidCookie ? connection.cookie : connectCookie;
                 connection.cookie       = whichCookie != ConnectionManager::InvalidCookie ? whichCookie : getNextCookie();
-                connection.connectedTime= DateTime::getNow( );
+                connection.connectedTime= areg::DateTime::getNow( );
                 mapConnections.setAt( connection.cookie, connection );
 
                 LOG_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
@@ -156,11 +156,11 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
                     chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
                     if ( data != nullptr )
                     {
-                        NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+                        areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
                         data->dataSave      = connection.cookie;
                         data->timeSend      = connection.connectTime;
                         data->timeReceived  = connection.connectedTime;
-                        data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
+                        data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
 
                         ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdRegistered), 0, reinterpret_cast<LPARAM>(data) );
                     }
@@ -189,7 +189,7 @@ void ConnectionController::requestRegisterConnection( const String & nickName, u
     }
 }
 
-void ConnectionController::requestDisconnect( const String & nickName, uint32_t cookie, const DateTime & dateTime )
+void ConnectionController::requestDisconnect( const areg::String & nickName, uint32_t cookie, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestDisconnect );
     ConnectionManager::ConnectionRecord connection;
@@ -211,11 +211,11 @@ void ConnectionController::requestDisconnect( const String & nickName, uint32_t 
             chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
             if ( data != nullptr )
             {
-                NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+                areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
                 data->dataSave      = connection.cookie;
                 data->timeSend      = connection.connectTime;
                 data->timeReceived  = connection.connectedTime;
-                data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
+                data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
 
                 ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdUnregistered), 0, reinterpret_cast<LPARAM>(data) );
             }
@@ -234,7 +234,7 @@ void ConnectionController::requestDisconnect( const String & nickName, uint32_t 
     }
 }
 
-void ConnectionController::requestSendMessage( const String & nickName, uint32_t cookie, const String & newMessage, const DateTime & dateTime )
+void ConnectionController::requestSendMessage( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage, const areg::DateTime & dateTime )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestSendMessage );
 
@@ -248,18 +248,18 @@ void ConnectionController::requestSendMessage( const String & nickName, uint32_t
                     , static_cast<const char *>(newMessage)
                     , static_cast<const char *>(dateTime.formatTime()) );
         broadcastSendMessage(connection.nickName, cookie, newMessage, dateTime);
-        broadcastKeyTyping( connection.nickName, cookie, String::getEmptyString() );
+        broadcastKeyTyping( connection.nickName, cookie, areg::String::getEmptyString() );
 
         HWND hWnd = mWnd;
         chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+            areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = dateTime;
-            data->timeReceived  = DateTime::getNow();
-            data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
-            NEString::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
+            data->timeReceived  = areg::DateTime::getNow();
+            data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
+            areg::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
 
             ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
@@ -270,7 +270,7 @@ void ConnectionController::requestSendMessage( const String & nickName, uint32_t
     }
 }
 
-void ConnectionController::requestKeyTyping( const String & nickName, uint32_t cookie, const String & newMessage )
+void ConnectionController::requestKeyTyping( const areg::String & nickName, uint32_t cookie, const areg::String & newMessage )
 {
     LOG_SCOPE( centralapp_ConnectionController_requestKeyTyping );
 
@@ -286,12 +286,12 @@ void ConnectionController::requestKeyTyping( const String & nickName, uint32_t c
         chat:: MessageData * data = ::IsWindow( hWnd ) ? chat::newData( ) : nullptr;
         if ( data != nullptr )
         {
-            NEString::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
+            areg::copyString<TCHAR, char>( data->nickName, ConnectionManager::NicknameMaxLen, connection.nickName.getString( ) );
             data->dataSave      = connection.cookie;
             data->timeSend      = connection.connectTime;
             data->timeReceived  = connection.connectedTime;
-            data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
-            NEString::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
+            data->message[0]    = static_cast<TCHAR>(areg::EndOfString);
+            areg::copyString<TCHAR, char>( data->message, CentralMessager::MessageMaxLen, newMessage.getString() );
 
             ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::WindowCommand::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
@@ -302,7 +302,7 @@ void ConnectionController::requestKeyTyping( const String & nickName, uint32_t c
     }
 }
 
-bool ConnectionController::FindConnection( const String & nickName, ConnectionManager::ConnectionRecord & connection )
+bool ConnectionController::FindConnection( const areg::String & nickName, ConnectionManager::ConnectionRecord & connection )
 {
     bool result = false;
     const ConnectionManager::MapConnections & mapClients = getConnectionList();
@@ -319,7 +319,7 @@ bool ConnectionController::FindConnection( const String & nickName, ConnectionMa
     return result;
 }
 
-bool ConnectionController::IsReservedNickname( const String & nickName ) const
+bool ConnectionController::IsReservedNickname( const areg::String & nickName ) const
 {
     if ( nickName == chat::SERVER_NAME )
         return true;

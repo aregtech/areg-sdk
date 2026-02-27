@@ -29,7 +29,7 @@
 /**
  * \brief   Constants used when parsing persistence file
  **/
-namespace NEPersistence
+namespace areg
 {
 //////////////////////////////////////////////////////////////////////////
 // Syntax to parse configuration file
@@ -115,12 +115,12 @@ namespace NEPersistence
     /**
      * \brief   Boolean syntax 'true'
      **/
-    constexpr std::string_view  SYNTAX_TRUE                 { NECommon::BOOLEAN_TRUE };
+    constexpr std::string_view  SYNTAX_TRUE                 { BOOLEAN_TRUE };
 
     /**
      * \brief   Boolean syntax 'false'
      **/
-    constexpr std::string_view  SYNTAX_FALSE                { NECommon::BOOLEAN_FALSE };
+    constexpr std::string_view  SYNTAX_FALSE                { BOOLEAN_FALSE };
 
     /**
      * \brief   The structure to define a property key of the configuration.
@@ -181,7 +181,7 @@ namespace NEPersistence
         , ServiceAddress       = 25    //!< The connection address of the remote service.
         , ServicePort          = 26    //!< The connection port number of the remote service.
 
-        , DefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(NEMemory::uAlignt)`
+        , DefaultBufferBlock   = 27    //!< The size in bytes to align when allocate a block in the bugger. The default `0` means allocated `sizeof(areg::uAlignt)`
         , DefaultMessageQueue  = 28    //!< The default size of message queue in the dispatcher thread. The default `0` means to ignore the limitation, increase by need.
 
         , AnyKey               = 29    //!< Indicates any key type.
@@ -234,287 +234,287 @@ namespace NEPersistence
     /**
      * \brief   Returns the configuration version property structure.
      **/
-    inline const NEPersistence::ConfigKey& getConfigVersion();
+    inline const ConfigKey& getConfigVersion();
 
     /**
      * \brief   Returns the logging version property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogVersion();
+    inline const ConfigKey& getLogVersion();
 
     /**
      * \brief   Returns the logging types (targets) property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogTarget();
+    inline const ConfigKey& getLogTarget();
 
     /**
      * \brief   Returns the logging enabled / disabled status property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogStatus();
+    inline const ConfigKey& getLogStatus();
 
     /**
      * \brief   Returns the logging type (in target) enabled / disabled flag property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogEnable();
+    inline const ConfigKey& getLogEnable();
 
     /**
      * \brief   Returns the log file location and file name mask property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogFileLocation();
+    inline const ConfigKey& getLogFileLocation();
 
     /**
      * \brief   Returns the flag to append logs into the file property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogFileAppend();
+    inline const ConfigKey& getLogFileAppend();
 
     /**
      * \brief   Returns the queue size of remote logging property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogRemoteQueueSize();
+    inline const ConfigKey& getLogRemoteQueueSize();
 
     /**
      * \brief   Returns the layout of enter scope message property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogLayoutEnter();
+    inline const ConfigKey& getLogLayoutEnter();
 
     /**
      * \brief   Returns the layout of log message property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogLayoutMessage();
+    inline const ConfigKey& getLogLayoutMessage();
 
     /**
      * \brief   Returns the layout of exit scope message property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogLayoutExit();
+    inline const ConfigKey& getLogLayoutExit();
 
     /**
      * \brief   Returns the log scope enable / disable flag property structure.
      **/
-    inline const NEPersistence::ConfigKey& getLogScope();
+    inline const ConfigKey& getLogScope();
 
     /**
      * \brief   Returns the list of supported remote services property structure.
      **/
-    inline const NEPersistence::ConfigKey& getServiceList();
+    inline const ConfigKey& getServiceList();
 
     /**
      * \brief   Returns the process name of the remote service property structure.
      **/
-    inline const NEPersistence::ConfigKey& getServiceName();
+    inline const ConfigKey& getServiceName();
 
     /**
      * \brief   Returns the list of connection type of the remote service property structure.
      **/
-    inline const NEPersistence::ConfigKey& getServiceConnection();
+    inline const ConfigKey& getServiceConnection();
 
     /**
      * \brief   Returns the connection enable / disable flag of the remote service property structure.
      **/
-    inline const NEPersistence::ConfigKey& getServiceEnable();
+    inline const ConfigKey& getServiceEnable();
 
     /**
      * \brief   Returns the connection address of the remote service property structure.
      **/
-    inline const NEPersistence::ConfigKey& getServiceAddress();
+    inline const ConfigKey& getServiceAddress();
 
     /**
      * \brief   Returns the connection port number of the remote service property structure.
      **/
-    inline const NEPersistence::ConfigKey& getServicePort();
+    inline const ConfigKey& getServicePort();
 
     /**
      * \brief   Returns the name of log database engine.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseEngine();
+    inline const ConfigKey& getLogDatabaseEngine();
 
     /**
      * \brief   Returns the log database name.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseName();
+    inline const ConfigKey& getLogDatabaseName();
 
     /**
      * \brief   Returns the location of the log database. This can be either
      *          a file path or URI.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseLocation();
+    inline const ConfigKey& getLogDatabaseLocation();
 
     /**
      * \brief   Returns the driver of the log database.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseDriver();
+    inline const ConfigKey& getLogDatabaseDriver();
 
     /**
      * \brief   Returns the IP-address of the log database engine to connect.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseAddress();
+    inline const ConfigKey& getLogDatabaseAddress();
 
     /**
      * \brief   Returns the port number of the log database engine to connect.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabasePort();
+    inline const ConfigKey& getLogDatabasePort();
 
     /**
      * \brief   The user name to use when connect to the database engine.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabaseUser();
+    inline const ConfigKey& getLogDatabaseUser();
 
     /**
      * \brief   The password to use when connect to the database engine.
      **/
-    inline const NEPersistence::ConfigKey& getLogDatabasePassword();
+    inline const ConfigKey& getLogDatabasePassword();
 
     /**
      * \brief   The default block size in bytes to allocate in shared buffer to minimize de-fragmentation.
      **/
-    inline const NEPersistence::ConfigKey& getDefaultBufferBlockSize();
+    inline const ConfigKey& getDefaultBufferBlockSize();
 
     /**
      * \brief   The default message queue size in the dispatcher thread.
      **/
-    inline const NEPersistence::ConfigKey& getDefaultMessageQueueSize();
+    inline const ConfigKey& getDefaultMessageQueueSize();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // NEPersistence namespace inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline const NEPersistence::ConfigKey& NEPersistence::getConfigVersion()
+inline const areg::ConfigKey& areg::getConfigVersion()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ConfigVersion)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ConfigVersion)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceList()
+inline const areg::ConfigKey& areg::getServiceList()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceList)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceList)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogVersion()
+inline const areg::ConfigKey& areg::getLogVersion()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogVersion)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogVersion)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogTarget()
+inline const areg::ConfigKey& areg::getLogTarget()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogTarget)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogTarget)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogStatus()
+inline const areg::ConfigKey& areg::getLogStatus()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogStatus)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogStatus)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogEnable()
+inline const areg::ConfigKey& areg::getLogEnable()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogEnable)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogEnable)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogFileLocation()
+inline const areg::ConfigKey& areg::getLogFileLocation()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogFileLocation)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogFileLocation)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogFileAppend()
+inline const areg::ConfigKey& areg::getLogFileAppend()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogFileAppend)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogFileAppend)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogRemoteQueueSize()
+inline const areg::ConfigKey& areg::getLogRemoteQueueSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogRemoteQueueSize)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogRemoteQueueSize)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogLayoutEnter()
+inline const areg::ConfigKey& areg::getLogLayoutEnter()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutEnter)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutEnter)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogLayoutMessage()
+inline const areg::ConfigKey& areg::getLogLayoutMessage()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutMessage)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutMessage)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogLayoutExit()
+inline const areg::ConfigKey& areg::getLogLayoutExit()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogLayoutExit)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogLayoutExit)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getLogScope()
+inline const areg::ConfigKey& areg::getLogScope()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogScope)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogScope)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceConnection()
+inline const areg::ConfigKey& areg::getServiceConnection()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceConnection)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceConnection)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceEnable()
+inline const areg::ConfigKey& areg::getServiceEnable()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceEnable)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceEnable)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceName()
+inline const areg::ConfigKey& areg::getServiceName()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceName)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceName)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServiceAddress()
+inline const areg::ConfigKey& areg::getServiceAddress()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServiceAddress)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServiceAddress)];
 }
 
-inline const NEPersistence::ConfigKey& NEPersistence::getServicePort()
+inline const areg::ConfigKey& areg::getServicePort()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::ServicePort)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::ServicePort)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseEngine()
+const areg::ConfigKey& areg::getLogDatabaseEngine()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseEngine)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseEngine)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseName()
+const areg::ConfigKey& areg::getLogDatabaseName()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseName)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseName)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseLocation()
+const areg::ConfigKey& areg::getLogDatabaseLocation()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseLocation)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseLocation)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseDriver()
+const areg::ConfigKey& areg::getLogDatabaseDriver()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseDriver)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseDriver)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseAddress()
+const areg::ConfigKey& areg::getLogDatabaseAddress()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseAddress)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseAddress)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabasePort()
+const areg::ConfigKey& areg::getLogDatabasePort()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabasePort)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabasePort)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabaseUser()
+const areg::ConfigKey& areg::getLogDatabaseUser()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabaseUsername)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabaseUsername)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getLogDatabasePassword()
+const areg::ConfigKey& areg::getLogDatabasePassword()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::LogDatabasePassword)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::LogDatabasePassword)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getDefaultBufferBlockSize()
+const areg::ConfigKey& areg::getDefaultBufferBlockSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultBufferBlock)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultBufferBlock)];
 }
 
-const NEPersistence::ConfigKey& NEPersistence::getDefaultMessageQueueSize()
+const areg::ConfigKey& areg::getDefaultMessageQueueSize()
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int32_t>(NEPersistence::ConfigEntry::DefaultMessageQueue)];
+    return areg::DefaultPropertyKeys[static_cast<int32_t>(areg::ConfigEntry::DefaultMessageQueue)];
 }
 
 #endif  // AREG_PERSIST_PERSISTENCEDEFS_HPP

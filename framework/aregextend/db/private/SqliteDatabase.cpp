@@ -40,110 +40,114 @@ namespace
     }
 }
 
-SqliteDatabase::SqliteDatabase()
-    : DatabaseEngine  ( )
-    , mDbPath           ( )
-    , mDbObject         ( nullptr )
+namespace aregext
 {
-}
 
-SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
-    : DatabaseEngine  ( )
-    , mDbPath           ( )
-    , mDbObject         ( nullptr )
-{
-    if (open)
+    SqliteDatabase::SqliteDatabase()
+        : areg::DatabaseEngine  ( )
+        , mDbPath           ( )
+        , mDbObject         ( nullptr )
     {
-        _open(dbPath);
-    }
-    else
-    {
-        mDbPath = dbPath.isEmpty() ? String::getEmptyString() : File::normalizePath(dbPath);
-    }
-}
-
-SqliteDatabase::~SqliteDatabase()
-{
-    _close();
-}
-
-inline bool SqliteDatabase::_open(const String& dbPath)
-{
-    bool result{ true };
-    _close();
-    mDbPath = dbPath.isEmpty() == false ? File::normalizePath(dbPath) : mDbPath;
-    if (mDbPath.isEmpty())
-    {
-        ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
-        return false;
     }
 
-    String folder = File::getFileDirectory(mDbPath);
-    if ((folder.isEmpty() == false) && (File::existDir(folder) == false))
+    SqliteDatabase::SqliteDatabase(const areg::String& dbPath, bool open)
+        : areg::DatabaseEngine  ( )
+        , mDbPath           ( )
+        , mDbObject         ( nullptr )
     {
-        File::createDirCascaded(folder);
+        if (open)
+        {
+            _open(dbPath);
+        }
+        else
+        {
+            mDbPath = dbPath.isEmpty() ? areg::String::getEmptyString() : areg::File::normalizePath(dbPath);
+        }
     }
 
-    if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)))
+    SqliteDatabase::~SqliteDatabase()
     {
         _close();
-        result = false;
     }
 
-    return result;
-}
-
-inline void SqliteDatabase::_close()
-{
-    if (mDbObject != nullptr)
+    inline bool SqliteDatabase::_open(const areg::String& dbPath)
     {
-        ::sqlite3_close(_sqlite(mDbObject));
-        mDbObject = nullptr;
+        bool result{ true };
+        _close();
+        mDbPath = dbPath.isEmpty() == false ? areg::File::normalizePath(dbPath) : mDbPath;
+        if (mDbPath.isEmpty())
+        {
+            ASSERT(false && "SqliteDatabase::_open: Database path is empty.");
+            return false;
+        }
+
+        areg::String folder = areg::File::getFileDirectory(mDbPath);
+        if ((folder.isEmpty() == false) && (areg::File::existDir(folder) == false))
+        {
+            areg::File::createDirCascaded(folder);
+        }
+
+        if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), _sqlite(&mDbObject)))
+        {
+            _close();
+            result = false;
+        }
+
+        return result;
     }
-}
 
-bool SqliteDatabase::isOperable() const
-{
-    return (mDbObject != nullptr);
-}
-
-bool SqliteDatabase::connect(const String& dbPath, bool /*readOnly*/)
-{
-    return _open(dbPath);
-}
-
-void SqliteDatabase::disconnect()
-{
-    _close();
-}
-
-bool SqliteDatabase::execute(const String& sql)
-{
-    bool result{ false };
-    if (mDbObject != nullptr)
+    inline void SqliteDatabase::_close()
     {
-        result = SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sql.getString(), nullptr, nullptr, nullptr);
+        if (mDbObject != nullptr)
+        {
+            ::sqlite3_close(_sqlite(mDbObject));
+            mDbObject = nullptr;
+        }
     }
 
-    return result;
-}
+    bool SqliteDatabase::isOperable() const
+    {
+        return (mDbObject != nullptr);
+    }
 
-bool SqliteDatabase::begin()
-{
-    constexpr std::string_view  sqlBegin{ "BEGIN TRANSACTION;" };
+    bool SqliteDatabase::connect(const areg::String& dbPath, bool /*readOnly*/)
+    {
+        return _open(dbPath);
+    }
 
-    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sqlBegin.data(), nullptr, nullptr, nullptr) : false);
-}
+    void SqliteDatabase::disconnect()
+    {
+        _close();
+    }
 
-bool SqliteDatabase::commit(bool doCommit)
-{
-    constexpr std::string_view sqlCommit{ "COMMIT;" };
-    constexpr std::string_view sqlRollback{ "ROLLBACK;" };
+    bool SqliteDatabase::execute(const areg::String& sql)
+    {
+        bool result{ false };
+        if (mDbObject != nullptr)
+        {
+            result = SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sql.getString(), nullptr, nullptr, nullptr);
+        }
 
-    return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRollback.data(), nullptr, nullptr, nullptr) : false);
-}
+        return result;
+    }
 
-bool SqliteDatabase::rollback()
-{
-    return commit(false);
-}
+    bool SqliteDatabase::begin()
+    {
+        constexpr std::string_view  sqlBegin{ "BEGIN TRANSACTION;" };
+
+        return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), sqlBegin.data(), nullptr, nullptr, nullptr) : false);
+    }
+
+    bool SqliteDatabase::commit(bool doCommit)
+    {
+        constexpr std::string_view sqlCommit{ "COMMIT;" };
+        constexpr std::string_view sqlRollback{ "ROLLBACK;" };
+
+        return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(_sqlite(mDbObject), doCommit ? sqlCommit.data() : sqlRollback.data(), nullptr, nullptr, nullptr) : false);
+    }
+
+    bool SqliteDatabase::rollback()
+    {
+        return commit(false);
+    }
+} // namespace aregext

@@ -16,47 +16,51 @@
 
 #include "areg/base/Containers.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// Tokenizer class implementation
-//////////////////////////////////////////////////////////////////////////
-
-Tokenizer::Tokenizer( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
-    : mTokens   ()
+namespace areg
 {
-   tokenize(str, delimiters, keepEmpty);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Tokenizer class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-Tokenizer::Tokenizer( const Tokenizer & src )
-    : mTokens( src.mTokens )
-{
-}
-
-Tokenizer::Tokenizer( Tokenizer && src ) noexcept
-    : mTokens( std::move(src.mTokens) )
-{
-}
-
-const StringArray& Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
-{
-    NEString::CharPos lastPos   = 0;
-    NEString::CharCount length  = str.getLength();
-    // empty self
-    mTokens.clear();
-    while (lastPos <= length)
+    Tokenizer::Tokenizer( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+        : mTokens   ()
     {
-        NEString::CharPos pos = str.findOneOf(delimiters, lastPos);
-        if (pos < 0)
-           pos = length;
-
-        if (pos != lastPos || keepEmpty)
-        {
-            String temp;
-            str.substring(temp, lastPos, pos - lastPos);
-            mTokens.add(temp);
-        }
-        
-        lastPos = pos + 1;
+    tokenize(str, delimiters, keepEmpty);
     }
 
-    return mTokens;
-}
+    Tokenizer::Tokenizer( const Tokenizer & src )
+        : mTokens( src.mTokens )
+    {
+    }
+
+    Tokenizer::Tokenizer( Tokenizer && src ) noexcept
+        : mTokens( std::move(src.mTokens) )
+    {
+    }
+
+    const StringArray& Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+    {
+        CharPos lastPos   = 0;
+        CharCount length  = str.getLength();
+        // empty self
+        mTokens.clear();
+        while (lastPos <= length)
+        {
+            CharPos pos = str.findOneOf(delimiters, lastPos);
+            if (pos < 0)
+            pos = length;
+
+            if (pos != lastPos || keepEmpty)
+            {
+                String temp;
+                str.substring(temp, lastPos, pos - lastPos);
+                mTokens.add(temp);
+            }
+            
+            lastPos = pos + 1;
+        }
+
+        return mTokens;
+    }
+
+} // namespace areg

@@ -29,7 +29,7 @@ namespace chat
 
     struct ChatParticipant
     {
-        String      nickName;
+        areg::String      nickName;
         uint32_t    cookie;
 
     };
@@ -82,7 +82,7 @@ namespace chat
      * \brief   Invalid Nick-name
      *          chat::InvalidNickname
      **/
-    const String  InvalidNickname     = "";
+    const areg::String  InvalidNickname     = "";
 
 	/************************************************************************
 	 * \brief   chat::ConnectionRecord
@@ -102,7 +102,7 @@ namespace chat
         /**
          * \brief   Initialize ConnectionRecord data by setting parameters.
          **/
-        inline ConnectionRecord( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime );
+        inline ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const areg::DateTime & _connectTime, const areg::DateTime & _connectedTime );
 	    /**
 	     * \brief   Copies data from given source. Every filed of structure should have copy constructor.
 	     * \param   src     The source of ConnectionRecord structure to copy data
@@ -156,17 +156,17 @@ namespace chat
 	    /**
 	     * \brief   Connection client nick name, should be unique
 	     **/
-	    String    nickName;
+	    areg::String    nickName;
 
 	    /**
 	     * \brief   Connection request date-time
 	     **/
-	    DateTime  connectTime;
+	    areg::DateTime  connectTime;
 
 	    /**
 	     * \brief   Connection registered / accepted date-time
 	     **/
-	    DateTime  connectedTime;
+	    areg::DateTime  connectedTime;
 
 	};
 
@@ -174,13 +174,13 @@ namespace chat
 	 * \brief	chat::ListConnections
 	 *			Internal custom type definition of ArrayList<ConnectionRecord>
 	 **/
-    using ListConnections   = ArrayList<ConnectionRecord>;
+    using ListConnections   = areg::ArrayList<ConnectionRecord>;
 
 	/**
 	 * \brief	chat::MapConnections
      *			Internal custom type definition of HashMap<uint32_t, ConnectionRecord>
      **/
-    using MapConnections    = HashMap<uint32_t, ConnectionRecord >;
+    using MapConnections    = areg::HashMap<uint32_t, ConnectionRecord >;
 
 	/************************************************************************
 	 * \brief   chat::Participant
@@ -256,7 +256,7 @@ namespace chat
 	    /**
 	     * \brief   DESCRIPTION MISSED
 	     **/
-	    String    nickName;
+	    areg::String    nickName;
 
 	};
 
@@ -266,13 +266,13 @@ namespace chat
 	 * \brief	chat::ListConnections
 	 *			Internal custom type definition of ArrayList<ConnectionRecord>
 	 **/
-	using ListParticipants  = ArrayList<Participant>;
+	using ListParticipants  = areg::ArrayList<Participant>;
 
 	/**
 	 * \brief	chat::MapDirectConnections
 	 *			Internal custom type definition of HashMap<String, PairConnection>
 	 **/
-	using MapParticipants   = HashMap<sInitiator, ListParticipants>;
+	using MapParticipants   = areg::HashMap<sInitiator, ListParticipants>;
 
 }
 
@@ -299,7 +299,7 @@ inline chat::ConnectionRecord::ConnectionRecord()
 /**
  * \brief   Initialize ConnectionRecord data by setting parameters.
  **/
-inline chat::ConnectionRecord::ConnectionRecord( const uint32_t & _cookie, const String & _nickName, const DateTime & _connectTime, const DateTime & _connectedTime )
+inline chat::ConnectionRecord::ConnectionRecord( const uint32_t & _cookie, const areg::String & _nickName, const areg::DateTime & _connectTime, const areg::DateTime & _connectedTime )
     : cookie          ( _cookie )
     , nickName        ( _nickName )
     , connectTime     ( _connectTime )
@@ -365,7 +365,7 @@ inline bool chat::ConnectionRecord::operator != ( const chat::ConnectionRecord &
  * \param   input       The instance of chat::ConnectionRecord structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const InStream & operator >> ( const InStream & stream, chat::ConnectionRecord & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, chat::ConnectionRecord & input )
 {
     stream  >> input.cookie;
     stream  >> input.nickName;
@@ -379,7 +379,7 @@ inline const InStream & operator >> ( const InStream & stream, chat::ConnectionR
  * \param   output      The instance of chat::ConnectionRecord structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline OutStream & operator << ( OutStream & stream, const chat::ConnectionRecord & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const chat::ConnectionRecord & output )
 {
     stream  << output.cookie;
     stream  << output.nickName;
@@ -480,7 +480,7 @@ inline bool chat::Participant::operator != ( const chat::Participant & other ) c
  * \param   input       The instance of chat::Participant structure to write data
  * \return  Returns the reference of streaming object.
  **/
-inline const InStream & operator >> ( const InStream & stream, chat::Participant & input )
+inline const areg::InStream & operator >> ( const areg::InStream & stream, chat::Participant & input )
 {
     stream  >> input.sessionId;
     stream  >> input.cookie;
@@ -493,7 +493,7 @@ inline const InStream & operator >> ( const InStream & stream, chat::Participant
  * \param   output      The instance of chat::Participant structure to read data
  * \return  Returns the reference of streaming object.
  **/
-inline OutStream & operator << ( OutStream & stream, const chat::Participant & output )
+inline areg::OutStream & operator << ( areg::OutStream & stream, const chat::Participant & output )
 {
     stream  << output.sessionId;
     stream  << output.cookie;
@@ -525,7 +525,7 @@ inline chat:: MessageData * chat::newData( )
     chat:: MessageData * result = DEBUG_NEW chat:: MessageData;
     if ( result != nullptr )
     {
-        NEMemory::memZero(reinterpret_cast<void *>(result), sizeof( chat:: MessageData ));
+        areg::memZero(reinterpret_cast<void *>(result), sizeof( chat:: MessageData ));
     }
 
     return result;

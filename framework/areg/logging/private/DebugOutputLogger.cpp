@@ -25,156 +25,160 @@
 
 #include "areg/base/private/DebugDefs.hpp"
 
-#if AREG_LOGS
-
-DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
-    : LoggerBase        ( logConfig )
-    , OutStream       ( )
-
-    , mIsOpened         ( false )
-    , mOutputMessageA   ( )
+namespace areg
 {
-}
 
-bool DebugOutputLogger::openLogger()
-{
-#if defined(OUTPUT_DEBUG)
-    if ( mIsOpened == false )
+    #if AREG_LOGS
+
+    DebugOutputLogger::DebugOutputLogger( LogConfiguration & logConfig)
+        : LoggerBase        ( logConfig )
+        , OutStream       ( )
+
+        , mIsOpened         ( false )
+        , mOutputMessageA   ( )
     {
-        if (mLogConfiguration.isDebugOutputLoggingEnabled())
+    }
+
+    bool DebugOutputLogger::openLogger()
+    {
+    #if defined(OUTPUT_DEBUG)
+        if ( mIsOpened == false )
         {
-            mIsOpened = createLayouts();
-
-            if (mIsOpened)
+            if (mLogConfiguration.isDebugOutputLoggingEnabled())
             {
-                Process& curProcess = Process::getInstance();
-                NELogging::LogEntry logMsgHello(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::formatString( logMsgHello.logMessage
-                                    , NELogging::LOG_MESSAGE_IZE
-                                    , LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                    , Process::getString(curProcess.getEnvironment())
-                                    , curProcess.getFullPath().getString()
-                                    , logMsgHello.logModuleId);
+                mIsOpened = createLayouts();
 
-                logMessage(logMsgHello);
+                if (mIsOpened)
+                {
+                    Process& curProcess = Process::getInstance();
+                    LogEntry logMsgHello(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+                    String::formatString( logMsgHello.logMessage
+                                        , LOG_MESSAGE_IZE
+                                        , LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                        , Process::getString(curProcess.getEnvironment())
+                                        , curProcess.getFullPath().getString()
+                                        , logMsgHello.logModuleId);
+
+                    logMessage(logMsgHello);
+                }
             }
         }
+    #endif  // !defined(OUTPUT_DEBUG)
+
+        return mIsOpened;
     }
-#endif  // !defined(OUTPUT_DEBUG)
 
-    return mIsOpened;
-}
-
-void DebugOutputLogger::closeLogger()
-{
-#if defined(OUTPUT_DEBUG)
-    if ( mIsOpened )
+    void DebugOutputLogger::closeLogger()
     {
-        Process & curProcess = Process::getInstance();
-        NELogging::LogEntry logMsgGoodbye(NELogging::LogMessageType::MessageText, 0u, 0u, 0u, NELogging::LogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::formatString( logMsgGoodbye.logMessage
-                            , NELogging::LOG_MESSAGE_IZE
-                            , LoggerBase::FORMAT_MESSAGE_BYE.data()
-                            , Process::getString(curProcess.getEnvironment())
-                            , curProcess.getFullPath().getString()
-                            , logMsgGoodbye.logModuleId);
-        logMessage(logMsgGoodbye);
-    }
-#endif  // !defined(OUTPUT_DEBUG)
-
-    releaseLayouts();
-    mIsOpened = false;
-}
-
-#if defined(OUTPUT_DEBUG)
-
-void DebugOutputLogger::logMessage(const NELogging::LogEntry & logMessage)
-{
-    if ( mIsOpened )
-    {
-        switch (logMessage.logMsgType)
+    #if defined(OUTPUT_DEBUG)
+        if ( mIsOpened )
         {
-        case NELogging::LogMessageType::MessageText:
-            getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(*this));
-            break;
-
-        case NELogging::LogMessageType::ScopeEnter:
-            getLayoutEnterScope().logMessage(logMessage, static_cast<OutStream&>(*this));
-            break;
-
-        case NELogging::LogMessageType::ScopeExit:
-            getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(*this) );
-            break;
-
-        default:
-            ASSERT(false);  // unexpected message to log
-            break;
+            Process & curProcess = Process::getInstance();
+            LogEntry logMsgGoodbye(LogMessageType::MessageText, 0u, 0u, 0u, LogPriority::PrioIgnoreLayout, nullptr, 0);
+            String::formatString( logMsgGoodbye.logMessage
+                                , LOG_MESSAGE_IZE
+                                , LoggerBase::FORMAT_MESSAGE_BYE.data()
+                                , Process::getString(curProcess.getEnvironment())
+                                , curProcess.getFullPath().getString()
+                                , logMsgGoodbye.logModuleId);
+            logMessage(logMsgGoodbye);
         }
+    #endif  // !defined(OUTPUT_DEBUG)
 
-        flush();
+        releaseLayouts();
+        mIsOpened = false;
     }
-}
 
-#else // !defined(OUTPUT_DEBUG)
+    #if defined(OUTPUT_DEBUG)
 
-void DebugOutputLogger::logMessage(const NELogging::LogEntry & /*logMessage*/)
-{
-}
+    void DebugOutputLogger::logMessage(const LogEntry & logMessage)
+    {
+        if ( mIsOpened )
+        {
+            switch (logMessage.logMsgType)
+            {
+            case LogMessageType::MessageText:
+                getLayoutMessage().logMessage(logMessage, static_cast<OutStream&>(*this));
+                break;
 
-#endif // !defined(OUTPUT_DEBUG)
+            case LogMessageType::ScopeEnter:
+                getLayoutEnterScope().logMessage(logMessage, static_cast<OutStream&>(*this));
+                break;
+
+            case LogMessageType::ScopeExit:
+                getLayoutExitScope().logMessage( logMessage, static_cast<OutStream &>(*this) );
+                break;
+
+            default:
+                ASSERT(false);  // unexpected message to log
+                break;
+            }
+
+            flush();
+        }
+    }
+
+    #else // !defined(OUTPUT_DEBUG)
+
+    void DebugOutputLogger::logMessage(const LogEntry & /*logMessage*/)
+    {
+    }
+
+    #endif // !defined(OUTPUT_DEBUG)
 
 
-bool DebugOutputLogger::isLoggerOpened() const
-{
-    return mIsOpened;
-}
+    bool DebugOutputLogger::isLoggerOpened() const
+    {
+        return mIsOpened;
+    }
 
-#if defined(OUTPUT_DEBUG)
-uint32_t DebugOutputLogger::write(const uint8_t * buffer, uint32_t size)
-{
-    mOutputMessageA.append(reinterpret_cast<const char *>(buffer), size);
-    return size;
-}
-#else   // defined(OUTPUT_DEBUG)
-uint32_t DebugOutputLogger::write(const uint8_t * /* buffer */, uint32_t size)
-{
-    return size;
-}
-#endif  // defined(OUTPUT_DEBUG)
+    #if defined(OUTPUT_DEBUG)
+    uint32_t DebugOutputLogger::write(const uint8_t * buffer, uint32_t size)
+    {
+        mOutputMessageA.append(reinterpret_cast<const char *>(buffer), size);
+        return size;
+    }
+    #else   // defined(OUTPUT_DEBUG)
+    uint32_t DebugOutputLogger::write(const uint8_t * /* buffer */, uint32_t size)
+    {
+        return size;
+    }
+    #endif  // defined(OUTPUT_DEBUG)
 
-uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
-{
-    return write(buffer.getBuffer(), buffer.getSizeUsed());
-}
+    uint32_t DebugOutputLogger::write(const ByteBuffer & buffer)
+    {
+        return write(buffer.getBuffer(), buffer.getSizeUsed());
+    }
 
-uint32_t DebugOutputLogger::write( const String & ascii )
-{
-#if defined(OUTPUT_DEBUG)
-    mOutputMessageA += ascii;
-#endif  // defined(OUTPUT_DEBUG)
-    return ascii.getSpace();
-}
+    uint32_t DebugOutputLogger::write( const String & ascii )
+    {
+    #if defined(OUTPUT_DEBUG)
+        mOutputMessageA += ascii;
+    #endif  // defined(OUTPUT_DEBUG)
+        return ascii.getSpace();
+    }
 
-uint32_t DebugOutputLogger::write( const WideString & wide )
-{
-#if defined(OUTPUT_DEBUG)
-    mOutputMessageA += wide;
-#endif  // !defined(OUTPUT_DEBUG)
-    return wide.getSpace();
-}
+    uint32_t DebugOutputLogger::write( const WideString & wide )
+    {
+    #if defined(OUTPUT_DEBUG)
+        mOutputMessageA += wide;
+    #endif  // !defined(OUTPUT_DEBUG)
+        return wide.getSpace();
+    }
 
-void DebugOutputLogger::flush()
-{
-#if defined(OUTPUT_DEBUG)
-    NEDebug::outputMessageOS(mOutputMessageA.getString());
-#endif // !defined(OUTPUT_DEBUG)
+    void DebugOutputLogger::flush()
+    {
+    #if defined(OUTPUT_DEBUG)
+        outputMessageOS(mOutputMessageA.getString());
+    #endif // !defined(OUTPUT_DEBUG)
 
-    mOutputMessageA.clear();
-}
+        mOutputMessageA.clear();
+    }
 
-uint32_t DebugOutputLogger::getSizeWritable() const
-{
-    return static_cast<uint32_t>(0xFFFF);
-}
+    uint32_t DebugOutputLogger::getSizeWritable() const
+    {
+        return static_cast<uint32_t>(0xFFFF);
+    }
 
-#endif // AREG_LOGS
+    #endif // AREG_LOGS
+} // namespace areg

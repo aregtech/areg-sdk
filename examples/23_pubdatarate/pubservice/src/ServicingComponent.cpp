@@ -38,7 +38,7 @@ void ServicingComponent::OptionConsumer::processEvent(const OptionData& data)
 // ServicingComponent::ServicingTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-void ServicingComponent::ServicingTimerConsumer::processTimer( Timer & timer )
+void ServicingComponent::ServicingTimerConsumer::processTimer( areg::Timer & timer )
 {
     if (&timer == &mService.mTimer)
     {
@@ -50,16 +50,16 @@ void ServicingComponent::ServicingTimerConsumer::processTimer( Timer & timer )
 // ServicingComponent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( entry, owner )
-    , LargeDataStub     ( static_cast<Component &>(self()) )
-    , ThreadConsumer  ( )
+ServicingComponent::ServicingComponent(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component         ( entry, owner )
+    , LargeDataStub     ( static_cast<areg::Component &>(self()) )
+    , areg::ThreadConsumer  ( )
 
     , mBitmap           ( )
     , mBlockList        ( )
-    , mTimer            ( static_cast<TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
-    , mInputThread      ( static_cast<ThreadConsumer &>(self()), THREAD_WAITINPUT )
-    , mImageThread      ( static_cast<ThreadConsumer &>(self()), THREAD_GENERATE )
+    , mTimer            ( static_cast<areg::TimerConsumer &>(mTimerConsumer) , TIMER_NAME )
+    , mInputThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_WAITINPUT )
+    , mImageThread      ( static_cast<areg::ThreadConsumer &>(self()), THREAD_GENERATE )
     , mOptions          ( )
     , mQuitThread       ( true )
     , mOptionChanged    ( true )
@@ -73,15 +73,15 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
     , mTimerConsumer    ( self() )
     , mLock             ( )
 {
-    mOptions.mWidth     = NEUtilities::IMAGE_WIDTH;
-    mOptions.mHeight    = NEUtilities::IMAGE_HEIGHT;
-    mOptions.mLines     = NEUtilities::LINES_PER_BLOCK;
-    mOptions.mPixelTime = NEUtilities::DWELL_TIME;
-    mOptions.mChannels  = NEUtilities::CHANNELS_SOURCE;
-    mOptions.mFlags     = static_cast<uint32_t>(NEUtilities::OptionFlag::CmdStop);
+    mOptions.mWidth     = areg::IMAGE_WIDTH;
+    mOptions.mHeight    = areg::IMAGE_HEIGHT;
+    mOptions.mLines     = areg::LINES_PER_BLOCK;
+    mOptions.mPixelTime = areg::DWELL_TIME;
+    mOptions.mChannels  = areg::CHANNELS_SOURCE;
+    mOptions.mFlags     = static_cast<uint32_t>(areg::OptionFlag::CmdStop);
 }
 
-void ServicingComponent::startupServiceInterface( Component & holder )
+void ServicingComponent::startupServiceInterface( areg::Component & holder )
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_startupServiceInterface);
 
@@ -90,16 +90,16 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     mOptionChanged = true;
     mPauseEvent.resetEvent();   // pause
 
-    Application::queryCommunicationData( sizeSend, sizeReceive );
+    areg::Application::queryCommunicationData( sizeSend, sizeReceive );
     uint64_t sizeItem = mItemRate != 0 ? mDataRate / mItemRate : 0;
 
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataRate);
-    NEUtilities::DataLiteral sendRate = NEUtilities::convDataSize( sizeSend );
-    NEUtilities::DataLiteral rcvRate  = NEUtilities::convDataSize( sizeReceive );
-    NEUtilities::DataLiteral itemRate = NEUtilities::convDataSize( sizeItem );
+    areg::DataLiteral dataRate = areg::convDataSize(mDataRate);
+    areg::DataLiteral sendRate = areg::convDataSize( sizeSend );
+    areg::DataLiteral rcvRate  = areg::convDataSize( sizeReceive );
+    areg::DataLiteral itemRate = areg::convDataSize( sizeItem );
 
 
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
     console.outputMsg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
@@ -107,15 +107,15 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     _printInfo();
 
     _initBlockList();
-    mInputThread.createThread(NECommon::WAIT_INFINITE);
-    mImageThread.createThread(NECommon::WAIT_INFINITE);
+    mInputThread.createThread(areg::WAIT_INFINITE);
+    mImageThread.createThread(areg::WAIT_INFINITE);
 
     console.enableConsoleInput(true);
 
     LargeDataStub::startupServiceInterface(holder);
 }
 
-void ServicingComponent::shutdownServiceInterface(Component& holder)
+void ServicingComponent::shutdownServiceInterface(areg::Component& holder)
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_shutdownServiceIntrface);
 
@@ -125,16 +125,16 @@ void ServicingComponent::shutdownServiceInterface(Component& holder)
     mPauseEvent.setEvent();
 
     mBitmap.release();
-    mInputThread.shutdownThread(NECommon::WAIT_INFINITE);
-    mImageThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mInputThread.shutdownThread(areg::WAIT_INFINITE);
+    mImageThread.shutdownThread(areg::WAIT_INFINITE);
 
     LargeDataStub::shutdownServiceInterface(holder);
 }
 
-bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::ServiceConnectionState connectionStatus )
+bool ServicingComponent::clientConnected(const areg::ProxyAddress& client, areg::ServiceConnectionState connectionStatus )
 {
     bool result = LargeDataStub::clientConnected(client, connectionStatus );
-    mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);
+    mClients += (areg::isServiceConnected( connectionStatus ) ? 1 : -1);
     _printInfo();
 
     return result;
@@ -142,20 +142,20 @@ bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::
 
 void ServicingComponent::onTimerExpired()
 {
-    mLock.lock(NECommon::WAIT_INFINITE);
+    mLock.lock(areg::WAIT_INFINITE);
 
     uint32_t rateItem   = mItemRate;
     uint32_t didSleep   = mDidSleep;
     uint32_t ignoreSleep= mIgnoreSleep;
 
     uint32_t sizeSend{ 0 }, sizeReceive{ 0 };
-    Application::queryCommunicationData( sizeSend, sizeReceive );
+    areg::Application::queryCommunicationData( sizeSend, sizeReceive );
     uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
 
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataRate );
-    NEUtilities::DataLiteral sendRate = NEUtilities::convDataSize( sizeSend );
-    NEUtilities::DataLiteral rcvRate  = NEUtilities::convDataSize( sizeReceive );
-    NEUtilities::DataLiteral itemRate = NEUtilities::convDataSize( sizeItem );
+    areg::DataLiteral dataRate = areg::convDataSize( mDataRate );
+    areg::DataLiteral sendRate = areg::convDataSize( sizeSend );
+    areg::DataLiteral rcvRate  = areg::convDataSize( sizeReceive );
+    areg::DataLiteral itemRate = areg::convDataSize( sizeItem );
 
     mItemRate = 0;
     mDataRate = 0;
@@ -163,7 +163,7 @@ void ServicingComponent::onTimerExpired()
     mIgnoreSleep = 0;
     mLock.unlock( );
 
-    Console & console = Console::getInstance( );
+    aregext::Console & console = aregext::Console::getInstance( );
     console.saveCursorPosition( );
 
     console.outputMsg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
@@ -181,7 +181,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     if (data.hasError())
     {
         LOG_WARN("Error input of command");
-        Console& console = Console::getInstance();
+        aregext::Console& console = aregext::Console::getInstance();
 
         console.saveCursorPosition();
         console.outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
@@ -199,7 +199,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         broadcastServiceStopping();
 
-        Application::signalAppQuit();
+        areg::Application::signalAppQuit();
     }
     else if (data.hasStart())
     {
@@ -208,7 +208,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
         mQuitThread = false;
         mOptionChanged = true;
         mOptions.update(data);
-        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, getComponentThread(), Timer::CONTINUOUSLY);
+        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, getComponentThread(), areg::Timer::CONTINUOUSLY);
         mPauseEvent.setEvent();
         _printInfo();
     }
@@ -249,7 +249,7 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
 
         mOptionChanged = true;
 
-        mLock.lock(NECommon::WAIT_INFINITE);
+        mLock.lock(areg::WAIT_INFINITE);
         _initBlockList();
         mLock.unlock();
         
@@ -264,7 +264,7 @@ void ServicingComponent::onThreadRuns()
 {
     LOG_SCOPE(examples_23_pubservice_ServicingComponent_onThreadRuns);
 
-    const String& threadName = Thread::getCurrentThreadName();
+    const areg::String& threadName = areg::Thread::getCurrentThreadName();
     if (threadName == THREAD_WAITINPUT )
     {
         LOG_DBG("Started console input thread.");
@@ -279,7 +279,7 @@ void ServicingComponent::onThreadRuns()
 
 void ServicingComponent::_runInputThread()
 {
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
 
     bool cmdQuit{ false };
     while ((cmdQuit == false) && (mQuitThread == false))
@@ -289,7 +289,7 @@ void ServicingComponent::_runInputThread()
 
         console.outputTxt(COORD_OPTIONS, MSG_INPUT_OPTION);
         console.refreshScreen();
-        String cmd = console.readString();
+        areg::String cmd = console.readString();
         cmd.makeLower();
         OptionData newData;
         newData.parseCommand(cmd);
@@ -308,7 +308,7 @@ void ServicingComponent::_runImageThread()
     std::chrono::nanoseconds nsPerBlock{ mOptions.nsPerBlock() };
     uint32_t blocks = mOptions.blocksCount();
 
-    Wait wait;
+    areg::Wait wait;
 
     while (mQuitThread == false)
     {
@@ -347,12 +347,12 @@ void ServicingComponent::_runImageThread()
     }
 }
 
-void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, Wait::WaitResolution waitResult)
+void ServicingComponent::_updateData(uint64_t genData, uint32_t genBlocks, areg::Wait::WaitResolution waitResult)
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     mDataRate += genData;
     mItemRate += genBlocks;
-    if (waitResult >= Wait::WaitResolution::Microsecond)
+    if (waitResult >= areg::Wait::WaitResolution::Microsecond)
     {
         mDidSleep += 1;
     }
@@ -370,17 +370,17 @@ uint64_t ServicingComponent::_getBlockImageTime() const
 
 void ServicingComponent::_printInfo() const
 {
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 
     uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
-    double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
-    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
-    NEUtilities::DataLiteral blockSize= NEUtilities::convDataSize(bytesPerBlock);
-    NEUtilities::DataLiteral timeRate = NEUtilities::convDuration(timePerBlock);
+    double blockRate = (static_cast<double>(areg::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
+    areg::DataLiteral dataRate = areg::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
+    areg::DataLiteral blockSize= areg::convDataSize(bytesPerBlock);
+    areg::DataLiteral timeRate = areg::convDuration(timePerBlock);
 
     console.printTxt("---------------------------------------\n");
     console.printTxt("Printing image current options:\n");
@@ -403,7 +403,7 @@ void ServicingComponent::_printInfo() const
 
 void ServicingComponent::_printHelp() const
 {
-    Console& console = Console::getInstance();
+    aregext::Console& console = aregext::Console::getInstance();
     console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 

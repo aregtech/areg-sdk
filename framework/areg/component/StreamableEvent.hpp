@@ -22,76 +22,87 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Event.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// StreamableEvent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Streamable Event is communication event and provides 
- *          possibility to serialize and deserialize event data in the 
- *          streaming object. All Events used to transfer data are
- *          declared as streamable Event. The Streamable Event is not
- *          created and used directly. Instead, one of derived classes
- *          should be used.
- **/
-class AREG_API StreamableEvent : public Event
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// friend classes
-//////////////////////////////////////////////////////////////////////////
-    friend class RemoteEventFactory;
-//////////////////////////////////////////////////////////////////////////
-// Runtime declare
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(StreamableEvent)
+    class RemoteEventFactory;
+}
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+namespace areg
+{
+    //////////////////////////////////////////////////////////////////////////
+    // StreamableEvent class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Creates streamable event and defines event type.
-     * \param   eventType   The type of event.
+     * \brief   Streamable Event is communication event and provides 
+     *          possibility to serialize and deserialize event data in the 
+     *          streaming object. All Events used to transfer data are
+     *          declared as streamable Event. The Streamable Event is not
+     *          created and used directly. Instead, one of derived classes
+     *          should be used.
      **/
-    explicit StreamableEvent( Event::EventType eventType );
+    class AREG_API StreamableEvent : public Event
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // friend classes
+    //////////////////////////////////////////////////////////////////////////
+        friend class RemoteEventFactory;
+    //////////////////////////////////////////////////////////////////////////
+    // Runtime declare
+    //////////////////////////////////////////////////////////////////////////
+        AREG_DECLARE_RUNTIME_EVENT(StreamableEvent)
 
-    /**
-     * \brief   Creates streamable event and initialize data
-     * \param   stream  The streaming object to read data
-     **/
-    StreamableEvent( const InStream & stream );
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Creates streamable event and defines event type.
+         * \param   eventType   The type of event.
+         **/
+        explicit StreamableEvent( Event::EventType eventType );
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~StreamableEvent() = default;
+        /**
+         * \brief   Creates streamable event and initialize data
+         * \param   stream  The streaming object to read data
+         **/
+        StreamableEvent( const InStream & stream );
 
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// StreamableEvent overrides
-/************************************************************************/
-    /**
-     * \brief   Reads and initialize event data from streaming object.
-     * \param   stream  The streaming object to read out event data
-     * \return  Returns streaming object to read out data.
-     **/
-    virtual const InStream & readStream( const InStream & stream );
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~StreamableEvent() = default;
 
-    /**
-     * \brief   Writes event data to streaming object
-     * \param   stream  The streaming object to write event data.
-     * \return  Returns streaming object to write event data.
-     **/
-    virtual OutStream & writeStream( OutStream & stream ) const;
+    //////////////////////////////////////////////////////////////////////////
+    // Operations
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+    /************************************************************************/
+    // StreamableEvent overrides
+    /************************************************************************/
+        /**
+         * \brief   Reads and initialize event data from streaming object.
+         * \param   stream  The streaming object to read out event data
+         * \return  Returns streaming object to read out data.
+         **/
+        virtual const InStream & readStream( const InStream & stream );
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    StreamableEvent() = delete;
-    AREG_NOCOPY_NOMOVE( StreamableEvent );
-};
+        /**
+         * \brief   Writes event data to streaming object
+         * \param   stream  The streaming object to write event data.
+         * \return  Returns streaming object to write event data.
+         **/
+        virtual OutStream & writeStream( OutStream & stream ) const;
 
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        StreamableEvent() = delete;
+        AREG_NOCOPY_NOMOVE( StreamableEvent );
+    };
+
+} // namespace areg
 #endif  // AREG_COMPONENT_STREAMABLEEVENT_HPP

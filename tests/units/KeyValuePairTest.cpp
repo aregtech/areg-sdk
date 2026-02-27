@@ -26,8 +26,8 @@
  **/
 TEST(KeyValuePairTest, TestConstructors)
 {
-    using Property = KeyValuePair<String, uint32_t>;
-    String  propName{ "Areg Property" };
+    using Property = areg::KeyValuePair<areg::String, uint32_t>;
+    areg::String  propName{ "Areg Property" };
 
     // Step 1: test constructors.
     Property propDef;
@@ -56,8 +56,8 @@ TEST(KeyValuePairTest, TestConstructors)
  **/
 TEST(KeyValuePairTest, TestOperators)
 {
-    using Property = KeyValuePair<String, uint32_t>;
-    String  propName{ "Areg Property" };
+    using Property = areg::KeyValuePair<areg::String, uint32_t>;
+    areg::String  propName{ "Areg Property" };
 
     // Step 1: test constructors.
     Property propDef;
@@ -91,12 +91,12 @@ TEST(KeyValuePairTest, TestOperators)
  **/
 TEST(KeyValuePairTest, TestAttributes)
 {
-    using Property = KeyValuePair<String, String>;
-    const String propName{ "Areg Property" };
-    const String propValue{ "Areg Value" };
+    using Property = areg::KeyValuePair<areg::String, areg::String>;
+    const areg::String propName{ "Areg Property" };
+    const areg::String propValue{ "Areg Value" };
 
-    String otherName{ "Another name" };
-    String otherValue{ "Another value" };
+    areg::String otherName{ "Another name" };
+    areg::String otherValue{ "Another value" };
 
     // Step 1: test constructors.
     Property propCopy;
@@ -106,8 +106,8 @@ TEST(KeyValuePairTest, TestAttributes)
     EXPECT_EQ(propCopy.getKey(), propName);
     EXPECT_EQ(propCopy.getValue(), propValue);
 
-    String moveName = propName;
-    String moveValue = propValue;
+    areg::String moveName = propName;
+    areg::String moveValue = propValue;
     Property propMove;
     EXPECT_TRUE(propMove.getKey().isEmpty() && propMove.getValue().isEmpty());
     propMove.setData(std::move(moveName), std::move(moveValue));
@@ -140,11 +140,11 @@ TEST(KeyValuePairTest, TestAttributes)
  **/
 TEST(KeyValuePairTest, TestStreaming)
 {
-    using Property = KeyValuePair<String, String>;
-    const String propName{ "Areg Property" };
-    const String propValue{ "Areg Value" };
+    using Property = areg::KeyValuePair<areg::String, areg::String>;
+    const areg::String propName{ "Areg Property" };
+    const areg::String propValue{ "Areg Value" };
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     Property src(propName, propValue), dst("key", "value");
     EXPECT_NE(src, dst);
 

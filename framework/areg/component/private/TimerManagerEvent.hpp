@@ -28,7 +28,10 @@
   /************************************************************************
    * Declared classes
    ************************************************************************/
-class TimerManagerEventData;
+namespace areg
+{
+    class TimerManagerEventData;
+}
 // class TimerManagerEvent
 // class TimerManagerEventConsumer
 
@@ -49,118 +52,124 @@ class TimerManagerEventData;
  /************************************************************************
   * Dependencies
   ************************************************************************/
-class Timer;
-
-//////////////////////////////////////////////////////////////////////////
-// TimerManagerEventData class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Timer Manager Event Data is a container object.
- *          It contains Timer object and requested action.
- *          The Data object is delivered to Timer Manager and
- *          depending on requested actions, the Timer Manager
- *          is performing action.
- *          For more details, see TimerManager class
- **/
-class TimerManagerEventData
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Default constructor.
-     *          Creates empty data with ignore action.
-     **/
-    inline TimerManagerEventData();
-
-    /**
-     * \brief   Initializes data object to start timer.
-     * \param   timer   The Timer object to set in Event Data. Can be nullptr if not used.
-     **/
-    inline explicit TimerManagerEventData(TimerBase* timer);
-
-    /**
-     * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
-     **/
-    inline TimerManagerEventData(const TimerManagerEventData& src);
-
-    /**
-     * \brief   Destructor
-     **/
-    ~TimerManagerEventData() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies Event Data from given source.
-     * \param   src     The source of Event Data to copy
-     **/
-    inline TimerManagerEventData& operator = (const TimerManagerEventData& src);
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Returns the Timer object.
-     **/
-    inline TimerBase* getTimer() const;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The Timer object of Event Data
-     **/
-    TimerBase*      mTimer;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// TimerManagerEvent and TimerManagerEventConsumer declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Declaration of TimerManagerEvent and TimerManagerEventConsumer.
- *          The TimerManagerEvent is used to send Event Data
- *          The TimerManagerEventConsumer is used to process data.
- **/
-AREG_DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, TimerManagerEventConsumer)
-
-/************************************************************************
- * Inline functions
- ************************************************************************/
-//////////////////////////////////////////////////////////////////////////
-// TimerManagerEventData class inline functions declaration
-//////////////////////////////////////////////////////////////////////////
-inline TimerManagerEventData::TimerManagerEventData()
-    : mTimer    ( nullptr   )
-{
+    class Timer;
 }
 
-inline TimerManagerEventData::TimerManagerEventData(TimerBase* timer)
-    : mTimer    ( timer     )
+namespace areg
 {
-}
+    //////////////////////////////////////////////////////////////////////////
+    // TimerManagerEventData class declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The Timer Manager Event Data is a container object.
+     *          It contains Timer object and requested action.
+     *          The Data object is delivered to Timer Manager and
+     *          depending on requested actions, the Timer Manager
+     *          is performing action.
+     *          For more details, see TimerManager class
+     **/
+    class TimerManagerEventData
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor.
+         *          Creates empty data with ignore action.
+         **/
+        inline TimerManagerEventData();
 
-inline TimerManagerEventData::TimerManagerEventData(const TimerManagerEventData& src)
-    : mTimer    ( src.mTimer    )
-{
-}
+        /**
+         * \brief   Initializes data object to start timer.
+         * \param   timer   The Timer object to set in Event Data. Can be nullptr if not used.
+         **/
+        inline explicit TimerManagerEventData(TimerBase* timer);
 
-inline TimerManagerEventData& TimerManagerEventData::operator = (const TimerManagerEventData& src)
-{
-    mTimer    = src.mTimer;
-    return (*this);
-}
+        /**
+         * \brief   Copy constructor.
+         * \param   src     The source of data to copy.
+         **/
+        inline TimerManagerEventData(const TimerManagerEventData& src);
 
-inline TimerBase* TimerManagerEventData::getTimer() const
-{
-    return mTimer;
-}
+        /**
+         * \brief   Destructor
+         **/
+        ~TimerManagerEventData() = default;
 
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Copies Event Data from given source.
+         * \param   src     The source of Event Data to copy
+         **/
+        inline TimerManagerEventData& operator = (const TimerManagerEventData& src);
+
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
+
+        /**
+         * \brief   Returns the Timer object.
+         **/
+        inline TimerBase* getTimer() const;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   The Timer object of Event Data
+         **/
+        TimerBase*      mTimer;
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // TimerManagerEvent and TimerManagerEventConsumer declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Declaration of TimerManagerEvent and TimerManagerEventConsumer.
+     *          The TimerManagerEvent is used to send Event Data
+     *          The TimerManagerEventConsumer is used to process data.
+     **/
+    AREG_DECLARE_EVENT(TimerManagerEventData, TimerManagerEvent, TimerManagerEventConsumer)
+
+    /************************************************************************
+     * Inline functions
+     ************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // TimerManagerEventData class inline functions declaration
+    //////////////////////////////////////////////////////////////////////////
+    inline TimerManagerEventData::TimerManagerEventData()
+        : mTimer    ( nullptr   )
+    {
+    }
+
+    inline TimerManagerEventData::TimerManagerEventData(TimerBase* timer)
+        : mTimer    ( timer     )
+    {
+    }
+
+    inline TimerManagerEventData::TimerManagerEventData(const TimerManagerEventData& src)
+        : mTimer    ( src.mTimer    )
+    {
+    }
+
+    inline TimerManagerEventData& TimerManagerEventData::operator = (const TimerManagerEventData& src)
+    {
+        mTimer    = src.mTimer;
+        return (*this);
+    }
+
+    inline TimerBase* TimerManagerEventData::getTimer() const
+    {
+        return mTimer;
+    }
+
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGEREVENT_HPP

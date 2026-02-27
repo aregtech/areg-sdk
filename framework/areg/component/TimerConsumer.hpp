@@ -30,78 +30,84 @@ class TimerConsumer;
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Timer;
-class TimerEventData;
-class DispatcherThread;
-
-/**
- * \brief   The timer Event is triggered when a Timer is expired and it should
- *          be processed in dispatcher thread.
- * 
- *          For details of setting up and starting the timer, see Timer class. 
- * \see Timer
- **/
-
-//////////////////////////////////////////////////////////////////////////
-// TimerConsumer class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   TimerConsumer class is receiving timer processing
- *          message when timer is expired. Inherit and override
- *          pure virtual function to process Timer.
- **/
-class AREG_API TimerConsumer : public  TimerEventConsumerBase
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor. Protected
-//////////////////////////////////////////////////////////////////////////
-protected:
+    class Timer;
+    class TimerEventData;
+    class DispatcherThread;
+}
+
+namespace areg
+{
     /**
-     * \brief   Constructor
+     * \brief   The timer Event is triggered when a Timer is expired and it should
+     *          be processed in dispatcher thread.
+     * 
+     *          For details of setting up and starting the timer, see Timer class. 
+     * \see Timer
      **/
-    TimerConsumer() = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // TimerConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Destructor
+     * \brief   TimerConsumer class is receiving timer processing
+     *          message when timer is expired. Inherit and override
+     *          pure virtual function to process Timer.
      **/
-    virtual ~TimerConsumer() = default;
+    class AREG_API TimerConsumer : public  TimerEventConsumerBase
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor. Protected
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Constructor
+         **/
+        TimerConsumer() = default;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~TimerConsumer() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// TimerConsumer interface overrides.
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+    /************************************************************************/
+    // TimerConsumer interface overrides.
+    /************************************************************************/
 
-    /**
-     * \brief   Triggered when Timer is expired. 
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
-     **/
-    virtual void processTimer( Timer & timer ) = 0;
+        /**
+         * \brief   Triggered when Timer is expired. 
+         *          The passed Timer parameter is indicating object, which has been expired.
+         *          Overwrite method to receive messages.
+         * \param   timer   The timer object that is expired.
+         **/
+        virtual void processTimer( Timer & timer ) = 0;
 
-    /**
-     * \brief   Automatically triggered when event is dispatched by thread.
-     * \param   data    The Timer Event Data object containing Timer object.
-     **/
-    void processEvent( const TimerEventData & data) override;
+        /**
+         * \brief   Automatically triggered when event is dispatched by thread.
+         * \param   data    The Timer Event Data object containing Timer object.
+         **/
+        void processEvent( const TimerEventData & data) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden overrides
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief	Triggered when dispatcher starts to dispatch Timer Event.
-     * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
-     **/
-    void startEventProcessing( Event & eventElem) override;
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden overrides
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief	Triggered when dispatcher starts to dispatch Timer Event.
+         * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
+         **/
+        void startEventProcessing( Event & eventElem) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( TimerConsumer );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( TimerConsumer );
+    };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_TIMERCONSUMER_HPP

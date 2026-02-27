@@ -29,13 +29,13 @@ DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_actionPedestrianGreen
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startupComponent);
 DEF_LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdownComponent);
 
-TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                     ( entry, owner )
-    , PowerManagerStub              ( static_cast<Component &>(self()) )
-    , TrafficControllerStub         ( static_cast<Component &>(self()) )
+TrafficLightService::TrafficLightService(const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+    : areg::Component                     ( entry, owner )
+    , PowerManagerStub              ( static_cast<areg::Component &>(self()) )
+    , TrafficControllerStub         ( static_cast<areg::Component &>(self()) )
     , TrafficLightActionHandler   ( )
 
-    , mConsoleInput                 ( entry.mRoleName, static_cast<Component &>(self()) )
+    , mConsoleInput                 ( entry.mRoleName, static_cast<areg::Component &>(self()) )
     , mLightFsm                     ( static_cast<TrafficLightActionHandler &>(self()) )
 {
 
@@ -264,18 +264,18 @@ void TrafficLightService::actionPedestrianGreen(bool isEastWest)
     LOG_INFO("EAST-WEST   : Vehicle [ %6s ], pedestrian [ %6s ]", fsm::getName(ew.lightVehicle), fsm::getName(ew.lightPedestrian));
 }
 
-void TrafficLightService::startupComponent(ComponentThread & comThread)
+void TrafficLightService::startupComponent(areg::ComponentThread & comThread)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_startupComponent);
 
-    Component::startupComponent(comThread);
+    areg::Component::startupComponent(comThread);
     mLightFsm.initFSM(&comThread);
 }
 
-void TrafficLightService::shutdownComponent(ComponentThread & comThread)
+void TrafficLightService::shutdownComponent(areg::ComponentThread & comThread)
 {
     LOG_SCOPE(19_pubfsm_pubservice_src_TrafficLightService_shutdownComponent);
 
     mLightFsm.releaseFSM();
-    Component::shutdownComponent(comThread);
+    areg::Component::shutdownComponent(comThread);
 }

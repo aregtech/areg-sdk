@@ -18,12 +18,12 @@
 #endif // _MSC_VER
 
 //! \brief   A thread to run and output message.
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread( static_cast<ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
-        , ThreadConsumer( )
+        : areg::Thread( static_cast<areg::ThreadConsumer &>(*this), "HelloThread") // set consumer and the name
+        , areg::ThreadConsumer( )
     {  }
 protected:
 /************************************************************************/
@@ -47,9 +47,9 @@ int main()
     // declare thread object.
     HelloThread aThread;
     // create and start thread, wait until it is started.
-    aThread.createThread(NECommon::WAIT_INFINITE);
+    aThread.createThread(areg::WAIT_INFINITE);
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.shutdownThread(NECommon::WAIT_INFINITE);
+    aThread.shutdownThread(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

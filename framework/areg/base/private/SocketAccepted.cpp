@@ -15,31 +15,34 @@
 
 #include "areg/base/SocketAccepted.hpp"
 
-SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress )
-    : Socket  ( hSocket, sockAddress)
+namespace areg
 {
-}
+    SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const SocketAddress & sockAddress )
+        : Socket  ( hSocket, sockAddress)
+    {
+    }
 
-bool SocketAccepted::createSocket(const char * /*hostName*/, uint16_t /*portNr*/)
-{
-    return true;
-}
+    bool SocketAccepted::createSocket(const char * /*hostName*/, uint16_t /*portNr*/)
+    {
+        return true;
+    }
 
-bool SocketAccepted::createSocket()
-{
-    return true;
-}
+    bool SocketAccepted::createSocket()
+    {
+        return true;
+    }
 
-bool SocketAccepted::operator == (const SocketAccepted & other) const
-{
-	return (this == &other) || ( isValid() && (*mSocket == other.getHandle() ));
-}
+    bool SocketAccepted::operator == (const SocketAccepted & other) const
+    {
+        return (this == &other) || ( isValid() && (*mSocket == other.getHandle() ));
+    }
 
-bool SocketAccepted::setAddress(const char * /*hostName*/, uint16_t /*portNr*/, bool /*isServer*/)
-{
-    return false;
-}
+    bool SocketAccepted::setAddress(const char * /*hostName*/, uint16_t /*portNr*/, bool /*isServer*/)
+    {
+        return false;
+    }
 
-void SocketAccepted::setAddress(const NESocket::SocketAddress & /*newAddress*/)
-{
-}
+    void SocketAccepted::setAddress(const SocketAddress & /*newAddress*/)
+    {
+    }
+} // namespace areg

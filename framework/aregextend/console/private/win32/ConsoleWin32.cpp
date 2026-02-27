@@ -56,7 +56,7 @@ namespace
 // Console Windows OS specific implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool Console::_osSetup()
+bool aregext::Console::_osSetup()
 {
     if (mIsReady == false)
     {
@@ -89,7 +89,7 @@ bool Console::_osSetup()
     return mIsReady;
 }
 
-void Console::_osRelease()
+void aregext::Console::_osRelease()
 {
     if (mIsReady)
     {
@@ -106,9 +106,9 @@ void Console::_osRelease()
     }
 }
 
-void Console::_osOutputText(Console::Coord pos, const String& text) const
+void aregext::Console::_osOutputText(aregext::Console::Coord pos, const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -117,9 +117,9 @@ void Console::_osOutputText(Console::Coord pos, const String& text) const
     WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
 }
 
-void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
+void aregext::Console::_osOutputText(aregext::Console::Coord pos, const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -128,47 +128,47 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-void Console::_osOutputText(const String& text) const
+void aregext::Console::_osOutputText(const areg::String& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
 }
 
-void Console::_osOutputText(const std::string_view& text) const
+void aregext::Console::_osOutputText(const std::string_view& text) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
-Console::Coord Console::_osGetCursorPosition() const
+aregext::Console::Coord aregext::Console::_osGetCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     CONSOLE_SCREEN_BUFFER_INFO bufferInfo;
-    NEMemory::memZero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    areg::memZero(&bufferInfo, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     GetConsoleScreenBufferInfo(hStdOut, &bufferInfo);
     const COORD& coord = reinterpret_cast<const COORD&>(bufferInfo.dwCursorPosition);
 
-    return Console::Coord{ coord.X, coord.Y };
+    return aregext::Console::Coord{ coord.X, coord.Y };
 }
 
-void Console::_osSetCursorCurPosition(Console::Coord pos) const
+void aregext::Console::_osSetCursorCurPosition(aregext::Console::Coord pos) const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
 
-bool Console::_osWaitInputString(char* buffer, uint32_t size)
+bool aregext::Console::_osWaitInputString(char* buffer, uint32_t size)
 {
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
     #if defined(_WIN32) && !defined(_MINGW)
@@ -181,26 +181,26 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size)
 #endif  // !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
 }
 
-void Console::_osRefreshScreen() const
+void aregext::Console::_osRefreshScreen() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     FlushConsoleInputBuffer(hStdOut);
 }
 
-void Console::_osClearLine() const
+void aregext::Console::_osClearLine() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
 }
 
-void Console::_osClearScreen() const
+void aregext::Console::_osClearScreen() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     if (hStdOut != nullptr)
@@ -210,38 +210,38 @@ void Console::_osClearScreen() const
     }
 }
 
-bool Console::_osReadInputList(const char* format, va_list varList) const
+bool aregext::Console::_osReadInputList(const char* format, va_list varList) const
 {
     return (vscanf(format, varList) > 0);
 }
 
-void Console::_osSaveCursorPosition() const
+void aregext::Console::_osSaveCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, nullptr);
 }
 
-void Console::_osRestoreCursorPosition() const
+void aregext::Console::_osRestoreCursorPosition() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, nullptr);
 }
 
-void Console::_osMoveCursorOneLineUp() const
+void aregext::Console::_osMoveCursorOneLineUp() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, nullptr);
 }
 
-void Console::_osMoveCursorOneLineDown() const
+void aregext::Console::_osMoveCursorOneLineDown() const
 {
-    Lock lock(mLock);
+    areg::Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);

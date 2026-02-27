@@ -25,115 +25,121 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class DateTime;
-namespace NEService {
+namespace areg
+{
+    class DateTime;
+}
+namespace areg {
     struct ConnectedInstance;
 }
 
-//////////////////////////////////////////////////////////////////////////
-// LogDatabaseEngine class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The interface to logging database engine used to save messages in the database.
- **/
-class AREG_API LogDatabaseEngine  : public DatabaseEngine
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-    LogDatabaseEngine();
-    virtual ~LogDatabaseEngine();
-
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// LogDatabaseEngine interface overrides.
-/************************************************************************/
-
+    //////////////////////////////////////////////////////////////////////////
+    // LogDatabaseEngine class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Returns true if the database and the log tables are initialized,
-     *          and ready to log messages.
+     * \brief   The interface to logging database engine used to save messages in the database.
      **/
-    virtual bool areTablesInitialized() const = 0;
+    class AREG_API LogDatabaseEngine  : public DatabaseEngine
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        LogDatabaseEngine();
+        virtual ~LogDatabaseEngine();
 
-    /**
-     * \brief   Called when logging message should be saved in the database.
-     * \param   message     The structure of the message to log.
-     * \return  Returns true if succeeded to save the log in the database.
-     **/
-    virtual bool logMessage(const NELogging::LogEntry & message) = 0;
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // LogDatabaseEngine interface overrides.
+    /************************************************************************/
 
-    /**
-     * \brief   Called when need to log information about log source instance.
-     * \param   instance    The structure of the logging message source to save in database.
-     * \param   timestamp   The timestamp to register when the instance is logged.
-     * \return  Returns true if succeeded to save the log instance in the database.
-     **/
-    virtual bool logInstanceConnected(const NEService::ConnectedInstance & instance, const DateTime & timestamp) = 0;
+        /**
+         * \brief   Returns true if the database and the log tables are initialized,
+         *          and ready to log messages.
+         **/
+        virtual bool areTablesInitialized() const = 0;
 
-    /**
-     * \brief   Called when an instance of log source is disconnected.
-     *          This call should as well automatically deactivate the log scopes.
-     * \param   cookie      The cookie ID of the instance to mark as disconnected.
-     * \param   timestamp   The deactivation timestamp to set.
-     * \return  Returns true if operation succeeded.
-     **/
-    virtual bool logInstanceDisconnected(const ITEM_ID & cookie, const DateTime & timestamp) = 0;
+        /**
+         * \brief   Called when logging message should be saved in the database.
+         * \param   message     The structure of the message to log.
+         * \return  Returns true if succeeded to save the log in the database.
+         **/
+        virtual bool logMessage(const LogEntry & message) = 0;
 
-    /**
-     * \brief   Called when need to log the information of the scope in the database.
-     * \param   scope       The log scope information to save in the database.
-     * \param   cookie      The cookie of the log scope owner instance.
-     * \param   timestamp   The timestamp to register when the scope is logged.
-     * \return  Returns true if succeeded to save the log scope in the database.
-     **/
-    virtual bool logScopeActivate(const NELogging::ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
+        /**
+         * \brief   Called when need to log information about log source instance.
+         * \param   instance    The structure of the logging message source to save in database.
+         * \param   timestamp   The timestamp to register when the instance is logged.
+         * \return  Returns true if succeeded to save the log instance in the database.
+         **/
+        virtual bool logInstanceConnected(const ConnectedInstance & instance, const DateTime & timestamp) = 0;
 
-    /**
-     * \brief   Called when need to log the information of the scope in the database.
-     * \param   scopeName   The name of the scope.
-     * \param   scopeId     The ID of the scope.
-     * \param   scopePrio   The log priority of the scope
-     * \param   cookie      The cookie of the log scope owner instance.
-     * \param   timestamp   The timestamp to register when the scope is logged.
-     * \return  Returns true if succeeded to save the log scope in the database.
-     **/
-    virtual bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
+        /**
+         * \brief   Called when an instance of log source is disconnected.
+         *          This call should as well automatically deactivate the log scopes.
+         * \param   cookie      The cookie ID of the instance to mark as disconnected.
+         * \param   timestamp   The deactivation timestamp to set.
+         * \return  Returns true if operation succeeded.
+         **/
+        virtual bool logInstanceDisconnected(const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
-    /**
-     * \brief   Called when need to log the information of the list of scopes in the database.
-     * \param   scopes      The information of the list of the log scope to save in the database.
-     * \param   cookie      The cookie of the log scope owner instance.
-     * \param   timestamp   The timestamp to register when the scope is logged.
-     * \return  Returns the number of scope entries saved in the database.
-     **/
-    virtual uint32_t logScopesActivate(const NELogging::ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) = 0;
+        /**
+         * \brief   Called when need to log the information of the scope in the database.
+         * \param   scope       The log scope information to save in the database.
+         * \param   cookie      The cookie of the log scope owner instance.
+         * \param   timestamp   The timestamp to register when the scope is logged.
+         * \return  Returns true if succeeded to save the log scope in the database.
+         **/
+        virtual bool logScopeActivate(const ScopeEntry & scope, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
-    /**
-     * \brief   Call to deactivate all scopes related with the specified cookie ID.
-     * \param   cookie      The cookie ID, which scopes should be marked as deactivated.
-     * \param   timestamp   The deactivation timestamp to set.
-     * \return  Returns true if operation succeeded.
-     **/
-    virtual bool logScopesDeactivate(const ITEM_ID & cookie, const DateTime & timestamp) = 0;
+        /**
+         * \brief   Called when need to log the information of the scope in the database.
+         * \param   scopeName   The name of the scope.
+         * \param   scopeId     The ID of the scope.
+         * \param   scopePrio   The log priority of the scope
+         * \param   cookie      The cookie of the log scope owner instance.
+         * \param   timestamp   The timestamp to register when the scope is logged.
+         * \return  Returns true if succeeded to save the log scope in the database.
+         **/
+        virtual bool logScopeActivate(const String & scopeName, uint32_t scopeId, uint32_t scopePrio, const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
-    /**
-     * \brief   Call to deactivate a single scope related with the specified cookie ID.
-     * \param   cookie      The cookie ID, which scope should be marked as deactivated.
-     * \param   scopeId     The scope ID to mark as deactivated.
-     * \param   timestamp   The deactivation timestamp to set.
-     * \return  Returns true if operation succeeded.
-     **/
-    virtual bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) = 0;
+        /**
+         * \brief   Called when need to log the information of the list of scopes in the database.
+         * \param   scopes      The information of the list of the log scope to save in the database.
+         * \param   cookie      The cookie of the log scope owner instance.
+         * \param   timestamp   The timestamp to register when the scope is logged.
+         * \return  Returns the number of scope entries saved in the database.
+         **/
+        virtual uint32_t logScopesActivate(const ScopeNames& scopes, const ITEM_ID& cookie, const DateTime& timestamp) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE(LogDatabaseEngine);
-};
+        /**
+         * \brief   Call to deactivate all scopes related with the specified cookie ID.
+         * \param   cookie      The cookie ID, which scopes should be marked as deactivated.
+         * \param   timestamp   The deactivation timestamp to set.
+         * \return  Returns true if operation succeeded.
+         **/
+        virtual bool logScopesDeactivate(const ITEM_ID & cookie, const DateTime & timestamp) = 0;
 
+        /**
+         * \brief   Call to deactivate a single scope related with the specified cookie ID.
+         * \param   cookie      The cookie ID, which scope should be marked as deactivated.
+         * \param   scopeId     The scope ID to mark as deactivated.
+         * \param   timestamp   The deactivation timestamp to set.
+         * \return  Returns true if operation succeeded.
+         **/
+        virtual bool logScopeDeactivate(const ITEM_ID & cookie, uint32_t scopeId, const DateTime & timestamp) = 0;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE(LogDatabaseEngine);
+    };
+
+} // namespace areg
 #endif // AREG_LOGGING_LOGDATABASEENGINE_HPP

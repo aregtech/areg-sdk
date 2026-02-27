@@ -19,150 +19,154 @@
 #include "areg/base/UtilityDefs.hpp"
 #include "areg/base/CommonDefs.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// Version class implementation
-//////////////////////////////////////////////////////////////////////////
 
-const Version & Version::getInvalidVersion()
+namespace areg
 {
-    static const Version _invalidVersion( 0, 0, 0 );
-    return _invalidVersion;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Version class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-Version::Version()
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-}
-
-Version::Version( uint32_t major, uint32_t minor, uint32_t patch /*= 0*/ )
-    : mMajor    (major)
-    , mMinor    (minor)
-    , mPatch    (patch)
-{
-}
-
-Version::Version( const Version &src )
-    : mMajor    (src.mMajor)
-    , mMinor    (src.mMinor)
-    , mPatch    (src.mPatch)
-{
-}
-
-Version::Version( Version && src ) noexcept
-    : mMajor    ( src.mMajor )
-    , mMinor    ( src.mMinor )
-    , mPatch    ( src.mPatch )
-{
-}
-
-Version::Version(const InStream & stream)
-    : mMajor    ( 0 )
-    , mMinor    ( 0 )
-    , mPatch    ( 0 )
-{
-    stream >> mMajor;
-    stream >> mMinor;
-    stream >> mPatch;
-}
-
-Version::Version(const char * version)
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-    convFromString( version );
-}
-
-Version::Version(const String & version)
-    : mMajor    (0)
-    , mMinor    (0)
-    , mPatch    (0)
-{
-    convFromString(version);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
-Version & Version::convFromString( const String & version )
-{
-    mMajor  = 0;
-    mMinor  = 0;
-    mPatch  = 0;
-
-    String major, minor, patch;
-    NEString::CharPos pos = NEString::START_POS;
-    pos = version.substring( major, NECommon::OBJECT_SEPARATOR, pos);
-    pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
-    version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
-
-    mMajor  = major.toUInt32();
-    mMinor  = minor.toUInt32();
-    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
-
-    return (*this);
-}
-
-Version & Version::convFromString( const char * version )
-{
-	return convFromString( String(version != nullptr ? version : NEString::EmptyStringA) );
-}
-
-Version & Version::operator = ( const Version &src )
-{
-    if (this != &src)
+    const Version & Version::getInvalidVersion()
     {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
-    }
-    return (*this);
-}
-
-Version & Version::operator = ( Version && src ) noexcept
-{
-    if ( this != &src )
-    {
-        this->mMajor    = src.mMajor;
-        this->mMinor    = src.mMinor;
-        this->mPatch    = src.mPatch;
+        static const Version _invalidVersion( 0, 0, 0 );
+        return _invalidVersion;
     }
 
-    return (*this);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    Version::Version()
+        : mMajor    (0)
+        , mMinor    (0)
+        , mPatch    (0)
+    {
+    }
 
-bool Version::operator < ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor < version.mMajor) || 
-                (mMajor == version.mMajor && mMinor < version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
-             );
-}
+    Version::Version( uint32_t major, uint32_t minor, uint32_t patch /*= 0*/ )
+        : mMajor    (major)
+        , mMinor    (minor)
+        , mPatch    (patch)
+    {
+    }
 
-bool Version::operator > ( const Version & version ) const
-{
-    return  (this == &version ? false :
-                (mMajor > version.mMajor) ||
-                (mMajor == version.mMajor && mMinor > version.mMinor) ||
-                (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
-            );
-}
+    Version::Version( const Version &src )
+        : mMajor    (src.mMajor)
+        , mMinor    (src.mMinor)
+        , mPatch    (src.mPatch)
+    {
+    }
 
-String Version::convToString() const
-{
-    constexpr const char * format{ "%d%c%d%c%d" };
+    Version::Version( Version && src ) noexcept
+        : mMajor    ( src.mMajor )
+        , mMinor    ( src.mMinor )
+        , mPatch    ( src.mPatch )
+    {
+    }
 
-    char buffer[ 128 ]{ 0 };
-    int32_t len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
-    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
-}
+    Version::Version(const InStream & stream)
+        : mMajor    ( 0 )
+        , mMinor    ( 0 )
+        , mPatch    ( 0 )
+    {
+        stream >> mMajor;
+        stream >> mMinor;
+        stream >> mPatch;
+    }
 
-//////////////////////////////////////////////////////////////////////////
-// Version friend global operators to make Version object streamable
-//////////////////////////////////////////////////////////////////////////
+    Version::Version(const char * version)
+        : mMajor    (0)
+        , mMinor    (0)
+        , mPatch    (0)
+    {
+        convFromString( version );
+    }
+
+    Version::Version(const String & version)
+        : mMajor    (0)
+        , mMinor    (0)
+        , mPatch    (0)
+    {
+        convFromString(version);
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Methods
+    //////////////////////////////////////////////////////////////////////////
+    Version & Version::convFromString( const String & version )
+    {
+        mMajor  = 0;
+        mMinor  = 0;
+        mPatch  = 0;
+
+        String major, minor, patch;
+        CharPos pos = START_POS;
+        pos = version.substring( major, OBJECT_SEPARATOR, pos);
+        pos = version.substring( minor, OBJECT_SEPARATOR, pos);
+        version.substring( patch, OBJECT_SEPARATOR, pos);
+
+        mMajor  = major.toUInt32();
+        mMinor  = minor.toUInt32();
+        mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
+
+        return (*this);
+    }
+
+    Version & Version::convFromString( const char * version )
+    {
+        return convFromString( String(version != nullptr ? version : EmptyStringA) );
+    }
+
+    Version & Version::operator = ( const Version &src )
+    {
+        if (this != &src)
+        {
+            this->mMajor    = src.mMajor;
+            this->mMinor    = src.mMinor;
+            this->mPatch    = src.mPatch;
+        }
+        return (*this);
+    }
+
+    Version & Version::operator = ( Version && src ) noexcept
+    {
+        if ( this != &src )
+        {
+            this->mMajor    = src.mMajor;
+            this->mMinor    = src.mMinor;
+            this->mPatch    = src.mPatch;
+        }
+
+        return (*this);
+    }
+
+    bool Version::operator < ( const Version & version ) const
+    {
+        return  (this == &version ? false :
+                    (mMajor < version.mMajor) || 
+                    (mMajor == version.mMajor && mMinor < version.mMinor) ||
+                    (mMajor == version.mMajor && mMinor == version.mMajor && mPatch < version.mPatch)
+                );
+    }
+
+    bool Version::operator > ( const Version & version ) const
+    {
+        return  (this == &version ? false :
+                    (mMajor > version.mMajor) ||
+                    (mMajor == version.mMajor && mMinor > version.mMinor) ||
+                    (mMajor == version.mMajor && mMinor == version.mMajor && mPatch > version.mPatch)
+                );
+    }
+
+    String Version::convToString() const
+    {
+        constexpr const char * format{ "%d%c%d%c%d" };
+
+        char buffer[ 128 ]{ 0 };
+        int32_t len = String::formatString( buffer, 128, format, mMajor, OBJECT_SEPARATOR, mMinor, OBJECT_SEPARATOR, mPatch );
+        return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Version friend global operators to make Version object streamable
+    //////////////////////////////////////////////////////////////////////////
+} // namespace areg

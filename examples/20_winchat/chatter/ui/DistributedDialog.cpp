@@ -75,11 +75,11 @@ bool DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand cmd,
 
 DistributedDialog::DistributedDialog( )
     : CPropertySheet    (DistributedDialog::TITLE, nullptr )
-    , ConnectionHandler( )
+    , aregext::ConnectionHandler( )
 
-    , mPageSetup        ( static_cast<ConnectionHandler &>(self()) )
-    , mPageMessaging    ( static_cast<ConnectionHandler &>(self()) )
-    , mPageConnections  ( static_cast<ConnectionHandler &>(self()) )
+    , mPageSetup        ( static_cast<aregext::ConnectionHandler &>(self()) )
+    , mPageMessaging    ( static_cast<aregext::ConnectionHandler &>(self()) )
+    , mPageConnections  ( static_cast<aregext::ConnectionHandler &>(self()) )
 
     , mMapChatPages     ( )
     , mCaption          ( _T("") )
@@ -241,7 +241,7 @@ LRESULT DistributedDialog::OnCmdServiceStartup( WPARAM wParam, LPARAM lParam )
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceStartup);
     if ( (wParam == 1) && (lParam != 0))
     {
-        Component* owner = reinterpret_cast<Component*>(lParam);
+        areg::Component* owner = reinterpret_cast<areg::Component*>(lParam);
         LOG_DBG("Service has been start up, component [ %s ]", owner->getRoleName().getString());
         mPageSetup.OnServiceStartup( true, owner );
         mPageConnections.OnServiceStartup( true, owner );
@@ -265,7 +265,7 @@ LRESULT DistributedDialog::OnCmdServiceNetwork( WPARAM wParam, LPARAM lParam )
     if ( (wParam == 1) && (lParam != 0) )
     {
         LOG_DBG("Network service is available");
-        DispatcherThread * ownerThread = reinterpret_cast<DispatcherThread *>(lParam);
+        areg::DispatcherThread * ownerThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
         mPageSetup.OnServiceNetwork( true, ownerThread );
         mPageConnections.OnServiceNetwork( true, ownerThread );
         mPageMessaging.OnServiceNetwork( true, ownerThread );
@@ -286,7 +286,7 @@ LRESULT DistributedDialog::OnCmdServiceConnection( WPARAM wParam, LPARAM lParam 
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdServiceConnection);
     bool isConnected = wParam != 0;
-    DispatcherThread * ownerThread = reinterpret_cast<DispatcherThread *>(lParam);
+    areg::DispatcherThread * ownerThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isConnected )
     {
         LOG_DBG("Connection service is available");
@@ -313,7 +313,7 @@ LRESULT DistributedDialog::OnCmdClientConnection( WPARAM wParam, LPARAM lParam )
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientConnection);
 
     bool isConnected = wParam != 0;
-    DispatcherThread *dispThread = reinterpret_cast<DispatcherThread *>(lParam);
+    areg::DispatcherThread *dispThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isConnected )
     {
         LOG_DBG("Client Connections service is available");
@@ -338,10 +338,10 @@ DEF_LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientRegistration);
 LRESULT DistributedDialog::OnCmdClientRegistration( WPARAM wParam, LPARAM lParam )
 {
     LOG_SCOPE(chatter_ui_DistributedDialog_OnCmdClientRegistration);
-    String nickName = GetNickName();
+    areg::String nickName = GetNickName();
 
     bool isRegistered = wParam != 0;
-    DispatcherThread * dispThread = reinterpret_cast<DispatcherThread *>(lParam);
+    areg::DispatcherThread * dispThread = reinterpret_cast<areg::DispatcherThread *>(lParam);
     if ( isRegistered )
     {
         LOG_DBG("Registered [ %s ]", nickName.getString());
@@ -531,7 +531,7 @@ PageChat * DistributedDialog::AddChatPage( const DirectConnection::sInitiator & 
         owner.sessionId = initiator.sessionId;
     }
 
-    String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
+    areg::String serviceName    = NEDistributedApp::getDirectMessagingRole( owner.nickName, owner.cookie, owner.sessionId, isInitiator );
     PageChat * chatPage   = new PageChat( serviceName, initiator, listParties, owner, isInitiator );
     if ( chatPage != nullptr )
     {
@@ -564,7 +564,7 @@ void DistributedDialog::ChangeCaption( LPCTSTR newCaption )
         dlg->SetTitle( newCaption );
 }
 
-bool DistributedDialog::RemoveChatPage( const String & connectName )
+bool DistributedDialog::RemoveChatPage( const areg::String & connectName )
 {
     bool result = false;
     MapChatPages::MAPPOS pos = mMapChatPages.find(connectName);

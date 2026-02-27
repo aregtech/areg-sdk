@@ -28,999 +28,1002 @@
 #include <map>
 #include <algorithm>
 
-//////////////////////////////////////////////////////////////////////////
-// OrderedMap<KEY, VALUE> class template declaration
-//////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief   The Map is a sorted associative container that contains key-value
- *          pairs with unique keys. Keys are sorted by comparison. The values 
- *          are accessed by Key. Key and Value can be of different types.
- *
- *          To access first element in the Map, get the first Position (call function
- *          firstPosition()). Each next element is accessed by calling next position.
- *          The type KEY should be possible to compare. If KEY type is an object 
- *          it should have implemented less ( < ) operator or std::less<Key>.
- *          In addition, the KEY and VALUE types should have at least default
- *          constructor and valid assigning operator.
- *
- *          For example:
- *          class MyClass {
- *              int32_t     mData;
- *          }
- *
- *          namespace std {
- *
- *              // comparison
- *              template<> struct less<MyClass> {
- *                  bool operator()( const MyClass& lhs, const MyClass& rhs ) const
- *                  {   return lhs.mData < rhs.mData; }
- *              }
- *          }
- *
- *          The Map object is not thread safe and data should be synchronized manually.
- *
- * \tparam  KEY     The type of Key to identify entries in the sorted map. Either should
- *                  be primitive or should have at least default and copy constructors,
- *                  and assigning operator. There should be as well possibility to compare
- *                  KEY type when calling std::less<KEY>().
- * \tparam  VALUE   The type of stored items. Either should be primitive or should have
- *                  default constructor and valid assigning operator. Also, should be
- *                  possible to convert to type 'const VALUE&'.
- **/
-template < typename KEY, typename VALUE>
-class OrderedMap : protected Constless< std::map<KEY, VALUE> >
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    //! Position in the sorted map
-    using MAPPOS    = typename std::map<KEY, VALUE>::iterator;
-    using Compare   = typename std::map<KEY, VALUE>::key_compare;
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // OrderedMap<KEY, VALUE> class template declaration
+    //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief	Creates empty map.
-     **/
-    OrderedMap() = default;
-
-    /**
-     * \brief	Creates empty map and using comparison function object 'comp'.
-     **/
-    OrderedMap(Compare comp);
-
-    /**
-     * \brief   Copies entries from given source.
-     * \param   src     The source to copy data.
-     **/
-    OrderedMap( const OrderedMap<KEY, VALUE> & src ) = default;
-
-    /**
-     * \brief   Moves entries from given source.
-     * \param   src     The source to move data.
-     **/
-    OrderedMap( OrderedMap<KEY, VALUE> && src ) noexcept = default;
-
-    /**
-     * \brief   Compiles entries from the given array of keys and values,
-     *          where the amount of key and value entries are equal.
-     *          If any key is repeating in the list, it will be replaced by new value.
-     *          The number of entries in the map is equal to 'count' only if all keys are unique.
-     * \param   keys    The list of keys to copy.
-     * \param   values  The list of values to pair with keys.
-     * \param   count   The number of entries in the key and value entries.
-     **/
-    OrderedMap(const KEY* keys, const VALUE* values, uint32_t count);
-
-    /**
-     * \brief   Destructor.
-     **/
-    ~OrderedMap() = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// Basic operators
-/************************************************************************/
-
-    /**
-     * \brief   Subscript operator. Returns reference to value of element by given key.
-     *          May be used on either the right (r-value) or the left (l-value) of an assignment statement.
-     **/
-    inline VALUE& operator [] (const KEY& Key);
-
-    /**
-     * \brief   Subscript operator. Returns reference to value of element by given key.
-     *          May be used on the right (r-value).
-     **/
-    inline const VALUE& operator [] (const KEY& Key) const;
-
-    /**
-     * \brief   Assigning operator. Copies all values from given source.
-     *          If sorted map previously had values, they will be removed and new values
-     *          from source will be set in the same sequence as they are
-     *          present in the source.
-     * \param   src     The source of map.
-     **/
-    inline OrderedMap<KEY, VALUE>& operator = ( const OrderedMap<KEY, VALUE> & src ) = default;
-
-    /**
-     * \brief   Move operator. Moves all values from given source.
-     *          If sorted map previously had values, they will be removed and new values
-     *          from source will be set in the same sequence as they are
-     *          present in the source.
-     * \param   src     The source of map.
-     **/
-    inline OrderedMap<KEY, VALUE>& operator = ( OrderedMap<KEY, VALUE> && src ) noexcept = default;
-
-    /**
-     * \brief   Checks equality of 2 map objects, and returns true if they are equal.
-     *          There should be possible to compare KEY and VALUE type entries of sorted map.
-     * \param   other   The map object to compare.
-     **/
-    inline bool operator == ( const OrderedMap<KEY, VALUE> & other ) const;
-
-    /**
-     * \brief   Checks inequality of 2 map objects, and returns true if they are not equal.
-     *          There should be possible to compare KEY and VALUE type entries of sorted map.
-     * \param   other   The map object to compare.
-     **/
-    inline bool operator != ( const OrderedMap<KEY, VALUE> & other ) const;
-
-/************************************************************************/
-// Friend global operators to make Sorted Map streamable
-/************************************************************************/
-
-    /**
-     * \brief   Reads out from the stream the key and value pairs of the map.
-     *          If map previously had values, they will be removed and new values
-     *          from the stream will be set in the same sequence as they are present
-     *          in the stream. There should be possibility to initialize values from
-     *          streaming object and if KEY or VALUE are not primitives, but an object,
-     *          they should have implemented streaming operator.
-     * \param   stream  The streaming object to read values.
-     * \param   input   The sorted map object to save initialized values.
-     **/
-    template < typename K, typename V >
-    friend inline const InStream & operator >> ( const InStream & stream, OrderedMap<K, V> & input);
-
-    /**
-     * \brief   Writes to the stream the key and value pairs of the map.
-     *          The values will be written to the stream starting from firs entry.
-     *          There should be possibility to stream key and value pairs and if KEY or VALUE
-     *          are not primitives, but an object, they should have implemented streaming operator.
-     * \param   stream  The stream to write values.
-     * \param   output  The sorted map object containing value to stream.
-     **/
-    template < typename K, typename V >
-    friend inline OutStream & operator << ( OutStream & stream, const OrderedMap<K, V> & output );
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Returns true if the sorted map is empty and has no elements.
-     **/
-    inline bool isEmpty() const;
-
-    /**
-     * \brief	Returns the current size of the map.
-     **/
-    inline uint32_t getSize() const;
-
-    /**
-     * \brief	Returns the position of the first key and value entry in the sorted map, which is
-     *          not invalid if the map is not empty. Otherwise, returns invalid position.
-     **/
-    inline MAPPOS firstPosition() const;
-
-    /**
-     * \brief   Returns true if specified position points the first entry in the sorted map.
-     * \param   pos     The position to check.
-     **/
-    inline bool isFirstPosition(const MAPPOS pos) const;
-
-    /**
-     * \brief   Returns the invalid position of the sorted map.
-     **/
-    inline MAPPOS invalidPosition() const;
-
-    /**
-     * \brief   Returns true if specified position is invalid, i.e. points the end of the sorted map.
-     **/
-    inline bool isInvalidPosition(const MAPPOS pos) const;
-
-    /**
-     * \brief   Returns true if the given position is not pointing the end of the sorted map.
-     *          Note, it does not check whether there is a such position existing in the map.
-     **/
-    inline bool isValidPosition(const MAPPOS pos) const;
-
-    /**
-     * \brief   Checks and ensures that specified position is pointing the valid entry in the sorted map.
-     *          The duration of checkup depends on the location of the position in the sorted map.
-     * \param   pos     The position to check.
-     */
-    inline bool checkPosition(const MAPPOS pos) const;
-
-    /**
-     * \brief	Checks and returns true if the given element exist in the sorted map or not.
-     * \param	Key	    The key of value to search.
-     */
-    inline bool contains(const KEY& Key) const;
-
-    /**
-     * \brief   Returns the vector object where the data are stored.
-     **/
-    inline const std::map<KEY, VALUE>& getData() const;
-
-/************************************************************************/
-// Operations
-/************************************************************************/
-
-    /**
-     * \brief   Remove all entries of the map.
-     **/
-    inline void clear();
-
-    /**
-     * \brief   Sets the size of the map to zero and deletes all capacity space.
-     */
-    inline void release();
-
-    /**
-     * \brief	Searches an element entry by the given key.
-     *          If found element, return true and on exit returns the value of element
-     * \param[in]	Key	    The key to search.
-     * \param[out]	Value   On output, contains value of found element
-     * \return	Returns true if there is an entry with the specified key.
-     **/
-    inline bool find( const KEY & Key, VALUE & Value ) const;
-
-    /**
-     * \brief	Search an element entry by the given key and returns the position in sorted map.
-     * \param	Key	    The key to search.
-     * \return	Returns valid sorted map position if found an entry by the give key.
-     *          Otherwise, returns invalid position (end of map position).
-     **/
-    inline MAPPOS find(const KEY& Key) const;
-
-    /**
-     * \brief	Returns reference to the value of the element by given existing key, which can be
-     *          on either the right (r-value) or the left (l-value) of an assignment statement.
-     **/
-    inline VALUE& getAt(const KEY& Key);
-    /**
-     * \brief	Returns reference to the value of the element by given existing key, which can be
-     *          on the right (r-value) of an assignment statement.
-     **/
-    inline const VALUE& getAt(const KEY& Key) const;
-
-    /**
-     * \brief	Update the value of the existing element in the sorted map.
-     *          The existence of the entry is checked by the given key.
-     *          Creates and inserts new entry if no element with the specified key exists.
-     * \param	Key	        The key of element to search or create new entry.
-     * \param	newValue	The value of element to set.
-     **/
-    inline void setAt( const KEY & Key, const VALUE & newValue );
-    inline void setAt( KEY && Key, VALUE && newValue);
-    /**
-     * \brief	Update existing element value or inserts new element in the sorted map.
-     * \param	element     The Key and Value pair of element to set or insert.
-     **/
-    inline void setAt( const std::pair<KEY, VALUE> & element);
-    inline void setAt( std::pair<KEY, VALUE> && element);
-
-    /**
-     * \brief   Extracts elements from the given source and inserts into the sorted map.
-     *          If there is an entry with the key equivalent to the key from source element,
-     *          then that element is not extracted from the source and remains unchanged.
-     *          On output, the `source` parameter may be empty if all entries are merged, or
-     *          can be unchanged if the target object contains entries with the same keys.
-     * \param[in,out]   source  The source of the sorted map to merge.
-     **/
-    inline void merge( OrderedMap<KEY, VALUE> & source );
-    inline void merge( OrderedMap<KEY, VALUE> && source );
-
-    /**
-     * \brief   Adds new entry with the specified key in the sorted map if it is not existing.
-     *          If 'updateExisting' parameter is true, it updates the existing key and value.
-     *          The method returns pair of value, where it indicates the position of the entry
-     *          and the flag, indicating whether it added new entry or not.
-     * \param   newKey          The key of the entry in the sorted map.
-     * \param   newValue        The value of the entry in the sorted map.
-     * \param   updateExisting  The flag, indicating whether should update the entry with the existing key.
-     *                          If true, updates the existing key and value.
-     *                          If, for example, 2 objects are compared by the name and not by
-     *                          absolute values, setting this parameter true updates the value of the existing entry.
-     *                          the existing Key and Value entries.
-     * \return  Returns a pair of 'MAPPOS' and 'bool' values, where
-     *              -   'MAPPOS' indicates the position of the entry in the sorted map.
-     *              -   'bool' equal to 'true' indicates that new entry is created.
-     *                  If this value is 'false' no new entry is created. When new entry is created, the existing
-     *                  position values can be invalidated.
-     **/
-    inline std::pair<MAPPOS, bool> addIfUnique(const KEY & newKey, const VALUE & newValue, bool updateExisting = false );
-    inline std::pair<MAPPOS, bool> addIfUnique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
-
-    /**
-     * \brief   Updates existing element specified by the Key and returns the position in the map.
-     *          If Key does not exit, no new entry is created and function returns invalid position.
-     * \param   Key         The key of an element in the sorted map to update.
-     * \param   newValue    New value to set on existing entry.
-     * \return  Returns valid position if the existing element is updated. Otherwise, returns invalid position.
-     **/
-    inline MAPPOS updateAt( const KEY & Key, const VALUE & newValue );
-
-    /**
-     * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
-     *          Otherwise, returns false.
-     * \param	Key	        The Key of the entry to search and remove.
-     **/
-    inline bool removeAt(const KEY& Key );
-
-    /**
-     * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
-     *          Otherwise, returns false.
-     * \param[in]	Key	    The Key of the entry to search and remove.
-     * \param[out]  Value   If succeeded to remove, on output it contains the value of the removed element.
-     **/
-    inline bool removeAt( const KEY & Key, VALUE & Value );
-
-    /**
-     * \brief	Update value of an element at the given position and return position of the next entry.
-     * \param	atPosition      The valid position of the element to update value.
-     * \param	newValue	    New value to set for existing element.
-     * \return  Returns valid position of the next element or invalid position if it updated the last 
-     *          entry in the sorted map.
-     **/
-    inline MAPPOS setPosition(MAPPOS atPosition, const VALUE& newValue );
-
-    /**
-     * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
-     *          or invalid position if removed last element in the map.
-     * \param	atPosition  The valid position of the element in the sorted map to remove.
-     * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
-     *          removed last element in the map.
-     **/
-    inline MAPPOS removePosition(MAPPOS atPosition);
-
-    /**
-     * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
-     *          or invalid position if removed last element in the map.
-     * \param[in]   atPosition  The valid position of the element in the sorted map to remove.
-     * \param[out]  Key         On output, this contains the key of the removed element
-     * \param[out]  Value       On output, this contains the value of the removed element.
-     * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
-     *          removed last element in the map.
-     **/
-    inline MAPPOS removePosition(MAPPOS atPosition, KEY & Key, VALUE & Value );
-
-    /**
-     * \brief   Removes the first entry in the sorted map.
-     **/
-    inline void removeFirst();
-
-    /**
-     * \brief   Removes the first entry in the sorted map.
-     * \param[out]  Key     On output it contains the key of the removed element in the sorted map.
-     * \param[out]  Value   On output it contains the value of the removed element in the sorted map.
-     * \return  Returns true if sorted map was not empty and first entry is removed. Otherwise, returns false.
-     **/
-    inline bool removeFirst(KEY& Key, VALUE& Value);
-
-    /**
-     * \brief   Removes the last entry in the sorted map.
-     **/
-    inline void removeLast();
-
-    /**
-     * \brief   Removes the last entry in the sorted map.
-     * \param[out]  Key     On output it contains the key of the removed element in the sorted map.
-     * \param[out]  Value   On output it contains the value of the removed element in the sorted map.
-     * \return  Returns true if sorted map was not empty and last entry is removed. Otherwise, returns false.
-     **/
-    inline bool removeLast(KEY& Key, VALUE& Value);
-
-    /**
-     * \brief	Returns position of the next entry in the sorted map followed the given position.
-     * \param	atPosition  The position of the entry to get next and extract values.
-     * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
-     **/
-    inline MAPPOS nextPosition(MAPPOS atPosition) const;
-
-    /**
-     * \brief	Returns position of the next entry in the sorted map followed the given position.
-     * \param[in]   atPosition  The position of the entry to get next and extract values.
-     * \param[out]  Key         On output, this contains key of given position.
-     * \param[out]  Value       On output, this contains value of given position.
-     * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
-     **/
-    inline MAPPOS nextPosition(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
-
-    /**
-     * \brief	Returns position of the next entry in the sorted map followed the given position.
-     * \param[in]   atPosition  The position of the entry to get next and extract values.
-     * \param[out]  Element     On output, this element contains pair of Key and Value specified by given position.
-     * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
-     **/
-    inline MAPPOS nextPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & Element ) const;
-
-    /**
-     * \brief	Extract data of the key and value of the entry by given position.
-     * \param[in]   atPosition	The position of the element to extract key and value.
-     * \param[out]  Key	        On output, contains key of the element at given position.
-     * \param[out]  Value       On output, contains value of the element at given position.
-     **/
-    inline void getAtPosition(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
-
-    /**
-     * \brief	Extract data of the key and value of the entry by given position.
-     * \param[in]   atPosition  The position of the element to extract key and value.
-     * \param[out]  Element     On output, contains the Key and Value pair of the element at given position
-     **/
-    inline void getAtPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const;
-
-    /**
-     * \brief   Returns the Key of the entry at the given position.
-     * \param   atPosition  The position of the element.
-     **/
-    inline const KEY & keyAtPosition(const MAPPOS atPosition ) const;
-    inline KEY& keyAtPosition(MAPPOS atPosition);
-
-    /**
-     * \brief   Returns the Value of the entry at the given position.
-     * \param   atPosition  The position of the element.
-     **/
-    inline const VALUE & valueAtPosition(const MAPPOS atPosition ) const;
-    inline VALUE& valueAtPosition(MAPPOS atPosition);
-
-    /**
-     * \brief	Extracts next position, key and value of the element in the sorted map followed position.
+     * \brief   The Map is a sorted associative container that contains key-value
+     *          pairs with unique keys. Keys are sorted by comparison. The values 
+     *          are accessed by Key. Key and Value can be of different types.
      *
-     * \param[in,out]   nextPos     On input this indicates the valid position of the entry in the sorted map.
-     *                              On output, this parameter points either next valid entry in the sorted map
-     *                              or invalid entry if no more entry is following.
-     * \param[out]      nextKey     On output, this contains key of the next entry in sorted map.
-     * \param[out]      nextValue   On output, this contain value of the next entry in sorted map.
-     * \return	Returns true, if there is a next element and the output values are valid.
+     *          To access first element in the Map, get the first Position (call function
+     *          firstPosition()). Each next element is accessed by calling next position.
+     *          The type KEY should be possible to compare. If KEY type is an object 
+     *          it should have implemented less ( < ) operator or std::less<Key>.
+     *          In addition, the KEY and VALUE types should have at least default
+     *          constructor and valid assigning operator.
+     *
+     *          For example:
+     *          class MyClass {
+     *              int32_t     mData;
+     *          }
+     *
+     *          namespace std {
+     *
+     *              // comparison
+     *              template<> struct less<MyClass> {
+     *                  bool operator()( const MyClass& lhs, const MyClass& rhs ) const
+     *                  {   return lhs.mData < rhs.mData; }
+     *              }
+     *          }
+     *
+     *          The Map object is not thread safe and data should be synchronized manually.
+     *
+     * \tparam  KEY     The type of Key to identify entries in the sorted map. Either should
+     *                  be primitive or should have at least default and copy constructors,
+     *                  and assigning operator. There should be as well possibility to compare
+     *                  KEY type when calling std::less<KEY>().
+     * \tparam  VALUE   The type of stored items. Either should be primitive or should have
+     *                  default constructor and valid assigning operator. Also, should be
+     *                  possible to convert to type 'const VALUE&'.
      **/
-    inline bool nextEntry(MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue ) const;
-
-     /**
-      * \brief   Copies elements from the map into the provided pre-allocated buffer of keys and values.
-      *          If `elemCount` is less than the number of elements in the map,
-      *          only the first `elemCount` elements are copied. Otherwise, all elements
-      *          in the map are copied. No elements are copied if `elemCount` is 0.
-      * \param[in,out]   keys       A pre-allocated buffer where the keys of the map elements will be copied.
-      *                             Must be large enough to hold at least `elemCount` elements.
-      * \param[in,out]   values     A pre-allocated buffer where the values of the map elements will be copied.
-      *                             Must be large enough to hold at least `elemCount` elements.
-      * \param[in]       elemCount  The maximum number of elements to copy into the keys and values buffer.
-      *                             If set to 0, no elements are copied.
-      * \return  The number of elements successfully copied.
-      **/
-    inline uint32_t getElements(KEY * keys, VALUE * values, uint32_t elemCount);
-
-//////////////////////////////////////////////////////////////////////////
-// Member Variables
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Instance of map to store key-value pairs.
-     **/
-    std::map<KEY, VALUE>  mValueList;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// Function Implement
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// OrderedMap<KEY, VALUE> class template Implement
-//////////////////////////////////////////////////////////////////////////
-
-template<typename KEY, typename VALUE>
-inline OrderedMap<KEY, VALUE>::OrderedMap(Compare comp)
-    : Constless< std::map<KEY, VALUE> >()
-    , mValueList(comp)
-{
-}
-
-template<typename KEY, typename VALUE>
-OrderedMap<KEY, VALUE>::OrderedMap(const KEY* keys, const VALUE* values, uint32_t count)
-    : Constless< std::map<KEY, VALUE> >()
-    , mValueList()
-{
-    for (uint32_t i = 0; i < count; ++i)
+    template < typename KEY, typename VALUE>
+    class OrderedMap : protected Constless< std::map<KEY, VALUE> >
     {
-        mValueList[keys[i]] = values[i];
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        //! Position in the sorted map
+        using MAPPOS    = typename std::map<KEY, VALUE>::iterator;
+        using Compare   = typename std::map<KEY, VALUE>::key_compare;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+
+        /**
+         * \brief	Creates empty map.
+         **/
+        OrderedMap() = default;
+
+        /**
+         * \brief	Creates empty map and using comparison function object 'comp'.
+         **/
+        OrderedMap(Compare comp);
+
+        /**
+         * \brief   Copies entries from given source.
+         * \param   src     The source to copy data.
+         **/
+        OrderedMap( const OrderedMap<KEY, VALUE> & src ) = default;
+
+        /**
+         * \brief   Moves entries from given source.
+         * \param   src     The source to move data.
+         **/
+        OrderedMap( OrderedMap<KEY, VALUE> && src ) noexcept = default;
+
+        /**
+         * \brief   Compiles entries from the given array of keys and values,
+         *          where the amount of key and value entries are equal.
+         *          If any key is repeating in the list, it will be replaced by new value.
+         *          The number of entries in the map is equal to 'count' only if all keys are unique.
+         * \param   keys    The list of keys to copy.
+         * \param   values  The list of values to pair with keys.
+         * \param   count   The number of entries in the key and value entries.
+         **/
+        OrderedMap(const KEY* keys, const VALUE* values, uint32_t count);
+
+        /**
+         * \brief   Destructor.
+         **/
+        ~OrderedMap() = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // Basic operators
+    /************************************************************************/
+
+        /**
+         * \brief   Subscript operator. Returns reference to value of element by given key.
+         *          May be used on either the right (r-value) or the left (l-value) of an assignment statement.
+         **/
+        inline VALUE& operator [] (const KEY& Key);
+
+        /**
+         * \brief   Subscript operator. Returns reference to value of element by given key.
+         *          May be used on the right (r-value).
+         **/
+        inline const VALUE& operator [] (const KEY& Key) const;
+
+        /**
+         * \brief   Assigning operator. Copies all values from given source.
+         *          If sorted map previously had values, they will be removed and new values
+         *          from source will be set in the same sequence as they are
+         *          present in the source.
+         * \param   src     The source of map.
+         **/
+        inline OrderedMap<KEY, VALUE>& operator = ( const OrderedMap<KEY, VALUE> & src ) = default;
+
+        /**
+         * \brief   Move operator. Moves all values from given source.
+         *          If sorted map previously had values, they will be removed and new values
+         *          from source will be set in the same sequence as they are
+         *          present in the source.
+         * \param   src     The source of map.
+         **/
+        inline OrderedMap<KEY, VALUE>& operator = ( OrderedMap<KEY, VALUE> && src ) noexcept = default;
+
+        /**
+         * \brief   Checks equality of 2 map objects, and returns true if they are equal.
+         *          There should be possible to compare KEY and VALUE type entries of sorted map.
+         * \param   other   The map object to compare.
+         **/
+        inline bool operator == ( const OrderedMap<KEY, VALUE> & other ) const;
+
+        /**
+         * \brief   Checks inequality of 2 map objects, and returns true if they are not equal.
+         *          There should be possible to compare KEY and VALUE type entries of sorted map.
+         * \param   other   The map object to compare.
+         **/
+        inline bool operator != ( const OrderedMap<KEY, VALUE> & other ) const;
+
+    /************************************************************************/
+    // Friend global operators to make Sorted Map streamable
+    /************************************************************************/
+
+        /**
+         * \brief   Reads out from the stream the key and value pairs of the map.
+         *          If map previously had values, they will be removed and new values
+         *          from the stream will be set in the same sequence as they are present
+         *          in the stream. There should be possibility to initialize values from
+         *          streaming object and if KEY or VALUE are not primitives, but an object,
+         *          they should have implemented streaming operator.
+         * \param   stream  The streaming object to read values.
+         * \param   input   The sorted map object to save initialized values.
+         **/
+        template < typename K, typename V >
+        friend inline const InStream & operator >> ( const InStream & stream, OrderedMap<K, V> & input);
+
+        /**
+         * \brief   Writes to the stream the key and value pairs of the map.
+         *          The values will be written to the stream starting from firs entry.
+         *          There should be possibility to stream key and value pairs and if KEY or VALUE
+         *          are not primitives, but an object, they should have implemented streaming operator.
+         * \param   stream  The stream to write values.
+         * \param   output  The sorted map object containing value to stream.
+         **/
+        template < typename K, typename V >
+        friend inline OutStream & operator << ( OutStream & stream, const OrderedMap<K, V> & output );
+
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
+
+        /**
+         * \brief   Returns true if the sorted map is empty and has no elements.
+         **/
+        inline bool isEmpty() const;
+
+        /**
+         * \brief	Returns the current size of the map.
+         **/
+        inline uint32_t getSize() const;
+
+        /**
+         * \brief	Returns the position of the first key and value entry in the sorted map, which is
+         *          not invalid if the map is not empty. Otherwise, returns invalid position.
+         **/
+        inline MAPPOS firstPosition() const;
+
+        /**
+         * \brief   Returns true if specified position points the first entry in the sorted map.
+         * \param   pos     The position to check.
+         **/
+        inline bool isFirstPosition(const MAPPOS pos) const;
+
+        /**
+         * \brief   Returns the invalid position of the sorted map.
+         **/
+        inline MAPPOS invalidPosition() const;
+
+        /**
+         * \brief   Returns true if specified position is invalid, i.e. points the end of the sorted map.
+         **/
+        inline bool isInvalidPosition(const MAPPOS pos) const;
+
+        /**
+         * \brief   Returns true if the given position is not pointing the end of the sorted map.
+         *          Note, it does not check whether there is a such position existing in the map.
+         **/
+        inline bool isValidPosition(const MAPPOS pos) const;
+
+        /**
+         * \brief   Checks and ensures that specified position is pointing the valid entry in the sorted map.
+         *          The duration of checkup depends on the location of the position in the sorted map.
+         * \param   pos     The position to check.
+         */
+        inline bool checkPosition(const MAPPOS pos) const;
+
+        /**
+         * \brief	Checks and returns true if the given element exist in the sorted map or not.
+         * \param	Key	    The key of value to search.
+         */
+        inline bool contains(const KEY& Key) const;
+
+        /**
+         * \brief   Returns the vector object where the data are stored.
+         **/
+        inline const std::map<KEY, VALUE>& getData() const;
+
+    /************************************************************************/
+    // Operations
+    /************************************************************************/
+
+        /**
+         * \brief   Remove all entries of the map.
+         **/
+        inline void clear();
+
+        /**
+         * \brief   Sets the size of the map to zero and deletes all capacity space.
+         */
+        inline void release();
+
+        /**
+         * \brief	Searches an element entry by the given key.
+         *          If found element, return true and on exit returns the value of element
+         * \param[in]	Key	    The key to search.
+         * \param[out]	Value   On output, contains value of found element
+         * \return	Returns true if there is an entry with the specified key.
+         **/
+        inline bool find( const KEY & Key, VALUE & Value ) const;
+
+        /**
+         * \brief	Search an element entry by the given key and returns the position in sorted map.
+         * \param	Key	    The key to search.
+         * \return	Returns valid sorted map position if found an entry by the give key.
+         *          Otherwise, returns invalid position (end of map position).
+         **/
+        inline MAPPOS find(const KEY& Key) const;
+
+        /**
+         * \brief	Returns reference to the value of the element by given existing key, which can be
+         *          on either the right (r-value) or the left (l-value) of an assignment statement.
+         **/
+        inline VALUE& getAt(const KEY& Key);
+        /**
+         * \brief	Returns reference to the value of the element by given existing key, which can be
+         *          on the right (r-value) of an assignment statement.
+         **/
+        inline const VALUE& getAt(const KEY& Key) const;
+
+        /**
+         * \brief	Update the value of the existing element in the sorted map.
+         *          The existence of the entry is checked by the given key.
+         *          Creates and inserts new entry if no element with the specified key exists.
+         * \param	Key	        The key of element to search or create new entry.
+         * \param	newValue	The value of element to set.
+         **/
+        inline void setAt( const KEY & Key, const VALUE & newValue );
+        inline void setAt( KEY && Key, VALUE && newValue);
+        /**
+         * \brief	Update existing element value or inserts new element in the sorted map.
+         * \param	element     The Key and Value pair of element to set or insert.
+         **/
+        inline void setAt( const std::pair<KEY, VALUE> & element);
+        inline void setAt( std::pair<KEY, VALUE> && element);
+
+        /**
+         * \brief   Extracts elements from the given source and inserts into the sorted map.
+         *          If there is an entry with the key equivalent to the key from source element,
+         *          then that element is not extracted from the source and remains unchanged.
+         *          On output, the `source` parameter may be empty if all entries are merged, or
+         *          can be unchanged if the target object contains entries with the same keys.
+         * \param[in,out]   source  The source of the sorted map to merge.
+         **/
+        inline void merge( OrderedMap<KEY, VALUE> & source );
+        inline void merge( OrderedMap<KEY, VALUE> && source );
+
+        /**
+         * \brief   Adds new entry with the specified key in the sorted map if it is not existing.
+         *          If 'updateExisting' parameter is true, it updates the existing key and value.
+         *          The method returns pair of value, where it indicates the position of the entry
+         *          and the flag, indicating whether it added new entry or not.
+         * \param   newKey          The key of the entry in the sorted map.
+         * \param   newValue        The value of the entry in the sorted map.
+         * \param   updateExisting  The flag, indicating whether should update the entry with the existing key.
+         *                          If true, updates the existing key and value.
+         *                          If, for example, 2 objects are compared by the name and not by
+         *                          absolute values, setting this parameter true updates the value of the existing entry.
+         *                          the existing Key and Value entries.
+         * \return  Returns a pair of 'MAPPOS' and 'bool' values, where
+         *              -   'MAPPOS' indicates the position of the entry in the sorted map.
+         *              -   'bool' equal to 'true' indicates that new entry is created.
+         *                  If this value is 'false' no new entry is created. When new entry is created, the existing
+         *                  position values can be invalidated.
+         **/
+        inline std::pair<MAPPOS, bool> addIfUnique(const KEY & newKey, const VALUE & newValue, bool updateExisting = false );
+        inline std::pair<MAPPOS, bool> addIfUnique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
+
+        /**
+         * \brief   Updates existing element specified by the Key and returns the position in the map.
+         *          If Key does not exit, no new entry is created and function returns invalid position.
+         * \param   Key         The key of an element in the sorted map to update.
+         * \param   newValue    New value to set on existing entry.
+         * \return  Returns valid position if the existing element is updated. Otherwise, returns invalid position.
+         **/
+        inline MAPPOS updateAt( const KEY & Key, const VALUE & newValue );
+
+        /**
+         * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
+         *          Otherwise, returns false.
+         * \param	Key	        The Key of the entry to search and remove.
+         **/
+        inline bool removeAt(const KEY& Key );
+
+        /**
+         * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
+         *          Otherwise, returns false.
+         * \param[in]	Key	    The Key of the entry to search and remove.
+         * \param[out]  Value   If succeeded to remove, on output it contains the value of the removed element.
+         **/
+        inline bool removeAt( const KEY & Key, VALUE & Value );
+
+        /**
+         * \brief	Update value of an element at the given position and return position of the next entry.
+         * \param	atPosition      The valid position of the element to update value.
+         * \param	newValue	    New value to set for existing element.
+         * \return  Returns valid position of the next element or invalid position if it updated the last 
+         *          entry in the sorted map.
+         **/
+        inline MAPPOS setPosition(MAPPOS atPosition, const VALUE& newValue );
+
+        /**
+         * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
+         *          or invalid position if removed last element in the map.
+         * \param	atPosition  The valid position of the element in the sorted map to remove.
+         * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
+         *          removed last element in the map.
+         **/
+        inline MAPPOS removePosition(MAPPOS atPosition);
+
+        /**
+         * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
+         *          or invalid position if removed last element in the map.
+         * \param[in]   atPosition  The valid position of the element in the sorted map to remove.
+         * \param[out]  Key         On output, this contains the key of the removed element
+         * \param[out]  Value       On output, this contains the value of the removed element.
+         * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
+         *          removed last element in the map.
+         **/
+        inline MAPPOS removePosition(MAPPOS atPosition, KEY & Key, VALUE & Value );
+
+        /**
+         * \brief   Removes the first entry in the sorted map.
+         **/
+        inline void removeFirst();
+
+        /**
+         * \brief   Removes the first entry in the sorted map.
+         * \param[out]  Key     On output it contains the key of the removed element in the sorted map.
+         * \param[out]  Value   On output it contains the value of the removed element in the sorted map.
+         * \return  Returns true if sorted map was not empty and first entry is removed. Otherwise, returns false.
+         **/
+        inline bool removeFirst(KEY& Key, VALUE& Value);
+
+        /**
+         * \brief   Removes the last entry in the sorted map.
+         **/
+        inline void removeLast();
+
+        /**
+         * \brief   Removes the last entry in the sorted map.
+         * \param[out]  Key     On output it contains the key of the removed element in the sorted map.
+         * \param[out]  Value   On output it contains the value of the removed element in the sorted map.
+         * \return  Returns true if sorted map was not empty and last entry is removed. Otherwise, returns false.
+         **/
+        inline bool removeLast(KEY& Key, VALUE& Value);
+
+        /**
+         * \brief	Returns position of the next entry in the sorted map followed the given position.
+         * \param	atPosition  The position of the entry to get next and extract values.
+         * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
+         **/
+        inline MAPPOS nextPosition(MAPPOS atPosition) const;
+
+        /**
+         * \brief	Returns position of the next entry in the sorted map followed the given position.
+         * \param[in]   atPosition  The position of the entry to get next and extract values.
+         * \param[out]  Key         On output, this contains key of given position.
+         * \param[out]  Value       On output, this contains value of given position.
+         * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
+         **/
+        inline MAPPOS nextPosition(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
+
+        /**
+         * \brief	Returns position of the next entry in the sorted map followed the given position.
+         * \param[in]   atPosition  The position of the entry to get next and extract values.
+         * \param[out]  Element     On output, this element contains pair of Key and Value specified by given position.
+         * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
+         **/
+        inline MAPPOS nextPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & Element ) const;
+
+        /**
+         * \brief	Extract data of the key and value of the entry by given position.
+         * \param[in]   atPosition	The position of the element to extract key and value.
+         * \param[out]  Key	        On output, contains key of the element at given position.
+         * \param[out]  Value       On output, contains value of the element at given position.
+         **/
+        inline void getAtPosition(MAPPOS atPosition, KEY & Key, VALUE & Value ) const;
+
+        /**
+         * \brief	Extract data of the key and value of the entry by given position.
+         * \param[in]   atPosition  The position of the element to extract key and value.
+         * \param[out]  Element     On output, contains the Key and Value pair of the element at given position
+         **/
+        inline void getAtPosition(MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const;
+
+        /**
+         * \brief   Returns the Key of the entry at the given position.
+         * \param   atPosition  The position of the element.
+         **/
+        inline const KEY & keyAtPosition(const MAPPOS atPosition ) const;
+        inline KEY& keyAtPosition(MAPPOS atPosition);
+
+        /**
+         * \brief   Returns the Value of the entry at the given position.
+         * \param   atPosition  The position of the element.
+         **/
+        inline const VALUE & valueAtPosition(const MAPPOS atPosition ) const;
+        inline VALUE& valueAtPosition(MAPPOS atPosition);
+
+        /**
+         * \brief	Extracts next position, key and value of the element in the sorted map followed position.
+         *
+         * \param[in,out]   nextPos     On input this indicates the valid position of the entry in the sorted map.
+         *                              On output, this parameter points either next valid entry in the sorted map
+         *                              or invalid entry if no more entry is following.
+         * \param[out]      nextKey     On output, this contains key of the next entry in sorted map.
+         * \param[out]      nextValue   On output, this contain value of the next entry in sorted map.
+         * \return	Returns true, if there is a next element and the output values are valid.
+         **/
+        inline bool nextEntry(MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue ) const;
+
+        /**
+         * \brief   Copies elements from the map into the provided pre-allocated buffer of keys and values.
+         *          If `elemCount` is less than the number of elements in the map,
+         *          only the first `elemCount` elements are copied. Otherwise, all elements
+         *          in the map are copied. No elements are copied if `elemCount` is 0.
+         * \param[in,out]   keys       A pre-allocated buffer where the keys of the map elements will be copied.
+         *                             Must be large enough to hold at least `elemCount` elements.
+         * \param[in,out]   values     A pre-allocated buffer where the values of the map elements will be copied.
+         *                             Must be large enough to hold at least `elemCount` elements.
+         * \param[in]       elemCount  The maximum number of elements to copy into the keys and values buffer.
+         *                             If set to 0, no elements are copied.
+         * \return  The number of elements successfully copied.
+         **/
+        inline uint32_t getElements(KEY * keys, VALUE * values, uint32_t elemCount);
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member Variables
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Instance of map to store key-value pairs.
+         **/
+        std::map<KEY, VALUE>  mValueList;
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // Function Implement
+    //////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////
+    // OrderedMap<KEY, VALUE> class template Implement
+    //////////////////////////////////////////////////////////////////////////
+
+    template<typename KEY, typename VALUE>
+    inline OrderedMap<KEY, VALUE>::OrderedMap(Compare comp)
+        : Constless< std::map<KEY, VALUE> >()
+        , mValueList(comp)
+    {
     }
-}
 
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::operator == (const OrderedMap<KEY, VALUE>& other) const
-{
-    return (mValueList == other.mValueList);
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::operator != ( const OrderedMap<KEY, VALUE>& other ) const
-{
-    return (mValueList != other.mValueList);
-}
-
-template < typename KEY, typename VALUE >
-inline VALUE & OrderedMap<KEY, VALUE>::operator [] (const KEY& Key)
-{
-    return mValueList[Key];
-}
-
-template < typename KEY, typename VALUE >
-inline const VALUE & OrderedMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
-{
-    return mValueList[Key];
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::isEmpty() const
-{
-    return mValueList.empty();
-}
-
-template < typename KEY, typename VALUE >
-inline uint32_t OrderedMap<KEY, VALUE>::getSize() const
-{
-    return static_cast<uint32_t>(mValueList.size());
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::firstPosition() const
-{
-    auto pos = mValueList.begin();
-    return Constless<std::map<KEY, VALUE>>::iter(mValueList, pos);
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::isFirstPosition(const MAPPOS pos) const
-{
-    return (mValueList.empty() == false) && (pos == mValueList.begin());
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::invalidPosition() const
-{
-	auto end = mValueList.end();
-    return Constless<std::map<KEY, VALUE>>::iter(mValueList, end);
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::isInvalidPosition(const MAPPOS pos) const
-{
-    return (pos == mValueList.end());
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::isValidPosition(const MAPPOS pos) const
-{
-    return (pos != mValueList.end());
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
-{
-    auto it = mValueList.begin();
-    while ((it != mValueList.end()) && (it != pos))
+    template<typename KEY, typename VALUE>
+    OrderedMap<KEY, VALUE>::OrderedMap(const KEY* keys, const VALUE* values, uint32_t count)
+        : Constless< std::map<KEY, VALUE> >()
+        , mValueList()
     {
-        ++it;
-    }
-
-    return (it != mValueList.end());
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::clear()
-{
-    mValueList.clear();
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::release()
-{
-    mValueList.clear();
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::find( const KEY & Key, VALUE & Value ) const
-{
-    bool result = false;
-    if (mValueList.empty() == false)
-    {
-        auto pos = mValueList.find(Key);
-        if (pos != mValueList.end())
+        for (uint32_t i = 0; i < count; ++i)
         {
-            Value = pos->second;
-            result = true;
+            mValueList[keys[i]] = values[i];
         }
     }
 
-    return result;
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::find(const KEY& Key) const
-{
-    auto cit = mValueList.empty() ? mValueList.end() : mValueList.find(Key);
-    return Constless<std::map<KEY, VALUE>>::iter(mValueList, cit);
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::contains(const KEY& Key) const
-{
-    return (mValueList.find(Key) != mValueList.end());
-}
-
-template<typename KEY, typename VALUE>
-inline const std::map<KEY, VALUE>& OrderedMap<KEY, VALUE>::getData() const
-{
-    return mValueList;
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::setAt(const KEY & Key, const VALUE & newValue)
-{
-    mValueList[Key] = newValue;
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::setAt( KEY && Key, VALUE && newValue)
-{
-    mValueList[Key] = std::move(newValue);
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::setAt(const std::pair<KEY, VALUE>& element)
-{
-    setAt(element.first, element.second);
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
-{
-    setAt(std::move(element.first), std::move(element.second));
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::merge(OrderedMap<KEY, VALUE>& source)
-{
-    mValueList.merge(source.mValueList);
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::merge(OrderedMap<KEY, VALUE> && source)
-{
-    mValueList.merge(std::move(source.mValueList));
-}
-
-template < typename KEY, typename VALUE >
-inline std::pair<typename OrderedMap<KEY, VALUE>::MAPPOS, bool> OrderedMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue, bool updateExisting /*= false*/ )
-{
-    std::pair<MAPPOS, bool> result = mValueList.insert({ newKey, newValue });
-    if ( updateExisting && (result.second == false) )
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::operator == (const OrderedMap<KEY, VALUE>& other) const
     {
-        ASSERT( result.first != mValueList.end( ) );
-        result.first->second = newValue;
+        return (mValueList == other.mValueList);
     }
 
-    return result;
-}
-
-template < typename KEY, typename VALUE >
-inline std::pair<typename OrderedMap<KEY, VALUE>::MAPPOS, bool> OrderedMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue, bool updateExisting /*= false*/ )
-{
-    std::pair<MAPPOS, bool> result = mValueList.insert( std::make_pair( newKey, newValue ) );
-    if ( updateExisting && (result.second == false) )
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::operator != ( const OrderedMap<KEY, VALUE>& other ) const
     {
-        ASSERT( result.first != mValueList.end( ) );
-        result.first->second = newValue;
+        return (mValueList != other.mValueList);
     }
 
-    return result;
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::updateAt(const KEY & Key, const VALUE & newValue)
-{
-    MAPPOS pos = mValueList.empty() ? invalidPosition() : mValueList.find(Key);
-    if (pos != mValueList.end())
+    template < typename KEY, typename VALUE >
+    inline VALUE & OrderedMap<KEY, VALUE>::operator [] (const KEY& Key)
     {
-        pos->second = newValue;
+        return mValueList[Key];
     }
 
-    return pos;
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::removeAt(const KEY& Key)
-{
-    bool result = false;
-    if (mValueList.empty() == false)
+    template < typename KEY, typename VALUE >
+    inline const VALUE & OrderedMap<KEY, VALUE>::operator [] ( const KEY & Key ) const
     {
-        MAPPOS pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            result = true;
-            mValueList.erase(pos);
-        }
+        return mValueList[Key];
     }
 
-    return result;
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& Value)
-{
-    bool result = false;
-    if (mValueList.empty() == false)
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::isEmpty() const
     {
-        MAPPOS pos = mValueList.find(Key);
-        if (pos != mValueList.end())
-        {
-            result = true;
-            Value = pos->second;
-            mValueList.erase(pos);
-        }
+        return mValueList.empty();
     }
 
-    return result;
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::setPosition(typename OrderedMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
-{
-    ASSERT( atPosition != mValueList.end() );
-    atPosition->second = newValue;
-    return (++atPosition);
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::removePosition(typename OrderedMap<KEY, VALUE>::MAPPOS curPos, KEY& Key, VALUE& Value)
-{
-    ASSERT( curPos != mValueList.end());
-    Key         = curPos->first;
-    Value       = curPos->second;
-
-    return mValueList.erase(curPos);
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::removePosition(MAPPOS atPosition)
-{
-    ASSERT(atPosition != mValueList.end());
-    return mValueList.erase(atPosition);
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::removeFirst(KEY& Key, VALUE& Value)
-{
-    bool result = false;
-    if (mValueList.empty() == false)
+    template < typename KEY, typename VALUE >
+    inline uint32_t OrderedMap<KEY, VALUE>::getSize() const
     {
-        auto pos    = mValueList.begin();
-        ASSERT(pos != mValueList.end());
-        Key = pos->first;
-        Value = pos->second;
-
-        mValueList.erase(pos);
-        result      = true;
+        return static_cast<uint32_t>(mValueList.size());
     }
 
-    return result;
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::removeFirst()
-{
-    if (mValueList.empty() == false)
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::firstPosition() const
     {
         auto pos = mValueList.begin();
-        ASSERT(pos != mValueList.end());
-        mValueList.erase(pos);
-    }
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::removeLast(KEY& Key, VALUE& Value)
-{
-    bool result = false;
-    if (mValueList.empty() == false)
-    {
-        auto pos = mValueList.rbegin();
-        ASSERT(pos != mValueList.end());
-        Key = pos->first;
-        Value = pos->second;
-
-        mValueList.erase(pos);
-        result = true;
+        return Constless<std::map<KEY, VALUE>>::iter(mValueList, pos);
     }
 
-    return result;
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::removeLast()
-{
-    if (mValueList.empty() == false)
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::isFirstPosition(const MAPPOS pos) const
     {
-        auto pos = mValueList.rbegin();
-        ASSERT(pos != mValueList.end());
-        mValueList.erase(pos);
-    }
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::nextPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition, KEY& Key, VALUE& Value) const
-{
-    ASSERT(atPosition != mValueList.end());
-
-    Key		    = atPosition->first;
-    Value	    = atPosition->second;
-
-    return (++ atPosition);
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS
-OrderedMap<KEY, VALUE>::nextPosition( OrderedMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const
-{
-    return nextPosition(atPosition, Element.first, Element.second);
-}
-
-template < typename KEY, typename VALUE >
-inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::nextPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const
-{
-    ASSERT(atPosition != mValueList.end());
-    return (++ atPosition);
-}
-
-template < typename KEY, typename VALUE >
-inline VALUE & OrderedMap<KEY, VALUE>::getAt( const KEY & Key )
-{
-    return mValueList.at(Key);
-}
-
-template < typename KEY, typename VALUE >
-inline const VALUE & OrderedMap<KEY, VALUE>::getAt(const KEY & Key) const
-{
-    return mValueList.at(Key);
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::getAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition, KEY & Key, VALUE & Value) const
-{
-    ASSERT(atPosition != mValueList.end());
-    Key     = atPosition->first;
-    Value   = atPosition->second;
-}
-
-template < typename KEY, typename VALUE >
-inline void OrderedMap<KEY, VALUE>::getAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const
-{
-    getAtPosition(atPosition, Element.first, Element.second);
-}
-
-template < typename KEY, typename VALUE >
-inline const KEY & OrderedMap<KEY, VALUE>::keyAtPosition(const OrderedMap<KEY, VALUE>::MAPPOS atPosition) const
-{
-    ASSERT(atPosition != mValueList.end());
-    return atPosition->first;
-}
-
-template < typename KEY, typename VALUE >
-inline KEY& OrderedMap<KEY, VALUE>::keyAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition)
-{
-    ASSERT(atPosition != mValueList.end());
-    return const_cast<KEY &>(atPosition->first);
-}
-
-template < typename KEY, typename VALUE >
-inline const VALUE & OrderedMap<KEY, VALUE>::valueAtPosition(const OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const
-{
-    ASSERT(atPosition != mValueList.end());
-    return atPosition->second;
-}
-
-template < typename KEY, typename VALUE >
-inline VALUE& OrderedMap<KEY, VALUE>::valueAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition)
-{
-    ASSERT(atPosition != mValueList.end());
-    return atPosition->second;
-}
-
-template < typename KEY, typename VALUE >
-inline bool OrderedMap<KEY, VALUE>::nextEntry(OrderedMap<KEY, VALUE>::MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue) const
-{
-    ASSERT( nextPos != mValueList.end() );
-    bool result = false;
-    if (++nextPos != mValueList.end())
-    {
-        nextKey     = nextPos->first;
-        nextValue   = nextPos->second;
-        result = true;
+        return (mValueList.empty() == false) && (pos == mValueList.begin());
     }
 
-    return result;
-}
-
-template<typename KEY, typename VALUE>
-inline uint32_t OrderedMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint32_t elemCount)
-{
-    uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
-    if (result > 0)
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::invalidPosition() const
     {
-        uint32_t i = 0;
-        for (const auto& elem : mValueList)
+        auto end = mValueList.end();
+        return Constless<std::map<KEY, VALUE>>::iter(mValueList, end);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::isInvalidPosition(const MAPPOS pos) const
+    {
+        return (pos == mValueList.end());
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::isValidPosition(const MAPPOS pos) const
+    {
+        return (pos != mValueList.end());
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
+    {
+        auto it = mValueList.begin();
+        while ((it != mValueList.end()) && (it != pos))
         {
-            keys[i] = elem.first;
-            values[i] = elem.second;
+            ++it;
+        }
 
-            if (++i == result)
+        return (it != mValueList.end());
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::clear()
+    {
+        mValueList.clear();
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::release()
+    {
+        mValueList.clear();
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::find( const KEY & Key, VALUE & Value ) const
+    {
+        bool result = false;
+        if (mValueList.empty() == false)
+        {
+            auto pos = mValueList.find(Key);
+            if (pos != mValueList.end())
             {
-                break;
+                Value = pos->second;
+                result = true;
             }
         }
+
+        return result;
     }
 
-    return result;
-}
-
-//////////////////////////////////////////////////////////////////////////
-// OrderedMap<KEY, VALUE> class friend methods
-//////////////////////////////////////////////////////////////////////////
-
-template < typename K, typename V >
-inline const InStream & operator >> ( const InStream & stream, OrderedMap<K, V> & input )
-{
-    uint32_t size = 0;
-    stream >> size;
-
-    input.mValueList.clear();
-    for (uint32_t i = 0; i < size; ++ i)
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::find(const KEY& Key) const
     {
-        K key;
-        V value;
-        stream >> key >> value;
-        input.setAt(key, value);
+        auto cit = mValueList.empty() ? mValueList.end() : mValueList.find(Key);
+        return Constless<std::map<KEY, VALUE>>::iter(mValueList, cit);
     }
 
-    return stream;
-}
-
-template < typename K, typename V >
-inline OutStream & operator << ( OutStream & stream, const OrderedMap<K, V> & output )
-{
-    uint32_t size = output.getSize();
-    stream << size;
-    if ( size != 0 )
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::contains(const KEY& Key) const
     {
-        for (const auto& elem : output.mValueList)
+        return (mValueList.find(Key) != mValueList.end());
+    }
+
+    template<typename KEY, typename VALUE>
+    inline const std::map<KEY, VALUE>& OrderedMap<KEY, VALUE>::getData() const
+    {
+        return mValueList;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::setAt(const KEY & Key, const VALUE & newValue)
+    {
+        mValueList[Key] = newValue;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::setAt( KEY && Key, VALUE && newValue)
+    {
+        mValueList[Key] = std::move(newValue);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::setAt(const std::pair<KEY, VALUE>& element)
+    {
+        setAt(element.first, element.second);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
+    {
+        setAt(std::move(element.first), std::move(element.second));
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::merge(OrderedMap<KEY, VALUE>& source)
+    {
+        mValueList.merge(source.mValueList);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::merge(OrderedMap<KEY, VALUE> && source)
+    {
+        mValueList.merge(std::move(source.mValueList));
+    }
+
+    template < typename KEY, typename VALUE >
+    inline std::pair<typename OrderedMap<KEY, VALUE>::MAPPOS, bool> OrderedMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue, bool updateExisting /*= false*/ )
+    {
+        std::pair<MAPPOS, bool> result = mValueList.insert({ newKey, newValue });
+        if ( updateExisting && (result.second == false) )
         {
-            stream << elem.first;
-            stream << elem.second;
+            ASSERT( result.first != mValueList.end( ) );
+            result.first->second = newValue;
+        }
+
+        return result;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline std::pair<typename OrderedMap<KEY, VALUE>::MAPPOS, bool> OrderedMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue, bool updateExisting /*= false*/ )
+    {
+        std::pair<MAPPOS, bool> result = mValueList.insert( std::make_pair( newKey, newValue ) );
+        if ( updateExisting && (result.second == false) )
+        {
+            ASSERT( result.first != mValueList.end( ) );
+            result.first->second = newValue;
+        }
+
+        return result;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::updateAt(const KEY & Key, const VALUE & newValue)
+    {
+        MAPPOS pos = mValueList.empty() ? invalidPosition() : mValueList.find(Key);
+        if (pos != mValueList.end())
+        {
+            pos->second = newValue;
+        }
+
+        return pos;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::removeAt(const KEY& Key)
+    {
+        bool result = false;
+        if (mValueList.empty() == false)
+        {
+            MAPPOS pos = mValueList.find(Key);
+            if (pos != mValueList.end())
+            {
+                result = true;
+                mValueList.erase(pos);
+            }
+        }
+
+        return result;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::removeAt(const KEY & Key, VALUE& Value)
+    {
+        bool result = false;
+        if (mValueList.empty() == false)
+        {
+            MAPPOS pos = mValueList.find(Key);
+            if (pos != mValueList.end())
+            {
+                result = true;
+                Value = pos->second;
+                mValueList.erase(pos);
+            }
+        }
+
+        return result;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::setPosition(typename OrderedMap<KEY, VALUE>::MAPPOS atPosition, const VALUE & newValue)
+    {
+        ASSERT( atPosition != mValueList.end() );
+        atPosition->second = newValue;
+        return (++atPosition);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::removePosition(typename OrderedMap<KEY, VALUE>::MAPPOS curPos, KEY& Key, VALUE& Value)
+    {
+        ASSERT( curPos != mValueList.end());
+        Key         = curPos->first;
+        Value       = curPos->second;
+
+        return mValueList.erase(curPos);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::removePosition(MAPPOS atPosition)
+    {
+        ASSERT(atPosition != mValueList.end());
+        return mValueList.erase(atPosition);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::removeFirst(KEY& Key, VALUE& Value)
+    {
+        bool result = false;
+        if (mValueList.empty() == false)
+        {
+            auto pos    = mValueList.begin();
+            ASSERT(pos != mValueList.end());
+            Key = pos->first;
+            Value = pos->second;
+
+            mValueList.erase(pos);
+            result      = true;
+        }
+
+        return result;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::removeFirst()
+    {
+        if (mValueList.empty() == false)
+        {
+            auto pos = mValueList.begin();
+            ASSERT(pos != mValueList.end());
+            mValueList.erase(pos);
         }
     }
 
-    return stream;
-}
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::removeLast(KEY& Key, VALUE& Value)
+    {
+        bool result = false;
+        if (mValueList.empty() == false)
+        {
+            auto pos = mValueList.rbegin();
+            ASSERT(pos != mValueList.end());
+            Key = pos->first;
+            Value = pos->second;
 
+            mValueList.erase(pos);
+            result = true;
+        }
+
+        return result;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::removeLast()
+    {
+        if (mValueList.empty() == false)
+        {
+            auto pos = mValueList.rbegin();
+            ASSERT(pos != mValueList.end());
+            mValueList.erase(pos);
+        }
+    }
+
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::nextPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition, KEY& Key, VALUE& Value) const
+    {
+        ASSERT(atPosition != mValueList.end());
+
+        Key		    = atPosition->first;
+        Value	    = atPosition->second;
+
+        return (++ atPosition);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS
+    OrderedMap<KEY, VALUE>::nextPosition( OrderedMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const
+    {
+        return nextPosition(atPosition, Element.first, Element.second);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline typename OrderedMap<KEY, VALUE>::MAPPOS OrderedMap<KEY, VALUE>::nextPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const
+    {
+        ASSERT(atPosition != mValueList.end());
+        return (++ atPosition);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline VALUE & OrderedMap<KEY, VALUE>::getAt( const KEY & Key )
+    {
+        return mValueList.at(Key);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline const VALUE & OrderedMap<KEY, VALUE>::getAt(const KEY & Key) const
+    {
+        return mValueList.at(Key);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::getAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition, KEY & Key, VALUE & Value) const
+    {
+        ASSERT(atPosition != mValueList.end());
+        Key     = atPosition->first;
+        Value   = atPosition->second;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline void OrderedMap<KEY, VALUE>::getAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition, std::pair<KEY, VALUE> & Element) const
+    {
+        getAtPosition(atPosition, Element.first, Element.second);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline const KEY & OrderedMap<KEY, VALUE>::keyAtPosition(const OrderedMap<KEY, VALUE>::MAPPOS atPosition) const
+    {
+        ASSERT(atPosition != mValueList.end());
+        return atPosition->first;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline KEY& OrderedMap<KEY, VALUE>::keyAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition)
+    {
+        ASSERT(atPosition != mValueList.end());
+        return const_cast<KEY &>(atPosition->first);
+    }
+
+    template < typename KEY, typename VALUE >
+    inline const VALUE & OrderedMap<KEY, VALUE>::valueAtPosition(const OrderedMap<KEY, VALUE>::MAPPOS atPosition ) const
+    {
+        ASSERT(atPosition != mValueList.end());
+        return atPosition->second;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline VALUE& OrderedMap<KEY, VALUE>::valueAtPosition(OrderedMap<KEY, VALUE>::MAPPOS atPosition)
+    {
+        ASSERT(atPosition != mValueList.end());
+        return atPosition->second;
+    }
+
+    template < typename KEY, typename VALUE >
+    inline bool OrderedMap<KEY, VALUE>::nextEntry(OrderedMap<KEY, VALUE>::MAPPOS & nextPos, KEY & nextKey, VALUE & nextValue) const
+    {
+        ASSERT( nextPos != mValueList.end() );
+        bool result = false;
+        if (++nextPos != mValueList.end())
+        {
+            nextKey     = nextPos->first;
+            nextValue   = nextPos->second;
+            result = true;
+        }
+
+        return result;
+    }
+
+    template<typename KEY, typename VALUE>
+    inline uint32_t OrderedMap<KEY, VALUE>::getElements(KEY* keys, VALUE* values, uint32_t elemCount)
+    {
+        uint32_t result{ std::min(static_cast<uint32_t>(mValueList.size()), elemCount) };
+        if (result > 0)
+        {
+            uint32_t i = 0;
+            for (const auto& elem : mValueList)
+            {
+                keys[i] = elem.first;
+                values[i] = elem.second;
+
+                if (++i == result)
+                {
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // OrderedMap<KEY, VALUE> class friend methods
+    //////////////////////////////////////////////////////////////////////////
+
+    template < typename K, typename V >
+    inline const InStream & operator >> ( const InStream & stream, OrderedMap<K, V> & input )
+    {
+        uint32_t size = 0;
+        stream >> size;
+
+        input.mValueList.clear();
+        for (uint32_t i = 0; i < size; ++ i)
+        {
+            K key;
+            V value;
+            stream >> key >> value;
+            input.setAt(key, value);
+        }
+
+        return stream;
+    }
+
+    template < typename K, typename V >
+    inline OutStream & operator << ( OutStream & stream, const OrderedMap<K, V> & output )
+    {
+        uint32_t size = output.getSize();
+        stream << size;
+        if ( size != 0 )
+        {
+            for (const auto& elem : output.mValueList)
+            {
+                stream << elem.first;
+                stream << elem.second;
+            }
+        }
+
+        return stream;
+    }
+
+} // namespace areg
 #endif  // AREG_BASE_TEMAP_HPP

@@ -27,50 +27,56 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class Event;
-
-//////////////////////////////////////////////////////////////////////////
-// QueueListener class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Event Queue Listener interface. The listener should be assigned
- *          in the Event Queue object and the signalEvent() function is 
- *          triggered every time when new event item is pushed in the queue
- *          or when queue is empty.
- **/
-class AREG_API QueueListener
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor. Protected
-//////////////////////////////////////////////////////////////////////////
-protected:
+    class Event;
+}
+
+namespace areg
+{
+    //////////////////////////////////////////////////////////////////////////
+    // QueueListener class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Protected default constructor.
+     * \brief   Event Queue Listener interface. The listener should be assigned
+     *          in the Event Queue object and the signalEvent() function is 
+     *          triggered every time when new event item is pushed in the queue
+     *          or when queue is empty.
      **/
-    QueueListener() = default;
-    virtual ~QueueListener() = default;
+    class AREG_API QueueListener
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor. Protected
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Protected default constructor.
+         **/
+        QueueListener() = default;
+        virtual ~QueueListener() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Override operations.
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// QueueListener interface overrides
-/************************************************************************/
-    /**
-     * \brief	Triggered from Event Queue object every time when new event
-     *          element is pushed into queue or when queue is empty.
-     *          Override method to provide queuing logic.
-     * \param	eventCount	The number of event elements currently in the queue.
-     *                      If zero, queue is empty, dispatcher can be suspended.
-     **/
-    virtual void signalEvent(uint32_t eventCount ) = 0;
+    //////////////////////////////////////////////////////////////////////////
+    // Override operations.
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // QueueListener interface overrides
+    /************************************************************************/
+        /**
+         * \brief	Triggered from Event Queue object every time when new event
+         *          element is pushed into queue or when queue is empty.
+         *          Override method to provide queuing logic.
+         * \param	eventCount	The number of event elements currently in the queue.
+         *                      If zero, queue is empty, dispatcher can be suspended.
+         **/
+        virtual void signalEvent(uint32_t eventCount ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden method calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( QueueListener );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden / Forbidden method calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( QueueListener );
+    };
 
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_QUEUELISTENER_HPP

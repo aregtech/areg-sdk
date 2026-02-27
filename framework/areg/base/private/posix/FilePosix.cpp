@@ -96,12 +96,12 @@ namespace
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-FILEHANDLE File::_osGetInvalidHandle()
+FILEHANDLE areg::File::_osGetInvalidHandle()
 {
     return static_cast<FILEHANDLE>(nullptr);
 }
 
-void File::_osCloseFile()
+void areg::File::_osCloseFile()
 {
     if ( isOpened( ) )
     {
@@ -115,10 +115,10 @@ void File::_osCloseFile()
         delete file;
     }
 
-    mFileHandle = File::_osGetInvalidHandle();
+    mFileHandle = areg::File::_osGetInvalidHandle();
 }
 
-bool File::_osOpenFile()
+bool areg::File::_osOpenFile()
 {
     PosixFile * file = nullptr;
 
@@ -173,7 +173,7 @@ bool File::_osOpenFile()
                 mode |= (S_IWUSR | S_IRUSR) | (S_IRGRP | S_IRGRP) | (S_IROTH | S_IWOTH);
             }
 
-            String dirName(File::getFileDirectory(mFileName));
+            areg::String dirName(areg::File::getFileDirectory(mFileName));
             if ( (flag & O_CREAT) != 0 )
             {
                 if (std::filesystem::exists(mFileName.getData(), err))
@@ -191,7 +191,7 @@ bool File::_osOpenFile()
                 }
                 else
                 {
-                    File::createDirCascaded(dirName);
+                    areg::File::createDirCascaded(dirName);
                     if (dirName == mFileName)
                     {
                         flag |= O_DIRECTORY; // set directory option
@@ -234,7 +234,7 @@ bool File::_osOpenFile()
     return (file != nullptr);
 }
 
-uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
+uint32_t areg::File::_osReadFile(uint8_t* buffer, uint32_t size) const
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size > 0));
@@ -259,7 +259,7 @@ uint32_t File::_osReadFile(uint8_t* buffer, uint32_t size) const
     return result;
 }
 
-uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
+uint32_t areg::File::_osWriteFile(const uint8_t* buffer, uint32_t size)
 {
     ASSERT(mFileHandle != nullptr);
     ASSERT((buffer != nullptr) && (size != 0));
@@ -274,23 +274,23 @@ uint32_t File::_osWriteFile(const uint8_t* buffer, uint32_t size)
     return result;
 }
 
-uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) const
+uint32_t areg::File::_osSetPositionFile(int32_t offset, areg::Cursor::SeekOrigin startAt) const
 {
     ASSERT(mFileHandle != nullptr);
-    uint32_t result = Cursor::INVALID_CURSOR_POSITION;
+    uint32_t result = areg::Cursor::INVALID_CURSOR_POSITION;
 
     PosixFile* file = reinterpret_cast<PosixFile*>(mFileHandle);
     switch (startAt)
     {
-    case Cursor::SeekOrigin::Begin:
+    case areg::Cursor::SeekOrigin::Begin:
         result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_SET));
         break;
 
-    case Cursor::SeekOrigin::Current:
+    case areg::Cursor::SeekOrigin::Current:
         result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_CUR));
         break;
 
-    case Cursor::SeekOrigin::End:
+    case areg::Cursor::SeekOrigin::End:
         result = static_cast<uint32_t>(lseek(file->fd, offset, SEEK_END));
         break;
 
@@ -302,19 +302,19 @@ uint32_t File::_osSetPositionFile(int32_t offset, Cursor::SeekOrigin startAt) co
     return result;
 }
 
-uint32_t File::_osGetPositionFile() const
+uint32_t areg::File::_osGetPositionFile() const
 {
     ASSERT(mFileHandle != nullptr);
     return static_cast<uint32_t>( lseek(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0, SEEK_CUR) );
 }
 
-bool File::_osTruncateFile()
+bool areg::File::_osTruncateFile()
 {
     ASSERT(mFileHandle != nullptr);
-    return (NECommon::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
+    return (areg::RETURNED_OK == ftruncate(reinterpret_cast<PosixFile*>(mFileHandle)->fd, 0));
 }
 
-void File::_osFlushFile()
+void areg::File::_osFlushFile()
 {
     ASSERT(mFileHandle != nullptr);
     fsync(reinterpret_cast<PosixFile*>(mFileHandle)->fd);
@@ -324,7 +324,7 @@ void File::_osFlushFile()
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/)
+uint32_t areg::File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, uint32_t /*unique*/)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
@@ -332,52 +332,52 @@ uint32_t File::_osCreateTempFileName(char* buffer, const char* folder, const cha
 
     constexpr char fmtFileName[]{ "%s%c%sXXXXXX" };
     constexpr char fmtFdName[]{ "/proc/self/fd/%d" };
-    sprintf(buffer, fmtFileName, folder, File::PATH_SEPARATOR, prefix);
+    sprintf(buffer, fmtFileName, folder, areg::File::PATH_SEPARATOR, prefix);
     int fno = ::mkstemp(buffer);
     if (fno > 1)
     {
         char temp[128];
         sprintf(temp, fmtFdName, fno);
-        int count = readlink(temp, buffer, File::MAXIMUM_PATH);
-        buffer[count > 0 ? count : 0] = String::EmptyChar;
+        int count = readlink(temp, buffer, areg::File::MAXIMUM_PATH);
+        buffer[count > 0 ? count : 0] = areg::String::EmptyChar;
         ::close(fno);
     }
 
     return static_cast<uint32_t>(strlen(buffer));
 }
 
-uint32_t File::_osGetSpecialDir(char* buffer, uint32_t /*length*/, const File::SpecialFolder specialFolder)
+uint32_t areg::File::_osGetSpecialDir(char* buffer, uint32_t /*length*/, const areg::File::SpecialFolder specialFolder)
 {
     ASSERT(buffer != nullptr);
-    buffer[0] = NEString::EndOfString;
+    buffer[0] = areg::EndOfString;
     const char * filePath = nullptr;
 
     switch (specialFolder)
     {
-    case File::SpecialFolder::UserHome:
+    case areg::File::SpecialFolder::UserHome:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s", filePath != nullptr ? filePath : "~");
         break;
 
-    case File::SpecialFolder::Personal:
+    case areg::File::SpecialFolder::Personal:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
-        ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS);
+        ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", areg::File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS);
         break;
 
-    case File::SpecialFolder::AppData:
+    case areg::File::SpecialFolder::AppData:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c.%s%c%s"
                     , filePath
-                    , static_cast<int32_t>(File::PATH_SEPARATOR)
-                    , Process::getInstance().getAppName().getString()
-                    , static_cast<int32_t>(File::PATH_SEPARATOR)
+                    , static_cast<int32_t>(areg::File::PATH_SEPARATOR)
+                    , areg::Process::getInstance().getAppName().getString()
+                    , static_cast<int32_t>(areg::File::PATH_SEPARATOR)
                     , DIR_NAME_APPDATA);
         break;
 
-    case File::SpecialFolder::Temp:
+    case areg::File::SpecialFolder::Temp:
         filePath = _getTempDir();
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s", filePath);

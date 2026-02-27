@@ -13,7 +13,7 @@ class PageConnections : public CPropertyPage
 
     static LPCTSTR HEADER_TITILES[];
 
-    using TypingList = ArrayList<chat:: MessageData *>;
+    using TypingList = areg::ArrayList<chat:: MessageData *>;
 
 DECLARE_DYNAMIC(PageConnections)
 

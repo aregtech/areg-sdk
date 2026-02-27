@@ -28,9 +28,9 @@
  *          Start multiple instance of client to make sure that all responses
  *          are properly replied.
  **/
-class ServiceComponent  : public  Component
+class ServiceComponent  : public  areg::Component
                         , private HelloUnblockStub
-                        , private TimerConsumer
+                        , private areg::TimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal structure
@@ -44,13 +44,13 @@ class ServiceComponent  : public  Component
     };
 
     //!< The stack of session entries
-    using SessionList = Stack<SessionEtnry>;
+    using SessionList = areg::Stack<SessionEtnry>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 protected:
 
@@ -59,7 +59,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    void startupServiceInterface( Component & holder ) override;
+    void startupServiceInterface( areg::Component & holder ) override;
 
     /**
      * \brief   Request call.
@@ -82,7 +82,7 @@ protected:
      * \brief   Triggered when Timer is expired. 
      * \param   timer   The timer object that is expired.
      **/
-    void processTimer( Timer & timer ) override;
+    void processTimer( areg::Timer & timer ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -102,7 +102,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     SessionList     mSessionList;   //!< The list of sessions to track.
-    Timer           mTimer;         //!< Timer to unlock request.
+    areg::Timer           mTimer;         //!< Timer to unlock request.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

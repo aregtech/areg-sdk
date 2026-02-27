@@ -28,7 +28,7 @@
 #endif // _MSC_VER
 
 //!<\brief   A local service component. It also contains service client object.
-class ServiceComponent : public Component
+class ServiceComponent : public areg::Component
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants
@@ -48,13 +48,13 @@ public:
      * \param   entry   The entry of registry, which describes the component.
      * \param   owner   The component owning thread.
      **/
-    ServiceComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-        : Component         ( entry.mRoleName, owner )
-        , mLocalService     ( static_cast<Component &>(self()) )
-        , mControllerClient ( entry.mDependencyServices[0], static_cast<Component &>(self()), ServiceComponent::MAIN_TIMEOUT   )
-        , mSecondClient     ( entry.mDependencyServices[1], static_cast<Component &>(self()), ServiceComponent::SECOND_TIMEOUT )
-        , mThirdClient      ( entry.mDependencyServices[2], static_cast<Component &>(self()), ServiceComponent::THIRD_TIMEOUT  )
-        , mLocalClient      ( entry.mDependencyServices[3], static_cast<Component &>(self()), ServiceComponent::LOCAL_TIMEOUT  )
+    ServiceComponent( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : areg::Component         ( entry.mRoleName, owner )
+        , mLocalService     ( static_cast<areg::Component &>(self()) )
+        , mControllerClient ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), ServiceComponent::MAIN_TIMEOUT   )
+        , mSecondClient     ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()), ServiceComponent::SECOND_TIMEOUT )
+        , mThirdClient      ( entry.mDependencyServices[2], static_cast<areg::Component &>(self()), ServiceComponent::THIRD_TIMEOUT  )
+        , mLocalClient      ( entry.mDependencyServices[3], static_cast<areg::Component &>(self()), ServiceComponent::LOCAL_TIMEOUT  )
     {
     }
 private:
@@ -100,12 +100,12 @@ BEGIN_MODEL( _modelName )
             REGISTER_DEPENDENCY(mesh::PublicThirdService)
             REGISTER_DEPENDENCY(mesh::LocalService)
         // end of component description
-        END_REGISTER_COMPONENT( NECommon::LocalService )
+        END_REGISTER_COMPONENT( areg::LocalService )
 
     // end of thread description
     END_REGISTER_THREAD( "TestClientProcessThread" )
 
-// end of model NECommon::ModelName
+// end of model areg::ModelName
 END_MODEL( _modelName )
 
 //////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ int main()
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::initApplication( );
 
     do
     {
@@ -134,20 +134,20 @@ int main()
         std::cout << "Wait for services ..." << std::endl;
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::loadModel( _modelName );
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::releaseApplication();
 
     } while (false);
 

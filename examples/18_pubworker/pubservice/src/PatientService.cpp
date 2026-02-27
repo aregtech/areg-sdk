@@ -12,9 +12,9 @@
 #include "pubservice/src/PatientService.hpp"
 #include "areg/component/ComponentThread.hpp"
 
-PatientService::PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component             ( entry, owner )
-    , PatientInformationStub( static_cast<Component &>(self()) )
+PatientService::PatientService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component             ( entry, owner )
+    , PatientInformationStub( static_cast<areg::Component &>(self()) )
 
     , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationStub &>(self()) )
 {
@@ -25,7 +25,7 @@ inline PatientService & PatientService::self()
     return (*this);
 }
 
-WorkerThreadConsumer * PatientService::workerThreadConsumer(const String & consumerName, const String & workerThreadName)
+areg::WorkerThreadConsumer * PatientService::workerThreadConsumer(const areg::String & consumerName, const areg::String & workerThreadName)
 {
     if ( mWorkerConsumer.getConsumerName() == consumerName)
     {
@@ -33,6 +33,6 @@ WorkerThreadConsumer * PatientService::workerThreadConsumer(const String & consu
     }
     else
     {
-        return Component::workerThreadConsumer(consumerName, workerThreadName);
+        return areg::Component::workerThreadConsumer(consumerName, workerThreadName);
     }
 }

@@ -26,7 +26,7 @@
  **/
 TEST(HashMapTest, TestConstructors)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     // Step 1: test default constructor and the constructor with the size of hash-table.
@@ -81,7 +81,7 @@ TEST(HashMapTest, TestConstructors)
  **/
 TEST(HashMapTest, TestOperators)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     HashMap hashMap1, hashMap2(10u);
@@ -146,7 +146,7 @@ TEST(HashMapTest, TestOperators)
  **/
 TEST(HashMapTest, TestPositionAttributes)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     HashMap hashMap;
@@ -187,7 +187,7 @@ TEST(HashMapTest, TestPositionAttributes)
  **/
 TEST(HashMapTest, TestPositionOperations)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
     constexpr uint32_t count{ 10 };
     constexpr int32_t coef{ 2 };
@@ -221,8 +221,8 @@ TEST(HashMapTest, TestPositionOperations)
         EXPECT_EQ(nextValue, Value);
         if (hashMap.isValidPosition(pos))
         {
-            EXPECT_EQ(NEMath::delta(hashMap.keyAtPosition(pos), nextKey), 1);
-            EXPECT_EQ(NEMath::delta(hashMap.valueAtPosition(pos), nextValue), coef);
+            EXPECT_EQ(areg::delta(hashMap.keyAtPosition(pos), nextKey), 1);
+            EXPECT_EQ(areg::delta(hashMap.valueAtPosition(pos), nextValue), coef);
         }
 
         pos = hashMap.nextPosition(cur);
@@ -239,7 +239,7 @@ TEST(HashMapTest, TestPositionOperations)
  **/
 TEST(HashMapTest, TestPositionManipulation)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
     constexpr uint32_t count{ 10 };
     constexpr int32_t coef{ 2 };
@@ -280,7 +280,7 @@ TEST(HashMapTest, TestPositionManipulation)
  **/
 TEST(HashMapTest, TestSearching)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
     constexpr uint32_t count{ 10 };
     constexpr uint32_t listSize{ 20 };
@@ -326,7 +326,7 @@ TEST(HashMapTest, TestSearching)
  **/
 TEST(HashMapTest, TestMerging)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     // Step 1: initialize 2 hash-maps with entries [0 .. 9] and [10 .. 19]
@@ -435,7 +435,7 @@ TEST(HashMapTest, TestMerging)
  **/
 TEST(HashMapTest, TestAddUnique)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
     constexpr uint32_t count{ 10 };
 
@@ -478,7 +478,7 @@ TEST(HashMapTest, TestAddUnique)
  **/
 TEST(HashMapTest, TestUpdate)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
     constexpr int arr[]{ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
 
@@ -501,7 +501,7 @@ TEST(HashMapTest, TestUpdate)
  **/
 TEST(HashMapTest, TestNextEntry)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     using POS = HashMap::MAPPOS;
     constexpr uint32_t count{ 10 };
 
@@ -538,7 +538,7 @@ TEST(HashMapTest, TestNextEntry)
  **/
 TEST(HashMapTest, TestStreaming)
 {
-    using HashMap = HashMap<int, int>;
+    using HashMap = areg::HashMap<int, int>;
     constexpr uint32_t count{ 10 };
 
     HashMap src;
@@ -547,7 +547,7 @@ TEST(HashMapTest, TestStreaming)
         src[i] = i;
     }
 
-    SharedBuffer stream;
+    areg::SharedBuffer stream;
     stream << src;
 
     stream.moveToBegin();

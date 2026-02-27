@@ -32,7 +32,7 @@
  //  Windows OS specific methods
  //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 {
 
     if (handle != nullptr)
@@ -41,20 +41,20 @@ void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
 {
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = 0;
-    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(watchdog.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(watchdog.getTimeout()) * areg::MILLISEC_TO_100NS);  // timer from now
     dueTime *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger{ };
-    timeTrigger.LowPart  = static_cast<DWORD>(NEMath::loDword(dueTime));
-    timeTrigger.HighPart = static_cast<LONG >(NEMath::hiDword(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(areg::loDword(dueTime));
+    timeTrigger.HighPart = static_cast<LONG >(areg::hiDword(dueTime));
 
     return (::SetWaitableTimer(   watchdog.getHandle()
                                 , &timeTrigger
                                 , period
-                                , (PTIMERAPCROUTINE)(&WatchdogManager::_windowsWatchdogExpiredRoutine)
+                                , (PTIMERAPCROUTINE)(&areg::WatchdogManager::_windowsWatchdogExpiredRoutine)
                                 , reinterpret_cast<void*>(watchdog.makeWatchdogId(watchdog.getId(), watchdog.getSequence())), FALSE) == TRUE);
 }
 
@@ -64,13 +64,13 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
+void areg::WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
 {
     ASSERT(argPtr != nullptr);
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
-    Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<Watchdog::WATCHDOG_ID>(argPtr);
-    Watchdog::GUARD_ID guardId = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
+    areg::Watchdog::WATCHDOG_ID watchdogId = reinterpret_cast<areg::Watchdog::WATCHDOG_ID>(argPtr);
+    areg::Watchdog::GUARD_ID guardId = areg::Watchdog::makeGuardId(watchdogId);
+    areg::Watchdog* watchdog = watchdogManager.mWatchdogResource.findResourceObject(guardId);
     if (watchdog != nullptr)
     {
         watchdogManager._processExpiredTimer(watchdog, watchdogId, highValue, lowValue);

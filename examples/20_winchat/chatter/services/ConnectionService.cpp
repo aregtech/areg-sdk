@@ -27,19 +27,19 @@ END_MODEL(chat::MODEL_NAME_DISTRIBUTED_CLIENT)
 DEF_LOG_SCOPE( chatter_ConnectionService_CreateComponent );
 DEF_LOG_SCOPE( chatter_ConnectionService_DeleteComponent );
 
-ConnectionService::ConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread )
-    : Component       ( entry, ownerThread )
+ConnectionService::ConnectionService( const areg::ComponentEntry & entry, areg::ComponentThread & ownerThread )
+    : areg::Component       ( entry, ownerThread )
 {
 }
 
-void ConnectionService::startupComponent( ComponentThread & comThread )
+void ConnectionService::startupComponent( areg::ComponentThread & comThread )
 {
-    Component::startupComponent(comThread);
+    areg::Component::startupComponent(comThread);
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
 }
 
-void ConnectionService::shutdownComponent( ComponentThread & comThread )
+void ConnectionService::shutdownComponent( areg::ComponentThread & comThread )
 {
     DistributedDialog::PostServiceMessage( NEDistributedApp::WindowCommand::CmdServiceStartup, 0, 0 );
-    Component::shutdownComponent(comThread);
+    areg::Component::shutdownComponent(comThread);
 }

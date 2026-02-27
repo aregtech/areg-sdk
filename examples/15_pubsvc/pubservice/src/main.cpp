@@ -59,7 +59,7 @@ int main()
     // force to start logging with default settings
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application use default settings: enable logging, servicing, routing, timer and watchdog.
-    Application::initApplication( );
+    areg::Application::initApplication( );
 
     do 
     {
@@ -67,18 +67,18 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel( _modelName );
+        areg::Application::loadModel( _modelName );
         LOG_DBG( "Servicing model is loaded" );
         // wait until Application quit signal is set.
-        Application::waitAppQuit( NECommon::WAIT_INFINITE );
+        areg::Application::waitAppQuit( areg::WAIT_INFINITE );
 
         std::cout
-            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << (areg::Application::findModel( _modelName ).getAliveDuration( ) / areg::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."
             << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication( );
+        areg::Application::releaseApplication( );
 
     } while (false);
 

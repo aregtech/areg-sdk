@@ -31,11 +31,11 @@ DEF_LOG_SCOPE(logging_main_HelloThread_onThreadRuns);
 DEF_LOG_SCOPE(logging_main_main);
 
 //! \brief Thread to run
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
     HelloThread()
-        : Thread(*this, "HelloThread")
+        : areg::Thread(*this, "HelloThread")
     {
         LOG_SCOPE(logging_main_HelloThread_HelloThread);
         LOG_DBG("Initialized thread [ %s ]", getName().getString());
@@ -73,14 +73,14 @@ int main()
         LOG_DBG("Starting Hello World thread");
         HelloThread aThread;
 
-        aThread.createThread(NECommon::WAIT_INFINITE);
+        aThread.createThread(areg::WAIT_INFINITE);
         LOG_DBG("%s to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
         LOG_INFO("Stopping and destroying thread [ %s ]", aThread.getName().getString());
-        Thread::ThreadCompletion status = aThread.shutdownThread(NECommon::WAIT_INFINITE);
+        areg::Thread::ThreadCompletion status = aThread.shutdownThread(areg::WAIT_INFINITE);
 
-        LOG_WARN_IF(Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
-        LOG_INFO_IF(Thread::ThreadCompletion::Completed == status, "The thread exit normal");
+        LOG_WARN_IF(areg::Thread::ThreadCompletion::Completed != status, "The thread exit abnormal, status = [ %d ]", static_cast<int32_t>(status));
+        LOG_INFO_IF(areg::Thread::ThreadCompletion::Completed == status, "The thread exit normal");
 
     } while (false);
 

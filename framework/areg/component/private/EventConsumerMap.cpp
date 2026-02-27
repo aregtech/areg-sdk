@@ -17,83 +17,87 @@
 
 #include "areg/component/EventConsumer.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// EventConsumerList class implementation
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// EventConsumerList class, Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-
-EventConsumerList::~EventConsumerList()
+namespace areg
 {
-    removeAllConsumers();
-}
+    //////////////////////////////////////////////////////////////////////////
+    // EventConsumerList class implementation
+    //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// EventConsumerList class, methods
-//////////////////////////////////////////////////////////////////////////
-bool EventConsumerList::addConsumer( EventConsumer& whichConsumer )
-{
-    bool result = false;
-    if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
+    //////////////////////////////////////////////////////////////////////////
+    // EventConsumerList class, Constructors / Destructor
+    //////////////////////////////////////////////////////////////////////////
+
+    EventConsumerList::~EventConsumerList()
     {
-        result = true;
-        whichConsumer.consumerRegistered(true);
-    }
-    
-    return result;
-}
-
-bool EventConsumerList::removeConsumer( EventConsumer& whichConsumer )
-{
-    bool result = false;
-    if ( EventConsumerListBase::removeEntry(&whichConsumer) )
-    {
-        result = true;
-        whichConsumer.consumerRegistered(false);
+        removeAllConsumers();
     }
 
-    return result;
-}
-
-void EventConsumerList::removeAllConsumers()
-{
-    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
-    for (; isValidPosition(pos); pos = nextPosition(pos))
+    //////////////////////////////////////////////////////////////////////////
+    // EventConsumerList class, methods
+    //////////////////////////////////////////////////////////////////////////
+    bool EventConsumerList::addConsumer( EventConsumer& whichConsumer )
     {
-        EventConsumer* consumer = valueAtPosition(pos);
-        ASSERT(consumer != nullptr);
-        consumer->consumerRegistered(false);
+        bool result = false;
+        if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
+        {
+            result = true;
+            whichConsumer.consumerRegistered(true);
+        }
+        
+        return result;
     }
 
-    EventConsumerListBase::clear();
-}
+    bool EventConsumerList::removeConsumer( EventConsumer& whichConsumer )
+    {
+        bool result = false;
+        if ( EventConsumerListBase::removeEntry(&whichConsumer) )
+        {
+            result = true;
+            whichConsumer.consumerRegistered(false);
+        }
 
-//////////////////////////////////////////////////////////////////////////
-// ImplEventConsumerMap class implementation
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-// ImplEventConsumerMap class, methods
-//////////////////////////////////////////////////////////////////////////
-#if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
+        return result;
+    }
 
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
-{
-    AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
-    ASSERT(Resource != nullptr);
-    Resource->removeAllConsumers();
-    delete Resource;
-    Resource = nullptr;
-}
+    void EventConsumerList::removeAllConsumers()
+    {
+        EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
+        for (; isValidPosition(pos); pos = nextPosition(pos))
+        {
+            EventConsumer* consumer = valueAtPosition(pos);
+            ASSERT(consumer != nullptr);
+            consumer->consumerRegistered(false);
+        }
 
-#else   // !(defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG))
+        EventConsumerListBase::clear();
+    }
 
-void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
-{
-    Resource->removeAllConsumers();
-    delete Resource;
-    Resource = nullptr;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // ImplEventConsumerMap class implementation
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // ImplEventConsumerMap class, methods
+    //////////////////////////////////////////////////////////////////////////
+    #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
 
-#endif  // defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
+    void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
+    {
+        AREG_OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
+        ASSERT(Resource != nullptr);
+        Resource->removeAllConsumers();
+        delete Resource;
+        Resource = nullptr;
+    }
+
+    #else   // !(defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG))
+
+    void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
+    {
+        Resource->removeAllConsumers();
+        delete Resource;
+        Resource = nullptr;
+    }
+
+    #endif  // defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
+
+} // namespace areg

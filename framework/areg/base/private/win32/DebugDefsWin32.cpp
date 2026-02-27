@@ -37,21 +37,21 @@
 #endif  // _MSC_VER
 
 #ifdef  _DEBUG
-void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
+void AREG_API_IMPL areg::outputMessageOS( const char * msg )
 {
-    if (NEString::isEmpty<char>(msg) == false)
+    if (areg::isEmpty<char>(msg) == false)
     {
         ::OutputDebugStringA(msg);
     }
 }
 #else   // _DEBUG
-void AREG_API_IMPL NEDebug::outputMessageOS(const char* /*msg*/)
+void AREG_API_IMPL areg::outputMessageOS(const char* /*msg*/)
 {
 }
 #endif  // _DEBUG
 
 #ifdef  _DEBUG
-void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack )
+void AREG_API_IMPL areg::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & callStack )
 {
 
     constexpr char  _stackFormat[]              { "        %s:(%d): %s: %s" };
@@ -64,7 +64,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
 
     constexpr uint32_t   _stackMaxDepth     { 64 };
     constexpr uint32_t   _symNameLength     { MAX_SYM_NAME };
-    constexpr uint32_t   _sizeOfSymInfo     { NEMath::alignSize(static_cast<uint32_t>(sizeof( SYMBOL_INFO )) + _symNameLength * static_cast<uint32_t>(sizeof( char )), static_cast<uint32_t>(sizeof(ULONG64))) };
+    constexpr uint32_t   _sizeOfSymInfo     { areg::alignSize(static_cast<uint32_t>(sizeof( SYMBOL_INFO )) + _symNameLength * static_cast<uint32_t>(sizeof( char )), static_cast<uint32_t>(sizeof(ULONG64))) };
 
     callStack.clear();
 
@@ -134,7 +134,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
                 // Get module name
                 bool hasModule = hasFunction ? SymGetModuleInfo64( hProcess, symbolInfo->ModBase, &moduleInfo ) == TRUE : false;
 
-                String::formatString( message
+                areg::String::formatString( message
                                     , _symNameLength + MAX_PATH + 8
                                     , _stackFormat
                                     , hasFile     ? lineInfo.FileName    : _msgFileUnavailable
@@ -164,7 +164,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
     }
 }
 #else   // _DEBUG
-void AREG_API_IMPL NEDebug::dumpExceptionCallStack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& /*callStack*/)
+void AREG_API_IMPL areg::dumpExceptionCallStack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& /*callStack*/)
 {
 }
 #endif  // _DEBUG

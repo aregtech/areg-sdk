@@ -21,7 +21,7 @@
 /**
  * \brief   The servicing object.
  **/
-class PatientService    : public    Component
+class PatientService    : public    areg::Component
                         , private   PatientInformationStub
 {
 //////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ public:
     static constexpr std::string_view PatientServiceWorkerThread { "PatientServiceWorkerThread" };
 
 public:
-    PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
+    PatientService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
 protected:
 
@@ -53,7 +53,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    WorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
+    areg::WorkerThreadConsumer * workerThreadConsumer( const areg::String & consumerName, const areg::String & workerThreadName ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.

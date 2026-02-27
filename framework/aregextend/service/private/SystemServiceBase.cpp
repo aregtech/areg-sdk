@@ -26,222 +26,226 @@
 
 DEF_LOG_SCOPE( areg_aregextend_service_SystemServiceBase_serviceMain );
 
-//////////////////////////////////////////////////////////////////////////
-// MultitargetRouter class implementation
-//////////////////////////////////////////////////////////////////////////
-SystemServiceBase::SystemServiceBase( ServiceCommunicationBase & commBase )
-    : mCommunication        ( commBase )
-    , mSystemServiceState   ( NESystemService::ServicePhase::Stopped )
-    , mSystemServiceOption  ( NESystemService::DEFAULT_OPTION )
-    , mSvcHandle            ( nullptr )
-    , mSeMHandle            ( nullptr )
-    , mFileConfig           ( NEApplication::DEFAULT_CONFIG_FILE )
+namespace aregext
 {
-}
 
-void SystemServiceBase::resetDefaultOptions()
-{
-    mSystemServiceOption = NESystemService::DEFAULT_OPTION;
-    mFileConfig = NEApplication::DEFAULT_CONFIG_FILE;
-    mCommunication.enableCalculateDataRate(NESystemService::DEFAULT_VERBOSE);
-}
-
-bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount )
-{
-    bool result{ false };
-
-    if (argc > 1)
+    //////////////////////////////////////////////////////////////////////////
+    // MultitargetRouter class implementation
+    //////////////////////////////////////////////////////////////////////////
+    SystemServiceBase::SystemServiceBase( ServiceCommunicationBase & commBase )
+        : mCommunication        ( commBase )
+        , mSystemServiceState   ( ServicePhase::Stopped )
+        , mSystemServiceOption  ( DEFAULT_OPTION )
+        , mSvcHandle            ( nullptr )
+        , mSeMHandle            ( nullptr )
+        , mFileConfig           ( areg::DEFAULT_CONFIG_FILE )
     {
-        OptionParser parser(optSetup, optCount);
-        if (parser.parseCommandLine(argv, argc > 1 ? static_cast<uint32_t>(argc) : 0))
+    }
+
+    void SystemServiceBase::resetDefaultOptions()
+    {
+        mSystemServiceOption = DEFAULT_OPTION;
+        mFileConfig = areg::DEFAULT_CONFIG_FILE;
+        mCommunication.enableCalculateDataRate(DEFAULT_VERBOSE);
+    }
+
+    bool SystemServiceBase::parseOptions( int32_t argc, const char ** argv, const OptionParser::OptionSetup * optSetup, uint32_t optCount )
+    {
+        bool result{ false };
+
+        if (argc > 1)
         {
-            result = prepareOptions(parser.getOptions());
+            OptionParser parser(optSetup, optCount);
+            if (parser.parseCommandLine(argv, argc > 1 ? static_cast<uint32_t>(argc) : 0))
+            {
+                result = prepareOptions(parser.getOptions());
+            }
+            else
+            {
+                printHelp(true);
+                result = false;
+            }
         }
-        else
+        else if ( argc == 1 )
+        {
+            resetDefaultOptions( );
+            result = true;
+        }
+
+        return result;
+    }
+
+    bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount)
+    {
+        bool result{ false };
+
+        if (argc > 1)
+        {
+            OptionParser parser(optSetup, optCount);
+            if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
+            {
+                parser.sort();
+                result = prepareOptions(parser.getOptions());
+            }
+            else
+            {
+                printHelp(true);
+                result = false;
+            }
+        }
+        else if (argc == 1)
+        {
+            resetDefaultOptions();
+            result = true;
+        }
+
+        return result;
+    }
+
+    bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
+    {
+        bool result{ true };
+
+        for (uint32_t i = 0; i < opts.getSize(); ++i)
+        {
+            const OptionParser::InputOption& opt = opts[i];
+            result &= dispatchOption(opt);
+        }
+
+        return result;
+    }
+
+    bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
+    {
+        bool result{ false };
+        bool outHelp{ false };
+
+        switch (static_cast<ServiceOption>(opt.inCommand))
+        {
+        case ServiceOption::CMD_Install:  // fall through
+        case ServiceOption::CMD_Uninstall:// fall through
+        case ServiceOption::CMD_Service:  // fall through
+        case ServiceOption::CMD_Console:
+            result = true;
+            setCurrentOption(static_cast<ServiceOption>(opt.inCommand));
+            break;
+
+        case ServiceOption::CMD_Load:
+        {
+            areg::String filePath(opt.inString[0]);
+            result = areg::File::existFile(filePath);
+            if (result)
+            {
+                mFileConfig = filePath;
+            }
+        }
+        break;
+
+        case ServiceOption::CMD_Verbose:
+            mCommunication.enableCalculateDataRate(true);
+            setCurrentOption(ServiceOption::CMD_Console);
+            result = true;
+            break;
+
+        case ServiceOption::CMD_Help:
+            outHelp = true;
+            break;
+
+        case ServiceOption::CMD_Undefined:// fall through
+        case ServiceOption::CMD_Custom:   // fall through
+        default:
+            setCurrentOption(ServiceOption::CMD_Undefined);
+            outHelp = true;
+            break;
+        }
+
+        if (outHelp)
         {
             printHelp(true);
             result = false;
         }
-    }
-    else if ( argc == 1 )
-    {
-        resetDefaultOptions( );
-        result = true;
+
+        return result;
     }
 
-    return result;
-}
-
-bool SystemServiceBase::parseOptions(int32_t argc, char** argv, const OptionParser::OptionSetup* optSetup, uint32_t optCount)
-{
-    bool result{ false };
-
-    if (argc > 1)
+    int32_t SystemServiceBase::serviceMain(ServiceOption optStartup, const char* argument)
     {
-        OptionParser parser(optSetup, optCount);
-        if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
+        int32_t result{ RESULT_SUCCEEDED };
+        if (serviceInitialize(optStartup, argument, nullptr))
         {
-            parser.sort();
-            result = prepareOptions(parser.getOptions());
+            LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);
+            LOG_DBG( "Starting log collector service, the current option [ %s ]", getString(optStartup) );
+            setState(ServicePhase::Starting);
+
+            if (registerService())
+            {
+                LOG_DBG("Registered service, starting service");
+                serviceStart();
+            }
+            else if (mSystemServiceOption == ServiceOption::CMD_Console)
+            {
+                LOG_DBG("Starting in console mode, starting service");
+                serviceStart();
+            }
+
+            if (mSystemServiceOption == ServiceOption::CMD_Service)
+            {
+                LOG_DBG("Starts to run service...");
+                runService();
+            }
+            else if (mSystemServiceOption == ServiceOption::CMD_Console)
+            {
+                LOG_DBG("Entering console mode...");
+    #if AREG_EXTENDED
+                runConsoleInputExtended();
+    #else   // !AREG_EXTENDED
+                runConsoleInputSimple();
+    #endif  // !AREG_EXTENDED
+            }
+            else
+            {
+                LOG_DBG("Unexpected option [ %s ]", getString(mSystemServiceOption));
+            }
+
+            serviceStop();
+            LOG_WARN("Service Stopped and not running anymore");
         }
         else
         {
-            printHelp(true);
-            result = false;
+            result = RESULT_FAILED_INIT;
         }
-    }
-    else if (argc == 1)
-    {
-        resetDefaultOptions();
-        result = true;
-    }
 
-    return result;
-}
+        serviceRelease();
+        setState(ServicePhase::Stopped);
 
-bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
-{
-    bool result{ true };
-
-    for (uint32_t i = 0; i < opts.getSize(); ++i)
-    {
-        const OptionParser::InputOption& opt = opts[i];
-        result &= dispatchOption(opt);
+        return result;
     }
 
-    return result;
-}
-
-bool SystemServiceBase::dispatchOption(const OptionParser::InputOption& opt)
-{
-    bool result{ false };
-    bool outHelp{ false };
-
-    switch (static_cast<NESystemService::ServiceOption>(opt.inCommand))
+    void SystemServiceBase::sendMessageToTarget(const areg::RemoteMessage& message)
     {
-    case NESystemService::ServiceOption::CMD_Install:  // fall through
-    case NESystemService::ServiceOption::CMD_Uninstall:// fall through
-    case NESystemService::ServiceOption::CMD_Service:  // fall through
-    case NESystemService::ServiceOption::CMD_Console:
-        result = true;
-        setCurrentOption(static_cast<NESystemService::ServiceOption>(opt.inCommand));
-        break;
+        mCommunication.sendMessage(message);
+    }
 
-    case NESystemService::ServiceOption::CMD_Load:
+    void SystemServiceBase::controlService(SystemServiceBase::ServiceControl control)
     {
-        String filePath(opt.inString[0]);
-        result = File::existFile(filePath);
-        if (result)
+        switch (control)
         {
-            mFileConfig = filePath;
+        case SystemServiceBase::ServiceControl::ServiceStop:
+        case SystemServiceBase::ServiceControl::ServiceShutdown:
+            serviceStop();
+            break;
+
+        case SystemServiceBase::ServiceControl::ServicePause:
+            servicePause();
+            break;
+
+        case SystemServiceBase::ServiceControl::ServiceContinue:
+            serviceContinue();
+            break;
+
+        default:
+            ASSERT(false);
+            break;
         }
     }
-    break;
-
-    case NESystemService::ServiceOption::CMD_Verbose:
-        mCommunication.enableCalculateDataRate(true);
-        setCurrentOption(NESystemService::ServiceOption::CMD_Console);
-        result = true;
-        break;
-
-    case NESystemService::ServiceOption::CMD_Help:
-        outHelp = true;
-        break;
-
-    case NESystemService::ServiceOption::CMD_Undefined:// fall through
-    case NESystemService::ServiceOption::CMD_Custom:   // fall through
-    default:
-        setCurrentOption(NESystemService::ServiceOption::CMD_Undefined);
-        outHelp = true;
-        break;
-    }
-
-    if (outHelp)
-    {
-        printHelp(true);
-        result = false;
-    }
-
-    return result;
-}
-
-int32_t SystemServiceBase::serviceMain(NESystemService::ServiceOption optStartup, const char* argument)
-{
-    int32_t result{ RESULT_SUCCEEDED };
-    if (serviceInitialize(optStartup, argument, nullptr))
-    {
-        LOG_SCOPE(areg_aregextend_service_SystemServiceBase_serviceMain);
-        LOG_DBG( "Starting log collector service, the current option [ %s ]", NESystemService::getString(optStartup) );
-        setState(NESystemService::ServicePhase::Starting);
-
-        if (registerService())
-        {
-            LOG_DBG("Registered service, starting service");
-            serviceStart();
-        }
-        else if (mSystemServiceOption == NESystemService::ServiceOption::CMD_Console)
-        {
-            LOG_DBG("Starting in console mode, starting service");
-            serviceStart();
-        }
-
-        if (mSystemServiceOption == NESystemService::ServiceOption::CMD_Service)
-        {
-            LOG_DBG("Starts to run service...");
-            runService();
-        }
-        else if (mSystemServiceOption == NESystemService::ServiceOption::CMD_Console)
-        {
-            LOG_DBG("Entering console mode...");
-#if AREG_EXTENDED
-            runConsoleInputExtended();
-#else   // !AREG_EXTENDED
-            runConsoleInputSimple();
-#endif  // !AREG_EXTENDED
-        }
-        else
-        {
-            LOG_DBG("Unexpected option [ %s ]", NESystemService::getString(mSystemServiceOption));
-        }
-
-        serviceStop();
-        LOG_WARN("Service Stopped and not running anymore");
-    }
-    else
-    {
-        result = RESULT_FAILED_INIT;
-    }
-
-    serviceRelease();
-    setState(NESystemService::ServicePhase::Stopped);
-
-    return result;
-}
-
-void SystemServiceBase::sendMessageToTarget(const RemoteMessage& message)
-{
-    mCommunication.sendMessage(message);
-}
-
-void SystemServiceBase::controlService(SystemServiceBase::ServiceControl control)
-{
-    switch (control)
-    {
-    case SystemServiceBase::ServiceControl::ServiceStop:
-    case SystemServiceBase::ServiceControl::ServiceShutdown:
-        serviceStop();
-        break;
-
-    case SystemServiceBase::ServiceControl::ServicePause:
-        servicePause();
-        break;
-
-    case SystemServiceBase::ServiceControl::ServiceContinue:
-        serviceContinue();
-        break;
-
-    default:
-        ASSERT(false);
-        break;
-    }
-}
+} // namespace aregext

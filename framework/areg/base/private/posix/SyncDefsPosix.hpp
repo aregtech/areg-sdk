@@ -36,16 +36,16 @@
  * \brief   This namespace contains main constants and helper methods
  *          shared between other synchronization objects.
  **/
-namespace NESyncTypesIX
+namespace areg::os
 {
     /**
-     * \brief   NESyncTypesIX::POSIX_SUCCESS
+     * \brief   areg::os::POSIX_SUCCESS
      *          Indicates the success of POSIX function call.
      **/
     constexpr int   POSIX_SUCCESS       = 0;
 
     /**
-     * \brief   NESyncTypesIX::SyncSignal
+     * \brief   areg::os::SyncSignal
      *          The valid indexes when synchronization event is fired in the waiting list
      *          or error happened.
      **/
@@ -53,7 +53,7 @@ namespace NESyncTypesIX
     {
           Invalid     =  -1 // Invalid synchronization object.
         , First       =  0  // First synchronization object in the waiting list is fired.
-        , All         =  NECommon::MAXIMUM_WAITING_OBJECTS // All synchronization objects in the waiting list are fired.
+        , All         =  areg::MAXIMUM_WAITING_OBJECTS // All synchronization objects in the waiting list are fired.
         , Error       =  99 // Indicates start of error range
         , FirstError  = 100 // First error index, so that it is possible to detect which event in the waiting list caused the error.
         , AsyncSignal = 200 // Indicates that the waiting thread is signaled by some asynchronous event.
@@ -62,7 +62,7 @@ namespace NESyncTypesIX
     };
 
     /**
-     * \brief   NESyncTypesIX::ResetMode
+     * \brief   areg::os::ResetMode
      *          The types of reset for event objects.
      **/
     enum  class  ResetMode
@@ -71,12 +71,12 @@ namespace NESyncTypesIX
         , Automatic //!< The event is reset automatically.
     };
     /**
-     * \brief   Returns string value of NESyncTypesIX::ResetMode
+     * \brief   Returns string value of areg::os::ResetMode
      **/
-    inline const char * getString(NESyncTypesIX::ResetMode val);
+    inline const char * getString(ResetMode val);
 
     /**
-     * \brief   NESyncTypesIX::WaitCondition
+     * \brief   areg::os::WaitCondition
      *          Event matching condition. Either there should be exact match,
      *          i.e. all events are fired, of any event in the list should be fired.
      **/
@@ -86,12 +86,12 @@ namespace NESyncTypesIX
         , Any     //!< Any event in the list should be fired to unlock the thread.
     };
     /**
-     * \brief   Returns string value of NESyncTypesIX::WaitCondition
+     * \brief   Returns string value of areg::os::WaitCondition
      **/
-    inline const char * getString(NESyncTypesIX::WaitCondition val);
+    inline const char * getString(WaitCondition val);
 
     /**
-     * \brief   NESyncTypesIX::SyncKind
+     * \brief   areg::os::SyncKind
      *          Type of synchronization objects.
      **/
     enum class SyncKind : uint32_t
@@ -106,9 +106,9 @@ namespace NESyncTypesIX
         , SoWaitTimer       = (1 << 4) | 1  //!< Waitable timer, so that it can be used in the waiting list
     };
     /**
-     * \brief   Returns string value of NESyncTypesIX::SyncKind
+     * \brief   Returns string value of areg::os::SyncKind
      **/
-    inline const char * getString(NESyncTypesIX::SyncKind val);
+    inline const char * getString(SyncKind val);
 
     /**
      * \brief   Calculates the timeout value starting from now.
@@ -125,16 +125,16 @@ namespace NESyncTypesIX
      **/
     inline void convTimeout( timespec & out_result, uint32_t msTimeout );
 
-} // namespace NESyncTypesIX
+} // namespace areg::os
 
 //////////////////////////////////////////////////////////////////////////
 // NESyncTypesIX namespace inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NESyncTypesIX::timeoutFromNow( timespec & out_result, uint32_t msTimeout )
+inline bool areg::os::timeoutFromNow( timespec & out_result, uint32_t msTimeout )
 {
     bool result = false;
-    if ( NESyncTypesIX::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
+    if ( areg::os::POSIX_SUCCESS == ::clock_gettime(CLOCK_REALTIME, &out_result ) )
     {
         convTimeout(out_result, msTimeout);
         result = true;
@@ -143,14 +143,14 @@ inline bool NESyncTypesIX::timeoutFromNow( timespec & out_result, uint32_t msTim
     return result;
 }
 
-inline void NESyncTypesIX::convTimeout( timespec & out_result, uint32_t msTimeout )
+inline void areg::os::convTimeout( timespec & out_result, uint32_t msTimeout )
 {
-	constexpr std::chrono::nanoseconds _sec_to_nano{NEUtilities::SEC_TO_NS};
+	constexpr std::chrono::nanoseconds _sec_to_nano{areg::SEC_TO_NS};
 
 	std::chrono::seconds		sec{ out_result.tv_sec };
 	std::chrono::nanoseconds  	ns { out_result.tv_nsec };
 
-	ns += std::chrono::nanoseconds(msTimeout * NEUtilities::MILLISEC_TO_NS);
+	ns += std::chrono::nanoseconds(msTimeout * areg::MILLISEC_TO_NS);
 	sec+= std::chrono::duration_cast<std::chrono::seconds>(ns);
 	ns = ns % _sec_to_nano;
 
@@ -158,54 +158,54 @@ inline void NESyncTypesIX::convTimeout( timespec & out_result, uint32_t msTimeou
     out_result.tv_nsec  = static_cast<int64_t>(ns.count());
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::ResetMode val)
+inline const char * areg::os::getString(areg::os::ResetMode val)
 {
     switch (val)
     {
-    case NESyncTypesIX::ResetMode::Manual:
-        return "NESyncTypesIX::Manual";
-    case NESyncTypesIX::ResetMode::Automatic:
-        return "NESyncTypesIX::Automatic";
+    case areg::os::ResetMode::Manual:
+        return "areg::os::Manual";
+    case areg::os::ResetMode::Automatic:
+        return "areg::os::Automatic";
     default:
-        return "ERR: Unexpected NESyncTypesIX::ResetMode value!";
+        return "ERR: Unexpected areg::os::ResetMode value!";
     }
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::WaitCondition val)
+inline const char * areg::os::getString(areg::os::WaitCondition val)
 {
     switch (val)
     {
-    case NESyncTypesIX::WaitCondition::Exact:
-        return "NESyncTypesIX::Exact";
-    case NESyncTypesIX::WaitCondition::Any:
-        return "NESyncTypesIX::Any";
+    case areg::os::WaitCondition::Exact:
+        return "areg::os::Exact";
+    case areg::os::WaitCondition::Any:
+        return "areg::os::Any";
     default:
-        return "ERR: Unexpected NESyncTypesIX::WaitCondition value!";
+        return "ERR: Unexpected areg::os::WaitCondition value!";
     }
 }
 
-inline const char * NESyncTypesIX::getString(NESyncTypesIX::SyncKind val)
+inline const char * areg::os::getString(areg::os::SyncKind val)
 {
     switch (val)
     {
-    case NESyncTypesIX::SyncKind::SoUndefined:
-        return "NESyncTypesIX::SoUndefined";
-    case NESyncTypesIX::SyncKind::SoWaitable:
-        return "NESyncTypesIX::SoWaitable";
-    case NESyncTypesIX::SyncKind::SoMutex:
-        return "NESyncTypesIX::SoMutex";
-    case NESyncTypesIX::SyncKind::SoSpinLock:
-        return "NESyncTypesIX::SoSpinLock";
-    case NESyncTypesIX::SyncKind::SoWaitMutex:
-        return "NESyncTypesIX::SoWaitMutex";
-    case NESyncTypesIX::SyncKind::SoWaitEvent:
-        return "NESyncTypesIX::SoWaitEvent";
-    case NESyncTypesIX::SyncKind::SoWaitSemaphore:
-        return "NESyncTypesIX::SoWaitSemaphore";
-    case NESyncTypesIX::SyncKind::SoWaitTimer:
-        return "NESyncTypesIX::SoWaitTimer";
+    case areg::os::SyncKind::SoUndefined:
+        return "areg::os::SoUndefined";
+    case areg::os::SyncKind::SoWaitable:
+        return "areg::os::SoWaitable";
+    case areg::os::SyncKind::SoMutex:
+        return "areg::os::SoMutex";
+    case areg::os::SyncKind::SoSpinLock:
+        return "areg::os::SoSpinLock";
+    case areg::os::SyncKind::SoWaitMutex:
+        return "areg::os::SoWaitMutex";
+    case areg::os::SyncKind::SoWaitEvent:
+        return "areg::os::SoWaitEvent";
+    case areg::os::SyncKind::SoWaitSemaphore:
+        return "areg::os::SoWaitSemaphore";
+    case areg::os::SyncKind::SoWaitTimer:
+        return "areg::os::SoWaitTimer";
     default:
-        return "ERR: Unexpected NESyncTypesIX::SyncKind value!";
+        return "ERR: Unexpected areg::os::SyncKind value!";
     }
 }
 

@@ -23,92 +23,95 @@
 
 #include "areg/base/File.hpp"
 
-#if AREG_LOGS
-
-//////////////////////////////////////////////////////////////////////////
-// FileLogger class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Message logger to output messages in to the file.
- *          At the moment the output logger supports only ASCII messages
- *          and any Unicode character might output wrong.
- **/
-class FileLogger    : public    LoggerBase
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    #if AREG_LOGS
+
+    //////////////////////////////////////////////////////////////////////////
+    // FileLogger class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Initializes the logger and sets the provided log configuration object,
-     *          which supplies methods for accessing property values.
-     * \param   logConfig   An instance of the log configuration object containing
-     *                      settings for initialization and message output.
+     * \brief   Message logger to output messages in to the file.
+     *          At the moment the output logger supports only ASCII messages
+     *          and any Unicode character might output wrong.
      **/
-    explicit FileLogger( LogConfiguration & logConfig );
+    class FileLogger    : public    LoggerBase
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initializes the logger and sets the provided log configuration object,
+         *          which supplies methods for accessing property values.
+         * \param   logConfig   An instance of the log configuration object containing
+         *                      settings for initialization and message output.
+         **/
+        explicit FileLogger( LogConfiguration & logConfig );
 
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~FileLogger()= default;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~FileLogger()= default;
 
-//////////////////////////////////////////////////////////////////////////
-// Override operations and attribute
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // Override operations and attribute
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-/************************************************************************/
-// LoggerBase interface overrides
-/************************************************************************/
+    /************************************************************************/
+    // LoggerBase interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Initializes and opens the logger. If this method returns true,
-     *          the log manager will start forwarding messages for logging.
-     *          If it returns false, the log manager assumes the logger is not
-     *          initialized and will not send messages for logging.
-     *          The logger must be opened before any messages can be logged.
-     * \return  Returns true if the logger was successfully initialized and opened.
-     **/
-    bool openLogger() override;
+        /**
+         * \brief   Initializes and opens the logger. If this method returns true,
+         *          the log manager will start forwarding messages for logging.
+         *          If it returns false, the log manager assumes the logger is not
+         *          initialized and will not send messages for logging.
+         *          The logger must be opened before any messages can be logged.
+         * \return  Returns true if the logger was successfully initialized and opened.
+         **/
+        bool openLogger() override;
 
-    /**
-     * \brief   Called to close logger and stop logging.
-     **/
-    void closeLogger() override;
+        /**
+         * \brief   Called to close logger and stop logging.
+         **/
+        void closeLogger() override;
 
-    /**
-     * \brief   Called when message should be logged.
-     *          Every logger should implement method to process logger specific logging.
-     **/
-    void logMessage( const NELogging::LogEntry & logMessage ) override;
+        /**
+         * \brief   Called when message should be logged.
+         *          Every logger should implement method to process logger specific logging.
+         **/
+        void logMessage( const LogEntry & logMessage ) override;
 
-    /**
-     * \brief   Returns true if logger is initialized (opened).
-     **/
-    bool isLoggerOpened() const override;
+        /**
+         * \brief   Returns true if logger is initialized (opened).
+         **/
+        bool isLoggerOpened() const override;
 
-public:
-    /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
-     **/
-    void flushLogs();
+    public:
+        /**
+         * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
+         **/
+        void flushLogs();
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The log file object
-     **/
-    File              mLogFile;
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   The log file object
+         **/
+        File              mLogFile;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    FileLogger() = delete;
-    AREG_NOCOPY_NOMOVE( FileLogger );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden / Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        FileLogger() = delete;
+        AREG_NOCOPY_NOMOVE( FileLogger );
+    };
 
-#endif  // AREG_LOGS
+    #endif  // AREG_LOGS
+} // namespace areg
 #endif  // AREG_LOGGING_PRIVATE_FILELOGGER_HPP

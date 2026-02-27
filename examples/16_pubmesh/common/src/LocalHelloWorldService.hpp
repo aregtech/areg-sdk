@@ -21,7 +21,7 @@ class LocalHelloWorldService  : private LocalHelloWorldStub
 {
 
     //!< The type of list of connected clients.
-    using ClientList = LinkedList<LocalHelloWorld::sConnectedClient>;
+    using ClientList = areg::LinkedList<LocalHelloWorld::sConnectedClient>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -32,7 +32,7 @@ public:
      * \brief   Instantiates the component object.
      * \param   masterComp  The service owner component, required by LocalHelloWorldStub.
      **/
-    LocalHelloWorldService( Component & masterComp );
+    LocalHelloWorldService( areg::Component & masterComp );
 
     virtual ~LocalHelloWorldService() = default;
 
@@ -47,13 +47,13 @@ protected:
      * \param   roleName    The role name of client component that requested to print hello world
      * \see     responseHelloWorld
      **/
-    void requestHelloWorld( const String & roleName ) override;
+    void requestHelloWorld( const areg::String & roleName ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    ClientList      mClientList;    //!< The list of connected clients.
+    areg::ClientList      mClientList;    //!< The list of connected clients.
     uint32_t    mNumRequests;   //!< The number of executed requests.
 
 //////////////////////////////////////////////////////////////////////////

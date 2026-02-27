@@ -20,10 +20,14 @@
 
 #include "logcollector/app/LogCollector.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// LogCollectorConsoleService class implementation
-//////////////////////////////////////////////////////////////////////////
-LogCollectorConsoleService::LogCollectorConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : SystemServiceConsole( &LogCollector::getInstance().getDataRateHelper( ), entry, owner )
+namespace logcollector
 {
-}
+
+    //////////////////////////////////////////////////////////////////////////
+    // LogCollectorConsoleService class implementation
+    //////////////////////////////////////////////////////////////////////////
+    LogCollectorConsoleService::LogCollectorConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+        : aregext::SystemServiceConsole( &logcollector::LogCollector::getInstance().getDataRateHelper( ), entry, owner )
+    {
+    }
+} // namespace logcollector

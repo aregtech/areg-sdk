@@ -40,62 +40,62 @@ namespace
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-const OptionParser::OptionSetup PubSubController::ValidOptions[]
+const aregext::OptionParser::OptionSetup PubSubController::ValidOptions[]
 {
-      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , OptionParser::NO_DATA , {}, {}, {} }
-    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , OptionParser::NO_DATA , {}, {}, {} }
-    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , OptionParser::NO_DATA , {}, {}, {} }
-    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , OptionParser::NO_DATA , {}, {}, {} }
+      {"i", "invalid", static_cast<int32_t>(OptionFlag::CMD_Invalidate)  , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"p", "pause"  , static_cast<int32_t>(OptionFlag::CMD_Pause)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"s", "start"  , static_cast<int32_t>(OptionFlag::CMD_Start)       , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"q", "quit"   , static_cast<int32_t>(OptionFlag::CMD_Quit)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
+    , {"h", "help"   , static_cast<int32_t>(OptionFlag::CMD_Help)        , aregext::OptionParser::NO_DATA , {}, {}, {} }
 };
 
 //////////////////////////////////////////////////////////////////////////
 // PubSubController class methods
 //////////////////////////////////////////////////////////////////////////
 
-PubSubController::PubSubController( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( entry, owner )
-    , Publisher         ( static_cast<Component &>(self()) )
-    , ThreadConsumer  ( )
+PubSubController::PubSubController( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component         ( entry, owner )
+    , Publisher         ( static_cast<areg::Component &>(self()) )
+    , areg::ThreadConsumer  ( )
 
-    , mSubscriber       ( entry.mDependencyServices[0], static_cast<Component &>(self()), 0 )
+    , mSubscriber       ( entry.mDependencyServices[0], static_cast<areg::Component &>(self()), 0 )
 
-    , mConsoleThread    (static_cast<ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
+    , mConsoleThread    (static_cast<areg::ThreadConsumer &>(self()), entry.mRoleName + "_Thread")
 {
 }
 
-void PubSubController::startupComponent(ComponentThread & comThread)
+void PubSubController::startupComponent(areg::ComponentThread & comThread)
 {
-    Component::startupComponent(comThread);
-    mConsoleThread.createThread(NECommon::WAIT_INFINITE);
+    areg::Component::startupComponent(comThread);
+    mConsoleThread.createThread(areg::WAIT_INFINITE);
 }
 
-void PubSubController::shutdownComponent(ComponentThread & comThread)
+void PubSubController::shutdownComponent(areg::ComponentThread & comThread)
 {
-    mConsoleThread.shutdownThread(NECommon::WAIT_INFINITE);
-    Component::shutdownComponent(comThread);
+    mConsoleThread.shutdownThread(areg::WAIT_INFINITE);
+    areg::Component::shutdownComponent(comThread);
 }
 
 void PubSubController::onThreadRuns()
 {
-    Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, std::size(ValidOptions));
+    aregext::Console & console = aregext::Console::getInstance();
+    aregext::OptionParser parser(ValidOptions, std::size(ValidOptions));
     console.lockConsole();
     console.enableConsoleInput(true);
-    printMessage(String::EmptyString, OptionFlag::CMD_Undefined);
+    printMessage(areg::String::EmptyString, OptionFlag::CMD_Undefined);
     console.unlockConsole();
 
     OptionFlag cmd = OptionFlag::CMD_Undefined;
 
     do
     {
-        String message;
-        String usrInput = console.readString();
+        areg::String message;
+        areg::String usrInput = console.readString();
         console.lockConsole();
 
         if (parser.parseOptionLine(usrInput.getString()))
         {
-            const OptionParser::InputOptionList & opts = parser.getOptions();
+            const aregext::OptionParser::InputOptionList & opts = parser.getOptions();
             cmd = opts.getSize() == 1u ? static_cast<OptionFlag>(opts[0u].inCommand) : OptionFlag::CMD_Error;
             switch (cmd)
             {
@@ -143,9 +143,9 @@ void PubSubController::onThreadRuns()
 }
 
 
-inline void PubSubController::printMessage(const String & message, OptionFlag cmd)
+inline void PubSubController::printMessage(const areg::String & message, OptionFlag cmd)
 {
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
     if (cmd == OptionFlag::CMD_Error)
     {
         console.outputStr(pubsub::CoordInfoMsg, message);

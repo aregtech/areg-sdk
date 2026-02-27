@@ -20,58 +20,61 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Event.hpp"
 
-/**
- * \brief   Special exit event used to indicate completion of a job.
- *          The exit event is a singleton object, which is shared by more than thread.
- *          Normally, used to exit thread.
- **/
-class ExitEvent : public Event
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Declare Event runtime information.
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME_EVENT(ExitEvent)
-
-//////////////////////////////////////////////////////////////////////////
-// Public methods
-//////////////////////////////////////////////////////////////////////////
-public:
     /**
-     * \brief   Returns the instance of special exit event object
+     * \brief   Special exit event used to indicate completion of a job.
+     *          The exit event is a singleton object, which is shared by more than thread.
+     *          Normally, used to exit thread.
      **/
-    static ExitEvent & getExitEvent();
+    class ExitEvent : public Event
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Declare Event runtime information.
+    //////////////////////////////////////////////////////////////////////////
+        AREG_DECLARE_RUNTIME_EVENT(ExitEvent)
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Default constructor. Hidden. Instantiated only in static method
-     **/
-    ExitEvent();
+    //////////////////////////////////////////////////////////////////////////
+    // Public methods
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Returns the instance of special exit event object
+         **/
+        static ExitEvent & getExitEvent();
 
-    /**
-     * \brief   Destructor. Hidden. Cannot be deleted outside of class.
-     **/
-    virtual ~ExitEvent() = default;
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Default constructor. Hidden. Instantiated only in static method
+         **/
+        ExitEvent();
 
-private:
-/************************************************************************/
-// Event class overrides. Hidden. Cannot be directly called.
-/************************************************************************/
+        /**
+         * \brief   Destructor. Hidden. Cannot be deleted outside of class.
+         **/
+        virtual ~ExitEvent() = default;
 
-    /**
-     * \brief   Call to destroy Event object.
-     *          Overwrite if there is any special action should be performed
-     *          before destroying event object.
-     **/
-    void destroy() override;
+    private:
+    /************************************************************************/
+    // Event class overrides. Hidden. Cannot be directly called.
+    /************************************************************************/
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ExitEvent );
-};
+        /**
+         * \brief   Call to destroy Event object.
+         *          Overwrite if there is any special action should be performed
+         *          before destroying event object.
+         **/
+        void destroy() override;
 
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( ExitEvent );
+    };
+
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_EXITEVENT_HPP

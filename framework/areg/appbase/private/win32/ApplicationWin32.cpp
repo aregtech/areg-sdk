@@ -14,10 +14,10 @@
 #endif // !NOMINMAX
 #include <Windows.h>
 
-void Application::_osSetupHandlers()
+void areg::Application::_osSetupHandlers()
 {
-    Application & theApp = Application::getInstance();
-    Lock lock(theApp.mLock);
+    areg::Application & theApp = areg::Application::getInstance();
+    areg::Lock lock(theApp.mLock);
 
     if (theApp.mSetup == false)
     {
@@ -25,10 +25,10 @@ void Application::_osSetupHandlers()
     }
 }
 
-void Application::_osReleaseHandlers()
+void areg::Application::_osReleaseHandlers()
 {
-    Application& theApp = Application::getInstance();
-    Lock lock(theApp.mLock);
+    areg::Application& theApp = areg::Application::getInstance();
+    areg::Lock lock(theApp.mLock);
 
     if (theApp.mSetup)
     {
@@ -39,9 +39,9 @@ void Application::_osReleaseHandlers()
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
+bool areg::Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
-    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
+    ASSERT(areg::isEmpty<wchar_t>(serviceName) == false);
     bool result = false;
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;

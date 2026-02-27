@@ -19,42 +19,46 @@
 
 #include "areg/logging/GELog.h"
 
-ClientConnection::ClientConnection()
-    : SocketConnectionBase    ( )
-    , mClientSocket ( )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
+namespace areg
 {
-}
+    ClientConnection::ClientConnection()
+        : SocketConnectionBase    ( )
+        , mClientSocket ( )
+        , mCookie       ( COOKIE_UNKNOWN )
+    {
+    }
 
-ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
-    : SocketConnectionBase    ( )
-    , mClientSocket ( hostName, portNr )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
-{
-}
+    ClientConnection::ClientConnection(const String & hostName, uint16_t portNr)
+        : SocketConnectionBase    ( )
+        , mClientSocket ( hostName, portNr )
+        , mCookie       ( COOKIE_UNKNOWN )
+    {
+    }
 
-ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress)
-    : SocketConnectionBase    ( )
-    , mClientSocket ( remoteAddress )
-    , mCookie       ( NEService::COOKIE_UNKNOWN )
-{
-}
+    ClientConnection::ClientConnection(const SocketAddress & remoteAddress)
+        : SocketConnectionBase    ( )
+        , mClientSocket ( remoteAddress )
+        , mCookie       ( COOKIE_UNKNOWN )
+    {
+    }
 
 
-bool ClientConnection::createSocket(const String & hostName, uint16_t portNr)
-{
-    setCookie( mClientSocket.createSocket(hostName, portNr) ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
-    return mClientSocket.isValid();
-}
+    bool ClientConnection::createSocket(const String & hostName, uint16_t portNr)
+    {
+        setCookie( mClientSocket.createSocket(hostName, portNr) ? COOKIE_LOCAL : COOKIE_UNKNOWN );
+        return mClientSocket.isValid();
+    }
 
-bool ClientConnection::createSocket()
-{
-    setCookie( mClientSocket.createSocket() ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
-    return mClientSocket.isValid();
-}
+    bool ClientConnection::createSocket()
+    {
+        setCookie( mClientSocket.createSocket() ? COOKIE_LOCAL : COOKIE_UNKNOWN );
+        return mClientSocket.isValid();
+    }
 
-void ClientConnection::closeSocket()
-{
-    setCookie(NEService::COOKIE_UNKNOWN);
-    mClientSocket.closeSocket();
-}
+    void ClientConnection::closeSocket()
+    {
+        setCookie(COOKIE_UNKNOWN);
+        mClientSocket.closeSocket();
+    }
+
+} // namespace areg

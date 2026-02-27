@@ -31,106 +31,106 @@
 /**
  * \brief   Predefined invalid Service Entry.
  **/
-AREG_API_IMPL const NERegistry::ServiceEntry & NERegistry::invalidServiceEntry()
+AREG_API_IMPL const areg::ServiceEntry & areg::invalidServiceEntry()
 {
-    static const NERegistry::ServiceEntry _invalidServiceEntry;
+    static const areg::ServiceEntry _invalidServiceEntry;
     return _invalidServiceEntry;
 }
 
 /**
  * \brief   Predefined invalid Service List.
  **/
-AREG_API_IMPL const NERegistry::ServiceList & NERegistry::invalidServiceList()
+AREG_API_IMPL const areg::ServiceList & areg::invalidServiceList()
 {
-    static const NERegistry::ServiceList _invalidServiceList;
+    static const areg::ServiceList _invalidServiceList;
     return _invalidServiceList;
 }
 
 /**
  * \brief   Predefined invalid Worker Thread Entry.
  **/
-AREG_API_IMPL const NERegistry::WorkerThreadEntry & NERegistry::invalidWorkerThreadEntry()
+AREG_API_IMPL const areg::WorkerThreadEntry & areg::invalidWorkerThreadEntry()
 {
-    static const NERegistry::WorkerThreadEntry _invalidWorkerThreadEntry;
+    static const areg::WorkerThreadEntry _invalidWorkerThreadEntry;
     return _invalidWorkerThreadEntry;
 }
 
 /**
  * \brief   Predefined invalid Worker Thread List.
  **/
-AREG_API_IMPL const NERegistry::WorkerThreadList & NERegistry::invalidWorkerThreadList()
+AREG_API_IMPL const areg::WorkerThreadList & areg::invalidWorkerThreadList()
 {
-    static const NERegistry::WorkerThreadList _invalidWorkerThreadList;
+    static const areg::WorkerThreadList _invalidWorkerThreadList;
     return _invalidWorkerThreadList;
 }
 
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API_IMPL const NERegistry::DependencyEntry & NERegistry::invalidDepedencyEntry()
+AREG_API_IMPL const areg::DependencyEntry & areg::invalidDepedencyEntry()
 {
-    static const NERegistry::DependencyEntry _invalidDepedencyEntry;
+    static const areg::DependencyEntry _invalidDepedencyEntry;
     return _invalidDepedencyEntry;
 }
 
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API_IMPL const NERegistry::DependencyList & NERegistry::invalidDepedencyList()
+AREG_API_IMPL const areg::DependencyList & areg::invalidDepedencyList()
 {
-    static const NERegistry::DependencyList _invalidDepedencyList;
+    static const areg::DependencyList _invalidDepedencyList;
     return _invalidDepedencyList;
 }
 
 /**
  * \brief   Predefined Invalid Component Entry.
  **/
-AREG_API_IMPL const NERegistry::ComponentEntry & NERegistry::invalidComponentEntry()
+AREG_API_IMPL const areg::ComponentEntry & areg::invalidComponentEntry()
 {
-    static const NERegistry::ComponentEntry _invalidComponentEntry;
+    static const areg::ComponentEntry _invalidComponentEntry;
     return _invalidComponentEntry;
 }
 
 /**
  * \brief   Predefined invalid Component List.
  **/
-AREG_API_IMPL const NERegistry::ComponentList & NERegistry::invalidComponentList()
+AREG_API_IMPL const areg::ComponentList & areg::invalidComponentList()
 {
-    static const NERegistry::ComponentList _invalidComponentList;
+    static const areg::ComponentList _invalidComponentList;
     return _invalidComponentList;
 }
 
 /**
  * \brief   Predefined invalid Thread Entry.
  **/
-AREG_API_IMPL const NERegistry::ComponentThreadEntry & NERegistry::invalidThreadEntry()
+AREG_API_IMPL const areg::ComponentThreadEntry & areg::invalidThreadEntry()
 {
-    static const NERegistry::ComponentThreadEntry _invalidThreadEntry;
+    static const areg::ComponentThreadEntry _invalidThreadEntry;
     return _invalidThreadEntry;
 }
 
 /**
  * \brief   Predefined invalid Thread List.
  **/
-AREG_API_IMPL const NERegistry::ComponentThreadList & NERegistry::invalidThreadList()
+AREG_API_IMPL const areg::ComponentThreadList & areg::invalidThreadList()
 {
-    static const NERegistry::ComponentThreadList _invalidThreadList;
+    static const areg::ComponentThreadList _invalidThreadList;
     return _invalidThreadList;
 }
 
 /**
  * \brief   Predefined invalid Model.
  **/
-AREG_API_IMPL const NERegistry::Model & NERegistry::invalidModel()
+AREG_API_IMPL const areg::Model & areg::invalidModel()
 {
-    static const NERegistry::Model _invalidModel;
+    static const areg::Model _invalidModel;
     return _invalidModel;
 }
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::ServiceEntry implementation
+// class areg::ServiceEntry implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::ServiceEntry::ServiceEntry( const String & serviceName, uint32_t major, uint32_t minor, uint32_t patch )
+areg::ServiceEntry::ServiceEntry( const areg::String & serviceName, uint32_t major, uint32_t minor, uint32_t patch )
     : mName     ( serviceName )
     , mVersion  ( major, minor, patch )
 {
@@ -138,32 +138,32 @@ NERegistry::ServiceEntry::ServiceEntry( const String & serviceName, uint32_t maj
     ASSERT( mVersion.isValid( ) );
 }
 
-NERegistry::ServiceEntry::ServiceEntry( const String & serviceName, const Version & version )
+areg::ServiceEntry::ServiceEntry( const areg::String & serviceName, const areg::Version & version )
     : mName     (serviceName)
     , mVersion  (version)
 {
     ASSERT( mName.isEmpty() == false );
 }
 
-bool NERegistry::ServiceEntry::operator == ( const NERegistry::ServiceEntry & other ) const
+bool areg::ServiceEntry::operator == ( const areg::ServiceEntry & other ) const
 {
     return (this == &other) || ((mName == other.mName) && (mVersion == other.mVersion));
 }
 
-bool NERegistry::ServiceEntry::operator != ( const NERegistry::ServiceEntry & other ) const
+bool areg::ServiceEntry::operator != ( const areg::ServiceEntry & other ) const
 {
     return (this != &other) && ((mName != other.mName) || (mVersion != other.mVersion));
 }
 
-bool NERegistry::ServiceEntry::isValid() const
+bool areg::ServiceEntry::isValid() const
 {
     return ( (mName.isEmpty() == false) && mVersion.isValid() );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::ServiceList implementation
+// class areg::ServiceList implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::ServiceList::ServiceList( const NERegistry::ServiceEntry & entry )
+areg::ServiceList::ServiceList( const areg::ServiceEntry & entry )
     : mListServices ()
 {
     if (entry.isValid())
@@ -172,20 +172,20 @@ NERegistry::ServiceList::ServiceList( const NERegistry::ServiceEntry & entry )
     }
 }
 
-const NERegistry::ServiceEntry & NERegistry::ServiceList::getService( const String & serviceName ) const
+const areg::ServiceEntry & areg::ServiceList::getService( const areg::String & serviceName ) const
 {
     int32_t index = findService(serviceName);
-    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidServiceEntry() : mListServices.getAt(static_cast<uint32_t>(index)));
+    return (index == areg::INVALID_INDEX ? areg::invalidServiceEntry() : mListServices.getAt(static_cast<uint32_t>(index)));
 }
 
-int32_t NERegistry::ServiceList::findService( const NERegistry::ServiceEntry & entry ) const
+int32_t areg::ServiceList::findService( const areg::ServiceEntry & entry ) const
 {
     return findService( entry.mName );
 }
 
-int32_t NERegistry::ServiceList::findService( const String & serviceName ) const
+int32_t areg::ServiceList::findService( const areg::String & serviceName ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for ( uint32_t i = 0; i < mListServices.getSize(); ++ i )
     {
         if (mListServices[i].mName == serviceName)
@@ -198,59 +198,59 @@ int32_t NERegistry::ServiceList::findService( const String & serviceName ) const
     return result;
 }
 
-bool NERegistry::ServiceList::isValid() const
+bool areg::ServiceList::isValid() const
 {
     return (mListServices.getSize() != 0 );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::WorkerThreadEntry implementation
+// class areg::WorkerThreadEntry implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::WorkerThreadEntry::WorkerThreadEntry()
+areg::WorkerThreadEntry::WorkerThreadEntry()
     : mThreadName       ()
     , mConsumerName     ()
-    , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
-    , mStackSizeKb      (NECommon::STACK_SIZE_DEFAULT)
-    , mMaxQueue         (NECommon::IGNORE_VALUE)
+    , mWatchdogTimeout  (areg::WATCHDOG_IGNORE)
+    , mStackSizeKb      (areg::STACK_SIZE_DEFAULT)
+    , mMaxQueue         (areg::IGNORE_VALUE)
 {
 }
 
-NERegistry::WorkerThreadEntry::WorkerThreadEntry( const String & masterThreadName
-                                                , const String & workerThreadName
-                                                , const String & compRoleName
-                                                , const String & compConsumerName
-                                                , const uint32_t watchdogTimeout /* = NECommon::WATCHDOG_IGNORE     */
-                                                , const uint32_t stackSizeKb     /* = NECommon::STACK_SIZE_DEFAULT  */
-                                                , const uint32_t maxQueue        /* = NECommon::IGNORE_VALUE        */ )
-    : mThreadName       (NEUtilities::createComponentItemName(masterThreadName, workerThreadName))
-    , mConsumerName     (NEUtilities::createComponentItemName(compRoleName, compConsumerName))
+areg::WorkerThreadEntry::WorkerThreadEntry( const areg::String & masterThreadName
+                                                , const areg::String & workerThreadName
+                                                , const areg::String & compRoleName
+                                                , const areg::String & compConsumerName
+                                                , const uint32_t watchdogTimeout /* = areg::WATCHDOG_IGNORE     */
+                                                , const uint32_t stackSizeKb     /* = areg::STACK_SIZE_DEFAULT  */
+                                                , const uint32_t maxQueue        /* = areg::IGNORE_VALUE        */ )
+    : mThreadName       (areg::createComponentItemName(masterThreadName, workerThreadName))
+    , mConsumerName     (areg::createComponentItemName(compRoleName, compConsumerName))
     , mWatchdogTimeout  (watchdogTimeout)
     , mStackSizeKb      (stackSizeKb)
     , mMaxQueue         (maxQueue)
 {
 }
 
-bool NERegistry::WorkerThreadEntry::operator == ( const NERegistry::WorkerThreadEntry & other ) const
+bool areg::WorkerThreadEntry::operator == ( const areg::WorkerThreadEntry & other ) const
 {
     return ( (this == &other) || ((mThreadName == other.mThreadName) && (mConsumerName == other.mConsumerName)));
 }
 
-bool NERegistry::WorkerThreadEntry::operator != ( const NERegistry::WorkerThreadEntry & other ) const
+bool areg::WorkerThreadEntry::operator != ( const areg::WorkerThreadEntry & other ) const
 {
     return ((this != &other) && ((mThreadName != other.mThreadName) || (mConsumerName != other.mConsumerName)));
 }
 
-bool NERegistry::WorkerThreadEntry::isValid() const
+bool areg::WorkerThreadEntry::isValid() const
 {
     return ( (mThreadName.isEmpty() == false) && (mConsumerName.isEmpty() == false) );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::WorkerThreadList implementation
+// class areg::WorkerThreadList implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::WorkerThreadList::WorkerThreadList( const NERegistry::WorkerThreadEntry & entry )
+areg::WorkerThreadList::WorkerThreadList( const areg::WorkerThreadEntry & entry )
     : mListWorkers  ()
 {
     if (entry.isValid())
@@ -259,15 +259,15 @@ NERegistry::WorkerThreadList::WorkerThreadList( const NERegistry::WorkerThreadEn
     }
 }
 
-const NERegistry::WorkerThreadEntry & NERegistry::WorkerThreadList::getWorkerThread( const String & threadName ) const
+const areg::WorkerThreadEntry & areg::WorkerThreadList::getWorkerThread( const areg::String & threadName ) const
 {
     int32_t index = findThread(threadName);
-    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidWorkerThreadEntry() : mListWorkers.getAt(static_cast<uint32_t>(index)));
+    return (index == areg::INVALID_INDEX ? areg::invalidWorkerThreadEntry() : mListWorkers.getAt(static_cast<uint32_t>(index)));
 }
 
-int32_t NERegistry::WorkerThreadList::findThread( const String & threadName ) const
+int32_t areg::WorkerThreadList::findThread( const areg::String & threadName ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for ( uint32_t i = 0; i < mListWorkers.getSize(); ++ i )
     {
         if (mListWorkers[i].mThreadName == threadName)
@@ -280,55 +280,55 @@ int32_t NERegistry::WorkerThreadList::findThread( const String & threadName ) co
     return result;
 }
 
-int32_t NERegistry::WorkerThreadList::findThread( const NERegistry::WorkerThreadEntry & entry ) const
+int32_t areg::WorkerThreadList::findThread( const areg::WorkerThreadEntry & entry ) const
 {
     return findThread( entry.mThreadName );
 }
 
-bool NERegistry::WorkerThreadList::isValid() const
+bool areg::WorkerThreadList::isValid() const
 {
     return (mListWorkers.getSize() != 0  );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::DependencyEntry implementation
+// class areg::DependencyEntry implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::DependencyEntry::DependencyEntry( const String & roleName )
+areg::DependencyEntry::DependencyEntry( const areg::String & roleName )
     : mRoleName(roleName)
 {
 }
 
-bool NERegistry::DependencyEntry::operator == ( const NERegistry::DependencyEntry & other ) const
+bool areg::DependencyEntry::operator == ( const areg::DependencyEntry & other ) const
 {
     return (mRoleName == other.mRoleName);
 }
 
-bool NERegistry::DependencyEntry::operator != ( const NERegistry::DependencyEntry & other ) const
+bool areg::DependencyEntry::operator != ( const areg::DependencyEntry & other ) const
 {
     return (mRoleName != other.mRoleName);
 }
 
-bool NERegistry::DependencyEntry::isValid() const
+bool areg::DependencyEntry::isValid() const
 {
     return (mRoleName.isEmpty() == false);
 }
 
-void NERegistry::DependencyEntry::setDependentService( const String & roleName )
+void areg::DependencyEntry::setDependentService( const areg::String & roleName )
 {
     mRoleName   = roleName;
 }
 
-const String & NERegistry::DependencyEntry::getDepdendentService() const
+const areg::String & areg::DependencyEntry::getDepdendentService() const
 {
     return mRoleName;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::DependencyList implementation
+// class areg::DependencyList implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::DependencyList::DependencyList( const NERegistry::DependencyEntry & entry  )
+areg::DependencyList::DependencyList( const areg::DependencyEntry & entry  )
     : mListDependencies ( )
 {
     if (entry.isValid())
@@ -337,20 +337,20 @@ NERegistry::DependencyList::DependencyList( const NERegistry::DependencyEntry & 
     }
 }
 
-const NERegistry::DependencyEntry & NERegistry::DependencyList::getDependency( const String & roleName ) const
+const areg::DependencyEntry & areg::DependencyList::getDependency( const areg::String & roleName ) const
 {
     int32_t index = findDependency(roleName);
-    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidDepedencyEntry() : mListDependencies.getAt(static_cast<uint32_t>(index)) );
+    return (index == areg::INVALID_INDEX ? areg::invalidDepedencyEntry() : mListDependencies.getAt(static_cast<uint32_t>(index)) );
 }
 
-int32_t NERegistry::DependencyList::findDependency( const NERegistry::DependencyEntry & entry ) const
+int32_t areg::DependencyList::findDependency( const areg::DependencyEntry & entry ) const
 {
     return findDependency( entry.mRoleName );
 }
 
-int32_t NERegistry::DependencyList::findDependency( const String & roleName ) const
+int32_t areg::DependencyList::findDependency( const areg::String & roleName ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for ( uint32_t i = 0; i < mListDependencies.getSize(); ++ i )
     {
         if (mListDependencies.getAt(i).mRoleName == roleName)
@@ -363,15 +363,15 @@ int32_t NERegistry::DependencyList::findDependency( const String & roleName ) co
     return result;
 }
 
-bool NERegistry::DependencyList::isValid() const
+bool areg::DependencyList::isValid() const
 {
     return (mListDependencies.getSize() != 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::ComponentEntry implementation
+// class areg::ComponentEntry implementation
 //////////////////////////////////////////////////////////////////////////
-NERegistry::ComponentEntry::ComponentEntry()
+areg::ComponentEntry::ComponentEntry()
     : mRoleName             ( )
 
     , mThreadName           ( )
@@ -385,7 +385,7 @@ NERegistry::ComponentEntry::ComponentEntry()
 {
 }
 
-NERegistry::ComponentEntry::ComponentEntry( const String & masterThreadName, const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete )
+areg::ComponentEntry::ComponentEntry( const areg::String & masterThreadName, const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
@@ -399,13 +399,13 @@ NERegistry::ComponentEntry::ComponentEntry( const String & masterThreadName, con
 {
 }
 
-NERegistry::ComponentEntry::ComponentEntry(   const String & masterThreadName
-                                            , const String & roleName
-                                            , FuncCreateComponent funcCreate
-                                            , FuncDeleteComponent funcDelete
-                                            , const NERegistry::ServiceList & serviceList
-                                            , const NERegistry::DependencyList & dependencyList
-                                            , const NERegistry::WorkerThreadList & workerList )
+areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
+                                            , const areg::String & roleName
+                                            , areg::FuncCreateComponent funcCreate
+                                            , areg::FuncDeleteComponent funcDelete
+                                            , const areg::ServiceList & serviceList
+                                            , const areg::DependencyList & dependencyList
+                                            , const areg::WorkerThreadList & workerList )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
@@ -419,13 +419,13 @@ NERegistry::ComponentEntry::ComponentEntry(   const String & masterThreadName
 {
 }
 
-NERegistry::ComponentEntry::ComponentEntry(   const String & masterThreadName
-                                            , const String & roleName
-                                            , FuncCreateComponent funcCreate
-                                            , FuncDeleteComponent funcDelete
-                                            , const NERegistry::ServiceEntry & service
-                                            , const NERegistry::DependencyEntry & dependency
-                                            , const NERegistry::WorkerThreadEntry & worker )
+areg::ComponentEntry::ComponentEntry(   const areg::String & masterThreadName
+                                            , const areg::String & roleName
+                                            , areg::FuncCreateComponent funcCreate
+                                            , areg::FuncDeleteComponent funcDelete
+                                            , const areg::ServiceEntry & service
+                                            , const areg::DependencyEntry & dependency
+                                            , const areg::WorkerThreadEntry & worker )
     : mRoleName             (roleName)
 
     , mThreadName           (masterThreadName)
@@ -439,7 +439,7 @@ NERegistry::ComponentEntry::ComponentEntry(   const String & masterThreadName
 {
 }
 
-NERegistry::ComponentEntry::ComponentEntry( const NERegistry::ComponentEntry & src )
+areg::ComponentEntry::ComponentEntry( const areg::ComponentEntry & src )
     : mRoleName             (src.mRoleName)
 
     , mThreadName           (src.mThreadName)
@@ -453,7 +453,7 @@ NERegistry::ComponentEntry::ComponentEntry( const NERegistry::ComponentEntry & s
 {
 }
 
-NERegistry::ComponentEntry::ComponentEntry( NERegistry::ComponentEntry && src ) noexcept
+areg::ComponentEntry::ComponentEntry( areg::ComponentEntry && src ) noexcept
     : mRoleName             ( std::move(src.mRoleName) )
 
     , mThreadName           ( std::move(src.mThreadName) )
@@ -467,9 +467,9 @@ NERegistry::ComponentEntry::ComponentEntry( NERegistry::ComponentEntry && src ) 
 {
 }
 
-NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( const NERegistry::ComponentEntry & src )
+areg::ComponentEntry & areg::ComponentEntry::operator = ( const areg::ComponentEntry & src )
 {
-    if (static_cast<const NERegistry::ComponentEntry *>(this) != &src)
+    if (static_cast<const areg::ComponentEntry *>(this) != &src)
     {
         mRoleName           = src.mRoleName;
 
@@ -486,7 +486,7 @@ NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( const NERe
     return (*this);
 }
 
-NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( NERegistry::ComponentEntry && src ) noexcept
+areg::ComponentEntry & areg::ComponentEntry::operator = ( areg::ComponentEntry && src ) noexcept
 {
     mRoleName           = std::move(src.mRoleName);
     mThreadName         = std::move(src.mThreadName);
@@ -500,14 +500,14 @@ NERegistry::ComponentEntry & NERegistry::ComponentEntry::operator = ( NERegistry
     return (*this);
 }
 
-bool NERegistry::ComponentEntry::operator == ( const NERegistry::ComponentEntry & other ) const
+bool areg::ComponentEntry::operator == ( const areg::ComponentEntry & other ) const
 {
     return (this != &other ? (mRoleName   == other.mRoleName)     &&
                              (mThreadName == other.mThreadName)
                            : true);
 }
 
-void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceEntry & entry )
+void areg::ComponentEntry::addSupportedService( const areg::ServiceEntry & entry )
 {
     if (findSupportedService(entry) < 0)
     {
@@ -515,7 +515,7 @@ void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceE
     }
 }
 
-void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceList & serviceList )
+void areg::ComponentEntry::addSupportedService( const areg::ServiceList & serviceList )
 {
     for (uint32_t i = 0; i < serviceList.mListServices.getSize(); ++i)
     {
@@ -523,19 +523,19 @@ void NERegistry::ComponentEntry::addSupportedService( const NERegistry::ServiceL
     }
 }
 
-NERegistry::ServiceEntry & NERegistry::ComponentEntry::addSupportedService(const String & serviceName, const Version & version)
+areg::ServiceEntry & areg::ComponentEntry::addSupportedService(const areg::String & serviceName, const areg::Version & version)
 {
     int32_t index = findSupportedService(serviceName);
-    if ( index == NECommon::INVALID_INDEX )
+    if ( index == areg::INVALID_INDEX )
     {
         index = static_cast<int32_t>(mSupportedServices.mListServices.getSize());
-        mSupportedServices.mListServices.add(NERegistry::ServiceEntry(serviceName, version));
+        mSupportedServices.mListServices.add(areg::ServiceEntry(serviceName, version));
     }
 
     return mSupportedServices.mListServices.getAt(static_cast<uint32_t>(index));
 }
 
-bool NERegistry::ComponentEntry::removeSupportedService( const String & serviceName )
+bool areg::ComponentEntry::removeSupportedService( const areg::String & serviceName )
 {
     bool result = false;
     if ( serviceName.isEmpty() == false)
@@ -553,17 +553,17 @@ bool NERegistry::ComponentEntry::removeSupportedService( const String & serviceN
     return result;
 }
 
-int32_t NERegistry::ComponentEntry::findSupportedService( const NERegistry::ServiceEntry& entry ) const
+int32_t areg::ComponentEntry::findSupportedService( const areg::ServiceEntry& entry ) const
 {
     return mSupportedServices.findService(entry);
 }
 
-int32_t NERegistry::ComponentEntry::findSupportedService( const String & serviceName ) const
+int32_t areg::ComponentEntry::findSupportedService( const areg::String & serviceName ) const
 {
     return mSupportedServices.findService(serviceName);
 }
 
-void NERegistry::ComponentEntry::addWorkerThread( const NERegistry::WorkerThreadEntry& entry )
+void areg::ComponentEntry::addWorkerThread( const areg::WorkerThreadEntry& entry )
 {
     if (findWorkerThread(entry) < 0)
     {
@@ -571,7 +571,7 @@ void NERegistry::ComponentEntry::addWorkerThread( const NERegistry::WorkerThread
     }
 }
 
-void NERegistry::ComponentEntry::addWorkerThread( const NERegistry::WorkerThreadList & workerList )
+void areg::ComponentEntry::addWorkerThread( const areg::WorkerThreadList & workerList )
 {
     for (uint32_t i = 0; i < workerList.mListWorkers.getSize(); ++i)
     {
@@ -579,17 +579,17 @@ void NERegistry::ComponentEntry::addWorkerThread( const NERegistry::WorkerThread
     }
 }
 
-int32_t NERegistry::ComponentEntry::findWorkerThread( const NERegistry::WorkerThreadEntry& entry ) const
+int32_t areg::ComponentEntry::findWorkerThread( const areg::WorkerThreadEntry& entry ) const
 {
     return mWorkerThreads.findThread(entry);
 }
 
-int32_t NERegistry::ComponentEntry::findWorkerThread( const String & workerName ) const
+int32_t areg::ComponentEntry::findWorkerThread( const areg::String & workerName ) const
 {
     return mWorkerThreads.findThread(workerName);
 }
 
-bool NERegistry::ComponentEntry::removeWorkerThread( const String & workerName )
+bool areg::ComponentEntry::removeWorkerThread( const areg::String & workerName )
 {
     bool result = false;
     if ( workerName.isEmpty() == false)
@@ -608,12 +608,12 @@ bool NERegistry::ComponentEntry::removeWorkerThread( const String & workerName )
     return result;
 }
 
-void NERegistry::ComponentEntry::addDependencyService( const NERegistry::DependencyEntry& entry )
+void areg::ComponentEntry::addDependencyService( const areg::DependencyEntry& entry )
 {
     mDependencyServices.mListDependencies.add(entry);
 }
 
-void NERegistry::ComponentEntry::addDependencyService( const NERegistry::DependencyList & dependencyList )
+void areg::ComponentEntry::addDependencyService( const areg::DependencyList & dependencyList )
 {
     for (uint32_t i = 0; i < dependencyList.mListDependencies.getSize(); ++i)
     {
@@ -621,19 +621,19 @@ void NERegistry::ComponentEntry::addDependencyService( const NERegistry::Depende
     }
 }
 
-NERegistry::DependencyEntry & NERegistry::ComponentEntry::addDependencyService(const String & roleName)
+areg::DependencyEntry & areg::ComponentEntry::addDependencyService(const areg::String & roleName)
 {
     int32_t index = static_cast<int32_t>(mDependencyServices.mListDependencies.getSize());
-    mDependencyServices.mListDependencies.add(NERegistry::DependencyEntry(roleName));
+    mDependencyServices.mListDependencies.add(areg::DependencyEntry(roleName));
     return mDependencyServices.mListDependencies.getAt(static_cast<uint32_t>(index));
 }
 
-int32_t NERegistry::ComponentEntry::findDependencyService( const NERegistry::DependencyEntry& entry ) const
+int32_t areg::ComponentEntry::findDependencyService( const areg::DependencyEntry& entry ) const
 {
     return mDependencyServices.findDependency(entry);
 }
 
-bool NERegistry::ComponentEntry::removeDependencyService( const String & roleName )
+bool areg::ComponentEntry::removeDependencyService( const areg::String & roleName )
 {
     bool result = false;
     if ( roleName.isEmpty() == false)
@@ -651,62 +651,62 @@ bool NERegistry::ComponentEntry::removeDependencyService( const String & roleNam
     return result;
 }
 
-int32_t NERegistry::ComponentEntry::findDependencyService( const String & roleName ) const
+int32_t areg::ComponentEntry::findDependencyService( const areg::String & roleName ) const
 {
     return mDependencyServices.findDependency(roleName);
 }
 
-const NERegistry::ServiceList & NERegistry::ComponentEntry::getSupportedServices() const
+const areg::ServiceList & areg::ComponentEntry::getSupportedServices() const
 {
     return mSupportedServices;
 }
 
-const NERegistry::WorkerThreadList & NERegistry::ComponentEntry::getWorkerThreads() const
+const areg::WorkerThreadList & areg::ComponentEntry::getWorkerThreads() const
 {
     return mWorkerThreads;
 }
 
-const NERegistry::DependencyList & NERegistry::ComponentEntry::getDependencyServices() const
+const areg::DependencyList & areg::ComponentEntry::getDependencyServices() const
 {
     return mDependencyServices;
 }
 
-void NERegistry::ComponentEntry::setInstanceMethods( FuncCreateComponent fnCreate, FuncDeleteComponent fnDelete )
+void areg::ComponentEntry::setInstanceMethods( areg::FuncCreateComponent fnCreate, areg::FuncDeleteComponent fnDelete )
 {
     mFuncCreate = fnCreate;
     mFuncDelete = fnDelete;
 }
 
-bool NERegistry::ComponentEntry::isValid() const
+bool areg::ComponentEntry::isValid() const
 {
     return ( (mRoleName.isEmpty() == false) && (mFuncCreate != nullptr) && (mFuncDelete != nullptr) );
 }
 
-void NERegistry::ComponentEntry::setData( std::any compData )
+void areg::ComponentEntry::setData( std::any compData )
 {
     mComponentData  = std::move(compData);
 }
 
-void NERegistry::ComponentEntry::resetData()
+void areg::ComponentEntry::resetData()
 {
     mComponentData.reset();
 }
 
-std::any NERegistry::ComponentEntry::getData() const
+std::any areg::ComponentEntry::getData() const
 {
     return mComponentData;
 }
 
-bool NERegistry::ComponentEntry::hasData() const
+bool areg::ComponentEntry::hasData() const
 {
     return mComponentData.has_value();
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::ComponentList implementation
+// class areg::ComponentList implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::ComponentList::ComponentList(  const NERegistry::ComponentEntry & entry )
+areg::ComponentList::ComponentList(  const areg::ComponentEntry & entry )
     : mListComponents   ( )
 {
     if (entry.isValid())
@@ -715,15 +715,15 @@ NERegistry::ComponentList::ComponentList(  const NERegistry::ComponentEntry & en
     }
 }
 
-const NERegistry::ComponentEntry & NERegistry::ComponentList::getComponent( const String & roleName ) const
+const areg::ComponentEntry & areg::ComponentList::getComponent( const areg::String & roleName ) const
 {
     int32_t index = findComponent(roleName);
-    return (index != NECommon::INVALID_INDEX ? mListComponents.getAt(static_cast<uint32_t>(index)) : NERegistry::invalidComponentEntry());
+    return (index != areg::INVALID_INDEX ? mListComponents.getAt(static_cast<uint32_t>(index)) : areg::invalidComponentEntry());
 }
 
-int32_t NERegistry::ComponentList::findComponent(const String & roleName) const
+int32_t areg::ComponentList::findComponent(const areg::String & roleName) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for ( uint32_t i = 0; i < mListComponents.getSize(); ++ i )
     {
         if (mListComponents[i].mRoleName == roleName)
@@ -736,22 +736,22 @@ int32_t NERegistry::ComponentList::findComponent(const String & roleName) const
     return result;
 }
 
-int32_t NERegistry::ComponentList::findComponent( const NERegistry::ComponentEntry& entry ) const
+int32_t areg::ComponentList::findComponent( const areg::ComponentEntry& entry ) const
 {
     return findComponent( entry.mRoleName );
 }
 
-bool NERegistry::ComponentList::isValid() const
+bool areg::ComponentList::isValid() const
 {
     return (mListComponents.getSize() != 0);
 }
 
-bool NERegistry::ComponentList::setComponentData( const String & roleName, std::any compData )
+bool areg::ComponentList::setComponentData( const areg::String & roleName, std::any compData )
 {
     bool result = false;
     for (uint32_t i = 0; i < mListComponents.getSize(); ++ i )
     {
-        NERegistry::ComponentEntry & entry = mListComponents[i];
+        areg::ComponentEntry & entry = mListComponents[i];
         if ( entry.mRoleName == roleName )
         {
             entry.setData(compData);
@@ -762,12 +762,12 @@ bool NERegistry::ComponentList::setComponentData( const String & roleName, std::
     return result;
 }
 
-bool NERegistry::ComponentList::resetComponentData(const String& roleName)
+bool areg::ComponentList::resetComponentData(const areg::String& roleName)
 {
     bool result = false;
     for (uint32_t i = 0; i < mListComponents.getSize(); ++i)
     {
-        NERegistry::ComponentEntry& entry = mListComponents[i];
+        areg::ComponentEntry& entry = mListComponents[i];
         if (entry.mRoleName == roleName)
         {
             entry.resetData();
@@ -779,22 +779,22 @@ bool NERegistry::ComponentList::resetComponentData(const String& roleName)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::ComponentThreadEntry implementation
+// class areg::ComponentThreadEntry implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry()
+areg::ComponentThreadEntry::ComponentThreadEntry()
     : mThreadName       ( )
     , mComponents       ( )
-    , mWatchdogTimeout  (NECommon::WATCHDOG_IGNORE)
-    , mStackSizeKB      (NECommon::STACK_SIZE_DEFAULT)
-    , mMaxQueue         (NECommon::IGNORE_VALUE)
+    , mWatchdogTimeout  (areg::WATCHDOG_IGNORE)
+    , mStackSizeKB      (areg::STACK_SIZE_DEFAULT)
+    , mMaxQueue         (areg::IGNORE_VALUE)
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
-                                                      , const uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
-                                                      , const uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */ 
-                                                      , const uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */)
+areg::ComponentThreadEntry::ComponentThreadEntry( const areg::String & threadName
+                                                      , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
+                                                      , const uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */ 
+                                                      , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */)
     : mThreadName       (threadName)
     , mComponents       ( )
     , mWatchdogTimeout  (watchdogTimeout)
@@ -803,11 +803,11 @@ NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadNam
 {
 }
 
-NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadName
-                                                      , const NERegistry::ComponentList& supCompList
-                                                      , const uint32_t watchdogTimeout  /* = NECommon::WATCHDOG_IGNORE      */
-                                                      , const uint32_t stackSizeKb      /* = NECommon::STACK_SIZE_DEFAULT   */ 
-                                                      , const uint32_t maxQueue         /* = NECommon::IGNORE_VALUE         */)
+areg::ComponentThreadEntry::ComponentThreadEntry( const areg::String & threadName
+                                                      , const areg::ComponentList& supCompList
+                                                      , const uint32_t watchdogTimeout  /* = areg::WATCHDOG_IGNORE      */
+                                                      , const uint32_t stackSizeKb      /* = areg::STACK_SIZE_DEFAULT   */ 
+                                                      , const uint32_t maxQueue         /* = areg::IGNORE_VALUE         */)
     : mThreadName       (threadName)
     , mComponents       (supCompList)
     , mWatchdogTimeout  (watchdogTimeout)
@@ -816,17 +816,17 @@ NERegistry::ComponentThreadEntry::ComponentThreadEntry( const String & threadNam
 {
 }
 
-bool NERegistry::ComponentThreadEntry::operator == ( const NERegistry::ComponentThreadEntry & other ) const
+bool areg::ComponentThreadEntry::operator == ( const areg::ComponentThreadEntry & other ) const
 {
     return ((this == &other) || (mThreadName == other.mThreadName));
 }
 
-bool NERegistry::ComponentThreadEntry::operator != ( const NERegistry::ComponentThreadEntry & other ) const
+bool areg::ComponentThreadEntry::operator != ( const areg::ComponentThreadEntry & other ) const
 {
     return ((this != &other) && (mThreadName != other.mThreadName));
 }
 
-void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::ComponentEntry & entry )
+void areg::ComponentThreadEntry::addComponent( const areg::ComponentEntry & entry )
 {
     if (findComponentEntry(entry) < 0)
     {
@@ -834,7 +834,7 @@ void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::Component
     }
 }
 
-void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::ComponentList & componentList )
+void areg::ComponentThreadEntry::addComponent( const areg::ComponentList & componentList )
 {
     for (uint32_t i = 0; i < componentList.mListComponents.getSize(); ++i)
     {
@@ -842,19 +842,19 @@ void NERegistry::ComponentThreadEntry::addComponent( const NERegistry::Component
     }
 }
 
-NERegistry::ComponentEntry & NERegistry::ComponentThreadEntry::addComponent(const String & roleName, FuncCreateComponent funcCreate, FuncDeleteComponent funcDelete)
+areg::ComponentEntry & areg::ComponentThreadEntry::addComponent(const areg::String & roleName, areg::FuncCreateComponent funcCreate, areg::FuncDeleteComponent funcDelete)
 {
     int32_t index = mComponents.findComponent(roleName);
-    if ( index == NECommon::INVALID_INDEX )
+    if ( index == areg::INVALID_INDEX )
     {
         index = static_cast<int32_t>(mComponents.mListComponents.getSize());
-        mComponents.mListComponents.add( NERegistry::ComponentEntry(mThreadName.getString(), roleName, funcCreate, funcDelete));
+        mComponents.mListComponents.add( areg::ComponentEntry(mThreadName.getString(), roleName, funcCreate, funcDelete));
     }
 
     return mComponents.mListComponents.getAt(static_cast<uint32_t>(index));
 }
 
-bool NERegistry::ComponentThreadEntry::removeComponent( const String & roleName )
+bool areg::ComponentThreadEntry::removeComponent( const areg::String & roleName )
 {
     bool result = false;
     if ( roleName.isEmpty() == false)
@@ -873,36 +873,36 @@ bool NERegistry::ComponentThreadEntry::removeComponent( const String & roleName 
     return result;
 }
 
-int32_t NERegistry::ComponentThreadEntry::findComponentEntry( const NERegistry::ComponentEntry & entry ) const
+int32_t areg::ComponentThreadEntry::findComponentEntry( const areg::ComponentEntry & entry ) const
 {
     return mComponents.findComponent(entry);
 }
 
-int32_t NERegistry::ComponentThreadEntry::findComponentEntry( const String & roleName ) const
+int32_t areg::ComponentThreadEntry::findComponentEntry( const areg::String & roleName ) const
 {
     return mComponents.findComponent(roleName);
 }
 
-bool NERegistry::ComponentThreadEntry::isValid() const
+bool areg::ComponentThreadEntry::isValid() const
 {
     return ( (mThreadName.isEmpty() == false) && (mComponents.mListComponents.isEmpty() == false) );
 }
 
-bool NERegistry::ComponentThreadEntry::setComponentData( const String & roleName, std::any compData )
+bool areg::ComponentThreadEntry::setComponentData( const areg::String & roleName, std::any compData )
 {
     return mComponents.setComponentData(roleName, compData);
 }
 
-bool NERegistry::ComponentThreadEntry::resetComponentData(const String& roleName)
+bool areg::ComponentThreadEntry::resetComponentData(const areg::String& roleName)
 {
     return mComponents.resetComponentData(roleName);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::ComponentThreadList implementation
+// class areg::ComponentThreadList implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::ComponentThreadList::ComponentThreadList( const NERegistry::ComponentThreadEntry & entry )
+areg::ComponentThreadList::ComponentThreadList( const areg::ComponentThreadEntry & entry )
     : mListThreads  ( )
 {
     if (entry.isValid())
@@ -911,20 +911,20 @@ NERegistry::ComponentThreadList::ComponentThreadList( const NERegistry::Componen
     }
 }
 
-const NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadList::getThread( const String & threadName ) const
+const areg::ComponentThreadEntry & areg::ComponentThreadList::getThread( const areg::String & threadName ) const
 {
     int32_t index = findThread(threadName);
-    return (index != NECommon::INVALID_INDEX ? mListThreads.getAt(static_cast<uint32_t>(index)) : NERegistry::invalidThreadEntry());
+    return (index != areg::INVALID_INDEX ? mListThreads.getAt(static_cast<uint32_t>(index)) : areg::invalidThreadEntry());
 }
 
-int32_t NERegistry::ComponentThreadList::findThread( const NERegistry::ComponentThreadEntry& entry ) const
+int32_t areg::ComponentThreadList::findThread( const areg::ComponentThreadEntry& entry ) const
 {
     return findThread( entry.mThreadName );
 }
 
-int32_t NERegistry::ComponentThreadList::findThread( const String & threadName ) const
+int32_t areg::ComponentThreadList::findThread( const areg::String & threadName ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
+    int32_t result = areg::INVALID_INDEX;
     for (uint32_t i = 0; i < mListThreads.getSize(); ++ i )
     {
         if (mListThreads[i].mThreadName == threadName)
@@ -937,16 +937,16 @@ int32_t NERegistry::ComponentThreadList::findThread( const String & threadName )
     return result;
 }
 
-bool NERegistry::ComponentThreadList::isValid() const
+bool areg::ComponentThreadList::isValid() const
 {
     return (mListThreads.getSize() != 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// class NERegistry::Model implementation
+// class areg::Model implementation
 //////////////////////////////////////////////////////////////////////////
 
-NERegistry::Model::Model()
+areg::Model::Model()
     : mModelName    ( )
     , mModelThreads ( )
     , mLoadState    ( Model::ModelState::Initialized )
@@ -954,7 +954,7 @@ NERegistry::Model::Model()
 {
 }
 
-NERegistry::Model::Model( const String & modelName )
+areg::Model::Model( const areg::String & modelName )
     : mModelName    (modelName)
     , mModelThreads ( )
     , mLoadState    ( Model::ModelState::Initialized )
@@ -962,7 +962,7 @@ NERegistry::Model::Model( const String & modelName )
 {
 }
 
-NERegistry::Model::Model( const String & modelName, const ComponentThreadList & threadList  )
+areg::Model::Model( const areg::String & modelName, const ComponentThreadList & threadList  )
     : mModelName    (modelName)
     , mModelThreads (threadList)
     , mLoadState    ( Model::ModelState::Initialized )
@@ -970,40 +970,40 @@ NERegistry::Model::Model( const String & modelName, const ComponentThreadList & 
 {
 }
 
-bool NERegistry::Model::operator == ( const NERegistry::Model & other ) const
+bool areg::Model::operator == ( const areg::Model & other ) const
 {
     return (this == &other) || ((mModelName == other.mModelName) && (mModelThreads.mListThreads == other.mModelThreads.mListThreads));
 }
 
-bool NERegistry::Model::operator != ( const NERegistry::Model & other ) const
+bool areg::Model::operator != ( const areg::Model & other ) const
 {
     return (this != &other) && ((mModelName != other.mModelName) || (mModelThreads.mListThreads != other.mModelThreads.mListThreads));
 }
 
-bool NERegistry::Model::isValid() const
+bool areg::Model::isValid() const
 {
     return ( (mModelName.isEmpty() == false) && mModelThreads.isValid() );
 }
 
-int32_t NERegistry::Model::findThread( const NERegistry::ComponentThreadEntry& entry ) const
+int32_t areg::Model::findThread( const areg::ComponentThreadEntry& entry ) const
 {
     return mModelThreads.findThread(entry);
 }
 
-int32_t NERegistry::Model::findThread( const String & threadName ) const
+int32_t areg::Model::findThread( const areg::String & threadName ) const
 {
     return mModelThreads.findThread(threadName);
 }
 
-void NERegistry::Model::addThread( const NERegistry::ComponentThreadEntry& entry )
+void areg::Model::addThread( const areg::ComponentThreadEntry& entry )
 {
-    if (entry.isValid() && (findThread(entry) == NECommon::INVALID_INDEX))
+    if (entry.isValid() && (findThread(entry) == areg::INVALID_INDEX))
     {
         mModelThreads.mListThreads.add(entry);
     }
 }
 
-void NERegistry::Model::addThread( const NERegistry::ComponentThreadList& threadList )
+void areg::Model::addThread( const areg::ComponentThreadList& threadList )
 {
     for (uint32_t i = 0; i < threadList.mListThreads.getSize(); ++i)
     {
@@ -1011,19 +1011,19 @@ void NERegistry::Model::addThread( const NERegistry::ComponentThreadList& thread
     }
 }
 
-NERegistry::ComponentThreadEntry & NERegistry::Model::addThread(const String & threadName)
+areg::ComponentThreadEntry & areg::Model::addThread(const areg::String & threadName)
 {
     int32_t index = findThread(threadName);
-    if (index == NECommon::INVALID_INDEX )
+    if (index == areg::INVALID_INDEX )
     {
         index = static_cast<int32_t>(mModelThreads.mListThreads.getSize());
-        mModelThreads.mListThreads.add(NERegistry::ComponentThreadEntry(threadName));
+        mModelThreads.mListThreads.add(areg::ComponentThreadEntry(threadName));
     }
 
     return mModelThreads.mListThreads.getAt(static_cast<uint32_t>(index));
 }
 
-bool NERegistry::Model::removeThread( const String & threadName )
+bool areg::Model::removeThread( const areg::String & threadName )
 {
     bool result = false;
     if ( threadName.isEmpty() == false)
@@ -1042,15 +1042,15 @@ bool NERegistry::Model::removeThread( const String & threadName )
     return result;
 }
 
-const String & NERegistry::Model::getModelName() const
+const areg::String & areg::Model::getModelName() const
 {
     return mModelName;
 }
 
-bool NERegistry::Model::hasRegisteredComponent( const NERegistry::ComponentEntry & entry ) const
+bool areg::Model::hasRegisteredComponent( const areg::ComponentEntry & entry ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
-    for (uint32_t i = 0; (result == NECommon::INVALID_INDEX) && (i < mModelThreads.mListThreads.getSize()); ++i)
+    int32_t result = areg::INVALID_INDEX;
+    for (uint32_t i = 0; (result == areg::INVALID_INDEX) && (i < mModelThreads.mListThreads.getSize()); ++i)
     {
         result = mModelThreads.mListThreads[i].findComponentEntry(entry);
     }
@@ -1058,10 +1058,10 @@ bool NERegistry::Model::hasRegisteredComponent( const NERegistry::ComponentEntry
     return ( result >= 0 );
 }
 
-bool NERegistry::Model::hasRegisteredComponent( const String & roleName ) const
+bool areg::Model::hasRegisteredComponent( const areg::String & roleName ) const
 {
-    int32_t result = NECommon::INVALID_INDEX;
-    for (uint32_t i = 0; (result == NECommon::INVALID_INDEX) && (i < mModelThreads.mListThreads.getSize()); ++i)
+    int32_t result = areg::INVALID_INDEX;
+    for (uint32_t i = 0; (result == areg::INVALID_INDEX) && (i < mModelThreads.mListThreads.getSize()); ++i)
     {
         result = mModelThreads.mListThreads[i].findComponentEntry(roleName);
     }
@@ -1069,17 +1069,17 @@ bool NERegistry::Model::hasRegisteredComponent( const String & roleName ) const
     return ( result >= 0 );
 }
 
-bool NERegistry::Model::isModelLoaded() const
+bool areg::Model::isModelLoaded() const
 {
-    return (mLoadState == NERegistry::Model::ModelState::Loaded);
+    return (mLoadState == areg::Model::ModelState::Loaded);
 }
 
-void NERegistry::Model::markModelLoaded( bool isLoaded /*= true */ )
+void areg::Model::markModelLoaded( bool isLoaded /*= true */ )
 {
     mLoadState = isLoaded ? Model::ModelState::Loaded : Model::ModelState::Unloaded;
 }
 
-void NERegistry::Model::markModelAlive( bool isAlive )
+void areg::Model::markModelAlive( bool isAlive )
 {
     if ( isAlive )
     {
@@ -1091,17 +1091,17 @@ void NERegistry::Model::markModelAlive( bool isAlive )
     }
 }
 
-const NERegistry::ComponentThreadList & NERegistry::Model::getThreadList() const
+const areg::ComponentThreadList & areg::Model::getThreadList() const
 {
     return mModelThreads;
 }
 
-bool NERegistry::Model::setComponentData( const String & roleName, std::any compData )
+bool areg::Model::setComponentData( const areg::String & roleName, std::any compData )
 {
     bool result = false;
     for ( uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++ i )
     {
-        NERegistry::ComponentThreadEntry & entry = mModelThreads.mListThreads.getAt(i);
+        areg::ComponentThreadEntry & entry = mModelThreads.mListThreads.getAt(i);
         if ( entry.setComponentData(roleName, compData) )
         {
             result = true;
@@ -1112,12 +1112,12 @@ bool NERegistry::Model::setComponentData( const String & roleName, std::any comp
     return result;
 }
 
-bool NERegistry::Model::resetComponentData(const String& roleName)
+bool areg::Model::resetComponentData(const areg::String& roleName)
 {
     bool result = false;
     for (uint32_t i = 0; i < mModelThreads.mListThreads.getSize(); ++i)
     {
-        NERegistry::ComponentThreadEntry& entry = mModelThreads.mListThreads.getAt(i);
+        areg::ComponentThreadEntry& entry = mModelThreads.mListThreads.getAt(i);
         if (entry.resetComponentData(roleName))
         {
             result = true;

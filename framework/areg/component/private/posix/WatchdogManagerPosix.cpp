@@ -34,23 +34,23 @@
 // POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
+void areg::WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 {
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
+    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(handle);
     if (posixTimer != nullptr)
     {
         posixTimer->stopTimer();
     }
 }
 
-bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
+bool areg::WatchdogManager::_osSystemTimerStart(areg::Watchdog& watchdog)
 {
     bool result = false;
-    TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
+    areg::os::TimerPosix* posixTimer = reinterpret_cast<areg::os::TimerPosix*>(watchdog.getHandle());
     if (posixTimer != nullptr)
     {
-        Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
-        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_posixWatchdogExpiredRoutine))
+        areg::Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
+        if (posixTimer->startTimer(watchdog, watchdogId, &areg::WatchdogManager::_posixWatchdogExpiredRoutine))
         {
             result = true;
         }
@@ -60,13 +60,13 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 }
 
 #ifdef __APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
+void areg::WatchdogManager::_posixWatchdogExpiredRoutine(areg::os::TimerPosix* posixTimer)
 {
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
+    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
     ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    areg::Watchdog::WATCHDOG_ID watchdogId = static_cast<areg::Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
+    areg::Watchdog::GUARD_ID guardId  = areg::Watchdog::makeGuardId(watchdogId);
+    areg::Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
 
     if (watchdog != nullptr)
     {
@@ -77,14 +77,14 @@ void WatchdogManager::_posixWatchdogExpiredRoutine(TimerPosix* posixTimer)
     }
 }
 #else   // !__APPLE__
-void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
+void areg::WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
 {
-    WatchdogManager& watchdogManager = WatchdogManager::getInstance();
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    areg::WatchdogManager& watchdogManager = areg::WatchdogManager::getInstance();
+    areg::os::TimerPosix * posixTimer = reinterpret_cast<areg::os::TimerPosix *>(argSig.sival_ptr);
     ASSERT(posixTimer != nullptr);
-    Watchdog::WATCHDOG_ID watchdogId = static_cast<Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
-    Watchdog::GUARD_ID guardId  = Watchdog::makeGuardId(watchdogId);
-    Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
+    areg::Watchdog::WATCHDOG_ID watchdogId = static_cast<areg::Watchdog::WATCHDOG_ID>(posixTimer->getContextId());
+    areg::Watchdog::GUARD_ID guardId  = areg::Watchdog::makeGuardId(watchdogId);
+    areg::Watchdog* watchdog          = watchdogManager.mWatchdogResource.findResourceObject(guardId);
 
     if (watchdog != nullptr)
     {

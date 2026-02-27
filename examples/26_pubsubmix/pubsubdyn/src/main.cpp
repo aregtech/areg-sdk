@@ -29,8 +29,8 @@ namespace
 {
     constexpr char const _modelName[]   { "PubSub" };                  //!< The name of model
     constexpr std::string_view  _title  { "PubSub mix features, secondary application..."};
-    const String SecondRole(NEUtilities::generateName(pubsub::PublisherSecond));
-    const String ThirddRole(NEUtilities::generateName(pubsub::PublisherThird));
+    const areg::String SecondRole(areg::generateName(pubsub::PublisherSecond));
+    const areg::String ThirddRole(areg::generateName(pubsub::PublisherThird));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ int main()
     LOGGING_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
-    Application::initApplication( );
+    areg::Application::initApplication( );
 
     do
     {
@@ -96,25 +96,25 @@ int main()
         LOG_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // Output the title
-        Console & console = Console::getInstance();
+        aregext::Console & console = aregext::Console::getInstance();
         console.clearScreen();
         console.outputTxt(pubsub::CoordTitle, _title);
         console.outputTxt(pubsub::CoordSubtitle, pubsub::Separator);
 
         // Set this value to have correct outputs on console, it plays no other role.
-        ComponentLoader::setComponentData(SecondRole, std::make_any<int32_t>(0));
-        ComponentLoader::setComponentData(ThirddRole, std::make_any<int32_t>(1));
+        areg::ComponentLoader::setComponentData(SecondRole, std::make_any<int32_t>(0));
+        areg::ComponentLoader::setComponentData(ThirddRole, std::make_any<int32_t>(1));
 
         // load model to initialize components
-        Application::loadModel(_modelName);
+        areg::Application::loadModel(_modelName);
 
         LOG_DBG("Servicing model is loaded");
 
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
+        areg::Application::waitAppQuit(areg::WAIT_INFINITE);
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        areg::Application::releaseApplication();
 
     } while (false);
 

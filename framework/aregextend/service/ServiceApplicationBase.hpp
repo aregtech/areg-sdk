@@ -25,316 +25,319 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ConnectionProvider;
+namespace areg { class ConnectionProvider; }
 
-//////////////////////////////////////////////////////////////////////////
-// ServiceApplicationBase class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Brief class to create a process that may run as console application,
- *          as well as system service. It extends the SystemServiceBase
- *          and implements basic methods. As well as it provides interface
- *          of configuration listener.
- **/
-class ServiceApplicationBase    : public    SystemServiceBase
-                                , protected ConfigListener
+namespace aregext
 {
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-
+    //////////////////////////////////////////////////////////////////////////
+    // ServiceApplicationBase class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Constructor, initializes the remote service communication instance.
-     * \param   commBase    The instance of the remote service communication object
-     *                      that provides the connection implementation, sends and receives messages.
-     *                      The object is required by base class of the System Service.
+     * \brief   Brief class to create a process that may run as console application,
+     *          as well as system service. It extends the SystemServiceBase
+     *          and implements basic methods. As well as it provides interface
+     *          of configuration listener.
      **/
-    ServiceApplicationBase(ServiceCommunicationBase& commBase);
+    class ServiceApplicationBase    : public    SystemServiceBase
+                                    , protected areg::ConfigListener
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
 
-    virtual ~ServiceApplicationBase() = default;
+        /**
+         * \brief   Constructor, initializes the remote service communication instance.
+         * \param   commBase    The instance of the remote service communication object
+         *                      that provides the connection implementation, sends and receives messages.
+         *                      The object is required by base class of the System Service.
+         **/
+        ServiceApplicationBase(ServiceCommunicationBase& commBase);
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-public:
+        virtual ~ServiceApplicationBase() = default;
 
-    /**
-     * \brief   Reads data from the console and sets in the buffer.
-     * \param[in,out]   buffer  The buffer to input data from console. Should not be nullptr.
-     * \param[in]       bufSize The size of the buffer. Should not be zero.
-     * \returns Returns true if succeeded to read data from the console.
-     **/
-    bool inputConsoleData(char* buffer, uint32_t bufSize);
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
+        /**
+         * \brief   Reads data from the console and sets in the buffer.
+         * \param[in,out]   buffer  The buffer to input data from console. Should not be nullptr.
+         * \param[in]       bufSize The size of the buffer. Should not be zero.
+         * \returns Returns true if succeeded to read data from the console.
+         **/
+        bool inputConsoleData(char* buffer, uint32_t bufSize);
 
-/************************************************************************/
-// ServiceApplicationBase overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Returns list of the options to validate contained in the pair object,
-     *          where the first entry is the pointer to the list and second entry is
-     *          the number of elements in the list
-     **/
-    virtual std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const = 0;
+    /************************************************************************/
+    // ServiceApplicationBase overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Returns the UNICODE name of the service application.
-     **/
-    virtual wchar_t* getServiceNameW() const = 0;
+        /**
+         * \brief   Returns list of the options to validate contained in the pair object,
+         *          where the first entry is the pointer to the list and second entry is
+         *          the number of elements in the list
+         **/
+        virtual std::pair<const OptionParser::OptionSetup*, int32_t> getAppOptions() const = 0;
 
-     /**
-      * \brief   Returns the ASCII name of the service application.
-      **/
-    virtual char* getServiceNameA() const = 0;
+        /**
+         * \brief   Returns the UNICODE name of the service application.
+         **/
+        virtual wchar_t* getServiceNameW() const = 0;
 
-    /**
-     * \brief   Returns the UNICODE display name of the service application.
-     *          This optional display name could be valid only for specific OS.
-     *          For example, in Windows this name is displayed in the list of services.
-     **/
-    virtual wchar_t* getServiceDisplayNameW() const = 0;
+         /**
+          * \brief   Returns the ASCII name of the service application.
+          **/
+        virtual char* getServiceNameA() const = 0;
 
-     /**
-      * \brief   Returns the ASCII display name of the service application.
-      *          This optional display name could be valid only for specific OS.
-      *          For example, in Windows this name is displayed in the list of services.
-      **/
-    virtual char* getServiceDisplayNameA() const = 0;
+        /**
+         * \brief   Returns the UNICODE display name of the service application.
+         *          This optional display name could be valid only for specific OS.
+         *          For example, in Windows this name is displayed in the list of services.
+         **/
+        virtual wchar_t* getServiceDisplayNameW() const = 0;
 
-    /**
-     * \brief   Returns the UNICODE description of the service application.
-     *          This optional service description could be valid only for specific OS.
-     *          For example, in Windows this description is shown in the list of services.
-     **/
-    virtual wchar_t* getServiceDescriptionW() const = 0;
+         /**
+          * \brief   Returns the ASCII display name of the service application.
+          *          This optional display name could be valid only for specific OS.
+          *          For example, in Windows this name is displayed in the list of services.
+          **/
+        virtual char* getServiceDisplayNameA() const = 0;
 
-    /**
-     * \brief   Returns the ASCII description of the service application.
-     *          This optional service description could be valid only for specific OS.
-     *          For example, in Windows this description is shown in the list of services.
-     **/
-    virtual char* getServiceDescriptionA() const = 0;
+        /**
+         * \brief   Returns the UNICODE description of the service application.
+         *          This optional service description could be valid only for specific OS.
+         *          For example, in Windows this description is shown in the list of services.
+         **/
+        virtual wchar_t* getServiceDescriptionW() const = 0;
 
-    /**
-     * \brief   Returns the type of the remote service.
-     *          Valid only for Areg SDK services.
-     **/
-    virtual NERemoteService::RemoteServiceKind getServiceType() const = 0;
+        /**
+         * \brief   Returns the ASCII description of the service application.
+         *          This optional service description could be valid only for specific OS.
+         *          For example, in Windows this description is shown in the list of services.
+         **/
+        virtual char* getServiceDescriptionA() const = 0;
 
-    /**
-     * \brief   Returns the type of the connection of the remote services.
-     *          Valid only for Areg SDK services.
-     **/
-    virtual NERemoteService::ConnectionType getConnectionType() const = 0;
+        /**
+         * \brief   Returns the type of the remote service.
+         *          Valid only for Areg SDK services.
+         **/
+        virtual areg::RemoteServiceKind getServiceType() const = 0;
 
-/************************************************************************/
-// SystemServiceBase overrides
-/************************************************************************/
+        /**
+         * \brief   Returns the type of the connection of the remote services.
+         *          Valid only for Areg SDK services.
+         **/
+        virtual areg::ConnectionType getConnectionType() const = 0;
 
-    /**
-     * \brief   Is the main entry point to install, uninstall, register and start service.
-     *          Normally, called from the main() method.
-     * \param   optStartup  Option that is set to start service. Can be ServiceOption::CMD_Undefined
-     *                      if need to run with default option.
-     * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
-     *                      or need to use default value.
-     * \return  The result of execution.
-     **/
-    int32_t serviceMain(NESystemService::ServiceOption optStartup, const char* argument) override;
+    /************************************************************************/
+    // SystemServiceBase overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Triggered to initialize the service application.
-     * \param   option      The option that was set to run. Can be ServiceOption::CMD_Undefined if unknown or should be ignored.
-     * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
-     * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
-     * \return  Returns true if succeeded to initialize application and the application can run.
-     *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
-     **/
-    bool serviceInitialize(NESystemService::ServiceOption option, const char* value, const char* fileConfig) override;
+        /**
+         * \brief   Is the main entry point to install, uninstall, register and start service.
+         *          Normally, called from the main() method.
+         * \param   optStartup  Option that is set to start service. Can be ServiceOption::CMD_Undefined
+         *                      if need to run with default option.
+         * \param   argument    Option argument. Can be empty or nullptr if no argument is expected
+         *                      or need to use default value.
+         * \return  The result of execution.
+         **/
+        int32_t serviceMain(ServiceOption optStartup, const char* argument) override;
 
-    /**
-     * \brief   Triggered when application is going to exit.
-     **/
-    void serviceRelease() override;
+        /**
+         * \brief   Triggered to initialize the service application.
+         * \param   option      The option that was set to run. Can be ServiceOption::CMD_Undefined if unknown or should be ignored.
+         * \param   value       The option value as a string. Can be empty string or nullptr if should be ignored.
+         * \param   fileConfig  The pointer to the configuration file. Can be empty or nullptr if should be ignored.
+         * \return  Returns true if succeeded to initialize application and the application can run.
+         *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
+         **/
+        bool serviceInitialize(ServiceOption option, const char* value, const char* fileConfig) override;
 
-    /**
-     * \brief   Call to install (register) message router service in the system.
-     * \return  Returns true if registration succeeded.
-     **/
-    bool serviceInstall() override;
+        /**
+         * \brief   Triggered when application is going to exit.
+         **/
+        void serviceRelease() override;
 
-    /**
-     * \brief   Call to uninstall (unregister) message router service in the system.
-     **/
-    void serviceUninstall() override;
+        /**
+         * \brief   Call to install (register) message router service in the system.
+         * \return  Returns true if registration succeeded.
+         **/
+        bool serviceInstall() override;
 
-    /**
-     * \brief   Registers system service in the system.
-     **/
-    bool registerService() override;
+        /**
+         * \brief   Call to uninstall (unregister) message router service in the system.
+         **/
+        void serviceUninstall() override;
 
-    /**
-     * \brief   Opens operating system service DB for further processing.
-     * \return  Returns true if succeeded.
-     **/
-    bool serviceOpen() override;
+        /**
+         * \brief   Registers system service in the system.
+         **/
+        bool registerService() override;
 
-    /**
-     * \brief   Called to start message router service.
-     * \return  Returns true, if started with success.
-     **/
-    bool serviceStart() override;
+        /**
+         * \brief   Opens operating system service DB for further processing.
+         * \return  Returns true if succeeded.
+         **/
+        bool serviceOpen() override;
 
-    /**
-     * \brief   Called to pause message router service.
-     **/
-    void servicePause() override;
+        /**
+         * \brief   Called to start message router service.
+         * \return  Returns true, if started with success.
+         **/
+        bool serviceStart() override;
 
-    /**
-     * \brief   Called to resume paused message router service.
-     **/
-    bool serviceContinue() override;
+        /**
+         * \brief   Called to pause message router service.
+         **/
+        void servicePause() override;
 
-    /**
-     * \brief   Called to stop message router service.
-     **/
-    void serviceStop() override;
+        /**
+         * \brief   Called to resume paused message router service.
+         **/
+        bool serviceContinue() override;
 
-    /**
-     * \brief   Called to shutdown the system service.
-     **/
-    void serviceShutdown() override;
+        /**
+         * \brief   Called to stop message router service.
+         **/
+        void serviceStop() override;
 
-    /**
-     * \brief   Sets the state of message router service.
-     **/
-    bool setState( NESystemService::ServicePhase newState ) override;
+        /**
+         * \brief   Called to shutdown the system service.
+         **/
+        void serviceShutdown() override;
 
-    /**
-     * \brief   Run application as a background process without input or output on console.
-     **/
-    void runService() override;
+        /**
+         * \brief   Sets the state of message router service.
+         **/
+        bool setState( ServicePhase newState ) override;
 
-    /**
-     * \brief   Called to setup service and start service dispatcher.
-     * \return  Returns value indicating the successful state of the operation.
-     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
-     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
-     *          In all other cases it should return RESULT_FAILED_INIT.
-     **/
-    int32_t startServiceDispatcher() override;
+        /**
+         * \brief   Run application as a background process without input or output on console.
+         **/
+        void runService() override;
 
-protected:
+        /**
+         * \brief   Called to setup service and start service dispatcher.
+         * \return  Returns value indicating the successful state of the operation.
+         *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
+         *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
+         *          In all other cases it should return RESULT_FAILED_INIT.
+         **/
+        int32_t startServiceDispatcher() override;
 
-/************************************************************************/
-// ConfigListener protected overrides
-/************************************************************************/
+    protected:
 
-    /**
-     * \brief   Called by configuration manager before the configuration is saved in the file.
-     * \param   config  The instance of configuration manager.
-     **/
-    void prepareSaveConfiguration(ConfigManager& config) override;
+    /************************************************************************/
+    // ConfigListener protected overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Called by configuration manager after the configuration is saved in the file.
-     * \param   config  The instance of configuration manager.
-     **/
-    void postSaveConfiguration(ConfigManager& config) override;
+        /**
+         * \brief   Called by configuration manager before the configuration is saved in the file.
+         * \param   config  The instance of configuration manager.
+         **/
+        void prepareSaveConfiguration(areg::ConfigManager& config) override;
 
-    /**
-     * \brief   Called by configuration manager before the configuration is loaded from the file.
-     * \param   config  The instance of configuration manager.
-     **/
-    void prepareReadConfiguration(ConfigManager& config) override;
+        /**
+         * \brief   Called by configuration manager after the configuration is saved in the file.
+         * \param   config  The instance of configuration manager.
+         **/
+        void postSaveConfiguration(areg::ConfigManager& config) override;
 
-    /**
-     * \brief   Called by configuration manager when configuration is completed to load data from the file.
-     * \param   config  The instance of configuration manager.
-     **/
-    void postReadConfiguration(ConfigManager& config) override;
+        /**
+         * \brief   Called by configuration manager before the configuration is loaded from the file.
+         * \param   config  The instance of configuration manager.
+         **/
+        void prepareReadConfiguration(areg::ConfigManager& config) override;
 
-    /**
-     * \brief   Called by configuration manager after setting read-only and writable properties.
-     *          For example, when the default configuration is set.
-     * \param   listReadonly    The list of read-only properties to set in the configuration.
-     * \param   listWritable    The list of module / process specific properties to set in the configuration;
-     * \param   config          The instance of configuration manager.
-     **/
-    void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+        /**
+         * \brief   Called by configuration manager when configuration is completed to load data from the file.
+         * \param   config  The instance of configuration manager.
+         **/
+        void postReadConfiguration(areg::ConfigManager& config) override;
 
-//////////////////////////////////////////////////////////////////////////
-// OS specific hidden methods.
-//////////////////////////////////////////////////////////////////////////
-private:
+        /**
+         * \brief   Called by configuration manager after setting read-only and writable properties.
+         *          For example, when the default configuration is set.
+         * \param   listReadonly    The list of read-only properties to set in the configuration.
+         * \param   listWritable    The list of module / process specific properties to set in the configuration;
+         * \param   config          The instance of configuration manager.
+         **/
+        void onSetupConfiguration(const areg::ListProperties& listReadonly, const areg::ListProperties& listWritable, areg::ConfigManager& config) override;
 
-    /**
-     * \brief   OS specific validity check of the service.
-     **/
-    bool _osIsValid() const;
+    //////////////////////////////////////////////////////////////////////////
+    // OS specific hidden methods.
+    //////////////////////////////////////////////////////////////////////////
+    private:
 
-    /**
-     * \brief   Called to free engaged resources.
-     **/
-    void _osFreeResources();
+        /**
+         * \brief   OS specific validity check of the service.
+         **/
+        bool _osIsValid() const;
 
-    /**
-     * \brief   OS specific initialization of the service.
-     **/
-    bool _osInitializeService();
+        /**
+         * \brief   Called to free engaged resources.
+         **/
+        void _osFreeResources();
 
-    /**
-     * \brief   OS specific implementation to open service.
-     **/
-    bool _osOpenService();
+        /**
+         * \brief   OS specific initialization of the service.
+         **/
+        bool _osInitializeService();
 
-    /**
-     * \brief   OS specific implementation to create service.
-     **/
-    bool _osCreateService();
+        /**
+         * \brief   OS specific implementation to open service.
+         **/
+        bool _osOpenService();
 
-    /**
-     * \brief   OS specific implementation of deleting service.
-     **/
-    void _osDeleteService();
+        /**
+         * \brief   OS specific implementation to create service.
+         **/
+        bool _osCreateService();
 
-    /**
-     * \brief   Registers service and returns true if handle is valid.
-     *          The method is valid for Windows OS.
-     **/
-    bool _osRegisterService();
+        /**
+         * \brief   OS specific implementation of deleting service.
+         **/
+        void _osDeleteService();
 
-    /**
-     * \brief   OS specific implementation of changing the state of the log collector service.
-     **/
-    bool _osSetState( NESystemService::ServicePhase newState );
+        /**
+         * \brief   Registers service and returns true if handle is valid.
+         *          The method is valid for Windows OS.
+         **/
+        bool _osRegisterService();
 
-    /**
-     * \brief   OS specific implementation to setup the service and start the dispatcher.
-     * \return  Returns value indicating the successful state of the operation.
-     *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
-     *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
-     *          In all other cases it should return RESULT_FAILED_INIT.
-     **/
-    int32_t _osStartServiceDispatcher();
+        /**
+         * \brief   OS specific implementation of changing the state of the log collector service.
+         **/
+        bool _osSetState( ServicePhase newState );
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
-    bool    mServiceSetup;  //!< Flag, indicating whether service si setup or not.
+        /**
+         * \brief   OS specific implementation to setup the service and start the dispatcher.
+         * \return  Returns value indicating the successful state of the operation.
+         *          If returns RESULT_SUCCEEDED, it succeeded to start the service dispatcher (Windows related).
+         *          If returns RESULT_IGNORED, the operation is ignored (case for POSIX or if dispatcher started).
+         *          In all other cases it should return RESULT_FAILED_INIT.
+         **/
+        int32_t _osStartServiceDispatcher();
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE(ServiceApplicationBase);
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        bool    mServiceSetup;  //!< Flag, indicating whether service si setup or not.
 
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE(ServiceApplicationBase);
+    };
+
+} // namespace aregext
 #endif  // AREG_AREGEXTEND_SERVICE_SERVICEAPPLICATIONBASE_HPP

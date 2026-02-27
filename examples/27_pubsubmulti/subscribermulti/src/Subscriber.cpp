@@ -17,32 +17,32 @@
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
 DEF_LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
-Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         (entry, owner)
-    , SubscriberBase    (entry.mDependencyServices[0], static_cast<Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
+Subscriber::Subscriber( const areg::ComponentEntry & entry, areg::ComponentThread & owner )
+    : areg::Component         (entry, owner)
+    , SubscriberBase    (entry.mDependencyServices[0], static_cast<areg::Component &>(self()), pubsub::Coord1Integer, pubsub::Coord1String)
     , mStateEventCount  ( 0 )
-    , mSecond           ( entry.mDependencyServices[1], static_cast<Component &>(self()) )
+    , mSecond           ( entry.mDependencyServices[1], static_cast<areg::Component &>(self()) )
 {
 }
 
-bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, ProxyBase & proxy )
+bool Subscriber::serviceConnected( areg::ServiceConnectionState status, areg::ProxyBase & proxy )
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
 
-    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
+    LOG_DBG("Service connection with status [ %s ]. If connected assign on provider state change", areg::getString(status));
 
-    bool connected = NEService::isServiceConnected(status);
+    bool connected = areg::isServiceConnected(status);
     notifyOnServiceProviderStateUpdate(connected);
 
-    Console & console = Console::getInstance();
+    aregext::Console & console = aregext::Console::getInstance();
 
     if (connected == false)
     {
         notifyOnStringOnChangeUpdate(false);
         notifyOnIntegerAlwaysUpdate(false);
 
-        console.outputMsg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), NEService::getString(status));
+        console.outputMsg(pubsub::CoordStatus, pubsub::FmtDisconnected.data(), areg::getString(status));
     }
     else
     {
@@ -59,21 +59,21 @@ bool Subscriber::serviceConnected( NEService::ServiceConnectionState status, Pro
     return true;
 }
 
-void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, NEService::DataState state)
+void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderState, areg::DataState state)
 {
     LOG_SCOPE(example_27_pubsubmulti_subscribermulti_Subscriber_onServiceProviderStateUpdate);
 
     ++ mStateEventCount;
-    String publisherState = state == NEService::DataState::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
+    areg::String publisherState = state == areg::DataState::DataIsOK ? PubSub::getString(ServiceProviderState) : pubsub::StrInvalid.data();
 
     LOG_DBG("Service provider state [ %s ], event count [ %u ]", publisherState.getString(), mStateEventCount);
 
-    Console & console = Console::getInstance();    
-    String stateConnect = pubsub::TxtConnected;
+    aregext::Console & console = aregext::Console::getInstance();    
+    areg::String stateConnect = pubsub::TxtConnected;
     if (PubSubClientBase::isConnected() == false)
     {
         ASSERT(PubSubClientBase::getProxy() != nullptr);
-        stateConnect = NEService::getString(PubSubClientBase::getProxy()->getConnectionStatus());
+        stateConnect = areg::getString(PubSubClientBase::getProxy()->getConnectionStatus());
     }
 
     console.outputMsg(  pubsub::CoordStatus
@@ -83,7 +83,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
                       , mStateEventCount);
     console.refreshScreen();
 
-    if (state == NEService::DataState::DataIsOK)
+    if (state == areg::DataState::DataIsOK)
     {
 
         if (isIntegerAlwaysValid() == false)
@@ -104,7 +104,7 @@ void Subscriber::onServiceProviderStateUpdate(PubSub::RunState ServiceProviderSt
         {
             notifyOnStringOnChangeUpdate(false);
             notifyOnIntegerAlwaysUpdate(false);
-            Application::signalAppQuit();
+            areg::Application::signalAppQuit();
         }
     }
 }

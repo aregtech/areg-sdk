@@ -27,11 +27,11 @@
 #endif // _MSC_VER
 
 //! \brief Thread to read buffer and output message
-class HelloThread : public Thread, protected ThreadConsumer
+class HelloThread : public areg::Thread, protected areg::ThreadConsumer
 {
 public:
-    explicit HelloThread(SharedBuffer& buffer)
-        : Thread(*this, "HelloThread") // set consumer and name
+    explicit HelloThread(areg::SharedBuffer& buffer)
+        : areg::Thread(*this, "HelloThread") // set consumer and name
         , mBuffer(buffer)
     {
     }
@@ -46,7 +46,7 @@ protected:
 
         int32_t numDigit{};
         float numPI{};
-        String strMsg{};
+        areg::String strMsg{};
 
         mBuffer.moveToBegin();
         mBuffer >> numDigit >> numPI >> strMsg;
@@ -63,7 +63,7 @@ protected:
     }
 
 private:
-    SharedBuffer& mBuffer;
+    areg::SharedBuffer& mBuffer;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -73,16 +73,16 @@ int main()
 {
     std::cout << "Demo: write and read data from binary buffer..." << std::endl;
 
-    SharedBuffer buffer;
-    buffer << 1234 << static_cast<float>(M_PI) << String("!!!Hello World!!!");
+    areg::SharedBuffer buffer;
+    buffer << 1234 << static_cast<float>(M_PI) << areg::String("!!!Hello World!!!");
 
     HelloThread aThread(buffer);
 
     // Start thread and wait until it starts
-    aThread.createThread(NECommon::WAIT_INFINITE);
+    aThread.createThread(areg::WAIT_INFINITE);
 
     // Stop thread and clean resources
-    aThread.shutdownThread(NECommon::WAIT_INFINITE);
+    aThread.shutdownThread(areg::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

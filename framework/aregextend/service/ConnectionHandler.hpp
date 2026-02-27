@@ -23,72 +23,75 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class SocketAccepted;
+namespace areg { class SocketAccepted; }
 
-//////////////////////////////////////////////////////////////////////////
-// ConnectionHandler class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The class to handler server side connection.
- *          It contains callbacks when needs to check client connection
- *          or when connection is lost.
- **/
-class ConnectionHandler
+namespace aregext
 {
-//////////////////////////////////////////////////////////////////////////
-// Protected constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
+    //////////////////////////////////////////////////////////////////////////
+    // ConnectionHandler class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default constructor
+     * \brief   The class to handler server side connection.
+     *          It contains callbacks when needs to check client connection
+     *          or when connection is lost.
      **/
-    ConnectionHandler() = default;
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ConnectionHandler() = default;
+    class ConnectionHandler
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Protected constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Default constructor
+         **/
+        ConnectionHandler() = default;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~ConnectionHandler() = default;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// ConnectionHandler class overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides
+    //////////////////////////////////////////////////////////////////////////
+    public:
+    /************************************************************************/
+    // ConnectionHandler class overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Call to check whether new client connection should be accepted
-     *          or rejected. Once client is accepted, server will start to receive
-     *          messages from client. Otherwise, connection with client is immediately
-     *          closed and communication is stopped.
-     * \param   clientSocket    Accepted client socket object to check.
-     * \return  Returns true if client connection can be accepted. To reject and close
-     *          connection with client, the method should return false.
-     **/
-    virtual bool canAcceptConnection( const SocketAccepted & clientSocket ) = 0;
+        /**
+         * \brief   Call to check whether new client connection should be accepted
+         *          or rejected. Once client is accepted, server will start to receive
+         *          messages from client. Otherwise, connection with client is immediately
+         *          closed and communication is stopped.
+         * \param   clientSocket    Accepted client socket object to check.
+         * \return  Returns true if client connection can be accepted. To reject and close
+         *          connection with client, the method should return false.
+         **/
+        virtual bool canAcceptConnection( const areg::SocketAccepted & clientSocket ) = 0;
 
-    /**
-     * \brief   Triggered, when lost connection with client.
-     *          Passed clientSocket parameter specifies client socket, which lost connection.
-     * \param   clientSocket    Client socket object, which lost connection.
-     **/
-    virtual void connectionLost( SocketAccepted & clientSocket ) = 0;
+        /**
+         * \brief   Triggered, when lost connection with client.
+         *          Passed clientSocket parameter specifies client socket, which lost connection.
+         * \param   clientSocket    Client socket object, which lost connection.
+         **/
+        virtual void connectionLost( areg::SocketAccepted & clientSocket ) = 0;
 
-    /**
-     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
-     **/
-    virtual void connectionFailure() = 0;
+        /**
+         * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
+         **/
+        virtual void connectionFailure() = 0;
 
-    /**
-     * \brief   Called when need to disconnect and unregister all service providers and service consumers.
-     **/
-    virtual void disconnectServices() = 0;
+        /**
+         * \brief   Called when need to disconnect and unregister all service providers and service consumers.
+         **/
+        virtual void disconnectServices() = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( ConnectionHandler );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( ConnectionHandler );
+    };
 
+} // namespace aregext
 #endif  // AREG_AREGEXTEND_SERVICE_CONNECTIONHANDLER_HPP
