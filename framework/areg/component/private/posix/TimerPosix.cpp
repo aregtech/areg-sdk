@@ -44,7 +44,7 @@ namespace
     //!< Invalid dispatch queue.
     constexpr dispatch_queue_t      INVALID_DISPATCH_QUEUE      { nullptr };
     //!< Invalid timer callback.
-    constexpr FuncPosixTimerRoutine INVALID_TIMER_CALLBACK      { nullptr };
+    constexpr areg::os::FuncPosixTimerRoutine INVALID_TIMER_CALLBACK      { nullptr };
 }
 #else   // !__APPLE__
 namespace
@@ -81,7 +81,7 @@ namespace areg::os
         _destroyTimer();
     }
 
-    bool TimerPosix::createTimer( FuncPosixTimerRoutine funcTimer )
+    bool TimerPosix::createTimer( areg::os::FuncPosixTimerRoutine funcTimer )
     {
     	SpinAutolockPosix lock(mLock);
     #ifdef __APPLE__
@@ -92,7 +92,7 @@ namespace areg::os
     #endif  // __APPLE__
     }
 
-    bool TimerPosix::startTimer( areg::TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer )
+    bool TimerPosix::startTimer( areg::TimerBase & context, id_type contextId, areg::os::FuncPosixTimerRoutine funcTimer )
     {
     	SpinAutolockPosix lock(mLock);
 
@@ -180,7 +180,7 @@ namespace areg::os
         }
     }
 
-    bool TimerPosix::_createTimer( FuncPosixTimerRoutine funcTimer )
+    bool TimerPosix::_createTimer( areg::os::FuncPosixTimerRoutine funcTimer )
     {
     #ifdef __APPLE__
         mTimerCallback = funcTimer;
@@ -229,7 +229,7 @@ namespace areg::os
 
                     // Capture the callback and 'this' pointer to call when timer fires.
                     // This allows TimerManager and WatchdogManager to process the expired timer.
-                    FuncPosixTimerRoutine callback = mTimerCallback;
+                    areg::os::FuncPosixTimerRoutine callback = mTimerCallback;
                     TimerPosix* timerPtr = this;
                     dispatch_source_set_event_handler(mTimerSource, ^{
                         if (callback != nullptr)

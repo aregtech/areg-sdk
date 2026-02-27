@@ -25,6 +25,7 @@
 #include "areg/base/private/posix/SpinLockPosix.hpp"
 #include <sys/types.h>
 #include <time.h>
+#include <signal.h>
 
 #ifdef __APPLE__
     #include <dispatch/dispatch.h>
@@ -34,26 +35,26 @@
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
 namespace areg { class TimerBase; }
-class TimerPosix;
+namespace areg::os { class TimerPosix; }
 namespace areg { class TimerManager; }
 namespace areg { class WatchdogManager; }
 
-#ifdef __APPLE__
-/**
- * \brief   The macOS timer callback function type triggered when timer expires.
- *          The callback receives the pointer to TimerPosix object.
- * \param   timerPtr    Pointer to the TimerPosix object that expired.
- */
-typedef void (*FuncPosixTimerRoutine)(TimerPosix* timerPtr);
-#else   // !__APPLE__
-/**
- * \brief   The POSIX timer routing method triggered in a separate thread.
- */
-typedef void (*FuncPosixTimerRoutine)( union sigval );
-#endif  // __APPLE__
-
 namespace areg::os
-{
+{ 
+    #ifdef __APPLE__
+    /**
+     * \brief   The macOS timer callback function type triggered when timer expires.
+     *          The callback receives the pointer to TimerPosix object.
+     * \param   timerPtr    Pointer to the TimerPosix object that expired.
+     */
+    typedef void (*FuncPosixTimerRoutine)(TimerPosix* timerPtr);
+    #else   // !__APPLE__
+    /**
+     * \brief   The POSIX timer routing method triggered in a separate thread.
+     */
+    typedef void (*FuncPosixTimerRoutine)( union sigval );
+    #endif  // __APPLE__
+
     //////////////////////////////////////////////////////////////////////////
     // TimerPosix class declaration.
     //////////////////////////////////////////////////////////////////////////
@@ -130,7 +131,7 @@ namespace areg::os
          * \param   funcTimer   The callback function to trigger when timer expires.
          * \return  Returns true if succeeded to created timer.
          **/
-        bool createTimer( FuncPosixTimerRoutine funcTimer );
+        bool createTimer( areg::os::FuncPosixTimerRoutine funcTimer );
 
         /**
          * \brief   Creates and starts timer with timeout and period count values specified in
@@ -142,7 +143,7 @@ namespace areg::os
          * \param   funcTimer   The callback function to trigger when timer expires.
          * \return  Returns true if timer is created and started with success.
          **/
-        bool startTimer( areg::TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
+        bool startTimer( areg::TimerBase & context, id_type contextId, areg::os::FuncPosixTimerRoutine funcTimer );
 
         /**
          * \brief   Restarts the timer if the timeout and the period values are not zero.
@@ -187,7 +188,7 @@ namespace areg::os
          * \param   funcTimer   The callback function to trigger when timer expires.
          * \return  Returns true if succeeded to create timer.
          **/
-        inline bool _createTimer( FuncPosixTimerRoutine funcTimer );
+        inline bool _createTimer( areg::os::FuncPosixTimerRoutine funcTimer );
 
         /**
          * \brief	Initializes and starts the timer.
@@ -227,7 +228,7 @@ namespace areg::os
         /**
          * \brief   The callback function to call when timer expires.
          */
-        FuncPosixTimerRoutine   mTimerCallback;
+        areg::os::FuncPosixTimerRoutine   mTimerCallback;
     #else   // !__APPLE__
         /**
          * \brief   The timer ID, set when creates timer.
