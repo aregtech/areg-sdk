@@ -38,7 +38,7 @@ namespace areg { class TimerBase; }
  *          It requires to run as separate thread.
  **/
 class TimerManagerBase  : protected areg::DispatcherThread
-                        , protected TimerManagerEventConsumer
+                        , protected areg::TimerManagerEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Runtime declaration

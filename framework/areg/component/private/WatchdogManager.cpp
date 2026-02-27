@@ -69,8 +69,8 @@ namespace areg
         if (watchdogManager.isWatchdogManagerStarted())
         {
             watchdogManager._registerWatchdog(watchdog);
-            result = TimerManagerEvent::sendEvent( TimerManagerEventData(&watchdog)
-                                                , static_cast<TimerManagerEventConsumer&>(watchdogManager)
+            result = areg::TimerManagerEvent::sendEvent( areg::TimerManagerEventData(&watchdog)
+                                                , static_cast<areg::TimerManagerEventConsumer&>(watchdogManager)
                                                 , static_cast<areg::DispatcherThread&>(watchdogManager));
         }
 
@@ -129,7 +129,7 @@ namespace areg
         mWatchdogResource.unlock();
     }
 
-    void WatchdogManager::processEvent(const TimerManagerEventData & data)
+    void WatchdogManager::processEvent(const areg::TimerManagerEventData & data)
     {
         areg::Watchdog* watchdog = static_cast<areg::Watchdog*>(data.getTimer());
         ASSERT(watchdog != nullptr);

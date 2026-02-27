@@ -77,8 +77,8 @@ bool TimerManager::startTimer(areg::Timer &timer, const areg::DispatcherThread &
         if ( timerManager._registerTimer( timer, whichThread ) )
         {
             LOG_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
-            result = TimerManagerEvent::sendEvent( TimerManagerEventData(&timer)
-                                                 , static_cast<TimerManagerEventConsumer &>(timerManager)
+            result = areg::TimerManagerEvent::sendEvent( areg::TimerManagerEventData(&timer)
+                                                 , static_cast<areg::TimerManagerEventConsumer &>(timerManager)
                                                  , static_cast<areg::DispatcherThread &>(timerManager) );
         }
         else
@@ -176,7 +176,7 @@ void TimerManager::_removeAllTimers()
     mTimerResource.unlock();
 }
 
-void TimerManager::processEvent( const TimerManagerEventData & data )
+void TimerManager::processEvent( const areg::TimerManagerEventData & data )
 {
     LOG_SCOPE(areg_component_private_TimerManager_processEvent);
     areg::Timer* timer = static_cast<areg::Timer*>(data.getTimer());

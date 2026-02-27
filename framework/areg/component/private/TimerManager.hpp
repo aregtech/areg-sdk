@@ -168,7 +168,7 @@ protected:
      * \brief   Automatically triggered when event is dispatched by timer thread
      * \param   data    The data object passed in event.
      **/
-    void processEvent( const TimerManagerEventData & data) override;
+    void processEvent( const areg::TimerManagerEventData & data) override;
 
 /************************************************************************/
 // DispatcherThread overrides
