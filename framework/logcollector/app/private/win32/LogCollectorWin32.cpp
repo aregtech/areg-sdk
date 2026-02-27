@@ -52,7 +52,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     static_cast<void>(envp);
     int32_t result{ aregext::ServiceApplicationBase::RESULT_FAILED_RUN };
     char ** argvTemp = aregext::convertArguments<TCHAR>(argv, argc);
-    LogCollector& logger = LogCollector::getInstance();
+    logcollector::LogCollector& logger = logcollector::LogCollector::getInstance();
     logger.parseOptions(static_cast<int32_t>(argc), argvTemp, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     result = logger.serviceMain(logger.getCurrentOption(), nullptr);
     aregext::deleteArguments(argvTemp, argc);
@@ -62,7 +62,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 #else   // _MINGW
 int main(int argc, char* argv[], char* envp[])
 {
-    LogCollector& logger = LogCollector::getInstance();
+    logcollector::LogCollector& logger = logcollector::LogCollector::getInstance();
     logger.parseOptions(argc, argv, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));
     return logger.serviceMain(logger.getCurrentOption(), nullptr);
 }
@@ -72,7 +72,7 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-        LogCollector& logger = LogCollector::getInstance();
+        logcollector::LogCollector& logger = logcollector::LogCollector::getInstance();
         logger.setState(aregext::ServicePhase::Starting);
         char** argvTemp = aregext::convertArguments<TCHAR>(argv, static_cast<int32_t>(argc));
         logger.serviceMain(aregext::ServiceOption::CMD_Service, argvTemp != nullptr ? argvTemp[0] : nullptr);
@@ -90,19 +90,19 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
     switch (CtrlCode)
     {
     case SERVICE_CONTROL_STOP:
-        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceStop);
+        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceStop);
         break;
 
     case SERVICE_CONTROL_PAUSE:
-        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServicePause);
+        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServicePause);
         break;
 
     case SERVICE_CONTROL_CONTINUE:
-        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceContinue);
+        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceContinue);
         break;
 
     case SERVICE_CONTROL_SHUTDOWN:
-        LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceShutdown);
+        logcollector::LogCollector::getInstance().controlService(aregext::SystemServiceBase::ServiceControl::ServiceShutdown);
         break;
 
     default:
