@@ -129,17 +129,17 @@ namespace areg
         /**
          * \return  Returns the layout object to print messages.
          **/
-        inline const LayoutManager & getLayoutMessage() const;
+        inline const areg::LayoutManager & getLayoutMessage() const;
 
         /**
          * \return  Returns the layout object to print "enter scope" message.
          **/
-        inline const LayoutManager & getLayoutEnterScope() const;
+        inline const areg::LayoutManager & getLayoutEnterScope() const;
 
         /**
          * \return  Returns the layout object to output "exit scope" message.
          **/
-        inline const LayoutManager & getLayoutExitScope() const;
+        inline const areg::LayoutManager & getLayoutExitScope() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Protected overrides
@@ -169,15 +169,15 @@ namespace areg
         /**
          * \brief   Message layouts to create messages
          **/
-        LayoutManager       mLayoutsMessage;
+        areg::LayoutManager       mLayoutsMessage;
         /**
          * \brief   Message layouts to create "Enter scope" message
          **/
-        LayoutManager       mLayoutsScopeEnter;
+        areg::LayoutManager       mLayoutsScopeEnter;
         /**
          * \brief   Message layouts to create "Exit scope" message
          **/
-        LayoutManager       mLayoutsScopeExit;
+        areg::LayoutManager       mLayoutsScopeExit;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden / Forbidden calls.
@@ -201,17 +201,17 @@ namespace areg
         return mLogConfiguration;
     }
 
-    inline const LayoutManager & LoggerBase::getLayoutMessage() const
+    inline const areg::LayoutManager & LoggerBase::getLayoutMessage() const
     {
         return mLayoutsMessage;
     }
 
-    inline const LayoutManager & LoggerBase::getLayoutEnterScope() const
+    inline const areg::LayoutManager & LoggerBase::getLayoutEnterScope() const
     {
         return mLayoutsScopeEnter;
     }
 
-    inline const LayoutManager & LoggerBase::getLayoutExitScope() const
+    inline const areg::LayoutManager & LoggerBase::getLayoutExitScope() const
     {
         return mLayoutsScopeExit;
     }

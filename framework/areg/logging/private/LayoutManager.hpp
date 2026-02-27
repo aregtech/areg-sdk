@@ -29,100 +29,103 @@
 namespace areg { class LogLayout; }
 namespace areg { class OutStream; }
 
-//////////////////////////////////////////////////////////////////////////
-// ClientService class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Layout Manager keeps list of layout objects to format output message
- *          The Layouts are created based on data in tracing configuration file.
- *          Currently, there are 3 types of layout manager used:
- *              - Message layout, format to display output message
- *              - Enter scope layout, format to display enter scope message
- *              - Exit scope layout, format to display exit scope message
- **/
-class LayoutManager
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Local types and constants.
-//////////////////////////////////////////////////////////////////////////
-private:
-    using ListLayouts   = areg::ArrayList<areg::LogLayout *>;
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
+    //////////////////////////////////////////////////////////////////////////
+    // ClientService class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Default constructor
+     * \brief   The Layout Manager keeps list of layout objects to format output message
+     *          The Layouts are created based on data in tracing configuration file.
+     *          Currently, there are 3 types of layout manager used:
+     *              - Message layout, format to display output message
+     *              - Enter scope layout, format to display enter scope message
+     *              - Exit scope layout, format to display exit scope message
      **/
-    LayoutManager() = default;
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~LayoutManager() ;
+    class LayoutManager
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Local types and constants.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        using ListLayouts   = ArrayList<LogLayout *>;
 
-//////////////////////////////////////////////////////////////////////////
-// Attributes and operations
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Creates list of layout objects outside of passed formatting string.
-     * \param   layoutFormat    The formatting string to parse and crate layout objects.
-     * \return  Returns true if after parsing the layout manager contains at least one layout object.
-     **/
-    bool createLayouts( const char * layoutFormat );
-    bool createLayouts( const areg::String & layoutFormat );
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Default constructor
+         **/
+        LayoutManager() = default;
+        /**
+         * \brief   Destructor
+         **/
+        virtual ~LayoutManager() ;
 
-    /**
-     * \brief   Release and delete list of layout objects.
-     **/
-    void deleteLayouts();
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes and operations
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Creates list of layout objects outside of passed formatting string.
+         * \param   layoutFormat    The formatting string to parse and crate layout objects.
+         * \return  Returns true if after parsing the layout manager contains at least one layout object.
+         **/
+        bool createLayouts( const char * layoutFormat );
+        bool createLayouts( const String & layoutFormat );
 
-    /**
-     * \brief   Logs the message in the streaming object by using layout objects.
-     *          It will go through all layouts to generate message and write in stream.
-     * \param   logMsg  The logging message to stream.
-     * \param   stream  The streaming object to write output message.
-     **/
-    void logMessage( const areg::LogEntry & logMsg, areg::OutStream & stream ) const;
+        /**
+         * \brief   Release and delete list of layout objects.
+         **/
+        void deleteLayouts();
 
-    /**
-     * \brief   Returns true if layout manager is valid.
-     *          The layout manager is valid if it has at least one layout object.
-     **/
-    inline bool isValid() const;
+        /**
+         * \brief   Logs the message in the streaming object by using layout objects.
+         *          It will go through all layouts to generate message and write in stream.
+         * \param   logMsg  The logging message to stream.
+         * \param   stream  The streaming object to write output message.
+         **/
+        void logMessage( const LogEntry & logMsg, OutStream & stream ) const;
 
-private:
+        /**
+         * \brief   Returns true if layout manager is valid.
+         *          The layout manager is valid if it has at least one layout object.
+         **/
+        inline bool isValid() const;
 
-    /**
-     * \brief   Instantiates and creates layout objects out of layout format string.
-     * \param   layoutFormat    The layout string to parse and create objects.
-     **/
-    inline void _createLayouts(char* layoutFormat);
+    private:
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   The list of layouts
-     **/
-    ListLayouts     mLayoutList;
+        /**
+         * \brief   Instantiates and creates layout objects out of layout format string.
+         * \param   layoutFormat    The layout string to parse and create objects.
+         **/
+        inline void _createLayouts(char* layoutFormat);
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    AREG_NOCOPY_NOMOVE( LayoutManager );
-};
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   The list of layouts
+         **/
+        ListLayouts     mLayoutList;
 
-//////////////////////////////////////////////////////////////////////////
-// LayoutManager class inline methods
-//////////////////////////////////////////////////////////////////////////
-inline bool LayoutManager::isValid() const
-{
-    return (mLayoutList.isEmpty() == false);
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        AREG_NOCOPY_NOMOVE( LayoutManager );
+    };
 
-#endif  // AREG_LOGS
+    //////////////////////////////////////////////////////////////////////////
+    // LayoutManager class inline methods
+    //////////////////////////////////////////////////////////////////////////
+    inline bool LayoutManager::isValid() const
+    {
+        return (mLayoutList.isEmpty() == false);
+    }
+
+    #endif  // AREG_LOGS
+} // namespace areg
 #endif  // AREG_LOGGING_PRIVATE_LAYOUTMANAGER_HPP
