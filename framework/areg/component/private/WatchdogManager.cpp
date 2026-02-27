@@ -88,7 +88,7 @@ namespace areg
     //////////////////////////////////////////////////////////////////////////
 
     WatchdogManager::WatchdogManager()
-        : TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME)
+        : areg::TimerManagerBase(WatchdogManager::WATCHDOG_THREAD_NAME)
 
         , mWatchdogResource()
     {
@@ -165,7 +165,7 @@ namespace areg
             _removeAllWatchdogs();
         }
 
-        TimerManagerBase::readyForEvents(isReady);
+        areg::TimerManagerBase::readyForEvents(isReady);
     }
 
 } // namespace areg

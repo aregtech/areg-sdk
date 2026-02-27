@@ -28,113 +28,116 @@
  ************************************************************************/
 namespace areg { class TimerBase; }
 
-//////////////////////////////////////////////////////////////////////////
-// TimerManager class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The Time Manager Base class to start and stop system timers,
- *          and process event messages. The base class is extended by
- *          Timer Manager and Watchdog Manager to execute specific tasks.
- *          It requires to run as separate thread.
- **/
-class TimerManagerBase  : protected areg::DispatcherThread
-                        , protected areg::TimerManagerEventConsumer
+namespace areg
 {
-//////////////////////////////////////////////////////////////////////////
-// Runtime declaration
-//////////////////////////////////////////////////////////////////////////
-    AREG_DECLARE_RUNTIME(TimerManagerBase)
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-protected:
-
+    //////////////////////////////////////////////////////////////////////////
+    // TimerManager class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   protected Constructor / destructor
+     * \brief   The Time Manager Base class to start and stop system timers,
+     *          and process event messages. The base class is extended by
+     *          Timer Manager and Watchdog Manager to execute specific tasks.
+     *          It requires to run as separate thread.
      **/
-    TimerManagerBase( const areg::String & threadName );
-    virtual ~TimerManagerBase() = default;
+    class TimerManagerBase  : protected areg::DispatcherThread
+                            , protected areg::TimerManagerEventConsumer
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Runtime declaration
+    //////////////////////////////////////////////////////////////////////////
+        AREG_DECLARE_RUNTIME(TimerManagerBase)
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides.
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// DispatcherThread overrides
-/************************************************************************/
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / Destructor
+    //////////////////////////////////////////////////////////////////////////
+    protected:
 
-    /**
-     * \brief	Posts event and delivers to its target thread / process.
-     * \param	eventElem	Event object to post.
-     * \return	Returns true if target was found and the event
-     *          delivered with success. Otherwise it returns false.
-     **/
-    bool postEvent( areg::Event & eventElem ) override;
+        /**
+         * \brief   protected Constructor / destructor
+         **/
+        TimerManagerBase( const areg::String & threadName );
+        virtual ~TimerManagerBase() = default;
 
-    /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
-     **/
-    bool runDispatcher() override;
+    //////////////////////////////////////////////////////////////////////////
+    // Overrides.
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+    /************************************************************************/
+    // DispatcherThread overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
-     **/
-    void readyForEvents( bool isReady ) override;
+        /**
+         * \brief	Posts event and delivers to its target thread / process.
+         * \param	eventElem	Event object to post.
+         * \return	Returns true if target was found and the event
+         *          delivered with success. Otherwise it returns false.
+         **/
+        bool postEvent( areg::Event & eventElem ) override;
 
-    /**
-     * \brief   Starts Timer Manager Thread it is not started yet.
-     * \return  Returns true if Timer Manager Thread is started and ready to process events.
-     **/
-    bool startTimerManagerThread();
+        /**
+         * \brief	Triggered when dispatcher starts running. 
+         *          In this function runs main dispatching loop.
+         *          Events are picked and dispatched here.
+         *          Override if logic should be changed.
+         * \return	Returns true if Exit Event is signaled.
+         **/
+        bool runDispatcher() override;
 
-    /**
-     * \brief   Stops Timer Manager Thread. Cancels and stops all timers.
-     *          If 'waitComplete' is set to True, the calling thread is
-     *          blocked until Timer Manager thread completes jobs and cleans resources.
-     *          Otherwise, this triggers stop and exit events, and immediately returns.
-     * \param   waitComplete    If true, waits for Timer Manager Thread to complete the jobs
-     *                          and exit threads. Otherwise, it triggers exit and returns.
-     **/
-    void stopTimerManagerThread( bool waitComplete );
+        /**
+         * \brief   Call to enable or disable event dispatching threads to receive events.
+         *          Override if need to make event dispatching preparation job.
+         * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+         **/
+        void readyForEvents( bool isReady ) override;
 
-    /**
-     * \brief   The calling thread is blocked until Timer Manager Thread did not
-     *          complete the job and exit. This should be called if previously
-     *          it was requested to stop the Timer Manager Thread without waiting for completion.
-     **/
-    void waitCompletion();
+        /**
+         * \brief   Starts Timer Manager Thread it is not started yet.
+         * \return  Returns true if Timer Manager Thread is started and ready to process events.
+         **/
+        bool startTimerManagerThread();
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden operations. Called from Timer Thread.
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Returns TimerManager object. for internal calls.
-     **/
-    inline TimerManagerBase & self();
+        /**
+         * \brief   Stops Timer Manager Thread. Cancels and stops all timers.
+         *          If 'waitComplete' is set to True, the calling thread is
+         *          blocked until Timer Manager thread completes jobs and cleans resources.
+         *          Otherwise, this triggers stop and exit events, and immediately returns.
+         * \param   waitComplete    If true, waits for Timer Manager Thread to complete the jobs
+         *                          and exit threads. Otherwise, it triggers exit and returns.
+         **/
+        void stopTimerManagerThread( bool waitComplete );
 
-//////////////////////////////////////////////////////////////////////////
-//  Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    TimerManagerBase() = delete;
-    AREG_NOCOPY_NOMOVE( TimerManagerBase );
-};
+        /**
+         * \brief   The calling thread is blocked until Timer Manager Thread did not
+         *          complete the job and exit. This should be called if previously
+         *          it was requested to stop the Timer Manager Thread without waiting for completion.
+         **/
+        void waitCompletion();
 
-//////////////////////////////////////////////////////////////////////////
-// TimerManager class inline functions implementation
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden operations. Called from Timer Thread.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Returns TimerManager object. for internal calls.
+         **/
+        inline TimerManagerBase & self();
 
-inline TimerManagerBase& TimerManagerBase::self()
-{
-    return (*this);
-}
+    //////////////////////////////////////////////////////////////////////////
+    //  Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        TimerManagerBase() = delete;
+        AREG_NOCOPY_NOMOVE( TimerManagerBase );
+    };
 
+    //////////////////////////////////////////////////////////////////////////
+    // TimerManager class inline functions implementation
+    //////////////////////////////////////////////////////////////////////////
+
+    inline TimerManagerBase& TimerManagerBase::self()
+    {
+        return (*this);
+    }
+
+} // namespace areg
 #endif  // AREG_COMPONENT_PRIVATE_TIMERMANAGERBASE_HPP

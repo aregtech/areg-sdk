@@ -32,7 +32,7 @@ namespace areg::os { class TimerPosix; }
 
 namespace areg
 {
-    class WatchdogManager   : protected TimerManagerBase
+    class WatchdogManager   : protected areg::TimerManagerBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Predefined constants and types

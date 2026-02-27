@@ -104,7 +104,7 @@ void TimerManager::stopTimer( areg::Timer &timer )
 //////////////////////////////////////////////////////////////////////////
 
 TimerManager::TimerManager()
-    : TimerManagerBase  ( TimerManager::TIMER_THREAD_NAME )
+    : areg::TimerManagerBase  ( TimerManager::TIMER_THREAD_NAME )
 
     , mTimerResource( )
 {
@@ -229,5 +229,5 @@ void TimerManager::readyForEvents( bool isReady )
         _removeAllTimers( );
     }
 
-    TimerManagerBase::readyForEvents(isReady);
+    areg::TimerManagerBase::readyForEvents(isReady);
 }

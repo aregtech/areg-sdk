@@ -52,7 +52,7 @@ namespace areg::os { class TimerPosix; }
  *              the queue of Timer Consumer Thread.
  *
  **/
-class TimerManager  : protected TimerManagerBase
+class TimerManager  : protected areg::TimerManagerBase
 {
 
 //////////////////////////////////////////////////////////////////////////
