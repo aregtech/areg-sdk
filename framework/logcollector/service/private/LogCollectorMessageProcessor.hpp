@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogCollectorServerService;
+namespace logcollector { class LogCollectorServerService; }
 namespace areg { class RemoteMessage; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ public:
      * \brief   Initializes the Log Collector  message processor.
      *          Requires the instance of Log Collector service object.
      **/
-    LogCollectorMessageProcessor(LogCollectorServerService & loggerService);
+    LogCollectorMessageProcessor(logcollector::LogCollectorServerService & loggerService);
 
     ~LogCollectorMessageProcessor() = default;
 
@@ -195,7 +195,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The instance of the Log Collector service.
-    LogCollectorServerService & mLoggerService;
+    logcollector::LogCollectorServerService & mLoggerService;
 
     //!< The queue of application IDs to save configuration.
     areg::ArrayList<ITEM_ID>        mListSaveConfig;

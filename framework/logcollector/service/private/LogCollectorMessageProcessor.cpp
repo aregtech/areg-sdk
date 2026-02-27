@@ -18,7 +18,7 @@
 #include "logcollector/service/LogCollectorServerService.hpp"
 #include "areg/ipc/RemoteServiceDefs.hpp"
 
-LogCollectorMessageProcessor::LogCollectorMessageProcessor(LogCollectorServerService & loggerService)
+LogCollectorMessageProcessor::LogCollectorMessageProcessor(logcollector::LogCollectorServerService & loggerService)
     : mLoggerService    ( loggerService )
     , mListSaveConfig   ( )
     , mPendingSave      ( areg::COOKIE_UNKNOWN )
@@ -206,7 +206,7 @@ void LogCollectorMessageProcessor::processNextSaveConfig()
         mPendingSave = mListSaveConfig[0u];
         mListSaveConfig.removeAt(0u, 1u);
         mLoggerService.sendMessage(areg::messageSaveConfiguration(areg::COOKIE_LOGGER, mPendingSave));
-        mLoggerService.mSaveTimer.startTimer(LogCollectorServerService::TIMEOUT_SAVE_CONFIG, static_cast<areg::DispatcherThread &>(mLoggerService), 1);
+        mLoggerService.mSaveTimer.startTimer(logcollector::LogCollectorServerService::TIMEOUT_SAVE_CONFIG, static_cast<areg::DispatcherThread &>(mLoggerService), 1);
     }
 }
 

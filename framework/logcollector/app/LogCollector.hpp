@@ -340,7 +340,7 @@ namespace logcollector
         /**
          * \brief   The service connection object to communicate with processes.
          **/
-        LogCollectorServerService mServiceServer;
+        logcollector::LogCollectorServerService mServiceServer;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
