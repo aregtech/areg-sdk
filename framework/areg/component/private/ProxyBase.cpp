@@ -172,7 +172,7 @@ namespace areg
     std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
                                                         , areg::ProxyListener & connect
-                                                        , FuncCreateProxy funcCreate
+                                                        , areg::FuncCreateProxy funcCreate
                                                         , const areg::String & ownerThread /*= areg::String::getEmptyString()*/)
     {
         return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, areg::DispatcherThread::getDispatcherThread(ownerThread) );
@@ -181,7 +181,7 @@ namespace areg
     std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
                                                         , areg::ProxyListener & connect
-                                                        , FuncCreateProxy funcCreate
+                                                        , areg::FuncCreateProxy funcCreate
                                                         , areg::DispatcherThread & ownerThread )
     {
         LOG_SCOPE(areg_component_ProxyBase_findOrCreateProxy);

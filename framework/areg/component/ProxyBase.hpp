@@ -56,19 +56,20 @@ namespace areg { class Version; }
 namespace areg { class ProxyBase; }
 namespace areg { class RemoteEventFactory; }
 
-/************************************************************************
- * Global types
- ************************************************************************/
-/**
- * \brief   Function type to create a Proxy object.
- *          roleName    The role name of servicing component to connect.
- *          ownerThread The instance of thread to dispatch messages.
- *                      If nullptr, uses current component thread.
- **/
-typedef areg::ProxyBase* (*FuncCreateProxy)( const areg::String & /*roleName*/, areg::DispatcherThread * /*ownerThread*/ );
-
 namespace areg
 {
+    
+    /************************************************************************
+     * Global types
+     ************************************************************************/
+    /**
+     * \brief   Function type to create a Proxy object.
+     *          roleName    The role name of servicing component to connect.
+     *          ownerThread The instance of thread to dispatch messages.
+     *                      If nullptr, uses current component thread.
+     **/
+    typedef areg::ProxyBase* (*FuncCreateProxy)( const areg::String & /*roleName*/, areg::DispatcherThread * /*ownerThread*/ );
+
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase class declaration
     //////////////////////////////////////////////////////////////////////////
@@ -441,7 +442,7 @@ namespace areg
         static std::shared_ptr<ProxyBase> findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
                                                         , areg::ProxyListener & connect
-                                                        , FuncCreateProxy funcCreate
+                                                        , areg::FuncCreateProxy funcCreate
                                                         , const areg::String & ownerThread = areg::String::getEmptyString() );
 
         /**
@@ -464,7 +465,7 @@ namespace areg
         static std::shared_ptr<ProxyBase> findOrCreateProxy( const areg::String & roleName
                                                         , const areg::InterfaceData & serviceIfData
                                                         , areg::ProxyListener & connect
-                                                        , FuncCreateProxy funcCreate
+                                                        , areg::FuncCreateProxy funcCreate
                                                         , areg::DispatcherThread & ownerThread );
 
         /**
