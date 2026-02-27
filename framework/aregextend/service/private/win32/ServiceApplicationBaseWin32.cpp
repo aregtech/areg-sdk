@@ -58,12 +58,12 @@ namespace
 // ServiceApplicationBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool ServiceApplicationBase::_osIsValid() const
+bool aregext::ServiceApplicationBase::_osIsValid() const
 {
     return (mSeMHandle != nullptr && mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osFreeResources()
+void aregext::ServiceApplicationBase::_osFreeResources()
 {
     if (mSvcHandle != nullptr)
     {
@@ -79,7 +79,7 @@ void ServiceApplicationBase::_osFreeResources()
     mSeMHandle = nullptr;
 }
 
-bool ServiceApplicationBase::_osInitializeService()
+bool aregext::ServiceApplicationBase::_osInitializeService()
 {
     areg::zeroElement<SERVICE_STATUS>(_serviceStatus);
     _serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -93,7 +93,7 @@ bool ServiceApplicationBase::_osInitializeService()
     return true;
 }
 
-bool ServiceApplicationBase::_osOpenService()
+bool aregext::ServiceApplicationBase::_osOpenService()
 {
     if (mSeMHandle == nullptr)
     {
@@ -108,7 +108,7 @@ bool ServiceApplicationBase::_osOpenService()
     return (mSvcHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osCreateService()
+bool aregext::ServiceApplicationBase::_osCreateService()
 {
     if (mSeMHandle == nullptr)
     {
@@ -188,7 +188,7 @@ bool ServiceApplicationBase::_osCreateService()
     return (mSvcHandle != nullptr);
 }
 
-void ServiceApplicationBase::_osDeleteService()
+void aregext::ServiceApplicationBase::_osDeleteService()
 {
     if (mSvcHandle != nullptr)
     {
@@ -196,7 +196,7 @@ void ServiceApplicationBase::_osDeleteService()
     }
 }
 
-bool ServiceApplicationBase::_osRegisterService()
+bool aregext::ServiceApplicationBase::_osRegisterService()
 {
     if (mSystemServiceOption == aregext::ServiceOption::CMD_Service)
     {
@@ -206,7 +206,7 @@ bool ServiceApplicationBase::_osRegisterService()
     return (_statusHandle != nullptr);
 }
 
-bool ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
+bool aregext::ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
 {
     bool result{ true };
 
@@ -270,7 +270,7 @@ bool ServiceApplicationBase::_osSetState(aregext::ServicePhase newState)
     return result;
 }
 
-int32_t ServiceApplicationBase::_osStartServiceDispatcher()
+int32_t aregext::ServiceApplicationBase::_osStartServiceDispatcher()
 {
     _serviceTable[0].lpServiceName = getServiceName();
     _serviceTable[0].lpServiceProc = &::_win32ServiceMain;

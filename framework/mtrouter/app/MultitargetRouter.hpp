@@ -39,7 +39,7 @@ class Console;
  *          to the connected servicing components. Applications connect to message routing service via
  *          TCP/IP protocol. The message router distributes the IPC message to the targets.
  **/
-class MultitargetRouter final : public ServiceApplicationBase
+class MultitargetRouter final : public aregext::ServiceApplicationBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types

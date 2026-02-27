@@ -133,7 +133,7 @@ void MultitargetRouter::printStatus(const areg::String& /* status */)
 #endif  // AREG_EXTENDED
 
 MultitargetRouter::MultitargetRouter()
-    : ServiceApplicationBase( mServiceServer )
+    : aregext::ServiceApplicationBase( mServiceServer )
     , mServiceServer        ( )
 {
 }

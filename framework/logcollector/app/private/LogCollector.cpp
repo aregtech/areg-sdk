@@ -143,7 +143,7 @@ void LogCollector::printStatus(const areg::String& /* status */)
 #endif  // AREG_EXTENDED
 
 LogCollector::LogCollector()
-    : ServiceApplicationBase( mServiceServer )
+    : aregext::ServiceApplicationBase( mServiceServer )
     , mServiceServer        ( )
 {
 }

@@ -49,7 +49,7 @@
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     static_cast<void>(envp);
-    int32_t result{ ServiceApplicationBase::RESULT_FAILED_RUN };
+    int32_t result{ aregext::ServiceApplicationBase::RESULT_FAILED_RUN };
     char** argvTemp = aregext::convertArguments<TCHAR>(argv, argc);
     MultitargetRouter& router = MultitargetRouter::getInstance();
     router.parseOptions(static_cast<int32_t>(argc), argvTemp, aregext::ServiceOptionSetup, std::size(aregext::ServiceOptionSetup));

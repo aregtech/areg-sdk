@@ -38,7 +38,7 @@ class Console;
  *          and collects the log messages from the running applications.
  *          It may save logs in the file or forward to log viewer application..
  **/
-class LogCollector : public ServiceApplicationBase
+class LogCollector : public aregext::ServiceApplicationBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
