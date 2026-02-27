@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner)
+SystemServiceConsole::SystemServiceConsole(aregext::DataRateHelper* dataRate, const areg::ComponentEntry & entry, areg::ComponentThread & owner)
     : areg::Component         ( entry, owner )
     , areg::StubBase          ( self( ), areg::getEmptyInterface( ) )
     , areg::TimerConsumer   ( )
@@ -46,8 +46,8 @@ void SystemServiceConsole::startupServiceInterface( areg::Component & holder )
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
     {
 
-        console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-        console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
+        console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
     }
 
     mTimer.startTimer( areg::TIMEOUT_1_SEC, areg::Timer::CONTINUOUSLY );
@@ -102,8 +102,8 @@ inline void SystemServiceConsole::_outputDataRate()
     console.lockConsole( );
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
     {
-        DataRateHelper::DataRate rateSend{ mDataRateHelper->queryBytesSentWithLiterals() };
-        DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
+        aregext::DataRateHelper::DataRate rateSend{ mDataRateHelper->queryBytesSentWithLiterals() };
+        aregext::DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
 
         console.saveCursorPosition( );
         console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );

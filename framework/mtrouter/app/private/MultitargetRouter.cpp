@@ -519,8 +519,8 @@ void MultitargetRouter::_setVerboseMode( bool makeVerbose )
         }
         else
         {
-            console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( aregext::COORD_SEND_RATE, aregext::FORMAT_SEND_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( aregext::COORD_RECV_RATE, aregext::FORMAT_RECV_DATA.data( ), 0.0, aregext::DataRateHelper::MSG_BYTES.data( ) );
             console.outputTxt( aregext::COORD_INFO_MSG, _verbose);
         }
 

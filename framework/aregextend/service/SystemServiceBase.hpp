@@ -273,7 +273,7 @@ namespace aregext
         /**
          * \brief   Returns the instance of data rate helper object to use when computing data rate.
          **/
-        inline DataRateHelper& getDataRateHelper() const;
+        inline aregext::DataRateHelper& getDataRateHelper() const;
 
         /**
          * \brief   Return the instance of the communication controller object.
@@ -377,7 +377,7 @@ namespace aregext
         return mSystemServiceState;
     }
 
-    inline DataRateHelper& SystemServiceBase::getDataRateHelper() const
+    inline aregext::DataRateHelper& SystemServiceBase::getDataRateHelper() const
     {
         return  mCommunication.getDataRateHelper();
     }

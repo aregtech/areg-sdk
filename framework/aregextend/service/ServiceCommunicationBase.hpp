@@ -152,7 +152,7 @@ namespace aregext
         /**
          * \brief   Returns the instance of data rate helper object to use when computing data rate.
          **/
-        inline DataRateHelper& getDataRateHelper() const;
+        inline aregext::DataRateHelper& getDataRateHelper() const;
 
         /**
          * \brief   Each time querying the bytes sent via network connection returns
@@ -492,7 +492,7 @@ namespace aregext
         areg::Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
         ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
         ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
-        DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
+        aregext::DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
         areg::StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
         areg::StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
         areg::ServiceServerConsumer                   mEventConsumer;     //!< The custom event consumer object
@@ -587,9 +587,9 @@ namespace aregext
                                             , eventPrio );
     }
 
-    inline DataRateHelper& ServiceCommunicationBase::getDataRateHelper() const
+    inline aregext::DataRateHelper& ServiceCommunicationBase::getDataRateHelper() const
     {
-        return const_cast<DataRateHelper &>(mDataRateHelper);
+        return const_cast<aregext::DataRateHelper &>(mDataRateHelper);
     }
 
     inline uint32_t ServiceCommunicationBase::queryBytesSent()
