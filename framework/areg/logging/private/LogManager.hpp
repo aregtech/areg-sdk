@@ -47,7 +47,7 @@ namespace areg
 {
     struct LogEntry;
 }
-class LogEventProcessor;
+namespace areg { class LogEventProcessor; }
 
 namespace areg
 {
@@ -64,7 +64,7 @@ namespace areg
     class LogManager    : public    areg::DispatcherThread
                         , private   LoggingEventConsumer
     {
-        friend class ::LogEventProcessor;
+        friend class areg::LogEventProcessor;
 
     //////////////////////////////////////////////////////////////////////////
     // Internal types and constants
@@ -476,7 +476,7 @@ namespace areg
         /**
          * \brief   The log event processor helper object.
          **/
-        LogEventProcessor   mEventProcessor;
+        areg::LogEventProcessor   mEventProcessor;
         /**
          * \brief   An event, indicating that the logging has been started.
          */
