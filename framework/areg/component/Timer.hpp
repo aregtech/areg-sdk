@@ -29,7 +29,7 @@
  ************************************************************************/
 namespace areg { class TimerConsumer; }
 namespace areg { class DispatcherThread; }
-class TimerEvent;
+namespace areg { class TimerEvent; }
 namespace areg { class TimerManager; }
 
 namespace areg
@@ -51,7 +51,7 @@ namespace areg
     // Friend classes to access protected members.
     /************************************************************************/
 
-        friend class ::TimerEvent;
+        friend class areg::TimerEvent;
         friend class areg::TimerManager;
 
     //////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,7 @@ class TimerConsumer;
  * Dependencies
  ************************************************************************/
 namespace areg { class Timer; }
-class TimerEventData;
+namespace areg { class TimerEventData; }
 namespace areg { class DispatcherThread; }
 
 namespace areg
@@ -52,7 +52,7 @@ namespace areg
      *          message when timer is expired. Inherit and override
      *          pure virtual function to process Timer.
      **/
-    class AREG_API TimerConsumer : public  TimerEventConsumerBase
+    class AREG_API TimerConsumer : public  areg::TimerEventConsumerBase
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor. Protected
@@ -87,7 +87,7 @@ namespace areg
          * \brief   Automatically triggered when event is dispatched by thread.
          * \param   data    The Timer Event Data object containing Timer object.
          **/
-        void processEvent( const TimerEventData & data) override;
+        void processEvent( const areg::TimerEventData & data) override;
 
     //////////////////////////////////////////////////////////////////////////
     // Hidden overrides

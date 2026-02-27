@@ -127,7 +127,7 @@ namespace areg
 
         if (mTimeoutInMs != areg::INVALID_TIMEOUT)
         {
-            TimerEvent::sendEvent(*this, *mDispatchThread);
+            areg::TimerEvent::sendEvent(*this, *mDispatchThread);
         }
         else
         {
