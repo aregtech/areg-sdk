@@ -21,8 +21,6 @@
 #include "areg/component/EventTemplate.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
-#if AREG_LOGS
-
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -37,6 +35,8 @@ namespace areg
 
 namespace areg
 {
+    #if AREG_LOGS
+
     //////////////////////////////////////////////////////////////////////////
     // LoggingEventData class declaration
     //////////////////////////////////////////////////////////////////////////

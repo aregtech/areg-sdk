@@ -22,7 +22,6 @@
 #include "areg/logging/LoggingDefs.hpp"
 #include "areg/logging/private/LoggingEvent.hpp"
 
-#if AREG_LOGS
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -36,6 +35,8 @@ namespace areg
 
 namespace areg
 {
+    #if AREG_LOGS
+
     //////////////////////////////////////////////////////////////////////////
     // LogEventProcessor class declaration
     //////////////////////////////////////////////////////////////////////////

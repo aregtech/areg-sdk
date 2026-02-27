@@ -34,7 +34,6 @@
 
 #include <string_view>
 
-#if AREG_LOGS
 
 /************************************************************************
  * Dependencies
@@ -49,6 +48,7 @@ namespace areg
 
 namespace areg
 {
+    #if AREG_LOGS
     //////////////////////////////////////////////////////////////////////////
     // NetTcpLogger class declaration
     //////////////////////////////////////////////////////////////////////////
@@ -223,7 +223,7 @@ namespace areg
         return (*this);
     }
 
+    #endif  // AREG_LOGS
 } // namespace areg
 
-#endif  // AREG_LOGS
 #endif  // AREG_LOGGING_PRIVATE_NETTCPLOGGER_HPP
