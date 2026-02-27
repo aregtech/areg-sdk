@@ -472,7 +472,7 @@ namespace areg
         /**
          * \brief   The database logging object to write logs in the DB.
          **/
-        DatabaseLogger      mLoggerDatabase;
+        areg::DatabaseLogger      mLoggerDatabase;
         /**
          * \brief   The log event processor helper object.
          **/

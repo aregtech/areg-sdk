@@ -30,158 +30,161 @@
  ************************************************************************/
 namespace areg { class LogDatabaseEngine; }
 
-//////////////////////////////////////////////////////////////////////////
-// DatabaseLogger class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The database logging class, which is responsible to log messages
- *          into the database. The database engine, which is responsible to handle
- *          the database, should be manually set. This class is forwarding
- *          the log messages to database engine handle for further processing.
- **/
-class DatabaseLogger : public areg::LoggerBase
+namespace areg
 {
-public:
-     /**
-      * \brief  Initializes the logger and sets the provided log configuration object,
-      *         which supplies methods for accessing property values.
-      *         The constructor will not automatically start database engine, it should
-      *         be manually started.
-      * \param  logConfig   An instance of the log configuration object containing
-      *                     settings for initialization and message output.
-      **/
-    explicit DatabaseLogger(areg::LogConfiguration & logConfig);
-
-    virtual ~DatabaseLogger();
-
-//////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-
+    //////////////////////////////////////////////////////////////////////////
+    // DatabaseLogger class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Returns the pointer to the database engine handler object,
-     *          which is responsible to handle the database.
+     * \brief   The database logging class, which is responsible to log messages
+     *          into the database. The database engine, which is responsible to handle
+     *          the database, should be manually set. This class is forwarding
+     *          the log messages to database engine handle for further processing.
      **/
-    inline const areg::LogDatabaseEngine * getDatabaseEngine() const;
-    inline areg::LogDatabaseEngine * getDatabaseEngine();
+    class DatabaseLogger : public areg::LoggerBase
+    {
+    public:
+         /**
+          * \brief  Initializes the logger and sets the provided log configuration object,
+          *         which supplies methods for accessing property values.
+          *         The constructor will not automatically start database engine, it should
+          *         be manually started.
+          * \param  logConfig   An instance of the log configuration object containing
+          *                     settings for initialization and message output.
+          **/
+        explicit DatabaseLogger(areg::LogConfiguration & logConfig);
 
-    /**
-     * \brief   Call to set the logging database engine object.
-     *          If nullptr, no data is logged in the database.
-     *          Otherwise, the log messages are forwarded to the 
-     *          database engine for further processing.
-     * \param   dbEngine    The pointer to the log database engine to save log messages.
-     *                      If nullptr, no message is forwarded to the database engine.
-     **/
-    inline void setDatabaseEngine(areg::LogDatabaseEngine * dbEngine);
+        virtual ~DatabaseLogger();
 
-    /**
-     * \brief   Returns true if the logging database engine is nut null.
-     **/
-    inline bool isValid() const;
+    //////////////////////////////////////////////////////////////////////////
+    // Attributes
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-//////////////////////////////////////////////////////////////////////////
-// Override operations and attribute
-//////////////////////////////////////////////////////////////////////////
-public:
+        /**
+         * \brief   Returns the pointer to the database engine handler object,
+         *          which is responsible to handle the database.
+         **/
+        inline const areg::LogDatabaseEngine * getDatabaseEngine() const;
+        inline areg::LogDatabaseEngine * getDatabaseEngine();
 
-/************************************************************************/
-// LoggerBase interface overrides
-/************************************************************************/
+        /**
+         * \brief   Call to set the logging database engine object.
+         *          If nullptr, no data is logged in the database.
+         *          Otherwise, the log messages are forwarded to the 
+         *          database engine for further processing.
+         * \param   dbEngine    The pointer to the log database engine to save log messages.
+         *                      If nullptr, no message is forwarded to the database engine.
+         **/
+        inline void setDatabaseEngine(areg::LogDatabaseEngine * dbEngine);
 
-    /**
-     * \brief   Initializes and opens the logger. If this method returns true,
-     *          the log manager will start forwarding messages for logging.
-     *          If it returns false, the log manager assumes the logger is not
-     *          initialized and will not send messages for logging.
-     *          The logger must be opened before any messages can be logged.
-     * \return  Returns true if the logger was successfully initialized and opened.
-     **/
-    bool openLogger() override;
+        /**
+         * \brief   Returns true if the logging database engine is nut null.
+         **/
+        inline bool isValid() const;
 
-    /**
-     * \brief   Called to close logger and stop logging.
-     **/
-    void closeLogger() override;
+    //////////////////////////////////////////////////////////////////////////
+    // Override operations and attribute
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-    /**
-     * \brief   Called when message should be logged.
-     *          Every logger should implement method to process logger specific logging.
-     **/
-    void logMessage( const areg::LogEntry & logMessage ) override;
+    /************************************************************************/
+    // LoggerBase interface overrides
+    /************************************************************************/
 
-    /**
-     * \brief   Returns true if logger is initialized (opened).
-     **/
-    bool isLoggerOpened() const override;
+        /**
+         * \brief   Initializes and opens the logger. If this method returns true,
+         *          the log manager will start forwarding messages for logging.
+         *          If it returns false, the log manager assumes the logger is not
+         *          initialized and will not send messages for logging.
+         *          The logger must be opened before any messages can be logged.
+         * \return  Returns true if the logger was successfully initialized and opened.
+         **/
+        bool openLogger() override;
 
-public:
-    /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
-     **/
-    void flushLogs();
+        /**
+         * \brief   Called to close logger and stop logging.
+         **/
+        void closeLogger() override;
 
-//////////////////////////////////////////////////////////////////////////
-// Protected overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Creates message layout objects. Returns true if succeeded.
-     *          Overwrite method to change layouts.
-     **/
-    bool createLayouts() override;
+        /**
+         * \brief   Called when message should be logged.
+         *          Every logger should implement method to process logger specific logging.
+         **/
+        void logMessage( const areg::LogEntry & logMessage ) override;
 
-    /**
-     * \brief   Release previously crated layouts
-     **/
-    void releaseLayouts() override;
+        /**
+         * \brief   Returns true if logger is initialized (opened).
+         **/
+        bool isLoggerOpened() const override;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables.
-//////////////////////////////////////////////////////////////////////////
-private:
-    //!< The pointer to the database engine.
-    areg::LogDatabaseEngine *   mDatabase;
+    public:
+        /**
+         * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
+         **/
+        void flushLogs();
 
-    //!< Locking object.
-    mutable areg::Mutex           mLock;
+    //////////////////////////////////////////////////////////////////////////
+    // Protected overrides
+    //////////////////////////////////////////////////////////////////////////
+    protected:
+        /**
+         * \brief   Creates message layout objects. Returns true if succeeded.
+         *          Overwrite method to change layouts.
+         **/
+        bool createLayouts() override;
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls.
-//////////////////////////////////////////////////////////////////////////
-private:
-    DatabaseLogger() = delete;
-    AREG_NOCOPY_NOMOVE(DatabaseLogger);
-};
+        /**
+         * \brief   Release previously crated layouts
+         **/
+        void releaseLayouts() override;
 
-//////////////////////////////////////////////////////////////////////////
-// DatabaseLogger class inline methods.
-//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        //!< The pointer to the database engine.
+        areg::LogDatabaseEngine *   mDatabase;
 
-inline const areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
-{
-    areg::Lock lock(mLock);
-    return mDatabase;
-}
+        //!< Locking object.
+        mutable areg::Mutex           mLock;
 
-inline areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
-{
-    areg::Lock lock(mLock);
-    return mDatabase;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        DatabaseLogger() = delete;
+        AREG_NOCOPY_NOMOVE(DatabaseLogger);
+    };
 
-inline void DatabaseLogger::setDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
-{
-    areg::Lock lock(mLock);
-    mDatabase = dbEngine;
-}
+    //////////////////////////////////////////////////////////////////////////
+    // DatabaseLogger class inline methods.
+    //////////////////////////////////////////////////////////////////////////
 
-inline bool DatabaseLogger::isValid() const
-{
-    areg::Lock lock(mLock);
-    return (mDatabase != nullptr);
-}
+    inline const areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine() const
+    {
+        areg::Lock lock(mLock);
+        return mDatabase;
+    }
 
-#endif  // AREG_LOGS
+    inline areg::LogDatabaseEngine * DatabaseLogger::getDatabaseEngine()
+    {
+        areg::Lock lock(mLock);
+        return mDatabase;
+    }
+
+    inline void DatabaseLogger::setDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
+    {
+        areg::Lock lock(mLock);
+        mDatabase = dbEngine;
+    }
+
+    inline bool DatabaseLogger::isValid() const
+    {
+        areg::Lock lock(mLock);
+        return (mDatabase != nullptr);
+    }
+
+    #endif  // AREG_LOGS
+} // namespace areg
 #endif  // AREG_LOGGING_PRIVATE_DATABASELOGGER_HPP

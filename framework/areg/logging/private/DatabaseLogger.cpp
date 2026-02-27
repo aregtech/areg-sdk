@@ -25,89 +25,93 @@
 
 #include <string_view>
 
-#if AREG_LOGS
-
-DatabaseLogger::DatabaseLogger(areg::LogConfiguration& logConfig)
-    : areg::LoggerBase    (logConfig)
-    , mDatabase     (nullptr)
-    , mLock         (false)
+namespace areg
 {
-}
 
-DatabaseLogger::~DatabaseLogger()
-{
-    areg::Lock lock(mLock);
-    if (mDatabase != nullptr)
+    #if AREG_LOGS
+
+    DatabaseLogger::DatabaseLogger(areg::LogConfiguration& logConfig)
+        : areg::LoggerBase    (logConfig)
+        , mDatabase     (nullptr)
+        , mLock         (false)
     {
-        mDatabase->disconnect();
-        mDatabase = nullptr;
     }
-}
 
-bool DatabaseLogger::openLogger()
-{
-    areg::Lock lock(mLock);
-    bool result{ false };
-
-    areg::String dbFile;
-    if (isValid())
+    DatabaseLogger::~DatabaseLogger()
     {
-        if (mLogConfiguration.isDatabaseLoggingEnabled())
+        areg::Lock lock(mLock);
+        if (mDatabase != nullptr)
         {
-            areg::String fileName(mLogConfiguration.getDatabaseFullPath());
-            dbFile = areg::File::normalizePath(fileName.getString());
-
-            if (mDatabase->connect(dbFile, false))
-            {
-                result = true;
-            }
+            mDatabase->disconnect();
+            mDatabase = nullptr;
         }
     }
 
-    return result;
-}
-
-void DatabaseLogger::closeLogger()
-{
-    areg::Lock lock(mLock);
-    if (isValid())
+    bool DatabaseLogger::openLogger()
     {
-        mDatabase->disconnect();
-    }
-}
+        areg::Lock lock(mLock);
+        bool result{ false };
 
-void DatabaseLogger::logMessage(const areg::LogEntry& logMessage)
-{
-    areg::Lock lock(mLock);
-    if (isValid())
+        areg::String dbFile;
+        if (isValid())
+        {
+            if (mLogConfiguration.isDatabaseLoggingEnabled())
+            {
+                areg::String fileName(mLogConfiguration.getDatabaseFullPath());
+                dbFile = areg::File::normalizePath(fileName.getString());
+
+                if (mDatabase->connect(dbFile, false))
+                {
+                    result = true;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    void DatabaseLogger::closeLogger()
     {
-        mDatabase->logMessage(logMessage);
+        areg::Lock lock(mLock);
+        if (isValid())
+        {
+            mDatabase->disconnect();
+        }
     }
-}
 
-bool DatabaseLogger::isLoggerOpened() const
-{
-    return false;
-}
-
-void DatabaseLogger::flushLogs()
-{
-    areg::Lock lock(mLock);
-
-    if (isValid())
+    void DatabaseLogger::logMessage(const areg::LogEntry& logMessage)
     {
-        mDatabase->commit(true);
+        areg::Lock lock(mLock);
+        if (isValid())
+        {
+            mDatabase->logMessage(logMessage);
+        }
     }
-}
 
-bool DatabaseLogger::createLayouts()
-{
-    // no need to crate layouts for log DB
-    return true;
-}
+    bool DatabaseLogger::isLoggerOpened() const
+    {
+        return false;
+    }
 
-void DatabaseLogger::releaseLayouts()
-{
-}
+    void DatabaseLogger::flushLogs()
+    {
+        areg::Lock lock(mLock);
 
-#endif // AREG_LOGS
+        if (isValid())
+        {
+            mDatabase->commit(true);
+        }
+    }
+
+    bool DatabaseLogger::createLayouts()
+    {
+        // no need to crate layouts for log DB
+        return true;
+    }
+
+    void DatabaseLogger::releaseLayouts()
+    {
+    }
+
+    #endif // AREG_LOGS
+} // namespace areg
