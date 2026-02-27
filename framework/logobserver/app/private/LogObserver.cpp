@@ -60,8 +60,8 @@ namespace
         uint16_t    lcPort{ areg::InvalidPort };
     };
 
-    using ListInstances = areg::ArrayList<LogInstance>;
-    using ListScopes    = areg::ArrayList<ScopeInfo>;
+    using ListInstances = areg::ArrayList<areglogger::LogInstance>;
+    using ListScopes    = areg::ArrayList<areglogger::ScopeInfo>;
     using MapScopes     = areg::HashMap<ITEM_ID, ListScopes>;
 
     LoggerConnect   _logConnect;
@@ -148,7 +148,7 @@ void LogObserver::callbackMessagingFailed()
 {
 }
 
-void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint32_t count)
+void LogObserver::callbackConnectedInstances(const areglogger::LogInstance* instances, uint32_t count)
 {
     if (count == 0)
     {
@@ -159,7 +159,7 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        const LogInstance& inst{ instances[i] };
+        const areglogger::LogInstance& inst{ instances[i] };
         bool contains{ false };
         for (uint32_t j = 0; j < _listInstances.getSize(); ++j)
         {
@@ -197,7 +197,7 @@ void LogObserver::callbackConnectedInstances(const LogInstance* instances, uint3
             areg::logAnyMessage(log);
 
             ASSERT(_mapScopes.contains(inst.liCookie) == false);
-            ::logObserverRequestScopes(inst.liCookie);
+            areglogger::logObserverRequestScopes(inst.liCookie);
         }
     }
 }
@@ -209,7 +209,7 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
         const ITEM_ID& cookie = instances[i];
         for (uint32_t j = 0; j < _listInstances.getSize(); ++j)
         {
-            const LogInstance& inst{ _listInstances[j] };
+            const areglogger::LogInstance& inst{ _listInstances[j] };
             if (inst.liCookie == cookie)
             {
                 TIME64 now{ areg::DateTime::getNow() };
@@ -243,11 +243,11 @@ void LogObserver::callbackDisconnecteInstances(const ITEM_ID * instances, uint32
     }
 }
 
-void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count)
+void LogObserver::callbackLogScopes(ITEM_ID cookie, const areglogger::ScopeInfo* scopes, uint32_t count)
 {
     for (uint32_t i = 0; i < _listInstances.getSize(); ++i)
     {
-        const LogInstance& inst{ _listInstances[i] };
+        const areglogger::LogInstance& inst{ _listInstances[i] };
         if (cookie == inst.liCookie)
         {
             areg::LogEntry log{ };
@@ -284,7 +284,7 @@ void LogObserver::callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uin
     }
 }
 
-void LogObserver::callbackLogUpdateScopes(ITEM_ID /* cookie */, const ScopeInfo* /* scopes */, uint32_t /* count */)
+void LogObserver::callbackLogUpdateScopes(ITEM_ID /* cookie */, const areglogger::ScopeInfo* /* scopes */, uint32_t /* count */)
 {
 }
 
@@ -308,7 +308,7 @@ void LogObserver::callbackLogMessageEx(const uint8_t* logBuffer, uint32_t /*size
 
 void LogObserver::logMain( int32_t argc, char ** argv )
 {
-    ObserverEvents evts
+    areglogger::ObserverEvents evts
     {
           &LogObserver::callbackObserverConfigured
         , &LogObserver::callbackDatabaseConfigured
@@ -340,13 +340,13 @@ void LogObserver::logMain( int32_t argc, char ** argv )
         }
     }
 
-    ::logObserverInitialize(&evts, fileConfig.getString());
+    areglogger::logObserverInitialize(&evts, fileConfig.getString());
 
     _runConsoleInputExtended();
 
     areg::Application::signalAppQuit();
-    ::logObserverDisconnectLogger();
-    ::logObserverRelease();
+    areglogger::logObserverDisconnectLogger();
+    areglogger::logObserverRelease();
 }
 
 bool LogObserver::_checkCommand(const areg::String& cmd)
@@ -535,7 +535,7 @@ bool LogObserver::_processSaveConfig(const aregext::OptionParser::InputOption& o
     bool result{ true };
     for (const auto& target : listTargets.getData())
     {
-        result &= ::logObserverRequestSaveConfig(target);
+        result &= areglogger::logObserverRequestSaveConfig(target);
     }
 
     return result;
@@ -583,7 +583,7 @@ bool LogObserver::_processInfoInstances()
         ++coord.posY;
         for (uint32_t i = 0; i < _listInstances.getSize(); ++ i)
         {
-            const LogInstance& instance{ _listInstances[i] };
+            const areglogger::LogInstance& instance{ _listInstances[i] };
             uint32_t id{ static_cast<uint32_t>(instance.liCookie) };
             auto pos = _mapScopes.find(instance.liCookie);
             uint32_t scopes{ pos != _mapScopes.invalidPosition() ? _mapScopes.valueAtPosition(pos).getSize() : 0u };
@@ -629,7 +629,7 @@ bool LogObserver::_processUpdateScopes(const aregext::OptionParser::InputOption&
 
 bool LogObserver::_processPauseLogging()
 {
-    return ::logObserverPauseLogging(true);
+    return areglogger::logObserverPauseLogging(true);
 }
 
 bool LogObserver::_processStartLogging(bool doStart)
@@ -637,15 +637,15 @@ bool LogObserver::_processStartLogging(bool doStart)
     bool result{ true };
     if (doStart)
     {
-        if (::logObserverIsInitialized())
+        if (areglogger::logObserverIsInitialized())
         {
-            if (::logObserverIsConnected() == false)
+            if (areglogger::logObserverIsConnected() == false)
             {
-                result = ::logObserverConnectLogger(nullptr, nullptr, areg::InvalidPort);
+                result = areglogger::logObserverConnectLogger(nullptr, nullptr, areg::InvalidPort);
             }
-            else if (::logObserverIsStarted() == false)
+            else if (areglogger::logObserverIsStarted() == false)
             {
-                result = ::logObserverPauseLogging(false);
+                result = areglogger::logObserverPauseLogging(false);
             }
         }
         else
@@ -655,7 +655,7 @@ bool LogObserver::_processStartLogging(bool doStart)
     }
     else
     {
-        ::logObserverDisconnectLogger();
+        areglogger::logObserverDisconnectLogger();
     }
 
     return result;
@@ -688,7 +688,7 @@ bool LogObserver::_processQueryScopes(const aregext::OptionParser::InputOption& 
 
     for (const auto& target : listTargets.getData())
     {
-        result &= ::logObserverRequestScopes(target);
+        result &= areglogger::logObserverRequestScopes(target);
     }
 
     return result;
@@ -752,11 +752,11 @@ bool LogObserver::_sendScopeUpdateMessage(const areg::String& scope)
             {
                 areg::String scopeName{ key.getPosition() };
                 uint32_t scopePrio{ prop.getValue().getIndetifier(areg::LogScopePriorityIndentifiers) };
-                ScopeInfo logScope;
+                areglogger::ScopeInfo logScope;
                 logScope.lsId   = areg::makeScopeIdEx(scopeName.getString());
                 logScope.lsPrio = scopePrio;
                 areg::copyString<char>(logScope.lsName, LENGTH_SCOPE, scopeName.getString(), scopeName.getLength());
-                result = ::logObserverRequestChangeScopePrio(target, &logScope, 1);
+                result = areglogger::logObserverRequestChangeScopePrio(target, &logScope, 1);
             }
         }
     }

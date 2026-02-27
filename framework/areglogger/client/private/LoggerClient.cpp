@@ -86,7 +86,7 @@ void LoggerClient::stopLoggerClient()
     disconnectServiceHost();
 }
 
-void LoggerClient::setCallbacks(const ObserverEvents* callbacks)
+void LoggerClient::setCallbacks(const areglogger::ObserverEvents* callbacks)
 {
     areg::Lock lock(mLock);
     mCallbacks = callbacks;
@@ -94,7 +94,7 @@ void LoggerClient::setCallbacks(const ObserverEvents* callbacks)
 
 void LoggerClient::setPaused(bool doPause)
 {
-    FuncObserverStarted callback{ nullptr };
+    areglogger::FuncObserverStarted callback{ nullptr };
     bool isStarted{ false };
 
     do
@@ -241,7 +241,7 @@ bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
     }
 
     bool result{ mLogDatabase.connect(filePath, false) };
-    FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
+    areglogger::FuncLogDbCreated callback{ mLogDatabase.isOperable() && (mCallbacks != nullptr) ? mCallbacks->evtLogDbCreated  : nullptr};
     if (areglogger::LogObserverBase::_theLogObserver != nullptr)
     {
         areglogger::LogObserverBase::_theLogObserver->onLogDbCreated(mLogDatabase.getDatabasePath().getData());
@@ -381,8 +381,8 @@ void LoggerClient::prepareReadConfiguration(areg::ConfigManager& /* config */)
 
 void LoggerClient::postReadConfiguration(areg::ConfigManager& config)
 {
-    FuncObserverConfigured callbackConf{ nullptr };
-    FuncLogDbConfigured callbackConfDb{ nullptr };
+    areglogger::FuncObserverConfigured callbackConf{ nullptr };
+    areglogger::FuncLogDbConfigured callbackConfDb{ nullptr };
     areg::String address;
     uint16_t port{0};
     areg::String dbName;
@@ -474,7 +474,7 @@ void LoggerClient::disconnectServiceHost()
 {
     if (isRunning())
     {
-        FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
+        areglogger::FuncInstancesDisconnect callback{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
         if (areglogger::LogObserverBase::_theLogObserver != nullptr)
         {
             areglogger::LogObserverBase::_theLogObserver->onLogServiceDisconnected();
@@ -504,8 +504,8 @@ void LoggerClient::onServiceExit()
 
 void LoggerClient::connectedRemoteServiceChannel(const areg::Channel& channel)
 {
-    FuncServiceConnected callbackConnect{ nullptr };
-    FuncObserverStarted callbackStart{ nullptr };
+    areglogger::FuncServiceConnected callbackConnect{ nullptr };
+    areglogger::FuncObserverStarted callbackStart{ nullptr };
     areg::String address;
     uint16_t port{ areg::InvalidPort };
     bool isStarted{ false };
@@ -543,8 +543,8 @@ void LoggerClient::connectedRemoteServiceChannel(const areg::Channel& channel)
 
 void LoggerClient::disconnectedRemoteServiceChannel(const areg::Channel& /* channel */)
 {
-    FuncServiceConnected callbackConnect{ nullptr };
-    FuncObserverStarted callbackStart{ nullptr };
+    areglogger::FuncServiceConnected callbackConnect{ nullptr };
+    areglogger::FuncObserverStarted callbackStart{ nullptr };
     areg::String address;
     uint16_t port{ areg::InvalidPort };
 
@@ -578,7 +578,7 @@ void LoggerClient::disconnectedRemoteServiceChannel(const areg::Channel& /* chan
 
 void LoggerClient::lostRemoteServiceChannel(const areg::Channel& /* channel */)
 {
-    FuncObserverStarted callback{ nullptr };
+    areglogger::FuncObserverStarted callback{ nullptr };
 
     do
     {
@@ -599,7 +599,7 @@ void LoggerClient::lostRemoteServiceChannel(const areg::Channel& /* channel */)
 
 void LoggerClient::failedSendMessage(const areg::RemoteMessage& /* msgFailed */, areg::Socket& /* whichTarget */)
 {
-    FuncMessagingFailed callback{ nullptr };
+    areglogger::FuncMessagingFailed callback{ nullptr };
     do
     {
         areg::Lock lock(mLock);
@@ -618,7 +618,7 @@ void LoggerClient::failedSendMessage(const areg::RemoteMessage& /* msgFailed */,
 
 void LoggerClient::failedReceiveMessage(areg::Socket& /* whichSource */)
 {
-    FuncMessagingFailed callback{ nullptr };
+    areglogger::FuncMessagingFailed callback{ nullptr };
     do
     {
         areg::Lock lock(mLock);

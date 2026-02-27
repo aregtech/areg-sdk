@@ -42,59 +42,59 @@ namespace areglogger
 
     bool LogObserverBase::initialize(const std::string& configFile)
     {
-        return logObserverInitialize(nullptr, configFile.empty() ? nullptr : configFile.c_str());
+        return areglogger::logObserverInitialize(nullptr, configFile.empty() ? nullptr : configFile.c_str());
     }
 
     void LogObserverBase::release()
     {
-        return logObserverRelease();
+        return areglogger::logObserverRelease();
     }
 
     bool LogObserverBase::connect(const std::string& address, uint16_t portNr, const std::string& dbLocation)
     {
-        return logObserverConnectLogger(  dbLocation.empty() ? nullptr : dbLocation.c_str()
+        return areglogger::logObserverConnectLogger(  dbLocation.empty() ? nullptr : dbLocation.c_str()
                                         , address.empty() ? nullptr : address.c_str()
                                         , portNr);
     }
 
     void LogObserverBase::disconnect()
     {
-        logObserverDisconnectLogger();
+        areglogger::logObserverDisconnectLogger();
     }
 
     bool LogObserverBase::pause()
     {
-        return logObserverPauseLogging(true);
+        return areglogger::logObserverPauseLogging(true);
     }
 
     bool LogObserverBase::resume()
     {
-        return logObserverPauseLogging(false);
+        return areglogger::logObserverPauseLogging(false);
     }
 
     bool LogObserverBase::stop()
     {
-        return logObserverStopLogging(true, nullptr);
+        return areglogger::logObserverStopLogging(true, nullptr);
     }
 
     bool LogObserverBase::restart(const std::string & dbLocation /*= areg::String::EmptyString*/)
     {
-        return logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
+        return areglogger::logObserverStopLogging(false, dbLocation.empty() ? nullptr : dbLocation.c_str());
     }
 
     bool LogObserverBase::isInitialized() const
     {
-        return logObserverIsInitialized();
+        return areglogger::logObserverIsInitialized();
     }
 
     bool LogObserverBase::isConnected() const
     {
-        return logObserverIsConnected();
+        return areglogger::logObserverIsConnected();
     }
 
     bool LogObserverBase::isStated() const
     {
-        return logObserverIsStarted();
+        return areglogger::logObserverIsStarted();
     }
 
     const areg::SocketAddress& LogObserverBase::getLoggerAddress() const
@@ -119,7 +119,7 @@ namespace areglogger
 
     bool LogObserverBase::getConfigLoggerEnabled() const
     {
-        return logObserverConfigLoggerEnabled();
+        return areglogger::logObserverConfigLoggerEnabled();
     }
 
     std::string LogObserverBase::getConfigLoggerAddress() const
@@ -189,22 +189,22 @@ namespace areglogger
 
     bool LogObserverBase::requestInstances()
     {
-        return logObserverRequestInstances();
+        return areglogger::logObserverRequestInstances();
     }
 
     bool LogObserverBase::requestScopes(ITEM_ID target /*= areg::TARGET_ALL*/)
     {
-        return logObserverRequestScopes(target);
+        return areglogger::logObserverRequestScopes(target);
     }
 
-    bool LogObserverBase::requestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count)
+    bool LogObserverBase::requestChangeScopePrio(ITEM_ID target, const areglogger::ScopeInfo* scopes, uint32_t count)
     {
-        return logObserverRequestChangeScopePrio(target, scopes, count);
+        return areglogger::logObserverRequestChangeScopePrio(target, scopes, count);
     }
 
     bool LogObserverBase::requestSaveConfig(ITEM_ID target /*= areg::TARGET_ALL*/)
     {
-        return logObserverRequestSaveConfig(target);
+        return areglogger::logObserverRequestSaveConfig(target);
     }
 
     void LogObserverBase::saveLoggerConfig()

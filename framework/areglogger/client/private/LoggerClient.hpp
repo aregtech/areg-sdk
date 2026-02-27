@@ -35,7 +35,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-struct ObserverEvents;
+namespace areglogger { struct ObserverEvents; }
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerClient class declaration
@@ -128,7 +128,7 @@ public:
      *                      If the parameter is 'nullptr' it resets all callbacks and no
      *                      callback is triggered on the events.
      **/
-    void setCallbacks(const ObserverEvents * callbacks);
+    void setCallbacks(const areglogger::ObserverEvents * callbacks);
 
     /**
      * \brief   Set paused flag true or false. If log collector client is paused, it does not
@@ -521,7 +521,7 @@ private:
      * \brief   The pointer to the callback structure to trigger methods on certain event.
      *          If nullptr, no callback is triggered.
      **/
-    const ObserverEvents *     mCallbacks;
+    const areglogger::ObserverEvents *     mCallbacks;
 
     /**
      * \brief   The object that processes received messages.

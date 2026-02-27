@@ -44,9 +44,9 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-struct LogInstance;
+namespace areglogger { struct LogInstance; }
 struct LogEntry;
-struct ScopeInfo;
+namespace areglogger { struct ScopeInfo; }
 
 //////////////////////////////////////////////////////////////////////////
 // LogObserver class declaration
@@ -225,7 +225,7 @@ private:
      * \param   instances   The pointer to the list of the connected instances.
      * \param   count       The number of entries in the list.
      **/
-    static void callbackConnectedInstances(const LogInstance* instances, uint32_t count);
+    static void callbackConnectedInstances(const areglogger::LogInstance* instances, uint32_t count);
 
     /**
      * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
@@ -240,7 +240,7 @@ private:
      * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    static void callbackLogScopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count);
+    static void callbackLogScopes(ITEM_ID cookie, const areglogger::ScopeInfo* scopes, uint32_t count);
 
     /**
      * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
@@ -248,7 +248,7 @@ private:
      * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
      * \param   count   The number of scope entries in the list.
      **/
-    static void callbackLogUpdateScopes(ITEM_ID cookie, const ScopeInfo* scopes, uint32_t count);
+    static void callbackLogUpdateScopes(ITEM_ID cookie, const areglogger::ScopeInfo* scopes, uint32_t count);
 
     /**
      * \brief   The callback of the event triggered when receive message to log.

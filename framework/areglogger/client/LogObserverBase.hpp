@@ -369,7 +369,7 @@ namespace areglogger
          * \param   count   The number of scope entries in the list.
          * \return  Returns true if processed with success. Otherwise, returns false.
          **/
-        bool requestChangeScopePrio(ITEM_ID target, const ScopeInfo* scopes, uint32_t count);
+        bool requestChangeScopePrio(ITEM_ID target, const areglogger::ScopeInfo* scopes, uint32_t count);
 
         /**
          * \brief   Requests to save current configuration of the specified target. This is normally called when update the log priority of the instance,
@@ -466,7 +466,7 @@ namespace areglogger
          * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
          * \param   count   The number of scope entries in the list.
          **/
-        virtual void onLogRegisterScopes(ITEM_ID cookie, const ScopeInfo* scopes, int32_t count) = 0;
+        virtual void onLogRegisterScopes(ITEM_ID cookie, const areglogger::ScopeInfo* scopes, int32_t count) = 0;
 
         /**
          * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
@@ -474,7 +474,7 @@ namespace areglogger
          * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
          * \param   count   The number of scope entries in the list.
          **/
-        virtual void onLogUpdateScopes(ITEM_ID cookie, const ScopeInfo* scopes, int32_t count) = 0;
+        virtual void onLogUpdateScopes(ITEM_ID cookie, const areglogger::ScopeInfo* scopes, int32_t count) = 0;
 
         /**
          * \brief   The callback of the event triggered when receive message to log.
