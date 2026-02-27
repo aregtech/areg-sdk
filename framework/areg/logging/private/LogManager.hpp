@@ -464,7 +464,7 @@ namespace areg
         /**
          * \brief   The debug output logging to output logs in the output device (window).
          **/
-        DebugOutputLogger   mLoggerDebug;
+        areg::DebugOutputLogger   mLoggerDebug;
         /**
          * \brief   The remote TCP/IP logging service.
          **/
