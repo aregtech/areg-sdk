@@ -30,7 +30,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class ScopeController;
+namespace areg { class ScopeController; }
 
 namespace areg
 {
@@ -227,7 +227,7 @@ namespace areg
          * \brief   Updates the list of scopes in the application configuration by setting the current state of scopes in configuration.
          * \param   scopeController     The instance of the scope controller to read states of the scopes.
          **/
-        void updateScopeConfiguration(const ScopeController & scopeController) const;
+        void updateScopeConfiguration(const areg::ScopeController & scopeController) const;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls

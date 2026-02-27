@@ -41,7 +41,7 @@
  ************************************************************************/
 namespace areg { class DispatcherThread; }
 namespace areg { class LogConfiguration; }
-class ScopeController;
+namespace areg { class ScopeController; }
 namespace areg { class SharedBuffer; }
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ public:
      * \param   scopeController The scope controller object, which contains and controls the scopes in application.
      * \param   dispatchThread  The dispatcher thread to dispatch events and messages.
      **/
-    NetTcpLogger(areg::LogConfiguration & logConfig, ScopeController & scopeController, areg::DispatcherThread & dispatchThread);
+    NetTcpLogger(areg::LogConfiguration & logConfig, areg::ScopeController & scopeController, areg::DispatcherThread & dispatchThread);
 
     /**
      * \brief   Destructor.
@@ -195,7 +195,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The instance of scope controller
-    ScopeController &   mScopeController;
+    areg::ScopeController &   mScopeController;
     //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
     bool                mIsEnabled;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.

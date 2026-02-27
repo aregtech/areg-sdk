@@ -130,7 +130,7 @@ void LogManager::setDefaultConfiguration(bool overwriteExisting)
 
 bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
 {
-    ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
+    areg::ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
     uint32_t scopeId = areg::makeScopeId( scopeName );
     const areg::LogScope * scope = ctrScope.getScope( scopeId );
     bool result{ scope != nullptr };
@@ -144,14 +144,14 @@ bool LogManager::setScopePriority( const char * scopeName, uint32_t newPrio )
 
 void LogManager::updateScopes(const areg::String & scopeName, uint32_t scopeId, uint32_t newPrio)
 {
-    ScopeController & ctrScope = LogManager::getInstance().mScopeController;
+    areg::ScopeController & ctrScope = LogManager::getInstance().mScopeController;
     ctrScope.clearConfigScopes();
     ctrScope.changeScopeActivityStatus(scopeName, scopeId, newPrio);
 }
 
 uint32_t LogManager::getScopePriority( const char * scopeName )
 {
-    ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
+    areg::ScopeController & ctrScope = LogManager::getInstance( ).mScopeController;
     uint32_t scopeId = areg::makeScopeId( scopeName );
     const areg::LogScope * scope = ctrScope.getScope( scopeId );
     return (scope != nullptr ? scope->getPriority() : static_cast<uint32_t>(areg::LogPriority::PrioInvalid));

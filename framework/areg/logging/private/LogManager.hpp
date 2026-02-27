@@ -445,7 +445,7 @@ private:
     /**
      * \brief   Scope controller object to activate / deactivate and change priority of the scopes.
      **/
-    ScopeController     mScopeController;
+    areg::ScopeController     mScopeController;
     /**
      * \brief   Flag, indicating whether the logging is started or not
      **/

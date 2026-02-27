@@ -302,7 +302,7 @@ namespace areg
 
     #if AREG_LOGS
 
-    void LogConfiguration::updateScopeConfiguration(const ScopeController& scopeController) const
+    void LogConfiguration::updateScopeConfiguration(const areg::ScopeController& scopeController) const
     {
         const auto& scopeList = scopeController.getScopeList();
         uint32_t key{ 0 };
@@ -322,7 +322,7 @@ namespace areg
 
     #else   // AREG_LOGS
 
-    void LogConfiguration::updateScopeConfiguration(const ScopeController& /*scopeController*/) const
+    void LogConfiguration::updateScopeConfiguration(const areg::ScopeController& /*scopeController*/) const
     {
     }
 
