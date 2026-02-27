@@ -97,7 +97,7 @@ namespace areg
      * \brief   areg::DEFAULT_ROUTER_HOST
      *          Default IP-Address of routing service.
      **/
-    constexpr std::string_view  DEFAULT_ROUTER_HOST         { areg::LocalAddress };
+    constexpr std::string_view  DEFAULT_ROUTER_HOST         { LocalAddress };
 
     /**
      * \brief   areg::DEFAULT_ROUTER_PORT
@@ -115,7 +115,7 @@ namespace areg
      * \brief   areg::DEFAULT_LOGGER_HOST
      *          Default IP-Address of routing service.
      **/
-    constexpr std::string_view  DEFAULT_LOGGER_HOST         { areg::LocalAddress };
+    constexpr std::string_view  DEFAULT_LOGGER_HOST         { LocalAddress };
 
     /**
      * \brief   areg::DEFAULT_LOGGER_PORT
@@ -127,7 +127,7 @@ namespace areg
      * \brief   areg::DEFAULT_SERVICE_HOST
      *          Default IP-Address of any remote service.
      **/
-    constexpr std::string_view  DEFAULT_SERVICE_HOST        { areg::LocalAddress };
+    constexpr std::string_view  DEFAULT_SERVICE_HOST        { LocalAddress };
 
     /**
      * \brief   areg::DEFAULT_SERVICE_ENABLED
@@ -195,11 +195,11 @@ namespace areg
      **/
     constexpr LogTypeEntry DefaultLogTypes []
         {
-              { static_cast<uint32_t>(areg::LogTarget::Undefined)  , {"unknown"}, false }
-            , { static_cast<uint32_t>(areg::LogTarget::Remote)     , {"remote" }, false }
-            , { static_cast<uint32_t>(areg::LogTarget::File)       , {"file"   }, true  }
-            , { static_cast<uint32_t>(areg::LogTarget::Debug)      , {"debug"  }, false }
-            , { static_cast<uint32_t>(areg::LogTarget::Database)   , {"db"     }, false}
+              { static_cast<uint32_t>(LogTarget::Undefined)  , {"unknown"}, false }
+            , { static_cast<uint32_t>(LogTarget::Remote)     , {"remote" }, false }
+            , { static_cast<uint32_t>(LogTarget::File)       , {"file"   }, true  }
+            , { static_cast<uint32_t>(LogTarget::Debug)      , {"debug"  }, false }
+            , { static_cast<uint32_t>(LogTarget::Database)   , {"db"     }, false}
         };
 
     /**
@@ -209,11 +209,11 @@ namespace areg
      **/
     constexpr LogTypeEntry DefaultConnections[]
         {
-              { static_cast<uint32_t>(areg::ConnectionType::Undefined)   , {"unknown"}, false }
-            , { static_cast<uint32_t>(areg::ConnectionType::Tcpip)       , {"tcpip"  }, true  }
-            , { static_cast<uint32_t>(areg::ConnectionType::Udp)         , {"udp"    }, false }
-            , { static_cast<uint32_t>(areg::ConnectionType::Web)         , {"web"    }, false }
-            , { static_cast<uint32_t>(areg::ConnectionType::SharedMemory), {"sm"     }, false }
+              { static_cast<uint32_t>(ConnectionType::Undefined)   , {"unknown"}, false }
+            , { static_cast<uint32_t>(ConnectionType::Tcpip)       , {"tcpip"  }, true  }
+            , { static_cast<uint32_t>(ConnectionType::Udp)         , {"udp"    }, false }
+            , { static_cast<uint32_t>(ConnectionType::Web)         , {"web"    }, false }
+            , { static_cast<uint32_t>(ConnectionType::SharedMemory), {"sm"     }, false }
         };
 
     /**
@@ -222,12 +222,12 @@ namespace areg
      **/
     constexpr LogTypeEntry DefaultRemotetServices[]
         {
-              { static_cast<uint32_t>(areg::RemoteServiceKind::Unknown) , {"unknown"}, false }
-            , { static_cast<uint32_t>(areg::RemoteServiceKind::Router)  , {"router" }, true  }
+              { static_cast<uint32_t>(RemoteServiceKind::Unknown) , {"unknown"}, false }
+            , { static_cast<uint32_t>(RemoteServiceKind::Router)  , {"router" }, true  }
 #ifdef DEBUG
-            , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, true  }
+            , { static_cast<uint32_t>(RemoteServiceKind::Logger)  , {"logger" }, true  }
 #else   // DEBUG
-            , { static_cast<uint32_t>(areg::RemoteServiceKind::Logger)  , {"logger" }, false }
+            , { static_cast<uint32_t>(RemoteServiceKind::Logger)  , {"logger" }, false }
 #endif  // DEBUG
         };
 
@@ -236,11 +236,11 @@ namespace areg
      *          The list of read-only global properties that cannot be changed,
      *          but can be changed for certain modules and saved in writable configuration.
      **/
-    constexpr areg::ConfigProperty  DefaultReadonlyProperties[]
+    constexpr ConfigProperty  DefaultReadonlyProperties[]
         {
-              { {"config"   , "*"   , "version" , ""        }, areg::CONFIG_VERSION    }   //!< The configuration version.
+              { {"config"   , "*"   , "version" , ""        }, CONFIG_VERSION    }   //!< The configuration version.
 
-            , { {"log"      , "*"   , "version" , ""        }, areg::LOG_VERSION             }   //!< The logging version.
+            , { {"log"      , "*"   , "version" , ""        }, LOG_VERSION             }   //!< The logging version.
             , { {"log"      , "*"   , "target"  , ""        }, "remote | file | debug | db"     }   //!< The logging types.
             , { {"log"      , "*"   , "enable"  , ""        }, "true"                           }   //!< The logging enabled / disabled status.
             , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                           }   //!< The logging in remote log collector enabled / disabled flag.
@@ -278,7 +278,7 @@ namespace areg
      *          The list of default scopes and priorities set in writable properties
      *          in case if configuration file cannot be loaded.
      **/
-    constexpr areg::ConfigProperty DefaultLogScopesConfig[]
+    constexpr ConfigProperty DefaultLogScopesConfig[]
         {
               { {"log", "mtrouter"      , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'mtrouter' service scopes to enable / disable.
             , { {"log", "logcollector"  , "scope"   , "*"       }, "NOTSET"                     }   //!< The 'logcollector' service scopes to enable / disable.
@@ -288,25 +288,25 @@ namespace areg
      * \brief   areg::LogTypeIdentifiers
      *          The list of logging type identifiers to convert to string or areg::LogTarget types
      **/
-    extern AREG_API const std::vector<areg::Identifier> LogTypeIdentifiers;
+    extern AREG_API const std::vector<Identifier> LogTypeIdentifiers;
 
     /**
      * \brief   areg::ConnectionIdentifiers
      *          The list of connection type identifiers to convert to string or areg::ConnectionType types
      **/
-    extern AREG_API const std::vector<areg::Identifier> ConnectionIdentifiers;
+    extern AREG_API const std::vector<Identifier> ConnectionIdentifiers;
 
     /**
      * \brief   areg::RemoteServiceIdentifiers
      *          The list of remote servicing type identifiers to convert to string or areg::RemoteServiceKind types
      **/
-    extern AREG_API const std::vector<areg::Identifier> RemoteServiceIdentifiers;
+    extern AREG_API const std::vector<Identifier> RemoteServiceIdentifiers;
 
     /**
      * \brief   areg::LogScopePriorityIndentifiers
      *          The list of logging priority type identifiers to convert to string or areg::LogPriority types
      **/
-    extern AREG_API const std::vector<areg::Identifier> LogScopePriorityIndentifiers;
+    extern AREG_API const std::vector<Identifier> LogScopePriorityIndentifiers;
 
     /**
      * \brief   areg::AppState

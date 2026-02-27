@@ -31,7 +31,10 @@
 /************************************************************************
  * Dependencies.
  ************************************************************************/
-namespace areg { class ConfigListener; }
+namespace areg
+{
+    class ConfigListener;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
@@ -59,7 +62,7 @@ namespace areg
          *          by given names. If a stored element is created by manually allocating memory, the memory
          *          should be as well manually freed.
          **/
-        using MapAppStorage     = areg::StringHashMap<areg::Primitive>;
+        using MapAppStorage     = StringHashMap<Primitive>;
 
     //////////////////////////////////////////////////////////////////////////
     // Constants and statics
@@ -105,8 +108,8 @@ namespace areg
                                     , bool startRouting   = true
                                     , bool startTimer     = true
                                     , bool startWatchdog  = false
-                                    , const char * configFile = areg::DEFAULT_CONFIG_FILE.data()
-                                    , areg::ConfigListener * configListener = nullptr);
+                                    , const char * configFile = DEFAULT_CONFIG_FILE.data()
+                                    , ConfigListener * configListener = nullptr);
 
         /**
          * \brief   Call to stop all components, unload models, stop services and release resources.
@@ -156,7 +159,7 @@ namespace areg
          * \return  If found, returns valid model. Otherwise, returns invalid model.
          *          The invalid model has empty name.
          **/
-        static const areg::Model & findModel( const char * modelName );
+        static const Model & findModel( const char * modelName );
 
         /**
          * \brief   Sets up the current working directory.
@@ -284,7 +287,7 @@ namespace areg
          * \brief   Returns true if an element exists in the application storage
          * \param   elemName    The name of element stored in application storage.
          **/
-        static bool isElementStored( const areg::String & elemName );
+        static bool isElementStored( const String & elemName );
 
         /**
          * \brief   Saves element in application storage. If storage already has element save with specified
@@ -294,13 +297,13 @@ namespace areg
          * \return  If storage already has an element saved with same name, it returns previously save element.
          *          Otherwise, it returns areg::InvalidElement.
          **/
-        static areg::Primitive storeElement( const areg::String & elemName, areg::Primitive elem );
+        static Primitive storeElement( const String & elemName, Primitive elem );
 
         /**
          * \brief   Returns stored element, which has given name. If element does not exist, returns areg::InvalidElement.
          * \param   elemName    The name of element to search in storage.
          **/
-        static areg::Primitive getStoredElement( const areg::String & elemName );
+        static Primitive getStoredElement( const String & elemName );
 
         /**
          * \brief   Locks the calling thread until either application quit signal is set, or waiting timeout is expired.
@@ -308,7 +311,7 @@ namespace areg
          *                      If areg::WAIT_INFINITE, waits until signal is set.
          * \return  Returns true, if application quit event signal is set. If timeout expired, returns false.
          **/
-        static bool waitAppQuit( uint32_t waitTimeout = areg::WAIT_INFINITE);
+        static bool waitAppQuit( uint32_t waitTimeout = WAIT_INFINITE);
 
         /**
          * \brief   Sets application quit signal event. So that, the waiting signal thread can be released
@@ -339,18 +342,18 @@ namespace areg
         /**
          * \brief   Returns the name of the executable process.
          **/
-        static const areg::String & getApplicationName();
+        static const String & getApplicationName();
 
         /**
          * \brief   Returns the name of system host.
          **/
-        static const areg::String & getMachineName();
+        static const String & getMachineName();
 
         /**
          * \brief   Returns the instance of application configuration initializer object
          *          to read or write configuration properties
          **/
-        static areg::ConfigManager& getConfigManager();
+        static ConfigManager& getConfigManager();
 
         /**
          * \brief   Loads the configuration from the given file.
@@ -361,7 +364,7 @@ namespace areg
          * \return  Returns true if succeeded to load configuration.
          *          If fails, loads default configuration and returns false.
          **/
-        static bool loadConfiguration(const char * fileName = nullptr, areg::ConfigListener * listener = nullptr);
+        static bool loadConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
         /**
          * \brief   Saves current configuration in the given file.
@@ -376,7 +379,7 @@ namespace areg
          * \return  Returns true if succeeded to save configuration.
          *          Otherwise, returns false.
          **/
-        static bool saveConfiguration(const char * fileName = nullptr, areg::ConfigListener * listener = nullptr);
+        static bool saveConfiguration(const char * fileName = nullptr, ConfigListener * listener = nullptr);
 
         /**
          * \brief   Loads default configuration properties defined in areg::DefaultReadonlyProperties
@@ -385,7 +388,7 @@ namespace areg
          * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered if default
          *                      configuration is set. If listener is null, no notification is triggered.
          **/
-        static void setupDefaultConfiguration(areg::ConfigListener * listener = nullptr);
+        static void setupDefaultConfiguration(ConfigListener * listener = nullptr);
 
         /**
          * \brief   Returns true if the application is already configured.
@@ -399,7 +402,7 @@ namespace areg
         /**
          * \brief   The state of application.
          **/
-        areg::AppState    mAppState;
+        AppState    mAppState;
         /**
          * \brief   Flag, indicating application basic handling is setup. In Linux setup signal handling.
          */
@@ -407,15 +410,15 @@ namespace areg
         /**
          * \brief   The object to read and save application configuration properties.
          **/
-        areg::ConfigManager   mConfigManager;
+        ConfigManager   mConfigManager;
         /**
          * \brief   Exit application event.
          **/
-        areg::SyncEvent       mAppQuit;
+        SyncEvent       mAppQuit;
         /**
          * \brief   Synchronization object
          **/
-        areg::ResourceLock    mLock;
+        ResourceLock    mLock;
     #if defined(_MSC_VER) && (_MSC_VER > 1200)
         #pragma warning(disable: 4251)
     #endif  // _MSC_VER
@@ -456,7 +459,7 @@ namespace areg
          * \param   newState    The new sate of application to set.
          * \return  Returns true if succeeded to change the application state.
          **/
-        static bool _setAppState(areg::AppState newState);
+        static bool _setAppState(AppState newState);
 
         /**
          * \brief   The OS specific implementation of start a service.
