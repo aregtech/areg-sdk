@@ -23,62 +23,66 @@
 
 DEF_LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
-ClientSendThread::ClientSendThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String& namePrefix )
-    : areg::DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
-    , areg::SendMessageEventConsumer( )
-
-    , mRemoteService    ( remoteService )
-    , mConnection       ( connection )
-    , mBytesSend        ( 0 )
-    , mSaveDataSend     ( false )
+namespace areg
 {
-}
 
-void ClientSendThread::readyForEvents( bool isReady )
-{
-    LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
+    ClientSendThread::ClientSendThread(areg::RemoteMessageHandler& remoteService, areg::ClientConnection & connection, const areg::String& namePrefix )
+        : areg::DispatcherThread  ( namePrefix + areg::CLIENT_SEND_MESSAGE_THREAD, areg::STACK_SIZE_DEFAULT, areg::QUEUE_SIZE_MAXIMUM )
+        , areg::SendMessageEventConsumer( )
 
-    if ( isReady )
+        , mRemoteService    ( remoteService )
+        , mConnection       ( connection )
+        , mBytesSend        ( 0 )
+        , mSaveDataSend     ( false )
     {
-        LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
-        areg::SendMessageEvent::addListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
-        areg::DispatcherThread::readyForEvents( true );
     }
-    else
-    {
-        areg::DispatcherThread::readyForEvents( false );
-        areg::SendMessageEvent::removeListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
-        mConnection.closeSocket( );
-        LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
-    }
-}
 
-void ClientSendThread::processEvent( const areg::SendMessageEventData & data )
-{
-    if ( data.isForwardMessage() )
+    void ClientSendThread::readyForEvents( bool isReady )
     {
-        const areg::RemoteMessage & msg = data.getRemoteMessage( );
-        int32_t sizeSend = mConnection.sendMessage( msg );
-        if ( sizeSend > 0 )
+        LOG_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
+
+        if ( isReady )
         {
-            if (mSaveDataSend)
-            {
-                mBytesSend += static_cast<uint32_t>(sizeSend);
-            }
+            LOG_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
+            areg::SendMessageEvent::addListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+            areg::DispatcherThread::readyForEvents( true );
         }
         else
         {
-            mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
+            areg::DispatcherThread::readyForEvents( false );
+            areg::SendMessageEvent::removeListener( static_cast<areg::SendMessageEventConsumer &>(*this), static_cast<areg::DispatcherThread &>(*this) );
+            mConnection.closeSocket( );
+            LOG_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
         }
     }
-    else if (data.isExitThreadMessage() )
-    {
-        mConnection.closeSocket( );
-        triggerExit( );
-    }
-}
 
-bool ClientSendThread::postEvent(areg::Event & eventElem)
-{
-    return (AREG_RUNTIME_CAST(&eventElem, areg::SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
-}
+    void ClientSendThread::processEvent( const areg::SendMessageEventData & data )
+    {
+        if ( data.isForwardMessage() )
+        {
+            const areg::RemoteMessage & msg = data.getRemoteMessage( );
+            int32_t sizeSend = mConnection.sendMessage( msg );
+            if ( sizeSend > 0 )
+            {
+                if (mSaveDataSend)
+                {
+                    mBytesSend += static_cast<uint32_t>(sizeSend);
+                }
+            }
+            else
+            {
+                mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
+            }
+        }
+        else if (data.isExitThreadMessage() )
+        {
+            mConnection.closeSocket( );
+            triggerExit( );
+        }
+    }
+
+    bool ClientSendThread::postEvent(areg::Event & eventElem)
+    {
+        return (AREG_RUNTIME_CAST(&eventElem, areg::SendMessageEvent) != nullptr) && areg::EventDispatcher::postEvent(eventElem);
+    }
+} // namespace areg

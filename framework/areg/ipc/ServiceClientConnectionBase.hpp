@@ -454,7 +454,7 @@ namespace areg
         /**
          * \brief   Message sender thread
          **/
-        ClientSendThread                        mThreadSend;
+        areg::ClientSendThread                        mThreadSend;
         /**
          * \brief   The Client Service event consumer
          **/
