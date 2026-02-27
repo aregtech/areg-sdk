@@ -180,7 +180,7 @@ namespace areg
                     for ( uint32_t i = 0; i < scopeCount; ++ i)
                     {
                         msgReceived >> scopeInfo;
-                        LogManager::updateScopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
+                        areg::LogManager::updateScopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
                     }
 
                     if (scopeCount != 0)
@@ -200,7 +200,7 @@ namespace areg
                 break;
 
             case areg::FuncIdRange::ServiceSaveLogConfiguration:
-                if (LogManager::saveLogConfig())
+                if (areg::LogManager::saveLogConfig())
                 {
                     sendMessage(areg::messageConfigurationSaved());
                 }

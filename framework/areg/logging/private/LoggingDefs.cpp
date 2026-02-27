@@ -137,7 +137,7 @@ areg::LogEntry::LogEntry(areg::LogMessageType msgType, uint32_t scopeId, uint32_
     , logMessagePrio{ msgPrio }
     , logSource     { areg::COOKIE_LOCAL }
     , logTarget     { areg::COOKIE_LOGGER }
-    , logCookie     { LogManager::getConnectionCookie() }
+    , logCookie     { areg::LogManager::getConnectionCookie() }
     , logModuleId   { areg::Process::getInstance().getId() }
     , logThreadId   { areg::Thread::getCurrentThreadId() }
     , logTimestamp  { areg::DateTime::getNow() }
@@ -243,47 +243,47 @@ areg::LogEntry & areg::LogEntry::operator = (const areg::LogEntry & src)
 
 AREG_API_IMPL bool areg::startLogging(const char * fileConfig /*= nullptr */ )
 {
-    return LogManager::startLogging(fileConfig);
+    return areg::LogManager::startLogging(fileConfig);
 }
 
 AREG_API_IMPL void areg::stopLogging(bool waitComplete)
 {
-    LogManager::stopLogging(waitComplete);
+    areg::LogManager::stopLogging(waitComplete);
 }
 
 AREG_API_IMPL void areg::waitLoggingEnd()
 {
-    LogManager::waitLoggingEnd();
+    areg::LogManager::waitLoggingEnd();
 }
 
 AREG_API_IMPL void areg::activateScope(areg::LogScope & logScope)
 {
-    LogManager::activateLogScope(logScope);
+    areg::LogManager::activateLogScope(logScope);
 }
 
 AREG_API_IMPL bool areg::isStarted()
 {
-    return LogManager::isLoggingStarted();
+    return areg::LogManager::isLoggingStarted();
 }
 
 AREG_API_IMPL bool areg::isConfigured()
 {
-    return LogManager::isLoggingConfigured();
+    return areg::LogManager::isLoggingConfigured();
 }
 
 AREG_API_IMPL bool areg::initializeLogging(const char * fileConfig)
 {
-    return LogManager::readLogConfig(fileConfig);
+    return areg::LogManager::readLogConfig(fileConfig);
 }
 
 AREG_API_IMPL bool areg::isEnabled()
 {
-    return LogManager::isLoggingEnabled();
+    return areg::LogManager::isLoggingEnabled();
 }
 
 AREG_API_IMPL bool areg::saveLogging( const char * configFile )
 {
-    return LogManager::saveLogConfig(configFile);
+    return areg::LogManager::saveLogConfig(configFile);
 }
 
 AREG_API_IMPL uint32_t areg::makeScopeId( const char * scopeName )
@@ -298,12 +298,12 @@ AREG_API_IMPL uint32_t areg::makeScopeIdEx(const char* scopeName)
 
 AREG_API_IMPL uint32_t areg::setScopePriority( const char * scopeName, uint32_t newPrio )
 {
-    return LogManager::setScopePriority( scopeName, newPrio );
+    return areg::LogManager::setScopePriority( scopeName, newPrio );
 }
 
 AREG_API_IMPL uint32_t areg::getScopePriority( const char * scopeName )
 {
-    return LogManager::getScopePriority( scopeName );
+    return areg::LogManager::getScopePriority( scopeName );
 }
 
 AREG_API_IMPL areg::RemoteMessage areg::createLogMessage(const areg::LogEntry& logMessage, areg::LogDataType dataType, const ITEM_ID& srcCookie)
@@ -341,7 +341,7 @@ AREG_API_IMPL areg::RemoteMessage areg::createLogMessage(const areg::LogEntry& l
 
 AREG_API_IMPL void areg::logMessage(const areg::RemoteMessage& message)
 {
-    return LogManager::logMessage(message);
+    return areg::LogManager::logMessage(message);
 }
 
 AREG_API_IMPL areg::RemoteMessage areg::messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const areg::ScopeList & scopeList)
@@ -361,7 +361,7 @@ AREG_API_IMPL areg::RemoteMessage areg::messageRegisterScopes(const ITEM_ID & so
 
 AREG_API_IMPL void areg::logAnyMessageLocal(const areg::LogEntry& logMessage)
 {
-    LogManager::logMessage(logMessage);
+    areg::LogManager::logMessage(logMessage);
 }
 
 AREG_API_IMPL areg::RemoteMessage areg::messageUpdateScopes(const ITEM_ID& source, const ITEM_ID& target, const areg::ScopeNames& scopeNames)
@@ -387,7 +387,7 @@ AREG_API_IMPL areg::RemoteMessage areg::messageUpdateScopes(const ITEM_ID& sourc
 
 AREG_API_IMPL void areg::logAnyMessage(const areg::LogEntry& logMessage)
 {
-    LogManager::logMessage(areg::SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(areg::LogEntry)));
+    areg::LogManager::logMessage(areg::SharedBuffer(reinterpret_cast<const uint8_t *>(&logMessage), sizeof(areg::LogEntry)));
 }
 
 AREG_API_IMPL areg::RemoteMessage areg::messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const areg::String& scopeName, uint32_t scopeId, uint32_t scopePrio)
@@ -485,32 +485,32 @@ AREG_API_IMPL areg::RemoteMessage areg::messageConfigurationSaved()
 
 AREG_API_IMPL void areg::setLogDatabaseEngine(areg::LogDatabaseEngine * dbEngine)
 {
-    LogManager::setLogDatabaseEngine(dbEngine);
+    areg::LogManager::setLogDatabaseEngine(dbEngine);
 }
 
 AREG_API_IMPL bool areg::forceStartLogging()
 {
-    LogManager::setDefaultConfiguration(false);
-    LogManager::forceEnableLogging();
-    return LogManager::forceActivateLogging();
+    areg::LogManager::setDefaultConfiguration(false);
+    areg::LogManager::forceEnableLogging();
+    return areg::LogManager::forceActivateLogging();
 }
 
 AREG_API_IMPL bool areg::initAndStartLogging(const char * fileConfig /*= nullptr */)
 {
-    if (LogManager::readLogConfig(fileConfig))
+    if (areg::LogManager::readLogConfig(fileConfig))
     {
-        LogManager::forceEnableLogging();
-        return LogManager::startLogging(nullptr);
+        areg::LogManager::forceEnableLogging();
+        return areg::LogManager::startLogging(nullptr);
     }
     else
     {
-        return LogManager::forceActivateLogging();
+        return areg::LogManager::forceActivateLogging();
     }
 }
 
 AREG_API_IMPL const ITEM_ID & areg::getCookie()
 {
-    return LogManager::getConnectionCookie();
+    return areg::LogManager::getConnectionCookie();
 }
 
 AREG_API_IMPL areg::String areg::makePrioString(uint32_t priorities)

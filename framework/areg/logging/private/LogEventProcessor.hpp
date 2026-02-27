@@ -26,7 +26,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class LogManager;
+namespace areg { class LogManager; }
 namespace areg { class LogConfiguration; }
 class LoggerBase;
 namespace areg { class InStream; }
@@ -47,7 +47,7 @@ public:
     /**
      * \brief   Initializes the logging event processor and set the instance of log manager.
      **/
-    LogEventProcessor( LogManager & logManager );
+    LogEventProcessor( areg::LogManager & logManager );
 
     ~LogEventProcessor() = default;
 
@@ -111,7 +111,7 @@ private:
 private:
 
     //!< The instance of log manager.
-    LogManager &      mLogManager;
+    areg::LogManager &      mLogManager;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

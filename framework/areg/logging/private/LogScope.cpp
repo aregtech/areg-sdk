@@ -39,7 +39,7 @@ namespace areg
         , mIsRegistered ( true )
         , mSessionId    ( 0 )
     {
-        LogManager::registerLogScope( self() );
+        areg::LogManager::registerLogScope( self() );
     }
 
     LogScope::LogScope(const areg::InStream & stream)
@@ -55,7 +55,7 @@ namespace areg
     {
         if (mIsRegistered)
         {
-            LogManager::unregisterLogScope(self());
+            areg::LogManager::unregisterLogScope(self());
         }
     }
 

@@ -30,7 +30,7 @@
  ************************************************************************/
 namespace areg { class LogScope; }
 namespace areg { class Property; }
-class LogManager;
+namespace areg { class LogManager; }
 namespace areg { class NetTcpLogger; }
 
 namespace areg
@@ -54,7 +54,7 @@ namespace areg
     {
         friend class areg::NetTcpLogger;
         friend class ScopeController;
-        friend class ::LogManager;
+        friend class areg::LogManager;
 
     //////////////////////////////////////////////////////////////////////////
     // Constructor / Destructor

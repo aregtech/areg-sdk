@@ -36,7 +36,7 @@ namespace areg
         if ( isScopeEnabled() )
         {
             areg::LogMessage msg{ areg::LogMessageType::ScopeEnter, mScopeId, mSessionId, 0u, areg::LogPriority::PrioScope, mScopeName };
-            LogManager::logMessage(msg);
+            areg::LogManager::logMessage(msg);
         }
     }
 
@@ -45,7 +45,7 @@ namespace areg
         if ( isScopeEnabled() )
         {
             areg::LogMessage msg{ areg::LogMessageType::ScopeExit, mScopeId, mSessionId, mTimestamp, areg::LogPriority::PrioScope, mScopeName };
-            LogManager::logMessage(msg);
+            areg::LogManager::logMessage(msg);
         }
     }
 
@@ -124,7 +124,7 @@ namespace areg
     {
         areg::LogMessage logData(areg::LogMessageType::MessageText, scopeId, sessionId, scopeStamp, msgPrio, nullptr, 0);
         logData.logMessageLen = static_cast<uint32_t>(areg::String::formatStringList( logData.logMessage, areg::LOG_MESSAGE_IZE, format, args ));
-        LogManager::logMessage( logData );
+        areg::LogManager::logMessage( logData );
     }
 
     #else   // AREG_LOGS

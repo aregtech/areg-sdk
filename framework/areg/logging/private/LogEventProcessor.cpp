@@ -26,7 +26,7 @@
 
 #if AREG_LOGS
 
-LogEventProcessor::LogEventProcessor( LogManager & logManager )
+LogEventProcessor::LogEventProcessor( areg::LogManager & logManager )
     : mLogManager (logManager)
 {
 }
