@@ -21,41 +21,44 @@
 #include "areg/base/GEGlobal.h"
 #include "aregextend/console/SystemServiceConsole.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// RouterConsoleService class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A service to output statistics..
- **/
-class RouterConsoleService  : public    aregext::SystemServiceConsole
+namespace mtrouter
 {
-public:
-    //!< The console service role name
-    static constexpr std::string_view   SERVICE_NAME    { "RouterConcoleService" };
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-
+    //////////////////////////////////////////////////////////////////////////
+    // RouterConsoleService class declaration
+    //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Instantiates the component object.
-     * \param   entry   The instance of the component entry that contains the component information.
-     * \param   owner   The instance of component owner thread.
+     * \brief   A service to output statistics..
      **/
-    RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
+    class RouterConsoleService  : public    aregext::SystemServiceConsole
+    {
+    public:
+        //!< The console service role name
+        static constexpr std::string_view   SERVICE_NAME    { "RouterConcoleService" };
 
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~RouterConsoleService() = default;
+    //////////////////////////////////////////////////////////////////////////
+    // Constructor / destructor
+    //////////////////////////////////////////////////////////////////////////
+    public:
 
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    RouterConsoleService() = delete;
-    AREG_NOCOPY_NOMOVE( RouterConsoleService );
-};
+        /**
+         * \brief   Instantiates the component object.
+         * \param   entry   The instance of the component entry that contains the component information.
+         * \param   owner   The instance of component owner thread.
+         **/
+        RouterConsoleService( const areg::ComponentEntry & entry, areg::ComponentThread & owner );
 
+        /**
+         * \brief   Destructor.
+         **/
+        virtual ~RouterConsoleService() = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        RouterConsoleService() = delete;
+        AREG_NOCOPY_NOMOVE( RouterConsoleService );
+    };
+
+} // namespace mtrouter
 #endif  // AREG_mtrouter_APP_ROUTERCONSOLESERVICE_HPP

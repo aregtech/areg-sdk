@@ -42,11 +42,11 @@ BEGIN_MODEL(_modelName)
     // define console service thread.
     BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread" )
         // Define the console service
-        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
+        BEGIN_REGISTER_COMPONENT(mtrouter::RouterConsoleService::SERVICE_NAME, mtrouter::RouterConsoleService)
             // register dummy 'empty service'.
             REGISTER_IMPLEMENT_SERVICE( areg::EmptyServiceName, areg::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
+        END_REGISTER_COMPONENT(mtrouter::RouterConsoleService::SERVICE_NAME )
     // end of thread description
     END_REGISTER_THREAD( "RouterConsoleServiceThread" )
 
