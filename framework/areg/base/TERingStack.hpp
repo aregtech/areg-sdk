@@ -1019,9 +1019,11 @@ RSOperationResult<VALUE> TERingStack<VALUE>::pop( void )
         {
             mHeadPos = mTailPos = 0u;
         }
+    } else {
+        return RSOperationResult<VALUE>(0u, false, false, removedElement);
     }
 
-    return RSOperationResult<VALUE>(mElemCount, mElemCount > 0, true, removedElement);
+    return RSOperationResult<VALUE>(mElemCount, true, true, removedElement);
 }
 
 template <typename VALUE>
